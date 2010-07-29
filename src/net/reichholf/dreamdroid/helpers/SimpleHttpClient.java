@@ -40,81 +40,59 @@ import android.util.Log;
  */
 public class SimpleHttpClient {
 	private UsernamePasswordCredentials mCreds = null;
+	private SharedPreferences mPrefs;
 	private DefaultHttpClient mDhc;
 	private HttpContext mContext;
 
 	private String mPrefix;
 	private String mHostname;
-	private String mPageString;
 	private String mPort;
+	private String mUser;
+	private String mPass;
+	private String mPageString;
 	private String mErrorText;
+
+	private boolean mLogin;
+	private boolean mSsl;
 	private boolean mError;
 
 	/**
-	 * @param host
-	 * @param prt
-	 * @param ssl
+	 * @param sp SharedPreferences of the Base-Context
 	 */
-	public SimpleHttpClient(String host, String prt, boolean ssl) {
+	private SimpleHttpClient(SharedPreferences sp) {
+		mPrefs = sp;
+
 		BasicHttpParams params = new BasicHttpParams();
 		params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
 
-		mDhc = new DefaultHttpClient(getEasySSLClientConnectionManager(), params);
+		mDhc = new DefaultHttpClient(getEasySSLClientConnectionManager(),
+				params);
 
 		mContext = new BasicHttpContext();
-		mHostname = host;
-		mPort = prt;
-
-		if (ssl) {
-			mPrefix = "https://";
-		} else {
-			mPrefix = "http://";
-		}
 	}
 
 	/**
-	 * @param host
-	 * @param port
-	 * @param user
-	 * @param pass
-	 * @param ssl
-	 */
-	public SimpleHttpClient(String host, String port, String user, String pass, boolean ssl) {
-
-		mDhc = new DefaultHttpClient(getEasySSLClientConnectionManager(), new BasicHttpParams());
-		mContext = new BasicHttpContext();
-
-		mHostname = host;
-		mPort = port;
-
-		if (ssl) {
-			mPrefix = "https://";
-		} else {
-			mPrefix = "http://";
-		}
-
-		this.setCredentials(user, pass);
-	}
-
-	/**
-	 * @return
+	 * @return ThreadSafeClientConnManager Instance
 	 */
 	public ThreadSafeClientConnManager getEasySSLClientConnectionManager() {
 		BasicHttpParams params = new BasicHttpParams();
 
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 
-		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-		schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
+		schemeRegistry.register(new Scheme("http", PlainSocketFactory
+				.getSocketFactory(), 80));
+		schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(),
+				443));
 
-		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
+		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(
+				params, schemeRegistry);
 
 		return cm;
 	}
 
 	/**
-	 * @param user
-	 * @param pass
+	 * @param user Username for http-auth
+	 * @param pass Password for http-auth
 	 */
 	public void setCredentials(String user, String pass) {
 		mCreds = new UsernamePasswordCredentials(user, pass);
@@ -134,6 +112,9 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public boolean fetchPageContent(String uri, List<NameValuePair> parameters) {
+		// Set login, ssl, port, host etc;
+		applyConfig();
+
 		mErrorText = null;
 		mError = false;
 		mPageString = "";
@@ -143,6 +124,7 @@ public class SimpleHttpClient {
 
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
 		String url = mPrefix + mHostname + ":" + mPort + uri + parms;
+
 		HttpGet get = new HttpGet(url);
 
 		try {
@@ -189,12 +171,40 @@ public class SimpleHttpClient {
 		return this.mPageString;
 	}
 
+	/**
+	 * @return
+	 */
 	public String getErrorText() {
 		return mErrorText;
 	}
 
+	/**
+	 * @return
+	 */
 	public boolean hasError() {
 		return mError;
+	}
+
+	/**
+	 * 
+	 */
+	public void applyConfig() {
+		mHostname = mPrefs.getString("host", "dm8000");
+		mPort = mPrefs.getString("port", "80");
+		mLogin = mPrefs.getBoolean("login", false);
+		mSsl = mPrefs.getBoolean("ssl", false);
+
+		if (mSsl) {
+			mPrefix = "https://";
+		} else {
+			mPrefix = "http://";
+		}
+
+		if (mLogin) {
+			mUser = mPrefs.getString("user", "root");
+			mPass = mPrefs.getString("pass", "dreambox");
+			setCredentials(mUser, mPass);
+		}
 	}
 
 	/**
@@ -202,18 +212,6 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public static SimpleHttpClient getInstance(SharedPreferences sp) {
-		String host = sp.getString("host", "dm8000");
-		String port = sp.getString("port", "80");
-		boolean login = sp.getBoolean("login", false);
-		boolean ssl = sp.getBoolean("ssl", false);
-
-		if (login) {
-			String user = sp.getString("user", "root");
-			String pass = sp.getString("pass", "dreambox");
-
-			return new SimpleHttpClient(host, port, user, pass, ssl);
-		} else {
-			return new SimpleHttpClient(host, port, ssl);
-		}
+		return new SimpleHttpClient(sp);
 	}
 }

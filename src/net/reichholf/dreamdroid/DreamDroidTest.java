@@ -16,6 +16,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.R;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -73,7 +74,7 @@ public class DreamDroidTest extends AbstractHttpListActivity {
 	}
 	
 	public void httpTest() {
-		SimpleHttpClient shc = new SimpleHttpClient("192.168.178.22", "80", false);
+		SimpleHttpClient shc = SimpleHttpClient.getInstance(PreferenceManager.getDefaultSharedPreferences(getBaseContext()));
 		List<NameValuePair> parameters = new ArrayList<NameValuePair>();
 		
 		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
