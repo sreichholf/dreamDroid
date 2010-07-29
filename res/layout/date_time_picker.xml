@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:orientation="vertical">
+
+	<View android:id="@+id/divider"
+	    android:background="@drawable/black_white_gradient"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_marginBottom="3dp"/>
+	
+	<ScrollView
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent" 
+		android:layout_marginBottom="53dip">
+		
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
+		    
+			<DatePicker 
+				android:id="@+id/DatePicker" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content" />  
+		  
+			<TimePicker 
+				android:id="@+id/TimePicker" 
+				android:layout_width="wrap_content" 
+				android:layout_height="wrap_content" />
+		
+		</LinearLayout>
+		
+	</ScrollView>
+
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:layout_marginTop="-50dp">
+	
+		
+		<Button 
+			android:text="@string/apply" 
+			android:id="@+id/ButtonApply" 
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content"
+			android:drawableLeft="@drawable/save_small"
+			android:layout_weight="1"/>
+	
+		<Button 
+			android:text="@string/cancel" 
+			android:id="@+id/ButtonCancel" 
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content"
+			android:drawableLeft="@drawable/close_small"
+			android:layout_weight="1" />
+	
+	</LinearLayout>		
+</LinearLayout>

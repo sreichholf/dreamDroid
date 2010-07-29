@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"		
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent" >
+
+	<ScrollView	
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent" 
+		android:layout_marginBottom="55dip">
+		<LinearLayout		
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent" >
+		  	 
+		  	<TextView 
+		  		android:id="@+id/TextViewTitle" 
+		  		android:layout_width="fill_parent" 
+		  		android:layout_height="wrap_content" 
+		  		android:text="@string/title" 
+		  		android:paddingLeft="3dip"
+		  		android:background="#333" />
+		  	
+			<LinearLayout 
+		  		android:layout_height="wrap_content" 
+		  		android:id="@+id/LinearLayoutTitle" 
+		  		android:layout_width="fill_parent">
+	 			
+	 			<EditText 
+	 				android:id="@+id/EditTextTitle" 
+	 				android:layout_height="wrap_content" 
+	 				android:text="@string/title" android:layout_width="fill_parent" android:layout_marginRight="50dip"/>
+	 			<CheckBox 
+	 				android:layout_width="wrap_content" 
+	 				android:layout_height="wrap_content" 
+	 				android:id="@+id/CheckBoxEnabled" android:layout_marginLeft="-45dip"/>
+			</LinearLayout>	  		
+				
+		  	<TextView
+		  		android:id="@+id/TextViewDescription"
+		  		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/description" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>		
+			<EditText 
+				android:id="@+id/EditTextDescription"			
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"  
+				android:text="@string/description" 
+				android.layout_weight="1" />			
+		
+			<TextView 
+				android:layout_height="wrap_content" 
+				android:layout_width="fill_parent" 
+				android:background="#333" 
+				android:id="@+id/TextViewBeginTitle" 
+				android:text="@string/begin_time" 
+				android:paddingLeft="3dip" />
+			
+			<TextView 
+				android:text="@+id/TextViewBegin" 
+				android:id="@+id/TextViewBegin" 
+				android:layout_width="fill_parent" 
+				android:paddingLeft="3dip" 
+				android:clickable="true"
+				android:background="@android:drawable/list_selector_background" 
+				android:layout_height="50dip" 
+				android:gravity="center_vertical" 
+				android:textSize="20dip"/>
+		
+			<TextView 
+				android:layout_height="wrap_content" 
+				android:layout_width="fill_parent" 
+				android:background="#333" 
+				android:id="@+id/TextViewTime" 
+				android:text="@string/end_time" 
+				android:paddingLeft="3dip" />				
+			<TextView 
+				android:text="@+id/TextViewEnd" 
+				android:id="@+id/TextViewEnd" 
+				android:layout_width="fill_parent" 
+				android:paddingLeft="3dip" 
+				android:clickable="true"
+				android:background="@android:drawable/list_selector_background" 
+				android:layout_height="50dip" 
+				android:gravity="center_vertical" 
+				android:textSize="20dip"/>				
+	
+			<TextView 
+				android:id="@+id/TextViewRepeatedTitle"
+				android:layout_height="wrap_content" 
+				android:layout_width="fill_parent"				
+				android:background="#333" 
+				android:text="@string/repeatings"
+				android:paddingLeft="3dip" />
+			<TextView 
+				android:text="@+id/TextViewRepeated" 
+				android:id="@+id/TextViewRepeated" 				
+				android:layout_width="fill_parent"				
+				android:background="@android:drawable/list_selector_background"
+				android:clickable="true" 
+				android:layout_height="50dip" 
+				android:gravity="center_vertical" 
+				android:paddingLeft="3dip" 
+				android:textSize="20dip"/>
+			
+			<TextView
+		 		android:id="@+id/TextViewServiceTitle"
+		 		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/service" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>
+							
+			<TextView
+		 		android:id="@+id/TextViewService"
+		 		android:text="@+id/TextViewService"
+		 		android:layout_width="fill_parent"
+		 		android:background="@android:drawable/list_selector_background"
+				android:clickable="true" 
+				android:gravity="center_vertical"
+				android:layout_height="50dip" 				
+				android:paddingLeft="3dip" 
+				android:textSize="20dip"/>		
+		
+			<TextView 
+				android:id="@+id/TextViewAfterEvent" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content" 
+				android:text="@string/afterevent" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>
+				
+			<Spinner 
+				android:id="@+id/SpinnerAfterEvent" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content" />
+			
+			<TextView
+		 		android:id="@+id/TextViewLocation"
+		 		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/location" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>			
+			<Spinner
+				android:id="@+id/SpinnerLocation"			
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"/>
+		
+		
+		</LinearLayout>
+		
+	</ScrollView>
+	<TableLayout		
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:layout_marginTop="-52dip"
+		style="@android:style/ButtonBar">
+		
+		<TableRow
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent">
+			
+			<Button
+				android:id="@+id/ButtonSave"
+				android:layout_height="wrap_content"
+				android:drawableLeft="@drawable/save_small"
+				android:layout_column="2"
+				android:layout_weight="1"
+				android:text="@string/save" />
+			
+			<Button
+				android:id="@+id/ButtonCancel"
+				android:layout_height="wrap_content"
+				android:layout_column="2"
+				android:layout_weight="1"
+				android:drawableLeft="@drawable/close_small"
+				android:text="@string/cancel" />
+			
+		</TableRow>		
+	</TableLayout>
+</LinearLayout>	

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/LinearLayoutMain"
+	android:layout_width="fill_parent"  
+	android:layout_height="wrap_content"
+	android:minHeight="44dip"
+	android:paddingRight="5dip"
+	android:orientation="vertical">
+  	
+  	<LinearLayout 
+  		android:id="@+id/LinearLayout2" 
+  		android:layout_width="fill_parent" 
+  		android:layout_height="wrap_content" 
+  		android:orientation="horizontal">
+  	
+  		<TextView 
+  			android:id="@+id/event_title" 
+  			android:textSize="18sp" 
+  			android:textColor="#FFF" 
+  			android:layout_height="wrap_content" 
+  			android:layout_width="fill_parent" 
+  			android:textStyle="bold"
+  			android:layout_gravity="center_vertical" />
+	  		
+	</LinearLayout>
+	
+	<LinearLayout
+		android:id="@+id/LinearLayout1"
+		android:layout_width="fill_parent"  
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+		
+		<TextView
+			android:id="@+id/event_start" 
+			android:textSize="13sp"
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent"
+			android:layout_weight="1" />
+			  	
+		<TextView
+		  android:id="@+id/event_duration" 
+		  android:textSize="13sp"
+		  android:layout_height="wrap_content"
+		  android:layout_width="fill_parent"
+		  android:layout_weight="1"
+		  android:layout_marginRight="5dip"
+		  android:gravity="right"/>
+
+  	</LinearLayout>
+  	
+	
+</LinearLayout>

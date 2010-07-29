@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/LinearLayoutMain"
+	android:layout_width="fill_parent"
+	android:minWidth="150dip"
+	android:layout_height="fill_parent"
+	android:orientation="vertical">
+	
+	<View android:id="@+id/divider"
+	    android:background="@drawable/black_white_gradient"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_marginBottom="3dp"/>
+	
+	<TextView
+		android:id="@+id/service_name" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="10dip"
+		android:textStyle="bold"/>
+	
+	<TextView
+			android:id="@+id/epg_time" 
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="10dip"
+			android:textStyle="bold"/>
+  	
+  	<ScrollView
+  		android:id="@+id/ScrollView"
+  		android:layout_width="fill_parent"
+  		android:layout_height="fill_parent"
+  		android:layout_marginBottom="50dip"
+  		android:padding="10dip">
+		
+		<TextView
+			android:id="@+id/epg_description_extended" 
+			android:layout_width="fill_parent"
+			android:text="123"
+			android:layout_height="wrap_content"/>	
+	</ScrollView>
+	<LinearLayout
+		android:id="@+id/LinearLayout1"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:orientation="horizontal"
+		android:layout_marginTop="-50dip">
+		
+		<Button
+			android:id="@+id/ButtonClose"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:drawableLeft="@drawable/close_small"
+			android:text="@string/close"
+			android:layout_weight="1" />
+		<Button
+			android:id="@+id/ButtonSetTimer"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:drawableLeft="@drawable/clock_small"			
+			android:text="@string/set_timer"
+			android:layout_weight="1"/>
+	</LinearLayout>
+
+</LinearLayout>

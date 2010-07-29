@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+	android:id="@+id/LinearLayoutMain" 
+	android:layout_width="fill_parent" 
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	
+	<ScrollView
+		android:id="@+id/ScrollViewMain"
+		android:layout_width="fill_parent" 
+		android:layout_height="fill_parent"
+		android:layout_marginBottom="51dip">
+	
+		<LinearLayout 
+			android:layout_width="fill_parent" 
+			android:layout_height="fill_parent"
+			android:orientation="vertical"		
+			android:id="@+id/LinearLayoutTop"
+			android:paddingRight="3dp" >
+				
+			<LinearLayout 
+				android:id="@+id/LinearLayout1" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:orientation="horizontal"
+				android:paddingTop="5dip">
+				
+				<Button
+					android:id="@+id/ButtonServices"
+					android:text="@string/services"		
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:drawableLeft="@drawable/small_tiles" 
+					android:layout_weight="1"/>
+				<Button 
+					android:id="@+id/ButtonMovies" 
+					android:text="@string/movies" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content" 
+					android:drawableLeft="@drawable/monitor" 
+					android:layout_weight="1" />		
+				<Button
+					android:id="@+id/ButtonTimer"
+					android:text="@string/timer"		
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content" 
+					android:drawableLeft="@drawable/clock"
+					android:layout_weight="1"/>							
+			</LinearLayout>
+			
+			<LinearLayout 
+				android:id="@+id/LinearLayout2" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+				<Button 
+					android:id="@+id/ButtonVirtualRemote" 
+					android:text="@string/virtual_remote" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content" 
+					android:drawableLeft="@drawable/large_tiles" 
+					android:layout_weight="1" />	
+				
+				<Button 
+					android:id="@+id/ButtonCurrent" 
+					android:text="@string/current_service" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content" 
+					android:drawableLeft="@drawable/help" 
+					android:layout_weight="1" />			
+					
+				<Button 
+					android:id="@+id/ButtonEpgSearch" 
+					android:text="@string/epg_search" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content" 
+					android:drawableLeft="@drawable/ic_menu_search" 
+					android:layout_weight="1" />		
+			</LinearLayout>	
+			
+			<LinearLayout 
+				android:id="@+id/LinearLayout4" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:orientation="horizontal">
+				
+				<Button 
+					android:id="@+id/ButtonMessage" 
+					android:text="@string/send_message" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content" 
+					android:drawableLeft="@drawable/dialog" 
+					android:layout_weight="1"/>		
+				
+				<Button 
+					android:id="@+id/ButtonInfo" 
+					android:text="@string/device_info" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content" 
+					android:drawableLeft="@drawable/info" 
+					android:layout_weight="1" />				
+			</LinearLayout>	
+			
+			<TextView
+				android:id="@+id/TextViewVersion"
+				android:text="@string/version_string" 
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="bottom"			
+				android:gravity="center"/>
+		</LinearLayout>	
+	</ScrollView>
+	
+	<LinearLayout 
+		android:id="@+id/LinearLayout2" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:layout_marginTop="-50dip"		
+		android:orientation="horizontal"
+		android:layout_gravity="bottom"
+		style="@android:style/ButtonBar">
+					
+		<ImageButton android:id="@+id/ButtonExit" 
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content" 
+			android:src="@drawable/close_small"
+			android:scaleType="center"
+			android:gravity="bottom"/>
+	</LinearLayout>	
+</LinearLayout>
