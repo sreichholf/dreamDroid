@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 import net.reichholf.dreamdroid.R;
@@ -35,8 +36,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
  * 
  */
 public class VirtualRemoteActivity extends AbstractHttpActivity {
-	public static final int MENU_LAYOUT = 0;
-	
+	public static final int MENU_LAYOUT = 0;	
 	
 	private Button mButtonPower;
 	private Button mButton1;
@@ -212,6 +212,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		mButtonText = (Button) findViewById(R.id.ButtonText);
 		mButtonRec = (Button) findViewById(R.id.ButtonRec);
 		
+		registerOnClickListener(mButtonPower, Remote.KEY_POWER);
 		registerOnClickListener(mButtonExit, Remote.KEY_EXIT);
 		registerOnClickListener(mButtonVolP, Remote.KEY_VOLP);
 		registerOnClickListener(mButtonVolM, Remote.KEY_VOLM);
@@ -232,8 +233,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		registerOnClickListener(mButtonYellow, Remote.KEY_YELLOW);
 		registerOnClickListener(mButtonBlue, Remote.KEY_BLUE);
 
-		if(!mQuickZap){
-			registerOnClickListener(mButtonPower, Remote.KEY_POWER);
+		if(!mQuickZap){			
 			registerOnClickListener(mButton1, Remote.KEY_1);
 			registerOnClickListener(mButton2, Remote.KEY_2);
 			registerOnClickListener(mButton3, Remote.KEY_3);
@@ -262,10 +262,20 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	 * @param id
 	 */
 	private void registerOnClickListener(View v, final int id) {
+		v.setLongClickable(true);
+		
+		v.setOnLongClickListener(new OnLongClickListener(){
+			@Override
+			public boolean onLongClick(View v){
+				onButtonClicked(id, true);
+				return true;
+			}
+		});
+		
 		v.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				onButtonClicked(id);
+				onButtonClicked(id, false);
 			}
 		});
 	}
@@ -273,9 +283,12 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	/**
 	 * @param id
 	 */
-	private void onButtonClicked(int id) {
+	private void onButtonClicked(int id, boolean longClick) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
+		if(longClick){
+			params.add(new BasicNameValuePair("type", Remote.CLICK_TYPE_LONG));
+		}
 
 		ExtendedHashMap result = null;
 

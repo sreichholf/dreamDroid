@@ -58,6 +58,7 @@ public class Remote extends AbstractRequestHandler{
 	public static final int KEY_TEXT = 388;
 	public static final int KEY_RECORD = 167;
 	
+	public static final String CLICK_TYPE_LONG = "long";
 	
 	public static String sendCommand(SimpleHttpClient shc, ArrayList<NameValuePair> params) {
 		if (shc.fetchPageContent(URIStore.REMOTECONTROL, params)) {

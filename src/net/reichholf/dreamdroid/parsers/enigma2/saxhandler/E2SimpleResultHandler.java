@@ -41,9 +41,9 @@ public class E2SimpleResultHandler extends DefaultHandler{
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals("e2state")) {
+		if (localName.equals("e2state") || localName.equals("e2result")) {
 			inState = true;
-		} else if (localName.equals("e2statetext")) {
+		} else if (localName.equals("e2statetext") || localName.equals("e2resulttext")) {
 			inStateText = true;
 		}
 	}
@@ -53,9 +53,9 @@ public class E2SimpleResultHandler extends DefaultHandler{
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2state")) {
+		if (localName.equals("e2state") || localName.equals("e2result")) {
 			inState = false;
-		} else if (localName.equals("e2statetext")) {
+		} else if (localName.equals("e2statetext") || localName.equals("e2resulttext")) {
 			inStateText = false;
 		} 
 	}
