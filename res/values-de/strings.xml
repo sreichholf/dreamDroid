@@ -130,4 +130,6 @@
 	<string name="quickzap">QuickZap</string>
 	<string name="choose_layout">Layout wählen</string>
 	<string name="layout">Layout ändern</string>
+<string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur verfügung!</string>
+<string name="ok">OK</string>
 </resources>

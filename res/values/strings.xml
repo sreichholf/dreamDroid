@@ -131,4 +131,6 @@
 <string name="quickzap">QuickZap</string>
 <string name="choose_layout">Choose a layout</string>
 <string name="layout">Change Layout</string>
+<string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
+<string name="ok">OK</string>
 </resources>
