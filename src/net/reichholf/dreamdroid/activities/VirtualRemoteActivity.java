@@ -11,8 +11,14 @@ import java.util.ArrayList;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -29,6 +35,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
  * 
  */
 public class VirtualRemoteActivity extends AbstractHttpActivity {
+	public static final int MENU_LAYOUT = 0;
+	
+	
 	private Button mButtonPower;
 	private Button mButton1;
 	private Button mButton2;
@@ -69,7 +78,10 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	private Button mButtonRadio;
 	private Button mButtonText;
 	private Button mButtonRec;
-
+	
+	private boolean mQuickZap;
+	private SharedPreferences mPrefs;
+	private SharedPreferences.Editor mEditor;
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -80,8 +92,83 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+		mEditor = mPrefs.edit();
+		mQuickZap = mPrefs.getBoolean("quickzap", false);
+		
+		reinit();
+	}
 
-		setContentView(R.layout.virtual_remote);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, MENU_LAYOUT, 0, getText(R.string.layout)).setIcon(android.R.drawable.ic_menu_always_landscape_portrait);
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case MENU_LAYOUT:
+			CharSequence[] actions = { getText(R.string.standard), getText(R.string.quickzap) };
+
+			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
+			adBuilder.setTitle(getText(R.string.choose_layout));
+			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
+
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						setLayout(false);						
+						break;
+
+					case 1:
+						setLayout(true);
+						break;
+					}									
+				}
+			});
+
+			AlertDialog alert = adBuilder.create();
+			alert.show();
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * @param b if true QuickZap Layout will be applied. False = Standard Layout
+	 */
+	private void setLayout(boolean b){
+		if(mQuickZap != b){
+			mQuickZap = b;
+			mEditor.putBoolean("quickzap", mQuickZap);
+			mEditor.commit();
+			
+			reinit();
+		}
+	}
+	
+	
+	/**
+	 * 
+	 */
+	private void reinit(){
+		if(mQuickZap){
+			setContentView(R.layout.virtual_remote_quick_zap);
+		} else {
+			setContentView(R.layout.virtual_remote);
+		}
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 		mButtonPower = (Button) findViewById(R.id.ButtonPower);
@@ -124,20 +211,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		mButtonRadio = (Button) findViewById(R.id.ButtonRadio);
 		mButtonText = (Button) findViewById(R.id.ButtonText);
 		mButtonRec = (Button) findViewById(R.id.ButtonRec);
-
-		registerOnClickListener(mButtonPower, Remote.KEY_POWER);
-		registerOnClickListener(mButton1, Remote.KEY_1);
-		registerOnClickListener(mButton2, Remote.KEY_2);
-		registerOnClickListener(mButton3, Remote.KEY_3);
-		registerOnClickListener(mButton4, Remote.KEY_4);
-		registerOnClickListener(mButton5, Remote.KEY_5);
-		registerOnClickListener(mButton6, Remote.KEY_6);
-		registerOnClickListener(mButton7, Remote.KEY_7);
-		registerOnClickListener(mButton8, Remote.KEY_8);
-		registerOnClickListener(mButton9, Remote.KEY_9);
-		registerOnClickListener(mButton0, Remote.KEY_0);
-		registerOnClickListener(mButtonLeftArrow, Remote.KEY_PREV);
-		registerOnClickListener(mButtonRightArrow, Remote.KEY_NEXT);
+		
 		registerOnClickListener(mButtonExit, Remote.KEY_EXIT);
 		registerOnClickListener(mButtonVolP, Remote.KEY_VOLP);
 		registerOnClickListener(mButtonVolM, Remote.KEY_VOLM);
@@ -157,17 +231,32 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		registerOnClickListener(mButtonGreen, Remote.KEY_GREEN);
 		registerOnClickListener(mButtonYellow, Remote.KEY_YELLOW);
 		registerOnClickListener(mButtonBlue, Remote.KEY_BLUE);
-		registerOnClickListener(mButtonRwd, Remote.KEY_REWIND);
-		registerOnClickListener(mButtonPlay, Remote.KEY_PLAY);
-		registerOnClickListener(mButtonStop, Remote.KEY_STOP);
-		registerOnClickListener(mButtonFwd, Remote.KEY_FORWARD);
-		registerOnClickListener(mButtonTv, Remote.KEY_TV);
-		registerOnClickListener(mButtonRadio, Remote.KEY_RADIO);
-		registerOnClickListener(mButtonText, Remote.KEY_TEXT);
-		registerOnClickListener(mButtonRec, Remote.KEY_RECORD);
 
+		if(!mQuickZap){
+			registerOnClickListener(mButtonPower, Remote.KEY_POWER);
+			registerOnClickListener(mButton1, Remote.KEY_1);
+			registerOnClickListener(mButton2, Remote.KEY_2);
+			registerOnClickListener(mButton3, Remote.KEY_3);
+			registerOnClickListener(mButton4, Remote.KEY_4);
+			registerOnClickListener(mButton5, Remote.KEY_5);
+			registerOnClickListener(mButton6, Remote.KEY_6);
+			registerOnClickListener(mButton7, Remote.KEY_7);
+			registerOnClickListener(mButton8, Remote.KEY_8);
+			registerOnClickListener(mButton9, Remote.KEY_9);
+			registerOnClickListener(mButton0, Remote.KEY_0);
+			registerOnClickListener(mButtonLeftArrow, Remote.KEY_PREV);
+			registerOnClickListener(mButtonRightArrow, Remote.KEY_NEXT);
+			registerOnClickListener(mButtonRwd, Remote.KEY_REWIND);
+			registerOnClickListener(mButtonPlay, Remote.KEY_PLAY);
+			registerOnClickListener(mButtonStop, Remote.KEY_STOP);
+			registerOnClickListener(mButtonFwd, Remote.KEY_FORWARD);
+			registerOnClickListener(mButtonTv, Remote.KEY_TV);
+			registerOnClickListener(mButtonRadio, Remote.KEY_RADIO);
+			registerOnClickListener(mButtonText, Remote.KEY_TEXT);
+			registerOnClickListener(mButtonRec, Remote.KEY_RECORD);
+		}
 	}
-
+	
 	/**
 	 * @param v
 	 * @param id

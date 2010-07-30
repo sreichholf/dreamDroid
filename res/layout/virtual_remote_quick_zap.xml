@@ -34,12 +34,12 @@
 						android:background="@drawable/button_key_square_big"/>		
 					
 					<Button 
-						android:id="@+id/ButtonPower" 
-						android:text="PWR"
+						android:id="@+id/ButtonMute" 
+						android:text="Mute"
 						android:textStyle="bold"
 						android:textColor="#FFF"
 						android:textSize="14dp"
-						android:background="@drawable/button_key_oval_big_red"/>	
+						android:background="@drawable/button_key_oval_big_grey"/>	
 					
 					<Button 
 						android:id="@+id/ButtonBouP" 

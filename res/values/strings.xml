@@ -34,7 +34,7 @@
 	<string name="device_info">Device Information</string>
 	<string name="exit">Exit</string>
 	<string name="send_message">Send Message</string>
-	<string name="version_string">DreamDroid v0.3.6\n© 2010 Stephan Reichholf
+	<string name="version_string">DreamDroid v0.3.7\n© 2010 Stephan Reichholf
 	</string>
 	<string name="save">Save</string>
 	<string name="cancel">Cancel</string>
@@ -127,4 +127,8 @@
 	<string name="next">Next</string>
 	<string name="epg_search">EPG-Search</string>
 	<string name="epg_search_hint">Search EPG</string>
+<string name="standard">Standard</string>
+<string name="quickzap">QuickZap</string>
+<string name="choose_layout">Choose a layout</string>
+<string name="layout">Change Layout</string>
 </resources>
