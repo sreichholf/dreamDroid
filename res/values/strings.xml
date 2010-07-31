@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android" >
 	<string name="description">Description</string>
 	<string name="title">Title</string>
 	<string name="we">We</string>
