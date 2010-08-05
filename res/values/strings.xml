@@ -50,15 +50,15 @@
 	<string name="host">Hostname/IP</string>
 	<string name="port">Port</string>
 	<string name="settings">Settings</string>
-	<string name="host_long">Name or IP of the target Dreambox</string>
-	<string name="port_long">Port of the target Dreambox (80 by default)
+	<string name="host_long">Hostname or IP</string>
+	<string name="port_long">Listening Port
 	</string>
 	<string name="ssl_enabled_long">Enable ssl secured connection (https)</string>
 	<string name="close">Close</string>
 	<string name="minutes_short">min.</string>
 	<string name="user">User</string>
-	<string name="user_long">Username for login (empty = no login)</string>
-	<string name="pass">Pass</string>
+	<string name="user_long">Username for login</string>
+	<string name="pass">Password</string>
 	<string name="pass_long">Password for the login</string>
 	<string name="saving">Saving. Please wait...</string>
 	<string name="deleting">Deleting. Please wait...</string>
@@ -127,11 +127,18 @@
 	<string name="next">Next</string>
 	<string name="epg_search">EPG-Search</string>
 	<string name="epg_search_hint">Search EPG</string>
-<string name="standard">Standard</string>
-<string name="quickzap">QuickZap</string>
-<string name="choose_layout">Choose a layout</string>
-<string name="layout">Change Layout</string>
-<string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
-<string name="ok">OK</string>
-<string name="profiles">Profiles</string>
+	<string name="standard">Standard</string>
+	<string name="quickzap">QuickZap</string>
+	<string name="choose_layout">Choose a layout</string>
+	<string name="layout">Change Layout</string>
+	<string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
+	<string name="ok">OK</string>
+	<string name="profiles">Profiles</string>
+	<string name="activate">Activate</string>
+	<string name="confirm_delete_profile">Do you really want to delete this profile?</string>
+	<string name="profile_activated">Activated profile</string>
+	<string name="profile_not_activated">Error activating profile</string>
+	<string name="profile_not_deleted">Error deleting profile</string>
+	<string name="profile_deleted">Deleted profile</string>
+	<string name="profile">Profile</string>
 </resources>

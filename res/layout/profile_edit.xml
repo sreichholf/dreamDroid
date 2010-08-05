@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"		
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent" >
+
+	<ScrollView	
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent" 
+		android:layout_marginBottom="55dip">
+		<LinearLayout		
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent" >
+		
+			<TextView
+		  		android:id="@+id/TextViewProfile"
+		  		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/profile" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>		
+			<EditText 
+				android:id="@+id/EditTextProfile"			
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"  
+				android:hint="@string/profile"
+				android:singleLine="true"/>
+			
+			<TextView
+		  		android:id="@+id/TextViewHost"
+		  		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/host" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>		
+			<EditText 
+				android:id="@+id/EditTextHost"			
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"  
+				android:hint="@string/host_long"
+				android:singleLine="true"/>
+
+
+				
+			<TextView
+		  		android:id="@+id/TextViewPort"
+		  		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/port" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>		
+
+			<TableLayout 
+		  		android:layout_height="wrap_content" 
+		  		android:id="@+id/LinearLayoutSsl" 
+		  		android:layout_width="fill_parent">	
+			
+				<TableRow
+					android:layout_height="wrap_content"
+					android:layout_width="fill_parent">
+					<EditText 
+						android:id="@+id/EditTextPort"			
+						android:layout_width="140dp" 
+						android:layout_height="wrap_content"  
+						android:hint="@string/port_long" 
+						android:singleLine="true"
+						android:inputType="number"/>
+							
+
+					<TextView
+				  		android:id="@+id/TextViewSsl"
+				  		android:layout_width="126dp"
+						android:layout_height="wrap_content"			 
+						android:text="@string/ssl_enabled" 
+						android:paddingLeft="3dip"
+						android:textSize="18sp"
+						android:layout_marginLeft="10dp"
+						android:textColor="#FFF"/>
+					<CheckBox 
+		 				android:layout_width="wrap_content" 
+		 				android:layout_height="wrap_content"
+		 				android:id="@+id/CheckBoxSsl"/>
+	 			</TableRow>
+			</TableLayout>	
+			
+			
+			<LinearLayout 
+		  		android:layout_height="wrap_content" 
+		  		android:id="@+id/LinearLayoutLogin" 
+		  		android:layout_width="fill_parent">	
+				
+				<TextView
+			  		android:id="@+id/TextViewLogin"
+			  		android:layout_width="fill_parent"
+					android:layout_height="wrap_content"			 
+					android:text="@string/login_enabled" 
+					android:paddingLeft="3dip"
+					android:textSize="18sp" 
+					android:textColor="#FFF"
+					android:layout_marginRight="50dip"/>
+						
+				<CheckBox 
+	 				android:layout_width="wrap_content" 
+	 				android:layout_height="wrap_content" 
+	 				android:id="@+id/CheckBoxLogin"
+	 				android:layout_marginLeft="-45dip"/>
+			</LinearLayout>
+			<TextView
+		  		android:id="@+id/TextViewUser"
+		  		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/user" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>		
+			<EditText 
+				android:id="@+id/EditTextUser"			
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"  
+				android:hint="@string/user_long" 
+				android:singleLine="true"/>
+			
+			<TextView
+		  		android:id="@+id/TextViewPass"
+		  		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/pass" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>		
+			<EditText 
+				android:id="@+id/EditTextPass"			
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"  
+				android:hint="@string/pass_long" 
+				android:singleLine="true"
+				android:inputType="textPassword"/>							
+		</LinearLayout>
+	</ScrollView>
+	<TableLayout		
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:layout_marginTop="-52dip"
+		style="@android:style/ButtonBar">
+		
+		<TableRow
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent">
+			
+			<Button
+				android:id="@+id/ButtonSave"
+				android:layout_height="wrap_content"
+				android:drawableLeft="@drawable/save_small"
+				android:layout_column="2"
+				android:layout_weight="1"
+				android:text="@string/save" />
+			
+			<Button
+				android:id="@+id/ButtonCancel"
+				android:layout_height="wrap_content"
+				android:layout_column="2"
+				android:layout_weight="1"
+				android:drawableLeft="@drawable/close_small"
+				android:text="@string/cancel" />
+			
+		</TableRow>		
+	</TableLayout>
+</LinearLayout>
+		

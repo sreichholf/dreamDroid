@@ -187,10 +187,14 @@ public class SimpleHttpClient {
 	 * 
 	 */
 	public void applyConfig() {
-		mHostname = DreamDroid.SP.getString("host", "dm8000");
-		mPort = DreamDroid.SP.getString("port", "80");
-		mLogin = DreamDroid.SP.getBoolean("login", false);
-		mSsl = DreamDroid.SP.getBoolean("ssl", false);
+//		mHostname = DreamDroid.SP.getString("host", "dm8000");
+		mHostname = DreamDroid.PROFILE.getHost();
+//		mPort = DreamDroid.SP.getString("port", "80");
+		mPort = new Integer(DreamDroid.PROFILE.getPort()).toString();
+//		mLogin = DreamDroid.SP.getBoolean("login", false);
+		mLogin = DreamDroid.PROFILE.isLogin();
+//		mSsl = DreamDroid.SP.getBoolean("ssl", false);
+		mSsl = DreamDroid.PROFILE.isSsl();
 
 		if (mSsl) {
 			mPrefix = "https://";
@@ -199,8 +203,10 @@ public class SimpleHttpClient {
 		}
 
 		if (mLogin) {
-			mUser = DreamDroid.SP.getString("user", "root");
-			mPass = DreamDroid.SP.getString("pass", "dreambox");
+//			mUser = DreamDroid.SP.getString("user", "root");
+			mUser = DreamDroid.PROFILE.getUser();
+//			mPass = DreamDroid.SP.getString("pass", "dreambox");
+			mPass = DreamDroid.PROFILE.getPass();
 			setCredentials(mUser, mPass);
 		}
 	}

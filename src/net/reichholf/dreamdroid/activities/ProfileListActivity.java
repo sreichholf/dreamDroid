@@ -13,11 +13,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 /**
  * @author sre
@@ -28,6 +30,7 @@ public class ProfileListActivity extends ListActivity {
 	private Profile mProfile;
 	private Cursor mCursor;
 	public static final int DIALOG_PROFILE_ID = 0;
+	public static final int DIALOG_PROFILE_CONFIRM_DELETE_ID = 1;
 
 	/*
 	 * (non-Javadoc)
@@ -38,24 +41,6 @@ public class ProfileListActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		mCursor = DreamDroid.getProfiles();
-
-		// the profile-table is initial - let's add the current config as
-		// default Profile
-		// TODO Revert to 0 before commit!
-		if (mCursor.getCount() <= 1) {
-			String host = DreamDroid.SP.getString("host", "dm8000");
-			int port = new Integer(DreamDroid.SP.getString("port", "80"));
-			String user = DreamDroid.SP.getString("user", "root");
-			String pass = DreamDroid.SP.getString("pass", "dreambox");
-
-			boolean login = DreamDroid.SP.getBoolean("login", false);
-			boolean ssl = DreamDroid.SP.getBoolean("ssl", false);
-
-			String profile = "Default";
-			Profile p = new Profile(profile, host, port, login, user, pass, ssl);
-			DreamDroid.addProfile(p);
-			mCursor.requery();
-		}
 
 		mAdapter = new SimpleCursorAdapter(this,
 				android.R.layout.two_line_list_item, mCursor, new String[] {
@@ -76,31 +61,40 @@ public class ProfileListActivity extends ListActivity {
 		showDialog(DIALOG_PROFILE_ID);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateDialog(int)
 	 */
 	protected Dialog onCreateDialog(int id) {
-		Dialog dialog = null;
+		Dialog dialog;
 		switch (id) {
 		case (DIALOG_PROFILE_ID):
-			CharSequence[] actions = { getText(R.string.edit),
-					getText(R.string.delete) };
+			CharSequence[] actions = { getText(R.string.activate),
+					getText(R.string.edit), getText(R.string.delete) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
-			adBuilder.setTitle(getText(R.string.pick_action));
+			adBuilder.setTitle(mProfile.getProfile());
 			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case 0:
+						if (DreamDroid.setActiveProfile(mProfile.getId())) {
+							showToast(getText(R.string.profile_activated)
+									+ " '" + mProfile.getProfile() + "'");
+						} else {
+							showToast(getText(R.string.profile_not_activated)
+									+ " '" + mProfile.getProfile() + "'");
+						}
 						break;
 
 					case 1:
-						DreamDroid.deleteProfile(mProfile);
-						
-						mProfile = null;
-						mCursor.requery();
-						mAdapter.notifyDataSetChanged();
+						editProfile();
+						break;
+
+					case 2:
+						showDialog(DIALOG_PROFILE_CONFIRM_DELETE_ID);
 						break;
 					}
 				}
@@ -109,8 +103,57 @@ public class ProfileListActivity extends ListActivity {
 			dialog = adBuilder.create();
 			break;
 
+		case (DIALOG_PROFILE_CONFIRM_DELETE_ID):
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+			builder.setTitle(mProfile.getProfile())
+					.setMessage(R.string.confirm_delete_profile)
+					.setCancelable(false)
+					.setPositiveButton(android.R.string.yes,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+
+									if (DreamDroid.deleteProfile(mProfile)) {
+										showToast(getText(R.string.profile_deleted)
+												+ " '"
+												+ mProfile.getProfile()
+												+ "'");
+									} else {
+										showToast(getText(R.string.profile_not_deleted)
+												+ " '"
+												+ mProfile.getProfile()
+												+ "'");
+									}
+									// TODO Add error handling
+									mProfile = null;
+									mCursor.requery();
+									mAdapter.notifyDataSetChanged();
+								}
+							})
+					.setNegativeButton(android.R.string.no,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									dialog.cancel();
+								}
+							});
+			dialog = builder.create();
+			break;
+		default:
+			dialog = null;
 		}
 		return dialog;
 
+	}
+	
+	private void editProfile(){
+		Intent intent = new Intent(this, ProfileEditActivity.class);
+		startActivity(intent);
+	}
+	
+	protected void showToast(String text) {
+		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
+		toast.show();
 	}
 }

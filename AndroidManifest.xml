@@ -39,6 +39,7 @@
 		<meta-data android:name="android.app.default_searchable"
                android:value=".activities.SearchEpgActivity" />
 	<activity android:name=".activities.ProfileListActivity"></activity>
+<activity android:name=".activities.ProfileEditActivity"></activity>
 </application>
 	
 	

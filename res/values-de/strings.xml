@@ -34,7 +34,6 @@
 	<string name="device_info">Geräte-Info</string>
 	<string name="exit">Exit</string>
 	<string name="send_message">Nachricht senden</string>
-
 	<string name="save">Speichern</string>
 	<string name="cancel">Abbrechen</string>
 	<string name="fetching_data">Hole Daten...</string>
@@ -49,14 +48,13 @@
 	<string name="host">Hostname/IP</string>
 	<string name="port">Port</string>
 	<string name="settings">Einstellungen</string>
-	<string name="host_long">Name oder IP der Dreambox</string>
-	<string name="port_long">Port der Dreambox (Standard ist 80)</string>
+	<string name="host_long">Hostname oder IP</string>
+	<string name="port_long">Listening-Port</string>
 	<string name="ssl_enabled_long">SSL-gesicherte Verbindung aktivieren</string>
 	<string name="close">Schließen</string>
 	<string name="minutes_short">min.</string>
 	<string name="user">Benutzer</string>
-	<string name="user_long">Benutzername für die Anmeldung (leer = keine
-		Anmeldung)</string>
+	<string name="user_long">Benutzername für die Anmeldung</string>
 	<string name="pass">Passwort</string>
 	<string name="pass_long">Passwort für die Anmeldung</string>
 	<string name="saving">Speichern. Bitte warten...</string>
@@ -118,8 +116,7 @@
 	</string-array>
 	<string name="login_enabled">Login aktivieren</string>
 	<string name="login_enabled_long">Login für den Fernzugriff aktivieren</string>
-	<string name="wait_request_finished">Bitte warten bis die aktuelle Abfrage abgeschlossen
-		wurde!</string>
+	<string name="wait_request_finished">Bitte warten bis die aktuelle Abfrage abgeschlossen wurde!</string>
 	<string name="current_service">Es läuft</string>
 	<string name="provider">Provider</string>
 	<string name="now">Jetzt</string>
@@ -130,7 +127,14 @@
 	<string name="quickzap">QuickZap</string>
 	<string name="choose_layout">Layout wählen</string>
 	<string name="layout">Layout ändern</string>
-<string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur verfügung!</string>
-<string name="ok">OK</string>
-<string name="profiles">Profile</string>
+	<string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur verfügung!</string>
+	<string name="ok">OK</string>
+	<string name="profiles">Profile</string>
+	<string name="activate">Aktivieren</string>
+	<string name="confirm_delete_profile">Wollen Sie dieses Profil wirklich löschen?</string>
+	<string name="profile_activated">Profil aktiviert</string>
+	<string name="profile_not_activated">Fehler beim Aktivieren des Profils</string>
+	<string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
+	<string name="profile_deleted">Profil gelöscht</string>
+	<string name="profile">Profil</string>
 </resources>

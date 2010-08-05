@@ -30,11 +30,14 @@
 	 			<EditText 
 	 				android:id="@+id/EditTextTitle" 
 	 				android:layout_height="wrap_content" 
-	 				android:text="@string/title" android:layout_width="fill_parent" android:layout_marginRight="50dip"/>
+	 				android:hint="@string/title" 
+	 				android:layout_width="fill_parent" 
+	 				android:layout_marginRight="50dip"/>
 	 			<CheckBox 
 	 				android:layout_width="wrap_content" 
 	 				android:layout_height="wrap_content" 
-	 				android:id="@+id/CheckBoxEnabled" android:layout_marginLeft="-45dip"/>
+	 				android:id="@+id/CheckBoxEnabled" 
+	 				android:layout_marginLeft="-45dip"/>
 			</LinearLayout>	  		
 				
 		  	<TextView
@@ -48,7 +51,7 @@
 				android:id="@+id/EditTextDescription"			
 				android:layout_width="fill_parent" 
 				android:layout_height="wrap_content"  
-				android:text="@string/description" 
+				android:hint="@string/description" 
 				android.layout_weight="1" />			
 		
 			<TextView 
