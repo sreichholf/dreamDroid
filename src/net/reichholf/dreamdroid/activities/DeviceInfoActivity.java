@@ -8,10 +8,8 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 import android.app.ListActivity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.SimpleAdapter;
@@ -136,8 +134,7 @@ public class DeviceInfoActivity extends ListActivity {
 	 * 
 	 */
 	private void setClient() {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-		mShc = SimpleHttpClient.getInstance(sp);
+		mShc = SimpleHttpClient.getInstance();
 	}
 
 	/**

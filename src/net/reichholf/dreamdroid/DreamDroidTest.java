@@ -10,29 +10,27 @@ package net.reichholf.dreamdroid;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
+import net.reichholf.dreamdroid.activities.MovieListActivity;
+import net.reichholf.dreamdroid.activities.TimerListActivity;
+import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.parsers.GenericSaxParser;
+import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2EventHandler;
+import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2MovieListHandler;
+import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2TimerHandler;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.R;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-
-import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
-import net.reichholf.dreamdroid.activities.MovieListActivity;
-import net.reichholf.dreamdroid.activities.TimerListActivity;
-import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
-import net.reichholf.dreamdroid.helpers.*;
-import net.reichholf.dreamdroid.parsers.GenericSaxParser;
-//import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2DeviceInfoHandler;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2EventHandler;
-//import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2ServiceListHandler;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2MovieListHandler;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2TimerHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.*;
 
 public class DreamDroidTest extends AbstractHttpListActivity {
 	
@@ -74,7 +72,7 @@ public class DreamDroidTest extends AbstractHttpListActivity {
 	}
 	
 	public void httpTest() {
-		SimpleHttpClient shc = SimpleHttpClient.getInstance(PreferenceManager.getDefaultSharedPreferences(getBaseContext()));
+		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		List<NameValuePair> parameters = new ArrayList<NameValuePair>();
 		
 		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());

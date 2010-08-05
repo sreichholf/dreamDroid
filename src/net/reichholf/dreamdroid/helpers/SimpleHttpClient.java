@@ -9,6 +9,8 @@ package net.reichholf.dreamdroid.helpers;
 import java.io.IOException;
 import java.util.List;
 
+import net.reichholf.dreamdroid.DreamDroid;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -31,7 +33,6 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
-import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
@@ -40,7 +41,6 @@ import android.util.Log;
  */
 public class SimpleHttpClient {
 	private UsernamePasswordCredentials mCreds = null;
-	private SharedPreferences mPrefs;
 	private DefaultHttpClient mDhc;
 	private HttpContext mContext;
 
@@ -59,9 +59,7 @@ public class SimpleHttpClient {
 	/**
 	 * @param sp SharedPreferences of the Base-Context
 	 */
-	private SimpleHttpClient(SharedPreferences sp) {
-		mPrefs = sp;
-
+	private SimpleHttpClient() {
 		BasicHttpParams params = new BasicHttpParams();
 		params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
 
@@ -189,10 +187,10 @@ public class SimpleHttpClient {
 	 * 
 	 */
 	public void applyConfig() {
-		mHostname = mPrefs.getString("host", "dm8000");
-		mPort = mPrefs.getString("port", "80");
-		mLogin = mPrefs.getBoolean("login", false);
-		mSsl = mPrefs.getBoolean("ssl", false);
+		mHostname = DreamDroid.SP.getString("host", "dm8000");
+		mPort = DreamDroid.SP.getString("port", "80");
+		mLogin = DreamDroid.SP.getBoolean("login", false);
+		mSsl = DreamDroid.SP.getBoolean("ssl", false);
 
 		if (mSsl) {
 			mPrefix = "https://";
@@ -201,8 +199,8 @@ public class SimpleHttpClient {
 		}
 
 		if (mLogin) {
-			mUser = mPrefs.getString("user", "root");
-			mPass = mPrefs.getString("pass", "dreambox");
+			mUser = DreamDroid.SP.getString("user", "root");
+			mPass = DreamDroid.SP.getString("pass", "dreambox");
 			setCredentials(mUser, mPass);
 		}
 	}
@@ -211,7 +209,7 @@ public class SimpleHttpClient {
 	 * @param sp
 	 * @return
 	 */
-	public static SimpleHttpClient getInstance(SharedPreferences sp) {
-		return new SimpleHttpClient(sp);
+	public static SimpleHttpClient getInstance() {
+		return new SimpleHttpClient();
 	}
 }

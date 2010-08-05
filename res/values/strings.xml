@@ -133,4 +133,5 @@
 <string name="layout">Change Layout</string>
 <string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
 <string name="ok">OK</string>
+<string name="profiles">Profiles</string>
 </resources>

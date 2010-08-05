@@ -13,9 +13,7 @@ import net.reichholf.dreamdroid.CustomExceptionHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import android.app.ListActivity;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -125,8 +123,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	 * 
 	 */
 	private void setClient() {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-		mShc = SimpleHttpClient.getInstance(sp);
+		mShc = SimpleHttpClient.getInstance();
 	}
 
 	/**

@@ -132,4 +132,5 @@
 	<string name="layout">Layout ändern</string>
 <string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur verfügung!</string>
 <string name="ok">OK</string>
+<string name="profiles">Profile</string>
 </resources>
