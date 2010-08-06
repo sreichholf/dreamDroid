@@ -66,7 +66,8 @@
 						android:layout_height="wrap_content"  
 						android:hint="@string/port_long" 
 						android:singleLine="true"
-						android:inputType="number"/>
+						android:inputType="number"
+						android:maxLength="5"/>
 							
 
 					<TextView
@@ -88,7 +89,7 @@
 			
 			<LinearLayout 
 		  		android:layout_height="wrap_content" 
-		  		android:id="@+id/LinearLayoutLogin" 
+		  		android:id="@+id/LinearLayoutIsLogin" 
 		  		android:layout_width="fill_parent">	
 				
 				<TextView
@@ -107,34 +108,41 @@
 	 				android:id="@+id/CheckBoxLogin"
 	 				android:layout_marginLeft="-45dip"/>
 			</LinearLayout>
-			<TextView
-		  		android:id="@+id/TextViewUser"
+			<LinearLayout 
+		  		android:layout_height="wrap_content" 
+		  		android:id="@+id/LinearLayoutLogin" 
 		  		android:layout_width="fill_parent"
-				android:layout_height="wrap_content"			 
-				android:text="@string/user" 
-				android:paddingLeft="3dip" 
-				android:background="#333"/>		
-			<EditText 
-				android:id="@+id/EditTextUser"			
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"  
-				android:hint="@string/user_long" 
-				android:singleLine="true"/>
-			
-			<TextView
-		  		android:id="@+id/TextViewPass"
-		  		android:layout_width="fill_parent"
-				android:layout_height="wrap_content"			 
-				android:text="@string/pass" 
-				android:paddingLeft="3dip" 
-				android:background="#333"/>		
-			<EditText 
-				android:id="@+id/EditTextPass"			
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"  
-				android:hint="@string/pass_long" 
-				android:singleLine="true"
-				android:inputType="textPassword"/>							
+		  		android:orientation="vertical">	
+				
+				<TextView
+			  		android:id="@+id/TextViewUser"
+			  		android:layout_width="fill_parent"
+					android:layout_height="wrap_content"			 
+					android:text="@string/user" 
+					android:paddingLeft="3dip" 
+					android:background="#333"/>		
+				<EditText 
+					android:id="@+id/EditTextUser"			
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"  
+					android:hint="@string/user_long" 
+					android:singleLine="true"/>
+				
+				<TextView
+			  		android:id="@+id/TextViewPass"
+			  		android:layout_width="fill_parent"
+					android:layout_height="wrap_content"			 
+					android:text="@string/pass" 
+					android:paddingLeft="3dip" 
+					android:background="#333"/>		
+				<EditText 
+					android:id="@+id/EditTextPass"			
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"  
+					android:hint="@string/pass_long" 
+					android:singleLine="true"
+					android:inputType="textPassword"/>
+			</LinearLayout>					
 		</LinearLayout>
 	</ScrollView>
 	<TableLayout		

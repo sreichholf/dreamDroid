@@ -16,6 +16,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -29,8 +31,11 @@ public class ProfileListActivity extends ListActivity {
 	private SimpleCursorAdapter mAdapter;
 	private Profile mProfile;
 	private Cursor mCursor;
+	
+	public static final int ITEM_ADD_PROFILE = 0;
 	public static final int DIALOG_PROFILE_ID = 0;
 	public static final int DIALOG_PROFILE_CONFIRM_DELETE_ID = 1;
+	public static final int EDIT_PROFILE_REQUEST = 1;
 
 	/*
 	 * (non-Javadoc)
@@ -147,11 +152,68 @@ public class ProfileListActivity extends ListActivity {
 
 	}
 	
-	private void editProfile(){
-		Intent intent = new Intent(this, ProfileEditActivity.class);
-		startActivity(intent);
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+	 */
+	@Override
+	protected void onActivityResult (int requestCode, int resultCode, Intent data){
+		if(requestCode == EDIT_PROFILE_REQUEST){
+			if(resultCode == RESULT_OK){
+				mCursor.requery();
+				mAdapter.notifyDataSetChanged();
+			}
+		}
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
+
+		return true;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()){
+		case(ITEM_ADD_PROFILE):
+			newProfile();
+		}
+		return true;
+	}
+	
+	/**
+	 * 
+	 */
+	private void editProfile(){
+		Intent intent = new Intent(this, ProfileEditActivity.class);
+		intent.putExtra("profile", mProfile);
+		intent.setAction(Intent.ACTION_EDIT);
+		
+		startActivityForResult(intent, EDIT_PROFILE_REQUEST);
+	}
+	
+	/**
+	 * 
+	 */
+	private void newProfile(){
+		Intent intent = new Intent(this, ProfileEditActivity.class);
+		intent.setAction(Intent.ACTION_INSERT);
+		startActivityForResult(intent, EDIT_PROFILE_REQUEST);
+	}
+	
+	/**
+	 * @param text
+	 */
 	protected void showToast(String text) {
 		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
 		toast.show();

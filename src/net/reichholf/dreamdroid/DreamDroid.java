@@ -69,7 +69,7 @@ public class DreamDroid extends Application {
 		// default Profile
 		// TODO Revert to 0 before commit!
 		Cursor c = getProfiles();
-		if (c.getCount() <= 1) {
+		if (c.getCount() == 0) {
 			String host = DreamDroid.SP.getString("host", "dm8000");
 			int port = new Integer(DreamDroid.SP.getString("port", "80"));
 			String user = DreamDroid.SP.getString("user", "root");
@@ -104,7 +104,7 @@ public class DreamDroid extends Application {
 	/**
 	 * @param p
 	 */
-	public static void addProfile(Profile p) {
+	public static boolean addProfile(Profile p) {
 		ContentValues values = new ContentValues();
 		values.put(KEY_PROFILE, p.getProfile());
 		values.put(KEY_HOST, p.getHost());
@@ -114,7 +114,11 @@ public class DreamDroid extends Application {
 		values.put(KEY_PASS, p.getPass());
 		values.put(KEY_SSL, p.isSsl());
 
-		DB.insert(PROFILES_TABLE_NAME, null, values);
+		if(DB.insert(PROFILES_TABLE_NAME, null, values) > -1){
+			return true;
+		}
+		
+		return false;
 	}
 
 	/**
@@ -140,7 +144,6 @@ public class DreamDroid extends Application {
 	 */
 	public static boolean updateProfile(Profile p) {
 		ContentValues values = new ContentValues();
-		values.put(KEY_ID, p.getId());
 		values.put(KEY_PROFILE, p.getProfile());
 		values.put(KEY_HOST, p.getHost());
 		values.put(KEY_PORT, p.getPort());

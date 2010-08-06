@@ -137,4 +137,9 @@
 	<string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
 	<string name="profile_deleted">Profil gelöscht</string>
 	<string name="profile">Profil</string>
+	<string name="profile_updated">Profil aktualisiert</string>
+	<string name="profile_added">Profil hinzugefügt</string>
+	<string name="profile_add">Profil hinzufügen</string>
+	<string name="profile_not_added">Profil konnte nicht hinzugefügt werden</string>
+	<string name="profile_not_updated">Profil konnte nicht aktualisiert werden</string>
 </resources>

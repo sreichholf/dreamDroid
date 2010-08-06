@@ -6,13 +6,20 @@
 
 package net.reichholf.dreamdroid;
 
+import java.io.Serializable;
+
 import android.database.Cursor;
 
 /**
  * @author sre
  *
  */
-public class Profile {	
+public class Profile implements Serializable{	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8176949133234868302L;
+	
 	private String mProfile;
 	private String mHost;
 	private String mUser;
@@ -24,6 +31,10 @@ public class Profile {
 	
 	public Profile(Cursor c){
 		set(c);
+	}
+	
+	public Profile(){
+		mId = -1;
 	}
 	
 	public Profile(String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
@@ -84,64 +95,80 @@ public class Profile {
 		mId = c.getInt(c.getColumnIndex(DreamDroid.KEY_ID));
 		mPort = c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT));
 		
-		mLogin = new Boolean(c.getString(c.getColumnIndex(DreamDroid.KEY_LOGIN)));
-		mSsl = new Boolean(c.getString(c.getColumnIndex(DreamDroid.KEY_SSL)));
+		int login = c.getInt(c.getColumnIndex(DreamDroid.KEY_LOGIN));
+		if(login == 1){
+			mLogin = true;
+		} else {
+			mLogin = false;
+		}
+		
+		int ssl = c.getInt(c.getColumnIndex(DreamDroid.KEY_SSL));
+		if(ssl == 1){
+			mSsl = true;
+		} else {
+			mSsl = false;
+		}
+		
 	}
 	
 	/**
 	 * @param mProfile the mProfile to set
 	 */
-	public void setProfile(String mProfile) {
-		this.mProfile = mProfile;
+	public void setProfile(String profile) {
+		this.mProfile = profile;
 	}
 
 	/**
 	 * @param mHost the mHost to set
 	 */
-	public void setHost(String mHost) {
-		this.mHost = mHost;
+	public void setHost(String host) {
+		this.mHost =host;
 	}
 
 	/**
 	 * @param mUser the mUser to set
 	 */
-	public void setUser(String mUser) {
-		this.mUser = mUser;
+	public void setUser(String user) {
+		this.mUser = user;
 	}
 
 	/**
 	 * @param mPass the mPass to set
 	 */
-	public void setPass(String mPass) {
-		this.mPass = mPass;
+	public void setPass(String pass) {
+		this.mPass = pass;
 	}
 
 	/**
 	 * @param mLogin the mLogin to set
 	 */
-	public void setLogin(boolean mLogin) {
-		this.mLogin = mLogin;
+	public void setLogin(boolean login) {
+		this.mLogin = login;
 	}
 
 	/**
 	 * @param mSsl the mSsl to set
 	 */
-	public void setSsl(boolean mSsl) {
-		this.mSsl = mSsl;
+	public void setSsl(boolean ssl) {
+		this.mSsl = ssl;
 	}
 
 	/**
 	 * @param mId the mId to set
 	 */
-	public void setId(int mId) {
-		this.mId = mId;
+	public void setId(int id) {
+		this.mId = id;
 	}
 
 	/**
 	 * @param mPort the mPort to set
 	 */
-	public void setPort(int mPort) {
-		this.mPort = mPort;
+	public void setPort(int port) {
+		this.mPort = port;
+	}
+	
+	public void setPort(String port){
+		mPort = new Integer(port);
 	}
 
 	/**
@@ -198,5 +225,9 @@ public class Profile {
 	 */
 	public int getPort() {
 		return mPort;
+	}
+	
+	public String getPortString(){
+		return (new Integer(mPort).toString());
 	}
 }

@@ -119,8 +119,7 @@
 	<string name="virtual_remote">Virtual Remote</string>
 	<string name="login_enabled">Enable Login</string>
 	<string name="login_enabled_long">Enable login for remote access</string>
-	<string name="wait_request_finished">Please wait until the running request has finished!
-	</string>
+	<string name="wait_request_finished">Please wait until the running request has finished!</string>
 	<string name="current_service">Current</string>
 	<string name="provider">Provider</string>
 	<string name="now">Now</string>
@@ -141,4 +140,9 @@
 	<string name="profile_not_deleted">Error deleting profile</string>
 	<string name="profile_deleted">Deleted profile</string>
 	<string name="profile">Profile</string>
+	<string name="profile_updated">Updated profile</string>
+	<string name="profile_added">Added profile</string>
+	<string name="profile_add">Add Profile</string>
+	<string name="profile_not_added">Could not add profile</string>
+	<string name="profile_not_updated">Could not update profile</string>
 </resources>
