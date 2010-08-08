@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
@@ -154,17 +153,10 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	 * @seenet.reichholf.dreamdroid.activities.AbstractHttpListActivity#
 	 * onRestoreInstanceState(android.os.Bundle)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
-
-		HashMap map = (HashMap) savedInstanceState.getSerializable("currentItem");
-		if (map != null) {
-			mCurrentItem = new ExtendedHashMap();
-			mCurrentItem.putAll(map);
-		}
-
+		mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
 		mReference = getDataForKey(Event.SERVICE_REFERENCE);
 		mName = getDataForKey(Event.SERVICE_NAME);
 

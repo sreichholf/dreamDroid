@@ -6,13 +6,14 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 /**
  * @author sreichholf
  * 
  */
-public class ExtendedHashMap extends HashMap<String, Object> {
+public class ExtendedHashMap extends HashMap<String, Object> implements Serializable{
 
 	/**
 	 * 

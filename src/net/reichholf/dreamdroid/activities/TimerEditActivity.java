@@ -61,7 +61,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
 
-	private boolean[] mCheckedDays = { false, false, false, false, false, false, false };
+	private boolean[] mCheckedDays = { false, false, false, false, false,
+			false, false };
 
 	private ExtendedHashMap mTimer;
 	private ExtendedHashMap mTimerOld;
@@ -80,7 +81,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	private ProgressDialog mSaveProgress;
 	private SaveTimerTask mSaveTask;
 
-	private class SaveTimerTask extends AsyncTask<HashMap<String, Object>, Void, Boolean> {
+	private class SaveTimerTask extends
+			AsyncTask<ExtendedHashMap, Void, Boolean> {
 		private ExtendedHashMap mResult;
 		private TimerEditActivity activity;
 
@@ -94,21 +96,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		 * 
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
-		@SuppressWarnings("unchecked")
 		@Override
-		protected Boolean doInBackground(HashMap<String, Object>... params) {
+		protected Boolean doInBackground(ExtendedHashMap... params) {
 			SimpleHttpClient shc = (SimpleHttpClient) params[0].get("shc");
-			HashMap<String, Object> map = (HashMap<String, Object>) params[0].get("timer");
+			ExtendedHashMap timer = (ExtendedHashMap) params[0].get("timer");
 
-			ExtendedHashMap timer = new ExtendedHashMap();
-			timer.putAll(map);
-
-			map = (HashMap) params[0].get("timerOld");
-			ExtendedHashMap timerOld = null;
-			if (map != null) {
-				timerOld = new ExtendedHashMap();
-				timerOld.putAll(map);
-			}
+			ExtendedHashMap timerOld = (ExtendedHashMap) params[0]
+					.get("timerOld");
 
 			String xml = Timer.save(shc, timer, timerOld);
 
@@ -135,7 +129,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		protected void onPostExecute(Boolean result) {
 			if (!result) {
 				if (mShc.hasError()) {
-					activity.showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+					activity.showToast(getText(R.string.get_content_error)
+							+ "\n" + mShc.getErrorText());
 				}
 			} else {
 				if (mResult == null) {
@@ -184,7 +179,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		mAfterevent.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+			public void onItemSelected(AdapterView<?> parent, View v,
+					int position, long id) {
 				mTimer.put(Timer.AFTER_EVENT, new Integer(position).toString());
 			}
 
@@ -197,7 +193,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		mLocation.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+			public void onItemSelected(AdapterView<?> parent, View v,
+					int position, long id) {
 				mTimer.put(Timer.LOCATION, mLocationList.get(position));
 			}
 
@@ -212,10 +209,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		// Initialize if savedInstanceState won't
 		if (savedInstanceState == null) {
-			HashMap<String, Object> data = (HashMap<String, Object>) getIntent().getExtras().get(sData);
+			HashMap<String, Object> map = (HashMap<String, Object>) getIntent().getExtras().get(sData);
+			ExtendedHashMap data = new ExtendedHashMap();
+			data.putAll(map);
+			
 			mTimer = new ExtendedHashMap();
-			mTimer.putAll((HashMap) data.get("timer"));
-
+			mTimer.putAll( (HashMap<String, Object>) data.get("timer") );
+			
 			mLocationList = (ArrayList<String>) data.get("locations");
 
 			if (getIntent().getAction().equals(Intent.ACTION_EDIT)) {
@@ -228,17 +228,15 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == PICK_SERVICE_REQUEST) {
 			if (resultCode == RESULT_OK) {
-				HashMap map = (HashMap) data.getSerializableExtra(sData);
-				ExtendedHashMap emap = new ExtendedHashMap();
-				emap.putAll(map);
+				ExtendedHashMap map = (ExtendedHashMap) data
+						.getSerializableExtra(sData);
 
-				mTimer.put(Timer.SERVICE_NAME, emap.getString(Service.NAME));
-				mTimer.put(Timer.REFERENCE, emap.getString(Service.REFERENCE));
+				mTimer.put(Timer.SERVICE_NAME, map.getString(Service.NAME));
+				mTimer.put(Timer.REFERENCE, map.getString(Service.REFERENCE));
 				mService.setText(mTimer.getString(Timer.SERVICE_NAME));
 			}
 		}
@@ -281,20 +279,15 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
 
-		HashMap map = (HashMap) savedInstanceState.getSerializable("timer");
-		mTimer = new ExtendedHashMap();
-		if (map != null) {
-			mTimer.putAll(map);
+		mTimer = (ExtendedHashMap) savedInstanceState.getSerializable("timer");
+		mTimerOld = (ExtendedHashMap) savedInstanceState
+				.getSerializable("timerOld");
+		mLocationList = (ArrayList<String>) savedInstanceState
+				.getSerializable("locations");
+
+		if (mTimer != null) {
 			reload();
 		}
-
-		map = (HashMap) savedInstanceState.getSerializable("timerOld");
-		mTimerOld = new ExtendedHashMap();
-		if (map != null) {
-			mTimerOld.putAll(map);
-		}
-
-		mLocationList = (ArrayList<String>) savedInstanceState.getSerializable("locations");
 	}
 
 	@Override
@@ -308,7 +301,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		switch (id) {
 		case (DIALOG_SAVE_TIMER_ID):
-			dialog = ProgressDialog.show(this, "", getText(R.string.saving), true);
+			dialog = ProgressDialog.show(this, "", getText(R.string.saving),
+					true);
 			break;
 
 		case (DIALOG_PICK_BEGIN_ID):
@@ -357,18 +351,20 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			CharSequence[] days = getResources().getTextArray(R.array.weekdays);
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(getText(R.string.choose_days));
-			builder.setMultiChoiceItems(days, mCheckedDays, new OnMultiChoiceClickListener() {
+			builder.setMultiChoiceItems(days, mCheckedDays,
+					new OnMultiChoiceClickListener() {
 
-				@Override
-				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					mCheckedDays[which] = isChecked;
+						@Override
+						public void onClick(DialogInterface dialog, int which,
+								boolean isChecked) {
+							mCheckedDays[which] = isChecked;
 
-					String text = setRepeated(mCheckedDays, mTimer);
-					mRepeatings.setText(text);
+							String text = setRepeated(mCheckedDays, mTimer);
+							mRepeatings.setText(text);
 
-				}
+						}
 
-			});
+					});
 			dialog = builder.create();
 
 			break;
@@ -465,18 +461,21 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mService.setText(mTimer.getString("servicename"));
 
 		// Afterevents
-		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(this, R.array.afterevents,
-				android.R.layout.simple_spinner_item);
-		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter
+				.createFromResource(this, R.array.afterevents,
+						android.R.layout.simple_spinner_item);
+		aaAfterevent
+				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
 
 		int aeValue = new Integer(mTimer.getString("afterevent")).intValue();
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
-		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
-				mLocationList);
-		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(this,
+				android.R.layout.simple_spinner_item, mLocationList);
+		aaLocations
+				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
 
 		String timerLoc = mTimer.getString(Timer.LOCATION);
@@ -512,7 +511,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 */
 	private String getRepeated(int value) {
 		String text = "";
-		CharSequence[] daysShort = getResources().getTextArray(R.array.weekdays_short);
+		CharSequence[] daysShort = getResources().getTextArray(
+				R.array.weekdays_short);
 
 		for (int i = 0; i < sRepeatedValues.length; i++) {
 			boolean checked = false;
@@ -543,7 +543,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	private String setRepeated(boolean[] checkedDays, ExtendedHashMap timer) {
 		String text = "";
 		int value = 0;
-		CharSequence[] daysShort = getResources().getTextArray(R.array.weekdays_short);
+		CharSequence[] daysShort = getResources().getTextArray(
+				R.array.weekdays_short);
 
 		for (int i = 0; i < checkedDays.length; i++) {
 			if (checkedDays[i]) {
@@ -585,14 +586,14 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			mTimer.put(Timer.DISABLED, "1");
 		}
 
-		String ae = new Integer(mAfterevent.getSelectedItemPosition()).toString();
+		String ae = new Integer(mAfterevent.getSelectedItemPosition())
+				.toString();
 		mTimer.put(Timer.AFTER_EVENT, ae);
 	}
 
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	private void saveTimer() {
 		setTimerFromViews();
 
@@ -605,7 +606,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			}
 		}
 
-		HashMap<String, Object> params = new HashMap<String, Object>();
+		ExtendedHashMap params = new ExtendedHashMap();
 		final SimpleHttpClient shc = mShc;
 		final ExtendedHashMap timer = mTimer;
 		final ExtendedHashMap timerOld = mTimerOld;
@@ -652,7 +653,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
 		TimePicker tp = (TimePicker) dialog.findViewById(R.id.TimePicker);
 
-		dp.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+		dp.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
+				cal.get(Calendar.DAY_OF_MONTH));
 		tp.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
 		tp.setCurrentMinute(cal.get(Calendar.MINUTE));
 	}

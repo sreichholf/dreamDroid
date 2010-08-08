@@ -86,19 +86,21 @@ public class ProfileEditActivity extends Activity {
 			}
 			
 		});
-		
+				
 		if (Intent.ACTION_EDIT.equals(getIntent().getAction())) {
 			mCurrentProfile = (Profile) getIntent().getSerializableExtra(
 					"profile");
 			
-			assignProfile();
-		} else {
-			mCurrentProfile = new Profile();
+			if(mProfile == null){
+				mCurrentProfile = new Profile();
+			} else {
+				assignProfile();
+			}
 		}
-		
+				
 		onIsLoginChanged(mLogin.isChecked());
 	}
-
+		
 	/**
 	 * @param checked
 	 */

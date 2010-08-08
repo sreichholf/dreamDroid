@@ -179,6 +179,10 @@ public class DreamDroid extends Application {
 		if(c.getCount() == 1){
 			c.moveToFirst();
 			PROFILE = new Profile(c);
+			SharedPreferences.Editor editor = SP.edit();
+			editor.putInt("currentProfile", id);
+			editor.commit();
+			
 			return true;
 		}
 		return false;

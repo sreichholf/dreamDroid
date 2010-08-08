@@ -46,15 +46,17 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+				
+		
 		mCursor = DreamDroid.getProfiles();
+			
 		mAdapter = new SimpleCursorAdapter(this,
 				android.R.layout.two_line_list_item, mCursor, new String[] {
 						DreamDroid.KEY_PROFILE, DreamDroid.KEY_HOST },
 				new int[] { android.R.id.text1, android.R.id.text2 });
 		
 		setListAdapter(mAdapter);
-		
+				
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener(){
 			@Override
 			public boolean onItemLongClick(AdapterView<?> a, View v,
@@ -65,6 +67,23 @@ public class ProfileListActivity extends ListActivity {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
+	 */
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putSerializable("profile", mProfile);
+		outState.putInt("current", mCursor.getPosition());
+		
+		super.onSaveInstanceState(outState);
+	}
+	
+	@Override
+	public void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
+		mProfile = (Profile) savedInstanceState.getSerializable("profile");
+	}	
+	
 	/*
 	 * (non-Javadoc)
 	 * 

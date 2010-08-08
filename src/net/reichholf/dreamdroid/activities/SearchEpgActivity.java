@@ -7,7 +7,11 @@
 package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -19,10 +23,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
 /**
  * @author sreichholf
@@ -153,17 +153,11 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	 * @seenet.reichholf.dreamdroid.activities.AbstractHttpListActivity#
 	 * onRestoreInstanceState(android.os.Bundle)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
 
-		HashMap map = (HashMap) savedInstanceState.getSerializable("currentItem");
-		if (map != null) {
-			mCurrentItem = new ExtendedHashMap();
-			mCurrentItem.putAll(map);
-		}
-
+		mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
 		setAdapter();
 	}
 
