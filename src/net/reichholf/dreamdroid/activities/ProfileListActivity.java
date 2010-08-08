@@ -19,6 +19,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
@@ -31,7 +33,7 @@ public class ProfileListActivity extends ListActivity {
 	private SimpleCursorAdapter mAdapter;
 	private Profile mProfile;
 	private Cursor mCursor;
-	
+
 	public static final int ITEM_ADD_PROFILE = 0;
 	public static final int DIALOG_PROFILE_ID = 0;
 	public static final int DIALOG_PROFILE_CONFIRM_DELETE_ID = 1;
@@ -46,12 +48,21 @@ public class ProfileListActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		mCursor = DreamDroid.getProfiles();
-
 		mAdapter = new SimpleCursorAdapter(this,
 				android.R.layout.two_line_list_item, mCursor, new String[] {
 						DreamDroid.KEY_PROFILE, DreamDroid.KEY_HOST },
 				new int[] { android.R.id.text1, android.R.id.text2 });
+		
 		setListAdapter(mAdapter);
+		
+		getListView().setOnItemLongClickListener(new OnItemLongClickListener(){
+			@Override
+			public boolean onItemLongClick(AdapterView<?> a, View v,
+					int position, long id) {
+				return onListItemLongClick(a, v, position, id);				
+			}
+		});
+		
 	}
 
 	/*
@@ -63,9 +74,15 @@ public class ProfileListActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		mProfile = new Profile(mCursor);
-		showDialog(DIALOG_PROFILE_ID);
+		activateProfile();
 	}
 
+	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
+		mProfile = new Profile(mCursor);
+		showDialog(DIALOG_PROFILE_ID);
+		return true;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -75,8 +92,8 @@ public class ProfileListActivity extends ListActivity {
 		Dialog dialog;
 		switch (id) {
 		case (DIALOG_PROFILE_ID):
-			CharSequence[] actions = { getText(R.string.activate),
-					getText(R.string.edit), getText(R.string.delete) };
+			CharSequence[] actions = { getText(R.string.edit),
+					getText(R.string.delete) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 			adBuilder.setTitle(mProfile.getProfile());
@@ -85,21 +102,14 @@ public class ProfileListActivity extends ListActivity {
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case 0:
-						if (DreamDroid.setActiveProfile(mProfile.getId())) {
-							showToast(getText(R.string.profile_activated)
-									+ " '" + mProfile.getProfile() + "'");
-						} else {
-							showToast(getText(R.string.profile_not_activated)
-									+ " '" + mProfile.getProfile() + "'");
-						}
-						break;
-
-					case 1:
 						editProfile();
 						break;
 
-					case 2:
+					case 1:
 						showDialog(DIALOG_PROFILE_CONFIRM_DELETE_ID);
+						break;
+						
+					default:
 						break;
 					}
 				}
@@ -151,20 +161,23 @@ public class ProfileListActivity extends ListActivity {
 		return dialog;
 
 	}
-	
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onActivityResult(int, int,
+	 * android.content.Intent)
 	 */
 	@Override
-	protected void onActivityResult (int requestCode, int resultCode, Intent data){
-		if(requestCode == EDIT_PROFILE_REQUEST){
-			if(resultCode == RESULT_OK){
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == EDIT_PROFILE_REQUEST) {
+			if (resultCode == RESULT_OK) {
 				mCursor.requery();
 				mAdapter.notifyDataSetChanged();
 			}
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -172,11 +185,12 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, ITEM_ADD_PROFILE, 1, getText(R.string.profile_add))
+				.setIcon(android.R.drawable.ic_menu_add);
 
 		return true;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -184,33 +198,48 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()){
-		case(ITEM_ADD_PROFILE):
-			newProfile();
+		switch (item.getItemId()) {
+		case (ITEM_ADD_PROFILE):
+			createProfile();
 		}
 		return true;
 	}
-	
+
 	/**
 	 * 
 	 */
-	private void editProfile(){
+	private void activateProfile() {
+		if (DreamDroid.setActiveProfile(mProfile.getId())) {
+			showToast(getText(R.string.profile_activated) + " '"
+					+ mProfile.getProfile() + "'");
+
+			finish();
+		} else {
+			showToast(getText(R.string.profile_not_activated) + " '"
+					+ mProfile.getProfile() + "'");
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private void editProfile() {
 		Intent intent = new Intent(this, ProfileEditActivity.class);
 		intent.putExtra("profile", mProfile);
 		intent.setAction(Intent.ACTION_EDIT);
-		
+
 		startActivityForResult(intent, EDIT_PROFILE_REQUEST);
 	}
-	
+
 	/**
 	 * 
 	 */
-	private void newProfile(){
+	private void createProfile() {
 		Intent intent = new Intent(this, ProfileEditActivity.class);
 		intent.setAction(Intent.ACTION_INSERT);
 		startActivityForResult(intent, EDIT_PROFILE_REQUEST);
 	}
-	
+
 	/**
 	 * @param text
 	 */
