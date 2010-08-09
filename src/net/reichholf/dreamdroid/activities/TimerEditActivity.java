@@ -228,12 +228,16 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == PICK_SERVICE_REQUEST) {
-			if (resultCode == RESULT_OK) {
-				ExtendedHashMap map = (ExtendedHashMap) data
-						.getSerializableExtra(sData);
+			if (resultCode == RESULT_OK) {				
+				ExtendedHashMap map = new ExtendedHashMap();
+				map.putAll( (HashMap<String, Object>) data.getSerializableExtra(sData));
 
 				mTimer.put(Timer.SERVICE_NAME, map.getString(Service.NAME));
 				mTimer.put(Timer.REFERENCE, map.getString(Service.REFERENCE));
@@ -242,6 +246,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
 	@Override
 	public void onPause() {
 		super.onPause();
