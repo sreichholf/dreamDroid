@@ -34,7 +34,7 @@ public class Profile implements Serializable{
 	}
 	
 	public Profile(){
-		mId = -1;
+		setId(-1);
 	}
 	
 	public Profile(String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
@@ -55,14 +55,14 @@ public class Profile implements Serializable{
 	 * @param ssl
 	 */
 	public void set(String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
-		mId = -1;
-		mProfile = profile;
-		mHost = host;
-		mPort = port;
-		mLogin = login;
-		mUser = user;
-		mPass = pass;
-		mSsl = ssl;
+		setId(-1);
+		setProfile(profile);
+		setHost(host);
+		setPort(port);
+		setLogin(login);
+		setUser(user);
+		setPass(pass);
+		setSsl(ssl);
 	}
 	
 	/**
@@ -76,37 +76,37 @@ public class Profile implements Serializable{
 	 * @param ssl
 	 */
 	public void set(int id, String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
-		mId = id;
-		mProfile = profile;
-		mHost = host;
-		mPort = port;
-		mLogin = login;
-		mUser = user;
-		mPass = pass;
-		mSsl = ssl;
+		setId(id);
+		setProfile(profile);
+		setHost(host);
+		setPort(port);
+		setLogin(login);
+		setUser(user);
+		setPass(pass);
+		setSsl(ssl);
 	}
 	
 	public void set(Cursor c){
-		mProfile = c.getString(c.getColumnIndex(DreamDroid.KEY_PROFILE));
-		mHost = c.getString(c.getColumnIndex(DreamDroid.KEY_HOST));
-		mUser = c.getString(c.getColumnIndex(DreamDroid.KEY_USER));
-		mPass = c.getString(c.getColumnIndex(DreamDroid.KEY_PASS));
+		setProfile( c.getString(c.getColumnIndex(DreamDroid.KEY_PROFILE)) );
+		setHost( c.getString(c.getColumnIndex(DreamDroid.KEY_HOST)) );
+		setUser ( c.getString(c.getColumnIndex(DreamDroid.KEY_USER)) );
+		setPass ( c.getString(c.getColumnIndex(DreamDroid.KEY_PASS)) );
 		
-		mId = c.getInt(c.getColumnIndex(DreamDroid.KEY_ID));
-		mPort = c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT));
+		setId( c.getInt(c.getColumnIndex(DreamDroid.KEY_ID)) );
+		setPort( c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT)) );
 		
 		int login = c.getInt(c.getColumnIndex(DreamDroid.KEY_LOGIN));
 		if(login == 1){
-			mLogin = true;
+			setLogin(true);
 		} else {
-			mLogin = false;
+			setLogin(false);
 		}
 		
 		int ssl = c.getInt(c.getColumnIndex(DreamDroid.KEY_SSL));
 		if(ssl == 1){
-			mSsl = true;
+			setSsl(true);
 		} else {
-			mSsl = false;
+			setSsl(false);
 		}
 		
 	}
@@ -122,7 +122,7 @@ public class Profile implements Serializable{
 	 * @param mHost the mHost to set
 	 */
 	public void setHost(String host) {
-		this.mHost =host;
+		this.mHost =host.replace("http://", "").replace("https://", "");
 	}
 
 	/**
