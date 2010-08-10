@@ -255,7 +255,7 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	private void createProfile() {
 		Intent intent = new Intent(this, ProfileEditActivity.class);
-		intent.setAction(Intent.ACTION_INSERT);
+		intent.setAction(Intent.ACTION_EDIT);
 		startActivityForResult(intent, EDIT_PROFILE_REQUEST);
 	}
 

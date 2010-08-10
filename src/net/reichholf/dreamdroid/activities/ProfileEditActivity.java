@@ -91,7 +91,7 @@ public class ProfileEditActivity extends Activity {
 			mCurrentProfile = (Profile) getIntent().getSerializableExtra(
 					"profile");
 			
-			if(mProfile == null){
+			if(mCurrentProfile == null){
 				mCurrentProfile = new Profile();
 			} else {
 				assignProfile();
