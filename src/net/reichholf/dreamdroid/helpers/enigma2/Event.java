@@ -21,7 +21,7 @@ import org.apache.http.NameValuePair;
  * @author sreichholf
  * 
  */
-public class Event {
+public class Event {	
 	public static final String EVENT_ID = "eventid";
 	public static final String EVENT_NAME = "eventname";
 	public static final String EVENT_START = "eventstart";
@@ -37,7 +37,8 @@ public class Event {
 	public static final String EVENT_DESCRIPTION_EXTENDED = "eventdescriptionextended";
 	public static final String SERVICE_REFERENCE = "reference";
 	public static final String SERVICE_NAME = "name";
-
+	
+	
 	/**
 	 * @param shc
 	 * @param params

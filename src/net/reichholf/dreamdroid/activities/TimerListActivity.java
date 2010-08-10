@@ -121,7 +121,11 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer);
-				mAdapter.notifyDataSetChanged();
+				
+				mAdapter.notifyDataSetChanged();				
+				if(mList.size() == 0){
+					showDialog(DIALOG_EMPTY_LIST_ID);
+				}
 			} else {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer) + " - "
 						+ getText(R.string.get_content_error);

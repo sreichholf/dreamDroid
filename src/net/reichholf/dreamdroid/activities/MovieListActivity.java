@@ -90,7 +90,11 @@ public class MovieListActivity extends AbstractHttpListActivity {
 
 			if (result) {
 				title = getText(R.string.app_name) + "::" + getText(R.string.movies);
-				mAdapter.notifyDataSetChanged();
+				
+				mAdapter.notifyDataSetChanged();				
+				if(mList.size() == 0){
+					showDialog(DIALOG_EMPTY_LIST_ID);
+				}
 			} else {
 				title = getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
 						+ getText(R.string.get_content_error);

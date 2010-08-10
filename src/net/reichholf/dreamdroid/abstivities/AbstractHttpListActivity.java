@@ -12,7 +12,11 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.CustomExceptionHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.R;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.widget.SimpleAdapter;
@@ -25,7 +29,9 @@ import android.widget.Toast;
 public abstract class AbstractHttpListActivity extends ListActivity {
 	// public static ArrayList<ExtendedHashMap> DATA = new
 	// ArrayList<ExtendedHashMap>();
-
+	public static final int DIALOG_EMPTY_LIST_ID = 1298032;
+	
+	
 	protected ArrayList<ExtendedHashMap> mList = new ArrayList<ExtendedHashMap>();
 	protected SimpleAdapter mAdapter;
 	protected ExtendedHashMap mData;
@@ -118,7 +124,29 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			mData.putAll(map);
 		}
 	}
+	
+	protected Dialog onCreateDialog(int id) {
+		final Dialog dialog;
 
+		switch (id) {
+		case DIALOG_EMPTY_LIST_ID:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage(R.string.no_list_item)
+			       .setCancelable(false)
+			       .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			        	   return;
+			           }
+			       });
+			dialog = builder.create();
+			break;
+		default:
+			dialog = null;
+		}
+		
+		return dialog;
+	}
+	
 	/**
 	 * 
 	 */

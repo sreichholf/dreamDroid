@@ -54,7 +54,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 
 				mList.clear();
 
-				if (Event.parseList(xml, mList)) {
+				if ( Event.parseList(xml, mList ) ) {
 					return true;
 				}
 			}
@@ -82,7 +82,11 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.epg_search)
 						+ " - \"" + mQuery + "\"";
-				mAdapter.notifyDataSetChanged();
+				
+				mAdapter.notifyDataSetChanged();				
+				if(mList.size() == 0){
+					showDialog(DIALOG_EMPTY_LIST_ID);
+				}
 			} else {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.epg_search)
 						+ " - " + getText(R.string.get_content_error);
@@ -93,10 +97,9 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 			}
 
 			setTitle(title);
-
 		}
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -134,7 +137,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 
 		super.onPause();
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 

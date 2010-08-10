@@ -21,7 +21,7 @@ import android.widget.Toast;
  * 
  */
 public abstract class AbstractHttpEventListActivity extends AbstractHttpListActivity {
-	public static final int DIALOG_EPG_ITEM_ID = 0;
+	public static final int DIALOG_EPG_ITEM_ID = 9382893;
 
 	protected String mReference;
 	protected String mName;
@@ -143,7 +143,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 			}
 			break;
 		default:
-			dialog = null;
+			dialog = super.onCreateDialog(id);
 		}
 
 		return dialog;

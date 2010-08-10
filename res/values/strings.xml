@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android" >
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 	<string name="description">Description</string>
 	<string name="title">Title</string>
 	<string name="we">We</string>
@@ -99,7 +99,6 @@
 	<string name="interface_version">Interface version</string>
 	<string name="front_processor_version">Frontprocessor version</string>
 	<string name="device_name">Devicename</string>
-
 	<string name="frontends">Frontends</string>
 	<string name="nics">Network Interfaces</string>
 	<string name="hdds">Harddisks</string>
@@ -145,4 +144,5 @@
 	<string name="profile_add">Add Profile</string>
 	<string name="profile_not_added">Could not add profile</string>
 	<string name="profile_not_updated">Could not update profile</string>
+	<string name="no_list_item">No items to display!</string>
 </resources>

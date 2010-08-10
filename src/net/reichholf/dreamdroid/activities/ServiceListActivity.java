@@ -113,7 +113,11 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.services) + " - "
 						+ mName;
-				mAdapter.notifyDataSetChanged();
+				
+				mAdapter.notifyDataSetChanged();				
+				if(mList.size() == 0){
+					showDialog(DIALOG_EMPTY_LIST_ID);
+				}			
 			} else {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.services) + " - "
 						+ getText(R.string.get_content_error);
