@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.Location;
 import net.reichholf.dreamdroid.helpers.enigma2.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
@@ -25,7 +24,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,12 +42,12 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	public static final int MENU_NEW_TIMER = 1;
 
 	private ExtendedHashMap mTimer;
-	private ArrayList<String> mLocations;
 	private ProgressDialog mDeleteProgress;
 	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
 	private AsyncTask<String, String, Boolean> mDeleteTask;
 
-	private class GetTimerListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
+	private class GetTimerListTask extends
+			AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 
 		/*
 		 * (non-Javadoc)
@@ -58,44 +56,46 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
+			publishProgress(getText(R.string.app_name) + "::"
+					+ getText(R.string.timer) + " - "
 					+ getText(R.string.fetching_data));
 
 			mList.clear();
 			String xml = Timer.getList(mShc, params);
 
 			if (xml != null) {
-				publishProgress(getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer)
-						+ " - " + getText(R.string.parsing));
+				publishProgress(getText(net.reichholf.dreamdroid.R.string.app_name)
+						+ "::"
+						+ getText(R.string.timer)
+						+ " - "
+						+ getText(R.string.parsing));
 
 				if (Timer.parseList(xml, mList)) {
-					publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
-							+ getText(R.string.locations) + " - " + getText(R.string.fetching_data));
+					if (DreamDroid.LOCATIONS.size() == 0) {
+						publishProgress(getText(R.string.app_name) + "::"
+								+ getText(R.string.timer) + " - "
+								+ getText(R.string.locations) + " - "
+								+ getText(R.string.fetching_data));
 
-					mLocations.clear();
-
-					boolean gotLoc = true;
-					String xmlLoc = Location.getList(mShc);
-
-					if (xmlLoc != null) {
-						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
-								+ getText(R.string.locations) + " - " + getText(R.string.parsing));
-
-						if (!Location.parseList(xmlLoc, mLocations)) {
-							Log.e(DreamDroid.LOG_TAG, "Error parsing locations, falling back to /hdd/movie");
-							gotLoc = false;
+						if (!DreamDroid.loadLocations(mShc)) {
+							showToast(getText(R.string.locations_default_fallback)
+									+ " '/hdd/movie'");
 						}
 					}
 
-					// fallback to default if an error occured while
-					// fetching/parsing locations
-					if (!gotLoc) {
-						mLocations = new ArrayList<String>();
-						mLocations.add("/hdd/movie");
+					if (DreamDroid.TAGS.size() == 0) {
+						publishProgress(getText(R.string.app_name) + "::"
+								+ getText(R.string.timer) + " - "
+								+ getText(R.string.tags) + " - "
+								+ getText(R.string.fetching_data));
+
+						if (!DreamDroid.loadTags(mShc)) {
+							// TODO Add Error-Toast
+						}
 					}
 
-					return true;
 				}
+				return true;
 			}
 
 			return false;
@@ -120,18 +120,21 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			String title = null;
 
 			if (result) {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer);
-				
-				mAdapter.notifyDataSetChanged();				
-				if(mList.size() == 0){
+				title = getText(net.reichholf.dreamdroid.R.string.app_name)
+						+ "::" + getText(R.string.timer);
+
+				mAdapter.notifyDataSetChanged();
+				if (mList.size() == 0) {
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}
 			} else {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer) + " - "
+				title = getText(net.reichholf.dreamdroid.R.string.app_name)
+						+ "::" + getText(R.string.timer) + " - "
 						+ getText(R.string.get_content_error);
 
 				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n"
+							+ mShc.getErrorText());
 				}
 			}
 
@@ -201,7 +204,6 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		super.onCreate(savedInstanceState);
 
 		if (savedInstanceState == null) {
-			mLocations = new ArrayList<String>();
 			setAdapter();
 			reload();
 		}
@@ -244,7 +246,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		mTimer = mList.get((int) id);
 
-		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
+		CharSequence[] actions = { getText(R.string.edit),
+				getText(R.string.delete) };
 
 		AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 		adBuilder.setTitle("Pick an action");
@@ -287,8 +290,10 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, MENU_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(
+				android.R.drawable.ic_menu_rotate);
+		menu.add(0, MENU_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(
+				android.R.drawable.ic_menu_add);
 		return true;
 	}
 
@@ -333,7 +338,6 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put("timer", timer);
-		data.put("locations", mLocations);
 
 		intent.putExtra(sData, data);
 
@@ -347,9 +351,11 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	}
 
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(this, mList, R.layout.timer_list_item, new String[] { Timer.NAME,
-				Timer.SERVICE_NAME, Timer.BEGIN_READEABLE, Timer.END_READABLE }, new int[] { R.id.timer_name,
-				R.id.service_name, R.id.timer_start, R.id.timer_end });
+		mAdapter = new SimpleAdapter(this, mList, R.layout.timer_list_item,
+				new String[] { Timer.NAME, Timer.SERVICE_NAME,
+						Timer.BEGIN_READEABLE, Timer.END_READABLE }, new int[] {
+						R.id.timer_name, R.id.service_name, R.id.timer_start,
+						R.id.timer_end });
 		setListAdapter(mAdapter);
 	}
 
@@ -359,17 +365,22 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	private void deleteTimerConfirm() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-		builder.setTitle(mTimer.getString(Timer.NAME)).setMessage(getText(R.string.delete_confirm))
-				.setCancelable(false).setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						deleteTimer(mTimer);
-						dialog.dismiss();
-					}
-				}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.dismiss();
-					}
-				});
+		builder.setTitle(mTimer.getString(Timer.NAME))
+				.setMessage(getText(R.string.delete_confirm))
+				.setCancelable(false)
+				.setPositiveButton(android.R.string.yes,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								deleteTimer(mTimer);
+								dialog.dismiss();
+							}
+						})
+				.setNegativeButton(android.R.string.no,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.dismiss();
+							}
+						});
 		AlertDialog alert = builder.create();
 		alert.show();
 	}
@@ -387,7 +398,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			}
 		}
 
-		mDeleteProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
+		mDeleteProgress = ProgressDialog.show(this, "",
+				getText(R.string.deleting), true);
 
 		mDeleteTask = new DeleteTimerTask();
 		mDeleteTask.execute("");

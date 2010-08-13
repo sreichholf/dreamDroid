@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.parsers.GenericSaxParser;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2LocationHandler;
+import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2TagHandler;
 
 import org.apache.http.NameValuePair;
 
-public class Location {
+public class Tag {
 
-	public static final String E2_LOCATION = "e2location";
+	public static final String E2_TAG = "e2tag";
 
 	/**
 	 * @param shc
@@ -19,8 +19,7 @@ public class Location {
 	 * @return
 	 */
 	public static String getList(SimpleHttpClient shc) {
-		if (shc.fetchPageContent(URIStore.LOCATIONS,
-				new ArrayList<NameValuePair>())) {
+		if (shc.fetchPageContent(URIStore.TAGS, new ArrayList<NameValuePair>())) {
 			return shc.getPageContentString();
 		}
 
@@ -35,7 +34,7 @@ public class Location {
 	public static boolean parseList(String xml, ArrayList<String> list) {
 		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
 
-		E2LocationHandler handler = new E2LocationHandler(list);
+		E2TagHandler handler = new E2TagHandler(list);
 		sdp.getParser().setHandler(handler);
 
 		if (sdp.parse(xml)) {
@@ -44,5 +43,4 @@ public class Location {
 
 		return false;
 	}
-
 }

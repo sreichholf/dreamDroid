@@ -18,6 +18,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -34,16 +35,20 @@ import android.widget.Toast;
  * 
  */
 public class MovieListActivity extends AbstractHttpListActivity {
-	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> currentTask;
+	private String currentLocation;
+	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mDeleteProgress;
 	private AsyncTask<String, String, Boolean> mDeleteTask;
 
+	
+	//TODO Add Location Support
 	/**
 	 * @author sreichholf
 	 * 
 	 */
-	private class GetMovieListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
+	private class GetMovieListTask extends
+			AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -51,20 +56,27 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
+			publishProgress(getText(R.string.app_name) + "::"
+					+ getText(R.string.movies) + " - "
 					+ getText(R.string.fetching_data));
 
 			mList.clear();
 			String xml = Movie.getList(mShc, params);
 
 			if (xml != null) {
-				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
+				publishProgress(getText(R.string.app_name) + "::"
+						+ getText(R.string.movies) + " - "
 						+ getText(R.string.parsing));
 
 				if (Movie.parseList(xml, mList)) {
+					if (DreamDroid.LOCATIONS.size() == 0) {
+						DreamDroid.loadLocations(mShc);
+					}
+
 					return true;
 				} else {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n"
+							+ mShc.getErrorText());
 				}
 			}
 			return false;
@@ -89,18 +101,21 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			String title = null;
 
 			if (result) {
-				title = getText(R.string.app_name) + "::" + getText(R.string.movies);
-				
-				mAdapter.notifyDataSetChanged();				
-				if(mList.size() == 0){
+				title = getText(R.string.app_name) + "::"
+						+ getText(R.string.movies);
+
+				mAdapter.notifyDataSetChanged();
+				if (mList.size() == 0) {
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}
 			} else {
-				title = getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
+				title = getText(R.string.app_name) + "::"
+						+ getText(R.string.movies) + " - "
 						+ getText(R.string.get_content_error);
 
 				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n"
+							+ mShc.getErrorText());
 				}
 			}
 
@@ -157,7 +172,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			if (!result) {
 				mResult = new ExtendedHashMap();
 				if (mHttpError) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n"
+							+ mShc.getErrorText());
 				}
 			}
 			onMovieDeleted(mResult);
@@ -175,9 +191,12 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mAdapter = new SimpleAdapter(this, mList, R.layout.movie_list_item, new String[] { Movie.TITLE,
-				Movie.SERVICE_NAME, Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE, Movie.LENGTH }, new int[] {
-				R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
+		mAdapter = new SimpleAdapter(this, mList, R.layout.movie_list_item,
+				new String[] { Movie.TITLE, Movie.SERVICE_NAME,
+						Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE,
+						Movie.LENGTH }, new int[] { R.id.movie_title,
+						R.id.service_name, R.id.file_size, R.id.event_start,
+						R.id.event_duration });
 		setListAdapter(mAdapter);
 		reload();
 	}
@@ -189,8 +208,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 */
 	@Override
 	public void onPause() {
-		if (currentTask != null) {
-			currentTask.cancel(true);
+		if (mListTask != null) {
+			mListTask.cancel(true);
 		}
 
 		super.onPause();
@@ -205,7 +224,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		mMovie = mList.get(position);
 
-		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete) };
+		CharSequence[] actions = { getText(R.string.zap),
+				getText(R.string.delete) };
 
 		AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 		adBuilder.setTitle(getText(R.string.pick_action));
@@ -218,7 +238,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 					break;
 				case 1:
 					deleteMovieConfirm();
-					break;				
+					break;
 				default:
 					return;
 				}
@@ -243,7 +263,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			resulttext = result.getString(SimpleResult.STATE_TEXT);
 		}
 
-		Toast toast = Toast.makeText(getApplicationContext(), resulttext, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getApplicationContext(), resulttext,
+				Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -253,17 +274,22 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	private void deleteMovieConfirm() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-		builder.setTitle(mMovie.getString(Movie.TITLE)).setMessage(getText(R.string.delete_confirm)).setCancelable(
-				false).setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-				deleteMovie();
-				dialog.dismiss();
-			}
-		}).setNegativeButton(getText(android.R.string.no), new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-				dialog.dismiss();
-			}
-		});
+		builder.setTitle(mMovie.getString(Movie.TITLE))
+				.setMessage(getText(R.string.delete_confirm))
+				.setCancelable(false)
+				.setPositiveButton(getText(android.R.string.yes),
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								deleteMovie();
+								dialog.dismiss();
+							}
+						})
+				.setNegativeButton(getText(android.R.string.no),
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.dismiss();
+							}
+						});
 		AlertDialog alert = builder.create();
 		alert.show();
 	}
@@ -281,7 +307,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			}
 		}
 
-		mDeleteProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
+		mDeleteProgress = ProgressDialog.show(this, "",
+				getText(R.string.deleting), true);
 
 		mDeleteTask = new DeleteMovieTask();
 		mDeleteTask.execute("");
@@ -316,13 +343,16 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	private void reload() {
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-
-		if (currentTask != null) {
-			currentTask.cancel(true);
+		if (currentLocation != null) {
+			params.add(new BasicNameValuePair("dirname", currentLocation));
 		}
 
-		currentTask = new GetMovieListTask();
-		currentTask.execute(params);
+		if (mListTask != null) {
+			mListTask.cancel(true);
+		}
+
+		mListTask = new GetMovieListTask();
+		mListTask.execute(params);
 
 	}
 }

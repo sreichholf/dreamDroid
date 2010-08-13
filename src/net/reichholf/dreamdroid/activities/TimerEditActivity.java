@@ -6,29 +6,31 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -38,8 +40,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
-
+//TODO Add Tag Support
 /**
  * @author sreichholf
  * 
@@ -66,7 +67,6 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 	private ExtendedHashMap mTimer;
 	private ExtendedHashMap mTimerOld;
-	private ArrayList<String> mLocationList;
 	private EditText mName;
 	private EditText mDescription;
 	private CheckBox mEnabled;
@@ -195,7 +195,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v,
 					int position, long id) {
-				mTimer.put(Timer.LOCATION, mLocationList.get(position));
+				mTimer.put(Timer.LOCATION, DreamDroid.LOCATIONS.get(position));
 			}
 
 			@Override
@@ -209,14 +209,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		// Initialize if savedInstanceState won't
 		if (savedInstanceState == null) {
-			HashMap<String, Object> map = (HashMap<String, Object>) getIntent().getExtras().get(sData);
+			HashMap<String, Object> map = (HashMap<String, Object>) getIntent()
+					.getExtras().get(sData);
 			ExtendedHashMap data = new ExtendedHashMap();
 			data.putAll(map);
-			
+
 			mTimer = new ExtendedHashMap();
-			mTimer.putAll( (HashMap<String, Object>) data.get("timer") );
-			
-			mLocationList = (ArrayList<String>) data.get("locations");
+			mTimer.putAll((HashMap<String, Object>) data.get("timer"));
 
 			if (getIntent().getAction().equals(Intent.ACTION_EDIT)) {
 				mTimerOld = mTimer.clone();
@@ -228,16 +227,20 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onActivityResult(int, int,
+	 * android.content.Intent)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == PICK_SERVICE_REQUEST) {
-			if (resultCode == RESULT_OK) {				
+			if (resultCode == RESULT_OK) {
 				ExtendedHashMap map = new ExtendedHashMap();
-				map.putAll( (HashMap<String, Object>) data.getSerializableExtra(sData));
+				map.putAll((HashMap<String, Object>) data
+						.getSerializableExtra(sData));
 
 				mTimer.put(Timer.SERVICE_NAME, map.getString(Service.NAME));
 				mTimer.put(Timer.REFERENCE, map.getString(Service.REFERENCE));
@@ -246,7 +249,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onPause()
 	 */
 	@Override
@@ -264,11 +269,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	public void onSaveInstanceState(Bundle outState) {
 		final ExtendedHashMap timer = mTimer;
 		final ExtendedHashMap timerOld = mTimerOld;
-		final ArrayList<String> locations = mLocationList;
 
 		outState.putSerializable("timer", timer);
 		outState.putSerializable("timerOld", timerOld);
-		outState.putSerializable("locations", locations);
 
 		this.removeDialog(DIALOG_SAVE_TIMER_ID);
 
@@ -281,7 +284,6 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 * @seenet.reichholf.dreamdroid.activities.AbstractHttpListActivity#
 	 * onRestoreInstanceState(android.os.Bundle)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
@@ -289,8 +291,6 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mTimer = (ExtendedHashMap) savedInstanceState.getSerializable("timer");
 		mTimerOld = (ExtendedHashMap) savedInstanceState
 				.getSerializable("timerOld");
-		mLocationList = (ArrayList<String>) savedInstanceState
-				.getSerializable("locations");
 
 		if (mTimer != null) {
 			reload();
@@ -480,14 +480,14 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		// Locations
 		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(this,
-				android.R.layout.simple_spinner_item, mLocationList);
+				android.R.layout.simple_spinner_item, DreamDroid.LOCATIONS);
 		aaLocations
 				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
 
 		String timerLoc = mTimer.getString(Timer.LOCATION);
-		for (int i = 0; i < mLocationList.size(); i++) {
-			String loc = mLocationList.get(i);
+		for (int i = 0; i < DreamDroid.LOCATIONS.size(); i++) {
+			String loc = DreamDroid.LOCATIONS.get(i);
 
 			if (timerLoc.equals(loc)) {
 				mLocation.setSelection(i);

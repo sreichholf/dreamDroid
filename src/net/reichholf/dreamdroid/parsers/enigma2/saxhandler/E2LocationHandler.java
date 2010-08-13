@@ -41,7 +41,7 @@ public class E2LocationHandler  extends DefaultHandler{
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(Location.LOCATION)) {
+		if (localName.equals(Location.E2_LOCATION)) {
 			inLocation = true;
 			mLocation = "";
 		}
@@ -52,7 +52,7 @@ public class E2LocationHandler  extends DefaultHandler{
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(Location.LOCATION)) {
+		if (localName.equals(Location.E2_LOCATION)) {
 			inLocation = false;
 			mLocationlist.add(mLocation.trim());
 		}

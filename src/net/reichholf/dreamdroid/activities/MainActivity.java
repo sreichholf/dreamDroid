@@ -41,6 +41,7 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_PROFILES = 7;
 	public static final int ITEM_CURRENT = 8;
 	public static final int ITEM_EPG_SEARCH = 9;
+	public static final int ITEM_SCREENSHOT = 10;
 	public static final int ITEM_EXIT = 99;
 
 	private Button mButtonInfo;
@@ -155,7 +156,7 @@ public class MainActivity extends AbstractHttpActivity {
 //		Will be reactivated as soon as there are some "Global settings"
 //		menu.add(0, ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(R.drawable.edit);
 		menu.add(0, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
-
+		menu.add(0, ITEM_SCREENSHOT, 2, "Screenshot").setIcon(android.R.drawable.ic_menu_crop);
 		return true;
 	}
 
@@ -291,7 +292,11 @@ public class MainActivity extends AbstractHttpActivity {
 		case (ITEM_EPG_SEARCH):
 			onSearchRequested();
 			break;
-
+			
+		case (ITEM_SCREENSHOT):
+			intent = new Intent(this, ScreenShotActivity.class);
+			startActivity(intent);
+			break;
 		case (ITEM_EXIT):
 			finish();
 			break;

@@ -67,6 +67,7 @@ public class SimpleHttpClient {
 				params);
 
 		mContext = new BasicHttpContext();
+		applyConfig();
 	}
 
 	/**
@@ -103,7 +104,12 @@ public class SimpleHttpClient {
 	public void unsetCrendentials() {
 		mDhc.getCredentialsProvider().setCredentials(AuthScope.ANY, null);
 	}
-
+	
+	
+	public String buildUrl(String uri, List<NameValuePair> parameters){
+		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
+		return mPrefix + mHostname + ":" + mPort + uri + parms;
+	}
 	/**
 	 * @param uri
 	 * @param parameters
@@ -119,10 +125,8 @@ public class SimpleHttpClient {
 		if (!uri.startsWith("/")) {
 			uri = "/".concat(uri);
 		}
-
-		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
-		String url = mPrefix + mHostname + ":" + mPort + uri + parms;
-
+		
+		String url = buildUrl(uri, parameters);
 		HttpGet get = new HttpGet(url);
 
 		try {
@@ -187,13 +191,9 @@ public class SimpleHttpClient {
 	 * 
 	 */
 	public void applyConfig() {
-//		mHostname = DreamDroid.SP.getString("host", "dm8000");
 		mHostname = DreamDroid.PROFILE.getHost();
-//		mPort = DreamDroid.SP.getString("port", "80");
 		mPort = new Integer(DreamDroid.PROFILE.getPort()).toString();
-//		mLogin = DreamDroid.SP.getBoolean("login", false);
 		mLogin = DreamDroid.PROFILE.isLogin();
-//		mSsl = DreamDroid.SP.getBoolean("ssl", false);
 		mSsl = DreamDroid.PROFILE.isSsl();
 
 		if (mSsl) {
@@ -203,9 +203,7 @@ public class SimpleHttpClient {
 		}
 
 		if (mLogin) {
-//			mUser = DreamDroid.SP.getString("user", "root");
 			mUser = DreamDroid.PROFILE.getUser();
-//			mPass = DreamDroid.SP.getString("pass", "dreambox");
 			mPass = DreamDroid.PROFILE.getPass();
 			setCredentials(mUser, mPass);
 		}
