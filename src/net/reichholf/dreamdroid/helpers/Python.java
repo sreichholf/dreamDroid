@@ -1,4 +1,4 @@
-package net.reichholf.dreamdroid.helpers.enigma2;
+package net.reichholf.dreamdroid.helpers;
 
 public class Python {
 	public static final String TRUE = "True";

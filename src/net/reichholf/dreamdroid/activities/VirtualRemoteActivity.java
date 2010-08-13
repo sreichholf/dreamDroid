@@ -27,7 +27,7 @@ import android.widget.Toast;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.Python;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
@@ -120,20 +120,27 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case MENU_LAYOUT:
+			int selected = 0;
+			if(mQuickZap){
+				selected = 1;
+			}
 			CharSequence[] actions = { getText(R.string.standard), getText(R.string.quickzap) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 			adBuilder.setTitle(getText(R.string.choose_layout));
-			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
+			
+			adBuilder.setSingleChoiceItems(actions, selected, new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case 0:
-						setLayout(false);						
+						setLayout(false);
+						dialog.dismiss();
 						break;
 
 					case 1:
 						setLayout(true);
+						dialog.dismiss();
 						break;
 					}									
 				}
@@ -166,8 +173,10 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	private void reinit(){
 		if(mQuickZap){
 			setContentView(R.layout.virtual_remote_quick_zap);
+			setTitle(getText(R.string.app_name) + " - " + getText(R.string.quickzap));
 		} else {
 			setContentView(R.layout.virtual_remote);
+			setTitle(getText(R.string.app_name) + " - " + getText(R.string.virtual_remote));
 		}
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 

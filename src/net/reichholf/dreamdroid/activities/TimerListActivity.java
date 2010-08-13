@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.Python;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 
