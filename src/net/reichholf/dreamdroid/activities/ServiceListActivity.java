@@ -39,8 +39,6 @@ import android.widget.Toast;
 public class ServiceListActivity extends AbstractHttpEventListActivity {
 	public static final int MENU_HOME = 0;
 
-	public static final int DIALOG_EPG_ITEM_ID = 0;
-
 	private String mReference;
 	private String mName;
 	private boolean mIsBouquetList;

@@ -118,7 +118,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 
 		mList = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("list");
 
-		HashMap map = (HashMap) savedInstanceState.getSerializable("data");
+		HashMap<String, Object> map = (HashMap<String, Object>) savedInstanceState.getSerializable("data");
 		mData = new ExtendedHashMap();
 		if (map != null) {
 			mData.putAll(map);
