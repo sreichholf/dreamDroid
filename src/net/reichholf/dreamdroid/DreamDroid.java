@@ -202,7 +202,11 @@ public class DreamDroid extends Application {
 		}
 		return false;
 	}
-
+	
+	public static boolean reloadActiveProfile(){		
+		return setActiveProfile(PROFILE.getId());
+	}
+	
 	/**
 	 * @param shc
 	 */

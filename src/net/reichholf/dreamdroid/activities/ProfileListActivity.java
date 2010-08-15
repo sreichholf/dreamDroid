@@ -193,6 +193,8 @@ public class ProfileListActivity extends ListActivity {
 			if (resultCode == RESULT_OK) {
 				mCursor.requery();
 				mAdapter.notifyDataSetChanged();
+				// Reload the current profile as it may be changed/altered
+				DreamDroid.reloadActiveProfile();
 			}
 		}
 	}
