@@ -6,11 +6,15 @@
 
 package net.reichholf.dreamdroid;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Location;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
+
 import android.app.Application;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
@@ -33,6 +37,8 @@ public class DreamDroid extends Application {
 	public static Profile PROFILE;
 	public static ArrayList<String> LOCATIONS;
 	public static ArrayList<String> TAGS;
+
+	public static boolean DATE_LOCALE_WO;
 
 	public static final String KEY_ID = "_id";
 	public static final String KEY_PROFILE = "profile";
@@ -61,10 +67,24 @@ public class DreamDroid extends Application {
 	 */
 	@Override
 	public void onCreate() {
+		// Determine if we require a Date-String-Locale-Missing-Fix
+		// for details please see:
+		// http://code.google.com/p/android/issues/detail?id=9453
+		SimpleDateFormat sdf = new SimpleDateFormat("E");
+		Date date = GregorianCalendar.getInstance().getTime();
+
+		try {
+			String s = sdf.format(date);
+			Integer.parseInt(s);
+			DATE_LOCALE_WO = true;
+		} catch (Exception e) {
+			DATE_LOCALE_WO = false;
+		}
+
 		SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		LOCATIONS = new ArrayList<String>();
 		TAGS = new ArrayList<String>();
-		
+
 		DB = openOrCreateDatabase(DATABASE_NAME, MODE_PRIVATE, null);
 
 		if (DB.needUpgrade(DATABASE_VERSION)) {
@@ -202,11 +222,14 @@ public class DreamDroid extends Application {
 		}
 		return false;
 	}
-	
-	public static boolean reloadActiveProfile(){		
+
+	/**
+	 * @return
+	 */
+	public static boolean reloadActiveProfile() {
 		return setActiveProfile(PROFILE.getId());
 	}
-	
+
 	/**
 	 * @param shc
 	 */
@@ -228,11 +251,11 @@ public class DreamDroid extends Application {
 			LOCATIONS = new ArrayList<String>();
 			LOCATIONS.add("/hdd/movie");
 		}
-		
+
 		return gotLoc;
 
 	}
-	
+
 	/**
 	 * @param shc
 	 */
@@ -249,11 +272,10 @@ public class DreamDroid extends Application {
 		}
 
 		if (!gotTags) {
-			Log.e(LOG_TAG,
-					"Error parsing Tags, no more Tags will be available");
+			Log.e(LOG_TAG, "Error parsing Tags, no more Tags will be available");
 			TAGS = new ArrayList<String>();
 		}
-		
+
 		return gotTags;
 
 	}

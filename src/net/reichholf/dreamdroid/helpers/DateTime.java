@@ -2,6 +2,9 @@ package net.reichholf.dreamdroid.helpers;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+
+import net.reichholf.dreamdroid.DreamDroid;
 
 /**
  * Provides static methods for Date and Time parsing
@@ -10,7 +13,7 @@ import java.util.Date;
  * 
  */
 public class DateTime {
-
+	
 	/**
 	 * @param eventstart
 	 * @param duration
@@ -41,8 +44,15 @@ public class DateTime {
 	 * @return
 	 */
 	public static String getDateTimeString(String timestamp) {
-		SimpleDateFormat sdfDateTime = new SimpleDateFormat("E, dd.MM. - HH:mm");
-
+		SimpleDateFormat sdfDateTime;
+		
+		//Some devices are missing some Translations, wee need to work around that!
+		if(DreamDroid.DATE_LOCALE_WO){
+			sdfDateTime = new SimpleDateFormat("E, dd.MM. - HH:mm", Locale.US);
+		} else {
+			sdfDateTime = new SimpleDateFormat("E, dd.MM. - HH:mm");
+		}
+		
 		Date date = DateTime.getDate(timestamp);
 		return sdfDateTime.format(date);
 	}
@@ -52,7 +62,14 @@ public class DateTime {
 	 * @return
 	 */
 	public static String getYearDateTimeString(String timestamp) {
-		SimpleDateFormat sdfDateTime = new SimpleDateFormat("E, dd.MM.yyyy - HH:mm");
+		SimpleDateFormat sdfDateTime;
+		
+		//Some devices are missing some Translations, wee need to work around that!
+		if(DreamDroid.DATE_LOCALE_WO){
+			sdfDateTime = new SimpleDateFormat("E, dd.MM.yyyy - HH:mm", Locale.US);
+		} else {
+			sdfDateTime = new SimpleDateFormat("E, dd.MM.yyyy - HH:mm");
+		}
 
 		Date date = DateTime.getDate(timestamp);
 		return sdfDateTime.format(date);
