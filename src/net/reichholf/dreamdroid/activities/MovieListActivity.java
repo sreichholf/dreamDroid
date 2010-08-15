@@ -74,9 +74,6 @@ public class MovieListActivity extends AbstractHttpListActivity {
 					}
 
 					return true;
-				} else {
-					showToast(getText(R.string.get_content_error) + "\n"
-							+ mShc.getErrorText());
 				}
 			}
 			return false;

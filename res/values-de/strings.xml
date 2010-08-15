@@ -143,5 +143,5 @@
 	<string name="profile_not_added">Profil konnte nicht hinzugefügt werden</string>
 	<string name="profile_not_updated">Profil konnte nicht aktualisiert werden</string>
 	<string name="no_list_item">Es wurden keine Einträge gefunden!</string>
-<string name="screenshot">Screenshot</string>
+	<string name="screenshot">Screenshot</string>
 </resources>

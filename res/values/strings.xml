@@ -146,6 +146,6 @@
 	<string name="profile_not_updated">Could not update profile</string>
 	<string name="no_list_item">No items to display!</string>
 	<string name="locations_default_fallback">Error loading locations, falling back to default:</string>
-<string name="tags">Tags</string>
-<string name="screenshot">Screenshot</string>
+	<string name="tags">Tags</string>
+	<string name="screenshot">Screenshot</string>
 </resources>

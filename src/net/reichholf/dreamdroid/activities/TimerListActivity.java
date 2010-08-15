@@ -75,12 +75,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 						publishProgress(getText(R.string.app_name) + "::"
 								+ getText(R.string.timer) + " - "
 								+ getText(R.string.locations) + " - "
-								+ getText(R.string.fetching_data));
-
-						if (!DreamDroid.loadLocations(mShc)) {
-							showToast(getText(R.string.locations_default_fallback)
-									+ " '/hdd/movie'");
-						}
+								+ getText(R.string.fetching_data));						
 					}
 
 					if (DreamDroid.TAGS.size() == 0) {

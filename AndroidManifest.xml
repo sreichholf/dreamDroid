@@ -3,15 +3,32 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="net.reichholf.dreamdroid" 
 	android:installLocation="auto" 
-	android:versionCode="20" android:versionName="0.6">
+	android:versionCode="20" 
+	android:versionName="0.6">
+	
+	<uses-sdk 
+		android:minSdkVersion="4"
+		android:maxSdkVersion="8" 
+		android:targetSdkVersion="4" ></uses-sdk>
+	
+	<supports-screens
+		android:largeScreens="true"
+		android:normalScreens="true"
+		android:smallScreens="true"
+		android:anyDensity="true"		 
+		android:resizeable="true"></supports-screens>
+	
+	<uses-permission android:name="android.permission.INTERNET" ></uses-permission>	
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" ></uses-permission>
+	
 	<application 
 		android:icon="@drawable/icon" 
 		android:label="@string/app_name"
 		android:name="DreamDroid" 
 		android:allowBackup="true"
 		android:allowClearUserData="true" 
-		android:hasCode="true"
-		android:debuggable="true" android:killAfterRestore="true" android:restoreAnyVersion="false">
+		android:killAfterRestore="true" 
+		android:debuggable="false">
 		
 		<activity android:label="@string/app_name" android:name=".activities.MainActivity">
 			<intent-filter>
@@ -20,48 +37,26 @@
 			</intent-filter>
 		</activity>
 		
-		<activity android:name=".activities.MovieListActivity" android:configChanges="orientation|keyboardHidden"/>		
-		<activity android:name=".activities.ServiceListActivity" android:configChanges="orientation|keyboardHidden"/>
-		<activity android:name=".activities.ServiceEpgListActivity" android:configChanges="orientation|keyboardHidden"/>
-		<activity android:name=".activities.TimerListActivity" android:configChanges="orientation|keyboardHidden"/>
-		<activity android:name=".activities.TimerEditActivity" android:configChanges="orientation|keyboardHidden"/>
-		<activity android:name=".activities.DeviceInfoActivity" android:configChanges="orientation|keyboardHidden" />
-		<activity android:name=".activities.CurrentServiceActivity" android:configChanges="orientation|keyboardHidden"/>
-		<activity android:name=".activities.VirtualRemoteActivity" />
-		<activity android:name=".activities.DreamDroidPreferenceActivity" />
+		<activity android:name=".activities.MovieListActivity" android:configChanges="orientation|keyboardHidden"></activity>		
+		<activity android:name=".activities.ServiceListActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.ServiceEpgListActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.TimerListActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.TimerEditActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.DeviceInfoActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.CurrentServiceActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.VirtualRemoteActivity" android:configChanges="orientation|keyboardHidden"></activity>		
+		<activity android:name=".activities.ProfileListActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.ProfileEditActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.ScreenShotActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<!-- <activity android:name=".activities.DreamDroidPreferenceActivity" /> -->
 		<activity android:name=".activities.SearchEpgActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.SEARCH" />
 	        </intent-filter>
 	        <meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
 		</activity>
-		
+						
 		<meta-data android:name="android.app.default_searchable"
-               android:value=".activities.SearchEpgActivity" />
-	<activity android:name=".activities.ProfileListActivity"></activity>
-<activity android:name=".activities.ProfileEditActivity"></activity>
-<activity android:name=".activities.ScreenShotActivity"></activity>
+               android:value=".activities.SearchEpgActivity" ></meta-data>
 </application>
-	
-	
-	
-	<supports-screens
-          android:largeScreens="true"
-          android:normalScreens="true"
-          android:anyDensity="true" android:resizeable="true" android:smallScreens="true"/>
-	
-	<uses-sdk 
-		android:minSdkVersion="4"
-		android:maxSdkVersion="8" android:targetSdkVersion="4"/>
-
-	<uses-permission 
-		android:name="android.permission.INTERNET" />
-	
-	<uses-configuration 
-		android:reqHardKeyboard="false" 
-		android:reqKeyboardType="undefined" 
-		android:reqFiveWayNav="false" 
-		android:reqNavigation="undefined" android:reqTouchScreen="undefined"/>
-
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 </manifest> 
