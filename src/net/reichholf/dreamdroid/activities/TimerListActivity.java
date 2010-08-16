@@ -75,7 +75,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 						publishProgress(getText(R.string.app_name) + "::"
 								+ getText(R.string.timer) + " - "
 								+ getText(R.string.locations) + " - "
-								+ getText(R.string.fetching_data));						
+								+ getText(R.string.fetching_data));	
+						
+						DreamDroid.loadLocations(mShc);
 					}
 
 					if (DreamDroid.TAGS.size() == 0) {
