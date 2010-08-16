@@ -51,14 +51,14 @@
 			android:id="@+id/ButtonClose"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:drawableLeft="@drawable/close_small"
+			android:drawableLeft="@drawable/ic_btn_close"
 			android:text="@string/close"
 			android:layout_weight="1" />
 		<Button
 			android:id="@+id/ButtonSetTimer"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:drawableLeft="@drawable/clock_small"			
+			android:drawableLeft="@drawable/ic_btn_clock"			
 			android:text="@string/set_timer"
 			android:layout_weight="1"/>
 	</LinearLayout>

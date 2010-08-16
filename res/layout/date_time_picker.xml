@@ -47,7 +47,7 @@
 			android:id="@+id/ButtonApply" 
 			android:layout_width="fill_parent" 
 			android:layout_height="wrap_content"
-			android:drawableLeft="@drawable/save_small"
+			android:drawableLeft="@drawable/ic_btn_save"
 			android:layout_weight="1"/>
 	
 		<Button 
@@ -55,7 +55,7 @@
 			android:id="@+id/ButtonCancel" 
 			android:layout_width="fill_parent" 
 			android:layout_height="wrap_content"
-			android:drawableLeft="@drawable/close_small"
+			android:drawableLeft="@drawable/ic_btn_close"
 			android:layout_weight="1" />
 	
 	</LinearLayout>		

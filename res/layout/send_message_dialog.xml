@@ -88,7 +88,7 @@
 		<Button  
 			android:id="@+id/ButtonSend"
 			android:text="@string/send"
-			android:drawableLeft="@drawable/send_small"				 
+			android:drawableLeft="@drawable/ic_btn_mail"				 
 			android:layout_width="fill_parent" 
 			android:layout_height="wrap_content"
 			android:layout_weight="1" />
@@ -96,7 +96,7 @@
 		<Button 
 			android:id="@+id/ButtonCancel"
 			android:text="@string/cancel"
-			android:drawableLeft="@drawable/close_small"
+			android:drawableLeft="@drawable/ic_btn_close"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"			
 			android:layout_weight="1" />			

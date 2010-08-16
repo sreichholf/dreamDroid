@@ -247,7 +247,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 				getText(R.string.delete) };
 
 		AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
-		adBuilder.setTitle("Pick an action");
+		adBuilder.setTitle(R.string.pick_action);
 		adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
 
 			public void onClick(DialogInterface dialog, int which) {

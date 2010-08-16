@@ -159,7 +159,7 @@
 			<Button
 				android:id="@+id/ButtonSave"
 				android:layout_height="wrap_content"
-				android:drawableLeft="@drawable/save_small"
+				android:drawableLeft="@drawable/ic_btn_save"
 				android:layout_column="2"
 				android:layout_weight="1"
 				android:text="@string/save" />
@@ -169,7 +169,7 @@
 				android:layout_height="wrap_content"
 				android:layout_column="2"
 				android:layout_weight="1"
-				android:drawableLeft="@drawable/close_small"
+				android:drawableLeft="@drawable/ic_btn_close"
 				android:text="@string/cancel" />
 			
 		</TableRow>		

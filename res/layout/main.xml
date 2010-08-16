@@ -30,14 +30,14 @@
 					android:text="@string/services"		
 					android:layout_width="fill_parent"
 					android:layout_height="wrap_content"
-					android:drawableTop="@drawable/small_tiles" 
+					android:drawableTop="@drawable/ic_menu_list" 
 					android:layout_weight="1"/>
 				<Button 
 					android:id="@+id/ButtonMovies" 
 					android:text="@string/movies" 
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/monitor" 
+					android:drawableTop="@drawable/ic_menu_movie" 
 					android:layout_weight="1" />	
 			</LinearLayout>
 			
@@ -52,14 +52,14 @@
 					android:text="@string/timer"		
 					android:layout_width="fill_parent"
 					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/clock"
+					android:drawableTop="@drawable/ic_menu_clock"
 					android:layout_weight="1"/>	
 				<Button 
 					android:id="@+id/ButtonVirtualRemote" 
 					android:text="@string/virtual_remote" 
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/large_tiles" 
+					android:drawableTop="@drawable/ic_menu_small_tiles" 
 					android:layout_weight="1" />			
 			</LinearLayout>	
 			
@@ -74,7 +74,7 @@
 					android:text="@string/current_service" 
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/help" 
+					android:drawableTop="@drawable/ic_menu_help" 
 					android:layout_weight="1" />
 				
 				<Button 
@@ -98,7 +98,7 @@
 					android:text="@string/send_message" 
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/dialog" 
+					android:drawableTop="@drawable/ic_menu_mail" 
 					android:layout_weight="1" />
 				
 				<Button 
@@ -106,7 +106,7 @@
 					android:text="@string/device_info" 
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/info" 
+					android:drawableTop="@drawable/ic_menu_info" 
 					android:layout_weight="1" />
 			</LinearLayout>	
 			
@@ -132,7 +132,7 @@
 		<ImageButton android:id="@+id/ButtonExit" 
 			android:layout_width="fill_parent" 
 			android:layout_height="wrap_content" 
-			android:src="@drawable/close_small"
+			android:src="@drawable/ic_btn_close"
 			android:scaleType="center"
 			android:gravity="bottom"/>
 	</LinearLayout>	
