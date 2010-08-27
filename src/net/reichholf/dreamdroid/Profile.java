@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid;
 import java.io.Serializable;
 
 import android.database.Cursor;
+import android.util.Log;
 
 /**
  * @author sre
@@ -112,116 +113,137 @@ public class Profile implements Serializable{
 	}
 	
 	/**
-	 * @param mProfile the mProfile to set
+	 * @param mProfile the Profile to set
 	 */
 	public void setProfile(String profile) {
 		this.mProfile = profile;
 	}
 
 	/**
-	 * @param mHost the mHost to set
+	 * @param mHost the Host to set
 	 */
 	public void setHost(String host) {
 		this.mHost =host.replace("http://", "").replace("https://", "");
 	}
 
 	/**
-	 * @param mUser the mUser to set
+	 * @param mUser the User to set
 	 */
 	public void setUser(String user) {
 		this.mUser = user;
 	}
 
 	/**
-	 * @param mPass the mPass to set
+	 * @param mPass the Pass to set
 	 */
 	public void setPass(String pass) {
 		this.mPass = pass;
 	}
 
 	/**
-	 * @param mLogin the mLogin to set
+	 * @param mLogin the Login to set
 	 */
 	public void setLogin(boolean login) {
 		this.mLogin = login;
 	}
 
 	/**
-	 * @param mSsl the mSsl to set
+	 * @param mSsl SSL yes/no
 	 */
 	public void setSsl(boolean ssl) {
 		this.mSsl = ssl;
 	}
 
 	/**
-	 * @param mId the mId to set
+	 * @param mId the Id to set
 	 */
 	public void setId(int id) {
 		this.mId = id;
 	}
 
 	/**
-	 * @param mPort the mPort to set
+	 * @param mPort the Port to set
 	 */
 	public void setPort(int port) {
 		this.mPort = port;
 	}
 	
-	public void setPort(String port){
-		mPort = new Integer(port);
+	/**
+	 * @param port
+	 */
+	public void setPort(String port){	
+		try{
+			mPort = new Integer(port);
+		} catch(NumberFormatException e ){
+			Log.w(DreamDroid.LOG_TAG, e.toString());
+			if(mSsl){
+				mPort = 443;
+			} else {
+				mPort = 80;
+			}
+		}
+	}
+	
+	/**
+	 * @param port
+	 * @param ssl
+	 */
+	public void setPort(String port, boolean ssl){
+		mSsl = ssl;		
+		setPort(port);
 	}
 
 	/**
-	 * @return the mProfile
+	 * @return the Profile
 	 */
 	public String getProfile() {
 		return mProfile;
 	}
 
 	/**
-	 * @return the mHost
+	 * @return the Host
 	 */
 	public String getHost() {
 		return mHost;
 	}
 
 	/**
-	 * @return the mUser
+	 * @return the User
 	 */
 	public String getUser() {
 		return mUser;
 	}
 
 	/**
-	 * @return the mPass
+	 * @return the Pass
 	 */
 	public String getPass() {
 		return mPass;
 	}
 
 	/**
-	 * @return the mLogin
+	 * @return the Login
 	 */
 	public boolean isLogin() {
 		return mLogin;
 	}
 
 	/**
-	 * @return the mSsl
+	 * @return SSL yes/no
 	 */
 	public boolean isSsl() {
 		return mSsl;
 	}
 
 	/**
-	 * @return the mId
+	 * @return the Id
 	 */
 	public int getId() {
 		return mId;
 	}
 
 	/**
-	 * @return the mPort
+	 * @return the Port
 	 */
 	public int getPort() {
 		return mPort;
