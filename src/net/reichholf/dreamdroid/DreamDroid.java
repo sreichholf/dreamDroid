@@ -121,8 +121,9 @@ public class DreamDroid extends Application {
 			showToast(getText(R.string.profile_activated) + " '"
 					+ PROFILE.getProfile() + "'");
 		} else {
-			showToast(getText(R.string.profile_not_activated) + " '"
-					+ PROFILE.getProfile() + "'");
+			showToast(getText(R.string.profile_not_activated));
+			//However we got here... we're creating an "do-not-crash-default-profile now
+			PROFILE = new Profile("Default", "dm8000", 80, false, "", "", false);
 		}
 	}
 
@@ -131,6 +132,14 @@ public class DreamDroid extends Application {
 	 *            Toast text
 	 */
 	protected void showToast(String text) {
+		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
+		toast.show();
+	}
+	
+	/**
+	 * @param text
+	 */
+	protected void showToast(CharSequence text){
 		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
 		toast.show();
 	}
