@@ -488,9 +488,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		String timerLoc = mTimer.getString(Timer.LOCATION);
 		for (int i = 0; i < DreamDroid.LOCATIONS.size(); i++) {
 			String loc = DreamDroid.LOCATIONS.get(i);
-
-			if (timerLoc.equals(loc)) {
-				mLocation.setSelection(i);
+			
+			if(timerLoc != null){
+				if (timerLoc.equals(loc)) {
+					mLocation.setSelection(i);
+				}
 			}
 		}
 
