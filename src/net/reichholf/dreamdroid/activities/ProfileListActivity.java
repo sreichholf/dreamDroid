@@ -46,10 +46,8 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-				
-		
-		mCursor = DreamDroid.getProfiles();
-			
+						
+		mCursor = DreamDroid.getProfiles();			
 		mAdapter = new SimpleCursorAdapter(this,
 				android.R.layout.two_line_list_item, mCursor, new String[] {
 						DreamDroid.KEY_PROFILE, DreamDroid.KEY_HOST },
@@ -63,8 +61,7 @@ public class ProfileListActivity extends ListActivity {
 					int position, long id) {
 				return onListItemLongClick(a, v, position, id);				
 			}
-		});
-		
+		});		
 	}
 
 	/* (non-Javadoc)
@@ -178,7 +175,6 @@ public class ProfileListActivity extends ListActivity {
 			dialog = null;
 		}
 		return dialog;
-
 	}
 
 	/*
@@ -193,7 +189,7 @@ public class ProfileListActivity extends ListActivity {
 			if (resultCode == RESULT_OK) {
 				mCursor.requery();
 				mAdapter.notifyDataSetChanged();
-				// Reload the current profile as it may be changed/altered
+				// Reload the current profile as it may have been changed/altered
 				DreamDroid.reloadActiveProfile();
 			}
 		}

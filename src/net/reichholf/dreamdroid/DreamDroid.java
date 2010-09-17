@@ -110,6 +110,10 @@ public class DreamDroid extends Application {
 			String profile = "Default";
 			Profile p = new Profile(profile, host, port, login, user, pass, ssl);
 			DreamDroid.addProfile(p);
+			
+			SharedPreferences.Editor editor = SP.edit();
+			editor.remove("currentProfile");
+			editor.commit();
 		}
 
 		int profileId = SP.getInt("currentProfile", 1);

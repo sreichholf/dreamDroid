@@ -106,20 +106,20 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			String title = null;
-
+			String title = null;			
+			mAdapter.notifyDataSetChanged();
+			
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.services) + " - "
 						+ mName;
-				
-				mAdapter.notifyDataSetChanged();				
+								
 				if(mList.size() == 0){
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}			
 			} else {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.services) + " - "
 						+ getText(R.string.get_content_error);
-
+								
 				if (mShc.hasError()) {
 					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}

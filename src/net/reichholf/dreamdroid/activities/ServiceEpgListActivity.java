@@ -76,12 +76,12 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 		 */
 		protected void onPostExecute(Boolean result) {
 			String title = null;
-
+			mAdapter.notifyDataSetChanged();
+			
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.epg) + " - "
 						+ mName;
 				
-				mAdapter.notifyDataSetChanged();				
 				if(mList.size() == 0){
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}

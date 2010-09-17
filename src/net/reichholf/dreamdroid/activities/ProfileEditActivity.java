@@ -137,6 +137,10 @@ public class ProfileEditActivity extends Activity {
 		mCurrentProfile.setPass(mPass.getText().toString());
 		
 		if(mCurrentProfile.getId() > 0){
+			if(mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())){
+				showToast( getText(R.string.host_empty) );
+				return;
+			}
 			if(DreamDroid.updateProfile(mCurrentProfile)){
 				showToast( getText(R.string.profile_updated) + " '" + mCurrentProfile.getProfile() + "'");
 				setResult(Activity.RESULT_OK);
@@ -159,6 +163,14 @@ public class ProfileEditActivity extends Activity {
 	 * @param toastText
 	 */
 	protected void showToast(String toastText) {
+		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
+		toast.show();
+	}
+	
+	/**
+	 * @param toastText
+	 */
+	protected void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}

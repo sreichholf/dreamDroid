@@ -53,8 +53,7 @@ public class DateTime {
 			sdfDateTime = new SimpleDateFormat("E, dd.MM. - HH:mm");
 		}
 		
-		Date date = DateTime.getDate(timestamp);
-		return sdfDateTime.format(date);
+		return DateTime.getFormattedDateString(sdfDateTime, timestamp);
 	}
 
 	/**
@@ -71,8 +70,7 @@ public class DateTime {
 			sdfDateTime = new SimpleDateFormat("E, dd.MM.yyyy - HH:mm");
 		}
 
-		Date date = DateTime.getDate(timestamp);
-		return sdfDateTime.format(date);
+		return DateTime.getFormattedDateString(sdfDateTime, timestamp);
 	}
 
 	/**
@@ -80,10 +78,8 @@ public class DateTime {
 	 * @return
 	 */
 	public static String getTimeString(String timestamp) {
-		SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
-
-		Date date = DateTime.getDate(timestamp);
-		return sdfTime.format(date);
+		SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");			
+		return DateTime.getFormattedDateString(sdfTime, timestamp);
 	}
 
 	/**
@@ -91,10 +87,29 @@ public class DateTime {
 	 * @return
 	 */
 	public static Date getDate(String timestamp) {
-		long s = new Long(timestamp);
-		s = s * 1000;
-		Date date = new Date(s);
-
-		return date;
+		try{
+			long s = new Long(timestamp);
+			s = s * 1000;
+			Date date = new Date(s);
+	
+			return date;
+		} catch(NumberFormatException e){
+			return null;
+		}
+	}
+	
+	/**
+	 * @param sdf
+	 * @param timestamp
+	 * @return
+	 */
+	public static String getFormattedDateString(SimpleDateFormat sdf, String timestamp){
+		Date date = DateTime.getDate(timestamp);
+		
+		if(date != null){
+			return sdf.format(date);
+		}
+		
+		return "-";
 	}
 }
