@@ -145,4 +145,10 @@
 	<string name="no_list_item">Es wurden keine Einträge gefunden!</string>
 	<string name="screenshot">Screenshot</string>
 	<string name="host_empty">Der Hostname darf nicht leer sein!</string>
+	<string name="standby">Standby</string>
+	<string name="powerup">Einschalten</string>
+	<string name="restart_gui">GUI-Neustart</string>
+	<string name="reboot">Neustarten</string>
+	<string name="shutdown">Herunterfahren</string>
+	<string name="powercontrol">Power Control</string>
 </resources>
