@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"	
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:orientation="vertical"
+	android:minWidth="200dip">
+	
+	<View 
+		android:id="@+id/divider"
+	    android:background="@drawable/black_white_gradient"
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:layout_marginBottom="3dp"/>
+	    
+	<ScrollView
+  		android:id="@+id/ScrollView"
+  		android:layout_width="fill_parent"
+  		android:layout_height="fill_parent"
+  		android:layout_marginBottom="75dp">
+  		
+		<LinearLayout		
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent" >
+						
+			<Button 
+				android:text="@string/standby" 
+				android:id="@+id/ButtonToggle" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content" />
+			<Button 
+				android:text="@string/restart_gui" 
+				android:id="@+id/ButtonGui" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content" />
+			<Button 
+				android:text="@string/reboot" 
+				android:id="@+id/ButtonReboot" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content" />
+			<Button 
+				android:text="@string/shutdown" 
+				android:id="@+id/ButtonShutdown" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content" />			
+		</LinearLayout>
+	</ScrollView>
+	<LinearLayout
+		android:orientation="vertical"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:layout_marginTop="-52dip"
+		android:gravity="center_horizontal">
+		<Button 
+			android:text="@string/close" 
+			android:id="@+id/ButtonClose" 
+			android:layout_width="wrap_content"		 
+			android:layout_height="wrap_content" 
+			android:drawableLeft="@drawable/ic_btn_close"
+			/>	
+	</LinearLayout>
+</LinearLayout>

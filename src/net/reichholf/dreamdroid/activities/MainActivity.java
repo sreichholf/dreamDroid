@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
+import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import android.app.Dialog;
 import android.content.Intent;
@@ -30,6 +31,7 @@ import android.widget.Spinner;
  */
 public class MainActivity extends AbstractHttpActivity {
 	public static final int DIALOG_SEND_MESSAGE_ID = 0;
+	public static final int DIALOG_SET_POWERSTATE_ID = 1;
 
 	public static final int ITEM_TIMER = 0;
 	public static final int ITEM_MOVIES = 1;
@@ -42,9 +44,14 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_CURRENT = 8;
 	public static final int ITEM_EPG_SEARCH = 9;
 	public static final int ITEM_SCREENSHOT = 10;
+	public static final int ITEM_TOGGLE_STANDBY = 11;
+	public static final int ITEM_RESTART_GUI = 12;
+	public static final int ITEM_REBOOT = 13;
+	public static final int ITEM_SHUTDOWN = 14;
+	public static final int ITEM_POWERSTATE_DIALOG = 15;
 	public static final int ITEM_EXIT = 99;
 
-	private Button mButtonInfo;
+	private Button mButtonPower;
 	private Button mButtonCurrent;
 	private Button mButtonMessage;
 	private Button mButtonMovies;
@@ -54,8 +61,10 @@ public class MainActivity extends AbstractHttpActivity {
 	private Button mButtonRemote;
 	private ImageButton mButtonExit;
 	private AsyncTask<ExtendedHashMap, String, Boolean> mSendMessageTask;
+	private AsyncTask<String, String, Boolean> mSetPowerStateTask;
 
-	private class SendMessageTask extends AsyncTask<ExtendedHashMap, String, Boolean> {
+	private class SendMessageTask extends
+			AsyncTask<ExtendedHashMap, String, Boolean> {
 		private ExtendedHashMap mResult;
 
 		/*
@@ -102,10 +111,58 @@ public class MainActivity extends AbstractHttpActivity {
 				mResult = new ExtendedHashMap();
 
 				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n"
+							+ mShc.getErrorText());
 				}
 			} else {
 				onMessageSent(mResult);
+			}
+
+		}
+	}
+
+	private class SetPowerStateTask extends AsyncTask<String, String, Boolean> {
+		private ExtendedHashMap mResult;
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected Boolean doInBackground(String... params) {
+			String xml = PowerState.set(mShc, params[0]);
+
+			if (xml != null) {
+				ExtendedHashMap result = Message.parseSimpleResult(xml);
+
+				String stateText = result.getString(SimpleResult.STATE_TEXT);
+
+				if (stateText != null) {
+					mResult = result;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if (!result) {
+				mResult = new ExtendedHashMap();
+
+				if (mShc.hasError()) {
+					showToast(getText(R.string.get_content_error) + "\n"
+							+ mShc.getErrorText());
+				}
+			} else {
+				onPowerStateSet((Boolean) mResult.get(PowerState.IN_STANDBY));
 			}
 
 		}
@@ -124,7 +181,7 @@ public class MainActivity extends AbstractHttpActivity {
 
 		setContentView(R.layout.main);
 
-		mButtonInfo = (Button) findViewById(R.id.ButtonInfo);
+		mButtonPower = (Button) findViewById(R.id.ButtonPower);
 		mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
 		mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
 		mButtonMovies = (Button) findViewById(R.id.ButtonMovies);
@@ -132,10 +189,9 @@ public class MainActivity extends AbstractHttpActivity {
 		mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
 		mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
 		mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
-
 		mButtonExit = (ImageButton) findViewById(R.id.ButtonExit);
 
-		registerOnClickListener(mButtonInfo, ITEM_INFO);
+		registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
 		registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
 		registerOnClickListener(mButtonMessage, ITEM_MESSAGE);
 		registerOnClickListener(mButtonMovies, ITEM_MOVIES);
@@ -153,10 +209,17 @@ public class MainActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-//		Will be reactivated as soon as there are some "Global settings"
-//		menu.add(0, ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(R.drawable.edit);
-		menu.add(0, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(0, ITEM_SCREENSHOT, 2, "Screenshot").setIcon(R.drawable.ic_menu_picture);
+		// Will be reactivated as soon as there are some "Global settings"
+		// menu.add(0, ITEM_SETTINGS, 0,
+		// getText(R.string.settings)).setIcon(R.drawable.edit);
+		menu.add(0, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(
+				android.R.drawable.ic_menu_preferences);
+		
+		menu.add(1, ITEM_SCREENSHOT, 2, R.string.screenshot).setIcon(
+				R.drawable.ic_menu_picture);
+		
+		menu.add(1, ITEM_INFO, 3, R.string.device_info).setIcon(
+				R.drawable.ic_menu_info);
 		return true;
 	}
 
@@ -186,7 +249,8 @@ public class MainActivity extends AbstractHttpActivity {
 			dialog.setContentView(R.layout.send_message_dialog);
 			dialog.setTitle(R.string.send_message);
 
-			Button buttonCancel = (Button) dialog.findViewById(R.id.ButtonCancel);
+			Button buttonCancel = (Button) dialog
+					.findViewById(R.id.ButtonCancel);
 			buttonCancel.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -198,18 +262,53 @@ public class MainActivity extends AbstractHttpActivity {
 			buttonSend.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					EditText text = (EditText) dialog.findViewById(R.id.EditTextMessage);
-					EditText timeout = (EditText) dialog.findViewById(R.id.EditTextTimeout);
+					EditText text = (EditText) dialog
+							.findViewById(R.id.EditTextMessage);
+					EditText timeout = (EditText) dialog
+							.findViewById(R.id.EditTextTimeout);
 
-					Spinner type = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
-					String t = new Integer(type.getSelectedItemPosition()).toString();
+					Spinner type = (Spinner) dialog
+							.findViewById(R.id.SpinnerMessageType);
+					String t = new Integer(type.getSelectedItemPosition())
+							.toString();
 
-					sendMessage(text.getText().toString(), t, timeout.getText().toString());
+					sendMessage(text.getText().toString(), t, timeout.getText()
+							.toString());
 				}
 			});
 
-			Spinner spinnerType = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
+			Spinner spinnerType = (Spinner) dialog
+					.findViewById(R.id.SpinnerMessageType);
 			spinnerType.setSelection(2);
+
+			break;
+
+		case DIALOG_SET_POWERSTATE_ID:
+			dialog = new Dialog(this);
+			dialog.setContentView(R.layout.powercontrol);
+			dialog.setTitle(R.string.powercontrol);
+
+			Button buttonToggle = (Button) dialog
+					.findViewById(R.id.ButtonToggle);
+			Button buttonGui = (Button) dialog.findViewById(R.id.ButtonGui);
+			Button buttonReboot = (Button) dialog
+					.findViewById(R.id.ButtonReboot);
+			Button buttonShutdown = (Button) dialog
+					.findViewById(R.id.ButtonShutdown);
+			Button buttonClose = (Button) dialog.findViewById(R.id.ButtonClose);
+
+			registerOnClickListener(buttonToggle, ITEM_TOGGLE_STANDBY);
+			registerOnClickListener(buttonGui, ITEM_RESTART_GUI);
+			registerOnClickListener(buttonReboot, ITEM_REBOOT);
+			registerOnClickListener(buttonShutdown, ITEM_SHUTDOWN);
+
+			buttonClose.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					dialog.dismiss();
+				}
+
+			});
 
 			break;
 		default:
@@ -279,7 +378,7 @@ public class MainActivity extends AbstractHttpActivity {
 			intent = new Intent(this, DreamDroidPreferenceActivity.class);
 			startActivity(intent);
 			break;
-			
+
 		case (ITEM_PROFILES):
 			intent = new Intent(this, ProfileListActivity.class);
 			startActivity(intent);
@@ -292,15 +391,52 @@ public class MainActivity extends AbstractHttpActivity {
 		case (ITEM_EPG_SEARCH):
 			onSearchRequested();
 			break;
-			
+
 		case (ITEM_SCREENSHOT):
 			intent = new Intent(this, ScreenShotActivity.class);
 			startActivity(intent);
 			break;
+
+		case (ITEM_TOGGLE_STANDBY):
+			setPowerState(PowerState.STATE_TOGGLE);
+			break;
+
+		case (ITEM_RESTART_GUI):
+			setPowerState(PowerState.STATE_GUI_RESTART);
+			break;
+
+		case (ITEM_REBOOT):
+			setPowerState(PowerState.STATE_SYSTEM_REBOOT);
+			break;
+
+		case (ITEM_SHUTDOWN):
+			setPowerState(PowerState.STATE_SHUTDOWN);
+			break;
+
+		case (ITEM_POWERSTATE_DIALOG):
+			showDialog(DIALOG_SET_POWERSTATE_ID);
+			break;
+
 		case (ITEM_EXIT):
 			finish();
 			break;
 		}
+	}
+
+	/**
+	 * @param state
+	 */
+	private void setPowerState(String state) {
+		if (mSetPowerStateTask != null) {
+			mSetPowerStateTask.cancel(true);
+		}
+
+		mSetPowerStateTask = new SetPowerStateTask();
+		mSetPowerStateTask.execute(state);
+	}
+
+	private void onPowerStateSet(boolean inStandby) {
+		// TODO - implement onPowerStateSet
 	}
 
 	/**

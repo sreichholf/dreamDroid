@@ -94,12 +94,12 @@
 					android:layout_weight="1"/>		
 				
 				<Button 
-					android:id="@+id/ButtonInfo" 
-					android:text="@string/device_info" 
+					android:id="@+id/ButtonPower" 
+					android:text="@string/powercontrol" 
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content" 
-					android:drawableLeft="@drawable/ic_menu_info" 
-					android:layout_weight="1" />				
+					android:drawableTop="@drawable/ic_menu_power_off" 
+					android:layout_weight="1" />			
 			</LinearLayout>	
 			
 			<TextView

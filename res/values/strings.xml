@@ -34,7 +34,7 @@
 	<string name="device_info">Device Information</string>
 	<string name="exit">Exit</string>
 	<string name="send_message">Send Message</string>
-	<string name="version_string">DreamDroid v0.6.2\n© 2010 Stephan Reichholf
+	<string name="version_string">DreamDroid v0.7\n© 2010 Stephan Reichholf
 	</string>
 	<string name="save">Save</string>
 	<string name="cancel">Cancel</string>
@@ -148,4 +148,11 @@
 	<string name="locations_default_fallback">Error loading locations, falling back to default:</string>
 	<string name="tags">Tags</string>
 	<string name="screenshot">Screenshot</string>
+	<string name="host_empty">The host name cannot be empty!</string>
+	<string name="standby">Standby</string>
+	<string name="powerup">Power Up</string>
+	<string name="restart_gui">Restart GUI</string>
+	<string name="reboot">Reboot</string>
+	<string name="shutdown">Shutdown</string>
+	<string name="powercontrol">Power Control</string>
 </resources>
