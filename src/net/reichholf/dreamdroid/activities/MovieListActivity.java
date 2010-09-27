@@ -21,10 +21,14 @@ import org.apache.http.message.BasicNameValuePair;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -35,20 +39,30 @@ import android.widget.Toast;
  * 
  */
 public class MovieListActivity extends AbstractHttpListActivity {
-	private String currentLocation;
-	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
+	public static final int MENU_LOCATIONS = 0;	
+	public static final int MENU_TAGS = 1;	
+	public static final int MENU_RELOAD = 2;
+
+	public static final int DIALOG_PICK_LOCATION_ID = 0;
+	public static final int DIALOG_PICK_TAGS_ID = 1;
+	public static final int DIALOG_DELETE_MOVIE_CONFIRM_ID = 2;
+
+	private boolean mTagsChanged;
+	private String mCurrentLocation;
+
+	private ArrayList<String> mSelectedTags;
+	private ArrayList<String> mOldTags;
+
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mDeleteProgress;
+	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
 	private AsyncTask<String, String, Boolean> mDeleteTask;
 
-	
-	//TODO Add Location Support
 	/**
 	 * @author sreichholf
 	 * 
 	 */
-	private class GetMovieListTask extends
-			AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
+	private class GetMovieListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -56,21 +70,37 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			publishProgress(getText(R.string.app_name) + "::"
-					+ getText(R.string.movies) + " - "
+			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
 					+ getText(R.string.fetching_data));
 
 			mList.clear();
 			String xml = Movie.getList(mShc, params);
 
 			if (xml != null) {
-				publishProgress(getText(R.string.app_name) + "::"
-						+ getText(R.string.movies) + " - "
+				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
 						+ getText(R.string.parsing));
 
 				if (Movie.parseList(xml, mList)) {
 					if (DreamDroid.LOCATIONS.size() == 0) {
-						DreamDroid.loadLocations(mShc);
+						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
+								+ getText(R.string.locations) + " - " + getText(R.string.fetching_data));
+
+						if (!DreamDroid.loadLocations(mShc)) {
+							// TODO Add Error-Msg when loadLocations fails
+						}
+
+						if (mCurrentLocation == null && DreamDroid.LOCATIONS.size() > 0) {
+							mCurrentLocation = DreamDroid.LOCATIONS.get(0);
+						}
+					}
+
+					if (DreamDroid.TAGS.size() == 0) {
+						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
+								+ getText(R.string.tags) + " - " + getText(R.string.fetching_data));
+
+						if (!DreamDroid.loadTags(mShc)) {
+							// TODO Add Error-Msg when loadTags fails
+						}
 					}
 
 					return true;
@@ -97,30 +127,30 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		protected void onPostExecute(Boolean result) {
 			String title = null;
 			mAdapter.notifyDataSetChanged();
-			
+
 			if (result) {
-				title = getText(R.string.app_name) + "::"
-						+ getText(R.string.movies);
-				
+				title = getText(R.string.app_name) + "::" + getText(R.string.movies);
+
 				if (mList.size() == 0) {
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}
 			} else {
-				title = getText(R.string.app_name) + "::"
-						+ getText(R.string.movies) + " - "
+				title = getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
 						+ getText(R.string.get_content_error);
 
 				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n"
-							+ mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
 			}
 
 			setTitle(title);
-
 		}
 	}
 
+	/**
+	 * @author sre
+	 * 
+	 */
 	private class DeleteMovieTask extends AsyncTask<String, String, Boolean> {
 		private ExtendedHashMap mResult;
 		private boolean mHttpError;
@@ -169,8 +199,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			if (!result) {
 				mResult = new ExtendedHashMap();
 				if (mHttpError) {
-					showToast(getText(R.string.get_content_error) + "\n"
-							+ mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
 			}
 			onMovieDeleted(mResult);
@@ -188,13 +217,12 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mAdapter = new SimpleAdapter(this, mList, R.layout.movie_list_item,
-				new String[] { Movie.TITLE, Movie.SERVICE_NAME,
-						Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE,
-						Movie.LENGTH }, new int[] { R.id.movie_title,
-						R.id.service_name, R.id.file_size, R.id.event_start,
-						R.id.event_duration });
+		mAdapter = new SimpleAdapter(this, mList, R.layout.movie_list_item, new String[] { Movie.TITLE,
+				Movie.SERVICE_NAME, Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE, Movie.LENGTH }, new int[] {
+				R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
 		setListAdapter(mAdapter);
+		mSelectedTags = new ArrayList<String>();
+
 		reload();
 	}
 
@@ -221,8 +249,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		mMovie = mList.get(position);
 
-		CharSequence[] actions = { getText(R.string.zap),
-				getText(R.string.delete) };
+		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete) };
 
 		AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 		adBuilder.setTitle(getText(R.string.pick_action));
@@ -234,7 +261,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 					zapTo(mMovie.getString(Movie.REFERENCE));
 					break;
 				case 1:
-					deleteMovieConfirm();
+					showDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
 					break;
 				default:
 					return;
@@ -243,6 +270,184 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		});
 
 		adBuilder.show();
+	}
+
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, MENU_LOCATIONS, 1, getText(R.string.locations)).setIcon(R.drawable.ic_menu_locations);
+		menu.add(0, MENU_TAGS, 1, getText(R.string.tags)).setIcon(R.drawable.ic_menu_tags);
+
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		return onItemClicked(item.getItemId());
+	}
+
+	private boolean onItemClicked(int id) {
+		switch (id) {
+		case MENU_RELOAD:
+			reload();
+			break;
+		case MENU_LOCATIONS:
+			showDialog(DIALOG_PICK_LOCATION_ID);
+			break;
+		case MENU_TAGS:
+			showDialog(DIALOG_PICK_TAGS_ID);
+			break;
+		default:
+			return false;
+		}
+
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		final Dialog dialog;
+		AlertDialog.Builder builder;
+
+		switch (id) {
+		case (DIALOG_DELETE_MOVIE_CONFIRM_ID):
+			builder = new AlertDialog.Builder(this);
+			builder.setTitle(mMovie.getString(Movie.TITLE)).setMessage(getText(R.string.delete_confirm))
+					.setCancelable(false)
+					.setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							deleteMovie();
+							dialog.dismiss();
+						}
+					}).setNegativeButton(getText(android.R.string.no), new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.dismiss();
+							removeDialog(DIALOG_PICK_LOCATION_ID);
+						}
+					});
+			dialog = builder.create();
+			break;
+
+		case (DIALOG_PICK_LOCATION_ID):
+			CharSequence[] locations = new CharSequence[DreamDroid.LOCATIONS.size()];
+
+			int selectedIndex = 0;
+			int lc = 0;
+			for (String location : DreamDroid.LOCATIONS) {
+				locations[lc] = location;
+				if (location.equals(mCurrentLocation)) {
+					selectedIndex = lc;
+				}
+				lc++;
+			}
+
+			builder = new AlertDialog.Builder(this);
+			builder.setTitle(getText(R.string.choose_location));
+
+			builder.setSingleChoiceItems(locations, selectedIndex, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String selectedLoc = DreamDroid.LOCATIONS.get(which);
+					if (!selectedLoc.equals(mCurrentLocation)) {
+						mCurrentLocation = DreamDroid.LOCATIONS.get(which);
+						reload();
+					}
+					dialog.dismiss();
+				}
+			});
+
+			dialog = builder.create();
+			break;
+
+		case (DIALOG_PICK_TAGS_ID):
+			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
+			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
+
+			int tc = 0;
+			for (String tag : DreamDroid.TAGS) {
+				tags[tc] = tag;
+
+				if (mSelectedTags.contains(tag)) {
+					selectedTags[tc] = true;
+				} else {
+					selectedTags[tc] = false;
+				}
+
+				tc++;
+			}
+
+			mTagsChanged = false;
+			mOldTags = new ArrayList<String>();
+			mOldTags.addAll(mSelectedTags);
+
+			builder = new AlertDialog.Builder(this);
+			builder.setTitle(getText(R.string.choose_tags));
+
+			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see android.content.DialogInterface.
+				 * OnMultiChoiceClickListener
+				 * #onClick(android.content.DialogInterface, int, boolean)
+				 */
+				@Override
+				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+					String tag = DreamDroid.TAGS.get(which);
+					mTagsChanged = true;
+					if (isChecked) {
+						if (!mSelectedTags.contains(tag)) {
+							mSelectedTags.add(tag);
+						}
+					} else {
+						int idx = mSelectedTags.indexOf(tag);
+						if (idx >= 0) {
+							mSelectedTags.remove(idx);
+						}
+					}
+				}
+
+			});
+
+			builder.setPositiveButton(android.R.string.ok, new Dialog.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if (mTagsChanged) {
+						reload();
+					}
+					dialog.dismiss();
+					removeDialog(DIALOG_PICK_TAGS_ID);
+				}
+
+			});
+
+			builder.setNegativeButton(android.R.string.cancel, new Dialog.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					mSelectedTags.clear();
+					mSelectedTags.addAll(mOldTags);
+					dialog.dismiss();
+					removeDialog(DIALOG_PICK_TAGS_ID);
+				}
+
+			});
+
+			dialog = builder.create();
+			break;
+		default:
+			dialog = super.onCreateDialog(id);
+		}
+
+		return dialog;
 	}
 
 	/**
@@ -260,35 +465,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			resulttext = result.getString(SimpleResult.STATE_TEXT);
 		}
 
-		Toast toast = Toast.makeText(getApplicationContext(), resulttext,
-				Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getApplicationContext(), resulttext, Toast.LENGTH_LONG);
 		toast.show();
-	}
-
-	/**
-	 * 
-	 */
-	private void deleteMovieConfirm() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-		builder.setTitle(mMovie.getString(Movie.TITLE))
-				.setMessage(getText(R.string.delete_confirm))
-				.setCancelable(false)
-				.setPositiveButton(getText(android.R.string.yes),
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								deleteMovie();
-								dialog.dismiss();
-							}
-						})
-				.setNegativeButton(getText(android.R.string.no),
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.dismiss();
-							}
-						});
-		AlertDialog alert = builder.create();
-		alert.show();
 	}
 
 	/**
@@ -304,8 +482,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			}
 		}
 
-		mDeleteProgress = ProgressDialog.show(this, "",
-				getText(R.string.deleting), true);
+		mDeleteProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
 
 		mDeleteTask = new DeleteMovieTask();
 		mDeleteTask.execute("");
@@ -338,10 +515,24 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 */
 	@SuppressWarnings("unchecked")
 	private void reload() {
+		mTagsChanged = false;
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		if (currentLocation != null) {
-			params.add(new BasicNameValuePair("dirname", currentLocation));
+		if (mCurrentLocation != null) {
+			params.add(new BasicNameValuePair("dirname", mCurrentLocation));
+		}
+
+		if (mSelectedTags.size() > 0) {
+			String tags = "";
+			for (String tag : mSelectedTags) {
+				if ("".equals(tags)) {
+					tags = tags.concat(tag);
+				} else {
+					tags = tags.concat(",").concat(tag);
+				}
+			}
+
+			params.add(new BasicNameValuePair("tag", tags));
 		}
 
 		if (mListTask != null) {

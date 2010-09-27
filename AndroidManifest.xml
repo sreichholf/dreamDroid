@@ -3,7 +3,7 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="net.reichholf.dreamdroid" 
 	android:installLocation="auto" 
-	android:versionName="0.7" android:versionCode="27">
+	android:versionCode="28" android:versionName="0.7pre">
 	
 	<uses-sdk 
 		android:minSdkVersion="4"

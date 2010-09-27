@@ -19,7 +19,7 @@
 	<string name="timer">Timer</string>
 	<string name="service">Kanal</string>
 	<string name="afterevent">Anschlussereignis</string>
-	<string name="location">Ziel</string>
+	<string name="location">Ort</string>
 	<string-array name="afterevents">
 		<item>Keines</item>
 		<item>Standby</item>
@@ -90,7 +90,7 @@
 	<string name="mo_to_fr">Werktags</string>
 	<string name="daily">Täglich</string>
 	<string name="new_timer">Neuer Timer</string>
-	<string name="locations">Ziele</string>
+	<string name="locations">Orte</string>
 	<string name="gui_version">GUI Version</string>
 	<string name="image_version">Image Version</string>
 	<string name="interface_version">Interface Version</string>
@@ -151,4 +151,6 @@
 	<string name="reboot">Neustarten</string>
 	<string name="shutdown">Herunterfahren</string>
 	<string name="powercontrol">Power Control</string>
+	<string name="choose_tags">Tags wählen</string>
+	<string name="choose_location">Ort wählen</string>
 </resources>

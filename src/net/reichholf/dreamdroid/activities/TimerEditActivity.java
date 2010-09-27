@@ -297,6 +297,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		final Dialog dialog;

@@ -242,7 +242,14 @@ public class DreamDroid extends Application {
 	public static boolean reloadActiveProfile() {
 		return setActiveProfile(PROFILE.getId());
 	}
-
+	
+	/**
+	 * @return
+	 */
+	public static void checkInterfaceVersion(){
+		
+	}
+	
 	/**
 	 * @param shc
 	 */
