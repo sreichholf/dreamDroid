@@ -127,9 +127,10 @@ public class SimpleHttpClient {
 		}
 		
 		String url = buildUrl(uri, parameters);
-		HttpGet get = new HttpGet(url);
+		
 
 		try {
+			HttpGet get = new HttpGet(url);
 			HttpResponse resp = mDhc.execute(get, mContext);
 			StatusLine s = resp.getStatusLine();
 
@@ -149,6 +150,11 @@ public class SimpleHttpClient {
 				mError = true;
 				return false;
 			}
+		} catch (IllegalArgumentException e) {
+			Log.e(this.getClass().getSimpleName(), e.toString());
+			mErrorText = e.toString();
+			mError = true;
+			return false;
 		} catch (ClientProtocolException e) {
 			Log.e(this.getClass().getSimpleName(), e.toString());
 
@@ -162,6 +168,7 @@ public class SimpleHttpClient {
 			mError = true;
 			return false;
 		}
+		
 
 		return false;
 	}
@@ -191,7 +198,7 @@ public class SimpleHttpClient {
 	 * 
 	 */
 	public void applyConfig() {
-		mHostname = DreamDroid.PROFILE.getHost();
+		mHostname = DreamDroid.PROFILE.getHost().trim();
 		mPort = new Integer(DreamDroid.PROFILE.getPort()).toString();
 		mLogin = DreamDroid.PROFILE.isLogin();
 		mSsl = DreamDroid.PROFILE.isSsl();

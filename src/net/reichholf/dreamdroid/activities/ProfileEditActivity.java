@@ -130,7 +130,7 @@ public class ProfileEditActivity extends Activity {
 	 */
 	private void save() {
 		mCurrentProfile.setProfile(mProfile.getText().toString());
-		mCurrentProfile.setHost(mHost.getText().toString());
+		mCurrentProfile.setHost(mHost.getText().toString().trim());
 		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());		
 		mCurrentProfile.setLogin(mLogin.isChecked());
 		mCurrentProfile.setUser(mUser.getText().toString());
