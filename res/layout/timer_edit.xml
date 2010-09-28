@@ -153,7 +153,24 @@
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"/>
 		
-		
+			<TextView
+		 		android:id="@+id/TextViewServiceTitle"
+		 		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/tags" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>
+							
+			<TextView
+		 		android:id="@+id/TextViewTags"
+		 		android:text="@+id/TextViewTags"
+		 		android:layout_width="fill_parent"
+		 		android:background="@android:drawable/list_selector_background"
+				android:clickable="true" 
+				android:gravity="center_vertical"
+				android:layout_height="50dip" 				
+				android:paddingLeft="3dip" 
+				android:textSize="20dip"/>				
 		</LinearLayout>
 		
 	</ScrollView>

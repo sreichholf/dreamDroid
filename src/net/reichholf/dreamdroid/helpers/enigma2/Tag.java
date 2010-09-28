@@ -43,4 +43,21 @@ public class Tag {
 
 		return false;
 	}
+	
+	/**
+	 * @param selectedTags
+	 * @return
+	 */
+	public static String implodeTags(ArrayList<String> selectedTags){
+		String tags = "";
+		for (String tag : selectedTags) {
+			if ("".equals(tags)) {
+				tags = tags.concat(tag);
+			} else {
+				tags = tags.concat(",").concat(tag);
+			}
+		}
+		
+		return tags;
+	}
 }

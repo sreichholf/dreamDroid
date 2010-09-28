@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 
 import org.apache.http.NameValuePair;
@@ -46,10 +47,10 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	public static final int DIALOG_PICK_LOCATION_ID = 0;
 	public static final int DIALOG_PICK_TAGS_ID = 1;
 	public static final int DIALOG_DELETE_MOVIE_CONFIRM_ID = 2;
-
-	private boolean mTagsChanged;
+	
 	private String mCurrentLocation;
-
+	
+	private boolean mTagsChanged;
 	private ArrayList<String> mSelectedTags;
 	private ArrayList<String> mOldTags;
 
@@ -220,7 +221,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		mAdapter = new SimpleAdapter(this, mList, R.layout.movie_list_item, new String[] { Movie.TITLE,
 				Movie.SERVICE_NAME, Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE, Movie.LENGTH }, new int[] {
 				R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
-		setListAdapter(mAdapter);
+
+		setListAdapter(mAdapter);		
 		mSelectedTags = new ArrayList<String>();
 
 		reload();
@@ -523,15 +525,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		}
 
 		if (mSelectedTags.size() > 0) {
-			String tags = "";
-			for (String tag : mSelectedTags) {
-				if ("".equals(tags)) {
-					tags = tags.concat(tag);
-				} else {
-					tags = tags.concat(",").concat(tag);
-				}
-			}
-
+			String tags = Tag.implodeTags(mSelectedTags);
 			params.add(new BasicNameValuePair("tag", tags));
 		}
 

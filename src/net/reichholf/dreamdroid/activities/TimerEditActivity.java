@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -17,6 +18,7 @@ import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 
 import android.app.AlertDialog;
@@ -40,6 +42,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
 //TODO Add Tag Support
 /**
  * @author sreichholf
@@ -52,6 +55,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	public static final int ITEM_PICK_START = 3;
 	public static final int ITEM_PICK_END = 4;
 	public static final int ITEM_PICK_REPEATED = 5;
+	public static final int ITEM_PICK_TAGS = 6;
 
 	public static final int PICK_SERVICE_REQUEST = 0;
 
@@ -59,14 +63,19 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	public static final int DIALOG_PICK_BEGIN_ID = 1;
 	public static final int DIALOG_PICK_END_ID = 2;
 	public static final int DIALOG_PICK_REPEATED_ID = 3;
+	public static final int DIALOG_PICK_TAGS_ID = 4;
 
 	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
 
-	private boolean[] mCheckedDays = { false, false, false, false, false,
-			false, false };
+	private boolean[] mCheckedDays = { false, false, false, false, false, false, false };
+
+	private boolean mTagsChanged;
+	private ArrayList<String> mSelectedTags;
+	private ArrayList<String> mOldTags;
 
 	private ExtendedHashMap mTimer;
 	private ExtendedHashMap mTimerOld;
+
 	private EditText mName;
 	private EditText mDescription;
 	private CheckBox mEnabled;
@@ -76,13 +85,14 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	private TextView mEnd;
 	private TextView mService;
 	private TextView mRepeatings;
+	private TextView mTags;
 	private Button mSave;
 	private Button mCancel;
 	private ProgressDialog mSaveProgress;
+
 	private SaveTimerTask mSaveTask;
 
-	private class SaveTimerTask extends
-			AsyncTask<ExtendedHashMap, Void, Boolean> {
+	private class SaveTimerTask extends AsyncTask<ExtendedHashMap, Void, Boolean> {
 		private ExtendedHashMap mResult;
 		private TimerEditActivity activity;
 
@@ -101,8 +111,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			SimpleHttpClient shc = (SimpleHttpClient) params[0].get("shc");
 			ExtendedHashMap timer = (ExtendedHashMap) params[0].get("timer");
 
-			ExtendedHashMap timerOld = (ExtendedHashMap) params[0]
-					.get("timerOld");
+			ExtendedHashMap timerOld = (ExtendedHashMap) params[0].get("timerOld");
 
 			String xml = Timer.save(shc, timer, timerOld);
 
@@ -129,8 +138,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		protected void onPostExecute(Boolean result) {
 			if (!result) {
 				if (mShc.hasError()) {
-					activity.showToast(getText(R.string.get_content_error)
-							+ "\n" + mShc.getErrorText());
+					activity.showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
 			} else {
 				if (mResult == null) {
@@ -165,6 +173,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mEnd = (TextView) findViewById(R.id.TextViewEnd);
 		mRepeatings = (TextView) findViewById(R.id.TextViewRepeated);
 		mService = (TextView) findViewById(R.id.TextViewService);
+		mTags = (TextView) findViewById(R.id.TextViewTags);
 
 		mSave = (Button) findViewById(R.id.ButtonSave);
 		mCancel = (Button) findViewById(R.id.ButtonCancel);
@@ -176,11 +185,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		registerOnClickListener(mStart, ITEM_PICK_START);
 		registerOnClickListener(mEnd, ITEM_PICK_END);
 		registerOnClickListener(mRepeatings, ITEM_PICK_REPEATED);
+		registerOnClickListener(mTags, ITEM_PICK_TAGS);
 
 		mAfterevent.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View v,
-					int position, long id) {
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
 				mTimer.put(Timer.AFTER_EVENT, new Integer(position).toString());
 			}
 
@@ -193,8 +202,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		mLocation.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View v,
-					int position, long id) {
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
 				mTimer.put(Timer.LOCATION, DreamDroid.LOCATIONS.get(position));
 			}
 
@@ -209,8 +217,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		// Initialize if savedInstanceState won't
 		if (savedInstanceState == null) {
-			HashMap<String, Object> map = (HashMap<String, Object>) getIntent()
-					.getExtras().get(sData);
+			HashMap<String, Object> map = (HashMap<String, Object>) getIntent().getExtras().get(sData);
 			ExtendedHashMap data = new ExtendedHashMap();
 			data.putAll(map);
 
@@ -223,6 +230,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 				mTimerOld = null;
 			}
 
+			mSelectedTags = new ArrayList<String>();
 			reload();
 		}
 	}
@@ -239,8 +247,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		if (requestCode == PICK_SERVICE_REQUEST) {
 			if (resultCode == RESULT_OK) {
 				ExtendedHashMap map = new ExtendedHashMap();
-				map.putAll((HashMap<String, Object>) data
-						.getSerializableExtra(sData));
+				map.putAll((HashMap<String, Object>) data.getSerializableExtra(sData));
 
 				mTimer.put(Timer.SERVICE_NAME, map.getString(Service.NAME));
 				mTimer.put(Timer.REFERENCE, map.getString(Service.REFERENCE));
@@ -289,15 +296,16 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		super.onRestoreInstanceState(savedInstanceState);
 
 		mTimer = (ExtendedHashMap) savedInstanceState.getSerializable("timer");
-		mTimerOld = (ExtendedHashMap) savedInstanceState
-				.getSerializable("timerOld");
+		mTimerOld = (ExtendedHashMap) savedInstanceState.getSerializable("timerOld");
 
 		if (mTimer != null) {
 			reload();
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateDialog(int)
 	 */
 	@Override
@@ -311,8 +319,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		switch (id) {
 		case (DIALOG_SAVE_TIMER_ID):
-			dialog = ProgressDialog.show(this, "", getText(R.string.saving),
-					true);
+			dialog = ProgressDialog.show(this, "", getText(R.string.saving), true);
 			break;
 
 		case (DIALOG_PICK_BEGIN_ID):
@@ -361,22 +368,99 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			CharSequence[] days = getResources().getTextArray(R.array.weekdays);
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(getText(R.string.choose_days));
-			builder.setMultiChoiceItems(days, mCheckedDays,
-					new OnMultiChoiceClickListener() {
+			builder.setMultiChoiceItems(days, mCheckedDays, new OnMultiChoiceClickListener() {
 
-						@Override
-						public void onClick(DialogInterface dialog, int which,
-								boolean isChecked) {
-							mCheckedDays[which] = isChecked;
+				@Override
+				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+					mCheckedDays[which] = isChecked;
 
-							String text = setRepeated(mCheckedDays, mTimer);
-							mRepeatings.setText(text);
+					String text = setRepeated(mCheckedDays, mTimer);
+					mRepeatings.setText(text);
 
-						}
+				}
 
-					});
+			});
 			dialog = builder.create();
 
+			break;
+
+		case (DIALOG_PICK_TAGS_ID):
+			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
+			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
+
+			int tc = 0;
+			for (String tag : DreamDroid.TAGS) {
+				tags[tc] = tag;
+
+				if (mSelectedTags.contains(tag)) {
+					selectedTags[tc] = true;
+				} else {
+					selectedTags[tc] = false;
+				}
+
+				tc++;
+			}
+
+			mTagsChanged = false;
+			mOldTags = new ArrayList<String>();
+			mOldTags.addAll(mSelectedTags);
+
+			builder = new AlertDialog.Builder(this);
+			builder.setTitle(getText(R.string.choose_tags));
+
+			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
+				/*
+				 * (non-Javadoc)
+				 * 
+				 * @see android.content.DialogInterface.
+				 * OnMultiChoiceClickListener
+				 * #onClick(android.content.DialogInterface, int, boolean)
+				 */
+				@Override
+				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+					String tag = DreamDroid.TAGS.get(which);
+					mTagsChanged = true;
+					if (isChecked) {
+						if (!mSelectedTags.contains(tag)) {
+							mSelectedTags.add(tag);
+						}
+					} else {
+						int idx = mSelectedTags.indexOf(tag);
+						if (idx >= 0) {
+							mSelectedTags.remove(idx);
+						}
+					}
+				}
+
+			});
+
+			builder.setPositiveButton(android.R.string.ok, new Dialog.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if (mTagsChanged) {
+						// TODO Update current Tags
+						String tags = Tag.implodeTags(mSelectedTags);
+						mTimer.put(Timer.TAGS, tags);
+						mTags.setText(tags);
+					}
+					dialog.dismiss();
+					removeDialog(DIALOG_PICK_TAGS_ID);
+				}
+
+			});
+
+			builder.setNegativeButton(android.R.string.cancel, new Dialog.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					mSelectedTags.clear();
+					mSelectedTags.addAll(mOldTags);
+					dialog.dismiss();
+					removeDialog(DIALOG_PICK_TAGS_ID);
+				}
+
+			});
+
+			dialog = builder.create();
 			break;
 		default:
 			dialog = null;
@@ -403,30 +487,32 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 */
 	private void onItemClicked(int id) {
 		switch (id) {
-		case (ITEM_SAVE):
+		case ITEM_SAVE:
 			saveTimer();
 			break;
 
-		case (ITEM_CANCEL):
+		case ITEM_CANCEL:
 			cancel();
 			break;
 
-		case (ITEM_PICK_SERVICE):
+		case ITEM_PICK_SERVICE:
 			pickService();
 			break;
 
-		case (ITEM_PICK_START):
+		case ITEM_PICK_START:
 			showDialog(DIALOG_PICK_BEGIN_ID);
 			break;
 
-		case (ITEM_PICK_END):
+		case ITEM_PICK_END:
 			showDialog(DIALOG_PICK_END_ID);
 			break;
 
-		case (ITEM_PICK_REPEATED):
+		case ITEM_PICK_REPEATED:
 			showDialog(DIALOG_PICK_REPEATED_ID);
 			break;
 
+		case ITEM_PICK_TAGS:
+			showDialog(DIALOG_PICK_TAGS_ID);
 		default:
 			return;
 		}
@@ -453,46 +539,43 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 */
 	private void reload() {
 		// Name
-		mName.setText(mTimer.getString("name"));
+		mName.setText(mTimer.getString(Timer.NAME));
 		mName.setHint(R.string.title);
 
 		// Description
-		mDescription.setText(mTimer.getString("description"));
+		mDescription.setText(mTimer.getString(Timer.DESCRIPTION));
 		mDescription.setHint(R.string.description);
 
 		// Enabled
-		int disabled = new Integer(mTimer.getString("disabled"));
+		int disabled = new Integer(mTimer.getString(Timer.DISABLED));
 		if (disabled == 0) {
 			mEnabled.setChecked(true);
 		} else {
 			mEnabled.setChecked(false);
 		}
 
-		mService.setText(mTimer.getString("servicename"));
+		mService.setText(mTimer.getString(Timer.SERVICE_NAME));
 
 		// Afterevents
-		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter
-				.createFromResource(this, R.array.afterevents,
-						android.R.layout.simple_spinner_item);
-		aaAfterevent
-				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(this, R.array.afterevents,
+				android.R.layout.simple_spinner_item);
+		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
 
-		int aeValue = new Integer(mTimer.getString("afterevent")).intValue();
+		int aeValue = new Integer(mTimer.getString(Timer.AFTER_EVENT)).intValue();
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
-		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(this,
-				android.R.layout.simple_spinner_item, DreamDroid.LOCATIONS);
-		aaLocations
-				.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
+				DreamDroid.LOCATIONS);
+		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
 
 		String timerLoc = mTimer.getString(Timer.LOCATION);
 		for (int i = 0; i < DreamDroid.LOCATIONS.size(); i++) {
 			String loc = DreamDroid.LOCATIONS.get(i);
-			
-			if(timerLoc != null){
+
+			if (timerLoc != null) {
 				if (timerLoc.equals(loc)) {
 					mLocation.setSelection(i);
 				}
@@ -500,8 +583,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 
 		// Start and Endtime
-		int begin = new Integer(mTimer.getString("begin"));
-		int end = new Integer(mTimer.getString("end"));
+		int begin = new Integer(mTimer.getString(Timer.BEGIN));
+		int end = new Integer(mTimer.getString(Timer.END));
 		long b = ((long) begin) * 1000;
 		long e = ((long) end) * 1000;
 		Date dateBegin = new Date(b);
@@ -511,9 +594,15 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mEnd.setText(dateEnd.toLocaleString());
 
 		// Repeatings
-		int repeatedValue = new Integer(mTimer.getString("repeated"));
+		int repeatedValue = new Integer(mTimer.getString(Timer.REPEATED));
 		String repeatedText = getRepeated(repeatedValue);
 		mRepeatings.setText(repeatedText);
+
+		mTags.setText(mTimer.getString(Timer.TAGS));
+		String[] tags = mTimer.getString(Timer.TAGS).split(",");
+		for (String tag : tags) {
+			mSelectedTags.add(tag);
+		}
 	}
 
 	/**
@@ -523,8 +612,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 */
 	private String getRepeated(int value) {
 		String text = "";
-		CharSequence[] daysShort = getResources().getTextArray(
-				R.array.weekdays_short);
+		CharSequence[] daysShort = getResources().getTextArray(R.array.weekdays_short);
 
 		for (int i = 0; i < sRepeatedValues.length; i++) {
 			boolean checked = false;
@@ -555,8 +643,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	private String setRepeated(boolean[] checkedDays, ExtendedHashMap timer) {
 		String text = "";
 		int value = 0;
-		CharSequence[] daysShort = getResources().getTextArray(
-				R.array.weekdays_short);
+		CharSequence[] daysShort = getResources().getTextArray(R.array.weekdays_short);
 
 		for (int i = 0; i < checkedDays.length; i++) {
 			if (checkedDays[i]) {
@@ -598,8 +685,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			mTimer.put(Timer.DISABLED, "1");
 		}
 
-		String ae = new Integer(mAfterevent.getSelectedItemPosition())
-				.toString();
+		String ae = new Integer(mAfterevent.getSelectedItemPosition()).toString();
 		mTimer.put(Timer.AFTER_EVENT, ae);
 	}
 
@@ -665,8 +751,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
 		TimePicker tp = (TimePicker) dialog.findViewById(R.id.TimePicker);
 
-		dp.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
-				cal.get(Calendar.DAY_OF_MONTH));
+		dp.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
 		tp.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
 		tp.setCurrentMinute(cal.get(Calendar.MINUTE));
 	}
