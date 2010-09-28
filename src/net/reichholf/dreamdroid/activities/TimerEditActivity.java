@@ -597,9 +597,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		int repeatedValue = new Integer(mTimer.getString(Timer.REPEATED));
 		String repeatedText = getRepeated(repeatedValue);
 		mRepeatings.setText(repeatedText);
-
-		mTags.setText(mTimer.getString(Timer.TAGS));
-		String[] tags = mTimer.getString(Timer.TAGS).split(",");
+		
+		String text = mTimer.getString(Timer.TAGS);
+		if(text == null){
+			text = "";
+		}
+		mTags.setText(text);
+		String[] tags = text.split(",");
 		for (String tag : tags) {
 			mSelectedTags.add(tag);
 		}
