@@ -31,7 +31,12 @@ import android.widget.Toast;
 public class DreamDroid extends Application {
 	public static final String ACTION_NEW = "dreamdroid.intent.action.NEW";
 	public static final String LOG_TAG = "net.reichholf.dreamdroid";
-
+	
+	public static final String PREFS_KEY_QUICKZAP = "quickzap";
+	public static final String PREFS_KEY_DEFAULT_BOUQUET_REF = "default_bouquet_ref";
+	public static final String PREFS_KEY_DEFAULT_BOUQUET_NAME = "default_bouquet_name";
+	public static final String PREFS_KEY_DEFAULT_BOUQUET_IS_LIST = "default_bouquet_is_bouquet_list";
+	
 	public static SQLiteDatabase DB;
 	public static SharedPreferences SP;
 	public static Profile PROFILE;

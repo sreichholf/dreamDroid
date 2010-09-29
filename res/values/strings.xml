@@ -157,4 +157,8 @@
 	<string name="powercontrol">Power Control</string>
 	<string name="choose_tags">Choose tags</string>
 	<string name="choose_location">Choose location</string>
+	<string name="bouquet_overview">Bouquet overview</string>
+	<string name="set_default">Set as default</string>
+	<string name="default_bouquet_set_to">Default bouquet has been set to: </string>	
+	<string name="default_bouquet_not_set">Default bouquet could not be set!</string>
 </resources>

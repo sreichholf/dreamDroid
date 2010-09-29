@@ -274,6 +274,9 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		adBuilder.show();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_LOCATIONS, 1, getText(R.string.locations)).setIcon(R.drawable.ic_menu_locations);
@@ -292,6 +295,10 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		return onItemClicked(item.getItemId());
 	}
 
+	/**
+	 * @param id
+	 * @return
+	 */
 	private boolean onItemClicked(int id) {
 		switch (id) {
 		case MENU_RELOAD:

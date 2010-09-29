@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -22,6 +23,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -37,7 +39,9 @@ import android.widget.Toast;
  * 
  */
 public class ServiceListActivity extends AbstractHttpEventListActivity {
-	public static final int MENU_HOME = 0;
+	public static final int MENU_CLOSE = 0;
+	public static final int MENU_OVERVIEW = 1;
+	public static final int MENU_SET_AS_DEFAULT = 2;
 
 	private String mReference;
 	private String mName;
@@ -148,10 +152,14 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 				mPickMode = false;
 			}
 
-			mIsBouquetList = true;
+			// mIsBouquetList = true;
 
-			mReference = getDataForKey(Event.SERVICE_REFERENCE, "default");
-			mName = getDataForKey(Event.SERVICE_NAME, "Overview");
+			String ref = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "default");
+			String name = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, (String) getText(R.string.bouquet_overview));
+			mIsBouquetList = DreamDroid.SP.getBoolean(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_IS_LIST, true);
+
+			mReference = getDataForKey(Event.SERVICE_REFERENCE, ref);
+			mName = getDataForKey(Event.SERVICE_NAME, name);
 
 			mHistory = new ArrayList<ExtendedHashMap>();
 			ExtendedHashMap map = new ExtendedHashMap();
@@ -205,7 +213,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 		mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
 		mReference = getDataForKey(Event.SERVICE_REFERENCE, "default");
-		mName = getDataForKey(Event.SERVICE_NAME, "Overview");
+		mName = getDataForKey(Event.SERVICE_NAME, (String) getText(R.string.bouquet_overview));
 		mIsBouquetList = savedInstanceState.getBoolean("isbouquetlist");
 		mPickMode = savedInstanceState.getBoolean("pickMode");
 
@@ -246,32 +254,37 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		int index = mHistory.size() - 1;
-		ExtendedHashMap map = (mHistory.get(index));
+		// back to standard back-button-behaviour when we're already at root level
+		if (!"default".equals(mReference)) {
+			int index = mHistory.size() - 1;
+			if (index >= 0) {
+				ExtendedHashMap map = (mHistory.get(index));
 
-		String oldref = (String) map.get(Event.SERVICE_REFERENCE);
-		String oldname = (String) map.get(Event.SERVICE_NAME);
+				String oldref = (String) map.get(Event.SERVICE_REFERENCE);
+				String oldname = (String) map.get(Event.SERVICE_NAME);
 
-		if ((keyCode == KeyEvent.KEYCODE_BACK) && !mReference.equals(oldref)) {
-			// there is a download Task running, the list may have already been
-			// altered
-			// so we let that request finish
+				if ((keyCode == KeyEvent.KEYCODE_BACK) && !mReference.equals(oldref)) {
+					// there is a download Task running, the list may have
+					// already been altered so we let that request finish
 
-			if (!isListTaskRunning()) {
-				mReference = String.valueOf(oldref);
-				mName = String.valueOf(oldname);
-				mHistory.remove(index);
-				if (isBouquetReference(mReference)) {
-					mIsBouquetList = true;
+					if (!isListTaskRunning()) {
+						mReference = String.valueOf(oldref);
+						mName = String.valueOf(oldname);
+
+						mHistory.remove(index);
+
+						if (isBouquetReference(mReference)) {
+							mIsBouquetList = true;
+						}
+						reload();
+
+					} else {
+						showToast(getText(R.string.wait_request_finished));
+					}
+					return true;
 				}
-				reload();
-
-			} else {
-				showToast(getText(R.string.wait_request_finished));
 			}
-			return true;
 		}
-
 		return super.onKeyDown(keyCode, event);
 	}
 
@@ -358,7 +371,10 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, MENU_HOME, 0, getText(R.string.close)).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+		menu.add(0, MENU_SET_AS_DEFAULT, 0, getText(R.string.set_default)).setIcon(android.R.drawable.ic_menu_set_as);
+		menu.add(0, MENU_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(R.drawable.ic_menu_list_overview);
+		menu.add(0, MENU_CLOSE, 0, getText(R.string.close)).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+
 		return true;
 	}
 
@@ -370,9 +386,25 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case MENU_HOME:
+		case MENU_CLOSE:
 			finish();
 			return true;
+		case MENU_OVERVIEW:
+			mReference = "default";
+			mName = (String) getText(R.string.bouquet_overview);
+			reload();
+			break;
+		case MENU_SET_AS_DEFAULT:
+			Editor editor = DreamDroid.SP.edit();
+			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mReference);
+			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mName);
+			editor.putBoolean(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_IS_LIST, mIsBouquetList);
+
+			if (editor.commit()) {
+				showToast(getText(R.string.default_bouquet_set_to) + " '" + mName + "'");
+			} else {
+				showToast(getText(R.string.default_bouquet_not_set));
+			}
 		}
 		return false;
 	}

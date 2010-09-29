@@ -24,6 +24,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.Toast;
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -95,7 +96,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		mEditor = mPrefs.edit();
-		mQuickZap = mPrefs.getBoolean("quickzap", false);
+		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
 		
 		reinit();
 	}
@@ -159,7 +160,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	private void setLayout(boolean b){
 		if(mQuickZap != b){
 			mQuickZap = b;
-			mEditor.putBoolean("quickzap", mQuickZap);
+			mEditor.putBoolean(DreamDroid.PREFS_KEY_QUICKZAP, mQuickZap);
 			mEditor.commit();
 			
 			reinit();

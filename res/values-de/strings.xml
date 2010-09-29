@@ -153,4 +153,8 @@
 	<string name="powercontrol">Power Control</string>
 	<string name="choose_tags">Tags wählen</string>
 	<string name="choose_location">Ort wählen</string>
+	<string name="bouquet_overview">Bouquet-Übersicht</string>
+	<string name="set_default">Als Standard nehmen</string>
+	<string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>	
+	<string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>	
 </resources>

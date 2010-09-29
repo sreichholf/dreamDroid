@@ -351,7 +351,6 @@ public class MainActivity extends AbstractHttpActivity {
 		case (ITEM_SERVICES):
 			intent = new Intent(this, ServiceListActivity.class);
 			ExtendedHashMap map = new ExtendedHashMap();
-			map.put("reference", "default");
 
 			intent.putExtra(sData, map);
 			intent.setAction(Intent.ACTION_VIEW);
