@@ -377,6 +377,21 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 		return true;
 	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPrepareOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onPrepareOptionsMenu (Menu menu){
+		MenuItem overview = menu.getItem(1);
+
+		if(mReference.equals("default")){
+			overview.setEnabled(false);
+		} else {
+			overview.setEnabled(true);
+		}
+		return true;
+	}
 
 	/*
 	 * (non-Javadoc)
