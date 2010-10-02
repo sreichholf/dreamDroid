@@ -26,6 +26,9 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 
 /**
+ * This is where all begins.
+ * It's the "main menu activity" which acts as central navigation instance
+ * 
  * @author sreichholf
  * 
  */
@@ -63,6 +66,12 @@ public class MainActivity extends AbstractHttpActivity {
 	private AsyncTask<ExtendedHashMap, String, Boolean> mSendMessageTask;
 	private AsyncTask<String, String, Boolean> mSetPowerStateTask;
 
+	/**
+	 * <code>AsyncTask</code> to send a message to the target device
+	 * 
+	 * @author sre
+	 *
+	 */
 	private class SendMessageTask extends
 			AsyncTask<ExtendedHashMap, String, Boolean> {
 		private ExtendedHashMap mResult;
@@ -121,6 +130,11 @@ public class MainActivity extends AbstractHttpActivity {
 		}
 	}
 
+	/**
+	 * <code>AsyncTask</code> to set the powerstate of the target device
+	 * @author sre
+	 *
+	 */
 	private class SetPowerStateTask extends AsyncTask<String, String, Boolean> {
 		private ExtendedHashMap mResult;
 
@@ -319,8 +333,10 @@ public class MainActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param v
-	 * @param id
+	 * Register an <code>OnClickListener</code> for a view and a specific item ID  (<code>ITEM_*</code> statics)
+	 * 
+	 * @param v The view an OnClickListener should be registered for
+	 * @param id The id used to identify the item clicked (<code>ITEM_*</code> statics)
 	 */
 	private void registerOnClickListener(View v, final int id) {
 		v.setOnClickListener(new OnClickListener() {
@@ -332,7 +348,9 @@ public class MainActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param id
+	 * Execute the proper action for a item ID (<code>ITEM_*</code> statics)
+	 * 
+	 * @param id The id used to identify the item clicked (<code>ITEM_*</code> statics)
 	 */
 	private void onItemClicked(int id) {
 		Intent intent;
@@ -423,7 +441,7 @@ public class MainActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param state
+	 * @param state The powerstate to set. For example defined in <code>helpers.enigma2.PowerState.STATE_*</code>
 	 */
 	private void setPowerState(String state) {
 		if (mSetPowerStateTask != null) {
@@ -434,14 +452,20 @@ public class MainActivity extends AbstractHttpActivity {
 		mSetPowerStateTask.execute(state);
 	}
 
+	/**
+	 * Shows succes/error toasts after power state has been set
+	 * 
+	 * @param inStandby
+	 */
 	private void onPowerStateSet(boolean inStandby) {
 		// TODO - implement onPowerStateSet
 	}
 
 	/**
-	 * @param text
-	 * @param type
-	 * @param timeout
+	 * Send a message to the target device which will be shown on TV
+	 * @param text The message text
+	 * @param type Type of the message as defined in <code>helpers.enigma2.Message.STATE_*</code>
+	 * @param timeout Timeout for the message, 0 means no timeout will occur
 	 */
 	private void sendMessage(String text, String type, String timeout) {
 		if (mSendMessageTask != null) {
@@ -458,7 +482,9 @@ public class MainActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param result
+	 * Handles the result of sending a message to the target device
+	 * 
+	 * @param result Result of sending the message in <code>helpers.enigma2.SimpleResult</code> style
 	 */
 	private void onMessageSent(ExtendedHashMap result) {
 		String toastText = (String) getText(R.string.get_content_error);

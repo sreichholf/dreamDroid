@@ -36,6 +36,9 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 /**
+ * Allows browsing recorded movies.
+ * Supports filtering by tags and locations
+ * 
  * @author sreichholf
  * 
  */
@@ -60,6 +63,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	private AsyncTask<String, String, Boolean> mDeleteTask;
 
 	/**
+	 * <code>AsyncTask</code> to get the list of recorded movies
 	 * @author sreichholf
 	 * 
 	 */
@@ -149,6 +153,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
+	 * <code>AsyncTask</code> to delete a movie using its service reference
+	 * Calls <code>onMovieDeleted</code> when finished.
 	 * @author sre
 	 * 
 	 */
@@ -296,7 +302,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param id
+	 * @param id The id of the selected menu item (<code>MENU_*</code> statics) 
 	 * @return
 	 */
 	private boolean onItemClicked(int id) {
@@ -460,7 +466,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param ref
+	 * @param ref The service reference to zap to
 	 */
 	public void zapTo(String ref) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -479,7 +485,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * 
+	 * Delete the selected movie
 	 */
 	private void deleteMovie() {
 		if (mDeleteTask != null) {
@@ -498,7 +504,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param result
+	 * @param result The result of deleting a specific movie as <helpers.enigma2.SimleResult>
 	 */
 	private void onMovieDeleted(ExtendedHashMap result) {
 		mDeleteProgress.dismiss();
@@ -520,7 +526,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * 
+	 * Reload the list of movies
 	 */
 	@SuppressWarnings("unchecked")
 	private void reload() {

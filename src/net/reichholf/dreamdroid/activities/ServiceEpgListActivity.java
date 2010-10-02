@@ -23,6 +23,9 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 /**
+ * Shows the EPG of a service.
+ * Timers can be set via integrated detail dialog
+ * 
  * @author sreichholf
  * 
  */
@@ -31,6 +34,8 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mEpgListTask;
 
 	/**
+	 * Fetch the list of EPG-Events async
+	 * 
 	 * @author sreichholf
 	 * 
 	 */
@@ -184,7 +189,7 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	}
 
 	/**
-	 * 
+	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
 		mAdapter = new SimpleAdapter(this, mList, R.layout.epg_list_item, new String[] { Event.EVENT_TITLE,
@@ -194,7 +199,7 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	}
 
 	/**
-	 * 
+	 * Reloads the EPG information by calling a <code>GetEpgListTask</code>.
 	 */
 	@SuppressWarnings("unchecked")
 	private void reload() {

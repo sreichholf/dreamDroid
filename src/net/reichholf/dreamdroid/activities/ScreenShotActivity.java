@@ -24,6 +24,8 @@ import android.webkit.WebSettings.ZoomDensity;
 import android.webkit.WebView;
 
 /**
+ * Allows fetching and showing the actual TV-Screen content
+ * 
  * @author sre
  * 
  */

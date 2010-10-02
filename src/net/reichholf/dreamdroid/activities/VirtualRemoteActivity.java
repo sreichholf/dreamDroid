@@ -33,6 +33,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
 /**
+ * A Virtual dreambox remote control using http-requests to send key-strokes
  * @author sreichholf
  * 
  */
@@ -169,7 +170,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	
 	
 	/**
-	 * 
+	 * Apply Gui-Element-Attributes and register OnClickListeners in dependence of the active layout (Standard or QuickZap)
 	 */
 	private void reinit(){
 		if(mQuickZap){
@@ -268,8 +269,10 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	}
 	
 	/**
-	 * @param v
-	 * @param id
+	 * Registers an OnClickListener for a specific GUI Element.
+	 * OnClick the function <code>onButtonClicked</code> will be called with the given id
+	 * @param v The view to register an OnClickListener for
+	 * @param id The item ID to register the listener for
 	 */
 	private void registerOnClickListener(View v, final int id) {
 		v.setLongClickable(true);
@@ -291,7 +294,9 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param id
+	 * Called after a Button has been clicked
+	 * @param id The id of the item
+	 * @param longClick If true the item has been long-clicked
 	 */
 	private void onButtonClicked(int id, boolean longClick) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -314,7 +319,8 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param result
+	 * Called after a key-press-command has been sent
+	 * @param result A SimpleXmlResult-like <code>ExtendedHashMap</code>
 	 */
 	private void onCommandSent(ExtendedHashMap result) {
 		String state = result.getString(SimpleResult.STATE);

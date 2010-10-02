@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="private" author="true" classpath="." destdir="C:\Users\sre\Desktop\dreamDroid_doc" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="net.reichholf.dreamdroid.helpers,net.reichholf.dreamdroid.parsers.enigma2.saxhandler,net.reichholf.dreamdroid.helpers.enigma2,net.reichholf.dreamdroid.dataProviders.interfaces,net.reichholf.dreamdroid.activities,net.reichholf.dreamdroid.dataProviders,com.commonsware.cwac.merge,net.reichholf.dreamdroid.abstivities,com.commonsware.cwac.sacklist,net.reichholf.dreamdroid.parsers" source="1.7" sourcefiles="src/net/reichholf/dreamdroid/DreamDroidTest.java,src/net/reichholf/dreamdroid/DreamDroid.java,src/net/reichholf/dreamdroid/CustomExceptionHandler.java,src/net/reichholf/dreamdroid/Profile.java" sourcepath="gen;src" splitindex="true" use="true" version="true">
+            <link href="file:/D:/android-sdk-windows/docs/reference"/>
+        </javadoc>
+    </target>
+</project>

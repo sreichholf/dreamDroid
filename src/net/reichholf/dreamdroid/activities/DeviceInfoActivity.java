@@ -18,6 +18,12 @@ import android.widget.Toast;
 
 import com.commonsware.cwac.merge.MergeAdapter;
 
+/**
+ * Shows device-specific information for the active profile.
+ * 
+ * @author sreichholf
+ *
+ */
 public class DeviceInfoActivity extends ListActivity {
 	private ExtendedHashMap mInfo;
 	private AsyncTask<Void, String, Boolean> mGetInfoTask;
@@ -36,6 +42,12 @@ public class DeviceInfoActivity extends ListActivity {
 	private SimpleHttpClient mShc;
 	private LayoutInflater mInflater;
 
+	/**
+	 * <code>AsyncTask</code> to Fetch the device information async.
+	 * 
+	 * @author sre
+	 *
+	 */
 	private class GetDeviceInfoTask extends AsyncTask<Void, String, Boolean> {
 		/*
 		 * (non-Javadoc)
@@ -131,14 +143,14 @@ public class DeviceInfoActivity extends ListActivity {
 	}
 
 	/**
-	 * 
+	 * Instanciates a <code>SimpleHttpClient</code> for execution of http-requests
 	 */
 	private void setClient() {
 		mShc = SimpleHttpClient.getInstance();
 	}
 
 	/**
-	 * 
+	 * Reloads the device information 
 	 */
 	private void reload() {
 		if (mGetInfoTask != null) {
@@ -149,7 +161,7 @@ public class DeviceInfoActivity extends ListActivity {
 	}
 
 	/**
-	 * @param id
+	 * @param id ID of the R.string to be set as the content of the <code>DreamDroid.R.layout.simple_header</code>
 	 * @return
 	 */
 	private TextView getListHeaderView(int id) {
@@ -159,7 +171,7 @@ public class DeviceInfoActivity extends ListActivity {
 	}
 
 	/**
-	 * 
+	 * Set all required stuff for the <code>com.commonsware.cwac.merge.MergeAdapter</code>
 	 */
 	private void setAdapter() {
 		mFrontendAdapter = new SimpleAdapter(this, mFrontends, android.R.layout.two_line_list_item, new String[] {
@@ -183,7 +195,7 @@ public class DeviceInfoActivity extends ListActivity {
 	}
 
 	/**
-	 * 
+	 * Called when device info has been loaded and parsed successfully
 	 */
 	@SuppressWarnings("unchecked")
 	private void onInfoReady() {
@@ -205,6 +217,11 @@ public class DeviceInfoActivity extends ListActivity {
 		}
 	}
 
+	/**
+	 * Shows a toast message
+	 * 
+	 * @param toastText The text to set for the toast
+	 */
 	private void showToast(String toastText) {
 		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
 		toast.show();

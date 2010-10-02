@@ -35,8 +35,15 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 /**
- * @author sreichholf
+ * Handles ServiceLists of (based on service references).
  * 
+ * If called with Intent.ACTION_PICK it can be used for selecting services (e.g. to set a timer).<br/>
+ * In Pick-Mode no EPG will be loaded/shown.<br/>
+ * For any other action it will be a full-featured ServiceList Browser capable of showing 
+ * EPG of running events or calling a <code>ServiceEpgListActivity</code> to show the whole EPG of a service
+ * 
+ * @author sreichholf
+ *  
  */
 public class ServiceListActivity extends AbstractHttpEventListActivity {
 	public static final int MENU_CLOSE = 0;
@@ -54,7 +61,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 	/**
 	 * @author sreichholf
-	 * 
+	 * Fetches a service list async.
+	 * Does all the error-handling, refreshing and title-setting
 	 */
 	private class GetServiceListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		/*
@@ -218,6 +226,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		mPickMode = savedInstanceState.getBoolean("pickMode");
 
 		setAdapter();
+		reload();
 	}
 
 	/**
@@ -436,7 +445,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	}
 
 	/**
-	 * @param ref
+	 * @param ref The ServiceReference to zap to
 	 */
 	public void zapTo(String ref) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -455,8 +464,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	}
 
 	/**
-	 * @param ref
-	 * @param nam
+	 * @param ref The ServiceReference to catch the EPG for
+	 * @param nam The name of the Service for the reference
 	 */
 	public void openEpg(String ref, String nam) {
 		Intent intent = new Intent(this, ServiceEpgListActivity.class);

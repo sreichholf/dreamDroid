@@ -45,6 +45,7 @@ import android.widget.Toast;
 
 //TODO Add Tag Support
 /**
+ * Activity for Editing existing or initial timers
  * @author sreichholf
  * 
  */
@@ -535,7 +536,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * 
+	 * Set the GUI-Content from <code>mTimer</code>
 	 */
 	private void reload() {
 		// Name
@@ -609,10 +610,12 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
+
 	/**
-	 * @param value
-	 * @param list
-	 * @param text
+	 * Interpret the repeated int-value by bit-shifting it
+	 * 
+	 * @param value The int-value for to-repeat-days
+	 * @return All days selected for repeatings in "Mo, Tu, Fr"-style
 	 */
 	private String getRepeated(int value) {
 		String text = "";
@@ -640,9 +643,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param checkedDays
-	 * @param timer
-	 * @return
+	 * Applies repeated settings to a timer
+	 * 
+	 * @param checkedDays <code>boolean[]> of checked days for timer-repeatings
+	 * @param timer The acutal timer
+	 * @return The string to set for the GUI-Label
 	 */
 	private String setRepeated(boolean[] checkedDays, ExtendedHashMap timer) {
 		String text = "";
@@ -677,7 +682,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * 
+	 * Apply GUI-values to the timer.
+	 * Applies Name, Description, Enabled and Afterevent from the GUI-Elements to <code>mTimer</code>
 	 */
 	private void setTimerFromViews() {
 		mTimer.put(Timer.NAME, mName.getText().toString());
@@ -694,7 +700,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * 
+	 * Save the current timer on the target device
 	 */
 	private void saveTimer() {
 		setTimerFromViews();
@@ -725,7 +731,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param result
+	 * @param result A SimpleXmlResult-styled <code>ExtendedHashMap</code>
 	 */
 	private void onTimerSaved(ExtendedHashMap result) {
 		mSaveTask = null;
@@ -746,10 +752,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
+
 	/**
-	 * @param dp
-	 * @param tp
-	 * @param cal
+	 * Set the the values of the date and the time picker of the DateTimePicker dialog
+	 * @param dialog The Dialog containing the date and the time picker
+	 * @param cal The calendar-object to set date and time from
 	 */
 	private void setDateAndTimePicker(final Dialog dialog, Calendar cal) {
 		DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
@@ -760,10 +767,10 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		tp.setCurrentMinute(cal.get(Calendar.MINUTE));
 	}
 
+
 	/**
-	 * @param dp
-	 * @param tp
-	 * @param cal
+	 * @param dialog The dialog containing the date and the time picker
+	 * @return <code>Calendar</code> container set to the date and time of the Date- and TimePicker
 	 */
 	private Calendar getCalendarFromPicker(final Dialog dialog) {
 		Calendar cal = GregorianCalendar.getInstance();
@@ -781,7 +788,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param timestamp
+	 * Convert a unix timestamp to a java Calendar instance
+	 * @param timestamp A unix timestamp
 	 * @return
 	 */
 	private Calendar getCalendarFromTimestamp(String timestamp) {
@@ -795,8 +803,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param b
-	 * @param dialog
+	 * Registers an OnClickListener for a dialogs cancel-button with id <code>R.id.ButtonCancel</code>
+	 * @param dialog The Dialog containing a <code>R.id.ButtonCancel</code>
 	 */
 	private void dialogRegisterCancel(final Dialog dialog) {
 		Button buttonCancel = (Button) dialog.findViewById(R.id.ButtonCancel);
@@ -810,7 +818,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * @param cal
+	 * Apply the values of the TimePicker for the Timer-Begin to <code>mTimer</code>
+	 * @param cal Calndear Object
 	 */
 	private void onTimerBeginSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
@@ -820,6 +829,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
+	 * Apply the values of the TimePicker for the Timer-End to <code>mTimer</code>
 	 * @param cal
 	 */
 	private void onTimerEndSet(Calendar cal) {
@@ -830,7 +840,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * 
+	 * Cancels the Activity
 	 */
 	private void cancel() {
 		finish();

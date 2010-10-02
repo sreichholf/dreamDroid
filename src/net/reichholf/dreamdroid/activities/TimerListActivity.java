@@ -32,6 +32,7 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 /**
+ * Activity to show a List of all existing timers of the target device
  * @author sreichholf
  * 
  */
@@ -46,6 +47,11 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
 	private AsyncTask<String, String, Boolean> mDeleteTask;
 
+	/**
+	 * Get the list of all timers async.
+	 * @author sre
+	 *
+	 */
 	private class GetTimerListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 
 		/*
@@ -128,6 +134,11 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		}
 	}
 
+	/**
+	 * Delete a specific timer async
+	 * @author sre
+	 *
+	 */
 	private class DeleteTimerTask extends AsyncTask<String, String, Boolean> {
 		private ExtendedHashMap mResult;
 
@@ -298,7 +309,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * 
+	 * Reload the list of timers by calling an <code>GetTimerListTask</code>
 	 */
 	@SuppressWarnings("unchecked")
 	public void reload() {
@@ -313,7 +324,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param timer
+	 * Open a <code>TimerEditActivity</code> for timer editing
+	 * @param timer The timer to be edited
 	 */
 	private void editTimer(ExtendedHashMap timer, boolean newTimer) {
 		Intent intent = new Intent(this, TimerEditActivity.class);
@@ -332,6 +344,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		this.startActivityForResult(intent, CHANGE_TIMER_REQUEST);
 	}
 
+	/**
+	 * Initializes the <code>SimpleListAdapter</code>
+	 */
 	private void setAdapter() {
 		mAdapter = new SimpleAdapter(this, mList, R.layout.timer_list_item, new String[] { Timer.NAME,
 				Timer.SERVICE_NAME, Timer.BEGIN_READEABLE, Timer.END_READABLE }, new int[] { R.id.timer_name,
@@ -340,7 +355,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param timer
+	 * Confirmation dialog before timer deletion
 	 */
 	private void deleteTimerConfirm() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -361,7 +376,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param timer
+	 * Delete a timer by creating an <code>DeleteTimerTask</code>
+	 * @param timer The Timer to delete as <code>ExtendedHashMap</code>
 	 */
 	private void deleteTimer(ExtendedHashMap timer) {
 		if (mDeleteTask != null) {
@@ -380,7 +396,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param result
+	 * Called after a timer has been deleted
+	 * @param result A SimpleXmlResult-like <code>ExtendedHashMap</code>
 	 */
 	private void onTimerDeleted(ExtendedHashMap result) {
 		mDeleteProgress.dismiss();

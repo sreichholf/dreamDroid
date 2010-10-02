@@ -25,6 +25,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 /**
+ * Search the EPG for a specific term.<br>
+ * Called when search is being requested by the user (by Hard- or Software-Key).
  * @author sreichholf
  * 
  */
@@ -33,6 +35,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	private String mQuery;
 
 	/**
+	 * <code>AsyncTask</code> to get the EPG information for the given search term 
 	 * @author sreichholf
 	 * 
 	 */
@@ -181,7 +184,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	}
 
 	/**
-	 * 
+	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
 		mAdapter = new SimpleAdapter(this, mList, R.layout.epg_multi_service_list_item, new String[] {
@@ -191,7 +194,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	}
 
 	/**
-	 * 
+	 * Issues the search by executing a new <code>GetSearchEpgListTask</code>
 	 */
 	@SuppressWarnings("unchecked")
 	private void search() {

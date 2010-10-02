@@ -20,10 +20,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 /**
- * @author sreichholf
- * 
- */
-/**
+ * Shows some information about the service currently running on TV
  * @author sreichholf
  * 
  */
@@ -42,6 +39,12 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	private TextView mNextTitle;
 	private TextView mNextDuration;
 
+	/**
+	 * <code>AsyncTask</code> to fetch the current service information async.
+	 * 
+	 * @author sre
+	 *
+	 */
 	private class GetCurrentServiceTask extends AsyncTask<Void, String, Boolean> {
 		/*
 		 * (non-Javadoc)
@@ -158,7 +161,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * 
+	 * Reloads all current service information
 	 */
 	private void reload() {
 		if (mCurrentServiceTask != null) {
@@ -169,7 +172,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * 
+	 * Called after loading the current service has finished to update the GUI-Content
 	 */
 	@SuppressWarnings("unchecked")
 	private void onCurrentServiceReady() {

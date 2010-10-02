@@ -23,6 +23,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 /**
+ * Used to edit connection profiles
+ * 
  * @author sre
  * 
  */
@@ -102,7 +104,7 @@ public class ProfileEditActivity extends Activity {
 	}
 		
 	/**
-	 * @param checked
+	 * @param checked Enables or disables the user/password input-boxes depending on login enabled/disabled
 	 */
 	private void onIsLoginChanged(boolean checked) {
 		if (checked) {
@@ -113,7 +115,7 @@ public class ProfileEditActivity extends Activity {
 	}
 
 	/**
-	 * 
+	 * Assign all values of <code>mProfile</code> to the GUI-Components 
 	 */
 	private void assignProfile() {
 		mProfile.setText(mCurrentProfile.getProfile());
@@ -126,7 +128,7 @@ public class ProfileEditActivity extends Activity {
 	}
 
 	/**
-	 * 
+	 * Save the profile permanently
 	 */
 	private void save() {
 		mCurrentProfile.setProfile(mProfile.getText().toString());
@@ -160,7 +162,8 @@ public class ProfileEditActivity extends Activity {
 	}
 	
 	/**
-	 * @param toastText
+	 * Show a toast
+	 * @param toastText The text to show
 	 */
 	protected void showToast(String toastText) {
 		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
@@ -168,7 +171,8 @@ public class ProfileEditActivity extends Activity {
 	}
 	
 	/**
-	 * @param toastText
+	 * Show a toast
+	 * @param toastText The text to show
 	 */
 	protected void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);

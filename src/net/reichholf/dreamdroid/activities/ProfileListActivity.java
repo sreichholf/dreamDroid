@@ -26,6 +26,8 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 /**
+ * Shows a list of all connection profiles
+ * 
  * @author sre
  * 
  */
@@ -223,7 +225,7 @@ public class ProfileListActivity extends ListActivity {
 	}
 
 	/**
-	 * 
+	 * Activates the selected profile
 	 */
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
@@ -238,7 +240,7 @@ public class ProfileListActivity extends ListActivity {
 	}
 
 	/**
-	 * 
+	 * Opens a <code>ProfileEditActivity</code> for the selected profile
 	 */
 	private void editProfile() {
 		Intent intent = new Intent(this, ProfileEditActivity.class);
@@ -249,7 +251,7 @@ public class ProfileListActivity extends ListActivity {
 	}
 
 	/**
-	 * 
+	 * Opens a <code>ProfileEditActivity</code> for creating a new profile
 	 */
 	private void createProfile() {
 		Intent intent = new Intent(this, ProfileEditActivity.class);
@@ -258,7 +260,8 @@ public class ProfileListActivity extends ListActivity {
 	}
 
 	/**
-	 * @param text
+	 * Shows a toast
+	 * @param text The text to show as toast
 	 */
 	protected void showToast(String text) {
 		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
