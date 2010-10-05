@@ -20,7 +20,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.webkit.WebSettings.ZoomDensity;
+//import android.webkit.WebSettings.ZoomDensity;
 import android.webkit.WebView;
 
 /**
@@ -64,7 +64,7 @@ public class ScreenShotActivity extends Activity {
 
 		mWebView.setBackgroundColor(Color.BLACK);
 		mWebView.getSettings().setBuiltInZoomControls(true);
-		mWebView.getSettings().setDefaultZoom(ZoomDensity.FAR);
+//		mWebView.getSettings().setDefaultZoom(ZoomDensity.FAR);
 		
 		Bundle extras = getIntent().getExtras();
 
