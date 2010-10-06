@@ -156,5 +156,6 @@
 	<string name="bouquet_overview">Bouquet-Übersicht</string>
 	<string name="set_default">Als Standard nehmen</string>
 	<string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>	
-	<string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>	
+	<string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
+	<string name="loading">Lade...</string>
 </resources>

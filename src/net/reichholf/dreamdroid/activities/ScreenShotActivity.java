@@ -16,12 +16,15 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 //import android.webkit.WebSettings.ZoomDensity;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 /**
  * Allows fetching and showing the actual TV-Screen content
@@ -37,13 +40,14 @@ public class ScreenShotActivity extends Activity {
 	public static final int FORMAT_PNG = 1;
 
 	public static final int ITEM_RELOAD = 0;
-	
+
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_FORMAT = "format";
 	public static final String KEY_SIZE = "size";
 	public static final String KEY_FILENAME = "filename";
 
 	private WebView mWebView;
+	private ProgressDialog mProgressDialog;
 	private int mType;
 	private int mFormat;
 	private int mSize;
@@ -57,15 +61,17 @@ public class ScreenShotActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setTitle( getText(R.string.app_name) + " - " + getText(R.string.screenshot) );
+		setTitle(getText(R.string.app_name) + " - " + getText(R.string.screenshot));
 
 		setContentView(R.layout.web_view);
 		mWebView = (WebView) findViewById(R.id.web);
 
 		mWebView.setBackgroundColor(Color.BLACK);
 		mWebView.getSettings().setBuiltInZoomControls(true);
-//		mWebView.getSettings().setDefaultZoom(ZoomDensity.FAR);
-		
+		mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+
+		mProgressDialog = new ProgressDialog(ScreenShotActivity.this);
+
 		Bundle extras = getIntent().getExtras();
 
 		if (extras == null) {
@@ -74,13 +80,15 @@ public class ScreenShotActivity extends Activity {
 
 		mType = extras.getInt(KEY_TYPE, TYPE_ALL);
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
-		mSize = extras.getInt(KEY_SIZE, 360);
+		mSize = extras.getInt(KEY_SIZE, 720);
 		mFilename = extras.getString(KEY_FILENAME);
 
 		reload();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
@@ -99,7 +107,7 @@ public class ScreenShotActivity extends Activity {
 		reload();
 		return true;
 	}
-	
+
 	private void reload() {
 		ArrayList<NameValuePair> parameters = new ArrayList<NameValuePair>();
 
@@ -124,18 +132,74 @@ public class ScreenShotActivity extends Activity {
 			break;
 		}
 
-		parameters.add(new BasicNameValuePair("r", new Integer(mSize)
-				.toString()));
+		parameters.add(new BasicNameValuePair("r", new Integer(mSize).toString()));
 
 		if (mFilename == null) {
-			long ts = ( new GregorianCalendar().getTimeInMillis() ) / 1000;
+			long ts = (new GregorianCalendar().getTimeInMillis()) / 1000;
 			mFilename = "/tmp/dreamDroid-" + ts;
 		}
 		parameters.add(new BasicNameValuePair("filename", mFilename));
 
-		String url = SimpleHttpClient.getInstance().buildUrl(
-				URIStore.SCREENSHOT, parameters);
+		String url = SimpleHttpClient.getInstance().buildUrl(URIStore.SCREENSHOT, parameters);
+
+		mWebView.setWebViewClient(new WebViewClient() {
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * android.webkit.WebViewClient#shouldOverrideUrlLoading(android
+			 * .webkit.WebView, java.lang.String)
+			 */
+			@Override
+			public void onLoadResource(WebView view, String url) {
+				if (!mProgressDialog.isShowing()) {
+					mProgressDialog = ProgressDialog.show(ScreenShotActivity.this, getText(R.string.screenshot),
+							getText(R.string.loading));
+				}
+
+				super.onLoadResource(view, url);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * android.webkit.WebViewClient#onPageFinished(android.webkit.WebView
+			 * , java.lang.String)
+			 */
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				if (mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * android.webkit.WebViewClient#onReceivedError(android.webkit.WebView
+			 * , int, java.lang.String, java.lang.String)
+			 */
+			@Override
+			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+				showToast("Error Loading Image");
+			}
+		});
+
 		mWebView.loadUrl(url);
+
+	}
+
+	/**
+	 * Show a toast
+	 * 
+	 * @param toastText
+	 *            The text to show
+	 */
+	protected void showToast(String toastText) {
+		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
+		toast.show();
 	}
 
 }
