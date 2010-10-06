@@ -71,13 +71,60 @@ public class ScreenShotActivity extends Activity {
 		mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
 
 		mProgressDialog = new ProgressDialog(ScreenShotActivity.this);
+		
+		mWebView.setWebViewClient(new WebViewClient() {
+			/* (non-Javadoc)
+			 * @see android.webkit.WebViewClient#onLoadResource(android.webkit.WebView, java.lang.String)
+			 */
+			@Override
+			public void onLoadResource(WebView view, String url) {
+				if (!mProgressDialog.isShowing()) {
+					mProgressDialog = ProgressDialog.show(ScreenShotActivity.this, getText(R.string.screenshot),
+							getText(R.string.loading));
+				}
 
+				super.onLoadResource(view, url);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * android.webkit.WebViewClient#onPageFinished(android.webkit.WebView
+			 * , java.lang.String)
+			 */
+			@Override
+			public void onPageFinished(WebView view, String url) {
+				if (mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * android.webkit.WebViewClient#onReceivedError(android.webkit.WebView
+			 * , int, java.lang.String, java.lang.String)
+			 */
+			@Override
+			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+				if (mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+				showToast("Error Loading Image");
+			}
+		});
+		
 		Bundle extras = getIntent().getExtras();
 
 		if (extras == null) {
 			extras = new Bundle();
 		}
-
+		
+		
+		
+		
 		mType = extras.getInt(KEY_TYPE, TYPE_ALL);
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
 		mSize = extras.getInt(KEY_SIZE, 720);
@@ -141,51 +188,6 @@ public class ScreenShotActivity extends Activity {
 		parameters.add(new BasicNameValuePair("filename", mFilename));
 
 		String url = SimpleHttpClient.getInstance().buildUrl(URIStore.SCREENSHOT, parameters);
-
-		mWebView.setWebViewClient(new WebViewClient() {
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * android.webkit.WebViewClient#shouldOverrideUrlLoading(android
-			 * .webkit.WebView, java.lang.String)
-			 */
-			@Override
-			public void onLoadResource(WebView view, String url) {
-				if (!mProgressDialog.isShowing()) {
-					mProgressDialog = ProgressDialog.show(ScreenShotActivity.this, getText(R.string.screenshot),
-							getText(R.string.loading));
-				}
-
-				super.onLoadResource(view, url);
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * android.webkit.WebViewClient#onPageFinished(android.webkit.WebView
-			 * , java.lang.String)
-			 */
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				if (mProgressDialog.isShowing()) {
-					mProgressDialog.dismiss();
-				}
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see
-			 * android.webkit.WebViewClient#onReceivedError(android.webkit.WebView
-			 * , int, java.lang.String, java.lang.String)
-			 */
-			@Override
-			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-				showToast("Error Loading Image");
-			}
-		});
 
 		mWebView.loadUrl(url);
 
