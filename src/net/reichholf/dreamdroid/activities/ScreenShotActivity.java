@@ -6,12 +6,16 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -19,9 +23,10 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-//import android.webkit.WebSettings.ZoomDensity;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -58,6 +63,7 @@ public class ScreenShotActivity extends Activity {
 	 * 
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -69,7 +75,44 @@ public class ScreenShotActivity extends Activity {
 		mWebView.setBackgroundColor(Color.BLACK);
 		mWebView.getSettings().setBuiltInZoomControls(true);
 		mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-
+		
+		// Some dynamic invocation voodoo
+		
+		try{
+			WebSettings settings = mWebView.getSettings();
+						
+			Field zoomDensityFar = null;
+			Class zoomDensity = null;
+						
+			Class[] classes = WebSettings.class.getDeclaredClasses();
+			for( Class cls : classes){
+				String name = cls.getName();
+				if("android.webkit.WebSettings$ZoomDensity".equals(name)){
+					zoomDensity = cls;
+					zoomDensityFar = cls.getField("FAR");
+				}
+			}
+			
+			Method setDefaultZoom = settings.getClass().getMethod("setDefaultZoom", zoomDensity);
+			
+			if(zoomDensityFar != null && setDefaultZoom != null){
+				setDefaultZoom.invoke(settings, zoomDensityFar.get(null));
+			}
+		} catch (IllegalArgumentException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		} catch (SecurityException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		} catch (NoSuchFieldException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		} catch (IllegalAccessException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		} catch (InvocationTargetException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		} catch (NoSuchMethodException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		} 
+		
+		
 		mProgressDialog = new ProgressDialog(ScreenShotActivity.this);
 		
 		mWebView.setWebViewClient(new WebViewClient() {
@@ -127,7 +170,7 @@ public class ScreenShotActivity extends Activity {
 		
 		mType = extras.getInt(KEY_TYPE, TYPE_ALL);
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
-		mSize = extras.getInt(KEY_SIZE, 720);
+		mSize = extras.getInt(KEY_SIZE, 640);
 		mFilename = extras.getString(KEY_FILENAME);
 
 		reload();
