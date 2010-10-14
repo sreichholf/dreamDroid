@@ -12,10 +12,12 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,6 +41,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
  */
 public class VirtualRemoteActivity extends AbstractHttpActivity {
 	public static final int MENU_LAYOUT = 0;	
+	
+	private Vibrator mVibrator;
 	
 	private Button mButtonPower;
 	private Button mButton1;
@@ -98,7 +102,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
-		
+		mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		reinit();
 	}
 
@@ -152,8 +156,10 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 			AlertDialog alert = adBuilder.create();
 			alert.show();
 			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
-		return false;
+
 	}
 	
 	/**
@@ -300,6 +306,9 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	 * @param longClick If true the item has been long-clicked
 	 */
 	private void onButtonClicked(int id, boolean longClick) {
+		
+		mVibrator.vibrate(25);
+		
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
 		if(longClick){
