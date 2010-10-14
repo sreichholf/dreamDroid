@@ -306,8 +306,12 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	 * @param longClick If true the item has been long-clicked
 	 */
 	private void onButtonClicked(int id, boolean longClick) {
+		int msec = 25;
+		if(longClick){
+			msec = 100;
+		}
 		
-		mVibrator.vibrate(25);
+		mVibrator.vibrate(msec);
 		
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
