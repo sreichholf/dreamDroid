@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.reichholf.dreamdroid.CustomExceptionHandler;
+import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.R;
@@ -17,8 +18,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -30,9 +36,9 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	// public static ArrayList<ExtendedHashMap> DATA = new
 	// ArrayList<ExtendedHashMap>();
 	public static final int DIALOG_EMPTY_LIST_ID = 1298032;
-	
-	
-	protected ArrayList<ExtendedHashMap> mList = new ArrayList<ExtendedHashMap>();
+	public static final int MENU_HOME = 89283794;
+
+	protected ArrayList<ExtendedHashMap> mMapList;
 	protected SimpleAdapter mAdapter;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
@@ -49,8 +55,9 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		CustomExceptionHandler.register(this);
-		
-		mExtras = this.getIntent().getExtras();
+
+		mExtras = getIntent().getExtras();
+		mMapList = new ArrayList<ExtendedHashMap>();
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -58,6 +65,9 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 				mData = new ExtendedHashMap();
 				mData.putAll(map);
 			}
+		} else {
+			mExtras = new Bundle();
+			getIntent().putExtras(mExtras);
 		}
 
 		if (savedInstanceState != null) {
@@ -100,53 +110,59 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("list", mList);
-		outState.putSerializable("data", mData);
-
+		getIntent().putExtras(mExtras);
 		super.onSaveInstanceState(outState);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see android.app.ListActivity#onRestoreInstanceState(android.os.Bundle)
+	 * @see android.app.Activity#onCreateDialog(int)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-
-		mList = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("list");
-
-		HashMap<String, Object> map = (HashMap<String, Object>) savedInstanceState.getSerializable("data");
-		mData = new ExtendedHashMap();
-		if (map != null) {
-			mData.putAll(map);
-		}
-	}
-	
 	protected Dialog onCreateDialog(int id) {
 		final Dialog dialog;
 
 		switch (id) {
 		case DIALOG_EMPTY_LIST_ID:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage(R.string.no_list_item)
-			       .setCancelable(false)
-			       .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-			           public void onClick(DialogInterface dialog, int id) {
-			        	   return;
-			           }
-			       });
+			builder.setMessage(R.string.no_list_item).setCancelable(false)
+					.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							return;
+						}
+					});
 			dialog = builder.create();
 			break;
 		default:
 			dialog = null;
 		}
-		
+
 		return dialog;
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		menu.add(0, MENU_HOME, 99, getText(R.string.home)).setIcon(android.R.drawable.ic_menu_view);
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		return onItemClicked(item.getItemId());
+	}
+
 	/**
 	 * 
 	 */
@@ -195,6 +211,41 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		}
 
 		return dfault;
+	}
+
+	/**
+	 * Register an <code>OnClickListener</code> for a view and a specific item
+	 * ID (<code>ITEM_*</code> statics)
+	 * 
+	 * @param v
+	 *            The view an OnClickListener should be registered for
+	 * @param id
+	 *            The id used to identify the item clicked (<code>ITEM_*</code>
+	 *            statics)
+	 */
+	protected void registerOnClickListener(View v, final int id) {
+		v.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onItemClicked(id);
+			}
+		});
+	}
+
+	/**
+	 * @param id
+	 */
+	protected boolean onItemClicked(int id) {
+		Intent intent;
+		switch (id) {
+		case MENU_HOME:
+			intent = new Intent(this, MainActivity.class);
+			startActivity(intent);
+			return true;
+		default:
+			return false;
+		}
+
 	}
 
 	/**

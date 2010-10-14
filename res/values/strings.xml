@@ -34,8 +34,7 @@
 	<string name="device_info">Device Information</string>
 	<string name="exit">Exit</string>
 	<string name="send_message">Send Message</string>
-	<string name="version_string">DreamDroid v0.7\n© 2010 Stephan Reichholf
-	</string>
+	<string name="version_string">DreamDroid v0.7\n© 2010 Stephan Reichholf\nstephan@reichholf.net</string>
 	<string name="save">Save</string>
 	<string name="cancel">Cancel</string>
 	<string name="fetching_data">Fetching data...</string>
@@ -162,4 +161,6 @@
 	<string name="default_bouquet_set_to">Default bouquet has been set to: </string>	
 	<string name="default_bouquet_not_set">Default bouquet could not be set!</string>
 	<string name="loading">Loading...</string>
+	<string name="about">About</string>
+	<string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0/</string>
 </resources>

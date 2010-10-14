@@ -474,7 +474,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 * @param b
 	 * @param id
 	 */
-	private void registerOnClickListener(View v, final int id) {
+	protected void registerOnClickListener(View v, final int id) {
 		v.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -486,36 +486,36 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	/**
 	 * @param id
 	 */
-	private void onItemClicked(int id) {
+	protected boolean onItemClicked(int id) {
 		switch (id) {
 		case ITEM_SAVE:
 			saveTimer();
-			break;
+			return true;
 
 		case ITEM_CANCEL:
 			cancel();
-			break;
+			return true;
 
 		case ITEM_PICK_SERVICE:
 			pickService();
-			break;
+			return true;
 
 		case ITEM_PICK_START:
 			showDialog(DIALOG_PICK_BEGIN_ID);
-			break;
+			return true;
 
 		case ITEM_PICK_END:
 			showDialog(DIALOG_PICK_END_ID);
-			break;
+			return true;
 
 		case ITEM_PICK_REPEATED:
 			showDialog(DIALOG_PICK_REPEATED_ID);
-			break;
+			return true;
 
 		case ITEM_PICK_TAGS:
 			showDialog(DIALOG_PICK_TAGS_ID);
 		default:
-			return;
+			return super.onItemClicked(id);
 		}
 
 	}

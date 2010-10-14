@@ -41,19 +41,19 @@ public class DreamDroidTest extends AbstractHttpListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		
-		mList = new ArrayList<ExtendedHashMap>();
+		mMapList = new ArrayList<ExtendedHashMap>();
 		ExtendedHashMap map = new ExtendedHashMap();
 		
 		map.put("item", "Timer");
 		map.put("desc", "Show, Add and edit Timers");
-		mList.add(map.clone());
+		mMapList.add(map.clone());
 
 		map.clear();
 		map.put("item", "Movies");
 		map.put("desc", "A list of recorded Movies");
-		mList.add(map.clone());
+		mMapList.add(map.clone());
 		
-		mAdapter = new SimpleAdapter(this, mList, android.R.layout.two_line_list_item, new String[]{"item", "desc"}, new int[]{R.id.text1, R.id.text2});
+		mAdapter = new SimpleAdapter(this, mMapList, android.R.layout.two_line_list_item, new String[]{"item", "desc"}, new int[]{R.id.text1, R.id.text2});
 		setListAdapter(mAdapter);
 		
 //		httpTest();
@@ -112,8 +112,8 @@ public class DreamDroidTest extends AbstractHttpListActivity {
 			
 			sdp.parse(input);
 			
-			mList.clear();
-			mList.addAll( movielist );
+			mMapList.clear();
+			mMapList.addAll( movielist );
 			mAdapter.notifyDataSetChanged();
 			
 			long runtime = (System.currentTimeMillis() - starttime);

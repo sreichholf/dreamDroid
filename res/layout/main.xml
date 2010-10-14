@@ -109,7 +109,7 @@
 					android:drawableTop="@drawable/ic_menu_power_off" 
 					android:layout_weight="1" />
 			</LinearLayout>	
-			
+<!-- 			
 			<TextView
 				android:id="@+id/TextViewVersion"
 				android:text="@string/version_string" 
@@ -117,6 +117,7 @@
 				android:layout_height="wrap_content"
 				android:layout_gravity="bottom"			
 				android:gravity="center"/>
+ -->				
 		</LinearLayout>	
 	</ScrollView>
 	

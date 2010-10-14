@@ -29,7 +29,6 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -78,14 +77,14 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
 					+ getText(R.string.fetching_data));
 
-			mList.clear();
+			mMapList.clear();
 			String xml = Movie.getList(mShc, params);
 
 			if (xml != null) {
 				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
 						+ getText(R.string.parsing));
 
-				if (Movie.parseList(xml, mList)) {
+				if (Movie.parseList(xml, mMapList)) {
 					if (DreamDroid.LOCATIONS.size() == 0) {
 						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
 								+ getText(R.string.locations) + " - " + getText(R.string.fetching_data));
@@ -136,7 +135,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			if (result) {
 				title = getText(R.string.app_name) + "::" + getText(R.string.movies);
 
-				if (mList.size() == 0) {
+				if (mMapList.size() == 0) {
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}
 			} else {
@@ -224,7 +223,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mAdapter = new SimpleAdapter(this, mList, R.layout.movie_list_item, new String[] { Movie.TITLE,
+		mAdapter = new SimpleAdapter(this, mMapList, R.layout.movie_list_item, new String[] { Movie.TITLE,
 				Movie.SERVICE_NAME, Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE, Movie.LENGTH }, new int[] {
 				R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
 
@@ -255,7 +254,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 * android.view.View, int, long)
 	 */
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		mMovie = mList.get(position);
+		mMovie = mMapList.get(position);
 
 		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete) };
 
@@ -284,6 +283,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		
 		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_LOCATIONS, 1, getText(R.string.locations)).setIcon(R.drawable.ic_menu_locations);
 		menu.add(0, MENU_TAGS, 1, getText(R.string.tags)).setIcon(R.drawable.ic_menu_tags);
@@ -291,36 +292,24 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		return onItemClicked(item.getItemId());
-	}
-
 	/**
 	 * @param id The id of the selected menu item (<code>MENU_*</code> statics) 
 	 * @return
 	 */
-	private boolean onItemClicked(int id) {
+	protected boolean onItemClicked(int id) {
 		switch (id) {
 		case MENU_RELOAD:
 			reload();
-			break;
+			return true;
 		case MENU_LOCATIONS:
 			showDialog(DIALOG_PICK_LOCATION_ID);
-			break;
+			return true;
 		case MENU_TAGS:
 			showDialog(DIALOG_PICK_TAGS_ID);
-			break;
+			return true;
 		default:
-			return false;
+			return super.onItemClicked(id);
 		}
-
-		return true;
 	}
 
 	/*

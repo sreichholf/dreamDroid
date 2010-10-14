@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
 import org.apache.http.NameValuePair;
@@ -23,8 +22,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 /**
- * Shows the EPG of a service.
- * Timers can be set via integrated detail dialog
+ * Shows the EPG of a service. Timers can be set via integrated detail dialog
  * 
  * @author sreichholf
  * 
@@ -55,9 +53,9 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.epg) + " - "
 						+ getText(R.string.parsing));
 
-				mList.clear();
+				mMapList.clear();
 
-				if (Event.parseList(xml, mList) ) {
+				if (Event.parseList(xml, mMapList)) {
 					return true;
 				}
 			}
@@ -82,12 +80,12 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 		protected void onPostExecute(Boolean result) {
 			String title = null;
 			mAdapter.notifyDataSetChanged();
-			
+
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.epg) + " - "
 						+ mName;
-				
-				if(mList.size() == 0){
+
+				if (mMapList.size() == 0) {
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}
 			} else {
@@ -115,17 +113,16 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (savedInstanceState == null) {
-			mReference = getDataForKey(Event.SERVICE_REFERENCE);
-			mName = getDataForKey(Event.SERVICE_NAME);
+		mReference = getDataForKey(Event.SERVICE_REFERENCE);
+		mName = getDataForKey(Event.SERVICE_NAME);
 
-			if (mReference != null) {
-				setAdapter();
-				reload();
-			} else {
-				this.finish();
-			}
+		if (mReference != null) {
+			setAdapter();
+			reload();
+		} else {
+			this.finish();
 		}
+
 	}
 
 	/*
@@ -145,42 +142,12 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @seenet.reichholf.dreamdroid.activities.AbstractHttpListActivity#
-	 * onSaveInstanceState(android.os.Bundle)
-	 */
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("currentItem", mCurrentItem);
-		outState.putString(Event.SERVICE_REFERENCE, mReference);
-		outState.putString(Event.SERVICE_NAME, mName);
-		super.onSaveInstanceState(outState);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seenet.reichholf.dreamdroid.activities.AbstractHttpListActivity#
-	 * onRestoreInstanceState(android.os.Bundle)
-	 */
-	@Override
-	public void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-		mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
-		mReference = getDataForKey(Event.SERVICE_REFERENCE);
-		mName = getDataForKey(Event.SERVICE_NAME);
-
-		setAdapter();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView,
 	 * android.view.View, int, long)
 	 */
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		mCurrentItem = mList.get((int) id);
+		mCurrentItem = mMapList.get((int) id);
 
 		// if the dialog has been opened before, remove that instance
 		removeDialog(DIALOG_EPG_ITEM_ID);
@@ -192,7 +159,7 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(this, mList, R.layout.epg_list_item, new String[] { Event.EVENT_TITLE,
+		mAdapter = new SimpleAdapter(this, mMapList, R.layout.epg_list_item, new String[] { Event.EVENT_TITLE,
 				Event.EVENT_START_READABLE, Event.EVENT_DURATION_READABLE }, new int[] { R.id.event_title,
 				R.id.event_start, R.id.event_duration });
 		setListAdapter(mAdapter);

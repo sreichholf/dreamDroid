@@ -26,24 +26,38 @@
 		android:name="DreamDroid" 
 		android:allowBackup="true"
 		android:allowClearUserData="true" 
-		android:killAfterRestore="true" 
-		android:debuggable="false">
+		android:killAfterRestore="true" android:debuggable="true">
 		
 		<activity android:label="@string/app_name" android:name=".activities.MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
+		</activity>		
+		<activity android:name=".activities.MovieListActivity" android:configChanges="orientation|keyboardHidden">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>		
+		<activity android:name=".activities.ServiceListActivity" android:configChanges="orientation|keyboardHidden">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
 		</activity>
-		
-		<activity android:name=".activities.MovieListActivity" android:configChanges="orientation|keyboardHidden"></activity>		
-		<activity android:name=".activities.ServiceListActivity" android:configChanges="orientation|keyboardHidden"></activity>
 		<activity android:name=".activities.ServiceEpgListActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.TimerListActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.TimerListActivity" android:configChanges="orientation|keyboardHidden">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>
 		<activity android:name=".activities.TimerEditActivity" android:configChanges="orientation|keyboardHidden"></activity>
 		<activity android:name=".activities.DeviceInfoActivity" android:configChanges="orientation|keyboardHidden"></activity>
 		<activity android:name=".activities.CurrentServiceActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.VirtualRemoteActivity" android:configChanges="orientation|keyboardHidden"></activity>		
+		<activity android:name=".activities.VirtualRemoteActivity" android:configChanges="orientation|keyboardHidden">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>		
 		<activity android:name=".activities.ProfileListActivity" android:configChanges="orientation|keyboardHidden"></activity>
 		<activity android:name=".activities.ProfileEditActivity" android:configChanges="orientation|keyboardHidden"></activity>
 		<activity android:name=".activities.ScreenShotActivity" android:configChanges="orientation|keyboardHidden"></activity>
@@ -57,5 +71,6 @@
 						
 		<meta-data android:name="android.app.default_searchable"
                android:value=".activities.SearchEpgActivity" ></meta-data>
+
 </application>
 </manifest> 

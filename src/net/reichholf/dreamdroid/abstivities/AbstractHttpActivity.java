@@ -9,9 +9,16 @@ package net.reichholf.dreamdroid.abstivities;
 import java.util.HashMap;
 
 import net.reichholf.dreamdroid.CustomExceptionHandler;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 /**
@@ -19,6 +26,8 @@ import android.widget.Toast;
  * 
  */
 public abstract class AbstractHttpActivity extends Activity {
+	public static final int MENU_HOME = 89283794;
+	
 	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
 
@@ -71,6 +80,28 @@ public abstract class AbstractHttpActivity extends Activity {
 		super.onRestoreInstanceState(savedInstanceState);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		menu.add(0, MENU_HOME, 99, getText(R.string.home)).setIcon(android.R.drawable.ic_menu_view);
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		return onItemClicked(item.getItemId());
+	}	
+	
 	/**
 	 * 
 	 */
@@ -78,6 +109,36 @@ public abstract class AbstractHttpActivity extends Activity {
 		mShc = SimpleHttpClient.getInstance();
 	}
 
+	/**
+	 * Register an <code>OnClickListener</code> for a view and a specific item ID  (<code>ITEM_*</code> statics)
+	 * 
+	 * @param v The view an OnClickListener should be registered for
+	 * @param id The id used to identify the item clicked (<code>ITEM_*</code> statics)
+	 */
+	protected void registerOnClickListener(View v, final int id) {
+		v.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onItemClicked(id);
+			}
+		});
+	}
+	
+	/**
+	 * @param id
+	 */
+	protected boolean onItemClicked(int id) {
+		Intent intent;
+		switch (id) {
+		case MENU_HOME:
+			intent = new Intent(this, MainActivity.class);
+			startActivity(intent);
+			return true;
+		default:
+			return false;
+		}
+	}
+	
 	/**
 	 * @param toastText
 	 */

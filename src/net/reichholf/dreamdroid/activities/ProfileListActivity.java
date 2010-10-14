@@ -65,23 +65,6 @@ public class ProfileListActivity extends ListActivity {
 			}
 		});		
 	}
-
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
-	 */
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("profile", mProfile);
-		outState.putInt("current", mCursor.getPosition());
-		
-		super.onSaveInstanceState(outState);
-	}
-	
-	@Override
-	public void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-		mProfile = (Profile) savedInstanceState.getSerializable("profile");
-	}	
 	
 	/*
 	 * (non-Javadoc)
@@ -204,6 +187,8 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		
 		menu.add(0, ITEM_ADD_PROFILE, 1, getText(R.string.profile_add))
 				.setIcon(android.R.drawable.ic_menu_add);
 
@@ -217,11 +202,21 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
+		return onItemClicked(item.getItemId());
+	}
+	
+	/**
+	 * @param id The id of the selected menu item (<code>MENU_*</code> statics) 
+	 * @return
+	 */
+	protected boolean onItemClicked(int id) {
+		switch(id){
 		case (ITEM_ADD_PROFILE):
 			createProfile();
+			return true;
+		default:
+			return false;
 		}
-		return true;
 	}
 
 	/**

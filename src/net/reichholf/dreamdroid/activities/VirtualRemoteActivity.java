@@ -109,6 +109,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
 		menu.add(0, MENU_LAYOUT, 0, getText(R.string.layout)).setIcon(android.R.drawable.ic_menu_always_landscape_portrait);
 		return true;
 	}
@@ -274,7 +275,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	 * @param v The view to register an OnClickListener for
 	 * @param id The item ID to register the listener for
 	 */
-	private void registerOnClickListener(View v, final int id) {
+	protected void registerOnClickListener(View v, final int id) {
 		v.setLongClickable(true);
 		
 		v.setOnLongClickListener(new OnLongClickListener(){

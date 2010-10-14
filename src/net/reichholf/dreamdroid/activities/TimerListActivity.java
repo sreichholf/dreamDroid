@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 /**
  * Activity to show a List of all existing timers of the target device
+ * 
  * @author sreichholf
  * 
  */
@@ -49,8 +50,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 	/**
 	 * Get the list of all timers async.
+	 * 
 	 * @author sre
-	 *
+	 * 
 	 */
 	private class GetTimerListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 
@@ -64,14 +66,14 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
 					+ getText(R.string.fetching_data));
 
-			mList.clear();
+			mMapList.clear();
 			String xml = Timer.getList(mShc, params);
 
 			if (xml != null) {
 				publishProgress(getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer)
 						+ " - " + getText(R.string.parsing));
 
-				if (Timer.parseList(xml, mList)) {
+				if (Timer.parseList(xml, mMapList)) {
 					if (DreamDroid.LOCATIONS.size() == 0) {
 						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
 								+ getText(R.string.locations) + " - " + getText(R.string.fetching_data));
@@ -117,7 +119,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer);
 
-				if (mList.size() == 0) {
+				if (mMapList.size() == 0) {
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}
 			} else {
@@ -136,8 +138,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 	/**
 	 * Delete a specific timer async
+	 * 
 	 * @author sre
-	 *
+	 * 
 	 */
 	private class DeleteTimerTask extends AsyncTask<String, String, Boolean> {
 		private ExtendedHashMap mResult;
@@ -199,23 +202,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (savedInstanceState == null) {
-			setAdapter();
-			reload();
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seenet.reichholf.dreamdroid.activities.AbstractHttpListActivity#
-	 * onRestoreInstanceState(android.os.Bundle)
-	 */
-	@Override
-	public void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-
 		setAdapter();
+		reload();
 	}
 
 	/*
@@ -240,7 +228,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 */
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		mTimer = mList.get((int) id);
+		mTimer = mMapList.get((int) id);
 
 		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 
@@ -284,7 +272,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
 		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(android.R.drawable.ic_menu_add);
 		return true;
@@ -304,6 +294,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		case (MENU_NEW_TIMER):
 			mTimer = Timer.getNewTimer();
 			editTimer(mTimer, true);
+		default:
+			super.onOptionsItemSelected(item);
 		}
 		return false;
 	}
@@ -325,7 +317,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 	/**
 	 * Open a <code>TimerEditActivity</code> for timer editing
-	 * @param timer The timer to be edited
+	 * 
+	 * @param timer
+	 *            The timer to be edited
 	 */
 	private void editTimer(ExtendedHashMap timer, boolean newTimer) {
 		Intent intent = new Intent(this, TimerEditActivity.class);
@@ -348,7 +342,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(this, mList, R.layout.timer_list_item, new String[] { Timer.NAME,
+		mAdapter = new SimpleAdapter(this, mMapList, R.layout.timer_list_item, new String[] { Timer.NAME,
 				Timer.SERVICE_NAME, Timer.BEGIN_READEABLE, Timer.END_READABLE }, new int[] { R.id.timer_name,
 				R.id.service_name, R.id.timer_start, R.id.timer_end });
 		setListAdapter(mAdapter);
@@ -377,7 +371,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 	/**
 	 * Delete a timer by creating an <code>DeleteTimerTask</code>
-	 * @param timer The Timer to delete as <code>ExtendedHashMap</code>
+	 * 
+	 * @param timer
+	 *            The Timer to delete as <code>ExtendedHashMap</code>
 	 */
 	private void deleteTimer(ExtendedHashMap timer) {
 		if (mDeleteTask != null) {
@@ -397,7 +393,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 	/**
 	 * Called after a timer has been deleted
-	 * @param result A SimpleXmlResult-like <code>ExtendedHashMap</code>
+	 * 
+	 * @param result
+	 *            A SimpleXmlResult-like <code>ExtendedHashMap</code>
 	 */
 	private void onTimerDeleted(ExtendedHashMap result) {
 		mDeleteProgress.dismiss();

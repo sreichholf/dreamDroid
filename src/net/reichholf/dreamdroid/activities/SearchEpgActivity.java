@@ -27,6 +27,7 @@ import android.widget.SimpleAdapter;
 /**
  * Search the EPG for a specific term.<br>
  * Called when search is being requested by the user (by Hard- or Software-Key).
+ * 
  * @author sreichholf
  * 
  */
@@ -35,7 +36,9 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	private String mQuery;
 
 	/**
-	 * <code>AsyncTask</code> to get the EPG information for the given search term 
+	 * <code>AsyncTask</code> to get the EPG information for the given search
+	 * term
+	 * 
 	 * @author sreichholf
 	 * 
 	 */
@@ -55,9 +58,9 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.epg_search) + " - "
 						+ getText(R.string.parsing));
 
-				mList.clear();
+				mMapList.clear();
 
-				if ( Event.parseList(xml, mList ) ) {
+				if (Event.parseList(xml, mMapList)) {
 					return true;
 				}
 			}
@@ -81,13 +84,13 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 		 */
 		protected void onPostExecute(Boolean result) {
 			String title = null;
-			mAdapter.notifyDataSetChanged();	
-			
+			mAdapter.notifyDataSetChanged();
+
 			if (result) {
 				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.epg_search)
 						+ " - \"" + mQuery + "\"";
-				
-				if(mList.size() == 0){
+
+				if (mMapList.size() == 0) {
 					showDialog(DIALOG_EMPTY_LIST_ID);
 				}
 			} else {
@@ -102,7 +105,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 			setTitle(title);
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -114,17 +117,16 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		if (savedInstanceState == null) {
-			Intent intent = getIntent();
+		Intent intent = getIntent();
 
-			if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-				mQuery = intent.getStringExtra(SearchManager.QUERY);
-				setAdapter();
-				search();
-			} else {
-				finish();
-			}
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			mQuery = intent.getStringExtra(SearchManager.QUERY);
+			setAdapter();
+			search();
+		} else {
+			finish();
 		}
+
 	}
 
 	/*
@@ -140,7 +142,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 
 		super.onPause();
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -175,7 +177,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	 */
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		mCurrentItem = mList.get((int) id);
+		mCurrentItem = mMapList.get((int) id);
 
 		// if the dialog has been opened before, remove that instance
 		removeDialog(DIALOG_EPG_ITEM_ID);
@@ -187,7 +189,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(this, mList, R.layout.epg_multi_service_list_item, new String[] {
+		mAdapter = new SimpleAdapter(this, mMapList, R.layout.epg_multi_service_list_item, new String[] {
 				Event.SERVICE_NAME, Event.EVENT_TITLE, Event.EVENT_START_READABLE, Event.EVENT_DURATION_READABLE },
 				new int[] { R.id.service_name, R.id.event_title, R.id.event_start, R.id.event_duration });
 		setListAdapter(mAdapter);

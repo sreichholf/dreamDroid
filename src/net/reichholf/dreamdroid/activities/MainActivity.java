@@ -24,10 +24,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 /**
- * This is where all begins.
- * It's the "main menu activity" which acts as central navigation instance
+ * This is where all begins. It's the "main menu activity" which acts as central
+ * navigation instance
  * 
  * @author sreichholf
  * 
@@ -35,6 +36,7 @@ import android.widget.Spinner;
 public class MainActivity extends AbstractHttpActivity {
 	public static final int DIALOG_SEND_MESSAGE_ID = 0;
 	public static final int DIALOG_SET_POWERSTATE_ID = 1;
+	public static final int DIALOG_ABOUT_ID = 2;
 
 	public static final int ITEM_TIMER = 0;
 	public static final int ITEM_MOVIES = 1;
@@ -52,6 +54,7 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_REBOOT = 13;
 	public static final int ITEM_SHUTDOWN = 14;
 	public static final int ITEM_POWERSTATE_DIALOG = 15;
+	public static final int ITEM_ABOUT = 16;
 	public static final int ITEM_EXIT = 99;
 
 	private Button mButtonPower;
@@ -70,10 +73,9 @@ public class MainActivity extends AbstractHttpActivity {
 	 * <code>AsyncTask</code> to send a message to the target device
 	 * 
 	 * @author sre
-	 *
+	 * 
 	 */
-	private class SendMessageTask extends
-			AsyncTask<ExtendedHashMap, String, Boolean> {
+	private class SendMessageTask extends AsyncTask<ExtendedHashMap, String, Boolean> {
 		private ExtendedHashMap mResult;
 
 		/*
@@ -120,8 +122,7 @@ public class MainActivity extends AbstractHttpActivity {
 				mResult = new ExtendedHashMap();
 
 				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n"
-							+ mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
 			} else {
 				onMessageSent(mResult);
@@ -132,8 +133,9 @@ public class MainActivity extends AbstractHttpActivity {
 
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
+	 * 
 	 * @author sre
-	 *
+	 * 
 	 */
 	private class SetPowerStateTask extends AsyncTask<String, String, Boolean> {
 		private ExtendedHashMap mResult;
@@ -172,8 +174,7 @@ public class MainActivity extends AbstractHttpActivity {
 				mResult = new ExtendedHashMap();
 
 				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n"
-							+ mShc.getErrorText());
+					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
 			} else {
 				onPowerStateSet((Boolean) mResult.get(PowerState.IN_STANDBY));
@@ -226,14 +227,10 @@ public class MainActivity extends AbstractHttpActivity {
 		// Will be reactivated as soon as there are some "Global settings"
 		// menu.add(0, ITEM_SETTINGS, 0,
 		// getText(R.string.settings)).setIcon(R.drawable.edit);
-		menu.add(0, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(
-				android.R.drawable.ic_menu_preferences);
-		
-		menu.add(1, ITEM_SCREENSHOT, 2, R.string.screenshot).setIcon(
-				R.drawable.ic_menu_picture);
-		
-		menu.add(1, ITEM_INFO, 3, R.string.device_info).setIcon(
-				R.drawable.ic_menu_info);
+		menu.add(0, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(1, ITEM_SCREENSHOT, 2, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);
+		menu.add(1, ITEM_INFO, 3, R.string.device_info).setIcon(R.drawable.ic_menu_info);
+		menu.add(1, ITEM_ABOUT, 4, R.string.about).setIcon(android.R.drawable.ic_menu_help);
 		return true;
 	}
 
@@ -244,8 +241,7 @@ public class MainActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		onItemClicked(item.getItemId());
-		return true;
+		return onItemClicked(item.getItemId());
 	}
 
 	/*
@@ -263,8 +259,7 @@ public class MainActivity extends AbstractHttpActivity {
 			dialog.setContentView(R.layout.send_message_dialog);
 			dialog.setTitle(R.string.send_message);
 
-			Button buttonCancel = (Button) dialog
-					.findViewById(R.id.ButtonCancel);
+			Button buttonCancel = (Button) dialog.findViewById(R.id.ButtonCancel);
 			buttonCancel.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -276,23 +271,17 @@ public class MainActivity extends AbstractHttpActivity {
 			buttonSend.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					EditText text = (EditText) dialog
-							.findViewById(R.id.EditTextMessage);
-					EditText timeout = (EditText) dialog
-							.findViewById(R.id.EditTextTimeout);
+					EditText text = (EditText) dialog.findViewById(R.id.EditTextMessage);
+					EditText timeout = (EditText) dialog.findViewById(R.id.EditTextTimeout);
 
-					Spinner type = (Spinner) dialog
-							.findViewById(R.id.SpinnerMessageType);
-					String t = new Integer(type.getSelectedItemPosition())
-							.toString();
+					Spinner type = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
+					String t = new Integer(type.getSelectedItemPosition()).toString();
 
-					sendMessage(text.getText().toString(), t, timeout.getText()
-							.toString());
+					sendMessage(text.getText().toString(), t, timeout.getText().toString());
 				}
 			});
 
-			Spinner spinnerType = (Spinner) dialog
-					.findViewById(R.id.SpinnerMessageType);
+			Spinner spinnerType = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
 			spinnerType.setSelection(2);
 
 			break;
@@ -302,21 +291,18 @@ public class MainActivity extends AbstractHttpActivity {
 			dialog.setContentView(R.layout.powercontrol);
 			dialog.setTitle(R.string.powercontrol);
 
-			Button buttonToggle = (Button) dialog
-					.findViewById(R.id.ButtonToggle);
+			Button buttonToggle = (Button) dialog.findViewById(R.id.ButtonToggle);
 			Button buttonGui = (Button) dialog.findViewById(R.id.ButtonGui);
-			Button buttonReboot = (Button) dialog
-					.findViewById(R.id.ButtonReboot);
-			Button buttonShutdown = (Button) dialog
-					.findViewById(R.id.ButtonShutdown);
-			Button buttonClose = (Button) dialog.findViewById(R.id.ButtonClose);
+			Button buttonReboot = (Button) dialog.findViewById(R.id.ButtonReboot);
+			Button buttonShutdown = (Button) dialog.findViewById(R.id.ButtonShutdown);
+			Button buttonClosePowerState = (Button) dialog.findViewById(R.id.ButtonClose);
 
 			registerOnClickListener(buttonToggle, ITEM_TOGGLE_STANDBY);
 			registerOnClickListener(buttonGui, ITEM_RESTART_GUI);
 			registerOnClickListener(buttonReboot, ITEM_REBOOT);
 			registerOnClickListener(buttonShutdown, ITEM_SHUTDOWN);
 
-			buttonClose.setOnClickListener(new OnClickListener() {
+			buttonClosePowerState.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					dialog.dismiss();
@@ -324,6 +310,25 @@ public class MainActivity extends AbstractHttpActivity {
 
 			});
 
+			break;
+		case DIALOG_ABOUT_ID:
+			dialog = new Dialog(this);
+			dialog.setContentView(R.layout.about);
+			dialog.setTitle(R.string.about);
+						
+			TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
+			CharSequence text = getText(R.string.version_string) + "\n\n" + getText(R.string.license);
+			aboutText.setText(text);
+						
+			Button buttonCloseAbout = (Button) dialog.findViewById(R.id.ButtonClose);
+			
+			buttonCloseAbout.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					dialog.dismiss();
+				}
+
+			});
 			break;
 		default:
 			dialog = null;
@@ -333,38 +338,25 @@ public class MainActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * Register an <code>OnClickListener</code> for a view and a specific item ID  (<code>ITEM_*</code> statics)
-	 * 
-	 * @param v The view an OnClickListener should be registered for
-	 * @param id The id used to identify the item clicked (<code>ITEM_*</code> statics)
-	 */
-	private void registerOnClickListener(View v, final int id) {
-		v.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemClicked(id);
-			}
-		});
-	}
-
-	/**
 	 * Execute the proper action for a item ID (<code>ITEM_*</code> statics)
 	 * 
-	 * @param id The id used to identify the item clicked (<code>ITEM_*</code> statics)
+	 * @param id
+	 *            The id used to identify the item clicked (<code>ITEM_*</code>
+	 *            statics)
 	 */
-	private void onItemClicked(int id) {
+	protected boolean onItemClicked(int id) {
 		Intent intent;
 
 		switch (id) {
 		case (ITEM_TIMER):
 			intent = new Intent(this, TimerListActivity.class);
-			this.startActivity(intent);
-			break;
+			startActivity(intent);
+			return true;
 
 		case (ITEM_MOVIES):
 			intent = new Intent(this, MovieListActivity.class);
-			this.startActivity(intent);
-			break;
+			startActivity(intent);
+			return true;
 
 		case (ITEM_SERVICES):
 			intent = new Intent(this, ServiceListActivity.class);
@@ -373,75 +365,83 @@ public class MainActivity extends AbstractHttpActivity {
 			intent.putExtra(sData, map);
 			intent.setAction(Intent.ACTION_VIEW);
 
-			this.startActivity(intent);
-			break;
+			startActivity(intent);
+			return true;
 
 		case (ITEM_INFO):
 			intent = new Intent(this, DeviceInfoActivity.class);
-			this.startActivity(intent);
-			break;
+			startActivity(intent);
+			return true;
 
 		case (ITEM_CURRENT):
 			intent = new Intent(this, CurrentServiceActivity.class);
-			this.startActivity(intent);
-			break;
+			startActivity(intent);
+			return true;
 
 		case (ITEM_REMOTE):
 			intent = new Intent(this, VirtualRemoteActivity.class);
-			this.startActivity(intent);
-			break;
+			startActivity(intent);
+			return true;
 
 		case (ITEM_SETTINGS):
 			intent = new Intent(this, DreamDroidPreferenceActivity.class);
 			startActivity(intent);
-			break;
+			return true;
 
 		case (ITEM_PROFILES):
 			intent = new Intent(this, ProfileListActivity.class);
 			startActivity(intent);
-			break;
+			return true;
 
 		case (ITEM_MESSAGE):
 			showDialog(DIALOG_SEND_MESSAGE_ID);
-			break;
+			return true;
 
 		case (ITEM_EPG_SEARCH):
 			onSearchRequested();
-			break;
+			return true;
 
 		case (ITEM_SCREENSHOT):
 			intent = new Intent(this, ScreenShotActivity.class);
 			startActivity(intent);
-			break;
+			return true;
 
 		case (ITEM_TOGGLE_STANDBY):
 			setPowerState(PowerState.STATE_TOGGLE);
-			break;
+			return true;
 
 		case (ITEM_RESTART_GUI):
 			setPowerState(PowerState.STATE_GUI_RESTART);
-			break;
+			return true;
 
 		case (ITEM_REBOOT):
 			setPowerState(PowerState.STATE_SYSTEM_REBOOT);
-			break;
+			return true;
 
 		case (ITEM_SHUTDOWN):
 			setPowerState(PowerState.STATE_SHUTDOWN);
-			break;
+			return true;
 
 		case (ITEM_POWERSTATE_DIALOG):
 			showDialog(DIALOG_SET_POWERSTATE_ID);
-			break;
-
+			return true;
+		
+		case (ITEM_ABOUT):
+			showDialog(DIALOG_ABOUT_ID);
+			return true;
+			
 		case (ITEM_EXIT):
 			finish();
-			break;
+			return true;
+		default:
+			return super.onItemClicked(id);
 		}
 	}
 
 	/**
-	 * @param state The powerstate to set. For example defined in <code>helpers.enigma2.PowerState.STATE_*</code>
+	 * @param state
+	 *            The powerstate to set. For example defined in
+	 *            <code>helpers.enigma2.PowerState.STATE_*</code>
 	 */
 	private void setPowerState(String state) {
 		if (mSetPowerStateTask != null) {
@@ -463,9 +463,14 @@ public class MainActivity extends AbstractHttpActivity {
 
 	/**
 	 * Send a message to the target device which will be shown on TV
-	 * @param text The message text
-	 * @param type Type of the message as defined in <code>helpers.enigma2.Message.STATE_*</code>
-	 * @param timeout Timeout for the message, 0 means no timeout will occur
+	 * 
+	 * @param text
+	 *            The message text
+	 * @param type
+	 *            Type of the message as defined in
+	 *            <code>helpers.enigma2.Message.STATE_*</code>
+	 * @param timeout
+	 *            Timeout for the message, 0 means no timeout will occur
 	 */
 	private void sendMessage(String text, String type, String timeout) {
 		if (mSendMessageTask != null) {
@@ -484,7 +489,9 @@ public class MainActivity extends AbstractHttpActivity {
 	/**
 	 * Handles the result of sending a message to the target device
 	 * 
-	 * @param result Result of sending the message in <code>helpers.enigma2.SimpleResult</code> style
+	 * @param result
+	 *            Result of sending the message in
+	 *            <code>helpers.enigma2.SimpleResult</code> style
 	 */
 	private void onMessageSent(ExtendedHashMap result) {
 		String toastText = (String) getText(R.string.get_content_error);
