@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.activities;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -171,7 +172,8 @@ public class ProfileListActivity extends ListActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == EDIT_PROFILE_REQUEST) {
-			if (resultCode == RESULT_OK) {
+			setResult(resultCode);
+			if (resultCode == RESULT_OK) {				
 				mCursor.requery();
 				mAdapter.notifyDataSetChanged();
 				// Reload the current profile as it may have been changed/altered
@@ -226,7 +228,8 @@ public class ProfileListActivity extends ListActivity {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '"
 					+ mProfile.getProfile() + "'");
-
+			
+			setResult(Activity.RESULT_OK);
 			finish();
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '"

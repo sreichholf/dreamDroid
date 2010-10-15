@@ -5,12 +5,60 @@
 	android:layout_height="fill_parent"
 	android:orientation="vertical"
 	xmlns:android="http://schemas.android.com/apk/res/android">
-	
+	<TableLayout 
+		android:id="@+id/LinearLayout2" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"		
+		android:orientation="horizontal"
+		android:layout_gravity="top"
+		android:layout_marginTop="-10dp"
+		style="@android:style/ButtonBar">
+		<TableRow
+			android:layout_marginTop="10dp">
+			<TextView 
+				android:text="@string/active_profile" 
+				android:textColor="#FFF"
+				android:textStyle="bold"
+				android:id="@+id/TextViewProfileTitle" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:layout_weight="1" />
+			<TextView 
+				android:text="@string/connection_state"
+				android:textColor="#FFF"
+				android:textStyle="bold" 
+				android:id="@+id/TextViewConnectionStateTitle" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:gravity="right"
+				android:layout_weight="1" />
+		</TableRow>
+		<TableRow
+			android:layout_marginTop="1dp">
+			<TextView 
+				android:text="..." 
+				android:textColor="#FFF"
+				android:textStyle="bold"
+				android:id="@+id/TextViewProfile" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:layout_weight="1" />
+			<TextView 
+				android:text="..."
+				android:textColor="#FFF"
+				android:textStyle="bold" 
+				android:id="@+id/TextViewConnectionState" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:gravity="right"
+				android:layout_weight="1" />		
+		</TableRow>
+	</TableLayout>
 	<ScrollView
 		android:id="@+id/ScrollViewMain"
 		android:layout_width="fill_parent" 
 		android:layout_height="fill_parent"
-		android:layout_marginBottom="51dip">
+		android:layout_marginBottom="0dip">
 	
 		<LinearLayout 
 			android:layout_width="fill_parent" 
@@ -84,9 +132,7 @@
 					android:layout_height="wrap_content" 
 					android:drawableTop="@drawable/ic_menu_search" 
 					android:layout_weight="1" />
-			</LinearLayout>	
-
-
+			</LinearLayout>
 			<LinearLayout 
 				android:id="@+id/LinearLayout4" 
 				android:layout_width="fill_parent" 
@@ -108,19 +154,12 @@
 					android:layout_height="wrap_content" 
 					android:drawableTop="@drawable/ic_menu_power_off" 
 					android:layout_weight="1" />
-			</LinearLayout>	
-<!-- 			
-			<TextView
-				android:id="@+id/TextViewVersion"
-				android:text="@string/version_string" 
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:layout_gravity="bottom"			
-				android:gravity="center"/>
- -->				
+			</LinearLayout>
+		
+			
 		</LinearLayout>	
 	</ScrollView>
-	
+<!-- 	
 	<LinearLayout 
 		android:id="@+id/LinearLayout2" 
 		android:layout_width="fill_parent" 
@@ -136,5 +175,6 @@
 			android:src="@drawable/ic_btn_close"
 			android:scaleType="center"
 			android:gravity="bottom"/>
-	</LinearLayout>	
+	</LinearLayout>
+ -->		
 </LinearLayout>

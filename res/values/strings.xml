@@ -163,4 +163,9 @@
 	<string name="loading">Loading...</string>
 	<string name="about">About</string>
 	<string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0/</string>
+	<string name="active_profile">Active profile</string>
+	<string name="connection_state">Connection state</string>
+	<string name="not_available">Not available</string>
+	<string name="checking">checking...</string>
+	<string name="error">ERROR!</string>
 </resources>

@@ -6,23 +6,27 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -37,7 +41,9 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int DIALOG_SEND_MESSAGE_ID = 0;
 	public static final int DIALOG_SET_POWERSTATE_ID = 1;
 	public static final int DIALOG_ABOUT_ID = 2;
-
+	
+	public static final int EDIT_PROFILES_REQUEST = 0;
+	
 	public static final int ITEM_TIMER = 0;
 	public static final int ITEM_MOVIES = 1;
 	public static final int ITEM_SERVICES = 2;
@@ -55,7 +61,6 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_SHUTDOWN = 14;
 	public static final int ITEM_POWERSTATE_DIALOG = 15;
 	public static final int ITEM_ABOUT = 16;
-	public static final int ITEM_EXIT = 99;
 
 	private Button mButtonPower;
 	private Button mButtonCurrent;
@@ -65,9 +70,12 @@ public class MainActivity extends AbstractHttpActivity {
 	private Button mButtonTimer;
 	private Button mButtonEpgSearch;
 	private Button mButtonRemote;
-	private ImageButton mButtonExit;
+	private TextView mActiveProfile;
+	private TextView mConnectionState;
+	// private ImageButton mButtonExit;
 	private AsyncTask<ExtendedHashMap, String, Boolean> mSendMessageTask;
 	private AsyncTask<String, String, Boolean> mSetPowerStateTask;
+	private CheckProfileTask mCheckProfileTask;
 
 	/**
 	 * <code>AsyncTask</code> to send a message to the target device
@@ -99,16 +107,6 @@ public class MainActivity extends AbstractHttpActivity {
 			}
 
 			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-
 		}
 
 		/*
@@ -183,6 +181,51 @@ public class MainActivity extends AbstractHttpActivity {
 		}
 	}
 
+	/**
+	 * <code>AsyncTask</code> to check the active profile
+	 * 
+	 * @author sre
+	 * 
+	 */
+	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected ExtendedHashMap doInBackground(Void... params) {
+			publishProgress(getText(R.string.checking).toString());
+			return CheckProfile.checkProfile(DreamDroid.PROFILE);
+		}
+
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(String... progress) {
+			setConnectionState(progress[0]);
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(ExtendedHashMap result) {
+			Log.i(DreamDroid.LOG_TAG, result.toString());
+			if((Boolean) result.get(CheckProfile.KEY_ERROR) ){
+				setConnectionState(getText(R.string.error).toString());
+			} else {
+				setConnectionState(getText(R.string.ok).toString());
+			}
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -195,7 +238,12 @@ public class MainActivity extends AbstractHttpActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.main);
-
+		
+		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);		
+		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
+		
+		setProfileName();
+		
 		mButtonPower = (Button) findViewById(R.id.ButtonPower);
 		mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
 		mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
@@ -204,7 +252,6 @@ public class MainActivity extends AbstractHttpActivity {
 		mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
 		mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
 		mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
-		mButtonExit = (ImageButton) findViewById(R.id.ButtonExit);
 
 		registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
 		registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
@@ -214,7 +261,8 @@ public class MainActivity extends AbstractHttpActivity {
 		registerOnClickListener(mButtonTimer, ITEM_TIMER);
 		registerOnClickListener(mButtonRemote, ITEM_REMOTE);
 		registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
-		registerOnClickListener(mButtonExit, ITEM_EXIT);
+		
+		checkActiveProfile();
 	}
 
 	/*
@@ -315,13 +363,13 @@ public class MainActivity extends AbstractHttpActivity {
 			dialog = new Dialog(this);
 			dialog.setContentView(R.layout.about);
 			dialog.setTitle(R.string.about);
-						
+
 			TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
 			CharSequence text = getText(R.string.version_string) + "\n\n" + getText(R.string.license);
 			aboutText.setText(text);
-						
+
 			Button buttonCloseAbout = (Button) dialog.findViewById(R.id.ButtonClose);
-			
+
 			buttonCloseAbout.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -337,6 +385,45 @@ public class MainActivity extends AbstractHttpActivity {
 		return dialog;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onActivityResult(int, int,
+	 * android.content.Intent)
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == EDIT_PROFILES_REQUEST) {	
+			setProfileName();
+			
+			if(resultCode == Activity.RESULT_OK){
+				checkActiveProfile();
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	private void setProfileName(){
+		mActiveProfile.setText(DreamDroid.PROFILE.getProfile());
+	}
+	
+	private void setConnectionState(String state){
+		mConnectionState.setText(state);
+	}
+	
+	private void checkActiveProfile(){
+		if (mCheckProfileTask != null) {
+			mCheckProfileTask.cancel(true);
+		}
+
+		mCheckProfileTask = new CheckProfileTask();
+		mCheckProfileTask.execute();
+//		Log.e(DreamDroid.LOG_TAG, result.toString());
+		
+	}
+	
 	/**
 	 * Execute the proper action for a item ID (<code>ITEM_*</code> statics)
 	 * 
@@ -390,7 +477,7 @@ public class MainActivity extends AbstractHttpActivity {
 
 		case (ITEM_PROFILES):
 			intent = new Intent(this, ProfileListActivity.class);
-			startActivity(intent);
+			startActivityForResult(intent, EDIT_PROFILES_REQUEST);
 			return true;
 
 		case (ITEM_MESSAGE):
@@ -425,14 +512,11 @@ public class MainActivity extends AbstractHttpActivity {
 		case (ITEM_POWERSTATE_DIALOG):
 			showDialog(DIALOG_SET_POWERSTATE_ID);
 			return true;
-		
+
 		case (ITEM_ABOUT):
 			showDialog(DIALOG_ABOUT_ID);
 			return true;
-			
-		case (ITEM_EXIT):
-			finish();
-			return true;
+
 		default:
 			return super.onItemClicked(id);
 		}

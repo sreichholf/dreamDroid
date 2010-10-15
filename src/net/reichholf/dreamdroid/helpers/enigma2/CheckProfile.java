@@ -24,24 +24,31 @@ public class CheckProfile {
 	public static final String KEY_PORT = "port";
 	public static final String KEY_CONNECTIVITY = "connectivity";
 	public static final String KEY_DEVICE_NAME = "devicename";
-
+	public static final String KEY_ERROR = "error";
 	public static final String KEY_RESULT = "result";
 	public static final String KEY_RESULT_TEXT = "text";
 
 	public static ExtendedHashMap checkProfile(Profile profile) {
 		ExtendedHashMap checkResult = new ExtendedHashMap();
-
+		setError(checkResult, false);
+		
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		String host = profile.getHost();
-
+		
+		ExtendedHashMap result;
+		
 		if (host != null) {
 			if (!host.contains(" ")) {
-				checkResult.put(KEY_HOST, new ExtendedHashMap().put(KEY_RESULT, true));
+				result = new ExtendedHashMap();
+				result.put(KEY_RESULT, true);
+				checkResult.put(KEY_HOST, result);
 
 				int port = profile.getPort();
 
 				if (port > 0 && port <= 65535) {
-					checkResult.put(KEY_PORT, new ExtendedHashMap().put(KEY_RESULT, true));
+					result = new ExtendedHashMap();
+					result.put(KEY_RESULT, true);
+					checkResult.put(KEY_PORT, result);
 
 					String xml = DeviceInfo.get(shc);
 
@@ -49,13 +56,15 @@ public class CheckProfile {
 						ExtendedHashMap deviceInfo = new ExtendedHashMap();
 
 						if (DeviceInfo.parse(xml, deviceInfo)) {
+							result = new ExtendedHashMap();
+							result.put(KEY_RESULT_TEXT,
+									deviceInfo.getString(DeviceInfo.DEVICE_NAME));
 							checkResult.put(
 									KEY_DEVICE_NAME,
-									new ExtendedHashMap().put(KEY_RESULT_TEXT,
-											deviceInfo.getString(DeviceInfo.DEVICE_NAME)));
+									result);
 
 							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION);
-							String[] v = version.split(".");
+							String[] v = version.split("\\.");
 
 							if (v.length >= 2) {
 								String major = v[0];
@@ -76,12 +85,15 @@ public class CheckProfile {
 								}
 
 								if (majorVersion > 1 || (majorVersion == 1 && minorVersion >= 6)) {
-									checkResult.put(KEY_VERSION, new ExtendedHashMap().put(KEY_RESULT, true));
+									result = new ExtendedHashMap();
+									result.put(KEY_RESULT, true);
+									checkResult.put(KEY_VERSION, result);
 								} else {
-									ExtendedHashMap map = new ExtendedHashMap();
-									map.put(KEY_RESULT, false);
-									map.put(KEY_RESULT_TEXT, "Version < 1.6");
-									checkResult.put(KEY_VERSION, map);
+									result = new ExtendedHashMap();
+									result.put(KEY_RESULT, false);
+									result.put(KEY_RESULT_TEXT, "Version < 1.6");
+									checkResult.put(KEY_VERSION, result);
+									setError(checkResult, true);
 								}
 
 							}
@@ -90,22 +102,29 @@ public class CheckProfile {
 						}
 
 					} else if (shc.hasError()) {
-						ExtendedHashMap map = new ExtendedHashMap();
-						map.put(KEY_RESULT, false);
-						map.put(KEY_RESULT_TEXT, shc.getErrorText());
+						result = new ExtendedHashMap();
+						result.put(KEY_RESULT, false);
+						result.put(KEY_RESULT_TEXT, shc.getErrorText());
 
-						checkResult.put(KEY_CONNECTIVITY, map);
+						checkResult.put(KEY_CONNECTIVITY, result);
+						setError(checkResult, true);
 					} else if (xml == null) {
 						// TODO Unexpected Error
 					}
 				} else {
 					checkResult.put(KEY_PORT, false);
+					setError(checkResult, true);
 				}
 			} else {
 				checkResult.put(KEY_HOST, false);
+				setError(checkResult, true);
 			}
 		}
 
 		return checkResult;
+	}
+	
+	private static void setError(ExtendedHashMap checkResult, boolean b){
+		checkResult.put(KEY_ERROR, b);
 	}
 }
