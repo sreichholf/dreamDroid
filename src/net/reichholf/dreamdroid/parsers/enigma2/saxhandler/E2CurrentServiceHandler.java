@@ -275,7 +275,7 @@ public class E2CurrentServiceHandler extends DefaultHandler {
 			if (inEventServiceReference) {
 				mEvent.putOrConcat(Event.SERVICE_REFERENCE, value);
 			} else if (inEventServiceName) {
-				mEvent.putOrConcat(Event.SERVICE_NAME, value);
+				mEvent.putOrConcat(Event.SERVICE_NAME, value.replaceAll("\\p{Cntrl}", ""));
 			} else if (inEventProviderName) {
 				// TODO add handling if needed
 			} else if (inEventId) {

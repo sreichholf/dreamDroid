@@ -143,7 +143,7 @@ public class E2EventHandler extends DefaultHandler {
 			} else if (inServiceRef) {
 				mEvent.putOrConcat(Event.SERVICE_REFERENCE, value.trim());
 			} else if (inServiceName) {
-				mEvent.putOrConcat(Event.SERVICE_NAME, value.trim());
+				mEvent.putOrConcat(Event.SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "").trim());
 			}
 		}
 	}

@@ -93,7 +93,7 @@ public class E2ServiceListHandler extends DefaultHandler {
 			if (inReference) {
 				mService.putOrConcat(Service.REFERENCE, value);
 			} else if (inName) {
-				mService.putOrConcat(Service.NAME, value);
+				mService.putOrConcat(Service.NAME, value.replaceAll("\\p{Cntrl}", ""));
 			}
 		}
 	}

@@ -220,7 +220,7 @@ public class E2TimerHandler extends DefaultHandler {
 			if (inReference) {
 				mTimer.putOrConcat(Timer.REFERENCE, value);
 			} else if (inServicename) {
-				mTimer.putOrConcat(Timer.SERVICE_NAME, value);
+				mTimer.putOrConcat(Timer.SERVICE_NAME, value.replaceAll("\\p{Cntrl}", ""));
 			} else if (inEit) {
 				mTimer.put(Timer.EIT, value);
 			} else if (inName) {

@@ -140,7 +140,7 @@ public class E2MovieListHandler extends DefaultHandler {
 			} else if (inDescriptionEx) {
 				mMovie.putOrConcat(Movie.DESCRIPTION_EXTENDED, value);
 			} else if (inName) {
-				mMovie.putOrConcat(Movie.SERVICE_NAME, value);
+				mMovie.putOrConcat(Movie.SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "")); //remove illegal chars
 			} else if (inTime) {
 				mMovie.putOrConcat(Movie.TIME, value);
 				mMovie.putOrConcat(Movie.TIME_READABLE, DateTime.getDateTimeString(value));
