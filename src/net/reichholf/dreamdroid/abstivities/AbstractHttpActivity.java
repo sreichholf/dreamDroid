@@ -8,7 +8,7 @@ package net.reichholf.dreamdroid.abstivities;
 
 import java.util.HashMap;
 
-import net.reichholf.dreamdroid.CustomExceptionHandler;
+//import net.reichholf.dreamdroid.CustomExceptionHandler;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -40,7 +40,7 @@ public abstract class AbstractHttpActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		CustomExceptionHandler.register(this);
+//		CustomExceptionHandler.register(this);
 		
 		if (savedInstanceState != null) {
 			Object retained = getLastNonConfigurationInstance();

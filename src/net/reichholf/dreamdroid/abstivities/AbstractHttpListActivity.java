@@ -9,7 +9,7 @@ package net.reichholf.dreamdroid.abstivities;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import net.reichholf.dreamdroid.CustomExceptionHandler;
+//import net.reichholf.dreamdroid.CustomExceptionHandler;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -54,7 +54,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		CustomExceptionHandler.register(this);
+//		CustomExceptionHandler.register(this);
 
 		mExtras = getIntent().getExtras();
 		mMapList = new ArrayList<ExtendedHashMap>();
