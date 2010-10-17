@@ -158,4 +158,13 @@
 	<string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>	
 	<string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
 	<string name="loading">Lade...</string>
+	<string name="about">Über</string>
+	<string name="license">Lizenz:\nLizensiert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+	<string name="source_code_link">Der Quellcode ist vergübar unter: http://github.com/sreichholf/dreamDroid</string>
+	<string name="active_profile">Aktives Profil</string>
+	<string name="connection_state">Verbindungsstatus</string>
+	<string name="not_available">Nicht verfügbar</string>
+	<string name="checking">prüfe...</string>
+	<string name="error">FEHLER!</string>
+	<string name="check_connectivity">Verbindung prüfen</string>
 </resources>

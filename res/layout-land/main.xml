@@ -59,8 +59,7 @@
 	<ScrollView
 		android:id="@+id/ScrollViewMain"
 		android:layout_width="fill_parent" 
-		android:layout_height="fill_parent"
-		android:layout_marginBottom="51dip">
+		android:layout_height="fill_parent">
 	
 		<LinearLayout 
 			android:layout_width="fill_parent" 

@@ -41,9 +41,9 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int DIALOG_SEND_MESSAGE_ID = 0;
 	public static final int DIALOG_SET_POWERSTATE_ID = 1;
 	public static final int DIALOG_ABOUT_ID = 2;
-	
+
 	public static final int EDIT_PROFILES_REQUEST = 0;
-	
+
 	public static final int ITEM_TIMER = 0;
 	public static final int ITEM_MOVIES = 1;
 	public static final int ITEM_SERVICES = 2;
@@ -61,6 +61,7 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_SHUTDOWN = 14;
 	public static final int ITEM_POWERSTATE_DIALOG = 15;
 	public static final int ITEM_ABOUT = 16;
+	public static final int ITEM_CHECK_CONN = 17;
 
 	private Button mButtonPower;
 	private Button mButtonCurrent;
@@ -199,7 +200,6 @@ public class MainActivity extends AbstractHttpActivity {
 			return CheckProfile.checkProfile(DreamDroid.PROFILE);
 		}
 
-
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -209,7 +209,7 @@ public class MainActivity extends AbstractHttpActivity {
 		protected void onProgressUpdate(String... progress) {
 			setConnectionState(progress[0]);
 		}
-		
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -218,14 +218,14 @@ public class MainActivity extends AbstractHttpActivity {
 		@Override
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(DreamDroid.LOG_TAG, result.toString());
-			if((Boolean) result.get(CheckProfile.KEY_ERROR) ){
+			if ((Boolean) result.get(CheckProfile.KEY_ERROR)) {
 				setConnectionState(getText(R.string.error).toString());
 			} else {
 				setConnectionState(getText(R.string.ok).toString());
 			}
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -238,12 +238,10 @@ public class MainActivity extends AbstractHttpActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.main);
-		
-		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);		
+
+		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
 		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
-		
-		setProfileName();
-		
+
 		mButtonPower = (Button) findViewById(R.id.ButtonPower);
 		mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
 		mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
@@ -261,7 +259,8 @@ public class MainActivity extends AbstractHttpActivity {
 		registerOnClickListener(mButtonTimer, ITEM_TIMER);
 		registerOnClickListener(mButtonRemote, ITEM_REMOTE);
 		registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
-		
+
+		setProfileName();
 		checkActiveProfile();
 	}
 
@@ -275,10 +274,11 @@ public class MainActivity extends AbstractHttpActivity {
 		// Will be reactivated as soon as there are some "Global settings"
 		// menu.add(0, ITEM_SETTINGS, 0,
 		// getText(R.string.settings)).setIcon(R.drawable.edit);
-		menu.add(0, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(1, ITEM_SCREENSHOT, 2, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);
-		menu.add(1, ITEM_INFO, 3, R.string.device_info).setIcon(R.drawable.ic_menu_info);
-		menu.add(1, ITEM_ABOUT, 4, R.string.about).setIcon(android.R.drawable.ic_menu_help);
+		menu.add(1, ITEM_CHECK_CONN, 1, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);
+		menu.add(1, ITEM_PROFILES, 2, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(0, ITEM_SCREENSHOT, 3, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);
+		menu.add(0, ITEM_INFO, 4, R.string.device_info).setIcon(R.drawable.ic_menu_info);
+		menu.add(0, ITEM_ABOUT, 5, R.string.about).setIcon(android.R.drawable.ic_menu_help);
 		return true;
 	}
 
@@ -365,7 +365,8 @@ public class MainActivity extends AbstractHttpActivity {
 			dialog.setTitle(R.string.about);
 
 			TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
-			CharSequence text = getText(R.string.version_string) + "\n\n" + getText(R.string.license);
+			CharSequence text = getText(R.string.version_string) + "\n\n" + getText(R.string.license) + "\n\n"
+					+ getText(R.string.source_code_link);
 			aboutText.setText(text);
 
 			Button buttonCloseAbout = (Button) dialog.findViewById(R.id.ButtonClose);
@@ -393,37 +394,35 @@ public class MainActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == EDIT_PROFILES_REQUEST) {	
+		if (requestCode == EDIT_PROFILES_REQUEST) {
 			setProfileName();
-			
-			if(resultCode == Activity.RESULT_OK){
+
+			if (resultCode == Activity.RESULT_OK) {
 				checkActiveProfile();
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 */
-	private void setProfileName(){
+	private void setProfileName() {
 		mActiveProfile.setText(DreamDroid.PROFILE.getProfile());
 	}
-	
-	private void setConnectionState(String state){
+
+	private void setConnectionState(String state) {
 		mConnectionState.setText(state);
 	}
-	
-	private void checkActiveProfile(){
+
+	private void checkActiveProfile() {
 		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
 		}
 
 		mCheckProfileTask = new CheckProfileTask();
 		mCheckProfileTask.execute();
-//		Log.e(DreamDroid.LOG_TAG, result.toString());
-		
 	}
-	
+
 	/**
 	 * Execute the proper action for a item ID (<code>ITEM_*</code> statics)
 	 * 
@@ -435,17 +434,17 @@ public class MainActivity extends AbstractHttpActivity {
 		Intent intent;
 
 		switch (id) {
-		case (ITEM_TIMER):
+		case ITEM_TIMER:
 			intent = new Intent(this, TimerListActivity.class);
 			startActivity(intent);
 			return true;
 
-		case (ITEM_MOVIES):
+		case ITEM_MOVIES:
 			intent = new Intent(this, MovieListActivity.class);
 			startActivity(intent);
 			return true;
 
-		case (ITEM_SERVICES):
+		case ITEM_SERVICES:
 			intent = new Intent(this, ServiceListActivity.class);
 			ExtendedHashMap map = new ExtendedHashMap();
 
@@ -455,66 +454,70 @@ public class MainActivity extends AbstractHttpActivity {
 			startActivity(intent);
 			return true;
 
-		case (ITEM_INFO):
+		case ITEM_INFO:
 			intent = new Intent(this, DeviceInfoActivity.class);
 			startActivity(intent);
 			return true;
 
-		case (ITEM_CURRENT):
+		case ITEM_CURRENT:
 			intent = new Intent(this, CurrentServiceActivity.class);
 			startActivity(intent);
 			return true;
 
-		case (ITEM_REMOTE):
+		case ITEM_REMOTE:
 			intent = new Intent(this, VirtualRemoteActivity.class);
 			startActivity(intent);
 			return true;
 
-		case (ITEM_SETTINGS):
+		case ITEM_SETTINGS:
 			intent = new Intent(this, DreamDroidPreferenceActivity.class);
 			startActivity(intent);
 			return true;
 
-		case (ITEM_PROFILES):
+		case ITEM_PROFILES:
 			intent = new Intent(this, ProfileListActivity.class);
 			startActivityForResult(intent, EDIT_PROFILES_REQUEST);
 			return true;
 
-		case (ITEM_MESSAGE):
+		case ITEM_MESSAGE:
 			showDialog(DIALOG_SEND_MESSAGE_ID);
 			return true;
 
-		case (ITEM_EPG_SEARCH):
+		case ITEM_EPG_SEARCH:
 			onSearchRequested();
 			return true;
 
-		case (ITEM_SCREENSHOT):
+		case ITEM_SCREENSHOT:
 			intent = new Intent(this, ScreenShotActivity.class);
 			startActivity(intent);
 			return true;
 
-		case (ITEM_TOGGLE_STANDBY):
+		case ITEM_TOGGLE_STANDBY:
 			setPowerState(PowerState.STATE_TOGGLE);
 			return true;
 
-		case (ITEM_RESTART_GUI):
+		case ITEM_RESTART_GUI:
 			setPowerState(PowerState.STATE_GUI_RESTART);
 			return true;
 
-		case (ITEM_REBOOT):
+		case ITEM_REBOOT:
 			setPowerState(PowerState.STATE_SYSTEM_REBOOT);
 			return true;
 
-		case (ITEM_SHUTDOWN):
+		case ITEM_SHUTDOWN:
 			setPowerState(PowerState.STATE_SHUTDOWN);
 			return true;
 
-		case (ITEM_POWERSTATE_DIALOG):
+		case ITEM_POWERSTATE_DIALOG:
 			showDialog(DIALOG_SET_POWERSTATE_ID);
 			return true;
 
-		case (ITEM_ABOUT):
+		case ITEM_ABOUT:
 			showDialog(DIALOG_ABOUT_ID);
+			return true;
+
+		case ITEM_CHECK_CONN:
+			checkActiveProfile();
 			return true;
 
 		default:
