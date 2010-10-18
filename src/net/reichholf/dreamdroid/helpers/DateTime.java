@@ -24,7 +24,7 @@ public class DateTime {
 	public static String getDurationString(String duration, String eventstart) {
 		long d = new Long(duration);
 		String durationPrefix = "";
-
+		d = 0;
 		if (eventstart != null) {
 			try {
 				long s = new Long(eventstart) * 1000;
@@ -32,8 +32,8 @@ public class DateTime {
 
 				if (now.getTime() >= (s)) {
 					d = d - ((now.getTime() - s) / 1000);
-					if( d <= 0){
-						d = 1;
+					if( d <= 60){
+						d = 60;
 					}
 					durationPrefix = "+";
 				}
