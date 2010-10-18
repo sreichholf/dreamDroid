@@ -57,14 +57,14 @@ public class SimpleHttpClient {
 	private boolean mError;
 
 	/**
-	 * @param sp SharedPreferences of the Base-Context
+	 * @param sp
+	 *            SharedPreferences of the Base-Context
 	 */
 	private SimpleHttpClient() {
 		BasicHttpParams params = new BasicHttpParams();
 		params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
 
-		mDhc = new DefaultHttpClient(getEasySSLClientConnectionManager(),
-				params);
+		mDhc = new DefaultHttpClient(getEasySSLClientConnectionManager(), params);
 
 		mContext = new BasicHttpContext();
 		applyConfig();
@@ -78,20 +78,19 @@ public class SimpleHttpClient {
 
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 
-		schemeRegistry.register(new Scheme("http", PlainSocketFactory
-				.getSocketFactory(), 80));
-		schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(),
-				443));
+		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+		schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
 
-		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(
-				params, schemeRegistry);
+		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
 
 		return cm;
 	}
 
 	/**
-	 * @param user Username for http-auth
-	 * @param pass Password for http-auth
+	 * @param user
+	 *            Username for http-auth
+	 * @param pass
+	 *            Password for http-auth
 	 */
 	public void setCredentials(String user, String pass) {
 		mCreds = new UsernamePasswordCredentials(user, pass);
@@ -104,12 +103,12 @@ public class SimpleHttpClient {
 	public void unsetCrendentials() {
 		mDhc.getCredentialsProvider().setCredentials(AuthScope.ANY, null);
 	}
-	
-	
-	public String buildUrl(String uri, List<NameValuePair> parameters){
+
+	public String buildUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
 		return mPrefix + mHostname + ":" + mPort + uri + parms;
 	}
+
 	/**
 	 * @param uri
 	 * @param parameters
@@ -125,9 +124,8 @@ public class SimpleHttpClient {
 		if (!uri.startsWith("/")) {
 			uri = "/".concat(uri);
 		}
-		
+
 		String url = buildUrl(uri, parameters);
-		
 
 		try {
 			HttpGet get = new HttpGet(url);
@@ -141,34 +139,49 @@ public class SimpleHttpClient {
 
 					mPageString = new String(tmp);
 					return true;
+					
 				} else {
 					mErrorText = "HttpEntity is null";
 					mError = true;
 				}
+				
 			} else {
 				mErrorText = s.getStatusCode() + " - " + s.getReasonPhrase();
 				mError = true;
 				return false;
 			}
+			
 		} catch (IllegalArgumentException e) {
 			Log.e(this.getClass().getSimpleName(), e.toString());
-			mErrorText = e.toString();
+			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
+			if (e.getMessage() != null) {
+				mErrorText += ": " + e.getMessage();
+			}
 			mError = true;
 			return false;
+
 		} catch (ClientProtocolException e) {
 			Log.e(this.getClass().getSimpleName(), e.toString());
 
-			mErrorText = e.toString();
+			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
+			if (e.getMessage() != null) {
+				mErrorText += ": " + e.getMessage();
+			}
+
 			mError = true;
 			return false;
+
 		} catch (IOException e) {
 			Log.e(this.getClass().getSimpleName(), e.toString());
 
-			mErrorText = e.toString();
+			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
+			if (e.getMessage() != null) {
+				mErrorText += ": " + e.getMessage();
+			}
+
 			mError = true;
 			return false;
 		}
-		
 
 		return false;
 	}
