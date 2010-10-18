@@ -218,7 +218,7 @@ public class MainActivity extends AbstractHttpActivity {
 		@Override
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(DreamDroid.LOG_TAG, result.toString());
-			if ((Boolean) result.get(CheckProfile.KEY_ERROR)) {
+			if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
 				setConnectionState(getText(R.string.error).toString());
 			} else {
 				setConnectionState(getText(R.string.ok).toString());

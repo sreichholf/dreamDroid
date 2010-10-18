@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import java.util.ArrayList;
+
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -18,37 +20,30 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
  * 
  */
 public class CheckProfile {	
-	
-	public static final String KEY_VERSION = "version";
-	public static final String KEY_HOST = "host";
-	public static final String KEY_PORT = "port";
-	public static final String KEY_CONNECTIVITY = "connectivity";
-	public static final String KEY_DEVICE_NAME = "devicename";
-	public static final String KEY_ERROR = "error";
-	public static final String KEY_RESULT = "result";
-	public static final String KEY_RESULT_TEXT = "text";
+	public static final String KEY_HAS_ERROR = "error";	
+	public static final String KEY_VALUE = "value";
+	public static final String KEY_ERROR_TEXT = "text";
+	public static final String KEY_WHAT = "what";
+	public static final String KEY_RESULT_LIST = "list";
 
 	public static ExtendedHashMap checkProfile(Profile profile) {
+		ArrayList<ExtendedHashMap> resultList = new ArrayList<ExtendedHashMap>();
 		ExtendedHashMap checkResult = new ExtendedHashMap();
+		
+		checkResult.put(KEY_RESULT_LIST, resultList);
 		setError(checkResult, false);
 		
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		String host = profile.getHost();
 		
-		ExtendedHashMap result;
-		
 		if (host != null) {
 			if (!host.contains(" ")) {
-				result = new ExtendedHashMap();
-				result.put(KEY_RESULT, true);
-				checkResult.put(KEY_HOST, result);
+				addEntry(resultList, "Hostname/IP", false, host);
 
 				int port = profile.getPort();
 
 				if (port > 0 && port <= 65535) {
-					result = new ExtendedHashMap();
-					result.put(KEY_RESULT, true);
-					checkResult.put(KEY_PORT, result);
+					addEntry(resultList, "Port", false, Integer.toString(port));
 
 					String xml = DeviceInfo.get(shc);
 
@@ -56,13 +51,8 @@ public class CheckProfile {
 						ExtendedHashMap deviceInfo = new ExtendedHashMap();
 
 						if (DeviceInfo.parse(xml, deviceInfo)) {
-							result = new ExtendedHashMap();
-							result.put(KEY_RESULT_TEXT,
-									deviceInfo.getString(DeviceInfo.DEVICE_NAME));
-							checkResult.put(
-									KEY_DEVICE_NAME,
-									result);
-
+							addEntry(resultList, "DeviceName", false, deviceInfo.getString(DeviceInfo.DEVICE_NAME));
+							
 							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION);
 							String[] v = version.split("\\.");
 
@@ -85,14 +75,9 @@ public class CheckProfile {
 								}
 
 								if (majorVersion > 1 || (majorVersion == 1 && minorVersion >= 6)) {
-									result = new ExtendedHashMap();
-									result.put(KEY_RESULT, true);
-									checkResult.put(KEY_VERSION, result);
+									addEntry(resultList, "Interface Version", false, version);
 								} else {
-									result = new ExtendedHashMap();
-									result.put(KEY_RESULT, false);
-									result.put(KEY_RESULT_TEXT, "Version < 1.6");
-									checkResult.put(KEY_VERSION, result);
+									addEntry(resultList, "Interface Version", true, version, "Version < 1.6");									
 									setError(checkResult, true);
 								}
 
@@ -102,21 +87,17 @@ public class CheckProfile {
 						}
 
 					} else if (shc.hasError()) {
-						result = new ExtendedHashMap();
-						result.put(KEY_RESULT, false);
-						result.put(KEY_RESULT_TEXT, shc.getErrorText());
-
-						checkResult.put(KEY_CONNECTIVITY, result);
+						addEntry(resultList, "HTTP-Acces", true, String.valueOf(host), shc.getErrorText());
 						setError(checkResult, true);
 					} else if (xml == null) {
 						// TODO Unexpected Error
 					}
 				} else {
-					checkResult.put(KEY_PORT, false);
+					addEntry(resultList, "Port", true, String.valueOf(port), "Port not between 1 and 65535");
 					setError(checkResult, true);
 				}
 			} else {
-				checkResult.put(KEY_HOST, false);
+				addEntry(resultList, "Hostname/IP", true, String.valueOf(host), "Illegal hostname");
 				setError(checkResult, true);
 			}
 		}
@@ -124,7 +105,21 @@ public class CheckProfile {
 		return checkResult;
 	}
 	
-	private static void setError(ExtendedHashMap checkResult, boolean b){
-		checkResult.put(KEY_ERROR, b);
+	private static void addEntry(ArrayList<ExtendedHashMap> resultList, String checkName, boolean hasError, String value, String errorText){
+		ExtendedHashMap entry = new ExtendedHashMap();
+		entry.put(KEY_HAS_ERROR, hasError);
+		entry.put(KEY_WHAT, checkName);
+		entry.put(KEY_VALUE, String.valueOf(value) );
+		entry.put(KEY_ERROR_TEXT, errorText);
+		
+		resultList.add(entry);
+	}
+	
+	private static void addEntry(ArrayList<ExtendedHashMap> resultList, String checkName, boolean hasError, String value){
+		addEntry(resultList, checkName, hasError, value, "");
+	}
+	
+	private static void setError(ExtendedHashMap checkResult, boolean hasError){
+		checkResult.put(KEY_HAS_ERROR, hasError);
 	}
 }
