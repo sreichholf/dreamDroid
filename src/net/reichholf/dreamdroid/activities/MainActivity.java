@@ -219,7 +219,8 @@ public class MainActivity extends AbstractHttpActivity {
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(DreamDroid.LOG_TAG, result.toString());
 			if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
-				setConnectionState(getText(R.string.error).toString());
+				String error = getText( (Integer) result.get(CheckProfile.KEY_ERROR_TEXT) ).toString();
+				setConnectionState(error);
 			} else {
 				setConnectionState(getText(R.string.ok).toString());
 			}
@@ -274,11 +275,12 @@ public class MainActivity extends AbstractHttpActivity {
 		// Will be reactivated as soon as there are some "Global settings"
 		// menu.add(0, ITEM_SETTINGS, 0,
 		// getText(R.string.settings)).setIcon(R.drawable.edit);
-		menu.add(1, ITEM_CHECK_CONN, 1, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);
-		menu.add(1, ITEM_PROFILES, 2, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
-		menu.add(0, ITEM_SCREENSHOT, 3, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);
-		menu.add(0, ITEM_INFO, 4, R.string.device_info).setIcon(R.drawable.ic_menu_info);
-		menu.add(0, ITEM_ABOUT, 5, R.string.about).setIcon(android.R.drawable.ic_menu_help);
+		menu.add(1, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(1, ITEM_CHECK_CONN, 2, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);		
+		menu.add(1, ITEM_ABOUT, 3, R.string.about).setIcon(android.R.drawable.ic_menu_help);
+		menu.add(0, ITEM_SCREENSHOT, 4, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);		
+		menu.add(0, ITEM_INFO, 5, R.string.device_info).setIcon(R.drawable.ic_menu_info);
+		
 		return true;
 	}
 

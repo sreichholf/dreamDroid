@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -26,24 +27,28 @@ public class CheckProfile {
 	public static final String KEY_WHAT = "what";
 	public static final String KEY_RESULT_LIST = "list";
 
+	/**
+	 * @param profile
+	 * @return
+	 */
 	public static ExtendedHashMap checkProfile(Profile profile) {
 		ArrayList<ExtendedHashMap> resultList = new ArrayList<ExtendedHashMap>();
 		ExtendedHashMap checkResult = new ExtendedHashMap();
 		
 		checkResult.put(KEY_RESULT_LIST, resultList);
-		setError(checkResult, false);
+		setError(checkResult, false, -1);
 		
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		String host = profile.getHost();
 		
 		if (host != null) {
 			if (!host.contains(" ")) {
-				addEntry(resultList, "Hostname/IP", false, host);
+				addEntry(resultList, R.string.host, false, host);
 
 				int port = profile.getPort();
 
 				if (port > 0 && port <= 65535) {
-					addEntry(resultList, "Port", false, Integer.toString(port));
+					addEntry(resultList, R.string.port, false, Integer.toString(port));
 
 					String xml = DeviceInfo.get(shc);
 
@@ -51,7 +56,7 @@ public class CheckProfile {
 						ExtendedHashMap deviceInfo = new ExtendedHashMap();
 
 						if (DeviceInfo.parse(xml, deviceInfo)) {
-							addEntry(resultList, "DeviceName", false, deviceInfo.getString(DeviceInfo.DEVICE_NAME));
+							addEntry(resultList, R.string.device_name, false, deviceInfo.getString(DeviceInfo.DEVICE_NAME));
 							
 							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION);
 							String[] v = version.split("\\.");
@@ -75,10 +80,10 @@ public class CheckProfile {
 								}
 
 								if (majorVersion > 1 || (majorVersion == 1 && minorVersion >= 6)) {
-									addEntry(resultList, "Interface Version", false, version);
+									addEntry(resultList, R.string.interface_version, false, version);
 								} else {
-									addEntry(resultList, "Interface Version", true, version, "Version < 1.6");									
-									setError(checkResult, true);
+									addEntry(resultList, R.string.interface_version, true, version, R.string.version_too_low);									
+									setError(checkResult, true, R.string.version_too_low);
 								}
 
 							}
@@ -87,39 +92,57 @@ public class CheckProfile {
 						}
 
 					} else if (shc.hasError()) {
-						addEntry(resultList, "HTTP-Acces", true, String.valueOf(host), shc.getErrorText());
-						setError(checkResult, true);
+						addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.connection_error);
+						setError(checkResult, true, R.string.connection_error);
 					} else if (xml == null) {
 						// TODO Unexpected Error
 					}
 				} else {
-					addEntry(resultList, "Port", true, String.valueOf(port), "Port not between 1 and 65535");
-					setError(checkResult, true);
+					addEntry(resultList, R.string.port, true, String.valueOf(port), R.string.port_out_of_range);
+					setError(checkResult, true, R.string.port_out_of_range);
 				}
 			} else {
-				addEntry(resultList, "Hostname/IP", true, String.valueOf(host), "Illegal hostname");
-				setError(checkResult, true);
+				addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.illegal_host);
+				setError(checkResult, true, R.string.illegal_host);
 			}
 		}
 
 		return checkResult;
 	}
 	
-	private static void addEntry(ArrayList<ExtendedHashMap> resultList, String checkName, boolean hasError, String value, String errorText){
+	/**
+	 * @param resultList
+	 * @param checkTypeId
+	 * @param hasError
+	 * @param value
+	 * @param errorTextId
+	 */
+	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value, int errorTextId){
 		ExtendedHashMap entry = new ExtendedHashMap();
 		entry.put(KEY_HAS_ERROR, hasError);
-		entry.put(KEY_WHAT, checkName);
+		entry.put(KEY_WHAT, checkTypeId);
 		entry.put(KEY_VALUE, String.valueOf(value) );
-		entry.put(KEY_ERROR_TEXT, errorText);
+		entry.put(KEY_ERROR_TEXT, errorTextId);
 		
 		resultList.add(entry);
 	}
 	
-	private static void addEntry(ArrayList<ExtendedHashMap> resultList, String checkName, boolean hasError, String value){
-		addEntry(resultList, checkName, hasError, value, "");
+	/**
+	 * @param resultList
+	 * @param checkTypeId
+	 * @param hasError
+	 * @param value
+	 */
+	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value){
+		addEntry(resultList, checkTypeId, hasError, value, -1);
 	}
 	
-	private static void setError(ExtendedHashMap checkResult, boolean hasError){
+	/**
+	 * @param checkResult
+	 * @param hasError
+	 */
+	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId){
 		checkResult.put(KEY_HAS_ERROR, hasError);
+		checkResult.put(KEY_ERROR_TEXT, errorTextId);
 	}
 }
