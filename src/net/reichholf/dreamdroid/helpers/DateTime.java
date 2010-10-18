@@ -32,6 +32,9 @@ public class DateTime {
 
 				if (now.getTime() >= (s)) {
 					d = d - ((now.getTime() - s) / 1000);
+					if( d <= 0){
+						d = 1;
+					}
 					durationPrefix = "+";
 				}
 			} catch (NumberFormatException nfe) {
