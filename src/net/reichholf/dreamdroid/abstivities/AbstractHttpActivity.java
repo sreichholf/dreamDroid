@@ -42,6 +42,8 @@ public abstract class AbstractHttpActivity extends Activity {
 		super.onCreate(savedInstanceState);
 //		CustomExceptionHandler.register(this);
 		
+		mShc = null;
+		
 		if (savedInstanceState != null) {
 			Object retained = getLastNonConfigurationInstance();
 			if (retained instanceof HashMap) {
