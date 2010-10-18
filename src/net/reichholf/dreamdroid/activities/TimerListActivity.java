@@ -42,11 +42,13 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 	public static final int MENU_RELOAD = 0;
 	public static final int MENU_NEW_TIMER = 1;
+	public static final int MENU_CLEANUP = 2;
 
 	private ExtendedHashMap mTimer;
-	private ProgressDialog mDeleteProgress;
+	private ProgressDialog mProgress;
 	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
-	private AsyncTask<String, String, Boolean> mDeleteTask;
+	private AsyncTask<Void, Void, Boolean> mDeleteTask;
+	private AsyncTask<Void, Void, Boolean> mCleanupTask;
 
 	/**
 	 * Get the list of all timers async.
@@ -142,7 +144,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 * @author sre
 	 * 
 	 */
-	private class DeleteTimerTask extends AsyncTask<String, String, Boolean> {
+	private class DeleteTimerTask extends AsyncTask<Void, Void, Boolean> {
 		private ExtendedHashMap mResult;
 
 		/*
@@ -151,7 +153,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
-		protected Boolean doInBackground(String... params) {
+		protected Boolean doInBackground(Void... params) {
 			String xml = Timer.delete(mShc, mTimer);
 
 			if (xml != null) {
@@ -171,11 +173,40 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		/*
 		 * (non-Javadoc)
 		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		protected void onPostExecute(Boolean result) {
+			if (!result) {
+				mResult = new ExtendedHashMap();
+			}
+			onTimerDeleted(mResult);
+		}
+	}
+
+	private class CleanupTimerListTask extends AsyncTask<Void, Void, Boolean> {
+		private ExtendedHashMap mResult;
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
-		protected void onProgressUpdate(String... progress) {
+		protected Boolean doInBackground(Void... params) {
+			String xml = Timer.cleanupTimers(mShc);
 
+			if (xml != null) {
+				ExtendedHashMap result = Timer.parseSimpleResult(xml);
+
+				String stateText = result.getString(SimpleResult.STATE_TEXT);
+
+				if (stateText != null) {
+					mResult = result;
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/*
@@ -187,10 +218,10 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			if (!result) {
 				mResult = new ExtendedHashMap();
 			}
-			onTimerDeleted(mResult);
+			onTimerCleanupFinished(mResult);
 		}
-	}
-
+	}	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -277,6 +308,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		super.onCreateOptionsMenu(menu);
 		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, MENU_CLEANUP, 0 , getText(R.string.cleanup)).setIcon(android.R.drawable.ic_menu_manage);
 		return true;
 	}
 
@@ -294,10 +326,13 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		case (MENU_NEW_TIMER):
 			mTimer = Timer.getNewTimer();
 			editTimer(mTimer, true);
+			return true;
+		case (MENU_CLEANUP):
+			cleanupTimerList();
+			return true;
 		default:
-			super.onOptionsItemSelected(item);
+			return super.onOptionsItemSelected(item);
 		}
-		return false;
 	}
 
 	/**
@@ -378,17 +413,17 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	private void deleteTimer(ExtendedHashMap timer) {
 		if (mDeleteTask != null) {
 			mDeleteTask.cancel(true);
-			if (mDeleteProgress != null) {
-				if (mDeleteProgress.isShowing()) {
-					mDeleteProgress.dismiss();
+			if (mProgress != null) {
+				if (mProgress.isShowing()) {
+					mProgress.dismiss();
 				}
 			}
 		}
 
-		mDeleteProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
+		mProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
 
 		mDeleteTask = new DeleteTimerTask();
-		mDeleteTask.execute("");
+		mDeleteTask.execute();
 	}
 
 	/**
@@ -398,7 +433,50 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 *            A SimpleXmlResult-like <code>ExtendedHashMap</code>
 	 */
 	private void onTimerDeleted(ExtendedHashMap result) {
-		mDeleteProgress.dismiss();
+		mProgress.dismiss();
+
+		String toastText = (String) getText(R.string.get_content_error);
+		String stateText = result.getString(SimpleResult.STATE_TEXT);
+
+		if (stateText != null && !"".equals(stateText)) {
+			toastText = stateText;
+		}
+
+		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
+		toast.show();
+
+		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
+			reload();
+		}
+	}
+	
+	/**
+	 * CleanUp timer list by creating an <code>CleanupTimerListTask</code>
+	 */
+	private void cleanupTimerList() {
+		if (mCleanupTask != null) {
+			mCleanupTask.cancel(true);
+			if (mProgress != null) {
+				if (mProgress.isShowing()) {
+					mProgress.dismiss();
+				}
+			}
+		}
+
+		mProgress = ProgressDialog.show(this, "", getText(R.string.cleaning_timerlist), true);
+
+		mCleanupTask = new CleanupTimerListTask();
+		mCleanupTask.execute();
+	}
+	
+	/**
+	 * Called after timerlist has been cleaned up
+	 * 
+	 * @param result
+	 *            A SimpleXmlResult-like <code>ExtendedHashMap</code>
+	 */
+	private void onTimerCleanupFinished(ExtendedHashMap result) {
+		mProgress.dismiss();
 
 		String toastText = (String) getText(R.string.get_content_error);
 		String stateText = result.getString(SimpleResult.STATE_TEXT);

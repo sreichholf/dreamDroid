@@ -109,6 +109,28 @@ public class Timer extends AbstractRequestHandler {
 	}
 
 	/**
+	 * @param event
+	 * @return
+	 */
+	public static ExtendedHashMap createByEvent(ExtendedHashMap event) {
+		ExtendedHashMap timer = getNewTimer();
+
+		String start = event.getString(Event.EVENT_START);
+		int duration = new Integer(event.getString(Event.EVENT_DURATION));
+		int end = duration + new Integer(start);
+
+		timer.put(Timer.BEGIN, start);
+		timer.put(Timer.END, String.valueOf(end));
+		timer.put(Timer.NAME, event.getString(Event.EVENT_TITLE));
+		timer.put(Timer.DESCRIPTION, event.getString(Event.EVENT_DESCRIPTION));
+		timer.put(Timer.DESCRIPTION_EXTENDED, event.getString(Event.EVENT_DESCRIPTION_EXTENDED));
+		timer.put(Timer.SERVICE_NAME, event.getString(Event.SERVICE_NAME));
+		timer.put(Timer.REFERENCE, event.getString(Event.SERVICE_REFERENCE));
+
+		return timer;
+	}
+
+	/**
 	 * @param shc
 	 * @param params
 	 * @return
@@ -137,6 +159,21 @@ public class Timer extends AbstractRequestHandler {
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param shc
+	 * @return
+	 */
+	public static String cleanupTimers(SimpleHttpClient shc) {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("cleanup", "true"));
+
+		if (shc.fetchPageContent(URIStore.TIMER_CLEANUP, params)) {
+			return shc.getPageContentString();
+		}
+
+		return null;
 	}
 
 	/**

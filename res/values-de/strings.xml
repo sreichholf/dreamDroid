@@ -171,4 +171,7 @@
 	<string name="connection_error">Verbindungsfehler</string>
 	<string name="port_out_of_range">Port nicht zwischen 1 und 65535</string>
 	<string name="illegal_host">Fehlerhafter Host</string>
+	<string name="edit_timer">Timer bearbeiten</string>
+	<string name="cleaning_timerlist">Räume Timerliste auf</string>
+	<string name="cleanup">Aufräumen</string>
 </resources>

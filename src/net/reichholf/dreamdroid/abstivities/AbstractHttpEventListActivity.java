@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.abstivities;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
@@ -9,6 +11,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -113,19 +116,20 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 				TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
 				textDescEx.setText(descEx);
 	
-				Button buttonClose = (Button) dialog.findViewById(R.id.ButtonClose);
-				buttonClose.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						dialog.dismiss();
-					}
-				});
-	
 				Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
 				buttonSetTimer.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
 						setTimerById(mCurrentItem);
+						dialog.dismiss();
+					}
+				});
+				
+				Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
+				buttonEditTimer.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						setTimerByEventData(mCurrentItem);
 						dialog.dismiss();
 					}
 				});
@@ -166,6 +170,22 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 
 		mAddTimerTask = new AddTimerTask();
 		mAddTimerTask.execute(event);
+	}
+	
+	
+	/**
+	 * @param event
+	 */
+	protected void setTimerByEventData(ExtendedHashMap event) {		
+		ExtendedHashMap timer = Timer.createByEvent(event);
+		ExtendedHashMap data = new ExtendedHashMap();
+		data.put("timer", timer);
+		
+		Intent intent = new Intent(this, TimerEditActivity.class);
+		intent.putExtra(sData, data);
+		intent.setAction(DreamDroid.ACTION_NEW);
+
+		this.startActivity(intent);
 	}
 
 	/**

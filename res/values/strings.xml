@@ -174,4 +174,7 @@
 	<string name="connection_error">Connection error</string>
 	<string name="port_out_of_range">Port not between 1 and 65535</string>
 	<string name="illegal_host">Illegal host</string>
+	<string name="edit_timer">Edit Timer</string>
+	<string name="cleaning_timerlist">Cleaning up timerlist</string>
+	<string name="cleanup">Cleanup</string>
 </resources>
