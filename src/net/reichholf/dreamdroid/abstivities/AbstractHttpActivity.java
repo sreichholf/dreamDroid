@@ -46,10 +46,10 @@ public abstract class AbstractHttpActivity extends Activity {
 			Object retained = getLastNonConfigurationInstance();
 			if (retained instanceof HashMap) {
 				mShc = (SimpleHttpClient) ((HashMap<String, Object>) retained).get("shc");
-			} else {
-				mShc = SimpleHttpClient.getInstance();
 			}
-		} else {
+		}
+
+		if(mShc == null){
 			setClient();
 		}
 	}

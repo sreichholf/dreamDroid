@@ -69,15 +69,17 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			mExtras = new Bundle();
 			getIntent().putExtras(mExtras);
 		}
-
+		
+		mShc = null;
+		
 		if (savedInstanceState != null) {
 			Object retained = getLastNonConfigurationInstance();
 			if (retained instanceof HashMap) {
 				mShc = (SimpleHttpClient) ((HashMap<String, Object>) retained).get("shc");
-			} else {
-				mShc = SimpleHttpClient.getInstance();
 			}
-		} else {
+		} 
+		
+		if(mShc == null){
 			setClient();
 		}
 	}
