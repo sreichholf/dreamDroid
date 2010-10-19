@@ -32,7 +32,7 @@ import android.widget.SimpleAdapter;
  * 
  */
 public class SearchEpgActivity extends AbstractHttpEventListActivity {
-	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mSearchEpgListTask;
+	private SearchEpgListTask mSearchEpgListTask;
 	private String mQuery;
 
 	/**
@@ -42,7 +42,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	 * @author sreichholf
 	 * 
 	 */
-	private class GetSearchEpgListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
+	private class SearchEpgListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -207,7 +207,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 			mSearchEpgListTask.cancel(true);
 		}
 
-		mSearchEpgListTask = new GetSearchEpgListTask();
+		mSearchEpgListTask = new SearchEpgListTask();
 		mSearchEpgListTask.execute(params);
 	}
 

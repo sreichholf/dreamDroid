@@ -32,7 +32,7 @@ public class DateTime {
 
 				if (now.getTime() >= s) {
 					d = d - ((now.getTime() - s) / 1000);
-					if( d <= 60){
+					if (d <= 60) {
 						d = 60;
 					}
 					durationPrefix = "+";

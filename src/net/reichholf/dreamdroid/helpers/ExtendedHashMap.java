@@ -13,7 +13,7 @@ import java.util.HashMap;
  * @author sreichholf
  * 
  */
-public class ExtendedHashMap extends HashMap<String, Object> implements Serializable{
+public class ExtendedHashMap extends HashMap<String, Object> implements Serializable {
 
 	/**
 	 * 

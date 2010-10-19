@@ -54,7 +54,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		CustomExceptionHandler.register(this);
+		// CustomExceptionHandler.register(this);
 
 		mExtras = getIntent().getExtras();
 		mMapList = new ArrayList<ExtendedHashMap>();
@@ -69,17 +69,17 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			mExtras = new Bundle();
 			getIntent().putExtras(mExtras);
 		}
-		
+
 		mShc = null;
-		
+
 		if (savedInstanceState != null) {
 			Object retained = getLastNonConfigurationInstance();
 			if (retained instanceof HashMap) {
 				mShc = (SimpleHttpClient) ((HashMap<String, Object>) retained).get("shc");
 			}
-		} 
-		
-		if(mShc == null){
+		}
+
+		if (mShc == null) {
 			setClient();
 		}
 	}

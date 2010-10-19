@@ -75,27 +75,27 @@ public class ScreenShotActivity extends Activity {
 		mWebView.setBackgroundColor(Color.BLACK);
 		mWebView.getSettings().setBuiltInZoomControls(true);
 		mWebView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-		
+
 		// Some dynamic invocation voodoo
-		
-		try{
+
+		try {
 			WebSettings settings = mWebView.getSettings();
-						
+
 			Field zoomDensityFar = null;
 			Class zoomDensity = null;
-						
+
 			Class[] classes = WebSettings.class.getDeclaredClasses();
-			for( Class cls : classes){
+			for (Class cls : classes) {
 				String name = cls.getName();
-				if("android.webkit.WebSettings$ZoomDensity".equals(name)){
+				if ("android.webkit.WebSettings$ZoomDensity".equals(name)) {
 					zoomDensity = cls;
 					zoomDensityFar = cls.getField("FAR");
 				}
 			}
-			
+
 			Method setDefaultZoom = settings.getClass().getMethod("setDefaultZoom", zoomDensity);
-			
-			if(zoomDensityFar != null && setDefaultZoom != null){
+
+			if (zoomDensityFar != null && setDefaultZoom != null) {
 				setDefaultZoom.invoke(settings, zoomDensityFar.get(null));
 			}
 		} catch (IllegalArgumentException e) {
@@ -110,14 +110,17 @@ public class ScreenShotActivity extends Activity {
 			Log.e(DreamDroid.LOG_TAG, e.getMessage());
 		} catch (NoSuchMethodException e) {
 			Log.e(DreamDroid.LOG_TAG, e.getMessage());
-		} 
-		
-		
+		}
+
 		mProgressDialog = new ProgressDialog(ScreenShotActivity.this);
-		
+
 		mWebView.setWebViewClient(new WebViewClient() {
-			/* (non-Javadoc)
-			 * @see android.webkit.WebViewClient#onLoadResource(android.webkit.WebView, java.lang.String)
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * android.webkit.WebViewClient#onLoadResource(android.webkit.WebView
+			 * , java.lang.String)
 			 */
 			@Override
 			public void onLoadResource(WebView view, String url) {
@@ -158,16 +161,13 @@ public class ScreenShotActivity extends Activity {
 				showToast("Error Loading Image");
 			}
 		});
-		
+
 		Bundle extras = getIntent().getExtras();
 
 		if (extras == null) {
 			extras = new Bundle();
 		}
-		
-		
-		
-		
+
 		mType = extras.getInt(KEY_TYPE, TYPE_ALL);
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
 		mSize = extras.getInt(KEY_SIZE, 640);

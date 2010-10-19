@@ -139,18 +139,18 @@ public class SimpleHttpClient {
 
 					mPageString = new String(tmp);
 					return true;
-					
+
 				} else {
 					mErrorText = "HttpEntity is null";
 					mError = true;
 				}
-				
+
 			} else {
 				mErrorText = s.getStatusCode() + " - " + s.getReasonPhrase();
 				mError = true;
 				return false;
 			}
-			
+
 		} catch (IllegalArgumentException e) {
 			Log.e(this.getClass().getSimpleName(), e.toString());
 			mErrorText = e.getClass().getSimpleName().replace("Exception", "");

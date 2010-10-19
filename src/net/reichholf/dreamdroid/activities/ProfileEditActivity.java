@@ -45,7 +45,6 @@ public class ProfileEditActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-
 		setContentView(R.layout.profile_edit);
 
 		mProfile = (EditText) findViewById(R.id.EditTextProfile);
@@ -59,52 +58,52 @@ public class ProfileEditActivity extends Activity {
 		mLayoutLogin = (LinearLayout) findViewById(R.id.LinearLayoutLogin);
 		mSave = (Button) findViewById(R.id.ButtonSave);
 		mCancel = (Button) findViewById(R.id.ButtonCancel);
-		
+
 		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
 			@Override
-			public void onCheckedChanged(CompoundButton checkbox,
-					boolean checked) {
+			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
 				onIsLoginChanged(checked);
 			}
 
 		});
-		
-		mSave.setOnClickListener(new OnClickListener(){
+
+		mSave.setOnClickListener(new OnClickListener() {
 
 			@Override
-			public void onClick(View v) {				
+			public void onClick(View v) {
 				save();
 			}
-			
+
 		});
-		
-		mCancel.setOnClickListener(new OnClickListener(){
+
+		mCancel.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				setResult(Activity.RESULT_CANCELED);
 				finish();
-				
+
 			}
-			
+
 		});
-				
+
 		if (Intent.ACTION_EDIT.equals(getIntent().getAction())) {
-			mCurrentProfile = (Profile) getIntent().getSerializableExtra(
-					"profile");
-			
-			if(mCurrentProfile == null){
+			mCurrentProfile = (Profile) getIntent().getSerializableExtra("profile");
+
+			if (mCurrentProfile == null) {
 				mCurrentProfile = new Profile();
 			} else {
 				assignProfile();
 			}
 		}
-				
+
 		onIsLoginChanged(mLogin.isChecked());
 	}
-		
+
 	/**
-	 * @param checked Enables or disables the user/password input-boxes depending on login enabled/disabled
+	 * @param checked
+	 *            Enables or disables the user/password input-boxes depending on
+	 *            login enabled/disabled
 	 */
 	private void onIsLoginChanged(boolean checked) {
 		if (checked) {
@@ -115,7 +114,7 @@ public class ProfileEditActivity extends Activity {
 	}
 
 	/**
-	 * Assign all values of <code>mProfile</code> to the GUI-Components 
+	 * Assign all values of <code>mProfile</code> to the GUI-Components
 	 */
 	private void assignProfile() {
 		mProfile.setText(mCurrentProfile.getProfile());
@@ -133,46 +132,50 @@ public class ProfileEditActivity extends Activity {
 	private void save() {
 		mCurrentProfile.setProfile(mProfile.getText().toString());
 		mCurrentProfile.setHost(mHost.getText().toString().trim());
-		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());		
+		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());
 		mCurrentProfile.setLogin(mLogin.isChecked());
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
-		
-		if(mCurrentProfile.getId() > 0){
-			if(mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())){
-				showToast( getText(R.string.host_empty) );
+
+		if (mCurrentProfile.getId() > 0) {
+			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
+				showToast(getText(R.string.host_empty));
 				return;
 			}
-			if(DreamDroid.updateProfile(mCurrentProfile)){
-				showToast( getText(R.string.profile_updated) + " '" + mCurrentProfile.getProfile() + "'");
+			if (DreamDroid.updateProfile(mCurrentProfile)) {
+				showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getProfile() + "'");
 				setResult(Activity.RESULT_OK);
 				finish();
 			} else {
-				showToast( getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getProfile() + "'");
+				showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getProfile() + "'");
 			}
 		} else {
-			if(DreamDroid.addProfile(mCurrentProfile)){
-				showToast( getText(R.string.profile_added) + " '" + mCurrentProfile.getProfile() + "'");
+			if (DreamDroid.addProfile(mCurrentProfile)) {
+				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getProfile() + "'");
 				setResult(Activity.RESULT_OK);
 				finish();
 			} else {
-				showToast( getText(R.string.profile_not_added) + " '" + mCurrentProfile.getProfile() + "'");
+				showToast(getText(R.string.profile_not_added) + " '" + mCurrentProfile.getProfile() + "'");
 			}
 		}
 	}
-	
+
 	/**
 	 * Show a toast
-	 * @param toastText The text to show
+	 * 
+	 * @param toastText
+	 *            The text to show
 	 */
 	protected void showToast(String toastText) {
 		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
-	
+
 	/**
 	 * Show a toast
-	 * @param toastText The text to show
+	 * 
+	 * @param toastText
+	 *            The text to show
 	 */
 	protected void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);

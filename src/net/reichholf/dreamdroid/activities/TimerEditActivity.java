@@ -65,6 +65,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	public static final int DIALOG_PICK_END_ID = 2;
 	public static final int DIALOG_PICK_REPEATED_ID = 3;
 	public static final int DIALOG_PICK_TAGS_ID = 4;
+	public static final int DIALOG_LOADING_ID = 5;
 
 	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
 
@@ -90,8 +91,10 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	private Button mSave;
 	private Button mCancel;
 	private ProgressDialog mSaveProgress;
+	private ProgressDialog mLoadProgress;
 
 	private SaveTimerTask mSaveTask;
+	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
 
 	private class SaveTimerTask extends AsyncTask<ExtendedHashMap, Void, Boolean> {
 		private ExtendedHashMap mResult;
@@ -153,6 +156,67 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
+	private class GetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
+		private TimerEditActivity mTea;
+		
+		public GetLocationsAndTagsTask(TimerEditActivity tea){
+			mTea = tea;
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			if (DreamDroid.LOCATIONS.size() == 0) {
+				publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
+
+				DreamDroid.loadLocations(mShc);
+			}
+
+			if (DreamDroid.TAGS.size() == 0) {
+				publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
+
+				DreamDroid.loadTags(mShc);
+			}
+			
+			return true;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(String... progress) {
+			if (mLoadProgress != null) {
+				if (!mLoadProgress.isShowing()) {
+					mLoadProgress = ProgressDialog.show(mTea, getText(R.string.loading).toString(), progress[0]);
+				} else {
+					mLoadProgress.setMessage(progress[0]);
+				}
+			} else {
+				mLoadProgress = ProgressDialog.show(mTea, getText(R.string.loading).toString(), progress[0]);
+			}
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if (mLoadProgress.isShowing()){
+				mLoadProgress.dismiss();
+			}
+			reload();
+		}
+	}	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -232,7 +296,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			}
 
 			mSelectedTags = new ArrayList<String>();
-			reload();
+			
+			if(DreamDroid.LOCATIONS.size() == 0 || DreamDroid.TAGS.size() == 0){
+				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
+				mGetLocationsAndTagsTask.execute();
+			} else {
+				reload();
+			}
 		}
 	}
 

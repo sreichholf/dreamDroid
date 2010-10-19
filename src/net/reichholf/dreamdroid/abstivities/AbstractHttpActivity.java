@@ -27,7 +27,7 @@ import android.widget.Toast;
  */
 public abstract class AbstractHttpActivity extends Activity {
 	public static final int MENU_HOME = 89283794;
-	
+
 	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
 
@@ -40,10 +40,10 @@ public abstract class AbstractHttpActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		CustomExceptionHandler.register(this);
-		
+		// CustomExceptionHandler.register(this);
+
 		mShc = null;
-		
+
 		if (savedInstanceState != null) {
 			Object retained = getLastNonConfigurationInstance();
 			if (retained instanceof HashMap) {
@@ -51,7 +51,7 @@ public abstract class AbstractHttpActivity extends Activity {
 			}
 		}
 
-		if(mShc == null){
+		if (mShc == null) {
 			setClient();
 		}
 	}
@@ -104,20 +104,24 @@ public abstract class AbstractHttpActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
-	}	
-	
+	}
+
 	/**
 	 * 
 	 */
-	protected void setClient() {		
+	protected void setClient() {
 		mShc = SimpleHttpClient.getInstance();
 	}
 
 	/**
-	 * Register an <code>OnClickListener</code> for a view and a specific item ID  (<code>ITEM_*</code> statics)
+	 * Register an <code>OnClickListener</code> for a view and a specific item
+	 * ID (<code>ITEM_*</code> statics)
 	 * 
-	 * @param v The view an OnClickListener should be registered for
-	 * @param id The id used to identify the item clicked (<code>ITEM_*</code> statics)
+	 * @param v
+	 *            The view an OnClickListener should be registered for
+	 * @param id
+	 *            The id used to identify the item clicked (<code>ITEM_*</code>
+	 *            statics)
 	 */
 	protected void registerOnClickListener(View v, final int id) {
 		v.setOnClickListener(new OnClickListener() {
@@ -127,7 +131,7 @@ public abstract class AbstractHttpActivity extends Activity {
 			}
 		});
 	}
-	
+
 	/**
 	 * @param id
 	 */
@@ -142,7 +146,7 @@ public abstract class AbstractHttpActivity extends Activity {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * @param toastText
 	 */

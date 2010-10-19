@@ -94,28 +94,28 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 
 		switch (id) {
 		case DIALOG_EPG_ITEM_ID:
-			
+
 			String servicename = mCurrentItem.getString(Event.SERVICE_NAME);
 			String title = mCurrentItem.getString(Event.EVENT_TITLE);
 			String date = mCurrentItem.getString(Event.EVENT_START_READABLE);
-			if(!"N/A".equals(title) && date != null){				
+			if (!"N/A".equals(title) && date != null) {
 				date = date.concat(" (" + (String) mCurrentItem.getString(Event.EVENT_DURATION_READABLE) + " "
 						+ getText(R.string.minutes_short) + ")");
 				String descEx = mCurrentItem.getString(Event.EVENT_DESCRIPTION_EXTENDED);
-	
+
 				dialog = new Dialog(this);
 				dialog.setContentView(R.layout.epg_item_dialog);
 				dialog.setTitle(title);
-	
+
 				TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
 				textServiceName.setText(servicename);
-	
+
 				TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
 				textTime.setText(date);
-	
+
 				TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
 				textDescEx.setText(descEx);
-	
+
 				Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
 				buttonSetTimer.setOnClickListener(new OnClickListener() {
 					@Override
@@ -124,7 +124,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 						dialog.dismiss();
 					}
 				});
-				
+
 				Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
 				buttonEditTimer.setOnClickListener(new OnClickListener() {
 					@Override
@@ -134,15 +134,14 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 					}
 				});
 			} else {
-				//No EPG Information is available!
+				// No EPG Information is available!
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setMessage(R.string.no_epg_available)
-				       .setCancelable(true)
-				       .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-				           public void onClick(DialogInterface dialog, int id) {
-				                dialog.cancel();
-				           }
-				       });
+				builder.setMessage(R.string.no_epg_available).setCancelable(true)
+						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
 				dialog = builder.create();
 			}
 			break;
@@ -171,16 +170,15 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 		mAddTimerTask = new AddTimerTask();
 		mAddTimerTask.execute(event);
 	}
-	
-	
+
 	/**
 	 * @param event
 	 */
-	protected void setTimerByEventData(ExtendedHashMap event) {		
+	protected void setTimerByEventData(ExtendedHashMap event) {
 		ExtendedHashMap timer = Timer.createByEvent(event);
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put("timer", timer);
-		
+
 		Intent intent = new Intent(this, TimerEditActivity.class);
 		intent.putExtra(sData, data);
 		intent.setAction(DreamDroid.ACTION_NEW);

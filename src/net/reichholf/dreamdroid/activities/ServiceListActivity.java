@@ -59,7 +59,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	private ArrayList<ExtendedHashMap> mHistory;
 	private boolean mPickMode;
 
-	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
+	private GetServiceListTask mListTask;
 
 	/**
 	 * @author sreichholf Fetches a service list async. Does all the
@@ -96,7 +96,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 				} else {
 					result = Service.parseList(xml, mMapList);
 				}
-
+				
 				return result;
 
 			}
@@ -499,7 +499,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			params.add(new BasicNameValuePair("sRef", mReference));
 		}
 
-		mListTask = new GetServiceListTask().execute(params);
+		mListTask = new GetServiceListTask();
+		mListTask.execute(params);
 	}
 
 	/**

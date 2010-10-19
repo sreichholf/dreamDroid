@@ -36,14 +36,15 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
 /**
  * A Virtual dreambox remote control using http-requests to send key-strokes
+ * 
  * @author sreichholf
  * 
  */
 public class VirtualRemoteActivity extends AbstractHttpActivity {
-	public static final int MENU_LAYOUT = 0;	
-	
+	public static final int MENU_LAYOUT = 0;
+
 	private Vibrator mVibrator;
-	
+
 	private Button mButtonPower;
 	private Button mButton1;
 	private Button mButton2;
@@ -84,10 +85,11 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	private Button mButtonRadio;
 	private Button mButtonText;
 	private Button mButtonRec;
-	
+
 	private boolean mQuickZap;
 	private SharedPreferences mPrefs;
 	private SharedPreferences.Editor mEditor;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -98,7 +100,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
@@ -114,7 +116,8 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		menu.add(0, MENU_LAYOUT, 0, getText(R.string.layout)).setIcon(android.R.drawable.ic_menu_always_landscape_portrait);
+		menu.add(0, MENU_LAYOUT, 0, getText(R.string.layout)).setIcon(
+				android.R.drawable.ic_menu_always_landscape_portrait);
 		return true;
 	}
 
@@ -128,14 +131,14 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		switch (item.getItemId()) {
 		case MENU_LAYOUT:
 			int selected = 0;
-			if(mQuickZap){
+			if (mQuickZap) {
 				selected = 1;
 			}
 			CharSequence[] actions = { getText(R.string.standard), getText(R.string.quickzap) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 			adBuilder.setTitle(getText(R.string.choose_layout));
-			
+
 			adBuilder.setSingleChoiceItems(actions, selected, new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
@@ -149,7 +152,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 						setLayout(true);
 						dialog.dismiss();
 						break;
-					}									
+					}
 				}
 			});
 
@@ -161,26 +164,28 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		}
 
 	}
-	
+
 	/**
-	 * @param b if true QuickZap Layout will be applied. False = Standard Layout
+	 * @param b
+	 *            if true QuickZap Layout will be applied. False = Standard
+	 *            Layout
 	 */
-	private void setLayout(boolean b){
-		if(mQuickZap != b){
+	private void setLayout(boolean b) {
+		if (mQuickZap != b) {
 			mQuickZap = b;
 			mEditor.putBoolean(DreamDroid.PREFS_KEY_QUICKZAP, mQuickZap);
 			mEditor.commit();
-			
+
 			reinit();
 		}
 	}
-	
-	
+
 	/**
-	 * Apply Gui-Element-Attributes and register OnClickListeners in dependence of the active layout (Standard or QuickZap)
+	 * Apply Gui-Element-Attributes and register OnClickListeners in dependence
+	 * of the active layout (Standard or QuickZap)
 	 */
-	private void reinit(){
-		if(mQuickZap){
+	private void reinit() {
+		if (mQuickZap) {
 			setContentView(R.layout.virtual_remote_quick_zap);
 			setTitle(getText(R.string.app_name) + " - " + getText(R.string.quickzap));
 		} else {
@@ -229,7 +234,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		mButtonRadio = (Button) findViewById(R.id.ButtonRadio);
 		mButtonText = (Button) findViewById(R.id.ButtonText);
 		mButtonRec = (Button) findViewById(R.id.ButtonRec);
-		
+
 		registerOnClickListener(mButtonPower, Remote.KEY_POWER);
 		registerOnClickListener(mButtonExit, Remote.KEY_EXIT);
 		registerOnClickListener(mButtonVolP, Remote.KEY_VOLP);
@@ -251,7 +256,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		registerOnClickListener(mButtonYellow, Remote.KEY_YELLOW);
 		registerOnClickListener(mButtonBlue, Remote.KEY_BLUE);
 
-		if(!mQuickZap){			
+		if (!mQuickZap) {
 			registerOnClickListener(mButton1, Remote.KEY_1);
 			registerOnClickListener(mButton2, Remote.KEY_2);
 			registerOnClickListener(mButton3, Remote.KEY_3);
@@ -274,24 +279,27 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 			registerOnClickListener(mButtonRec, Remote.KEY_RECORD);
 		}
 	}
-	
+
 	/**
-	 * Registers an OnClickListener for a specific GUI Element.
-	 * OnClick the function <code>onButtonClicked</code> will be called with the given id
-	 * @param v The view to register an OnClickListener for
-	 * @param id The item ID to register the listener for
+	 * Registers an OnClickListener for a specific GUI Element. OnClick the
+	 * function <code>onButtonClicked</code> will be called with the given id
+	 * 
+	 * @param v
+	 *            The view to register an OnClickListener for
+	 * @param id
+	 *            The item ID to register the listener for
 	 */
 	protected void registerOnClickListener(View v, final int id) {
 		v.setLongClickable(true);
-		
-		v.setOnLongClickListener(new OnLongClickListener(){
+
+		v.setOnLongClickListener(new OnLongClickListener() {
 			@Override
-			public boolean onLongClick(View v){
+			public boolean onLongClick(View v) {
 				onButtonClicked(id, true);
 				return true;
 			}
 		});
-		
+
 		v.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -302,20 +310,23 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 
 	/**
 	 * Called after a Button has been clicked
-	 * @param id The id of the item
-	 * @param longClick If true the item has been long-clicked
+	 * 
+	 * @param id
+	 *            The id of the item
+	 * @param longClick
+	 *            If true the item has been long-clicked
 	 */
 	private void onButtonClicked(int id, boolean longClick) {
 		int msec = 25;
-		if(longClick){
+		if (longClick) {
 			msec = 100;
 		}
-		
+
 		mVibrator.vibrate(msec);
-		
+
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
-		if(longClick){
+		if (longClick) {
 			params.add(new BasicNameValuePair("type", Remote.CLICK_TYPE_LONG));
 		}
 
@@ -334,7 +345,9 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 
 	/**
 	 * Called after a key-press-command has been sent
-	 * @param result A SimpleXmlResult-like <code>ExtendedHashMap</code>
+	 * 
+	 * @param result
+	 *            A SimpleXmlResult-like <code>ExtendedHashMap</code>
 	 */
 	private void onCommandSent(ExtendedHashMap result) {
 		String state = result.getString(SimpleResult.STATE);

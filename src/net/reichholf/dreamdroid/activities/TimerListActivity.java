@@ -46,9 +46,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
-	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
-	private AsyncTask<Void, Void, Boolean> mDeleteTask;
-	private AsyncTask<Void, Void, Boolean> mCleanupTask;
+	private GetTimerListTask mListTask;
+	private DeleteTimerTask mDeleteTask;
+	private CleanupTimerListTask mCleanupTask;
 
 	/**
 	 * Get the list of all timers async.
@@ -76,24 +76,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 						+ " - " + getText(R.string.parsing));
 
 				if (Timer.parseList(xml, mMapList)) {
-					if (DreamDroid.LOCATIONS.size() == 0) {
-						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
-								+ getText(R.string.locations) + " - " + getText(R.string.fetching_data));
-
-						DreamDroid.loadLocations(mShc);
-					}
-
-					if (DreamDroid.TAGS.size() == 0) {
-						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
-								+ getText(R.string.tags) + " - " + getText(R.string.fetching_data));
-
-						if (!DreamDroid.loadTags(mShc)) {
-							// TODO Add Error-Toast
-						}
-					}
-
+					return true;
 				}
-				return true;
 			}
 
 			return false;
@@ -220,8 +204,8 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			}
 			onTimerCleanupFinished(mResult);
 		}
-	}	
-	
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -308,7 +292,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		super.onCreateOptionsMenu(menu);
 		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(android.R.drawable.ic_menu_add);
-		menu.add(0, MENU_CLEANUP, 0 , getText(R.string.cleanup)).setIcon(android.R.drawable.ic_menu_manage);
+		menu.add(0, MENU_CLEANUP, 0, getText(R.string.cleanup)).setIcon(android.R.drawable.ic_menu_manage);
 		return true;
 	}
 
@@ -449,7 +433,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			reload();
 		}
 	}
-	
+
 	/**
 	 * CleanUp timer list by creating an <code>CleanupTimerListTask</code>
 	 */
@@ -468,7 +452,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		mCleanupTask = new CleanupTimerListTask();
 		mCleanupTask.execute();
 	}
-	
+
 	/**
 	 * Called after timerlist has been cleaned up
 	 * 

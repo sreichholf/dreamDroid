@@ -49,24 +49,21 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-						
-		mCursor = DreamDroid.getProfiles();			
-		mAdapter = new SimpleCursorAdapter(this,
-				android.R.layout.two_line_list_item, mCursor, new String[] {
-						DreamDroid.KEY_PROFILE, DreamDroid.KEY_HOST },
-				new int[] { android.R.id.text1, android.R.id.text2 });
-		
+
+		mCursor = DreamDroid.getProfiles();
+		mAdapter = new SimpleCursorAdapter(this, android.R.layout.two_line_list_item, mCursor, new String[] {
+				DreamDroid.KEY_PROFILE, DreamDroid.KEY_HOST }, new int[] { android.R.id.text1, android.R.id.text2 });
+
 		setListAdapter(mAdapter);
-				
-		getListView().setOnItemLongClickListener(new OnItemLongClickListener(){
+
+		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
-			public boolean onItemLongClick(AdapterView<?> a, View v,
-					int position, long id) {
-				return onListItemLongClick(a, v, position, id);				
+			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
+				return onListItemLongClick(a, v, position, id);
 			}
-		});		
+		});
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -84,7 +81,7 @@ public class ProfileListActivity extends ListActivity {
 		showDialog(DIALOG_PROFILE_ID);
 		return true;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -94,8 +91,7 @@ public class ProfileListActivity extends ListActivity {
 		Dialog dialog;
 		switch (id) {
 		case (DIALOG_PROFILE_ID):
-			CharSequence[] actions = { getText(R.string.edit),
-					getText(R.string.delete) };
+			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 			adBuilder.setTitle(mProfile.getProfile());
@@ -110,7 +106,7 @@ public class ProfileListActivity extends ListActivity {
 					case 1:
 						showDialog(DIALOG_PROFILE_CONFIRM_DELETE_ID);
 						break;
-						
+
 					default:
 						break;
 					}
@@ -123,38 +119,25 @@ public class ProfileListActivity extends ListActivity {
 		case (DIALOG_PROFILE_CONFIRM_DELETE_ID):
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-			builder.setTitle(mProfile.getProfile())
-					.setMessage(R.string.confirm_delete_profile)
-					.setCancelable(false)
-					.setPositiveButton(android.R.string.yes,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int id) {
+			builder.setTitle(mProfile.getProfile()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
+					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
 
-									if (DreamDroid.deleteProfile(mProfile)) {
-										showToast(getText(R.string.profile_deleted)
-												+ " '"
-												+ mProfile.getProfile()
-												+ "'");
-									} else {
-										showToast(getText(R.string.profile_not_deleted)
-												+ " '"
-												+ mProfile.getProfile()
-												+ "'");
-									}
-									// TODO Add error handling
-									mProfile = null;
-									mCursor.requery();
-									mAdapter.notifyDataSetChanged();
-								}
-							})
-					.setNegativeButton(android.R.string.no,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int id) {
-									dialog.cancel();
-								}
-							});
+							if (DreamDroid.deleteProfile(mProfile)) {
+								showToast(getText(R.string.profile_deleted) + " '" + mProfile.getProfile() + "'");
+							} else {
+								showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getProfile() + "'");
+							}
+							// TODO Add error handling
+							mProfile = null;
+							mCursor.requery();
+							mAdapter.notifyDataSetChanged();
+						}
+					}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
 			dialog = builder.create();
 			break;
 		default:
@@ -173,10 +156,11 @@ public class ProfileListActivity extends ListActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == EDIT_PROFILE_REQUEST) {
 			setResult(resultCode);
-			if (resultCode == RESULT_OK) {				
+			if (resultCode == RESULT_OK) {
 				mCursor.requery();
 				mAdapter.notifyDataSetChanged();
-				// Reload the current profile as it may have been changed/altered
+				// Reload the current profile as it may have been
+				// changed/altered
 				DreamDroid.reloadActiveProfile();
 			}
 		}
@@ -190,9 +174,8 @@ public class ProfileListActivity extends ListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		
-		menu.add(0, ITEM_ADD_PROFILE, 1, getText(R.string.profile_add))
-				.setIcon(android.R.drawable.ic_menu_add);
+
+		menu.add(0, ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
 
 		return true;
 	}
@@ -206,13 +189,14 @@ public class ProfileListActivity extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
 	}
-	
+
 	/**
-	 * @param id The id of the selected menu item (<code>MENU_*</code> statics) 
+	 * @param id
+	 *            The id of the selected menu item (<code>MENU_*</code> statics)
 	 * @return
 	 */
 	protected boolean onItemClicked(int id) {
-		switch(id){
+		switch (id) {
 		case (ITEM_ADD_PROFILE):
 			createProfile();
 			return true;
@@ -226,14 +210,12 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
-			showToast(getText(R.string.profile_activated) + " '"
-					+ mProfile.getProfile() + "'");
-			
+			showToast(getText(R.string.profile_activated) + " '" + mProfile.getProfile() + "'");
+
 			setResult(Activity.RESULT_OK);
 			finish();
 		} else {
-			showToast(getText(R.string.profile_not_activated) + " '"
-					+ mProfile.getProfile() + "'");
+			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getProfile() + "'");
 		}
 	}
 
@@ -259,7 +241,9 @@ public class ProfileListActivity extends ListActivity {
 
 	/**
 	 * Shows a toast
-	 * @param text The text to show as toast
+	 * 
+	 * @param text
+	 *            The text to show as toast
 	 */
 	protected void showToast(String text) {
 		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);

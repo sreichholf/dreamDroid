@@ -20,8 +20,8 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
  * @author sre
  * 
  */
-public class CheckProfile {	
-	public static final String KEY_HAS_ERROR = "error";	
+public class CheckProfile {
+	public static final String KEY_HAS_ERROR = "error";
 	public static final String KEY_VALUE = "value";
 	public static final String KEY_ERROR_TEXT = "text";
 	public static final String KEY_WHAT = "what";
@@ -34,13 +34,13 @@ public class CheckProfile {
 	public static ExtendedHashMap checkProfile(Profile profile) {
 		ArrayList<ExtendedHashMap> resultList = new ArrayList<ExtendedHashMap>();
 		ExtendedHashMap checkResult = new ExtendedHashMap();
-		
+
 		checkResult.put(KEY_RESULT_LIST, resultList);
 		setError(checkResult, false, -1);
-		
+
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		String host = profile.getHost();
-		
+
 		if (host != null) {
 			if (!host.contains(" ")) {
 				addEntry(resultList, R.string.host, false, host);
@@ -56,8 +56,9 @@ public class CheckProfile {
 						ExtendedHashMap deviceInfo = new ExtendedHashMap();
 
 						if (DeviceInfo.parse(xml, deviceInfo)) {
-							addEntry(resultList, R.string.device_name, false, deviceInfo.getString(DeviceInfo.DEVICE_NAME));
-							
+							addEntry(resultList, R.string.device_name, false,
+									deviceInfo.getString(DeviceInfo.DEVICE_NAME));
+
 							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION);
 							String[] v = version.split("\\.");
 
@@ -82,7 +83,8 @@ public class CheckProfile {
 								if (majorVersion > 1 || (majorVersion == 1 && minorVersion >= 6)) {
 									addEntry(resultList, R.string.interface_version, false, version);
 								} else {
-									addEntry(resultList, R.string.interface_version, true, version, R.string.version_too_low);									
+									addEntry(resultList, R.string.interface_version, true, version,
+											R.string.version_too_low);
 									setError(checkResult, true, R.string.version_too_low);
 								}
 
@@ -109,7 +111,7 @@ public class CheckProfile {
 
 		return checkResult;
 	}
-	
+
 	/**
 	 * @param resultList
 	 * @param checkTypeId
@@ -117,31 +119,32 @@ public class CheckProfile {
 	 * @param value
 	 * @param errorTextId
 	 */
-	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value, int errorTextId){
+	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
+			String value, int errorTextId) {
 		ExtendedHashMap entry = new ExtendedHashMap();
 		entry.put(KEY_HAS_ERROR, hasError);
 		entry.put(KEY_WHAT, checkTypeId);
-		entry.put(KEY_VALUE, String.valueOf(value) );
+		entry.put(KEY_VALUE, String.valueOf(value));
 		entry.put(KEY_ERROR_TEXT, errorTextId);
-		
+
 		resultList.add(entry);
 	}
-	
+
 	/**
 	 * @param resultList
 	 * @param checkTypeId
 	 * @param hasError
 	 * @param value
 	 */
-	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value){
+	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value) {
 		addEntry(resultList, checkTypeId, hasError, value, -1);
 	}
-	
+
 	/**
 	 * @param checkResult
 	 * @param hasError
 	 */
-	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId){
+	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId) {
 		checkResult.put(KEY_HAS_ERROR, hasError);
 		checkResult.put(KEY_ERROR_TEXT, errorTextId);
 	}

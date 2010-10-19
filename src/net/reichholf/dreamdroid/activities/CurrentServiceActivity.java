@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 /**
  * Shows some information about the service currently running on TV
+ * 
  * @author sreichholf
  * 
  */
@@ -28,7 +29,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	public static final int MENU_RELOAD = 0;
 
 	private ExtendedHashMap mCurrent;
-	private AsyncTask<Void, String, Boolean> mCurrentServiceTask;
+	private GetCurrentServiceTask mCurrentServiceTask;
 
 	private TextView mServiceName;
 	private TextView mProvider;
@@ -43,7 +44,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	 * <code>AsyncTask</code> to fetch the current service information async.
 	 * 
 	 * @author sre
-	 *
+	 * 
 	 */
 	private class GetCurrentServiceTask extends AsyncTask<Void, String, Boolean> {
 		/*
@@ -168,11 +169,13 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 			mCurrentServiceTask.cancel(true);
 		}
 
-		mCurrentServiceTask = new GetCurrentServiceTask().execute();
+		mCurrentServiceTask = new GetCurrentServiceTask();
+		mCurrentServiceTask.execute();
 	}
 
 	/**
-	 * Called after loading the current service has finished to update the GUI-Content
+	 * Called after loading the current service has finished to update the
+	 * GUI-Content
 	 */
 	@SuppressWarnings("unchecked")
 	private void onCurrentServiceReady() {

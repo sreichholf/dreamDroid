@@ -73,9 +73,9 @@ public class MainActivity extends AbstractHttpActivity {
 	private Button mButtonRemote;
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
-	// private ImageButton mButtonExit;
-	private AsyncTask<ExtendedHashMap, String, Boolean> mSendMessageTask;
-	private AsyncTask<String, String, Boolean> mSetPowerStateTask;
+
+	private SendMessageTask mSendMessageTask;
+	private SetPowerStateTask mSetPowerStateTask;
 	private CheckProfileTask mCheckProfileTask;
 
 	/**

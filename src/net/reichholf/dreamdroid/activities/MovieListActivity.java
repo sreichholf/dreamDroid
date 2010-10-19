@@ -35,34 +35,34 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 /**
- * Allows browsing recorded movies.
- * Supports filtering by tags and locations
+ * Allows browsing recorded movies. Supports filtering by tags and locations
  * 
  * @author sreichholf
  * 
  */
 public class MovieListActivity extends AbstractHttpListActivity {
-	public static final int MENU_LOCATIONS = 0;	
-	public static final int MENU_TAGS = 1;	
+	public static final int MENU_LOCATIONS = 0;
+	public static final int MENU_TAGS = 1;
 	public static final int MENU_RELOAD = 2;
 
 	public static final int DIALOG_PICK_LOCATION_ID = 0;
 	public static final int DIALOG_PICK_TAGS_ID = 1;
 	public static final int DIALOG_DELETE_MOVIE_CONFIRM_ID = 2;
-	
+
 	private String mCurrentLocation;
-	
+
 	private boolean mTagsChanged;
 	private ArrayList<String> mSelectedTags;
 	private ArrayList<String> mOldTags;
 
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mDeleteProgress;
-	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mListTask;
-	private AsyncTask<String, String, Boolean> mDeleteTask;
+	private GetMovieListTask mListTask;
+	private DeleteMovieTask mDeleteTask;
 
 	/**
 	 * <code>AsyncTask</code> to get the list of recorded movies
+	 * 
 	 * @author sreichholf
 	 * 
 	 */
@@ -154,6 +154,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	/**
 	 * <code>AsyncTask</code> to delete a movie using its service reference
 	 * Calls <code>onMovieDeleted</code> when finished.
+	 * 
 	 * @author sre
 	 * 
 	 */
@@ -227,7 +228,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 				Movie.SERVICE_NAME, Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE, Movie.LENGTH }, new int[] {
 				R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
 
-		setListAdapter(mAdapter);		
+		setListAdapter(mAdapter);
 		mSelectedTags = new ArrayList<String>();
 
 		reload();
@@ -279,12 +280,14 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		adBuilder.show();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		
+
 		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_LOCATIONS, 1, getText(R.string.locations)).setIcon(R.drawable.ic_menu_locations);
 		menu.add(0, MENU_TAGS, 1, getText(R.string.tags)).setIcon(R.drawable.ic_menu_tags);
@@ -293,7 +296,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param id The id of the selected menu item (<code>MENU_*</code> statics) 
+	 * @param id
+	 *            The id of the selected menu item (<code>MENU_*</code> statics)
 	 * @return
 	 */
 	protected boolean onItemClicked(int id) {
@@ -455,7 +459,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param ref The service reference to zap to
+	 * @param ref
+	 *            The service reference to zap to
 	 */
 	public void zapTo(String ref) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -493,7 +498,9 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param result The result of deleting a specific movie as <helpers.enigma2.SimleResult>
+	 * @param result
+	 *            The result of deleting a specific movie as
+	 *            <helpers.enigma2.SimleResult>
 	 */
 	private void onMovieDeleted(ExtendedHashMap result) {
 		mDeleteProgress.dismiss();

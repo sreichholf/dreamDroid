@@ -29,7 +29,7 @@ import android.widget.SimpleAdapter;
  */
 public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 
-	private AsyncTask<ArrayList<NameValuePair>, String, Boolean> mEpgListTask;
+	private GetEpgListTask mEpgListTask;
 
 	/**
 	 * Fetch the list of EPG-Events async
