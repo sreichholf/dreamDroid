@@ -105,7 +105,7 @@ public class SimpleHttpClient {
 	}
 
 	public String buildUrl(String uri, List<NameValuePair> parameters) {
-		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
+		String parms = URLEncodedUtils.format(parameters, HTTP.ISO_8859_1);
 		return mPrefix + mHostname + ":" + mPort + uri + parms;
 	}
 
