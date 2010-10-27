@@ -127,6 +127,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 				if (stateText != null) {
 					mResult = result;
 					return true;
+				} else {
+					mResult = null;
 				}
 
 			}
