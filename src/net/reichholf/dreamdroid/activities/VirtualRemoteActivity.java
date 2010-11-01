@@ -24,6 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 import net.reichholf.dreamdroid.DreamDroid;
@@ -100,6 +102,11 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		/* make window full-screen */
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		mEditor = mPrefs.edit();
