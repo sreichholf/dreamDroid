@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -138,33 +137,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		switch (item.getItemId()) {
 		case MENU_LAYOUT:
 			int selected = 0;
-			if (mQuickZap) {
-				selected = 1;
-			}
-			CharSequence[] actions = { getText(R.string.standard), getText(R.string.quickzap) };
-
-			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
-			adBuilder.setTitle(getText(R.string.choose_layout));
-
-			adBuilder.setSingleChoiceItems(actions, selected, new DialogInterface.OnClickListener() {
-
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						setLayout(false);
-						dialog.dismiss();
-						break;
-
-					case 1:
-						setLayout(true);
-						dialog.dismiss();
-						break;
-					}
-				}
-			});
-
-			AlertDialog alert = adBuilder.create();
-			alert.show();
+			setLayout(!mQuickZap);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
