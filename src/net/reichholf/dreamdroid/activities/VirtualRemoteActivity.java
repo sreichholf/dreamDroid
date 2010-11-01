@@ -122,8 +122,14 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		menu.add(0, MENU_LAYOUT, 0, getText(R.string.layout)).setIcon(
+		menu.add(0, MENU_LAYOUT, 0, getText(R.string.quickzap)).setIcon(
 				android.R.drawable.ic_menu_always_landscape_portrait);
+		return true;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.findItem(MENU_LAYOUT).setTitle(mQuickZap ? R.string.standard : R.string.quickzap);
 		return true;
 	}
 

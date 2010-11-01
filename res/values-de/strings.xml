@@ -123,10 +123,8 @@
 	<string name="next">Nachher</string>
 	<string name="epg_search">EPG-Suche</string>
 	<string name="epg_search_hint">In EPG suchen</string>
-	<string name="standard">Standard</string>
-	<string name="quickzap">QuickZap</string>
-	<string name="choose_layout">Layout wählen</string>
-	<string name="layout">Layout ändern</string>
+	<string name="standard">Standard-Layout</string>
+	<string name="quickzap">QuickZap-Layout</string>
 	<string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur verfügung!</string>
 	<string name="ok">OK</string>
 	<string name="profiles">Profile</string>
