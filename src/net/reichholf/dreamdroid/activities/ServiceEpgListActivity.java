@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.ListHandler.EpgListRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -37,68 +37,9 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	 * @author sreichholf
 	 * 
 	 */
-	private class GetEpgListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.epg) + " - "
-					+ getText(R.string.fetching_data));
-
-			String xml = Event.getList(mShc, params);
-			if (xml != null) {
-				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.epg) + " - "
-						+ getText(R.string.parsing));
-
-				mMapList.clear();
-
-				if (Event.parseList(xml, mMapList)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			setTitle(progress[0]);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			String title = null;
-			mAdapter.notifyDataSetChanged();
-
-			if (result) {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.epg) + " - "
-						+ mName;
-
-				if (mMapList.size() == 0) {
-					showDialog(DIALOG_EMPTY_LIST_ID);
-				}
-			} else {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.epg) + " - "
-						+ getText(R.string.get_content_error);
-
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-
-			setTitle(title);
-
+	private class GetEpgListTask extends AsyncListUpdateTask{
+		public GetEpgListTask() {
+			super(getString(R.string.epg), new EpgListRequestHandler(), false);
 		}
 	}
 

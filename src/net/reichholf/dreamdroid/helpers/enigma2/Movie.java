@@ -8,11 +8,9 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import java.util.ArrayList;
 
-import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.parsers.GenericSaxParser;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2MovieListHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.abs.RequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -21,7 +19,7 @@ import org.apache.http.message.BasicNameValuePair;
  * @author sreichholf
  * 
  */
-public class Movie extends AbstractRequestHandler {
+public class Movie extends RequestHandler{
 	public static final String REFERENCE = "reference";
 	public static final String TITLE = "title";
 	public static final String DESCRIPTION = "description";
@@ -34,37 +32,6 @@ public class Movie extends AbstractRequestHandler {
 	public static final String FILE_NAME = "filename";
 	public static final String FILE_SIZE = "filesize";
 	public static final String FILE_SIZE_READABLE = "filesize_readable";
-
-	/**
-	 * @param shc
-	 * @param params
-	 * @return
-	 */
-	public static String getList(SimpleHttpClient shc, ArrayList<NameValuePair>... params) {
-		if (shc.fetchPageContent(URIStore.MOVIES, params[0])) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param xml
-	 * @param list
-	 * @return
-	 */
-	public static boolean parseList(String xml, ArrayList<ExtendedHashMap> list) {
-		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
-
-		E2MovieListHandler handler = new E2MovieListHandler(list);
-		sdp.getParser().setHandler(handler);
-
-		if (sdp.parse(xml)) {
-			return true;
-		}
-
-		return false;
-	}
 
 	/**
 	 * @param shc

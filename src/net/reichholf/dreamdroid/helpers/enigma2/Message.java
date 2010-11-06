@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.enigma2.abs.RequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -18,7 +19,7 @@ import org.apache.http.message.BasicNameValuePair;
  * @author sreichholf
  *
  */
-public class Message extends AbstractRequestHandler {
+public class Message extends RequestHandler {
 	public static final String TEXT = "message";
 	public static final String TYPE = "type";
 	public static final String TIMEOUT = "timeout";	

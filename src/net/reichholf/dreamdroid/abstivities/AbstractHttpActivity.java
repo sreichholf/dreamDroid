@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.abstivities;
 
 import java.util.HashMap;
 
-//import net.reichholf.dreamdroid.CustomExceptionHandler;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -19,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Toast;
 
 /**
@@ -30,7 +30,7 @@ public abstract class AbstractHttpActivity extends Activity {
 
 	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -40,8 +40,9 @@ public abstract class AbstractHttpActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// CustomExceptionHandler.register(this);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
+		// CustomExceptionHandler.register(this);
 		mShc = null;
 
 		if (savedInstanceState != null) {
@@ -147,6 +148,22 @@ public abstract class AbstractHttpActivity extends Activity {
 		}
 	}
 
+	/**
+	 * @param progress
+	 */
+	protected void updateProgress(String progress){
+		setTitle(progress);
+		setProgressBarIndeterminateVisibility(true);
+	}
+	
+	/**
+	 * @param title
+	 */
+	protected void finishProgress(String title){
+		setTitle(title);
+		setProgressBarIndeterminateVisibility(false);
+	}
+		
 	/**
 	 * @param toastText
 	 */

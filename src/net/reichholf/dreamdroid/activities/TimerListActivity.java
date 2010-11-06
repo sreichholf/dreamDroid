@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.helpers.enigma2.ListHandler.TimerListRequestHandler;
 
 import org.apache.http.NameValuePair;
 
@@ -56,69 +57,9 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 * @author sre
 	 * 
 	 */
-	private class GetTimerListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.timer) + " - "
-					+ getText(R.string.fetching_data));
-
-			mMapList.clear();
-			String xml = Timer.getList(mShc, params);
-
-			if (xml != null) {
-				publishProgress(getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer)
-						+ " - " + getText(R.string.parsing));
-
-				if (Timer.parseList(xml, mMapList)) {
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			setTitle(progress[0]);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			String title = null;
-			mAdapter.notifyDataSetChanged();
-
-			if (result) {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer);
-
-				if (mMapList.size() == 0) {
-					showDialog(DIALOG_EMPTY_LIST_ID);
-				}
-			} else {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.timer) + " - "
-						+ getText(R.string.get_content_error);
-
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-
-			setTitle(title);
-
+	private class GetTimerListTask extends AsyncListUpdateTask {
+		public GetTimerListTask(){
+			super(getString(R.string.timer), new TimerListRequestHandler(), false);
 		}
 	}
 

@@ -12,11 +12,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.parsers.GenericSaxParser;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2TimerHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.abs.RequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -27,7 +25,7 @@ import android.app.Activity;
  * @author sreichholf
  * 
  */
-public class Timer extends AbstractRequestHandler {
+public class Timer extends RequestHandler {
 	public static final String REFERENCE = "reference";
 	public static final String SERVICE_NAME = "servicename";
 	public static final String EIT = "eit";
@@ -128,37 +126,6 @@ public class Timer extends AbstractRequestHandler {
 		timer.put(Timer.REFERENCE, event.getString(Event.SERVICE_REFERENCE));
 
 		return timer;
-	}
-
-	/**
-	 * @param shc
-	 * @param params
-	 * @return
-	 */
-	public static String getList(SimpleHttpClient shc, ArrayList<NameValuePair>... params) {
-		if (shc.fetchPageContent(URIStore.TIMER_LIST, params[0])) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param xml
-	 * @param list
-	 * @return
-	 */
-	public static boolean parseList(String xml, ArrayList<ExtendedHashMap> list) {
-		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
-
-		E2TimerHandler handler = new E2TimerHandler(list);
-		sdp.getParser().setHandler(handler);
-
-		if (sdp.parse(xml)) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**

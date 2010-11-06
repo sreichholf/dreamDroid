@@ -6,23 +6,15 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
-import java.util.ArrayList;
-
-import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.parsers.GenericSaxParser;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2EventHandler;
-
-import org.apache.http.NameValuePair;
 
 /**
  * @author sreichholf
  * 
  */
-public class Event {	
+public class Event{	
 	public static final String EVENT_ID = "eventid";
 	public static final String EVENT_NAME = "eventname";
 	public static final String EVENT_START = "eventstart";
@@ -39,51 +31,6 @@ public class Event {
 	public static final String SERVICE_REFERENCE = "reference";
 	public static final String SERVICE_NAME = "name";
 	
-	
-	/**
-	 * @param shc
-	 * @param params
-	 * @return
-	 */
-	public static String getList(SimpleHttpClient shc, ArrayList<NameValuePair>... params) {
-		if (shc.fetchPageContent(URIStore.EPG_SERVICE, params[0])) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param xml
-	 * @param list
-	 * @return
-	 */
-	public static boolean parseList(String xml, ArrayList<ExtendedHashMap> list) {
-		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
-
-		E2EventHandler handler = new E2EventHandler(list);
-		sdp.getParser().setHandler(handler);
-
-		if (sdp.parse(xml)) {
-			return true;
-		}
-
-		return false;
-	}
-	
-	/**
-	 * @param shc
-	 * @param params
-	 * @return
-	 */
-	public static String search(SimpleHttpClient shc, ArrayList<NameValuePair>... params) {
-		if (shc.fetchPageContent(URIStore.EPG_SEARCH, params[0])){
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-
 	/**
 	 * @param event
 	 */

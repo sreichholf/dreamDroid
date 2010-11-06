@@ -65,7 +65,11 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 * @author sreichholf Fetches a service list async. Does all the
 	 *         error-handling, refreshing and title-setting
 	 */
-	private class GetServiceListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
+	private class GetServiceListTask extends AsyncListUpdateTask {		
+		public GetServiceListTask(){
+			super(getString(R.string.services));
+		}
+		
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -73,8 +77,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.services) + " - "
-					+ getText(R.string.fetching_data));
+			mTaskList = new ArrayList<ExtendedHashMap>();
+			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
 
 			String xml;
 
@@ -85,60 +89,19 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			}
 
 			if (xml != null) {
-				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.services) + " - "
-						+ getText(R.string.parsing));
-
-				mMapList.clear();
+				publishProgress(mBaseTitle + " - " + getText(R.string.parsing));
 				boolean result = false;
 
 				if (!mIsBouquetList && !mPickMode) {
-					result = Service.parseEpgBouquetList(xml, mMapList);
+					result = Service.parseEpgBouquetList(xml, mTaskList);
 				} else {
-					result = Service.parseList(xml, mMapList);
+					result = Service.parseList(xml, mTaskList);
 				}
-				
+
 				return result;
 
 			}
 			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			setTitle(progress[0]);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			String title = null;
-			mAdapter.notifyDataSetChanged();
-
-			if (result) {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.services) + " - "
-						+ mName;
-
-				if (mMapList.size() == 0) {
-					showDialog(DIALOG_EMPTY_LIST_ID);
-				}
-			} else {
-				title = getText(net.reichholf.dreamdroid.R.string.app_name) + "::" + getText(R.string.services) + " - "
-						+ getText(R.string.get_content_error);
-
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-
-			setTitle(title);
 		}
 	}
 
@@ -400,9 +363,6 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	@Override
 	protected boolean onItemClicked(int id){
 		switch (id) {
-//		case MENU_CLOSE:
-//			finish();
-//			return true;
 		case MENU_OVERVIEW:
 			mReference = "default";
 			mName = (String) getText(R.string.bouquet_overview);

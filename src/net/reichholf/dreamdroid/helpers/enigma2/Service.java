@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.enigma2.abs.RequestHandler;
 import net.reichholf.dreamdroid.parsers.GenericSaxParser;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2EventHandler;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2ServiceListHandler;
@@ -21,7 +22,7 @@ import org.apache.http.NameValuePair;
  * @author sreichholf
  * 
  */
-public class Service extends AbstractRequestHandler {
+public class Service extends RequestHandler {
 	public static final String NAME = "name";
 	public static final String REFERENCE = "reference";
 

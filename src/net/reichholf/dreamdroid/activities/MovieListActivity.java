@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.helpers.enigma2.ListHandler.MovieListRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -66,88 +67,9 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 * @author sreichholf
 	 * 
 	 */
-	private class GetMovieListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
-					+ getText(R.string.fetching_data));
-
-			mMapList.clear();
-			String xml = Movie.getList(mShc, params);
-
-			if (xml != null) {
-				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
-						+ getText(R.string.parsing));
-
-				if (Movie.parseList(xml, mMapList)) {
-					if (DreamDroid.LOCATIONS.size() == 0) {
-						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
-								+ getText(R.string.locations) + " - " + getText(R.string.fetching_data));
-
-						if (!DreamDroid.loadLocations(mShc)) {
-							// TODO Add Error-Msg when loadLocations fails
-						}
-
-						if (mCurrentLocation == null && DreamDroid.LOCATIONS.size() > 0) {
-							mCurrentLocation = DreamDroid.LOCATIONS.get(0);
-						}
-					}
-
-					if (DreamDroid.TAGS.size() == 0) {
-						publishProgress(getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
-								+ getText(R.string.tags) + " - " + getText(R.string.fetching_data));
-
-						if (!DreamDroid.loadTags(mShc)) {
-							// TODO Add Error-Msg when loadTags fails
-						}
-					}
-
-					return true;
-				}
-			}
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			setTitle(progress[0]);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			String title = null;
-			mAdapter.notifyDataSetChanged();
-
-			if (result) {
-				title = getText(R.string.app_name) + "::" + getText(R.string.movies);
-
-				if (mMapList.size() == 0) {
-					showDialog(DIALOG_EMPTY_LIST_ID);
-				}
-			} else {
-				title = getText(R.string.app_name) + "::" + getText(R.string.movies) + " - "
-						+ getText(R.string.get_content_error);
-
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-
-			setTitle(title);
+	private class GetMovieListTask extends AsyncListUpdateTask {				
+		public GetMovieListTask(){
+			super(getString(R.string.movies), new MovieListRequestHandler(), true);
 		}
 	}
 
@@ -185,16 +107,6 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			}
 
 			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-
 		}
 
 		/*
