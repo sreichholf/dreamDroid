@@ -67,6 +67,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		public AsyncListUpdateTask(String baseTitle, ListRequestHandler listRequestHandler, boolean requireLocsAndTags){
 			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
 			mListRequestHandler = listRequestHandler;
+			mRequireLocsAndTags = requireLocsAndTags;
 		}
 		
 		/* (non-Javadoc)

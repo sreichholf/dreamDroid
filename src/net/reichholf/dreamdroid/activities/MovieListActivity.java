@@ -146,6 +146,16 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		reload();
 	}
 
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#setDefaultLocation()
+	 */
+	@Override
+	protected void setDefaultLocation(){
+		if (mCurrentLocation == null && DreamDroid.LOCATIONS.size() > 0) {
+			mCurrentLocation = DreamDroid.LOCATIONS.get(0);
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
