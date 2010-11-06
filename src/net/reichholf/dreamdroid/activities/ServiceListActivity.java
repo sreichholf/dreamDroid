@@ -178,6 +178,14 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		super.onPause();
 	}
 
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle()
+	 */
+	@Override
+	protected String concatCurrentName(String title){
+		return title + " - " + mName;
+	}
+	
 	/**
 	 * 
 	 */

@@ -109,7 +109,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 
 		mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
 		setAdapter();
-	}
+	}	
 
 	/*
 	 * (non-Javadoc)
@@ -125,6 +125,14 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 		removeDialog(DIALOG_EPG_ITEM_ID);
 		showDialog(DIALOG_EPG_ITEM_ID);
 
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle()
+	 */
+	@Override
+	protected String concatCurrentName(String title){
+		return title + " - '" + mQuery + "'";
 	}
 
 	/**

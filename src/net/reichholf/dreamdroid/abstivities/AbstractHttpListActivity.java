@@ -48,12 +48,13 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	protected SimpleAdapter mAdapter;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
+	protected String mBaseTitle;
 	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
 
 	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean>{
 		protected ArrayList<ExtendedHashMap> mTaskList;
-		protected String mBaseTitle;
+		
 		protected ListRequestHandler mListRequestHandler;
 		protected boolean mRequireLocsAndTags;
 		protected ArrayList<String> mLocations;
@@ -369,8 +370,15 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	 * @param title
 	 */
 	protected void finishProgress(String title){
-		setTitle(title);
+		setTitle(concatCurrentName(title));
 		setProgressBarIndeterminateVisibility(false);
+	}
+	
+	/**
+	 * @return
+	 */
+	protected String concatCurrentName(String title){		
+		return title;
 	}
 	
 	/**

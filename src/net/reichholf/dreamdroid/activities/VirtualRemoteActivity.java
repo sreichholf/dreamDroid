@@ -12,7 +12,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -142,7 +141,6 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case MENU_LAYOUT:
-			int selected = 0;
 			setLayout(!mQuickZap);
 			return true;
 		default:
