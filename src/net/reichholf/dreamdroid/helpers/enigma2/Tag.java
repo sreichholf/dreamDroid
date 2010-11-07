@@ -54,7 +54,7 @@ public class Tag {
 			if ("".equals(tags)) {
 				tags = tags.concat(tag);
 			} else {
-				tags = tags.concat(",").concat(tag);
+				tags = tags.concat(" ").concat(tag);
 			}
 		}
 		

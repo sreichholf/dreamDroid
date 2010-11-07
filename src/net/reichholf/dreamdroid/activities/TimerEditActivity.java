@@ -676,7 +676,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			text = "";
 		}
 		mTags.setText(text);
-		String[] tags = text.split(",");
+		String[] tags = text.split(" ");
 		for (String tag : tags) {
 			mSelectedTags.add(tag);
 		}
