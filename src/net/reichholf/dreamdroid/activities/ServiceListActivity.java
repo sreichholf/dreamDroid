@@ -480,38 +480,15 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 		mMapList.clear();
 
-		ExtendedHashMap map = new ExtendedHashMap();
-		// TV
-		map.put(Event.SERVICE_NAME, getText(R.string.tv_bouquets));
-		map.put(Event.SERVICE_REFERENCE, RefStore.TV_BOUQUETS);
-		mMapList.add(map.clone());
+		String[] servicelist = getResources().getStringArray(R.array.servicelist);
+		String[] servicerefs = getResources().getStringArray(R.array.servicerefs);
 
-		map.clear();
-		map.put(Event.SERVICE_NAME, getText(R.string.tv_provider));
-		map.put(Event.SERVICE_REFERENCE, RefStore.TV_PROVIDER);
-		mMapList.add(map.clone());
-
-		map.clear();
-		map.put(Event.SERVICE_NAME, getText(R.string.tv_all));
-		map.put(Event.SERVICE_REFERENCE, RefStore.TV_ALL);
-		mMapList.add(map.clone());
-
-		// Radio
-		map.clear();
-		map.put(Event.SERVICE_NAME, getText(R.string.radio_bouquets));
-		map.put(Event.SERVICE_REFERENCE, RefStore.RADIO_BOUQUETS);
-		mMapList.add(map.clone());
-
-		map.clear();
-		map.put(Event.SERVICE_NAME, getText(R.string.radio_provider));
-		map.put(Event.SERVICE_REFERENCE, RefStore.RADIO_PROVIDERS);
-		mMapList.add(map.clone());
-
-		map.clear();
-		map.put(Event.SERVICE_NAME, getText(R.string.radio_all));
-		map.put(Event.SERVICE_REFERENCE, RefStore.RADIO_ALL);
-		mMapList.add(map.clone());
-
+		for (int i = 0; i < servicelist.length; i++) {
+			ExtendedHashMap map = new ExtendedHashMap();
+			map.put(Event.SERVICE_NAME, servicelist[i]);
+			map.put(Event.SERVICE_REFERENCE, servicerefs[i]);
+			mMapList.add(map);
+		}
 		mAdapter.notifyDataSetChanged();
 	}
 }

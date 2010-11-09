@@ -10,12 +10,14 @@
 	<string name="menu_timer_desc">Timer anzeigen, hinzufügen und ändern</string>
 	<string name="menu_movies">Filme</string>
 	<string name="menu_movies_desc">Liste verfügbarer Filme</string>
-	<string name="tv_bouquets">Bouquets (TV)</string>
-	<string name="tv_provider">Provider (TV)</string>
-	<string name="tv_all">Alle Kanäle (TV)</string>
-	<string name="radio_bouquets">Bouquets (Radio)</string>
-	<string name="radio_provider">Provider (Radio)</string>
-	<string name="radio_all">Alle Kanäle (Radio)</string>
+	<string-array name="servicelist">
+		<item>Bouquets (TV)</item>
+		<item>Provider (TV)</item>
+		<item>Alle Kanäle (TV)</item>
+		<item>Bouquets (Radio)</item>
+		<item>Provider (Radio)</item>
+		<item>Alle Kanäle (Radio)</item>
+	</string-array>
 	<string name="timer">Timer</string>
 	<string name="service">Kanal</string>
 	<string name="afterevent">Anschlussereignis</string>

@@ -10,12 +10,14 @@
 	<string name="menu_timer_desc">Show, add and edit timers</string>
 	<string name="menu_movies">Movies</string>
 	<string name="menu_movies_desc">A list of available recordings</string>
-	<string name="tv_bouquets">Bouquets (TV)</string>
-	<string name="tv_provider">Provider (TV)</string>
-	<string name="tv_all">All Services (TV)</string>
-	<string name="radio_bouquets">Bouquets (Radio)</string>
-	<string name="radio_provider">Provider (Radio)</string>
-	<string name="radio_all">All (Radio)</string>
+	<string-array name="servicelist">
+		<item>Bouquets (TV)</item>
+		<item>Provider (TV)</item>
+		<item>All Services (TV)</item>
+		<item>Bouquets (Radio)</item>
+		<item>Provider (Radio)</item>
+		<item>All (Radio)</item>
+	</string-array>
 	<string name="timer">Timer</string>
 	<string name="service">Service</string>
 	<string name="afterevent">Afterevent</string>
