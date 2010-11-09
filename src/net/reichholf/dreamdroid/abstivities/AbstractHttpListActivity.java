@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -51,6 +52,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	protected String mBaseTitle;
 	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
+	protected TextView mEmpty;
 
 	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean>{
 		protected ArrayList<ExtendedHashMap> mTaskList;
@@ -158,10 +160,13 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
+		super.onCreate(savedInstanceState);	
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		
-		// CustomExceptionHandler.register(this);
+		setContentView(R.layout.list_or_empty);		
+		mEmpty = (TextView) findViewById(android.R.id.empty);
+		mEmpty.setText(R.string.loading);
+		
 		mExtras = getIntent().getExtras();
 		mMapList = new ArrayList<ExtendedHashMap>();
 
@@ -222,33 +227,6 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	public void onSaveInstanceState(Bundle outState) {
 		getIntent().putExtras(mExtras);
 		super.onSaveInstanceState(outState);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateDialog(int)
-	 */
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		final Dialog dialog;
-
-		switch (id) {
-		case DIALOG_EMPTY_LIST_ID:
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage(R.string.no_list_item).setCancelable(false)
-					.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							return;
-						}
-					});
-			dialog = builder.create();
-			break;
-		default:
-			dialog = null;
-		}
-
-		return dialog;
 	}
 
 	/*
@@ -387,14 +365,11 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	 */
 	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list){
 		finishProgress(title);
+		mEmpty.setText(R.string.no_list_item);
 		
 		mMapList.clear();
 		mMapList.addAll(list);
 		mAdapter.notifyDataSetChanged();
-		
-		if (mMapList.size() == 0) {
-			showDialog(DIALOG_EMPTY_LIST_ID);
-		}		
 	}
 	
 	/**
