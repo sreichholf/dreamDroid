@@ -45,46 +45,50 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 
 	private Vibrator mVibrator;
 
-	private Button mButtonPower;
-	private Button mButton1;
-	private Button mButton2;
-	private Button mButton3;
-	private Button mButton4;
-	private Button mButton5;
-	private Button mButton6;
-	private Button mButton7;
-	private Button mButton8;
-	private Button mButton9;
-	private Button mButton0;
-	private Button mButtonLeftArrow;
-	private Button mButtonRightArrow;
-	private Button mButtonExit;
-	private Button mButtonVolP;
-	private Button mButtonVolM;
-	private Button mButtonMute;
-	private Button mButtonBouP;
-	private Button mButtonBouM;
-	private Button mButtonUp;
-	private Button mButtonDown;
-	private Button mButtonLeft;
-	private Button mButtonRight;
-	private Button mButtonOk;
-	private Button mButtonInfo;
-	private Button mButtonMenu;
-	private Button mButtonHelp;
-	private Button mButtonPvr;
-	private Button mButtonRed;
-	private Button mButtonGreen;
-	private Button mButtonYellow;
-	private Button mButtonBlue;
-	private Button mButtonRwd;
-	private Button mButtonPlay;
-	private Button mButtonStop;
-	private Button mButtonFwd;
-	private Button mButtonTv;
-	private Button mButtonRadio;
-	private Button mButtonText;
-	private Button mButtonRec;
+	private final int[][] mButtonsCommon = {
+		{ R.id.ButtonPower, Remote.KEY_POWER },
+		{ R.id.ButtonExit, Remote.KEY_EXIT },
+		{ R.id.ButtonVolP, Remote.KEY_VOLP },
+		{ R.id.ButtonVolM, Remote.KEY_VOLM },
+		{ R.id.ButtonMute, Remote.KEY_MUTE },
+		{ R.id.ButtonBouP, Remote.KEY_BOUP },
+		{ R.id.ButtonBouM, Remote.KEY_BOUM },
+		{ R.id.ButtonUp, Remote.KEY_UP },
+		{ R.id.ButtonDown, Remote.KEY_DOWN },
+		{ R.id.ButtonLeft, Remote.KEY_LEFT },
+		{ R.id.ButtonRight, Remote.KEY_RIGHT },
+		{ R.id.ButtonOk, Remote.KEY_OK },
+		{ R.id.ButtonInfo, Remote.KEY_INFO },
+		{ R.id.ButtonMenu, Remote.KEY_MENU },
+		{ R.id.ButtonHelp, Remote.KEY_HELP },
+		{ R.id.ButtonPvr, Remote.KEY_PVR },
+		{ R.id.ButtonRed, Remote.KEY_RED },
+		{ R.id.ButtonGreen, Remote.KEY_GREEN },
+		{ R.id.ButtonYellow, Remote.KEY_YELLOW },
+		{ R.id.ButtonBlue, Remote.KEY_BLUE }
+	};
+	private final int[][] mButtonsStandard = {
+		{ R.id.Button1, Remote.KEY_1 },
+		{ R.id.Button2, Remote.KEY_2 },
+		{ R.id.Button3, Remote.KEY_3 },
+		{ R.id.Button4, Remote.KEY_4 },
+		{ R.id.Button5, Remote.KEY_5 },
+		{ R.id.Button6, Remote.KEY_6 },
+		{ R.id.Button7, Remote.KEY_7 },
+		{ R.id.Button8, Remote.KEY_8 },
+		{ R.id.Button9, Remote.KEY_9 },
+		{ R.id.Button0, Remote.KEY_0 },
+		{ R.id.ButtonLeftArrow, Remote.KEY_PREV },
+		{ R.id.ButtonRightArrow, Remote.KEY_NEXT },
+		{ R.id.ButtonRwd, Remote.KEY_REWIND },
+		{ R.id.ButtonPlay, Remote.KEY_PLAY },
+		{ R.id.ButtonStop, Remote.KEY_STOP },
+		{ R.id.ButtonFwd, Remote.KEY_FORWARD },
+		{ R.id.ButtonTv, Remote.KEY_TV },
+		{ R.id.ButtonRadio, Remote.KEY_RADIO },
+		{ R.id.ButtonText, Remote.KEY_TEXT },
+		{ R.id.ButtonRec, Remote.KEY_RECORD }
+	};
 
 	private boolean mQuickZap;
 	private SharedPreferences mPrefs;
@@ -165,6 +169,17 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	}
 
 	/**
+	 * @param buttonmap
+	 *            array of (button view id, command id) to register callbacks for
+	 */
+	private void registerButtons(int[][] buttonmap) {
+		for (int i = 0; i < buttonmap.length; i++) {
+			Button btn = (Button)findViewById(buttonmap[i][0]);
+			registerOnClickListener(btn, buttonmap[i][1]);
+		}
+	}
+
+	/**
 	 * Apply Gui-Element-Attributes and register OnClickListeners in dependence
 	 * of the active layout (Standard or QuickZap)
 	 */
@@ -178,89 +193,9 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		}
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-		mButtonPower = (Button) findViewById(R.id.ButtonPower);
-		mButton1 = (Button) findViewById(R.id.Button1);
-		mButton2 = (Button) findViewById(R.id.Button2);
-		mButton3 = (Button) findViewById(R.id.Button3);
-		mButton4 = (Button) findViewById(R.id.Button4);
-		mButton5 = (Button) findViewById(R.id.Button5);
-		mButton6 = (Button) findViewById(R.id.Button6);
-		mButton7 = (Button) findViewById(R.id.Button7);
-		mButton8 = (Button) findViewById(R.id.Button8);
-		mButton9 = (Button) findViewById(R.id.Button9);
-		mButton0 = (Button) findViewById(R.id.Button0);
-		mButtonLeftArrow = (Button) findViewById(R.id.ButtonLeftArrow);
-		mButtonRightArrow = (Button) findViewById(R.id.ButtonRightArrow);
-		mButtonExit = (Button) findViewById(R.id.ButtonExit);
-		mButtonVolP = (Button) findViewById(R.id.ButtonVolP);
-		mButtonVolM = (Button) findViewById(R.id.ButtonVolM);
-		mButtonMute = (Button) findViewById(R.id.ButtonMute);
-		mButtonBouP = (Button) findViewById(R.id.ButtonBouP);
-		mButtonBouM = (Button) findViewById(R.id.ButtonBouM);
-		mButtonUp = (Button) findViewById(R.id.ButtonUp);
-		mButtonDown = (Button) findViewById(R.id.ButtonDown);
-		mButtonLeft = (Button) findViewById(R.id.ButtonLeft);
-		mButtonRight = (Button) findViewById(R.id.ButtonRight);
-		mButtonOk = (Button) findViewById(R.id.ButtonOk);
-		mButtonInfo = (Button) findViewById(R.id.ButtonInfo);
-		mButtonMenu = (Button) findViewById(R.id.ButtonMenu);
-		mButtonHelp = (Button) findViewById(R.id.ButtonHelp);
-		mButtonPvr = (Button) findViewById(R.id.ButtonPvr);
-		mButtonRed = (Button) findViewById(R.id.ButtonRed);
-		mButtonGreen = (Button) findViewById(R.id.ButtonGreen);
-		mButtonYellow = (Button) findViewById(R.id.ButtonYellow);
-		mButtonBlue = (Button) findViewById(R.id.ButtonBlue);
-		mButtonRwd = (Button) findViewById(R.id.ButtonRwd);
-		mButtonPlay = (Button) findViewById(R.id.ButtonPlay);
-		mButtonStop = (Button) findViewById(R.id.ButtonStop);
-		mButtonFwd = (Button) findViewById(R.id.ButtonFwd);
-		mButtonTv = (Button) findViewById(R.id.ButtonTv);
-		mButtonRadio = (Button) findViewById(R.id.ButtonRadio);
-		mButtonText = (Button) findViewById(R.id.ButtonText);
-		mButtonRec = (Button) findViewById(R.id.ButtonRec);
-
-		registerOnClickListener(mButtonPower, Remote.KEY_POWER);
-		registerOnClickListener(mButtonExit, Remote.KEY_EXIT);
-		registerOnClickListener(mButtonVolP, Remote.KEY_VOLP);
-		registerOnClickListener(mButtonVolM, Remote.KEY_VOLM);
-		registerOnClickListener(mButtonMute, Remote.KEY_MUTE);
-		registerOnClickListener(mButtonBouP, Remote.KEY_BOUP);
-		registerOnClickListener(mButtonBouM, Remote.KEY_BOUM);
-		registerOnClickListener(mButtonUp, Remote.KEY_UP);
-		registerOnClickListener(mButtonDown, Remote.KEY_DOWN);
-		registerOnClickListener(mButtonLeft, Remote.KEY_LEFT);
-		registerOnClickListener(mButtonRight, Remote.KEY_RIGHT);
-		registerOnClickListener(mButtonOk, Remote.KEY_OK);
-		registerOnClickListener(mButtonInfo, Remote.KEY_INFO);
-		registerOnClickListener(mButtonMenu, Remote.KEY_MENU);
-		registerOnClickListener(mButtonHelp, Remote.KEY_HELP);
-		registerOnClickListener(mButtonPvr, Remote.KEY_PVR);
-		registerOnClickListener(mButtonRed, Remote.KEY_RED);
-		registerOnClickListener(mButtonGreen, Remote.KEY_GREEN);
-		registerOnClickListener(mButtonYellow, Remote.KEY_YELLOW);
-		registerOnClickListener(mButtonBlue, Remote.KEY_BLUE);
-
+		registerButtons(mButtonsCommon);
 		if (!mQuickZap) {
-			registerOnClickListener(mButton1, Remote.KEY_1);
-			registerOnClickListener(mButton2, Remote.KEY_2);
-			registerOnClickListener(mButton3, Remote.KEY_3);
-			registerOnClickListener(mButton4, Remote.KEY_4);
-			registerOnClickListener(mButton5, Remote.KEY_5);
-			registerOnClickListener(mButton6, Remote.KEY_6);
-			registerOnClickListener(mButton7, Remote.KEY_7);
-			registerOnClickListener(mButton8, Remote.KEY_8);
-			registerOnClickListener(mButton9, Remote.KEY_9);
-			registerOnClickListener(mButton0, Remote.KEY_0);
-			registerOnClickListener(mButtonLeftArrow, Remote.KEY_PREV);
-			registerOnClickListener(mButtonRightArrow, Remote.KEY_NEXT);
-			registerOnClickListener(mButtonRwd, Remote.KEY_REWIND);
-			registerOnClickListener(mButtonPlay, Remote.KEY_PLAY);
-			registerOnClickListener(mButtonStop, Remote.KEY_STOP);
-			registerOnClickListener(mButtonFwd, Remote.KEY_FORWARD);
-			registerOnClickListener(mButtonTv, Remote.KEY_TV);
-			registerOnClickListener(mButtonRadio, Remote.KEY_RADIO);
-			registerOnClickListener(mButtonText, Remote.KEY_TEXT);
-			registerOnClickListener(mButtonRec, Remote.KEY_RECORD);
+			registerButtons(mButtonsStandard);
 		}
 	}
 
