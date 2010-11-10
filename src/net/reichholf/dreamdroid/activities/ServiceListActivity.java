@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.RefStore;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
