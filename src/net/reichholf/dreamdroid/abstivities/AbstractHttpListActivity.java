@@ -9,19 +9,16 @@ package net.reichholf.dreamdroid.abstivities;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.http.NameValuePair;
-
-//import net.reichholf.dreamdroid.CustomExceptionHandler;
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.abs.ListRequestHandler;
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
-import android.app.AlertDialog;
-import android.app.Dialog;
+
+import org.apache.http.NameValuePair;
+
 import android.app.ListActivity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
