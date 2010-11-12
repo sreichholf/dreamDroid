@@ -24,7 +24,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 /**
  * Allows fetching and showing the actual TV-Screen content
@@ -89,7 +88,13 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 		protected void onPostExecute(Boolean result) {
 			if (result) {
 				onScreenshotAvailable(mBytes);
-			}			
+			} else {
+				String error = getString(R.string.get_content_error);
+				if(mShc.hasError()){
+					error = error.concat("\n").concat(mShc.getErrorText());
+				}
+				showToast(error);
+			}
 		}
 	}
 	/*
@@ -195,16 +200,4 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 		mGetScreenshotTask = new GetScreenshotTask();
 		mGetScreenshotTask.execute(params);
 	}
-
-	/**
-	 * Show a toast
-	 * 
-	 * @param toastText
-	 *            The text to show
-	 */
-	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
-	}
-
 }
