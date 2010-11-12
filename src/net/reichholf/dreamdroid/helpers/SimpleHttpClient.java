@@ -49,7 +49,7 @@ public class SimpleHttpClient {
 	private String mPort;
 	private String mUser;
 	private String mPass;
-	private String mPageString;
+	private byte[] mBytes;
 	private String mErrorText;
 
 	private boolean mLogin;
@@ -120,7 +120,7 @@ public class SimpleHttpClient {
 
 		mErrorText = null;
 		mError = false;
-		mPageString = "";
+		mBytes = new byte[0];
 		if (!uri.startsWith("/")) {
 			uri = "/".concat(uri);
 		}
@@ -135,9 +135,7 @@ public class SimpleHttpClient {
 			if (s.getStatusCode() == HttpStatus.SC_OK) {
 				HttpEntity entity = resp.getEntity();
 				if (entity != null) {
-					byte[] tmp = EntityUtils.toByteArray(entity);
-
-					mPageString = new String(tmp);
+					mBytes = EntityUtils.toByteArray(entity);
 					return true;
 
 				} else {
@@ -152,7 +150,7 @@ public class SimpleHttpClient {
 			}
 
 		} catch (IllegalArgumentException e) {
-			Log.e(this.getClass().getSimpleName(), e.toString());
+			Log.e(getClass().getSimpleName(), e.toString());
 			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
 			if (e.getMessage() != null) {
 				mErrorText += ": " + e.getMessage();
@@ -161,7 +159,7 @@ public class SimpleHttpClient {
 			return false;
 
 		} catch (ClientProtocolException e) {
-			Log.e(this.getClass().getSimpleName(), e.toString());
+			Log.e(getClass().getSimpleName(), e.toString());
 
 			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
 			if (e.getMessage() != null) {
@@ -172,7 +170,7 @@ public class SimpleHttpClient {
 			return false;
 
 		} catch (IOException e) {
-			Log.e(this.getClass().getSimpleName(), e.toString());
+			Log.e(getClass().getSimpleName(), e.toString());
 
 			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
 			if (e.getMessage() != null) {
@@ -190,7 +188,11 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String getPageContentString() {
-		return this.mPageString;
+		return new String(mBytes);
+	}
+	
+	public byte[] getBytes(){
+		return mBytes;
 	}
 
 	/**
