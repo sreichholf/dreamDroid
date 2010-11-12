@@ -9,15 +9,13 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.helpers.enigma2.abs.RequestHandler;
-
 import org.apache.http.NameValuePair;
 
 /**
  * @author sreichholf
  *
  */
-public class Remote extends RequestHandler{
+public class Remote extends SimpleResult{
 	public static final int KEY_POWER = 116;
 	public static final int KEY_1 = 2;
 	public static final int KEY_2 = 3;

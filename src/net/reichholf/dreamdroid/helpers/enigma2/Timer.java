@@ -13,8 +13,6 @@ import java.util.GregorianCalendar;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.helpers.enigma2.abs.RequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -25,7 +23,7 @@ import android.app.Activity;
  * @author sreichholf
  * 
  */
-public class Timer extends RequestHandler {
+public class Timer {
 	public static final String REFERENCE = "reference";
 	public static final String SERVICE_NAME = "servicename";
 	public static final String EIT = "eit";
@@ -81,7 +79,7 @@ public class Timer extends RequestHandler {
 	/**
 	 * @return
 	 */
-	public static ExtendedHashMap getNewTimer() {
+	public static ExtendedHashMap getInitialTimer() {
 		ExtendedHashMap timer = new ExtendedHashMap();
 		timer.put(DESCRIPTION, "");
 		timer.put(LOCATION, "/hdd/movie/");
@@ -111,7 +109,7 @@ public class Timer extends RequestHandler {
 	 * @return
 	 */
 	public static ExtendedHashMap createByEvent(ExtendedHashMap event) {
-		ExtendedHashMap timer = getNewTimer();
+		ExtendedHashMap timer = getInitialTimer();
 
 		String start = event.getString(Event.EVENT_START);
 		int duration = new Integer(event.getString(Event.EVENT_DURATION));
@@ -127,29 +125,8 @@ public class Timer extends RequestHandler {
 
 		return timer;
 	}
-
-	/**
-	 * @param shc
-	 * @return
-	 */
-	public static String cleanupTimers(SimpleHttpClient shc) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("cleanup", "true"));
-
-		if (shc.fetchPageContent(URIStore.TIMER_CLEANUP, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-
-	/**
-	 * 
-	 * @param shc
-	 * @param timer
-	 * @return
-	 */
-	public static String save(SimpleHttpClient shc, ExtendedHashMap timer, ExtendedHashMap timerOld) {
+	
+	public static ArrayList<NameValuePair> getSaveParams(ExtendedHashMap timer, ExtendedHashMap timerOld){
 		/*
 		 * URL to create /web/timerchange? sRef= &begin= &end= &name=
 		 * &description= &dirname= &tags= &eit= &disabled= &justplay=
@@ -180,51 +157,28 @@ public class Timer extends RequestHandler {
 		} else {
 			params.add(new BasicNameValuePair("deleteOldOnSave", "0"));
 		}
-
-		if (shc.fetchPageContent(URIStore.TIMER_CHANGE, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
+		
+		return params;
 	}
-
-	/**
-	 * @param shc
-	 * @param event
-	 * @return
-	 */
-	public static String addByEventId(SimpleHttpClient shc, ExtendedHashMap event) {
-		// URL - /web/timeraddbyeventid?sRef=&eventid=&justplay=&dirname=&tags=
+	
+	public static ArrayList<NameValuePair> getEventIdParams(ExtendedHashMap event){
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		params.add(new BasicNameValuePair("sRef", event.getString(Event.SERVICE_REFERENCE)));
 		params.add(new BasicNameValuePair("eventid", event.getString(Event.EVENT_ID)));
-
-		if (shc.fetchPageContent(URIStore.TIMER_ADD_BY_EVENT_ID, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
+		
+		return params;
 	}
-
-	/**
-	 * @param shc
-	 * @param timer
-	 * @return
-	 */
-	public static String delete(SimpleHttpClient shc, ExtendedHashMap timer) {
+	
+	public static ArrayList<NameValuePair> getDeleteParams(ExtendedHashMap timer){
 		// URL - web/timerdelete?sRef=&begin=&end=
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		params.add(new BasicNameValuePair("sRef", timer.getString(REFERENCE)));
 		params.add(new BasicNameValuePair("begin", timer.getString(BEGIN)));
 		params.add(new BasicNameValuePair("end", timer.getString(END)));
-
-		if (shc.fetchPageContent(URIStore.TIMER_DELETE, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
+		
+		return params;
 	}
 
 }

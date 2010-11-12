@@ -12,14 +12,18 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 
+import org.apache.http.NameValuePair;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerChangeRequestHandler;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -41,11 +45,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 //TODO Add Tag Support
 /**
  * Activity for Editing existing or initial timers
+ * 
  * @author sreichholf
  * 
  */
@@ -60,7 +64,6 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 	public static final int PICK_SERVICE_REQUEST = 0;
 
-	public static final int DIALOG_SAVE_TIMER_ID = 0;
 	public static final int DIALOG_PICK_BEGIN_ID = 1;
 	public static final int DIALOG_PICK_END_ID = 2;
 	public static final int DIALOG_PICK_REPEATED_ID = 3;
@@ -90,81 +93,18 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	private TextView mTags;
 	private Button mSave;
 	private Button mCancel;
-	private ProgressDialog mSaveProgress;
 	private ProgressDialog mLoadProgress;
+	private ProgressDialog mProgress;
 
-	private SaveTimerTask mSaveTask;
 	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
-
-	private class SaveTimerTask extends AsyncTask<ExtendedHashMap, Void, Boolean> {
-		private ExtendedHashMap mResult;
-		private TimerEditActivity activity;
-
-		public SaveTimerTask(TimerEditActivity tea) {
-			super();
-			activity = tea;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(ExtendedHashMap... params) {
-			SimpleHttpClient shc = (SimpleHttpClient) params[0].get("shc");
-			ExtendedHashMap timer = (ExtendedHashMap) params[0].get("timer");
-
-			ExtendedHashMap timerOld = (ExtendedHashMap) params[0].get("timerOld");
-
-			String xml = Timer.save(shc, timer, timerOld);
-
-			if (xml != null) {
-				ExtendedHashMap result = Timer.parseSimpleResult(xml);
-
-				String stateText = result.getString("statetext");
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				} else {
-					mResult = null;
-				}
-
-			}
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		@Override
-		protected void onPostExecute(Boolean result) {
-			if (!result) {
-				if (mShc.hasError()) {
-					activity.showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			} else {
-				if (mResult == null) {
-					mResult = new ExtendedHashMap();
-				}
-
-				if (activity != null) {
-					activity.onTimerSaved(mResult);
-				}
-			}
-		}
-	}
 
 	private class GetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
 		private TimerEditActivity mTea;
-		
-		public GetLocationsAndTagsTask(TimerEditActivity tea){
+
+		public GetLocationsAndTagsTask(TimerEditActivity tea) {
 			mTea = tea;
 		}
-		
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -183,7 +123,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 				DreamDroid.loadTags(mShc);
 			}
-			
+
 			return true;
 		}
 
@@ -204,7 +144,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 				mLoadProgress = ProgressDialog.show(mTea, getText(R.string.loading).toString(), progress[0]);
 			}
 		}
-		
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -212,13 +152,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		 */
 		@Override
 		protected void onPostExecute(Boolean result) {
-			if (mLoadProgress.isShowing()){
+			if (mLoadProgress.isShowing()) {
 				mLoadProgress.dismiss();
 			}
 			reload();
 		}
-	}	
-	
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -298,8 +238,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			}
 
 			mSelectedTags = new ArrayList<String>();
-			
-			if(DreamDroid.LOCATIONS.size() == 0 || DreamDroid.TAGS.size() == 0){
+
+			if (DreamDroid.LOCATIONS.size() == 0 || DreamDroid.TAGS.size() == 0) {
 				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
 				mGetLocationsAndTagsTask.execute();
 			} else {
@@ -353,7 +293,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		outState.putSerializable("timer", timer);
 		outState.putSerializable("timerOld", timerOld);
 
-		this.removeDialog(DIALOG_SAVE_TIMER_ID);
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
+			}
+		}
 
 		super.onSaveInstanceState(outState);
 	}
@@ -388,12 +332,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		Calendar cal;
 		Button buttonApply;
 
-		setTimerFromViews();
+		applyViewValues();
 
 		switch (id) {
-		case (DIALOG_SAVE_TIMER_ID):
-			dialog = ProgressDialog.show(this, "", getText(R.string.saving), true);
-			break;
 
 		case (DIALOG_PICK_BEGIN_ID):
 			cal = getCalendarFromTimestamp(mTimer.getString("begin"));
@@ -670,9 +611,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		int repeatedValue = new Integer(mTimer.getString(Timer.REPEATED));
 		String repeatedText = getRepeated(repeatedValue);
 		mRepeatings.setText(repeatedText);
-		
+
 		String text = mTimer.getString(Timer.TAGS);
-		if(text == null){
+		if (text == null) {
 			text = "";
 		}
 		mTags.setText(text);
@@ -682,11 +623,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 	}
 
-
 	/**
 	 * Interpret the repeated int-value by bit-shifting it
 	 * 
-	 * @param value The int-value for to-repeat-days
+	 * @param value
+	 *            The int-value for to-repeat-days
 	 * @return All days selected for repeatings in "Mo, Tu, Fr"-style
 	 */
 	private String getRepeated(int value) {
@@ -717,8 +658,10 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	/**
 	 * Applies repeated settings to a timer
 	 * 
-	 * @param checkedDays <code>boolean[]> of checked days for timer-repeatings
-	 * @param timer The acutal timer
+	 * @param checkedDays
+	 *            <code>boolean[]> of checked days for timer-repeatings
+	 * @param timer
+	 *            The acutal timer
 	 * @return The string to set for the GUI-Label
 	 */
 	private String setRepeated(boolean[] checkedDays, ExtendedHashMap timer) {
@@ -754,10 +697,10 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * Apply GUI-values to the timer.
-	 * Applies Name, Description, Enabled and Afterevent from the GUI-Elements to <code>mTimer</code>
+	 * Apply GUI-values to the timer. Applies Name, Description, Enabled and
+	 * Afterevent from the GUI-Elements to <code>mTimer</code>
 	 */
-	private void setTimerFromViews() {
+	private void applyViewValues() {
 		mTimer.put(Timer.NAME, mName.getText().toString());
 		mTimer.put(Timer.DESCRIPTION, mDescription.getText().toString());
 
@@ -775,60 +718,45 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 * Save the current timer on the target device
 	 */
 	private void saveTimer() {
-		setTimerFromViews();
-
-		if (mSaveTask != null) {
-			mSaveTask.cancel(true);
-			if (mSaveProgress != null) {
-				if (mSaveProgress.isShowing()) {
-					mSaveProgress.dismiss();
-				}
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
 			}
 		}
-
-		ExtendedHashMap params = new ExtendedHashMap();
-		final SimpleHttpClient shc = mShc;
-		final ExtendedHashMap timer = mTimer;
-		final ExtendedHashMap timerOld = mTimerOld;
-
-		params.put("shc", shc);
-		params.put("timer", timer);
-		params.put("timerOld", timerOld);
-
-		showDialog(DIALOG_SAVE_TIMER_ID);
-
-		mSaveTask = new SaveTimerTask(this);
-		mSaveTask.execute(params);
-
+		
+		mProgress = ProgressDialog.show(this, "", getText(R.string.save), true);
+		
+		applyViewValues();
+		ArrayList<NameValuePair> params = Timer.getSaveParams(mTimer, mTimerOld);
+		
+		execSimpleResultTask(new TimerChangeRequestHandler(), params);
 	}
 
-	/**
-	 * @param result A SimpleXmlResult-styled <code>ExtendedHashMap</code>
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
+	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
 	 */
-	private void onTimerSaved(ExtendedHashMap result) {
-		mSaveTask = null;
-		removeDialog(DIALOG_SAVE_TIMER_ID);
+	@Override
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		mProgress.dismiss();		
+		super.onSimpleResult(success, result);
 
-		String toastText = (String) getText(R.string.get_content_error);
-		String stateText = result.getString("statetext");
-
-		if (stateText != null && !"".equals(stateText)) {
-			toastText = stateText;
-		}
-
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
-
-		if ("True".equals(result.getString("state"))) {
+		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
 			setResult(RESULT_OK);
 		}
 	}
 
-
 	/**
-	 * Set the the values of the date and the time picker of the DateTimePicker dialog
-	 * @param dialog The Dialog containing the date and the time picker
-	 * @param cal The calendar-object to set date and time from
+	 * Set the the values of the date and the time picker of the DateTimePicker
+	 * dialog
+	 * 
+	 * @param dialog
+	 *            The Dialog containing the date and the time picker
+	 * @param cal
+	 *            The calendar-object to set date and time from
 	 */
 	private void setDateAndTimePicker(final Dialog dialog, Calendar cal) {
 		DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
@@ -839,10 +767,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		tp.setCurrentMinute(cal.get(Calendar.MINUTE));
 	}
 
-
 	/**
-	 * @param dialog The dialog containing the date and the time picker
-	 * @return <code>Calendar</code> container set to the date and time of the Date- and TimePicker
+	 * @param dialog
+	 *            The dialog containing the date and the time picker
+	 * @return <code>Calendar</code> container set to the date and time of the
+	 *         Date- and TimePicker
 	 */
 	private Calendar getCalendarFromPicker(final Dialog dialog) {
 		Calendar cal = GregorianCalendar.getInstance();
@@ -861,7 +790,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 	/**
 	 * Convert a unix timestamp to a java Calendar instance
-	 * @param timestamp A unix timestamp
+	 * 
+	 * @param timestamp
+	 *            A unix timestamp
 	 * @return
 	 */
 	private Calendar getCalendarFromTimestamp(String timestamp) {
@@ -875,8 +806,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * Registers an OnClickListener for a dialogs cancel-button with id <code>R.id.ButtonCancel</code>
-	 * @param dialog The Dialog containing a <code>R.id.ButtonCancel</code>
+	 * Registers an OnClickListener for a dialogs cancel-button with id
+	 * <code>R.id.ButtonCancel</code>
+	 * 
+	 * @param dialog
+	 *            The Dialog containing a <code>R.id.ButtonCancel</code>
 	 */
 	private void dialogRegisterCancel(final Dialog dialog) {
 		Button buttonCancel = (Button) dialog.findViewById(R.id.ButtonCancel);
@@ -890,8 +824,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * Apply the values of the TimePicker for the Timer-Begin to <code>mTimer</code>
-	 * @param cal Calndear Object
+	 * Apply the values of the TimePicker for the Timer-Begin to
+	 * <code>mTimer</code>
+	 * 
+	 * @param cal
+	 *            Calndear Object
 	 */
 	private void onTimerBeginSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
@@ -901,7 +838,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	}
 
 	/**
-	 * Apply the values of the TimePicker for the Timer-End to <code>mTimer</code>
+	 * Apply the values of the TimePicker for the Timer-End to
+	 * <code>mTimer</code>
+	 * 
 	 * @param cal
 	 */
 	private void onTimerEndSet(Calendar cal) {

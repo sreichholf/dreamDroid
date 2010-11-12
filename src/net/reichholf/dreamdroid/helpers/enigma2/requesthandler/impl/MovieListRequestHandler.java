@@ -4,7 +4,7 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.helpers.enigma2.ListHandler;
+package net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl;
 
 import java.util.ArrayList;
 
@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.abs.ListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ListRequestHandler;
 import net.reichholf.dreamdroid.parsers.GenericSaxParser;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2MovieListHandler;
 

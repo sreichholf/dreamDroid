@@ -14,9 +14,13 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.helpers.enigma2.abs.ListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.ZapRequestHandler;
 
 import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -42,43 +46,53 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	public static final int DIALOG_EMPTY_LIST_ID = 1298032;
 	public static final int MENU_HOME = 89283794;
 
+	protected final String sData = "data";
+	protected String mBaseTitle;
+
 	protected ArrayList<ExtendedHashMap> mMapList;
-	protected SimpleAdapter mAdapter;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
-	protected String mBaseTitle;
+	protected SimpleAdapter mAdapter;
 	protected SimpleHttpClient mShc;
-	protected final String sData = "data";
-	protected TextView mEmpty;
 
-	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean>{
+	protected TextView mEmpty;
+	protected SimpleResultTask mSimpleResultTask;
+
+	/**
+	 * @author sre
+	 * 
+	 */
+	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		protected ArrayList<ExtendedHashMap> mTaskList;
-		
+
 		protected ListRequestHandler mListRequestHandler;
 		protected boolean mRequireLocsAndTags;
 		protected ArrayList<String> mLocations;
 		protected ArrayList<String> mTags;
-		
-		public AsyncListUpdateTask(String baseTitle){
+
+		public AsyncListUpdateTask(String baseTitle) {
 			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
 			mListRequestHandler = null;
 		}
-		
-		public AsyncListUpdateTask(String baseTitle, ListRequestHandler listRequestHandler, boolean requireLocsAndTags){
+
+		public AsyncListUpdateTask(String baseTitle, ListRequestHandler listRequestHandler, boolean requireLocsAndTags) {
 			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
 			mListRequestHandler = listRequestHandler;
 			mRequireLocsAndTags = requireLocsAndTags;
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if(mListRequestHandler == null){
-				throw new UnsupportedOperationException("Method doInBackground not re-implemented while no ListRequestHandler has been given");
+			if (mListRequestHandler == null) {
+				throw new UnsupportedOperationException(
+						"Method doInBackground not re-implemented while no ListRequestHandler has been given");
 			}
-			
+
 			mTaskList = new ArrayList<ExtendedHashMap>();
 			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
 
@@ -89,7 +103,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 				mTaskList.clear();
 
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
-					if(mRequireLocsAndTags){
+					if (mRequireLocsAndTags) {
 						if (DreamDroid.LOCATIONS.size() == 0) {
 							publishProgress(mBaseTitle + " - " + getText(R.string.locations) + " - "
 									+ getText(R.string.fetching_data));
@@ -107,22 +121,26 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 								// TODO Add Error-Msg when loadTags fails
 							}
 						}
-					}					
+					}
 					return true;
 				}
 			}
 			return false;
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
 		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
 			updateProgress(progress[0]);
 		}
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		@Override
@@ -130,7 +148,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			String title = null;
 
 			if (result) {
-				title = mBaseTitle;				
+				title = mBaseTitle;
 			} else {
 				title = mBaseTitle + " - " + getString(R.string.get_content_error);
 
@@ -138,17 +156,75 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 					showToast(getString(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
 			}
-			
-			if(mRequireLocsAndTags){
+
+			if (mRequireLocsAndTags) {
 				setDefaultLocation();
 			}
 			finishListProgress(title, mTaskList);
 		}
 	}
-	
-	protected void setDefaultLocation(){
+
+	/**
+	 * @author sre
+	 * 
+	 */
+	protected class SimpleResultTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
+		private ExtendedHashMap mResult;
+		private SimpleResultRequestHandler mHandler;
+
+		public SimpleResultTask(SimpleResultRequestHandler handler) {
+			mHandler = handler;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			publishProgress();
+			String xml = mHandler.get(mShc, params[0]);
+
+			if (xml != null) {
+				ExtendedHashMap result = mHandler.parseSimpleResult(xml);
+
+				String stateText = result.getString("statetext");
+
+				if (stateText != null) {
+					mResult = result;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(Void... progress) {
+			setProgressBarIndeterminateVisibility(true);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		protected void onPostExecute(Boolean result) {
+			setProgressBarIndeterminateVisibility(false);
+			onSimpleResult(result, mResult);
+		}
+	}
+
+	protected void setDefaultLocation() {
 		throw new UnsupportedOperationException("Required Method setDefaultLocation() not re-implemented");
 	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -157,13 +233,13 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);	
+		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		
-		setContentView(R.layout.list_or_empty);		
+
+		setContentView(R.layout.list_or_empty);
 		mEmpty = (TextView) findViewById(android.R.id.empty);
 		mEmpty.setText(R.string.loading);
-		
+
 		mExtras = getIntent().getExtras();
 		mMapList = new ArrayList<ExtendedHashMap>();
 
@@ -332,43 +408,89 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		}
 
 	}
-	
+
+	/**
+	 * @param handler
+	 * @param params
+	 */
+	@SuppressWarnings("unchecked")
+	public void execSimpleResultTask(SimpleResultRequestHandler handler, ArrayList<NameValuePair> params) {
+		if (mSimpleResultTask != null) {
+			mSimpleResultTask.cancel(true);
+		}
+
+		mSimpleResultTask = new SimpleResultTask(handler);
+		mSimpleResultTask.execute(params);
+	}
+
+	/**
+	 * @param ref
+	 *            The ServiceReference to zap to
+	 */
+	public void zapTo(String ref) {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("sRef", ref));
+		execSimpleResultTask(new ZapRequestHandler(), params);
+	}
+
 	/**
 	 * @param progress
 	 */
-	protected void updateProgress(String progress){
+	protected void updateProgress(String progress) {
 		setTitle(progress);
 		setProgressBarIndeterminateVisibility(true);
 	}
-	
+
 	/**
 	 * @param title
 	 */
-	protected void finishProgress(String title){
-		setTitle(concatCurrentName(title));
+	protected void finishProgress(String title) {
+		setTitle(genWindowTitle(title));
 		setProgressBarIndeterminateVisibility(false);
 	}
-	
+
 	/**
 	 * @return
 	 */
-	protected String concatCurrentName(String title){		
+	protected String genWindowTitle(String title) {
 		return title;
 	}
-	
+
+	/**
+	 * @param success
+	 * @param result
+	 */
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		if (!success) {
+			result = new ExtendedHashMap();
+		}
+
+		String toastText = (String) getText(R.string.get_content_error);
+		String stateText = result.getString(SimpleResult.STATE_TEXT);
+
+		if (stateText != null && !"".equals(stateText)) {
+			toastText = stateText;
+		} else if (mShc.hasError()) {
+			stateText = mShc.getErrorText();
+		}
+
+		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
+		toast.show();
+	}
+
 	/**
 	 * @param title
 	 * @param list
 	 */
-	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list){
+	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
 		finishProgress(title);
 		mEmpty.setText(R.string.no_list_item);
-		
+
 		mMapList.clear();
 		mMapList.addAll(list);
 		mAdapter.notifyDataSetChanged();
 	}
-	
+
 	/**
 	 * @param toastText
 	 */

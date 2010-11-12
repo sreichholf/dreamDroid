@@ -121,7 +121,7 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 
 		mType = extras.getInt(KEY_TYPE, TYPE_ALL);
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
-		mSize = extras.getInt(KEY_SIZE, 480);
+		mSize = extras.getInt(KEY_SIZE, 720);
 		mFilename = extras.getString(KEY_FILENAME);
 
 		reload();
@@ -149,16 +149,25 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 		return true;
 	}
 
+	/**
+	 * 
+	 */
 	private void updateProgress(){
 		setProgressBarIndeterminateVisibility(true);
 	}
 	
+	/**
+	 * @param bytes
+	 */
 	private void onScreenshotAvailable(byte[] bytes){
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		setProgressBarIndeterminateVisibility(false);
 	}
 	
+	/**
+	 * 
+	 */
 	@SuppressWarnings("unchecked")
 	private void reload() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();

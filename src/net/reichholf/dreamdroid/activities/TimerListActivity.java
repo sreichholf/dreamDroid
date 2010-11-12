@@ -15,7 +15,9 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
-import net.reichholf.dreamdroid.helpers.enigma2.ListHandler.TimerListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerCleanupRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerDeleteRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerListRequestHandler;
 
 import org.apache.http.NameValuePair;
 
@@ -23,14 +25,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 /**
  * Activity to show a List of all existing timers of the target device
@@ -48,8 +48,6 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
 	private GetTimerListTask mListTask;
-	private DeleteTimerTask mDeleteTask;
-	private CleanupTimerListTask mCleanupTask;
 
 	/**
 	 * Get the list of all timers async.
@@ -60,90 +58,6 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	private class GetTimerListTask extends AsyncListUpdateTask {
 		public GetTimerListTask(){
 			super(getString(R.string.timer), new TimerListRequestHandler(), false);
-		}
-	}
-
-	/**
-	 * Delete a specific timer async
-	 * 
-	 * @author sre
-	 * 
-	 */
-	private class DeleteTimerTask extends AsyncTask<Void, Void, Boolean> {
-		private ExtendedHashMap mResult;
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			String xml = Timer.delete(mShc, mTimer);
-
-			if (xml != null) {
-				ExtendedHashMap result = Timer.parseSimpleResult(xml);
-
-				String stateText = result.getString(SimpleResult.STATE_TEXT);
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			if (!result) {
-				mResult = new ExtendedHashMap();
-			}
-			onTimerDeleted(mResult);
-		}
-	}
-
-	private class CleanupTimerListTask extends AsyncTask<Void, Void, Boolean> {
-		private ExtendedHashMap mResult;
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			String xml = Timer.cleanupTimers(mShc);
-
-			if (xml != null) {
-				ExtendedHashMap result = Timer.parseSimpleResult(xml);
-
-				String stateText = result.getString(SimpleResult.STATE_TEXT);
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			if (!result) {
-				mResult = new ExtendedHashMap();
-			}
-			onTimerCleanupFinished(mResult);
 		}
 	}
 
@@ -249,7 +163,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 			reload();
 			return true;
 		case (MENU_NEW_TIMER):
-			mTimer = Timer.getNewTimer();
+			mTimer = Timer.getInitialTimer();
 			editTimer(mTimer, true);
 			return true;
 		case (MENU_CLEANUP):
@@ -336,83 +250,38 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 *            The Timer to delete as <code>ExtendedHashMap</code>
 	 */
 	private void deleteTimer(ExtendedHashMap timer) {
-		if (mDeleteTask != null) {
-			mDeleteTask.cancel(true);
-			if (mProgress != null) {
-				if (mProgress.isShowing()) {
-					mProgress.dismiss();
-				}
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
 			}
 		}
-
-		mProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
-
-		mDeleteTask = new DeleteTimerTask();
-		mDeleteTask.execute();
-	}
-
-	/**
-	 * Called after a timer has been deleted
-	 * 
-	 * @param result
-	 *            A SimpleXmlResult-like <code>ExtendedHashMap</code>
-	 */
-	private void onTimerDeleted(ExtendedHashMap result) {
-		mProgress.dismiss();
-
-		String toastText = (String) getText(R.string.get_content_error);
-		String stateText = result.getString(SimpleResult.STATE_TEXT);
-
-		if (stateText != null && !"".equals(stateText)) {
-			toastText = stateText;
-		}
-
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
-
-		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
-			reload();
-		}
+		ArrayList<NameValuePair> params = Timer.getDeleteParams(timer);
+		mProgress = ProgressDialog.show(this, "", getText(R.string.cleaning_timerlist), true);
+		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
 
 	/**
 	 * CleanUp timer list by creating an <code>CleanupTimerListTask</code>
 	 */
 	private void cleanupTimerList() {
-		if (mCleanupTask != null) {
-			mCleanupTask.cancel(true);
-			if (mProgress != null) {
-				if (mProgress.isShowing()) {
-					mProgress.dismiss();
-				}
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
 			}
 		}
-
+		
 		mProgress = ProgressDialog.show(this, "", getText(R.string.cleaning_timerlist), true);
-
-		mCleanupTask = new CleanupTimerListTask();
-		mCleanupTask.execute();
+		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<NameValuePair>());
 	}
-
-	/**
-	 * Called after timerlist has been cleaned up
-	 * 
-	 * @param result
-	 *            A SimpleXmlResult-like <code>ExtendedHashMap</code>
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult(boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
 	 */
-	private void onTimerCleanupFinished(ExtendedHashMap result) {
+	@Override
+	protected void onSimpleResult(boolean success, ExtendedHashMap result){		
 		mProgress.dismiss();
-
-		String toastText = (String) getText(R.string.get_content_error);
-		String stateText = result.getString(SimpleResult.STATE_TEXT);
-
-		if (stateText != null && !"".equals(stateText)) {
-			toastText = stateText;
-		}
-
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
-
+		super.onSimpleResult(success, result);
+		
 		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
 			reload();
 		}

@@ -7,12 +7,12 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEventIdRequestHandler;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -29,59 +29,8 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 	protected String mReference;
 	protected String mName;
 
-	protected ProgressDialog mAddTimerProgress;
-	protected AsyncTask<ExtendedHashMap, String, Boolean> mAddTimerTask;
+	protected ProgressDialog mProgress;
 	protected ExtendedHashMap mCurrentItem;
-
-	protected class AddTimerTask extends AsyncTask<ExtendedHashMap, String, Boolean> {
-		private ExtendedHashMap mResult;
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(ExtendedHashMap... event) {
-			String xml = Timer.addByEventId(mShc, event[0]);
-
-			if (xml != null) {
-				ExtendedHashMap result = Timer.parseSimpleResult(xml);
-
-				String stateText = result.getString("statetext");
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
-
-			}
-
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			if (!result) {
-				mResult = new ExtendedHashMap();
-			}
-			onTimerSet(mResult);
-		}
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -156,19 +105,30 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 	 * @param event
 	 */
 	protected void setTimerById(ExtendedHashMap event) {
-		if (mAddTimerTask != null) {
-			mAddTimerTask.cancel(true);
-			if (mAddTimerProgress != null) {
-				if (mAddTimerProgress.isShowing()) {
-					mAddTimerProgress.dismiss();
-				}
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
 			}
 		}
 
-		mAddTimerProgress = ProgressDialog.show(this, "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(this, "", getText(R.string.saving), true);
+		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
+	}
 
-		mAddTimerTask = new AddTimerTask();
-		mAddTimerTask.execute(event);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
+	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
+	 */
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
+			}
+		}
+		super.onSimpleResult(success, result);
 	}
 
 	/**
@@ -190,7 +150,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 	 * @param result
 	 */
 	protected void onTimerSet(ExtendedHashMap result) {
-		mAddTimerProgress.dismiss();
+		mProgress.dismiss();
 
 		String toastText = (String) getText(R.string.get_content_error);
 

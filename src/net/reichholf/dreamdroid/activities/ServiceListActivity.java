@@ -14,7 +14,6 @@ import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -31,7 +30,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 /**
  * Handles ServiceLists of (based on service references).
@@ -181,7 +179,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle()
 	 */
 	@Override
-	protected String concatCurrentName(String title){
+	protected String genWindowTitle(String title){
 		return title + " - " + mName;
 	}
 	
@@ -400,26 +398,6 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * @param ref
-	 *            The ServiceReference to zap to
-	 */
-	public void zapTo(String ref) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("sRef", ref));
-		String xml = Service.zap(mShc, params);
-
-		ExtendedHashMap result = Service.parseSimpleResult(xml);
-
-		String resulttext = (String) getText(R.string.get_content_error);
-		if (result != null) {
-			resulttext = result.getString(SimpleResult.STATE_TEXT);
-		}
-
-		Toast toast = Toast.makeText(getApplicationContext(), resulttext, Toast.LENGTH_LONG);
-		toast.show();
 	}
 
 	/**

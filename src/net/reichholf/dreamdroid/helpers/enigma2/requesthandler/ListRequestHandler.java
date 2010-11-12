@@ -4,7 +4,7 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.helpers.enigma2.abs;
+package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
 import java.util.ArrayList;
 

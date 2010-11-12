@@ -10,12 +10,14 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
-import net.reichholf.dreamdroid.helpers.enigma2.ListHandler.MovieListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieDeleteRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieListRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -41,6 +43,7 @@ import android.widget.Toast;
  * @author sreichholf
  * 
  */
+@SuppressWarnings("unused")
 public class MovieListActivity extends AbstractHttpListActivity {
 	public static final int MENU_LOCATIONS = 0;
 	public static final int MENU_TAGS = 1;
@@ -57,9 +60,11 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	private ArrayList<String> mOldTags;
 
 	private ExtendedHashMap mMovie;
-	private ProgressDialog mDeleteProgress;
+	private ProgressDialog mProgress;
+	// private ProgressDialog mDeleteProgress;
 	private GetMovieListTask mListTask;
-	private DeleteMovieTask mDeleteTask;
+
+	// private DeleteMovieTask mDeleteTask;
 
 	/**
 	 * <code>AsyncTask</code> to get the list of recorded movies
@@ -67,8 +72,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 * @author sreichholf
 	 * 
 	 */
-	private class GetMovieListTask extends AsyncListUpdateTask {				
-		public GetMovieListTask(){
+	private class GetMovieListTask extends AsyncListUpdateTask {
+		public GetMovieListTask() {
 			super(getString(R.string.movies), new MovieListRequestHandler(), true);
 		}
 	}
@@ -80,50 +85,52 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 * @author sre
 	 * 
 	 */
-	private class DeleteMovieTask extends AsyncTask<String, String, Boolean> {
-		private ExtendedHashMap mResult;
-		private boolean mHttpError;
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(String... params) {
-			String xml = Movie.delete(mShc, mMovie);
-			mHttpError = false;
-			if (xml != null) {
-				ExtendedHashMap result = Timer.parseSimpleResult(xml);
-
-				String stateText = result.getString("statetext");
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
-			} else {
-				mHttpError = true;
-			}
-
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		protected void onPostExecute(Boolean result) {
-			if (!result) {
-				mResult = new ExtendedHashMap();
-				if (mHttpError) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-			onMovieDeleted(mResult);
-		}
-	}
+	// private class DeleteMovieTask extends AsyncTask<String, String, Boolean>
+	// {
+	// private ExtendedHashMap mResult;
+	// private boolean mHttpError;
+	//
+	// /*
+	// * (non-Javadoc)
+	// *
+	// * @see android.os.AsyncTask#doInBackground(Params[])
+	// */
+	// @Override
+	// protected Boolean doInBackground(String... params) {
+	// String xml = Movie.delete(mShc, mMovie);
+	// mHttpError = false;
+	// if (xml != null) {
+	// ExtendedHashMap result = Movie.parseSimpleResult(xml);
+	//
+	// String stateText = result.getString("statetext");
+	//
+	// if (stateText != null) {
+	// mResult = result;
+	// return true;
+	// }
+	// } else {
+	// mHttpError = true;
+	// }
+	//
+	// return false;
+	// }
+	//
+	// /*
+	// * (non-Javadoc)
+	// *
+	// * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+	// */
+	// protected void onPostExecute(Boolean result) {
+	// if (!result) {
+	// mResult = new ExtendedHashMap();
+	// if (mHttpError) {
+	// showToast(getText(R.string.get_content_error) + "\n" +
+	// mShc.getErrorText());
+	// }
+	// }
+	// onMovieDeleted(mResult);
+	// }
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -146,16 +153,19 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		reload();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#setDefaultLocation()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
+	 * setDefaultLocation()
 	 */
 	@Override
-	protected void setDefaultLocation(){
+	protected void setDefaultLocation() {
 		if (mCurrentLocation == null && DreamDroid.LOCATIONS.size() > 0) {
 			mCurrentLocation = DreamDroid.LOCATIONS.get(0);
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -381,64 +391,32 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	}
 
 	/**
-	 * @param ref
-	 *            The service reference to zap to
-	 */
-	public void zapTo(String ref) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("sRef", ref));
-		String xml = Service.zap(mShc, params);
-
-		ExtendedHashMap result = Service.parseSimpleResult(xml);
-
-		String resulttext = (String) getText(R.string.get_content_error);
-		if (result != null) {
-			resulttext = result.getString(SimpleResult.STATE_TEXT);
-		}
-
-		Toast toast = Toast.makeText(getApplicationContext(), resulttext, Toast.LENGTH_LONG);
-		toast.show();
-	}
-
-	/**
 	 * Delete the selected movie
 	 */
 	private void deleteMovie() {
-		if (mDeleteTask != null) {
-			mDeleteTask.cancel(true);
-			if (mDeleteProgress != null) {
-				if (mDeleteProgress.isShowing()) {
-					mDeleteProgress.dismiss();
-				}
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
 			}
 		}
 
-		mDeleteProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
-
-		mDeleteTask = new DeleteMovieTask();
-		mDeleteTask.execute("");
+		mProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
+		execSimpleResultTask(new MovieDeleteRequestHandler(), Movie.getDeleteParams(mMovie));
 	}
 
-	/**
-	 * @param result
-	 *            The result of deleting a specific movie as
-	 *            <helpers.enigma2.SimleResult>
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
+	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
 	 */
-	private void onMovieDeleted(ExtendedHashMap result) {
-		mDeleteProgress.dismiss();
+	@Override
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		mProgress.dismiss();
+		super.onSimpleResult(success, result);
 
-		String toastText = (String) getText(R.string.get_content_error);
-
-		String stateText = result.getString("statetext");
-
-		if (stateText != null && !"".equals(stateText)) {
-			toastText = stateText;
-		}
-
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
-
-		if ("True".equals(result.getString("state"))) {
+		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
 			reload();
 		}
 	}
@@ -466,6 +444,5 @@ public class MovieListActivity extends AbstractHttpListActivity {
 
 		mListTask = new GetMovieListTask();
 		mListTask.execute(params);
-
 	}
 }

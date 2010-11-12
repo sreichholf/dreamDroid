@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.ListHandler.EpgSearchRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.EpgSearchRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -131,7 +131,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle()
 	 */
 	@Override
-	protected String concatCurrentName(String title){
+	protected String genWindowTitle(String title){
 		return title + " - '" + mQuery + "'";
 	}
 

@@ -4,7 +4,7 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.helpers.enigma2.ListHandler;
+package net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl;
 
 import java.util.ArrayList;
 
@@ -12,7 +12,7 @@ import org.apache.http.NameValuePair;
 
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.abs.ListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ListRequestHandler;
 
 /**
  * @author sre
