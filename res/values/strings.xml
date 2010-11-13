@@ -177,4 +177,6 @@
 	<string name="edit_timer">Edit Timer</string>
 	<string name="cleaning_timerlist">Cleaning up timerlist</string>
 	<string name="cleanup">Cleanup</string>
+	<string name="in_standby">Device is now in Standby-Mode</string>
+	<string name="is_running">Device is now running</string>
 </resources>

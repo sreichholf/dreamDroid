@@ -13,7 +13,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MessageRequestHandler;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -74,61 +74,8 @@ public class MainActivity extends AbstractHttpActivity {
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
 
-	private SendMessageTask mSendMessageTask;
 	private SetPowerStateTask mSetPowerStateTask;
 	private CheckProfileTask mCheckProfileTask;
-
-	/**
-	 * <code>AsyncTask</code> to send a message to the target device
-	 * 
-	 * @author sre
-	 * 
-	 */
-	private class SendMessageTask extends AsyncTask<ExtendedHashMap, String, Boolean> {
-		private ExtendedHashMap mResult;
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected Boolean doInBackground(ExtendedHashMap... params) {
-			String xml = Message.send(mShc, params[0]);
-
-			if (xml != null) {
-				ExtendedHashMap result = Message.parseSimpleResult(xml);
-
-				String stateText = result.getString(SimpleResult.STATE_TEXT);
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		@Override
-		protected void onPostExecute(Boolean result) {
-			if (!result) {
-				mResult = new ExtendedHashMap();
-
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			} else {
-				onMessageSent(mResult);
-			}
-
-		}
-	}
 
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
@@ -149,14 +96,9 @@ public class MainActivity extends AbstractHttpActivity {
 			String xml = PowerState.set(mShc, params[0]);
 
 			if (xml != null) {
-				ExtendedHashMap result = Message.parseSimpleResult(xml);
-
-				String stateText = result.getString(SimpleResult.STATE_TEXT);
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
+				ExtendedHashMap result = PowerState.parseResult(xml);
+				mResult = result;
+				return true;
 			}
 
 			return false;
@@ -544,10 +486,14 @@ public class MainActivity extends AbstractHttpActivity {
 	/**
 	 * Shows succes/error toasts after power state has been set
 	 * 
-	 * @param inStandby
+	 * @param isRunning
 	 */
-	private void onPowerStateSet(boolean inStandby) {
-		// TODO - implement onPowerStateSet
+	private void onPowerStateSet(boolean isRunning) {
+		if(isRunning){
+			showToast(getString(R.string.is_running));
+		} else {
+			showToast(getString(R.string.in_standby));			
+		}
 	}
 
 	/**
@@ -562,37 +508,11 @@ public class MainActivity extends AbstractHttpActivity {
 	 *            Timeout for the message, 0 means no timeout will occur
 	 */
 	private void sendMessage(String text, String type, String timeout) {
-		if (mSendMessageTask != null) {
-			mSendMessageTask.cancel(true);
-		}
-
 		ExtendedHashMap msg = new ExtendedHashMap();
 		msg.put(Message.TEXT, text);
 		msg.put(Message.TYPE, type);
 		msg.put(Message.TIMEOUT, timeout);
-
-		mSendMessageTask = new SendMessageTask();
-		mSendMessageTask.execute(msg);
+		
+		execSimpleResultTask(new MessageRequestHandler(), Message.getParams(msg));
 	}
-
-	/**
-	 * Handles the result of sending a message to the target device
-	 * 
-	 * @param result
-	 *            Result of sending the message in
-	 *            <code>helpers.enigma2.SimpleResult</code> style
-	 */
-	private void onMessageSent(ExtendedHashMap result) {
-		String toastText = (String) getText(R.string.get_content_error);
-		String stateText = result.getString(SimpleResult.STATE_TEXT);
-
-		if (stateText != null && !"".equals(stateText)) {
-			toastText = stateText;
-		}
-
-		removeDialog(DIALOG_SEND_MESSAGE_ID);
-
-		showToast(toastText);
-	}
-
 }

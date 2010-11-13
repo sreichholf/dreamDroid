@@ -78,7 +78,7 @@ public class E2PowerStateHandler extends DefaultHandler {
 		if (inState) {
 			if ("false".equals(value.trim()))
 				mResult.put(PowerState.IN_STANDBY, true);
-			else {
+			else if ("true".equals(value.trim())){
 				mResult.put(PowerState.IN_STANDBY, false);
 			}
 		}

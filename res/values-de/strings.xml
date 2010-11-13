@@ -174,4 +174,6 @@
 	<string name="edit_timer">Timer bearbeiten</string>
 	<string name="cleaning_timerlist">Räume Timerliste auf</string>
 	<string name="cleanup">Aufräumen</string>
+	<string name="in_standby">Gerät ist nun im Standby-Modus</string>
+	<string name="is_running">Gerät läuft nun</string>
 </resources>

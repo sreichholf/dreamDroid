@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -26,17 +25,26 @@ public class Message extends SimpleResult {
 	public static final String MESSAGE_TYPE_INFO = "2";
 	public static final String MESSAGE_TYPE_ERROR = "3";
 	
-	public static String send(SimpleHttpClient shc, ExtendedHashMap message) {
-		
+//	public static String send(SimpleHttpClient shc, ExtendedHashMap message) {
+//		
+//		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+//		params.add(new BasicNameValuePair("text", message.getString(TEXT)));
+//		params.add(new BasicNameValuePair("type", message.getString(TYPE)));
+//		params.add(new BasicNameValuePair("timeout", message.getString(TIMEOUT)));
+//		
+//		if (shc.fetchPageContent(URIStore.MESSAGE, params)) {
+//			return shc.getPageContentString();
+//		}
+//
+//		return null;
+//	}
+	
+	public static ArrayList<NameValuePair> getParams(ExtendedHashMap message){
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("text", message.getString(TEXT)));
 		params.add(new BasicNameValuePair("type", message.getString(TYPE)));
 		params.add(new BasicNameValuePair("timeout", message.getString(TIMEOUT)));
 		
-		if (shc.fetchPageContent(URIStore.MESSAGE, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
+		return params;
 	}
 }
