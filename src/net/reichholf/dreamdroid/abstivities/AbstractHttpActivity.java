@@ -234,11 +234,10 @@ public abstract class AbstractHttpActivity extends Activity {
 		if (stateText != null && !"".equals(stateText)) {
 			toastText = stateText;
 		} else if (mShc.hasError()) {
-			stateText = mShc.getErrorText();
+			toastText = mShc.getErrorText();
 		}
 
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
+		showToast(toastText);
 	}
 	
 	/**

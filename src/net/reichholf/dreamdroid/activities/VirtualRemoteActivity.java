@@ -8,6 +8,15 @@ package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.enigma2.Remote;
+import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.RemoteCommandRequestHandler;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -25,14 +34,6 @@ import android.view.View.OnLongClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Toast;
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.enigma2.Remote;
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
 /**
  * A Virtual dreambox remote control using http-requests to send key-strokes
@@ -91,6 +92,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	};
 
 	private boolean mQuickZap;
+	private String mBaseTitle;
 	private SharedPreferences mPrefs;
 	private SharedPreferences.Editor mEditor;
 
@@ -186,11 +188,12 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	private void reinit() {
 		if (mQuickZap) {
 			setContentView(R.layout.virtual_remote_quick_zap);
-			setTitle(getText(R.string.app_name) + " - " + getText(R.string.quickzap));
+			mBaseTitle = getString(R.string.app_name) + " - " + getString(R.string.quickzap);			
 		} else {
 			setContentView(R.layout.virtual_remote);
-			setTitle(getText(R.string.app_name) + " - " + getText(R.string.virtual_remote));
+			mBaseTitle = getString(R.string.app_name) + " - " + getString(R.string.virtual_remote);
 		}
+		setTitle(mBaseTitle);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 		registerButtons(mButtonsCommon);
@@ -248,44 +251,35 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		if (longClick) {
 			params.add(new BasicNameValuePair("type", Remote.CLICK_TYPE_LONG));
 		}
-
-		ExtendedHashMap result = null;
-
-		String xml = Remote.sendCommand(mShc, params);
-		if (xml != null) {
-			result = Remote.parseSimpleResult(xml);
-		}
-
-		if (result == null) {
-			result = new ExtendedHashMap();
-		}
-		onCommandSent(result);
+		execSimpleResultTask(new RemoteCommandRequestHandler(), params);
 	}
-
-	/**
-	 * Called after a key-press-command has been sent
-	 * 
-	 * @param result
-	 *            A SimpleXmlResult-like <code>ExtendedHashMap</code>
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpActivity#onSimpleResult(boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
 	 */
-	private void onCommandSent(ExtendedHashMap result) {
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		boolean hasError = false;
+		String toastText = (String) getText(R.string.get_content_error);
+		String stateText = result.getString(SimpleResult.STATE_TEXT);
 		String state = result.getString(SimpleResult.STATE);
-		String stateText = result.getString(SimpleResult.STATE);
-
-		if (Python.FALSE.equals(state) || mShc.hasError()) {
-			String toastText = (String) getText(R.string.get_content_error);
-
-			if (mShc.hasError()) {
-				toastText += "\n" + mShc.getErrorText();
-			}
-
-			if (stateText != null && !"".equals(stateText)) {
-				toastText = stateText;
-			}
-
-			Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-			toast.show();
+		
+		if (!success) {
+			result = new ExtendedHashMap();
+			hasError = true;
 		}
-
+				
+		if (stateText == null || "".equals(stateText)) {
+			toastText = stateText;
+			hasError = true;
+		} else if (mShc.hasError()) {
+			toastText = toastText + "\n" + mShc.getErrorText();
+			hasError = true;
+		} else if (Python.FALSE.equals(state)){
+			hasError = true;
+		}
+		
+		if(hasError){
+			showToast(toastText);
+		}
 	}
 }

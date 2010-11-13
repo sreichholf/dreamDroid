@@ -6,10 +6,6 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
-import java.util.ArrayList;
-
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import org.apache.http.NameValuePair;
 
 /**
  * @author sreichholf
@@ -58,12 +54,4 @@ public class Remote extends SimpleResult{
 	public static final int KEY_RECORD = 167;
 	
 	public static final String CLICK_TYPE_LONG = "long";
-	
-	public static String sendCommand(SimpleHttpClient shc, ArrayList<NameValuePair> params) {
-		if (shc.fetchPageContent(URIStore.REMOTECONTROL, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
 }

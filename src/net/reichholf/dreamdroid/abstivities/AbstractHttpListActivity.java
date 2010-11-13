@@ -471,11 +471,10 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		if (stateText != null && !"".equals(stateText)) {
 			toastText = stateText;
 		} else if (mShc.hasError()) {
-			stateText = mShc.getErrorText();
+			toastText = mShc.getErrorText();
 		}
 
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
+		showToast(toastText);
 	}
 
 	/**
