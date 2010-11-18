@@ -724,7 +724,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			}
 		}
 		
-		mProgress = ProgressDialog.show(this, "", getText(R.string.save), true);
+		mProgress = ProgressDialog.show(this, "", getText(R.string.saving), true);
 		
 		applyViewValues();
 		ArrayList<NameValuePair> params = Timer.getSaveParams(mTimer, mTimerOld);
@@ -746,6 +746,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
 			setResult(RESULT_OK);
+			finish();
 		}
 	}
 
