@@ -259,23 +259,20 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	 */
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		boolean hasError = false;
-		String toastText = (String) getText(R.string.get_content_error);
+		String toastText = getString(R.string.get_content_error);					
 		String stateText = result.getString(SimpleResult.STATE_TEXT);
-		String state = result.getString(SimpleResult.STATE);
+		String state = result.getString(SimpleResult.STATE);		
+			
+		if (stateText == null || "".equals(stateText)) {			
+			hasError = true;
+		} 
 		
-		if (!success) {
-			result = new ExtendedHashMap();
-			hasError = true;
-		}
-				
-		if (stateText == null || "".equals(stateText)) {
-			toastText = stateText;
-			hasError = true;
-		} else if (mShc.hasError()) {
+		if (mShc.hasError()) {
 			toastText = toastText + "\n" + mShc.getErrorText();
 			hasError = true;
 		} else if (Python.FALSE.equals(state)){
 			hasError = true;
+			toastText = stateText;
 		}
 		
 		if(hasError){

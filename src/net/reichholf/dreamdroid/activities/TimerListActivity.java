@@ -279,7 +279,10 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 */
 	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result){		
-		mProgress.dismiss();
+		if(mProgress != null){		
+			mProgress.dismiss();
+			mProgress = null;
+		}
 		super.onSimpleResult(success, result);
 		
 		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {

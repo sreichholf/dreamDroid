@@ -90,6 +90,11 @@ public abstract class AbstractHttpActivity extends Activity {
 		 */
 		protected void onPostExecute(Boolean result) {
 			setProgressBarIndeterminateVisibility(false);
+			
+			if (!result || mResult == null) {
+				mResult = new ExtendedHashMap();
+			}
+			
 			onSimpleResult(result, mResult);
 		}
 	}
@@ -224,10 +229,6 @@ public abstract class AbstractHttpActivity extends Activity {
 	 * @param result
 	 */
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
-		if (!success) {
-			result = new ExtendedHashMap();
-		}
-
 		String toastText = (String) getText(R.string.get_content_error);
 		String stateText = result.getString(SimpleResult.STATE_TEXT);
 

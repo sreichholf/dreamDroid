@@ -56,6 +56,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	private String mCurrentLocation;
 
 	private boolean mTagsChanged;
+	private boolean mReloadOnSimpleResult;
 	private ArrayList<String> mSelectedTags;
 	private ArrayList<String> mOldTags;
 
@@ -77,60 +78,6 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			super(getString(R.string.movies), new MovieListRequestHandler(), true);
 		}
 	}
-
-	/**
-	 * <code>AsyncTask</code> to delete a movie using its service reference
-	 * Calls <code>onMovieDeleted</code> when finished.
-	 * 
-	 * @author sre
-	 * 
-	 */
-	// private class DeleteMovieTask extends AsyncTask<String, String, Boolean>
-	// {
-	// private ExtendedHashMap mResult;
-	// private boolean mHttpError;
-	//
-	// /*
-	// * (non-Javadoc)
-	// *
-	// * @see android.os.AsyncTask#doInBackground(Params[])
-	// */
-	// @Override
-	// protected Boolean doInBackground(String... params) {
-	// String xml = Movie.delete(mShc, mMovie);
-	// mHttpError = false;
-	// if (xml != null) {
-	// ExtendedHashMap result = Movie.parseSimpleResult(xml);
-	//
-	// String stateText = result.getString("statetext");
-	//
-	// if (stateText != null) {
-	// mResult = result;
-	// return true;
-	// }
-	// } else {
-	// mHttpError = true;
-	// }
-	//
-	// return false;
-	// }
-	//
-	// /*
-	// * (non-Javadoc)
-	// *
-	// * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-	// */
-	// protected void onPostExecute(Boolean result) {
-	// if (!result) {
-	// mResult = new ExtendedHashMap();
-	// if (mHttpError) {
-	// showToast(getText(R.string.get_content_error) + "\n" +
-	// mShc.getErrorText());
-	// }
-	// }
-	// onMovieDeleted(mResult);
-	// }
-	// }
 
 	/*
 	 * (non-Javadoc)
@@ -394,6 +341,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 * Delete the selected movie
 	 */
 	private void deleteMovie() {
+		removeDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
@@ -401,6 +349,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		}
 
 		mProgress = ProgressDialog.show(this, "", getText(R.string.deleting), true);
+		mReloadOnSimpleResult = true;
 		execSimpleResultTask(new MovieDeleteRequestHandler(), Movie.getDeleteParams(mMovie));
 	}
 
@@ -413,11 +362,17 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 */
 	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
-		mProgress.dismiss();
+		if(mProgress != null){
+			mProgress.dismiss();
+			mProgress = null;
+		}
 		super.onSimpleResult(success, result);
-
-		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
-			reload();
+		
+		if(mReloadOnSimpleResult){
+			if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
+				reload();
+				mReloadOnSimpleResult = false;
+			}
 		}
 	}
 
