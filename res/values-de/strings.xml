@@ -129,7 +129,7 @@
 	<string name="quickzap">QuickZap-Layout</string>
 	<string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur verfügung!</string>
 	<string name="ok">OK</string>
-	<string name="profiles">Profile</string>
+	<string name="connection_profiles">Verbindungsprofile</string>
 	<string name="activate">Aktivieren</string>
 	<string name="confirm_delete_profile">Wollen Sie dieses Profil wirklich löschen?</string>
 	<string name="profile_activated">Profil aktiviert</string>

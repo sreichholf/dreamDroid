@@ -130,7 +130,7 @@
 	<string name="quickzap">QuickZap Layout</string>
 	<string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
 	<string name="ok">OK</string>
-	<string name="profiles">Profiles</string>
+	<string name="connection_profiles">Connection Profiles</string>
 	<string name="activate">Activate</string>
 	<string name="confirm_delete_profile">Do you really want to delete this profile?</string>
 	<string name="profile_activated">Activated profile</string>

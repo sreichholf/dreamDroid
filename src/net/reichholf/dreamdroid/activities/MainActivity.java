@@ -217,7 +217,7 @@ public class MainActivity extends AbstractHttpActivity {
 		// Will be reactivated as soon as there are some "Global settings"
 		// menu.add(0, ITEM_SETTINGS, 0,
 		// getText(R.string.settings)).setIcon(R.drawable.edit);
-		menu.add(1, ITEM_PROFILES, 1, getText(R.string.profiles)).setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(1, ITEM_PROFILES, 1, getText(R.string.connection_profiles)).setIcon(android.R.drawable.ic_menu_preferences);
 		menu.add(1, ITEM_CHECK_CONN, 2, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);
 		menu.add(1, ITEM_ABOUT, 3, R.string.about).setIcon(android.R.drawable.ic_menu_help);
 		menu.add(0, ITEM_SCREENSHOT, 4, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);
