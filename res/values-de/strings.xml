@@ -176,4 +176,6 @@
 	<string name="cleanup">Aufräumen</string>
 	<string name="in_standby">Gerät ist nun im Standby-Modus</string>
 	<string name="is_running">Gerät läuft nun</string>
+	<string name="stream">Streamen</string>
+	<string name="install_vplayer">Für das Streaming wird vPlayer benötigt!</string>
 </resources>

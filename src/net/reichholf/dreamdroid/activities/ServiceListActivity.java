@@ -22,6 +22,9 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -298,7 +301,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 				finish();
 			} else {
 				CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
-						getText(R.string.zap) };
+						getText(R.string.zap), getText(R.string.stream) };
 
 				AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 				adBuilder.setTitle(getText(R.string.pick_action));
@@ -317,6 +320,9 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 						case 2:
 							zapTo(ref);
+							break;
+						case 3:
+							stream(ref);
 							break;
 						}
 					}
@@ -414,9 +420,29 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 		intent.putExtra(sData, map);
 
-		this.startActivity(intent);
+		startActivity(intent);
 	}
-
+	
+	/**
+	 * @param ref
+	 */
+	private void stream(String ref){
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		String uriString = "http://" + DreamDroid.PROFILE.getHost().trim() + ":8001/" + ref;
+		PackageManager pm = this.getPackageManager();
+		
+		intent.setDataAndType(Uri.parse(uriString) , "video/*");
+		ArrayList<ResolveInfo> infos = (ArrayList<ResolveInfo>) pm.queryIntentActivities(intent, 0);
+		for(ResolveInfo info : infos){
+			if(info.activityInfo.applicationInfo.packageName.equals("me.abitno.vplayer") ){
+				startActivity(intent);
+				return;
+			}
+		}
+		
+		showToast(getText(R.string.install_vplayer));		
+	}
+	
 	/**
 	 * 
 	 */
