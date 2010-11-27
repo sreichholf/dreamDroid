@@ -111,11 +111,13 @@ public class MainActivity extends AbstractHttpActivity {
 		 */
 		@Override
 		protected void onPostExecute(Boolean result) {
-			if (!result) {
+			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 
 				if (mShc.hasError()) {
 					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+				} else {
+					showToast(getText(R.string.get_content_error));
 				}
 			} else {
 				onPowerStateSet((Boolean) mResult.get(PowerState.IN_STANDBY));
