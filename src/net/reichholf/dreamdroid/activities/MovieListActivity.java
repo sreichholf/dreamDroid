@@ -11,11 +11,13 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieDeleteRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieListRequestHandler;
 
@@ -28,7 +30,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -136,7 +142,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		mMovie = mMapList.get(position);
 
-		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete) };
+		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.stream) };
 
 		AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 		adBuilder.setTitle(getText(R.string.pick_action));
@@ -150,6 +156,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 				case 1:
 					showDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
 					break;
+				case 2:
+					streamFile(mMovie.getString(Movie.FILE_NAME));
 				default:
 					return;
 				}
@@ -375,6 +383,32 @@ public class MovieListActivity extends AbstractHttpListActivity {
 			}
 		}
 	}
+	/**
+	 * @param ref
+	 * 			A ServiceReference
+	 */
+	private void streamFile(String fileName){
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		SimpleHttpClient shc = SimpleHttpClient.getInstance();
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("file", fileName));
+		String uriString = shc.buildUrl(URIStore.FILE, params);
+		
+		intent.setDataAndType(Uri.parse(uriString) , "video/*");
+		
+		PackageManager pm = this.getPackageManager();
+		ArrayList<ResolveInfo> infos = (ArrayList<ResolveInfo>) pm.queryIntentActivities(intent, 0);
+		
+		for(ResolveInfo info : infos){
+			if(info.activityInfo.applicationInfo.packageName.equals("me.abitno.vplayer") ){
+				intent.setClassName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name);
+				startActivity(intent);
+				return;
+			}
+		}
+		
+		showToast(getText(R.string.install_vplayer));		
+	}	
 
 	/**
 	 * Reload the list of movies

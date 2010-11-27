@@ -322,7 +322,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 							zapTo(ref);
 							break;
 						case 3:
-							stream(ref);
+							streamService(ref);
 							break;
 						}
 					}
@@ -425,14 +425,17 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	
 	/**
 	 * @param ref
+	 * 			A ServiceReference
 	 */
-	private void stream(String ref){
+	private void streamService(String ref){
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "http://" + DreamDroid.PROFILE.getHost().trim() + ":8001/" + ref;
-		PackageManager pm = this.getPackageManager();
 		
 		intent.setDataAndType(Uri.parse(uriString) , "video/*");
+		
+		PackageManager pm = this.getPackageManager();
 		ArrayList<ResolveInfo> infos = (ArrayList<ResolveInfo>) pm.queryIntentActivities(intent, 0);
+		
 		for(ResolveInfo info : infos){
 			if(info.activityInfo.applicationInfo.packageName.equals("me.abitno.vplayer") ){
 				intent.setClassName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name);
