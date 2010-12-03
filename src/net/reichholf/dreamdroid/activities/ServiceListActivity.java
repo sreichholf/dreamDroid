@@ -27,6 +27,7 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -429,7 +430,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 */
 	private void streamService(String ref){
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "http://" + DreamDroid.PROFILE.getHost().trim() + ":8001/" + ref;
+		String uriString = "http://" + DreamDroid.PROFILE.getStreamHost().trim() + ":8001/" + ref;
+		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
 		
 		intent.setDataAndType(Uri.parse(uriString) , "video/*");
 		

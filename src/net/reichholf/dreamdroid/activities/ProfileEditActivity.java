@@ -33,6 +33,7 @@ public class ProfileEditActivity extends Activity {
 
 	private EditText mProfile;
 	private EditText mHost;
+	private EditText mStreamHost;
 	private EditText mPort;
 	private CheckBox mSsl;
 	private CheckBox mLogin;
@@ -49,6 +50,7 @@ public class ProfileEditActivity extends Activity {
 
 		mProfile = (EditText) findViewById(R.id.EditTextProfile);
 		mHost = (EditText) findViewById(R.id.EditTextHost);
+		mStreamHost = (EditText) findViewById(R.id.EditTextStreamHost);
 		mPort = (EditText) findViewById(R.id.EditTextPort);
 		mSsl = (CheckBox) findViewById(R.id.CheckBoxSsl);
 		mLogin = (CheckBox) findViewById(R.id.CheckBoxLogin);
@@ -119,6 +121,7 @@ public class ProfileEditActivity extends Activity {
 	private void assignProfile() {
 		mProfile.setText(mCurrentProfile.getProfile());
 		mHost.setText(mCurrentProfile.getHost());
+		mStreamHost.setText(mCurrentProfile.getStreamHostValue());
 		mPort.setText(mCurrentProfile.getPortString());
 		mSsl.setChecked(mCurrentProfile.isSsl());
 		mLogin.setChecked(mCurrentProfile.isLogin());
@@ -132,6 +135,7 @@ public class ProfileEditActivity extends Activity {
 	private void save() {
 		mCurrentProfile.setProfile(mProfile.getText().toString());
 		mCurrentProfile.setHost(mHost.getText().toString().trim());
+		mCurrentProfile.setStreamHost(mStreamHost.getText().toString().trim());
 		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());
 		mCurrentProfile.setLogin(mLogin.isChecked());
 		mCurrentProfile.setUser(mUser.getText().toString());
@@ -141,6 +145,9 @@ public class ProfileEditActivity extends Activity {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
 				showToast(getText(R.string.host_empty));
 				return;
+			}
+			if (mCurrentProfile.getStreamHost() == null) {
+				mCurrentProfile.setStreamHost("");
 			}
 			if (DreamDroid.updateProfile(mCurrentProfile)) {
 				showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getProfile() + "'");

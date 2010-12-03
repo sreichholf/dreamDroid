@@ -36,7 +36,7 @@
 	<string name="device_info">Device Information</string>
 	<string name="exit">Exit</string>
 	<string name="send_message">Send Message</string>
-	<string name="version_string">DreamDroid v0.8.4\n© 2010 Stephan Reichholf\nstephan@reichholf.net</string>
+	<string name="version_string">DreamDroid v0.8.5\n© 2010 Stephan Reichholf\nstephan@reichholf.net</string>
 	<string name="save">Save</string>
 	<string name="cancel">Cancel</string>
 	<string name="fetching_data">Fetching data...</string>
@@ -181,4 +181,6 @@
 	<string name="is_running">Device is now running</string>
 	<string name="stream">Stream</string>
 	<string name="install_vplayer">Streaming requires vPlayer to be installed</string>
+	<string name="stream_host">Streaming Hostname/IP</string>
+	<string name="stream_host_long">Host/IP for streaming (optional)</string>
 </resources>

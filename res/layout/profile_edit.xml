@@ -42,7 +42,19 @@
 				android:hint="@string/host_long"
 				android:singleLine="true"/>
 
-
+			<TextView
+		  		android:id="@+id/TextViewStreamHost"
+		  		android:layout_width="fill_parent"
+				android:layout_height="wrap_content"			 
+				android:text="@string/stream_host" 
+				android:paddingLeft="3dip" 
+				android:background="#333"/>
+			<EditText 
+				android:id="@+id/EditTextStreamHost"			
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"  
+				android:hint="@string/stream_host_long"
+				android:singleLine="true"/>
 				
 			<TextView
 		  		android:id="@+id/TextViewPort"

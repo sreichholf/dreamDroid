@@ -178,4 +178,6 @@
 	<string name="is_running">Gerät läuft nun</string>
 	<string name="stream">Streamen</string>
 	<string name="install_vplayer">Für das Streaming wird vPlayer benötigt!</string>
+	<string name="stream_host">Streaming Hostname/IP</string>
+	<string name="stream_host_long">Host/IP für Streaming (optional)</string>
 </resources>

@@ -23,6 +23,7 @@ public class Profile implements Serializable{
 	
 	private String mProfile;
 	private String mHost;
+	private String mStreamHost;
 	private String mUser;
 	private String mPass;
 	private boolean mLogin;
@@ -38,12 +39,12 @@ public class Profile implements Serializable{
 		setId(-1);
 	}
 	
-	public Profile(String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
-		set(profile, host, port, login, user, pass, ssl);
+	public Profile(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
+		set(profile, host, streamHost, port, login, user, pass, ssl);
 	}
 	
-	public Profile(int id, String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
-		set(profile, host, port, login, user, pass, ssl);
+	public Profile(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
+		set(profile, host, streamHost, port, login, user, pass, ssl);
 	}
 	
 	/**
@@ -55,10 +56,11 @@ public class Profile implements Serializable{
 	 * @param pass
 	 * @param ssl
 	 */
-	public void set(String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
+	public void set(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
 		setId(-1);
 		setProfile(profile);
 		setHost(host);
+		setStreamHost(streamHost);
 		setPort(port);
 		setLogin(login);
 		setUser(user);
@@ -76,10 +78,11 @@ public class Profile implements Serializable{
 	 * @param pass
 	 * @param ssl
 	 */
-	public void set(int id, String profile, String host, int port, boolean login, String user, String pass, boolean ssl){
+	public void set(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
 		setId(id);
 		setProfile(profile);
 		setHost(host);
+		setStreamHost(streamHost);
 		setPort(port);
 		setLogin(login);
 		setUser(user);
@@ -90,6 +93,7 @@ public class Profile implements Serializable{
 	public void set(Cursor c){
 		setProfile( c.getString(c.getColumnIndex(DreamDroid.KEY_PROFILE)) );
 		setHost( c.getString(c.getColumnIndex(DreamDroid.KEY_HOST)) );
+		setStreamHost( c.getString(c.getColumnIndex(DreamDroid.KEY_STREAM_HOST)));
 		setUser ( c.getString(c.getColumnIndex(DreamDroid.KEY_USER)) );
 		setPass ( c.getString(c.getColumnIndex(DreamDroid.KEY_PASS)) );
 		
@@ -123,7 +127,17 @@ public class Profile implements Serializable{
 	 * @param mHost the Host to set
 	 */
 	public void setHost(String host) {
-		this.mHost =host.replace("http://", "").replace("https://", "");
+		this.mHost = host.replace("http://", "").replace("https://", "");
+	}
+	
+	/**
+	 * @param streamHost the streaming host to set
+	 */
+	public void setStreamHost(String streamHost){
+		if(streamHost == null){
+			streamHost = "";
+		}
+		this.mStreamHost = streamHost.replace("http://", "").replace("https://", "");
 	}
 
 	/**
@@ -205,6 +219,24 @@ public class Profile implements Serializable{
 	 */
 	public String getHost() {
 		return mHost;
+	}
+	
+	/**
+	 * @return the host for streaming
+	 */
+	public String getStreamHost(){
+		if("".equals(mStreamHost) || mStreamHost == null){
+			return mHost;
+		} else {
+			return mStreamHost;
+		}
+	}
+	
+	/**
+	 * @return
+	 */
+	public String getStreamHostValue(){
+		return mStreamHost;
 	}
 
 	/**
