@@ -52,7 +52,12 @@ public class Timer {
 	public static final String DONT_SAVE = "dontsave";
 	public static final String CANCELED = "canceled";
 	public static final String TOGGLE_DISABLED = "toggledisabled";
-
+	
+	public static final int STATE_WAITING = 0;
+	public static final int STATE_PREPARED = 1;
+	public static final int STATE_RUNNING = 2;
+	public static final int STATE_ENDED = 3;	
+	
 	public static enum Afterevents {
 		NOTHING(0), STANDBY(1), DEEP_STANDBY(2), AUTO(3);
 

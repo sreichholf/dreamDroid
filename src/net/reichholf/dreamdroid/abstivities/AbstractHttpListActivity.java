@@ -32,7 +32,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
-import android.widget.SimpleAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,7 +52,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
-	protected SimpleAdapter mAdapter;
+	protected BaseAdapter mAdapter;
 	protected SimpleHttpClient mShc;
 
 	protected TextView mEmpty;

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
+import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
@@ -30,7 +31,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 /**
  * Activity to show a List of all existing timers of the target device
@@ -216,9 +216,11 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(this, mMapList, R.layout.timer_list_item, new String[] { Timer.NAME,
-				Timer.SERVICE_NAME, Timer.BEGIN_READEABLE, Timer.END_READABLE }, new int[] { R.id.timer_name,
-				R.id.service_name, R.id.timer_start, R.id.timer_end });
+//		mAdapter = new SimpleAdapter(this, mMapList, R.layout.timer_list_item, new String[] { Timer.NAME,
+//				Timer.SERVICE_NAME, Timer.BEGIN_READEABLE, Timer.END_READABLE }, new int[] { R.id.timer_name,
+//				R.id.service_name, R.id.timer_start, R.id.timer_end });
+		
+		mAdapter = new TimerListAdapter(this, R.layout.timer_list_item, mMapList);
 		setListAdapter(mAdapter);
 	}
 

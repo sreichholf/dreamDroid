@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<integer-array name="timer_state_color">
+		<item>0xFFFFFF00</item>
+		<item>0xFFFF9900</item>
+		<item>0xFF00FF00</item>
+		<item>0xFF0000FF</item>
+	</integer-array>
+</resources>
