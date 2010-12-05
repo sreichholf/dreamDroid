@@ -69,6 +69,10 @@ public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			action.setText(mAction[actionId]);
 			
 			int stateId = Integer.parseInt(timer.getString(Timer.STATE));
+			int disabled = Integer.parseInt(timer.getString(Timer.DISABLED));
+			//The state for disabled timers is 3 
+			//If any timer is disabled we add 1 to the state get the disabled color/text
+			stateId += disabled;
 			state.setText(mState[stateId]);
 			stateIndicator.setBackgroundColor(mStateColor[stateId]);			
 		}

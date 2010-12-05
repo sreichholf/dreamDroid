@@ -186,6 +186,7 @@
 		<item>vorbereiten...</item>
 		<item>läuft...</item>
 		<item>beendet</item>
+		<item>deaktviert</item>
 	</string-array>
 	<string-array name="timer_action">
 		<item>aufnehmen</item>
