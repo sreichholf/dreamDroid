@@ -8,15 +8,33 @@ package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEventIdRequestHandler;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
@@ -27,6 +45,10 @@ import android.widget.TextView;
  */
 public class CurrentServiceActivity extends AbstractHttpActivity {
 	public static final int MENU_RELOAD = 0;
+	public static final int ITEM_NOW = 0;
+	public static final int ITEM_NEXT = 1;
+	public static final int ITEM_STREAM = 2;
+	public static final int DIALOG_EPG_ITEM_ID = 9382893;
 
 	private ExtendedHashMap mCurrent;
 	private GetCurrentServiceTask mCurrentServiceTask;
@@ -39,6 +61,16 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	private TextView mNextStart;
 	private TextView mNextTitle;
 	private TextView mNextDuration;
+	private Button mStream;
+	private LinearLayout mNowLayout;	
+	private LinearLayout mNextLayout;	
+	protected ProgressDialog mProgress;
+	
+	private ExtendedHashMap mService;
+	private ExtendedHashMap mNow;
+	private ExtendedHashMap mNext;
+	private ExtendedHashMap mCurrentItem;
+	
 
 	/**
 	 * <code>AsyncTask</code> to fetch the current service information async.
@@ -88,7 +120,8 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		 */
 		protected void onPostExecute(Boolean result) {
 			String title = null;
-
+			setProgressBarIndeterminateVisibility(false);
+			
 			if (result) {
 				title = getText(R.string.app_name) + "::" + getText(R.string.current_service);
 
@@ -117,6 +150,8 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		
 		setContentView(R.layout.current_service);
 
 		mServiceName = (TextView) findViewById(R.id.service_name);
@@ -127,11 +162,18 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		mNextStart = (TextView) findViewById(R.id.event_next_start);
 		mNextTitle = (TextView) findViewById(R.id.event_next_title);
 		mNextDuration = (TextView) findViewById(R.id.event_next_duration);
-
 		mCurrent = new ExtendedHashMap();
-
+		
+		mStream = (Button) findViewById(R.id.ButtonStream);
+		mNowLayout = (LinearLayout) findViewById(R.id.layout_now);
+		mNextLayout = (LinearLayout) findViewById(R.id.layout_next);
+		
+		registerOnClickListener(mNowLayout, ITEM_NOW);
+		registerOnClickListener(mNextLayout, ITEM_NEXT);
+		registerOnClickListener(mStream, ITEM_STREAM);
+		
 		reload();
-	}
+	}	
 
 	/*
 	 * (non-Javadoc)
@@ -153,7 +195,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case (MENU_RELOAD):
+		case (MENU_RELOAD):			
 			reload();
 			return true;
 		default:
@@ -162,13 +204,64 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	}
 
 	/**
+	 * Register an <code>OnClickListener</code> for a view and a specific item
+	 * ID (<code>ITEM_*</code> statics)
+	 * 
+	 * @param v
+	 *            The view an OnClickListener should be registered for
+	 * @param id
+	 *            The id used to identify the item clicked (<code>ITEM_*</code>
+	 *            statics)
+	 */
+	protected void registerOnClickListener(View v, final int id) {
+		v.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onItemClicked(id);
+			}
+		});
+	}
+
+	/**
+	 * @param id
+	 */
+	@Override
+	protected boolean onItemClicked(int id) {
+		switch (id) {
+		case ITEM_NOW:
+			showEpgDetail(mNow);
+			return true;
+		case ITEM_NEXT:
+			showEpgDetail(mNext);
+			return true;
+		case ITEM_STREAM:
+			String ref = mService.getString(Service.REFERENCE);
+			if(!"".equals(ref) && ref != null){
+				streamService(ref);
+			}
+			return true;
+		default:
+			return false;
+		}
+	}
+	
+	private void showEpgDetail(ExtendedHashMap event){
+		if(event != null){
+			mCurrentItem = event;
+			removeDialog(DIALOG_EPG_ITEM_ID);
+			showDialog(DIALOG_EPG_ITEM_ID);
+		}
+	}
+	
+	/**
 	 * Reloads all current service information
 	 */
 	private void reload() {
 		if (mCurrentServiceTask != null) {
 			mCurrentServiceTask.cancel(true);
 		}
-
+		
+		setProgressBarIndeterminateVisibility(true);
 		mCurrentServiceTask = new GetCurrentServiceTask();
 		mCurrentServiceTask.execute();
 	}
@@ -179,20 +272,152 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	 */
 	@SuppressWarnings("unchecked")
 	private void onCurrentServiceReady() {
-		ExtendedHashMap service = (ExtendedHashMap) mCurrent.get(CurrentService.SERVICE);
+		mService = (ExtendedHashMap) mCurrent.get(CurrentService.SERVICE);
 		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.EVENTS);
-		ExtendedHashMap now = events.get(0);
-		ExtendedHashMap next = events.get(1);
+		mNow = events.get(0);
+		mNext = events.get(1);
 
-		mServiceName.setText(service.getString(CurrentService.SERVICE_NAME));
-		mProvider.setText(service.getString(CurrentService.SERVICE_PROVIDER));
+		mServiceName.setText(mService.getString(CurrentService.SERVICE_NAME));
+		mProvider.setText(mService.getString(CurrentService.SERVICE_PROVIDER));
 		// Now
-		mNowStart.setText(now.getString(Event.EVENT_START_READABLE));
-		mNowTitle.setText(now.getString(Event.EVENT_TITLE));
-		mNowDuration.setText(now.getString(Event.EVENT_DURATION_READABLE));
+		mNowStart.setText(mNow.getString(Event.EVENT_START_READABLE));
+		mNowTitle.setText(mNow.getString(Event.EVENT_TITLE));
+		mNowDuration.setText(mNow.getString(Event.EVENT_DURATION_READABLE));
 		// Next
-		mNextStart.setText(next.getString(Event.EVENT_START_READABLE));
-		mNextTitle.setText(next.getString(Event.EVENT_TITLE));
-		mNextDuration.setText(next.getString(Event.EVENT_DURATION_READABLE));
+		mNextStart.setText(mNext.getString(Event.EVENT_START_READABLE));
+		mNextTitle.setText(mNext.getString(Event.EVENT_TITLE));
+		mNextDuration.setText(mNext.getString(Event.EVENT_DURATION_READABLE));
+	}
+	
+	protected Dialog onCreateDialog(int id) {
+		final Dialog dialog;
+
+		switch (id) {
+		case DIALOG_EPG_ITEM_ID:
+
+			String servicename = mCurrentItem.getString(Event.SERVICE_NAME);
+			String title = mCurrentItem.getString(Event.EVENT_TITLE);
+			String date = mCurrentItem.getString(Event.EVENT_START_READABLE);
+			if (!"N/A".equals(title) && date != null) {
+				date = date.concat(" (" + (String) mCurrentItem.getString(Event.EVENT_DURATION_READABLE) + " "
+						+ getText(R.string.minutes_short) + ")");
+				String descEx = mCurrentItem.getString(Event.EVENT_DESCRIPTION_EXTENDED);
+
+				dialog = new Dialog(this);
+				dialog.setContentView(R.layout.epg_item_dialog);
+				dialog.setTitle(title);
+
+				TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
+				textServiceName.setText(servicename);
+
+				TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
+				textTime.setText(date);
+
+				TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
+				textDescEx.setText(descEx);
+
+				Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
+				buttonSetTimer.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						setTimerById(mCurrentItem);
+						dialog.dismiss();
+					}
+				});
+
+				Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
+				buttonEditTimer.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						setTimerByEventData(mCurrentItem);
+						dialog.dismiss();
+					}
+				});
+			} else {
+				// No EPG Information is available!
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setMessage(R.string.no_epg_available).setCancelable(true)
+						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
+				dialog = builder.create();
+			}
+			break;
+		default:
+			dialog = super.onCreateDialog(id);
+		}
+
+		return dialog;
+	}
+	
+	/**
+	 * @param event
+	 */
+	protected void setTimerByEventData(ExtendedHashMap event) {
+		ExtendedHashMap timer = Timer.createByEvent(event);
+		ExtendedHashMap data = new ExtendedHashMap();
+		data.put("timer", timer);
+
+		Intent intent = new Intent(this, TimerEditActivity.class);
+		intent.putExtra(sData, data);
+		intent.setAction(DreamDroid.ACTION_NEW);
+
+		this.startActivity(intent);
+	}
+	/**
+	 * @param event
+	 */
+	protected void setTimerById(ExtendedHashMap event) {
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
+			}
+		}
+
+		mProgress = ProgressDialog.show(this, "", getText(R.string.saving), true);
+		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
+	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
+	 */
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
+			}
+		}
+		super.onSimpleResult(success, result);
+	}
+	
+	/**
+	 * @param ref
+	 * 			A ServiceReference
+	 */
+	private void streamService(String ref){
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		String uriString = "http://" + DreamDroid.PROFILE.getStreamHost().trim() + ":8001/" + ref;
+		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
+		
+		intent.setDataAndType(Uri.parse(uriString) , "video/*");
+		
+		PackageManager pm = this.getPackageManager();
+		ArrayList<ResolveInfo> infos = (ArrayList<ResolveInfo>) pm.queryIntentActivities(intent, 0);
+		
+		for(ResolveInfo info : infos){
+			if(info.activityInfo.applicationInfo.packageName.equals("me.abitno.vplayer") ){
+				intent.setClassName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name);
+				startActivity(intent);
+				return;
+			}
+		}
+		
+		showToast(getText(R.string.install_vplayer));		
 	}
 }

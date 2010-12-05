@@ -183,4 +183,5 @@
 	<string name="install_vplayer">Streaming requires vPlayer to be installed</string>
 	<string name="stream_host">Streaming Hostname/IP</string>
 	<string name="stream_host_long">Host/IP for streaming (optional)</string>
+	<string name="stream_current">Stream current</string>
 </resources>
