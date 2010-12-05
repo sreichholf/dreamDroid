@@ -52,6 +52,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 //	public static final int MENU_CLOSE = 0;
 	public static final int MENU_OVERVIEW = 1;
 	public static final int MENU_SET_AS_DEFAULT = 2;
+	public static final int MENU_RELOAD = 3;
 
 	private String mReference;
 	private String mName;
@@ -345,8 +346,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		super.onCreateOptionsMenu(menu);
 		
 		menu.add(0, MENU_SET_AS_DEFAULT, 0, getText(R.string.set_default)).setIcon(android.R.drawable.ic_menu_set_as);
+		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(R.drawable.ic_menu_list_overview);
-//		menu.add(0, MENU_CLOSE, 0, getText(R.string.close)).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 
 		return true;
 	}
@@ -358,12 +359,19 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 */
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		MenuItem overview = menu.getItem(1);
+		MenuItem overview = menu.getItem(2);
 
 		if (mReference.equals("default")) {
 			overview.setEnabled(false);
 		} else {
 			overview.setEnabled(true);
+		}
+		
+		MenuItem reload = menu.getItem(1);
+		if(!mIsBouquetList && !mPickMode){
+			reload.setEnabled(true);
+		} else {
+			reload.setEnabled(false);
 		}
 		return true;
 	}
@@ -391,6 +399,10 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			} else {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
+			return true;
+		case MENU_RELOAD:
+			reload();
+			return true;
 		default:
 			return super.onItemClicked(id);
 		}	
@@ -486,7 +498,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	public void loadDefault() {
 		String title = getText(R.string.app_name) + "::" + getText(R.string.services);
 		setTitle(title);
-
+		mIsBouquetList = true;
+		
 		mMapList.clear();
 
 		String[] servicelist = getResources().getStringArray(R.array.servicelist);
@@ -498,6 +511,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			map.put(Event.SERVICE_REFERENCE, servicerefs[i]);
 			mMapList.add(map);
 		}
+		
+		
 		mAdapter.notifyDataSetChanged();
 	}
 }
