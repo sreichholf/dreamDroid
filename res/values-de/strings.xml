@@ -181,4 +181,14 @@
 	<string name="stream_host">Streaming Hostname/IP</string>
 	<string name="stream_host_long">Host/IP für Streaming (optional)</string>
 	<string name="stream_current">Streame laufendes Programm</string>
+	<string-array name="timer_state">
+		<item>wartet...</item>
+		<item>vorbereiten...</item>
+		<item>läuft...</item>
+		<item>beendet...</item>
+	</string-array>
+	<string-array name="timer_action">
+		<item>aufnehmen</item>
+		<item>umschalten</item>
+	</string-array>
 </resources>
