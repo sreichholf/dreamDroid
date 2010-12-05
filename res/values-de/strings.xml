@@ -185,7 +185,7 @@
 		<item>wartet...</item>
 		<item>vorbereiten...</item>
 		<item>läuft...</item>
-		<item>beendet...</item>
+		<item>beendet</item>
 	</string-array>
 	<string-array name="timer_action">
 		<item>aufnehmen</item>

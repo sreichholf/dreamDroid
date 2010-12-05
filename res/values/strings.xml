@@ -188,7 +188,7 @@
 		<item>waiting...</item>
 		<item>prepared...</item>
 		<item>running...</item>
-		<item>ended...</item>
+		<item>ended</item>
 	</string-array>
 	<string-array name="timer_action">
 		<item>record</item>
