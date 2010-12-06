@@ -392,7 +392,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("file", fileName));
-		String uriString = shc.buildUrl(URIStore.FILE, params);
+		String uriString = shc.buildStreamUrl(URIStore.FILE, params);
 		
 		intent.setDataAndType(Uri.parse(uriString) , "video/*");
 		
