@@ -70,6 +70,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	private ExtendedHashMap mNow;
 	private ExtendedHashMap mNext;
 	private ExtendedHashMap mCurrentItem;
+	private boolean mCurrentServiceReady;
 	
 
 	/**
@@ -152,6 +153,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		
+		mCurrentServiceReady = false;
 		setContentView(R.layout.current_service);
 
 		mServiceName = (TextView) findViewById(R.id.service_name);
@@ -227,21 +229,26 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	protected boolean onItemClicked(int id) {
-		switch (id) {
-		case ITEM_NOW:
-			showEpgDetail(mNow);
-			return true;
-		case ITEM_NEXT:
-			showEpgDetail(mNext);
-			return true;
-		case ITEM_STREAM:
-			String ref = mService.getString(Service.REFERENCE);
-			if(!"".equals(ref) && ref != null){
-				streamService(ref);
+		if(mCurrentServiceReady){
+			switch (id) {
+			case ITEM_NOW:
+				showEpgDetail(mNow);
+				return true;
+			case ITEM_NEXT:
+				showEpgDetail(mNext);
+				return true;
+			case ITEM_STREAM:
+				String ref = mService.getString(Service.REFERENCE);
+				if(!"".equals(ref) && ref != null){
+					streamService(ref);
+				}
+				return true;
+			default:
+				return false;
 			}
+		} else {
+			showToast( getText(R.string.not_available) );
 			return true;
-		default:
-			return false;
 		}
 	}
 	
@@ -260,7 +267,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		if (mCurrentServiceTask != null) {
 			mCurrentServiceTask.cancel(true);
 		}
-		
+		mCurrentServiceReady = false;
 		setProgressBarIndeterminateVisibility(true);
 		mCurrentServiceTask = new GetCurrentServiceTask();
 		mCurrentServiceTask.execute();
@@ -272,6 +279,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	 */
 	@SuppressWarnings("unchecked")
 	private void onCurrentServiceReady() {
+		mCurrentServiceReady = true;
 		mService = (ExtendedHashMap) mCurrent.get(CurrentService.SERVICE);
 		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.EVENTS);
 		mNow = events.get(0);
