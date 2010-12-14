@@ -241,6 +241,8 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 				String ref = mService.getString(Service.REFERENCE);
 				if(!"".equals(ref) && ref != null){
 					streamService(ref);
+				} else {
+					showToast( getText(R.string.not_available) );
 				}
 				return true;
 			default:
