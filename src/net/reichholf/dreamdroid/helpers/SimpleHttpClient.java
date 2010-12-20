@@ -111,7 +111,7 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String buildUrl(String uri, List<NameValuePair> parameters) {
-		String parms = URLEncodedUtils.format(parameters, HTTP.ISO_8859_1);
+		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
 		return mPrefix + mHostname + ":" + mPort + uri + parms;
 	}
 	
@@ -121,7 +121,7 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String buildStreamUrl(String uri, List<NameValuePair> parameters) {
-		String parms = URLEncodedUtils.format(parameters, HTTP.ISO_8859_1);
+		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
 		return "http://" + mStreamHostname + ":" + 80 + uri + parms;
 	}
 
