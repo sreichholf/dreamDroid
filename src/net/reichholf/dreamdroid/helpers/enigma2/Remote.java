@@ -44,10 +44,10 @@ public class Remote extends SimpleResult{
 	public static final int KEY_GREEN = 399;
 	public static final int KEY_YELLOW = 400;
 	public static final int KEY_BLUE = 401;
-	public static final int KEY_REWIND = 168;
+	public static final int KEY_REWIND = 165;
 	public static final int KEY_PLAY = 164;
 	public static final int KEY_STOP = 128;
-	public static final int KEY_FORWARD = 159;
+	public static final int KEY_FORWARD = 163;
 	public static final int KEY_TV = 377;
 	public static final int KEY_RADIO = 385;
 	public static final int KEY_TEXT = 388;
