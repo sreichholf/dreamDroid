@@ -36,7 +36,7 @@
 	<string name="device_info">Info dispositivo</string>
 	<string name="exit">Esci</string>
 	<string name="send_message">Invia messaggio</string>
-	<string name="version_string">DreamDroid v0.9.3.1\n© 2010 Stephan Reichholf\nstephan@reichholf.net\n\nTraduzione:\nDiego Pierotto</string>
+	<string name="version_string">DreamDroid v0.9.3.2\n© 2010 Stephan Reichholf\nstephan@reichholf.net\n\nTraduzione:\nDiego Pierotto</string>
 	<string name="save">Salva</string>
 	<string name="cancel">Annulla</string>
 	<string name="fetching_data">Raccolta dati...</string>

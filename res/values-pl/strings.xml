@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Opis</string>
+<string name="title">Tytuł</string>
+<string name="we">Śr</string>
+<string name="tue">Wt</string>
+<string name="mo">Pn</string>
+<string name="app_name">DreamDroid</string>
+<string name="menu_timer">Zaplanowane zadania</string>
+<string name="menu_timer_desc">Pokaż, dodaj i edytuj zaplanowane zadania</string>
+<string name="menu_movies">Filmy</string>
+<string name="menu_movies_desc">Lista dostępnych nagrań</string>
+<string-array name="servicelist">
+<item>Bukiety (TV)</item>
+<item>Dostawcy (TV)</item>
+<item>Wszystkie (TV)</item>
+<item>Bukiety (Radio)</item>
+<item>Dostawcy (Radio)</item>
+<item>Wszystkie (Radio)</item>
+</string-array>
+<string name="timer">Zaplanowane zadania</string>
+<string name="service">Kanał</string>
+<string name="afterevent">Po zdarzeniu</string>
+<string name="location">Lokalizacja</string>
+<string-array name="afterevents">
+<item>Nic</item>
+<item>Czuwanie</item>
+<item>Głębokie czuwanie</item>
+<item>Automatycznie</item>
+</string-array>
+<string name="begin_time">Czas rozpoczęcia</string>
+<string name="repeatings">Powtarzanie</string>
+<string name="end_time">Czas zakończenia</string>
+<string name="services">Kanały</string>
+<string name="movies">Filmy</string>
+<string name="device_info">Informacje o urządzeniu</string>
+<string name="exit">Wyjście</string>
+<string name="send_message">Wyślij wiadomość</string>
+
+<string name="save">Zapisz</string>
+<string name="cancel">Anuluj</string>
+<string name="fetching_data">Pobieranie danych...</string>
+<string name="parsing">Przetwarzanie...</string>
+<string name="get_content_error">Błąd pobierania treści!</string>
+<string name="zap">Przełącznik</string>
+<string name="browse_epg">Przeglądaj EPG</string>
+<string name="edit">Edytuj</string>
+<string name="delete">Usuń</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">Włącz SSL</string>
+<string name="host">Nazwa hosta/IP</string>
+<string name="port">Port</string>
+<string name="settings">Ustawienia</string>
+<string name="host_long">Nazwa hosta lub IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="ssl_enabled_long">Włącz bezpieczne połączenie SSL (https)</string>
+<string name="close">Zamknij</string>
+<string name="minutes_short">min.</string>
+<string name="user">Użytkownik</string>
+<string name="user_long">Nazwa użytkownika do logowania</string>
+<string name="pass">Hasło</string>
+<string name="pass_long">Hasło do logowania</string>
+<string name="saving">Zapisywanie. Proszę czekać...</string>
+<string name="deleting">Usuwanie. Proszę czekać</string>
+<string name="delete_confirm">Na pewno usunąć?</string>
+<string name="set_timer">Ustaw zaplanowane zadania</string>
+<string name="home">Menu główne</string>
+<string name="pick_action">Wybierz działanie</string>
+<string name="set_time_begin">Data i czas rozpoczęcia</string>
+<string name="set_time_end">Data i czas zakończenia</string>
+<string name="apply">Zastosuj</string>
+<string name="reload">Przeładuj</string>
+<string-array name="weekdays_short">
+<item>Pn</item>
+<item>Wt</item>
+<item>Śr</item>
+<item>Cz</item>
+<item>Pt</item>
+<item>So</item>
+<item>Ni</item>
+</string-array>
+<string-array name="weekdays">
+<item>Poniedziałek</item>
+<item>Wtorek</item>
+<item>Środa</item>
+<item>Czwartek</item>
+<item>Piątek</item>
+<item>Sobota</item>
+<item>Niedziela</item>
+</string-array>
+<string name="none">Brak</string>
+<string name="choose_days">Wybierz dzień</string>
+<string name="mo_to_fr">Od poniedziałku do piątku</string>
+<string name="daily">Codziennie</string>
+<string name="new_timer">Nowe zaplanowane zadanie</string>
+<string name="locations">Lokalizacje</string>
+<string name="gui_version">Wersja GUI</string>
+<string name="image_version">Wersja Image</string>
+<string name="interface_version">Wersja interfejsu</string>
+<string name="front_processor_version">Wersja frontprocesora</string>
+<string name="device_name">Nazwa urządzenia</string>
+<string name="frontends">Tuner</string>
+<string name="nics">Interfejsy sieciowe</string>
+<string name="hdds">Dyski twarde</string>
+<string name="not_implemented">Ta funkcja nie jest jeszcze zaimplementowana</string>
+<string name="current_event">Aktualne zdarzenie</string>
+<string name="timeout">Limit czasu</string>
+<string name="message">Wiadomość</string>
+<string name="message_text_hint">Wprowadź treść wiadomości</string>
+<string name="send">Wyślij</string>
+<string name="type">Typ</string>
+<string-array name="message_types">
+<item>Tak/Nie</item>
+<item>Ostrzeżenie</item>
+<item>Info</item>
+<item></item>
+</string-array>
+<string name="virtual_remote">Wirtualny pilot</string>
+<string name="login_enabled">Włącz logowanie</string>
+<string name="login_enabled_long">Włącz logowanie do zdalnego dostępu</string>
+<string name="wait_request_finished">Proszę czekać dopóki uruchomione zapytanie nie zostanie ukończone</string>
+<string name="current_service">Aktualny</string>
+<string name="provider">Dostawca</string>
+<string name="now">Teraz</string>
+<string name="next">Następne</string>
+<string name="epg_search">EPG - Wyszukiwanie</string>
+<string name="epg_search_hint">Wyszukiwanie EPG</string>
+<string name="standard">Standardowy układ</string>
+<string name="quickzap">Układ QuickZap</string>
+<string name="no_epg_available">Obecnie nie ma informacji EPG dla tego kanału</string>
+<string name="ok">OK</string>
+<string name="connection_profiles">Profile połączenia</string>
+<string name="activate">Aktywuj</string>
+<string name="confirm_delete_profile">Na pewno chcesz usunąć ten profil?</string>
+<string name="profile_activated">Aktywny profil</string>
+<string name="profile_not_activated">Błąd aktywowania profilu</string>
+<string name="profile_not_deleted">Błąd usuwania profilu</string>
+<string name="profile_deleted">Profil został usunięty</string>
+<string name="profile">Profil</string>
+<string name="profile_updated">Profil został zaktualizowany</string>
+<string name="profile_added">Profil został dodany</string>
+<string name="profile_add">Dodaj profil</string>
+<string name="profile_not_added">Nie można dodać profilu</string>
+<string name="profile_not_updated">Nie można zaktualizować profilu</string>
+<string name="no_list_item">Brak elementów do wyświetlenia...</string>
+<string name="locations_default_fallback">Błąd ładowania lokalizacji, ustawiono na domyślną:</string>
+<string name="tags">Tagi</string>
+<string name="screenshot">Zrzut ekranu</string>
+<string name="host_empty">Nazwa hosta nie może być pusta</string>
+<string name="standby">Czuwanie</string>
+<string name="powerup">Włącz</string>
+<string name="restart_gui">Restart GUI</string>
+<string name="reboot">Restart</string>
+<string name="shutdown">Wyłącz</string>
+<string name="powercontrol">Czuwanie / Restart</string>
+<string name="choose_tags">Wybierz tagi</string>
+<string name="choose_location">Wybierz lokalizacje</string>
+<string name="bouquet_overview">Przegląd bukietów</string>
+<string name="set_default">Ustaw jako domyślny</string>
+<string name="default_bouquet_set_to">Domyślny bukiet został ustawiony na:</string>
+<string name="default_bouquet_not_set">Domyślny bukiet nie może zostać ustawiony!</string>
+<string name="loading">Ładowanie...</string>
+<string name="about">O DreamDroid</string>
+<string name="license">LICENCJA:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">Kod źródłowy dostępny na: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Aktywny profil</string>
+<string name="connection_state">Stan połączenia</string>
+<string name="not_available">Niedostępne</string>
+<string name="checking">sprawdzanie...</string>
+<string name="error">BŁĄD!</string>
+<string name="check_connectivity">Sprawdź łączność</string>
+<string name="version_too_low">Wersja &lt; 1.6</string>
+<string name="connection_error">Błąd połączenia</string>
+<string name="port_out_of_range">Port musi być pomiędzy 1 a 65535</string>
+<string name="illegal_host">Niedozwolony host</string>
+<string name="edit_timer">Edytuj zaplanowane zadania</string>
+<string name="cleaning_timerlist">Uporządkuj listę zaplanowanych zadań</string>
+<string name="cleanup">Uporządkuj</string>
+<string name="in_standby">Urządzenie jest w trybie czuwania</string>
+<string name="is_running">Urządzenie jest uruchomione</string>
+<string name="stream">Strumień</string>
+<string name="install_vplayer">Strumieniowanie wymaga instalacji odtwarzacza vPlayer</string>
+<string name="stream_host">Nazwa hosta/IP strumieniowania</string>
+<string name="stream_host_long">Host/IP dla strumieniowania (opcjonalne)</string>
+<string name="stream_current">Aktualny strumień</string>
+<string-array name="timer_state">
+<item>oczekiwanie...</item>
+<item>gotowe...</item>
+<item>uruchomione...</item>
+<item>zakończone...</item>
+<item>wyłączone...</item>
+</string-array>
+<string-array name="timer_action">
+<item>nagranie</item>
+<item>przełącznik</item>
+</string-array>
+</resources>
