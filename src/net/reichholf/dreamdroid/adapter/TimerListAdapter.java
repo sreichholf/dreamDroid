@@ -10,8 +10,10 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +67,14 @@ public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			begin.setText(timer.getString(Timer.BEGIN_READEABLE));
 			end.setText(timer.getString(Timer.END_READABLE));
 			
-			int actionId = Integer.parseInt(timer.getString(Timer.JUST_PLAY));
+			int actionId = 0;
+			
+			try{			
+				actionId = Integer.parseInt(timer.getString(Timer.JUST_PLAY));
+			} catch (Exception e){
+				Log.e(DreamDroid.LOG_TAG, "[TimerListAdapter] Error getting timer action: " + e.getMessage());
+			}
+			
 			action.setText(mAction[actionId]);
 			
 			int stateId = Integer.parseInt(timer.getString(Timer.STATE));
