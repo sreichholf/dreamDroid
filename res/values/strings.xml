@@ -195,4 +195,5 @@
 		<item>record</item>
 		<item>zap</item>
 	</string-array>
+<string name="sleeptimer">Sleep Timer</string>
 </resources>

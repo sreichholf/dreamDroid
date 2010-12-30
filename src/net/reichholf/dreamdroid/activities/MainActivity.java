@@ -6,14 +6,23 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import java.util.ArrayList;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MessageRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.SleepTimerHandler;
+import net.reichholf.dreamdroid.widget.NumberPicker;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -26,7 +35,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -41,6 +52,7 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int DIALOG_SEND_MESSAGE_ID = 0;
 	public static final int DIALOG_SET_POWERSTATE_ID = 1;
 	public static final int DIALOG_ABOUT_ID = 2;
+	public static final int DIALOG_SLEEPTIMER_ID = 3;
 
 	public static final int EDIT_PROFILES_REQUEST = 0;
 
@@ -62,6 +74,7 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_POWERSTATE_DIALOG = 15;
 	public static final int ITEM_ABOUT = 16;
 	public static final int ITEM_CHECK_CONN = 17;
+	public static final int ITEM_SLEEPTIMER = 18;
 
 	private Button mButtonPower;
 	private Button mButtonCurrent;
@@ -170,6 +183,34 @@ public class MainActivity extends AbstractHttpActivity {
 			}
 		}
 	}
+	
+	/**
+	 * @param time
+	 * @param action
+	 * @param enabled
+	 */
+	private void setSleepTimer(String time, String action, boolean enabled) {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("cmd", SleepTimer.CMD_SET));
+		params.add(new BasicNameValuePair("time", time));
+		params.add(new BasicNameValuePair("action", action));
+		
+		if(enabled){
+			params.add(new BasicNameValuePair("enabled", Python.TRUE));
+		} else {
+			params.add(new BasicNameValuePair("enabled", Python.FALSE));
+		}
+				
+		execSimpleResultTask(new SleepTimerHandler(), params);
+	}
+	
+	/**
+	 * 
+	 */
+	private void getSleepTimer(){
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		execSimpleResultTask(new SleepTimerHandler(), params);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -219,11 +260,12 @@ public class MainActivity extends AbstractHttpActivity {
 		// Will be reactivated as soon as there are some "Global settings"
 		// menu.add(0, ITEM_SETTINGS, 0,
 		// getText(R.string.settings)).setIcon(R.drawable.edit);
-		menu.add(1, ITEM_PROFILES, 1, getText(R.string.connection_profiles)).setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(1, ITEM_PROFILES, 1, getText(R.string.connection_profiles)).setIcon(android.R.drawable.ic_menu_preferences);		
 		menu.add(1, ITEM_CHECK_CONN, 2, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);
 		menu.add(1, ITEM_ABOUT, 3, R.string.about).setIcon(android.R.drawable.ic_menu_help);
-		menu.add(0, ITEM_SCREENSHOT, 4, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);
-		menu.add(0, ITEM_INFO, 5, R.string.device_info).setIcon(R.drawable.ic_menu_info);
+		menu.add(0, ITEM_SLEEPTIMER, 4, R.string.sleeptimer).setIcon(R.drawable.ic_menu_clock);
+		menu.add(0, ITEM_SCREENSHOT, 5, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);		
+		menu.add(0, ITEM_INFO, 6, R.string.device_info).setIcon(R.drawable.ic_menu_info);
 
 		return true;
 	}
@@ -305,6 +347,7 @@ public class MainActivity extends AbstractHttpActivity {
 			});
 
 			break;
+			
 		case DIALOG_ABOUT_ID:
 			dialog = new Dialog(this);
 			dialog.setContentView(R.layout.about);
@@ -324,6 +367,48 @@ public class MainActivity extends AbstractHttpActivity {
 				}
 
 			});
+			break;
+		
+		case DIALOG_SLEEPTIMER_ID:
+			getSleepTimer();
+			dialog = new Dialog(this);
+			dialog.setContentView(R.layout.sleeptimer);
+			dialog.setTitle(R.string.sleeptimer);
+			final NumberPicker time = (NumberPicker) dialog.findViewById(R.id.NumberPicker);
+			final CheckBox enabled = (CheckBox) dialog.findViewById(R.id.CheckBoxEnabled);
+			final RadioGroup action = (RadioGroup) dialog.findViewById(R.id.RadioGroupAction);
+			
+			time.setRange(0, 999);
+			time.setCurrent(90);
+			enabled.setChecked(true);
+			action.check(R.id.RadioButtonStandby);
+			
+			Button buttonCloseSleepTimer = (Button) dialog.findViewById(R.id.ButtonClose);
+			buttonCloseSleepTimer.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					dialog.dismiss();
+				}
+
+			});
+			
+			Button buttonSaveSleepTimer = (Button) dialog.findViewById(R.id.ButtonSave);
+			buttonSaveSleepTimer.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					String t = new Integer(time.getCurrent()).toString();
+					int id = action.getCheckedRadioButtonId();
+					String a = SleepTimer.ACTION_STANDBY;
+					
+					if(id == R.id.RadioButtonShutdown){
+						a = SleepTimer.ACTION_SHUTDOWN;
+					} 
+					
+					setSleepTimer(t, a, enabled.isChecked());
+					dialog.dismiss();
+				}
+			});
+			
 			break;
 		default:
 			dialog = null;
@@ -465,12 +550,18 @@ public class MainActivity extends AbstractHttpActivity {
 		case ITEM_CHECK_CONN:
 			checkActiveProfile();
 			return true;
-
+		
+		case ITEM_SLEEPTIMER:
+			showDialog(DIALOG_SLEEPTIMER_ID);
+			return true;
+			
 		default:
 			return super.onItemClicked(id);
 		}
 	}
-
+	
+	
+	
 	/**
 	 * @param state
 	 *            The powerstate to set. For example defined in
@@ -516,5 +607,13 @@ public class MainActivity extends AbstractHttpActivity {
 		msg.put(Message.TIMEOUT, timeout);
 		
 		execSimpleResultTask(new MessageRequestHandler(), Message.getParams(msg));
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpActivity#onSimpleResult(boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
+	 */
+	@Override
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		super.onSimpleResult(success, result);
 	}
 }
