@@ -134,6 +134,7 @@ public class DreamDroid extends Application {
 			editor.remove("currentProfile");
 			editor.commit();
 		}
+		c.close();
 
 		int profileId = SP.getInt("currentProfile", 1);
 		if (setActiveProfile(profileId)) {
@@ -251,9 +252,11 @@ public class DreamDroid extends Application {
 			SharedPreferences.Editor editor = SP.edit();
 			editor.putInt("currentProfile", id);
 			editor.commit();
+			c.close();
 
 			return true;
 		}
+		c.close();
 		return false;
 	}
 
