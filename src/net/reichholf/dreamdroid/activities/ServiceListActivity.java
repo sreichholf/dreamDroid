@@ -22,8 +22,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -445,20 +443,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		String uriString = "http://" + DreamDroid.PROFILE.getStreamHost().trim() + ":8001/" + ref;
 		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
 		
-		intent.setDataAndType(Uri.parse(uriString) , "video/*");
-		
-		PackageManager pm = this.getPackageManager();
-		ArrayList<ResolveInfo> infos = (ArrayList<ResolveInfo>) pm.queryIntentActivities(intent, 0);
-		
-		for(ResolveInfo info : infos){
-			if(info.activityInfo.applicationInfo.packageName.equals("me.abitno.vplayer") ){
-				intent.setClassName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name);
-				startActivity(intent);
-				return;
-			}
-		}
-		
-		showToast(getText(R.string.install_vplayer));		
+		intent.setDataAndType(Uri.parse(uriString) , "video/*");		
+		startActivity(intent);
 	}
 	
 	/**

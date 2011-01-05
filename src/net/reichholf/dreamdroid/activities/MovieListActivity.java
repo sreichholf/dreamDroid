@@ -395,19 +395,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		String uriString = shc.buildStreamUrl(URIStore.FILE, params);
 		
 		intent.setDataAndType(Uri.parse(uriString) , "video/*");
-		
-		PackageManager pm = this.getPackageManager();
-		ArrayList<ResolveInfo> infos = (ArrayList<ResolveInfo>) pm.queryIntentActivities(intent, 0);
-		
-		for(ResolveInfo info : infos){
-			if(info.activityInfo.applicationInfo.packageName.equals("me.abitno.vplayer") ){
-				intent.setClassName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name);
-				startActivity(intent);
-				return;
-			}
-		}
-		
-		showToast(getText(R.string.install_vplayer));		
+		startActivity(intent);	
 	}	
 
 	/**
