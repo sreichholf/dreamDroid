@@ -76,15 +76,17 @@
 					android:id="@+id/ButtonServices"
 					android:text="@string/services"		
 					android:layout_width="fill_parent"
-					android:layout_height="wrap_content"
-					android:drawableTop="@drawable/ic_menu_list" 
+					android:layout_height="85dp"
+					android:layout_gravity="center_vertical"
+					android:drawableLeft="@drawable/ic_menu_list" 
 					android:layout_weight="1"/>
 				<Button 
 					android:id="@+id/ButtonMovies" 
 					android:text="@string/movies" 
 					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/ic_menu_movie" 
+					android:layout_height="85dp"
+					android:layout_gravity="center_vertical"
+					android:drawableLeft="@drawable/ic_menu_movie" 
 					android:layout_weight="1" />	
 			</LinearLayout>
 			
@@ -98,15 +100,17 @@
 					android:id="@+id/ButtonTimer"
 					android:text="@string/timer"		
 					android:layout_width="fill_parent"
-					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/ic_menu_clock"
+					android:layout_height="85dp"
+					android:layout_gravity="center_vertical"
+					android:drawableLeft="@drawable/ic_menu_clock"
 					android:layout_weight="1"/>	
 				<Button 
 					android:id="@+id/ButtonVirtualRemote" 
 					android:text="@string/virtual_remote" 
 					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/ic_menu_small_tiles" 
+					android:layout_height="85dp" 
+					android:layout_gravity="center_vertical"
+					android:drawableLeft="@drawable/ic_menu_small_tiles" 
 					android:layout_weight="1" />			
 			</LinearLayout>	
 			
@@ -120,16 +124,18 @@
 					android:id="@+id/ButtonCurrent" 
 					android:text="@string/current_service" 
 					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/ic_menu_help" 
+					android:layout_height="85dp" 
+					android:layout_gravity="center_vertical"
+					android:drawableLeft="@drawable/ic_menu_help" 
 					android:layout_weight="1" />
 				
 				<Button 
 					android:id="@+id/ButtonEpgSearch" 
 					android:text="@string/epg_search" 
 					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/ic_menu_search" 
+					android:layout_height="85dp" 
+					android:layout_gravity="center_vertical"
+					android:drawableLeft="@drawable/ic_menu_search" 
 					android:layout_weight="1" />
 			</LinearLayout>
 			<LinearLayout 
@@ -142,16 +148,18 @@
 					android:id="@+id/ButtonMessage" 
 					android:text="@string/send_message" 
 					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/ic_menu_mail" 
+					android:layout_height="85dp"
+					android:layout_gravity="center_vertical" 
+					android:drawableLeft="@drawable/ic_menu_mail" 
 					android:layout_weight="1" />
 				
 				<Button 
 					android:id="@+id/ButtonPower" 
 					android:text="@string/powercontrol" 
 					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content" 
-					android:drawableTop="@drawable/ic_menu_power_off" 
+					android:layout_height="85dp"
+					android:layout_gravity="center_vertical"
+					android:drawableLeft="@drawable/ic_menu_power_off" 
 					android:layout_weight="1" />
 			</LinearLayout>
 		

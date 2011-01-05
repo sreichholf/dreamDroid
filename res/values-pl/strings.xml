@@ -36,13 +36,12 @@
 <string name="device_info">Informacje o urządzeniu</string>
 <string name="exit">Wyjście</string>
 <string name="send_message">Wyślij wiadomość</string>
-
 <string name="save">Zapisz</string>
 <string name="cancel">Anuluj</string>
 <string name="fetching_data">Pobieranie danych...</string>
 <string name="parsing">Przetwarzanie...</string>
 <string name="get_content_error">Błąd pobierania treści!</string>
-<string name="zap">Przełącznik</string>
+<string name="zap">Przełącz</string>
 <string name="browse_epg">Przeglądaj EPG</string>
 <string name="edit">Edytuj</string>
 <string name="delete">Usuń</string>
@@ -62,7 +61,7 @@
 <string name="pass">Hasło</string>
 <string name="pass_long">Hasło do logowania</string>
 <string name="saving">Zapisywanie. Proszę czekać...</string>
-<string name="deleting">Usuwanie. Proszę czekać</string>
+<string name="deleting">Usuwanie. Proszę czekać...</string>
 <string name="delete_confirm">Na pewno usunąć?</string>
 <string name="set_timer">Ustaw zaplanowane zadania</string>
 <string name="home">Menu główne</string>
@@ -77,8 +76,8 @@
 <item>Śr</item>
 <item>Cz</item>
 <item>Pt</item>
-<item>So</item>
-<item>Ni</item>
+<item>S</item>
+<item>N</item>
 </string-array>
 <string-array name="weekdays">
 <item>Poniedziałek</item>

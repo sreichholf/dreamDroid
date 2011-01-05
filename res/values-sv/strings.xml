@@ -9,7 +9,7 @@
 <string name="menu_timer">Timer</string>
 <string name="menu_timer_desc">Visa,Lägg till,ändra Timer</string>
 <string name="menu_movies">Filmer</string>
-<string name="menu_movies_desc">Lista på Befintliga Filmer</string>
+<string name="menu_movies_desc">Lista Med Inspelade Filmer.</string>
 <string-array name="servicelist">
 <item>Bouquets (TV)</item>
 <item>Provider (TV)</item>
@@ -28,9 +28,9 @@
 <item>StängAv</item>
 <item>AutomatiskT</item>
 </string-array>
-<string name="begin_time">Vilken tid skall Det Börja</string>
+<string name="begin_time">Vilken tid skall Det Börja?</string>
 <string name="repeatings">Återkommande</string>
-<string name="end_time">Vilken tid skall det sluta</string>
+<string name="end_time">Vilken tid skall det sluta?</string>
 <string name="services">Kanaler</string>
 <string name="movies">Filmer</string>
 <string name="device_info">Box Information</string>
@@ -42,7 +42,7 @@
 <string name="fetching_data">Hämtar Data</string>
 <string name="parsing">Analyserar</string>
 <string name="get_content_error">Fel kunde inte hämta innehåll</string>
-<string name="zap">Skifta</string>
+<string name="zap">Skifta Kanal</string>
 <string name="browse_epg">Bläddra Epgn</string>
 <string name="edit">Ändra</string>
 <string name="delete">Ta bort</string>
@@ -153,7 +153,7 @@
 <string name="restart_gui">Omstart Av GUI</string>
 <string name="reboot">OmStart</string>
 <string name="shutdown">Stäng Av</string>
-<string name="powercontrol">StrömKontroll</string>
+<string name="powercontrol">På/Av</string>
 <string name="choose_tags">Välj Inställningar</string>
 <string name="choose_location">Välj Plats</string>
 <string name="bouquet_overview">KanalÖversikt</string>
@@ -167,7 +167,7 @@
 <string name="active_profile">Aktiv Profil</string>
 <string name="connection_state">Status På anslutningen</string>
 <string name="not_available">Inte Tillgänglig</string>
-<string name="checking">Kollar</string>
+<string name="checking">Testar.</string>
 <string name="error">FEL!</string>
 <string name="check_connectivity">Kolla Anslutningen</string>
 <string name="version_too_low">Version &lt; 1.6</string>

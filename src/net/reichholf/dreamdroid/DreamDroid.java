@@ -16,8 +16,11 @@ import net.reichholf.dreamdroid.helpers.enigma2.Location;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
@@ -29,8 +32,10 @@ import android.widget.Toast;
  * 
  */
 public class DreamDroid extends Application {
+	public static String VERSION_STRING;
 	public static final String ACTION_NEW = "dreamdroid.intent.action.NEW";
 	public static final String LOG_TAG = "net.reichholf.dreamdroid";
+	
 	
 	public static final String PREFS_KEY_QUICKZAP = "quickzap";
 	public static final String PREFS_KEY_DEFAULT_BOUQUET_REF = "default_bouquet_ref";
@@ -69,6 +74,21 @@ public class DreamDroid extends Application {
 	
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME 
 			+ " ADD " + KEY_STREAM_HOST + " TEXT;";
+	
+	/**
+	 * @param context
+	 * @return
+	 */
+	public static String getVersionString(Context context){
+		try {
+			ComponentName comp = new ComponentName(context, context.getClass());
+			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
+			return "dreamDroid " + pinfo.versionName + "\n© 2010 Stephan Reichholf\nstephan@reichholf.net";
+		} catch (android.content.pm.PackageManager.NameNotFoundException e) {
+			return "dreamDroid\n© 2010 Stephan Reichholf\nstephan@reichholf.net";
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -81,7 +101,8 @@ public class DreamDroid extends Application {
 		// http://code.google.com/p/android/issues/detail?id=9453
 		SimpleDateFormat sdf = new SimpleDateFormat("E");
 		Date date = GregorianCalendar.getInstance().getTime();
-
+		VERSION_STRING = getVersionString(this);
+		
 		try {
 			String s = sdf.format(date);
 			Integer.parseInt(s);

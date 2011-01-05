@@ -354,7 +354,7 @@ public class MainActivity extends AbstractHttpActivity {
 			dialog.setTitle(R.string.about);
 
 			TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
-			CharSequence text = getText(R.string.version_string) + "\n\n" + getText(R.string.license) + "\n\n"
+			CharSequence text = DreamDroid.VERSION_STRING + "\n\n" + getText(R.string.license) + "\n\n"
 					+ getText(R.string.source_code_link);
 			aboutText.setText(text);
 
