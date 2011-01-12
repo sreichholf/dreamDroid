@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -41,22 +40,6 @@ public class E2EventHandler extends DefaultHandler {
 	 */
 	public E2EventHandler(ArrayList<ExtendedHashMap> list) {
 		mEventlist = list;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
-	 */
-	@Override
-	public void startDocument() {
-		// TODO ???
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endDocument()
-	 */
-	@Override
-	public void endDocument() throws SAXException {
-		// TODO ???
 	}
 
 	/* (non-Javadoc)

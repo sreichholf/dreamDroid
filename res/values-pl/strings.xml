@@ -169,7 +169,7 @@
 <string name="checking">sprawdzanie...</string>
 <string name="error">BŁĄD!</string>
 <string name="check_connectivity">Sprawdź łączność</string>
-<string name="version_too_low">Wersja &lt; 1.6</string>
+<string name="version_too_low">Wersja &lt; 1.6.5</string>
 <string name="connection_error">Błąd połączenia</string>
 <string name="port_out_of_range">Port musi być pomiędzy 1 a 65535</string>
 <string name="illegal_host">Niedozwolony host</string>

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.helpers.enigma2.Location;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class E2LocationHandler  extends DefaultHandler{
@@ -18,22 +17,6 @@ public class E2LocationHandler  extends DefaultHandler{
 	 */
 	public E2LocationHandler(ArrayList<String> list) {
 		mLocationlist = list;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
-	 */
-	@Override
-	public void startDocument() {
-		// TODO ???
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endDocument()
-	 */
-	@Override
-	public void endDocument() throws SAXException {
-		// TODO ???
 	}
 
 	/* (non-Javadoc)

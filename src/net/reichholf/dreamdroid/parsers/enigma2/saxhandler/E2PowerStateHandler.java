@@ -4,7 +4,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class E2PowerStateHandler extends DefaultHandler {
@@ -17,26 +16,6 @@ public class E2PowerStateHandler extends DefaultHandler {
 	 */
 	public E2PowerStateHandler(ExtendedHashMap res) {
 		mResult = res;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
-	 */
-	@Override
-	public void startDocument() {
-		// TODO ???
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.xml.sax.helpers.DefaultHandler#endDocument()
-	 */
-	@Override
-	public void endDocument() throws SAXException {
-		// TODO ???
 	}
 
 	/*

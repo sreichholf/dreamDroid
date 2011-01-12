@@ -14,7 +14,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -42,22 +41,6 @@ public class E2MovieListHandler extends DefaultHandler {
 	 */
 	public E2MovieListHandler(ArrayList<ExtendedHashMap> list) {
 		mMovielist = list;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
-	 */
-	@Override
-	public void startDocument() {
-		// TODO ???
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endDocument()
-	 */
-	@Override
-	public void endDocument() throws SAXException {
-		// TODO ???
 	}
 
 	/* (non-Javadoc)

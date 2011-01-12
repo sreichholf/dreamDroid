@@ -170,7 +170,7 @@
 	<string name="checking">verifica...</string>
 	<string name="error">ERRORE!</string>
 	<string name="check_connectivity">Verifica connettività</string>
-	<string name="version_too_low">Versione &lt; 1.6</string>
+	<string name="version_too_low">Versione &lt; 1.6.5</string>
 	<string name="connection_error">Errore connessione</string>
 	<string name="port_out_of_range">La porta non può essere tra 1 e 65535</string>
 	<string name="illegal_host">Nome sistema non valido</string>

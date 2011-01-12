@@ -167,7 +167,7 @@
 <string name="checking">prüfe...</string>
 <string name="error">FEHLER!</string>
 <string name="check_connectivity">Verbindung prüfen</string>
-<string name="version_too_low">Version &lt; 1.6</string>
+<string name="version_too_low">Version &lt; 1.6.5</string>
 <string name="connection_error">Verbindungsfehler</string>
 <string name="port_out_of_range">Port nicht zwischen 1 und 65535</string>
 <string name="illegal_host">Fehlerhafter Host</string>

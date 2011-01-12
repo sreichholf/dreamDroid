@@ -8,12 +8,11 @@ package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
 import java.util.ArrayList;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
@@ -62,16 +61,6 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 		mFrontends = new ArrayList<ExtendedHashMap>();
 		mHdds = new ArrayList<ExtendedHashMap>();
 		mNics = new ArrayList<ExtendedHashMap>();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.xml.sax.helpers.DefaultHandler#endDocument()
-	 */
-	@Override
-	public void endDocument() throws SAXException {
-		// TODO ???
 	}
 
 	/*

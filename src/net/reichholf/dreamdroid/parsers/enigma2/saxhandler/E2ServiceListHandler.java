@@ -10,7 +10,6 @@ package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 import java.util.ArrayList;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -34,22 +33,6 @@ public class E2ServiceListHandler extends DefaultHandler {
 	 */
 	public E2ServiceListHandler(ArrayList<ExtendedHashMap> list) {
 		mServicelist = list;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
-	 */
-	@Override
-	public void startDocument() {
-		// TODO ???
-	}
-
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endDocument()
-	 */
-	@Override
-	public void endDocument() throws SAXException {
-		// TODO ???
 	}
 
 	/* (non-Javadoc)

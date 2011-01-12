@@ -49,6 +49,7 @@ public class DreamDroid extends Application {
 	public static ArrayList<String> TAGS;
 
 	public static boolean DATE_LOCALE_WO;
+	private static boolean sFeatureSleeptimer = false;
 
 	public static final String KEY_ID = "_id";
 	public static final String KEY_PROFILE = "profile";
@@ -205,7 +206,19 @@ public class DreamDroid extends Application {
 
 		return false;
 	}
-
+	
+	public static void disableSleepTimer(){
+		sFeatureSleeptimer = false;
+	}
+	
+	public static void enableSleepTimer(){
+		sFeatureSleeptimer = true;
+	}
+	
+	public static boolean featureSleepTimer(){
+		return sFeatureSleeptimer;
+	}
+	
 	/**
 	 * @return Cursor for all Settings
 	 */

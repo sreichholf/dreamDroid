@@ -21,11 +21,13 @@ import net.reichholf.dreamdroid.helpers.enigma2.Message;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MessageRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.SleepTimerHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.SleepTimerRequestHandler;
 import net.reichholf.dreamdroid.widget.NumberPicker;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -53,6 +55,7 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int DIALOG_SET_POWERSTATE_ID = 1;
 	public static final int DIALOG_ABOUT_ID = 2;
 	public static final int DIALOG_SLEEPTIMER_ID = 3;
+	public static final int DIALOG_SLEEPTIMER_PROGRESS_ID = 4;
 
 	public static final int EDIT_PROFILES_REQUEST = 0;
 
@@ -89,6 +92,9 @@ public class MainActivity extends AbstractHttpActivity {
 
 	private SetPowerStateTask mSetPowerStateTask;
 	private CheckProfileTask mCheckProfileTask;
+	private SleepTimerTask mSleepTimerTask;
+	
+	private ExtendedHashMap mSleepTimer;
 
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
@@ -183,6 +189,66 @@ public class MainActivity extends AbstractHttpActivity {
 			}
 		}
 	}
+
+	
+	private class SleepTimerTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
+		private ExtendedHashMap mResult;
+		private SleepTimerRequestHandler mHandler;
+		private boolean mDialogOnFinish;
+		
+		public SleepTimerTask(boolean dialogOnFinish){
+			mHandler = new SleepTimerRequestHandler();
+			mDialogOnFinish = dialogOnFinish;			
+		}
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			publishProgress();
+			String xml = mHandler.get(mShc, params[0]);
+
+			if (xml != null) {
+				ExtendedHashMap result = mHandler.parse(xml);
+
+				String enabled = result.getString(SleepTimer.ENABLED);
+
+				if (enabled != null) {
+					mResult = result;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(Void... progress) {
+			showDialog(DIALOG_SLEEPTIMER_PROGRESS_ID);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		protected void onPostExecute(Boolean result) {
+			removeDialog(DIALOG_SLEEPTIMER_PROGRESS_ID);
+			
+			if (!result || mResult == null) {
+				mResult = new ExtendedHashMap();
+			}
+			
+			onSleepTimerResult(result, mResult, mDialogOnFinish);
+		}
+	}
 	
 	/**
 	 * @param time
@@ -200,18 +266,32 @@ public class MainActivity extends AbstractHttpActivity {
 		} else {
 			params.add(new BasicNameValuePair("enabled", Python.FALSE));
 		}
-				
-		execSimpleResultTask(new SleepTimerHandler(), params);
+		
+		execSleepTimerTask(params, false);
 	}
 	
 	/**
 	 * 
 	 */
-	private void getSleepTimer(){
+	private void getSleepTimer(boolean showDialogOnFinish){
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		execSimpleResultTask(new SleepTimerHandler(), params);
+		execSleepTimerTask(params, showDialogOnFinish);
+
 	}
 
+	/**
+	 * @param params
+	 */
+	@SuppressWarnings("unchecked")
+	private void execSleepTimerTask(ArrayList<NameValuePair> params, boolean showDialogOnFinish){
+		if (mSleepTimerTask != null) {
+			mSleepTimerTask.cancel(true);
+		}
+
+		mSleepTimerTask = new SleepTimerTask(showDialogOnFinish);
+		mSleepTimerTask.execute(params);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -246,8 +326,11 @@ public class MainActivity extends AbstractHttpActivity {
 		registerOnClickListener(mButtonRemote, ITEM_REMOTE);
 		registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
 
+		mSleepTimer = new ExtendedHashMap();
+		
 		setProfileName();
 		checkActiveProfile();
+		
 	}
 
 	/*
@@ -269,7 +352,13 @@ public class MainActivity extends AbstractHttpActivity {
 
 		return true;
 	}
-
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.findItem(ITEM_SLEEPTIMER).setEnabled(DreamDroid.featureSleepTimer());
+		return true;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -370,7 +459,6 @@ public class MainActivity extends AbstractHttpActivity {
 			break;
 		
 		case DIALOG_SLEEPTIMER_ID:
-			getSleepTimer();
 			dialog = new Dialog(this);
 			dialog.setContentView(R.layout.sleeptimer);
 			dialog.setTitle(R.string.sleeptimer);
@@ -379,9 +467,23 @@ public class MainActivity extends AbstractHttpActivity {
 			final RadioGroup action = (RadioGroup) dialog.findViewById(R.id.RadioGroupAction);
 			
 			time.setRange(0, 999);
-			time.setCurrent(90);
-			enabled.setChecked(true);
-			action.check(R.id.RadioButtonStandby);
+			
+			int min = 90;
+			try {
+				min = Integer.parseInt(mSleepTimer.getString(SleepTimer.MINUTES));
+			} catch (NumberFormatException nfe){}
+			
+			boolean enable = Python.TRUE.equals(mSleepTimer.getString(SleepTimer.ENABLED));
+			String act = mSleepTimer.getString(SleepTimer.ACTION);
+			
+			time.setCurrent(min);
+			enabled.setChecked( enable );
+			
+			if(SleepTimer.ACTION_SHUTDOWN.equals(act)){
+				action.check(R.id.RadioButtonShutdown);
+			} else{ 
+				action.check(R.id.RadioButtonStandby);
+			}
 			
 			Button buttonCloseSleepTimer = (Button) dialog.findViewById(R.id.ButtonClose);
 			buttonCloseSleepTimer.setOnClickListener(new OnClickListener() {
@@ -409,6 +511,9 @@ public class MainActivity extends AbstractHttpActivity {
 				}
 			});
 			
+			break;
+		case DIALOG_SLEEPTIMER_PROGRESS_ID:
+			dialog = ProgressDialog.show(this, getText(R.string.sleeptimer), getText(R.string.loading));
 			break;
 		default:
 			dialog = null;
@@ -552,7 +657,7 @@ public class MainActivity extends AbstractHttpActivity {
 			return true;
 		
 		case ITEM_SLEEPTIMER:
-			showDialog(DIALOG_SLEEPTIMER_ID);
+			getSleepTimer(true);
 			return true;
 			
 		default:
@@ -609,11 +714,22 @@ public class MainActivity extends AbstractHttpActivity {
 		execSimpleResultTask(new MessageRequestHandler(), Message.getParams(msg));
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpActivity#onSimpleResult(boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
+	/**
+	 * @param success
+	 * @param sleepTimer
 	 */
-	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
-		super.onSimpleResult(success, result);
+	private void onSleepTimerResult(boolean success, ExtendedHashMap sleepTimer, boolean openDialog){
+		if(success){
+			mSleepTimer = sleepTimer;
+			if(openDialog){
+				showDialog(DIALOG_SLEEPTIMER_ID);
+				return;
+			}
+			String text = sleepTimer.getString(SleepTimer.TEXT);
+			showToast(text);
+		} else {
+			showToast(getString(R.string.error));
+		}
 	}
+	
 }

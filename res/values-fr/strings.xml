@@ -170,7 +170,7 @@
 <string name="checking">Vérification...</string>
 <string name="error">ERREUR!</string>
 <string name="check_connectivity">Test de la connexion</string>
-<string name="version_too_low">Version &lt; 1.6</string>
+<string name="version_too_low">Version &lt; 1.6.5</string>
 <string name="connection_error">Erreur de connexion</string>
 <string name="port_out_of_range">Port non compris entre 1 et 65535</string>
 <string name="illegal_host">Nom illegal</string>

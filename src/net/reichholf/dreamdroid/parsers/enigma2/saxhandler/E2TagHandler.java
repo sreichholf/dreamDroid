@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 import java.util.ArrayList;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class E2TagHandler extends DefaultHandler {
@@ -16,26 +15,6 @@ public class E2TagHandler extends DefaultHandler {
 	 */
 	public E2TagHandler(ArrayList<String> list) {
 		mTaglist = list;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
-	 */
-	@Override
-	public void startDocument() {
-		// TODO ???
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.xml.sax.helpers.DefaultHandler#endDocument()
-	 */
-	@Override
-	public void endDocument() throws SAXException {
-		// TODO ???
 	}
 
 	/*

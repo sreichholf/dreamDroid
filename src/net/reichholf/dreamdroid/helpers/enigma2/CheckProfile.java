@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -26,12 +27,18 @@ public class CheckProfile {
 	public static final String KEY_ERROR_TEXT = "text";
 	public static final String KEY_WHAT = "what";
 	public static final String KEY_RESULT_LIST = "list";
+	public static final int[] REQUIRED_VERSION = {1, 6, 5};
+	public static int[] CURRENT_VERSION = {0, 0, 0};	
 
 	/**
 	 * @param profile
 	 * @return
 	 */
 	public static ExtendedHashMap checkProfile(Profile profile) {
+		int[] versionZero =  {0, 0, 0};
+		CURRENT_VERSION = versionZero;
+		DreamDroid.disableSleepTimer();
+		
 		ArrayList<ExtendedHashMap> resultList = new ArrayList<ExtendedHashMap>();
 		ExtendedHashMap checkResult = new ExtendedHashMap();
 
@@ -60,34 +67,24 @@ public class CheckProfile {
 									deviceInfo.getString(DeviceInfo.DEVICE_NAME));
 
 							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION);
-							String[] v = version.split("\\.");
 
-							if (v.length >= 2) {
-								String major = v[0];
-								String minor = v[1];
-
-								int majorVersion = 0;
-								int minorVersion = 0;
-
-								try {
-									majorVersion = Integer.parseInt(major);
-									minorVersion = Integer.parseInt(minor);
-								} catch (NumberFormatException nfe) {
-									try {
-										minorVersion = Integer.parseInt(minor.substring(0, 1));
-									} catch (NumberFormatException nfex) {
-										// TODO Handle final nfe for minor
-									}
-								}
-
-								if (majorVersion > 1 || (majorVersion == 1 && minorVersion >= 6)) {
-									addEntry(resultList, R.string.interface_version, false, version);
+							int vc = checkVersion(version);
+							if (vc >= 0 ) {
+								String requiredForSleeptimer = "1.6.5";
+								if(requiredForSleeptimer.equals(version)){
+									DreamDroid.enableSleepTimer();
 								} else {
-									addEntry(resultList, R.string.interface_version, true, version,
-											R.string.version_too_low);
-									setError(checkResult, true, R.string.version_too_low);
+									vc = checkVersion(requiredForSleeptimer);
+									if( vc >= 0 ){
+										DreamDroid.enableSleepTimer();
+									}									
 								}
-
+								
+								addEntry(resultList, R.string.interface_version, false, version);
+							} else {
+								addEntry(resultList, R.string.interface_version, true, version,
+										R.string.version_too_low);
+								setError(checkResult, true, R.string.version_too_low);
 							}
 						} else {
 							// TODO Parser-Error
@@ -110,6 +107,34 @@ public class CheckProfile {
 		}
 
 		return checkResult;
+	}
+	
+	public static int checkVersion(String version){
+		String[] parts = version.split("\\.");
+		
+		for(int i = 0; i < REQUIRED_VERSION.length; i++){
+			int cur = 0;
+			int req = REQUIRED_VERSION[i];
+			
+			if (parts.length >= i + 1){
+				try{
+					cur = Integer.parseInt(parts[i]);					
+				} catch(NumberFormatException nfe){}
+			}
+			
+			if(cur == req){
+				if( ( i + 1 ) == REQUIRED_VERSION.length){
+					return 0;
+				}
+				continue;
+			} else if (cur > req) {
+				return 1;
+			} else {
+				return -1;
+			}
+		}
+		
+		return -1;
 	}
 
 	/**

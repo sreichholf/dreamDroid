@@ -170,7 +170,7 @@
 	<string name="checking">checking...</string>
 	<string name="error">ERROR!</string>
 	<string name="check_connectivity">Check connectivity</string>
-	<string name="version_too_low">Version &lt; 1.6</string>
+	<string name="version_too_low">Version &lt; 1.6.5</string>
 	<string name="connection_error">Connection error</string>
 	<string name="port_out_of_range">Port not between 1 and 65535</string>
 	<string name="illegal_host">Illegal host</string>

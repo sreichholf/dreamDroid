@@ -170,7 +170,7 @@
 <string name="checking">sjekker...</string>
 <string name="error">FEIL!</string>
 <string name="check_connectivity">Sjekk tilkobling</string>
-<string name="version_too_low">Versjon &lt; 1.6</string>
+<string name="version_too_low">Versjon &lt; 1.6.5</string>
 <string name="connection_error">Tilkoblingsfeil</string>
 <string name="port_out_of_range">Port ikke mellom 1 og 65535</string>
 <string name="illegal_host">Ugyldig vert</string>
