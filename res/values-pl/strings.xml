@@ -36,6 +36,7 @@
 <string name="device_info">Informacje o urządzeniu</string>
 <string name="exit">Wyjście</string>
 <string name="send_message">Wyślij wiadomość</string>
+
 <string name="save">Zapisz</string>
 <string name="cancel">Anuluj</string>
 <string name="fetching_data">Pobieranie danych...</string>
