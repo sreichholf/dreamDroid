@@ -41,7 +41,13 @@ public class Event{
 
 			String start = DateTime.getDateTimeString(eventstart);
 			String starttime = DateTime.getTimeString(eventstart);
-			String duration = DateTime.getDurationString(event.getString(EVENT_DURATION), eventstart);
+			String duration;
+			try {
+				duration = DateTime.getDurationString(event.getString(EVENT_DURATION), eventstart);
+			} catch (NumberFormatException e) {
+				// deal with WebInterface 1.5 => EVENT_DURATION is already a string
+				duration = event.getString(EVENT_DURATION);
+			}
 
 			event.put(EVENT_START_READABLE, start);
 			event.put(EVENT_START_TIME_READABLE, starttime);
@@ -50,7 +56,13 @@ public class Event{
 
 		String eventtitle = event.getString(EVENT_TITLE);
 		if (Python.NONE.equals(eventtitle) || eventtitle == null) {
-			event.put(EVENT_TITLE, "N/A");
+			// deal with WebInterface 1.5 => try EVENT_NAME instead of EVENT_TITLE
+			eventtitle = event.getString(EVENT_NAME);
+			if (eventtitle != null) {
+				event.put(EVENT_TITLE, eventtitle);
+			} else {
+				event.put(EVENT_TITLE, "N/A");
+			}
 		}
 	}
 }
