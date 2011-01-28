@@ -13,8 +13,10 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.RemoteCommandRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.ZapRequestHandler;
 
 import org.apache.http.NameValuePair;
@@ -24,11 +26,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.Toast;
 
 /**
@@ -287,5 +286,42 @@ public abstract class AbstractHttpActivity extends Activity {
 	protected void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
 		toast.show();
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+			case KeyEvent.KEYCODE_VOLUME_UP:
+				onButtonClicked(Remote.KEY_VOLP, false);
+				return true;
+
+			case KeyEvent.KEYCODE_VOLUME_DOWN:
+				onButtonClicked(Remote.KEY_VOLM, false);
+				return true;
+		}
+
+		return super.onKeyDown(keyCode, event);
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		return keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || super.onKeyUp(keyCode, event);
+	}
+
+	/**
+	 * Called after a Button has been clicked
+	 *
+	 * @param id
+	 *            The id of the item
+	 * @param longClick
+	 *            If true the item has been long-clicked
+	 */
+	private void onButtonClicked(int id, boolean longClick) {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
+		if (longClick) {
+			params.add(new BasicNameValuePair("type", Remote.CLICK_TYPE_LONG));
+		}
+		execSimpleResultTask(new RemoteCommandRequestHandler(), params);
 	}
 }
