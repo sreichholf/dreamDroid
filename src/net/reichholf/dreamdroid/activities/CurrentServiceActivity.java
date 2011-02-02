@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
 
+import android.app.SearchManager;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
@@ -46,6 +47,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	public static final int ITEM_NOW = 0;
 	public static final int ITEM_NEXT = 1;
 	public static final int ITEM_STREAM = 2;
+	public static final int ITEM_SIMILAR = 3;
 	public static final int DIALOG_EPG_ITEM_ID = 9382893;
 
 	private ExtendedHashMap mCurrent;
@@ -60,7 +62,8 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	private TextView mNextTitle;
 	private TextView mNextDuration;
 	private Button mStream;
-	private LinearLayout mNowLayout;	
+	private Button mSimilar;
+	private LinearLayout mNowLayout;
 	private LinearLayout mNextLayout;	
 	protected ProgressDialog mProgress;
 	
@@ -165,13 +168,15 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		mCurrent = new ExtendedHashMap();
 		
 		mStream = (Button) findViewById(R.id.ButtonStream);
+		mSimilar = (Button) findViewById(R.id.ButtonSimilar);
 		mNowLayout = (LinearLayout) findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) findViewById(R.id.layout_next);
 		
 		registerOnClickListener(mNowLayout, ITEM_NOW);
 		registerOnClickListener(mNextLayout, ITEM_NEXT);
 		registerOnClickListener(mStream, ITEM_STREAM);
-		
+		registerOnClickListener(mSimilar, ITEM_SIMILAR);
+
 		reload();
 	}	
 
@@ -239,6 +244,17 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 				String ref = mService.getString(Service.REFERENCE);
 				if(!"".equals(ref) && ref != null){
 					streamService(ref);
+				} else {
+					showToast( getText(R.string.not_available) );
+				}
+				return true;
+			case ITEM_SIMILAR:
+				String title = mNow.getString(Event.EVENT_TITLE);
+				if(!"".equals(title) && title != null){
+					Intent intent = new Intent(this, SearchEpgActivity.class);
+					intent.setAction(Intent.ACTION_SEARCH);
+					intent.putExtra(SearchManager.QUERY, title);
+					startActivity(intent);
 				} else {
 					showToast( getText(R.string.not_available) );
 				}

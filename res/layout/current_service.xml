@@ -147,7 +147,16 @@
 				android:text="@string/stream_current"
 				android:gravity="center_vertical"
 				android:drawableLeft="@drawable/ic_menu_movie" />
-				
+			<Button
+				android:id="@+id/ButtonSimilar"
+				android:layout_width="200dp"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="1dp"
+				android:layout_gravity="center_horizontal"
+				android:text="@string/similar"
+				android:gravity="center_vertical"
+				android:drawableLeft="@drawable/ic_menu_list" />
+
 		</LinearLayout>
 	</ScrollView>
 </LinearLayout>

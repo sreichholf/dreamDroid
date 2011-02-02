@@ -184,6 +184,7 @@
 	<string name="stream_host">Streaming Hostname/IP</string>
 	<string name="stream_host_long">Host/IP for streaming (optional)</string>
 	<string name="stream_current">Stream current</string>
+	<string name="similar">Similar programs</string>
 	<string-array name="timer_state">
 		<item>waiting...</item>
 		<item>prepared...</item>
