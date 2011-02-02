@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
 
+import android.app.SearchManager;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
@@ -266,6 +267,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		mCurrentItem = mMapList.get(position);
 		final String ref = mCurrentItem.getString(Event.SERVICE_REFERENCE);
 		final String nam = mCurrentItem.getString(Event.SERVICE_NAME);
+		final String title = mCurrentItem.getString(Event.EVENT_TITLE);
 
 		if (isBouquetReference(ref)) {
 			if (!isListTaskRunning()) {
@@ -301,7 +303,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 				finish();
 			} else {
 				CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
-						getText(R.string.zap), getText(R.string.stream) };
+						getText(R.string.zap), getText(R.string.similar), getText(R.string.stream) };
 
 				AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 				adBuilder.setTitle(getText(R.string.pick_action));
@@ -321,7 +323,12 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 						case 2:
 							zapTo(ref);
 							break;
+
 						case 3:
+							openSimilar(title);
+							break;
+
+						case 4:
 							streamService(ref);
 							break;
 						}
@@ -418,6 +425,18 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	}
 
 	/**
+	 * @param title
+	 *            The program title to find similar programs for
+	 */
+	public void openSimilar(String title) {
+		Log.e("dreamDroid", "title: " + title);
+		Intent intent = new Intent(this, SearchEpgActivity.class);
+		intent.setAction(Intent.ACTION_SEARCH);
+		intent.putExtra(SearchManager.QUERY, title);
+		startActivity(intent);
+	}
+	
+	/**
 	 * @param ref
 	 *            The ServiceReference to catch the EPG for
 	 * @param nam
@@ -433,7 +452,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 		startActivity(intent);
 	}
-	
+
 	/**
 	 * @param ref
 	 * 			A ServiceReference
