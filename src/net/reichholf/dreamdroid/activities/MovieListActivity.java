@@ -68,10 +68,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
-	// private ProgressDialog mDeleteProgress;
 	private GetMovieListTask mListTask;
-
-	// private DeleteMovieTask mDeleteTask;
 
 	/**
 	 * <code>AsyncTask</code> to get the list of recorded movies
@@ -142,7 +139,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		mMovie = mMapList.get(position);
 
-		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.stream) };
+		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
+				getText(R.string.stream) };
 
 		AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 		adBuilder.setTitle(getText(R.string.pick_action));
@@ -157,7 +155,16 @@ public class MovieListActivity extends AbstractHttpListActivity {
 					showDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
 					break;
 				case 2:
+					ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+					params.add(new BasicNameValuePair("file", mMovie.getString(Movie.FILE_NAME)));
+					String url = mShc.buildUrl(URIStore.FILE, params);
+
+					Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+					startActivity(intent);
+					break;
+				case 3:
 					streamFile(mMovie.getString(Movie.FILE_NAME));
+					break;
 				default:
 					return;
 				}
@@ -370,33 +377,34 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 */
 	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
-		if(mProgress != null){
+		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
 		}
 		super.onSimpleResult(success, result);
-		
-		if(mReloadOnSimpleResult){
+
+		if (mReloadOnSimpleResult) {
 			if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
 				reload();
 				mReloadOnSimpleResult = false;
 			}
 		}
 	}
+
 	/**
 	 * @param ref
-	 * 			A ServiceReference
+	 *            A ServiceReference
 	 */
-	private void streamFile(String fileName){
+	private void streamFile(String fileName) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("file", fileName));
 		String uriString = shc.buildStreamUrl(URIStore.FILE, params);
-		
-		intent.setDataAndType(Uri.parse(uriString) , "video/*");
-		startActivity(intent);	
-	}	
+
+		intent.setDataAndType(Uri.parse(uriString), "video/*");
+		startActivity(intent);
+	}
 
 	/**
 	 * Reload the list of movies
