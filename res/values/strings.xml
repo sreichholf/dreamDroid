@@ -197,4 +197,6 @@
 		<item>zap</item>
 	</string-array>
 <string name="sleeptimer">Sleep Timer</string>
+<string name="current_volume">Volume is now %s</string>
+<string name="muted">Muted</string>
 </resources>

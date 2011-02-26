@@ -12,11 +12,12 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.RemoteCommandRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.VolumeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.ZapRequestHandler;
 
 import org.apache.http.NameValuePair;
@@ -26,8 +27,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.*;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Toast;
 
 /**
@@ -40,6 +45,7 @@ public abstract class AbstractHttpActivity extends Activity {
 	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
 	protected SimpleResultTask mSimpleResultTask;
+	protected SetVolumeTask mVolumeTask;
 	
 	protected class SimpleResultTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mResult;
@@ -48,6 +54,8 @@ public abstract class AbstractHttpActivity extends Activity {
 		public SimpleResultTask(SimpleResultRequestHandler handler){
 			mHandler = handler;
 		}
+		
+		
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -95,6 +103,60 @@ public abstract class AbstractHttpActivity extends Activity {
 			}
 			
 			onSimpleResult(result, mResult);
+		}
+	}
+	
+	protected class SetVolumeTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
+		private ExtendedHashMap mVolume;
+		private VolumeRequestHandler mHandler;
+		
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			publishProgress();
+			mHandler = new VolumeRequestHandler();
+			String xml = mHandler.get(mShc, params[0]);
+
+			if (xml != null) {
+				ExtendedHashMap volume = mHandler.parse(xml);
+
+				String current = volume.getString(Volume.CURRENT);
+				if(current != null){
+					mVolume = volume;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(Void... progress) {
+			setProgressBarIndeterminateVisibility(true);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		protected void onPostExecute(Boolean result) {
+			setProgressBarIndeterminateVisibility(false);
+			
+			if (!result || mVolume == null) {
+				mVolume = new ExtendedHashMap();
+			}
+			
+			onVolumeSet(result, mVolume);
 		}
 	}
 	
@@ -292,11 +354,11 @@ public abstract class AbstractHttpActivity extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
-				onButtonClicked(Remote.KEY_VOLP, false);
+				onVolumeButtonClicked(Volume.COMMAND_UP);
 				return true;
 
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				onButtonClicked(Remote.KEY_VOLM, false);
+				onVolumeButtonClicked(Volume.COMMAND_DOWN);
 				return true;
 		}
 
@@ -316,12 +378,35 @@ public abstract class AbstractHttpActivity extends Activity {
 	 * @param longClick
 	 *            If true the item has been long-clicked
 	 */
-	private void onButtonClicked(int id, boolean longClick) {
+	@SuppressWarnings("unchecked")
+	private void onVolumeButtonClicked(String set) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
-		if (longClick) {
-			params.add(new BasicNameValuePair("type", Remote.CLICK_TYPE_LONG));
+		params.add( new BasicNameValuePair("set", set) );
+		if (mVolumeTask != null) {
+			mVolumeTask.cancel(true);
 		}
-		execSimpleResultTask(new RemoteCommandRequestHandler(), params);
+
+		mVolumeTask = new SetVolumeTask();
+		mVolumeTask.execute(params);
+	}
+	
+	/**
+	 * @param success
+	 * @param volume
+	 */
+	private void onVolumeSet(boolean success, ExtendedHashMap volume){
+		String text = getString(R.string.get_content_error);
+		if(success){
+			if(Python.TRUE.equals( volume.getString(Volume.RESULT)) ){
+				String current = volume.getString(Volume.CURRENT);
+				boolean muted = Python.TRUE.equals( volume.getString(Volume.MUTED) );
+				if(muted){
+					text = getString(R.string.current_volume, getString(R.string.muted));					
+				} else {
+					text = getString(R.string.current_volume, current);
+				}
+			}
+		}
+		showToast(text);
 	}
 }
