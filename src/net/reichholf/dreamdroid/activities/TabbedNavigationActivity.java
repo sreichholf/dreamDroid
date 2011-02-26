@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+import android.app.Activity;
 import android.app.TabActivity;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -108,10 +109,17 @@ public class TabbedNavigationActivity extends TabActivity {
 		mActiveProfile.setText(DreamDroid.PROFILE.getProfile());
 	}
 
-	private void setConnectionState(String state) {
+	/**
+	 * @param state
+	 */
+	private void setConnectionState(String state) {		
 		mConnectionState.setText(state);
+		setAvailableFeatures();
 	}
 
+	/**
+	 * 
+	 */
 	public void checkActiveProfile() {
 		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
@@ -119,6 +127,16 @@ public class TabbedNavigationActivity extends TabActivity {
 
 		mCheckProfileTask = new CheckProfileTask();
 		mCheckProfileTask.execute();
+	}
+	
+	/**
+	 * 
+	 */
+	private void setAvailableFeatures(){
+		Activity currentActivity = getCurrentActivity();
+		if(currentActivity.getClass().equals(ExtrasActivity.class)){
+			( (ExtrasActivity) currentActivity ).setAvailableFeatures();
+		}
 	}
 	
 

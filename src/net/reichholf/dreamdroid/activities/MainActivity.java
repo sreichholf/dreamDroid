@@ -268,6 +268,8 @@ public class MainActivity extends AbstractHttpActivity {
 		if(mExtras){
 			setContentView(R.layout.extras);
 				mButtonSleepTimer = (Button) findViewById(R.id.ButtonSleeptimer);
+				mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
+				
 				mButtonScreenshot = (Button) findViewById(R.id.ButtonScreenshot);
 				mButtonDeviceInfo = (Button) findViewById(R.id.ButtonDeviceInfo);
 				mButtonAbout = (Button) findViewById(R.id.ButtonAbout);				
@@ -316,19 +318,11 @@ public class MainActivity extends AbstractHttpActivity {
 		// Will be reactivated as soon as there are some "Global settings"
 		// menu.add(0, ITEM_SETTINGS, 0,
 		// getText(R.string.settings)).setIcon(R.drawable.edit);
-//		menu.add(1, ITEM_PROFILES, 1, getText(R.string.connection_profiles)).setIcon(android.R.drawable.ic_menu_preferences);		
-//		menu.add(1, ITEM_CHECK_CONN, 2, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);
-//		menu.add(1, ITEM_ABOUT, 3, R.string.about).setIcon(android.R.drawable.ic_menu_help);
-//		menu.add(0, ITEM_SLEEPTIMER, 4, R.string.sleeptimer).setIcon(R.drawable.ic_menu_clock);
-//		menu.add(0, ITEM_SCREENSHOT, 5, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);		
-//		menu.add(0, ITEM_INFO, 6, R.string.device_info).setIcon(R.drawable.ic_menu_info);
-
 		return true;
 	}
 	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-//		menu.findItem(ITEM_SLEEPTIMER).setEnabled(DreamDroid.featureSleepTimer());
 		return true;
 	}
 	
@@ -665,6 +659,12 @@ public class MainActivity extends AbstractHttpActivity {
 		msg.put(Message.TIMEOUT, timeout);
 		
 		execSimpleResultTask(new MessageRequestHandler(), Message.getParams(msg));
+	}
+	
+	public void setAvailableFeatures(){
+		if(mExtras){
+			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
+		}
 	}
 	
 	/**
