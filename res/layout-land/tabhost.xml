@@ -14,6 +14,7 @@
 		android:layout_gravity="top"
 		android:layout_marginTop="-10dp"
 		android:background="#AAA">
+
 		<TableRow
 			android:layout_marginTop="10dp">
 			<TextView 
@@ -25,6 +26,15 @@
 				android:layout_height="wrap_content"
 				android:layout_weight="1" />
 			<TextView 
+				android:text="..." 
+				android:textColor="#FFF"
+				android:textStyle="bold"
+				android:id="@+id/TextViewProfile" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:layout_weight="1" />
+				
+			<TextView 
 				android:text="@string/connection_state"
 				android:textColor="#FFF"
 				android:textStyle="bold" 
@@ -33,7 +43,17 @@
 				android:layout_height="wrap_content"
 				android:gravity="right"
 				android:layout_weight="1" />
+			<TextView 
+				android:text="..."
+				android:textColor="#FFF"
+				android:textStyle="bold" 
+				android:id="@+id/TextViewConnectionState" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:gravity="right"
+				android:layout_weight="1" />	
 		</TableRow>
+<!-- 		
 		<TableRow
 			android:layout_marginTop="1dp">
 			<TextView 
@@ -54,6 +74,7 @@
 				android:gravity="right"
 				android:layout_weight="1" />		
 		</TableRow>
+ -->		
 	</TableLayout>
 	<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
 	    android:id="@android:id/tabhost"

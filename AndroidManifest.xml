@@ -3,10 +3,10 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="net.reichholf.dreamdroid" 
 	android:installLocation="auto" 
-	android:versionName="0.9.6" android:versionCode="77">
+	android:versionName="0.9.6" android:versionCode="78">
 	
 	<uses-sdk 
-		android:maxSdkVersion="9" 
+		android:maxSdkVersion="11"
 		android:targetSdkVersion="4" android:minSdkVersion="4"></uses-sdk>
 	
 	<supports-screens
@@ -69,7 +69,7 @@
 	        <meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
 		</activity>
 						
-		<activity android:name=".activities.TabbedNavigationActivity" android:configChanges="orientation|keyboardHidden">
+		<activity android:name=".activities.TabbedNavigationActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />	
 				<category android:name="android.intent.category.LAUNCHER" />
