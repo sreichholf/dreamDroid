@@ -232,6 +232,8 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	protected boolean onItemClicked(int id) {
+		String ref;
+		
 		if(mCurrentServiceReady){
 			switch (id) {
 			case ITEM_NOW:
@@ -241,7 +243,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 				showEpgDetail(mNext);
 				return true;
 			case ITEM_STREAM:
-				String ref = mService.getString(Service.REFERENCE);
+				ref = mService.getString(Service.REFERENCE);
 				if(!"".equals(ref) && ref != null){
 					streamService(ref);
 				} else {
@@ -250,7 +252,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 				return true;
 			case ITEM_SIMILAR:
 				String title = mNow.getString(Event.EVENT_TITLE);
-				if(!"".equals(title) && title != null){
+				if(!"N/A".equals(title) && title != null){					
 					Intent intent = new Intent(this, SearchEpgActivity.class);
 					intent.setAction(Intent.ACTION_SEARCH);
 					intent.putExtra(SearchManager.QUERY, title);

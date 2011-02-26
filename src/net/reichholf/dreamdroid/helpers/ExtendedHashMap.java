@@ -58,7 +58,24 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Serializ
 		put(key, value);
 	}
 
+	/**
+	 * @param key
+	 * @return
+	 */
 	public String getString(String key) {
 		return (String) get(key);
+	}
+	
+	/**
+	 * @param key
+	 * @param defaultString
+	 * @return
+	 */
+	public String getString(String key, String defaultString) {
+		String retVal = (String) get(key);
+		if(retVal == null){
+			retVal = defaultString;
+		}
+		return retVal;
 	}
 }

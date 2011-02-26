@@ -66,18 +66,13 @@ public class CheckProfile {
 							addEntry(resultList, R.string.device_name, false,
 									deviceInfo.getString(DeviceInfo.DEVICE_NAME));
 
-							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION);
-
+							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION, "0");
+							
 							int vc = checkVersion(version);
 							if (vc >= 0 ) {
-								String requiredForSleeptimer = "1.6.5";
-								if(requiredForSleeptimer.equals(version)){
+								int[] requiredForSleeptimer = {1, 6, 5};
+								if(checkVersion(version, requiredForSleeptimer) >= 0){
 									DreamDroid.enableSleepTimer();
-								} else {
-									vc = checkVersion(requiredForSleeptimer);
-									if( vc >= 0 ){
-										DreamDroid.enableSleepTimer();
-									}									
 								}
 								
 								addEntry(resultList, R.string.interface_version, false, version);
@@ -110,6 +105,10 @@ public class CheckProfile {
 	}
 	
 	public static int checkVersion(String version){
+		return checkVersion(version, REQUIRED_VERSION);
+	}
+	
+	public static int checkVersion(String version, int[] required){
 		String[] parts = version.split("\\.");
 		
 		for(int i = 0; i < REQUIRED_VERSION.length; i++){
