@@ -24,7 +24,7 @@ public class TabbedNavigationActivity extends TabActivity {
 	private CheckProfileTask mCheckProfileTask;
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
-	
+
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		/*
 		 * (non-Javadoc)
@@ -62,46 +62,48 @@ public class TabbedNavigationActivity extends TabActivity {
 				setConnectionState(getText(R.string.ok).toString());
 			}
 		}
-	}	
-	
-	
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.ActivityGroup#onCreate(android.os.Bundle)
+	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.tabhost);
 
-		Resources res = getResources(); // Resource object to get Drawables
-		TabHost tabHost = getTabHost(); // The activity TabHost
-		TabHost.TabSpec spec; // Resusable TabSpec for each tab
-		Intent intent; // Reusable Intent for each tab
+		Resources res = getResources();
+		TabHost tabHost = getTabHost();
+		TabHost.TabSpec spec;
+		Intent intent;
 
-		// Create an Intent to launch an Activity for the tab (to be reused)
 		intent = new Intent().setClass(this, MainActivity.class);
-		
-		// Initialize a TabSpec for each tab and add it to the TabHost
-		spec = tabHost.newTabSpec("menu").setIndicator("Menu", res.getDrawable(android.R.drawable.ic_menu_view))
+
+		spec = tabHost.newTabSpec("menu")
+				.setIndicator(getText(R.string.main_menu), res.getDrawable(android.R.drawable.ic_menu_view))
 				.setContent(intent);
 		tabHost.addTab(spec);
 
-		// Do the same for the other tabs
 		intent = new Intent().setClass(this, ExtrasActivity.class);
-		spec = tabHost.newTabSpec("extras").setIndicator("Extras", res.getDrawable(android.R.drawable.ic_menu_zoom))
+		spec = tabHost.newTabSpec("extras")
+				.setIndicator(getText(R.string.extras), res.getDrawable(android.R.drawable.ic_menu_zoom))
 				.setContent(intent);
 		tabHost.addTab(spec);
 
 		intent = new Intent().setClass(this, ProfileListActivity.class);
-		spec = tabHost.newTabSpec("profiles").setIndicator("Profiles", res.getDrawable(R.drawable.ic_tab_link))
+		spec = tabHost.newTabSpec("profiles")
+				.setIndicator(getText(R.string.profiles), res.getDrawable(R.drawable.ic_tab_link))
 				.setContent(intent);
 		tabHost.addTab(spec);
 
 		tabHost.setCurrentTab(0);
-		
+
 		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
 		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
-		
+
 		setProfileName();
 		checkActiveProfile();
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -112,7 +114,7 @@ public class TabbedNavigationActivity extends TabActivity {
 	/**
 	 * @param state
 	 */
-	private void setConnectionState(String state) {		
+	private void setConnectionState(String state) {
 		mConnectionState.setText(state);
 		setAvailableFeatures();
 	}
@@ -128,16 +130,15 @@ public class TabbedNavigationActivity extends TabActivity {
 		mCheckProfileTask = new CheckProfileTask();
 		mCheckProfileTask.execute();
 	}
-	
+
 	/**
 	 * 
 	 */
-	private void setAvailableFeatures(){
+	private void setAvailableFeatures() {
 		Activity currentActivity = getCurrentActivity();
-		if(currentActivity.getClass().equals(ExtrasActivity.class)){
-			( (ExtrasActivity) currentActivity ).setAvailableFeatures();
+		if (currentActivity.getClass().equals(ExtrasActivity.class)) {
+			((ExtrasActivity) currentActivity).setAvailableFeatures();
 		}
 	}
-	
 
 }
