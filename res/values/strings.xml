@@ -199,4 +199,7 @@
 <string name="sleeptimer">Sleep Timer</string>
 <string name="current_volume">Volume is now %s</string>
 <string name="muted">Muted</string>
+<string name="enable_volume_control">Enable Volume Control</string>
+<string name="enable_volume_control_long">Enable direct Volume Control using H/W-Buttons</string>
+<string name="download">Download</string>
 </resources>

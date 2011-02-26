@@ -8,15 +8,11 @@ package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
@@ -24,13 +20,15 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MessageReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.SleepTimerRequestHandler;
 import net.reichholf.dreamdroid.widget.NumberPicker;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -80,20 +78,26 @@ public class MainActivity extends AbstractHttpActivity {
 
 	private Button mButtonPower;
 	private Button mButtonCurrent;
-	private Button mButtonMessage;
+	private Button mButtonConnectivity;
 	private Button mButtonMovies;
 	private Button mButtonServices;
 	private Button mButtonTimer;
 	private Button mButtonEpgSearch;
 	private Button mButtonRemote;
-	private TextView mActiveProfile;
-	private TextView mConnectionState;
-
+	private Button mButtonSleepTimer;
+	private Button mButtonScreenshot;	
+	private Button mButtonDeviceInfo;	
+	private Button mButtonMessage;
+	private Button mButtonAbout;
+	
+	private boolean mExtras;
+	
 	private SetPowerStateTask mSetPowerStateTask;
-	private CheckProfileTask mCheckProfileTask;
 	private SleepTimerTask mSleepTimerTask;
 	
 	private ExtendedHashMap mSleepTimer;
+	
+	private TabbedNavigationActivity mParent;
 
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
@@ -144,52 +148,11 @@ public class MainActivity extends AbstractHttpActivity {
 		}
 	}
 
+
 	/**
-	 * <code>AsyncTask</code> to check the active profile
-	 * 
 	 * @author sre
-	 * 
+	 *
 	 */
-	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected ExtendedHashMap doInBackground(Void... params) {
-			publishProgress(getText(R.string.checking).toString());
-			return CheckProfile.checkProfile(DreamDroid.PROFILE);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			setConnectionState(progress[0]);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		@Override
-		protected void onPostExecute(ExtendedHashMap result) {
-			Log.i(DreamDroid.LOG_TAG, result.toString());
-			if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
-				String error = getText((Integer) result.get(CheckProfile.KEY_ERROR_TEXT)).toString();
-				setConnectionState(error);
-			} else {
-				setConnectionState(getText(R.string.ok).toString());
-			}
-		}
-	}
-
-	
 	private class SleepTimerTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mResult;
 		private SleepTimerRequestHandler mHandler;
@@ -301,35 +264,46 @@ public class MainActivity extends AbstractHttpActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		setContentView(R.layout.main);
-
-		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
-		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
-
-		mButtonPower = (Button) findViewById(R.id.ButtonPower);
-		mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
-		mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
-		mButtonMovies = (Button) findViewById(R.id.ButtonMovies);
-		mButtonServices = (Button) findViewById(R.id.ButtonServices);
-		mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
-		mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
-		mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
-
-		registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
-		registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
-		registerOnClickListener(mButtonMessage, ITEM_MESSAGE);
-		registerOnClickListener(mButtonMovies, ITEM_MOVIES);
-		registerOnClickListener(mButtonServices, ITEM_SERVICES);
-		registerOnClickListener(mButtonTimer, ITEM_TIMER);
-		registerOnClickListener(mButtonRemote, ITEM_REMOTE);
-		registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
-
+		mExtras = getIntent().getBooleanExtra("extras", false);
+		if(mExtras){
+			setContentView(R.layout.extras);
+				mButtonSleepTimer = (Button) findViewById(R.id.ButtonSleeptimer);
+				mButtonScreenshot = (Button) findViewById(R.id.ButtonScreenshot);
+				mButtonDeviceInfo = (Button) findViewById(R.id.ButtonDeviceInfo);
+				mButtonAbout = (Button) findViewById(R.id.ButtonAbout);				
+				mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
+				
+				registerOnClickListener(mButtonSleepTimer, ITEM_SLEEPTIMER);
+				registerOnClickListener(mButtonScreenshot, ITEM_SCREENSHOT);
+				registerOnClickListener(mButtonDeviceInfo, ITEM_INFO);
+				registerOnClickListener(mButtonAbout, ITEM_ABOUT);
+				registerOnClickListener(mButtonMessage, ITEM_MESSAGE);			
+		} else {
+			setContentView(R.layout.main);
+	
+			mButtonPower = (Button) findViewById(R.id.ButtonPower);
+			mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
+	
+			mButtonConnectivity = (Button) findViewById(R.id.ButtonCheckConnection);
+			mButtonMovies = (Button) findViewById(R.id.ButtonMovies);
+			mButtonServices = (Button) findViewById(R.id.ButtonServices);
+			mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
+			mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
+			mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
+	
+			registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
+			registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
+	
+			registerOnClickListener(mButtonConnectivity, ITEM_CHECK_CONN);
+			registerOnClickListener(mButtonMovies, ITEM_MOVIES);
+			registerOnClickListener(mButtonServices, ITEM_SERVICES);
+			registerOnClickListener(mButtonTimer, ITEM_TIMER);
+			registerOnClickListener(mButtonRemote, ITEM_REMOTE);
+			registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
+		}
+		
 		mSleepTimer = new ExtendedHashMap();
-		
-		setProfileName();
-		checkActiveProfile();
-		
+		mParent = (TabbedNavigationActivity) getParent();
 	}
 
 	/*
@@ -342,19 +316,19 @@ public class MainActivity extends AbstractHttpActivity {
 		// Will be reactivated as soon as there are some "Global settings"
 		// menu.add(0, ITEM_SETTINGS, 0,
 		// getText(R.string.settings)).setIcon(R.drawable.edit);
-		menu.add(1, ITEM_PROFILES, 1, getText(R.string.connection_profiles)).setIcon(android.R.drawable.ic_menu_preferences);		
-		menu.add(1, ITEM_CHECK_CONN, 2, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);
-		menu.add(1, ITEM_ABOUT, 3, R.string.about).setIcon(android.R.drawable.ic_menu_help);
-		menu.add(0, ITEM_SLEEPTIMER, 4, R.string.sleeptimer).setIcon(R.drawable.ic_menu_clock);
-		menu.add(0, ITEM_SCREENSHOT, 5, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);		
-		menu.add(0, ITEM_INFO, 6, R.string.device_info).setIcon(R.drawable.ic_menu_info);
+//		menu.add(1, ITEM_PROFILES, 1, getText(R.string.connection_profiles)).setIcon(android.R.drawable.ic_menu_preferences);		
+//		menu.add(1, ITEM_CHECK_CONN, 2, getText(R.string.check_connectivity)).setIcon(R.drawable.ic_menu_link);
+//		menu.add(1, ITEM_ABOUT, 3, R.string.about).setIcon(android.R.drawable.ic_menu_help);
+//		menu.add(0, ITEM_SLEEPTIMER, 4, R.string.sleeptimer).setIcon(R.drawable.ic_menu_clock);
+//		menu.add(0, ITEM_SCREENSHOT, 5, R.string.screenshot).setIcon(R.drawable.ic_menu_picture);		
+//		menu.add(0, ITEM_INFO, 6, R.string.device_info).setIcon(R.drawable.ic_menu_info);
 
 		return true;
 	}
 	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(ITEM_SLEEPTIMER).setEnabled(DreamDroid.featureSleepTimer());
+//		menu.findItem(ITEM_SLEEPTIMER).setEnabled(DreamDroid.featureSleepTimer());
 		return true;
 	}
 	
@@ -530,32 +504,12 @@ public class MainActivity extends AbstractHttpActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == EDIT_PROFILES_REQUEST) {
-			setProfileName();
+			mParent.setProfileName();
 
 			if (resultCode == Activity.RESULT_OK) {
-				checkActiveProfile();
+				mParent.checkActiveProfile();
 			}
 		}
-	}
-
-	/**
-	 * 
-	 */
-	private void setProfileName() {
-		mActiveProfile.setText(DreamDroid.PROFILE.getProfile());
-	}
-
-	private void setConnectionState(String state) {
-		mConnectionState.setText(state);
-	}
-
-	private void checkActiveProfile() {
-		if (mCheckProfileTask != null) {
-			mCheckProfileTask.cancel(true);
-		}
-
-		mCheckProfileTask = new CheckProfileTask();
-		mCheckProfileTask.execute();
 	}
 
 	/**
@@ -652,7 +606,7 @@ public class MainActivity extends AbstractHttpActivity {
 			return true;
 
 		case ITEM_CHECK_CONN:
-			checkActiveProfile();
+			mParent.checkActiveProfile();
 			return true;
 		
 		case ITEM_SLEEPTIMER:

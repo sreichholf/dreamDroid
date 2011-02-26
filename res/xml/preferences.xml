@@ -2,43 +2,10 @@
 <PreferenceScreen
 	xmlns:android="http://schemas.android.com/apk/res/android" 
 	android:orderingFromXml="true">
-	
-	<EditTextPreference 
-		android:key="host"
-		android:summary="@string/host_long"
-		android:singleLine="true"
-		android:title="@string/host" />
-
+ 
 	<CheckBoxPreference 
-		android:key="login"
-		android:summary="@string/login_enabled_long"
-		android:title="@string/login_enabled" />
-
-	<EditTextPreference 
-		android:key="user"
-		android:dependency="login"
-		android:summary="@string/user_long"
-		android:singleLine="true"
-		android:title="@string/user" />
-		
-	<EditTextPreference 
-		android:key="pass"
-		android:dependency="login"
-		android:summary="@string/pass_long"
-		android:title="@string/pass"
-		android:singleLine="true"
-		android:password="true" />		
-	
-	<EditTextPreference 
-		android:key="port"
-		android:summary="@string/port_long"
-		android:title="@string/port"
-		android:numeric="integer"
-		android:singleLine="true"/>
-			
-	<CheckBoxPreference 
-		android:key="ssl"
-		android:summary="@string/ssl_enabled_long"
-		android:title="@string/ssl_enabled" />
+		android:key="volume"
+		android:summary="@string/enable_volume_control_long"
+		android:title="@string/enable_volume_control" />
 
 </PreferenceScreen>

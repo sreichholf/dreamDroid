@@ -5,55 +5,7 @@
 	android:layout_height="fill_parent"
 	android:orientation="vertical"
 	xmlns:android="http://schemas.android.com/apk/res/android">
-	<TableLayout 
-		android:id="@+id/LinearLayout2" 
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"		
-		android:orientation="horizontal"
-		android:layout_gravity="top"
-		android:layout_marginTop="-10dp"
-		style="@android:style/ButtonBar">
-		<TableRow
-			android:layout_marginTop="10dp">
-			<TextView 
-				android:text="@string/active_profile" 
-				android:textColor="#FFF"
-				android:textStyle="bold"
-				android:id="@+id/TextViewProfileTitle" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:layout_weight="1" />
-			<TextView 
-				android:text="@string/connection_state"
-				android:textColor="#FFF"
-				android:textStyle="bold" 
-				android:id="@+id/TextViewConnectionStateTitle" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:gravity="right"
-				android:layout_weight="1" />
-		</TableRow>
-		<TableRow
-			android:layout_marginTop="1dp">
-			<TextView 
-				android:text="..." 
-				android:textColor="#FFF"
-				android:textStyle="bold"
-				android:id="@+id/TextViewProfile" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:layout_weight="1" />
-			<TextView 
-				android:text="..."
-				android:textColor="#FFF"
-				android:textStyle="bold" 
-				android:id="@+id/TextViewConnectionState" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:gravity="right"
-				android:layout_weight="1" />		
-		</TableRow>
-	</TableLayout>
+	
 	<ScrollView
 		android:id="@+id/ScrollViewMain"
 		android:layout_width="fill_parent" 
@@ -76,7 +28,7 @@
 					android:id="@+id/ButtonServices"
 					android:text="@string/services"		
 					android:layout_width="fill_parent"
-					android:layout_height="85dp"
+					android:layout_height="65dp"
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_list" 
 					android:layout_weight="1"/>
@@ -84,7 +36,7 @@
 					android:id="@+id/ButtonMovies" 
 					android:text="@string/movies" 
 					android:layout_width="fill_parent" 
-					android:layout_height="85dp"
+					android:layout_height="65dp"
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_movie" 
 					android:layout_weight="1" />	
@@ -100,7 +52,7 @@
 					android:id="@+id/ButtonTimer"
 					android:text="@string/timer"		
 					android:layout_width="fill_parent"
-					android:layout_height="85dp"
+					android:layout_height="65dp"
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_clock"
 					android:layout_weight="1"/>	
@@ -108,7 +60,7 @@
 					android:id="@+id/ButtonVirtualRemote" 
 					android:text="@string/virtual_remote" 
 					android:layout_width="fill_parent" 
-					android:layout_height="85dp" 
+					android:layout_height="65dp" 
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_small_tiles" 
 					android:layout_weight="1" />			
@@ -124,7 +76,7 @@
 					android:id="@+id/ButtonCurrent" 
 					android:text="@string/current_service" 
 					android:layout_width="fill_parent" 
-					android:layout_height="85dp" 
+					android:layout_height="65dp" 
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_help" 
 					android:layout_weight="1" />
@@ -133,7 +85,7 @@
 					android:id="@+id/ButtonEpgSearch" 
 					android:text="@string/epg_search" 
 					android:layout_width="fill_parent" 
-					android:layout_height="85dp" 
+					android:layout_height="65dp" 
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_search" 
 					android:layout_weight="1" />
@@ -145,43 +97,24 @@
 				android:orientation="horizontal">
 				
 				<Button 
-					android:id="@+id/ButtonMessage" 
-					android:text="@string/send_message" 
-					android:layout_width="fill_parent" 
-					android:layout_height="85dp"
-					android:layout_gravity="center_vertical" 
-					android:drawableLeft="@drawable/ic_menu_mail" 
-					android:layout_weight="1" />
-				
-				<Button 
 					android:id="@+id/ButtonPower" 
 					android:text="@string/powercontrol" 
 					android:layout_width="fill_parent" 
-					android:layout_height="85dp"
+					android:layout_height="65dp"
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_power_off" 
+					android:layout_weight="1" />
+				<Button 
+					android:id="@+id/ButtonCheckConnection" 
+					android:text="@string/check_connectivity" 
+					android:layout_width="fill_parent" 
+					android:layout_height="65dp"
+					android:layout_gravity="center_vertical" 
+					android:drawableLeft="@drawable/ic_menu_link" 
 					android:layout_weight="1" />
 			</LinearLayout>
 		
 			
 		</LinearLayout>	
-	</ScrollView>
-<!-- 	
-	<LinearLayout 
-		android:id="@+id/LinearLayout2" 
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:layout_marginTop="-50dip"		
-		android:orientation="horizontal"
-		android:layout_gravity="bottom"
-		style="@android:style/ButtonBar">
-					
-		<ImageButton android:id="@+id/ButtonExit" 
-			android:layout_width="fill_parent" 
-			android:layout_height="wrap_content" 
-			android:src="@drawable/ic_btn_close"
-			android:scaleType="center"
-			android:gravity="bottom"/>
-	</LinearLayout>
- -->		
+	</ScrollView>	
 </LinearLayout>

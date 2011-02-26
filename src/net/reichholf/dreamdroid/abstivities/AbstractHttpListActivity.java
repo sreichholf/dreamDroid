@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.MainActivity;
+import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -454,7 +454,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		Intent intent;
 		switch (id) {
 		case MENU_HOME:
-			intent = new Intent(this, MainActivity.class);
+			intent = new Intent(this, TabbedNavigationActivity.class);
 			startActivity(intent);
 			return true;
 		default:

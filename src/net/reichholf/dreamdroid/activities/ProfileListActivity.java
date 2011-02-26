@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.activities;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -20,8 +19,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
@@ -212,8 +211,8 @@ public class ProfileListActivity extends ListActivity {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getProfile() + "'");
 
-			setResult(Activity.RESULT_OK);
-			finish();
+//			setResult(Activity.RESULT_OK);
+//			finish();
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getProfile() + "'");
 		}
