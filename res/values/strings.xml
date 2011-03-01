@@ -204,5 +204,7 @@
 	<string name="download">Download</string>
 	<string name="extras">Extras</string>
 	<string name="main_menu">Main</string>
-	<string name="profiles">Profiles</string>
+	<string name="profiles">Profiles</string>	
+	<string name="enable_instant_zap">Instant zap</string>
+	<string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
 </resources>

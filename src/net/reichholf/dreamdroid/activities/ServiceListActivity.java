@@ -31,8 +31,10 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 /**
  * Handles ServiceLists of (based on service references).
@@ -48,7 +50,6 @@ import android.widget.SimpleAdapter;
  * 
  */
 public class ServiceListActivity extends AbstractHttpEventListActivity {
-//	public static final int MENU_CLOSE = 0;
 	public static final int MENU_OVERVIEW = 1;
 	public static final int MENU_SET_AS_DEFAULT = 2;
 	public static final int MENU_RELOAD = 3;
@@ -148,6 +149,14 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		}
 
 		setAdapter();
+		
+		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
+				return onListItemLongClick(a, v, position, id);
+			}
+		});
+		
 		reload();
 	}
 
@@ -264,83 +273,21 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 */
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		mCurrentItem = mMapList.get(position);
-		final String ref = mCurrentItem.getString(Event.SERVICE_REFERENCE);
-		final String nam = mCurrentItem.getString(Event.SERVICE_NAME);
-		final String title = mCurrentItem.getString(Event.EVENT_TITLE);
-
-		if (isBouquetReference(ref)) {
-			if (!isListTaskRunning()) {
-				mIsBouquetList = true;
-
-				// Second hierarchy level -> we get a List of Services now
-				if (isBouquetReference(mReference)) {
-					mIsBouquetList = false;
-				}
-
-				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(Event.SERVICE_REFERENCE, String.valueOf(mReference));
-				map.put(Event.SERVICE_NAME, String.valueOf(mName));
-				mHistory.add(map);
-
-				mReference = ref;
-				mName = nam;
-
-				reload();
-			} else {
-				showToast(getText(R.string.wait_request_finished));
-			}
-		} else {
-			if (mPickMode) {
-				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(Event.SERVICE_REFERENCE, ref);
-				map.put(Event.SERVICE_NAME, nam);
-
-				Intent intent = new Intent();
-				intent.putExtra(sData, map);
-
-				setResult(RESULT_OK, intent);
-				finish();
-			} else {
-				CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
-						getText(R.string.zap), getText(R.string.similar), getText(R.string.stream) };
-
-				AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
-				adBuilder.setTitle(getText(R.string.pick_action));
-				adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						switch (which) {
-						case 0:
-							removeDialog(DIALOG_EPG_ITEM_ID);
-							showDialog(DIALOG_EPG_ITEM_ID);
-							break;
-
-						case 1:
-							openEpg(ref, nam);
-							break;
-
-						case 2:
-							zapTo(ref);
-							break;
-
-						case 3:
-							openSimilar(title);
-							break;
-
-						case 4:
-							streamService(ref);
-							break;
-						}
-					}
-				});
-
-				AlertDialog alert = adBuilder.create();
-				alert.show();
-			}
-		}
+		onListItemClick(v, position, id, false);
 	}
-
+	
+	/**
+	 * @param a
+	 * @param v
+	 * @param position
+	 * @param id
+	 * @return
+	 */
+	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
+		onListItemClick(v, position, id, true);
+		return true;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -466,6 +413,89 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		startActivity(intent);
 	}
 	
+	private void onListItemClick(View v, int position, long id, boolean isLong){
+		mCurrentItem = mMapList.get(position);
+		final String ref = mCurrentItem.getString(Event.SERVICE_REFERENCE);
+		final String nam = mCurrentItem.getString(Event.SERVICE_NAME);
+		final String title = mCurrentItem.getString(Event.EVENT_TITLE);
+
+		if (isBouquetReference(ref)) {
+			if (!isListTaskRunning()) {
+				mIsBouquetList = true;
+
+				// Second hierarchy level -> we get a List of Services now
+				if (isBouquetReference(mReference)) {
+					mIsBouquetList = false;
+				}
+
+				ExtendedHashMap map = new ExtendedHashMap();
+				map.put(Event.SERVICE_REFERENCE, String.valueOf(mReference));
+				map.put(Event.SERVICE_NAME, String.valueOf(mName));
+				mHistory.add(map);
+
+				mReference = ref;
+				mName = nam;
+
+				reload();
+			} else {
+				showToast(getText(R.string.wait_request_finished));
+			}
+		} else {
+			if (mPickMode) {
+				ExtendedHashMap map = new ExtendedHashMap();
+				map.put(Event.SERVICE_REFERENCE, ref);
+				map.put(Event.SERVICE_NAME, nam);
+
+				Intent intent = new Intent();
+				intent.putExtra(sData, map);
+
+				setResult(RESULT_OK, intent);
+				finish();
+			} else {				
+				boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
+				if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
+					zapTo(ref);
+				} else {
+				
+					CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
+							getText(R.string.zap), getText(R.string.similar), getText(R.string.stream) };
+	
+					AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
+					adBuilder.setTitle(getText(R.string.pick_action));
+					adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
+	
+						public void onClick(DialogInterface dialog, int which) {
+							switch (which) {
+							case 0:
+								removeDialog(DIALOG_EPG_ITEM_ID);
+								showDialog(DIALOG_EPG_ITEM_ID);
+								break;
+	
+							case 1:
+								openEpg(ref, nam);
+								break;
+	
+							case 2:
+								zapTo(ref);
+								break;
+	
+							case 3:
+								openSimilar(title);
+								break;
+	
+							case 4:
+								streamService(ref);
+								break;
+							}
+						}
+					});
+	
+					AlertDialog alert = adBuilder.create();
+					alert.show();
+				}
+			}
+		}
+	}
 	/**
 	 * 
 	 */

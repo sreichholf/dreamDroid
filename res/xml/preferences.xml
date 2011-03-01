@@ -4,8 +4,13 @@
 	android:orderingFromXml="true">
  
 	<CheckBoxPreference 
-		android:key="volume"
+		android:key="volume_control"
 		android:summary="@string/enable_volume_control_long"
 		android:title="@string/enable_volume_control" />
+	
+	<CheckBoxPreference 
+		android:key="instant_zap"
+		android:summary="@string/enable_instant_zap_long"
+		android:title="@string/enable_instant_zap" />
 
 </PreferenceScreen>

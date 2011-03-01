@@ -23,6 +23,6 @@ public class DreamDroidPreferenceActivity extends PreferenceActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this.addPreferencesFromResource(R.xml.preferences);
+		addPreferencesFromResource(R.xml.preferences);
 	}
 }

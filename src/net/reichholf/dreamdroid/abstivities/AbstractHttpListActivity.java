@@ -558,16 +558,17 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		switch (keyCode) {
-			case KeyEvent.KEYCODE_VOLUME_UP:
-				onVolumeButtonClicked(Volume.COMMAND_UP);
-				return true;
-
-			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				onVolumeButtonClicked(Volume.COMMAND_DOWN);
-				return true;
+		if( DreamDroid.SP.getBoolean("volume_control", false) ) {
+			switch (keyCode) {
+				case KeyEvent.KEYCODE_VOLUME_UP:
+					onVolumeButtonClicked(Volume.COMMAND_UP);
+					return true;
+	
+				case KeyEvent.KEYCODE_VOLUME_DOWN:
+					onVolumeButtonClicked(Volume.COMMAND_DOWN);
+					return true;
+			}
 		}
-
 		return super.onKeyDown(keyCode, event);
 	}
 

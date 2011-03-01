@@ -39,9 +39,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations
@@ -99,7 +101,14 @@ public class MovieListActivity extends AbstractHttpListActivity {
 
 		setListAdapter(mAdapter);
 		mSelectedTags = new ArrayList<String>();
-
+		
+		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
+				return onListItemLongClick(a, v, position, id);
+			}
+		});
+		
 		reload();
 	}
 
@@ -137,43 +146,20 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	 * android.view.View, int, long)
 	 */
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		mMovie = mMapList.get(position);
-
-		CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
-				getText(R.string.stream) };
-
-		AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
-		adBuilder.setTitle(getText(R.string.pick_action));
-		adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-			public void onClick(DialogInterface dialog, int which) {
-				switch (which) {
-				case 0:
-					zapTo(mMovie.getString(Movie.REFERENCE));
-					break;
-				case 1:
-					showDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
-					break;
-				case 2:
-					ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-					params.add(new BasicNameValuePair("file", mMovie.getString(Movie.FILE_NAME)));
-					String url = mShc.buildUrl(URIStore.FILE, params);
-
-					Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-					startActivity(intent);
-					break;
-				case 3:
-					streamFile(mMovie.getString(Movie.FILE_NAME));
-					break;
-				default:
-					return;
-				}
-			}
-		});
-
-		adBuilder.show();
+		onListItemClick(v, position, id, false);
 	}
-
+	
+	/**
+	 * @param a
+	 * @param v
+	 * @param position
+	 * @param id
+	 * @return
+	 */
+	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
+		onListItemClick(v, position, id, true);
+		return true;
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -351,7 +337,51 @@ public class MovieListActivity extends AbstractHttpListActivity {
 
 		return dialog;
 	}
-
+	
+	private void onListItemClick(View v, int position, long id, boolean isLong){
+		mMovie = mMapList.get(position);
+		boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
+		if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
+			zapTo(mMovie.getString(Movie.REFERENCE));
+		} else {
+		
+			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
+					getText(R.string.stream) };
+	
+			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
+			adBuilder.setTitle(getText(R.string.pick_action));
+			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
+	
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						zapTo(mMovie.getString(Movie.REFERENCE));
+						break;
+					case 1:
+						showDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
+						break;
+					case 2:
+						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+						params.add(new BasicNameValuePair("file", mMovie.getString(Movie.FILE_NAME)));
+						String url = mShc.buildUrl(URIStore.FILE, params);
+	
+						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+						startActivity(intent);
+						break;
+					case 3:
+						streamFile(mMovie.getString(Movie.FILE_NAME));
+						break;
+					default:
+						return;
+					}
+				}
+			});
+	
+			adBuilder.show();
+		}
+	}
+	
+	
 	/**
 	 * Delete the selected movie
 	 */

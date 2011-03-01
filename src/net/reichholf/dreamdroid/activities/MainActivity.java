@@ -315,9 +315,7 @@ public class MainActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Will be reactivated as soon as there are some "Global settings"
-		// menu.add(0, ITEM_SETTINGS, 0,
-		// getText(R.string.settings)).setIcon(R.drawable.edit);
+		menu.add(0, ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
 		return true;
 	}
 	

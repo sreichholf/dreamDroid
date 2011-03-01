@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.abstivities;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -352,16 +353,17 @@ public abstract class AbstractHttpActivity extends Activity {
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		switch (keyCode) {
-			case KeyEvent.KEYCODE_VOLUME_UP:
-				onVolumeButtonClicked(Volume.COMMAND_UP);
-				return true;
-
-			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				onVolumeButtonClicked(Volume.COMMAND_DOWN);
-				return true;
+		if( DreamDroid.SP.getBoolean("volume_control", false) ) {
+			switch (keyCode) {
+				case KeyEvent.KEYCODE_VOLUME_UP:
+					onVolumeButtonClicked(Volume.COMMAND_UP);
+					return true;
+	
+				case KeyEvent.KEYCODE_VOLUME_DOWN:
+					onVolumeButtonClicked(Volume.COMMAND_DOWN);
+					return true;
+			}
 		}
-
 		return super.onKeyDown(keyCode, event);
 	}
 
@@ -394,7 +396,7 @@ public abstract class AbstractHttpActivity extends Activity {
 	 * @param success
 	 * @param volume
 	 */
-	private void onVolumeSet(boolean success, ExtendedHashMap volume){
+	private void onVolumeSet(boolean success, ExtendedHashMap volume){		
 		String text = getString(R.string.get_content_error);
 		if(success){
 			if(Python.TRUE.equals( volume.getString(Volume.RESULT)) ){
