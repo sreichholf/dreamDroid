@@ -170,7 +170,7 @@
 <string name="checking">Testar.</string>
 <string name="error">FEL!</string>
 <string name="check_connectivity">Kolla Anslutningen</string>
-<string name="version_too_low">Version &lt; 1.6.5</string>
+<string name="version_too_low">Version &lt; 1.6</string>
 <string name="connection_error">Kunde inte Ansluta</string>
 <string name="port_out_of_range">Inga Portar Emellan 1 och 65535</string>
 <string name="illegal_host">Fel Värd</string>
@@ -195,4 +195,5 @@
 <item>Spela In</item>
 <item>Zappa</item>
 </string-array>
+<string name="sleeptimer">Insomningstimer</string>
 </resources>

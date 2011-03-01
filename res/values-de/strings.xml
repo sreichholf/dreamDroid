@@ -36,6 +36,7 @@
 <string name="device_info">Geräte-Info</string>
 <string name="exit">Exit</string>
 <string name="send_message">Nachricht senden</string>
+
 <string name="save">Speichern</string>
 <string name="cancel">Abbrechen</string>
 <string name="fetching_data">Hole Daten...</string>
@@ -167,7 +168,7 @@
 <string name="checking">prüfe...</string>
 <string name="error">FEHLER!</string>
 <string name="check_connectivity">Verbindung prüfen</string>
-<string name="version_too_low">Version &lt; 1.6.5</string>
+<string name="version_too_low">Version &lt; 1.6</string>
 <string name="connection_error">Verbindungsfehler</string>
 <string name="port_out_of_range">Port nicht zwischen 1 und 65535</string>
 <string name="illegal_host">Fehlerhafter Host</string>
@@ -177,11 +178,10 @@
 <string name="in_standby">Gerät ist nun im Standby-Modus</string>
 <string name="is_running">Gerät läuft nun</string>
 <string name="stream">Streamen</string>
-<string name="install_vplayer">Für das Streaming wird vPlayer benötigt!</string>
+
 <string name="stream_host">Streaming Hostname/IP</string>
 <string name="stream_host_long">Host/IP für Streaming (optional)</string>
 <string name="stream_current">Streame laufendes Programm</string>
-<string name="similar">Ähnliche Sendungen</string>
 <string-array name="timer_state">
 <item>wartet...</item>
 <item>vorbereiten...</item>
@@ -193,4 +193,12 @@
 <item>aufnehmen</item>
 <item>umschalten</item>
 </string-array>
+<string name="current_volume">Lautstärke ist nun bei %s</string>
+<string name="muted">Stumm</string>
+<string name="enable_volume_control">Lautstärkeregulierung aktivieren</string>
+<string name="enable_volume_control_long">Direkte Regulierung der Lautstärke über Hardware-Buttons</string>
+<string name="download">Downloads</string>
+<string name="extras">Extras</string>
+<string name="main_menu">Main</string>
+<string name="profiles">Profile</string>
 </resources>

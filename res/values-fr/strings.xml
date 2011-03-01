@@ -2,9 +2,9 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 <string name="description">Description</string>
 <string name="title">Titre</string>
-<string name="we">We</string>
-<string name="tue">Ma</string>
-<string name="mo">Lu</string>
+<string name="we">Mer</string>
+<string name="tue">Mar</string>
+<string name="mo">Lun</string>
 <string name="app_name">DreamDroid</string>
 <string name="menu_timer">Programmation</string>
 <string name="menu_timer_desc">Vérifier, ajouter et editer les programmations</string>
@@ -20,7 +20,7 @@
 </string-array>
 <string name="timer">Programmation</string>
 <string name="service">Service</string>
-<string name="afterevent">Afterevent</string>
+<string name="afterevent">Après l\'évènement</string>
 <string name="location">Répertoire</string>
 <string-array name="afterevents">
 <item>Rien</item>
@@ -100,12 +100,12 @@
 <string name="interface_version">Version d\'interface</string>
 <string name="front_processor_version">Version processeur</string>
 <string name="device_name">Nom phéripherique</string>
-<string name="frontends">Frontends</string>
+<string name="frontends">Début de processus</string>
 <string name="nics">Interfaces Réseau</string>
 <string name="hdds">Disques Durs</string>
 <string name="not_implemented">Cette fonction n\'est pas encore développée!</string>
-<string name="current_event">Evenement Courant</string>
-<string name="timeout">Timeout</string>
+<string name="current_event">Evènement Courant</string>
+<string name="timeout">Interruption</string>
 <string name="message">Message</string>
 <string name="message_text_hint">Entrez votre message</string>
 <string name="send">Envoi</string>
@@ -117,8 +117,8 @@
 <item>Erreur</item>
 </string-array>
 <string name="virtual_remote">Télécommande</string>
-<string name="login_enabled">Connexion par nom d\'utilisateur/mot de passe</string>
-<string name="login_enabled_long">Permettre un accès par nom d\'utilsateur/mot de passe</string>
+<string name="login_enabled">Connexion par nom d \'utilisateur mot de passe</string>
+<string name="login_enabled_long">Permettre un accès par nom d\'utilsateur et mot de passe</string>
 <string name="wait_request_finished">Merci de patienter jusqu\'a la fin de la requête courante!</string>
 <string name="current_service">Actuellement</string>
 <string name="provider">Fournisseur</string>
@@ -126,8 +126,8 @@
 <string name="next">Suivant</string>
 <string name="epg_search">Recherche EPG</string>
 <string name="epg_search_hint">Recherche EPG</string>
-<string name="standard">Standard Layout</string>
-<string name="quickzap">QuickZap Layout</string>
+<string name="standard">Agencement standard</string>
+<string name="quickzap">Agencement QuickZap</string>
 <string name="no_epg_available">Actuellement il n\'y a pas EPG disponible pour cette chaîne!</string>
 <string name="ok">OK</string>
 <string name="connection_profiles">Profils de connexion</string>
@@ -156,10 +156,10 @@
 <string name="powercontrol">Alimentation</string>
 <string name="choose_tags">Choix de tags</string>
 <string name="choose_location">Choix du répertoire</string>
-<string name="bouquet_overview">Bouquet overview</string>
+<string name="bouquet_overview">Vue d\'ensemble des bouquets</string>
 <string name="set_default">Définir par défaut</string>
 <string name="default_bouquet_set_to">Bouquet par défaut positionné à: </string>
-<string name="default_bouquet_not_set">Bouquet par défaut ne pouvait pas être réglé!</string>
+<string name="default_bouquet_not_set">Bouquet par défaut ne peut pas être réglé!</string>
 <string name="loading">Chargement...</string>
 <string name="about">A propos</string>
 <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
@@ -170,17 +170,17 @@
 <string name="checking">Vérification...</string>
 <string name="error">ERREUR!</string>
 <string name="check_connectivity">Test de la connexion</string>
-<string name="version_too_low">Version &lt; 1.6.5</string>
+<string name="version_too_low">Version &lt; 1.6</string>
 <string name="connection_error">Erreur de connexion</string>
 <string name="port_out_of_range">Port non compris entre 1 et 65535</string>
 <string name="illegal_host">Nom illegal</string>
 <string name="edit_timer">Modifier enregistrement</string>
 <string name="cleaning_timerlist">Vider la liste des enregistrements</string>
 <string name="cleanup">Nettoyer</string>
-<string name="in_standby">Appareil en veille maintenant</string>
-<string name="is_running">Appareil en service maintenant</string>
+<string name="in_standby">Appareil actuellement en veille</string>
+<string name="is_running">Appareil actuellement en service</string>
 <string name="stream">Diffusion</string>
-<string name="install_vplayer">Le Streaming nécessite l\'installation de vPlayer</string>
+
 <string name="stream_host">Nom/IP de streaming</string>
 <string name="stream_host_long">Nom/IP pour diffuser en continu (optionel)</string>
 <string name="stream_current">Diffusion courante</string>
@@ -195,4 +195,5 @@
 <item>enregistrement</item>
 <item>zap</item>
 </string-array>
+<string name="sleeptimer">mise en veille</string>
 </resources>

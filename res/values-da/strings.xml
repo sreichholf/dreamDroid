@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Beskrivelse</string>
+<string name="title">Titel</string>
+<string name="we">Ons</string>
+<string name="tue">Tor</string>
+<string name="mo">Man</string>
+<string name="app_name">DreamDroid</string>
+<string name="menu_timer">Timer</string>
+<string name="menu_timer_desc">Vis, tilføj og redigér timer</string>
+<string name="menu_movies">Film</string>
+<string name="menu_movies_desc">Liste af optagelser</string>
+<string-array name="servicelist">
+<item>Bouquets (TV)</item>
+<item>Provider (TV)</item>
+<item>All Services (TV)</item>
+<item>Bouquets (Radio)</item>
+<item>Provider (Radio)</item>
+<item>All (Radio)</item>
+</string-array>
+<string name="timer">Timer</string>
+<string name="service">Service</string>
+<string name="afterevent">Efter film</string>
+<string name="location">Lokation</string>
+<string-array name="afterevents">
+<item>Gør intet</item>
+<item>Standby</item>
+<item>Dyb Standby</item>
+<item>Auto</item>
+</string-array>
+<string name="begin_time">Starttid</string>
+<string name="repeatings">Gentagelser</string>
+<string name="end_time">Sluttid</string>
+<string name="services">Services</string>
+<string name="movies">Film</string>
+<string name="device_info">Enheds information</string>
+<string name="exit">Exit</string>
+<string name="send_message">Sedn besked</string>
+
+<string name="save">Gem</string>
+<string name="cancel">Annulér</string>
+<string name="fetching_data">Henter data...</string>
+<string name="parsing">Fletter</string>
+<string name="get_content_error">Fejl ved hentning af indhold</string>
+<string name="zap">Zap</string>
+<string name="browse_epg">Gennemse EPG</string>
+<string name="edit">Redigér</string>
+<string name="delete">Slet</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">Aktivér SSL</string>
+<string name="host">Hostname/IP</string>
+<string name="port">Port</string>
+<string name="settings">Indstillinger</string>
+<string name="host_long">Hostname eller IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="ssl_enabled_long">Aktivér  SSl sikker forbindelse (HTTPS)</string>
+<string name="close">Luk</string>
+<string name="minutes_short">Min.</string>
+<string name="user">Bruger</string>
+<string name="user_long">Brugernavn til login</string>
+<string name="pass">Adgangskode</string>
+<string name="pass_long">Adgangskode til login</string>
+<string name="saving">Gemmer, vent venligst...</string>
+<string name="deleting">Sletter, vent venligst</string>
+<string name="delete_confirm">Vil du virkelig slette?</string>
+<string name="set_timer">Opret timer</string>
+<string name="home">Hjem</string>
+<string name="pick_action">Vælg en handling</string>
+<string name="set_time_begin">Start dato og tid</string>
+<string name="set_time_end">Slut dato og tid</string>
+<string name="apply">Anvend</string>
+<string name="reload">Indlæs igen</string>
+<string-array name="weekdays_short">
+<item>man</item>
+<item>tir</item>
+<item>ons</item>
+<item>tor</item>
+<item>fre</item>
+<item>lør</item>
+<item>søn</item>
+</string-array>
+<string-array name="weekdays">
+<item>Mandag</item>
+<item>Tirsdag</item>
+<item>Onsdag</item>
+<item>Torsdag</item>
+<item>Fredag</item>
+<item>Lørdag</item>
+<item>Søndag</item>
+</string-array>
+<string name="none">Ingen</string>
+<string name="choose_days">Vælg dage</string>
+<string name="mo_to_fr">Mandag til Fredag</string>
+<string name="daily">Dagligt</string>
+<string name="new_timer">Ny Timer</string>
+<string name="locations">Lokationer</string>
+<string name="gui_version">GUI version</string>
+<string name="image_version">Image version</string>
+<string name="interface_version">Interface version</string>
+<string name="front_processor_version">Frontprocessor version</string>
+<string name="device_name">Enhedsnavn</string>
+<string name="frontends">Frontends</string>
+<string name="nics">Netværks interface</string>
+<string name="hdds">Harddisks</string>
+<string name="not_implemented">Denne funktion er ikke gennemført endnu!</string>
+<string name="current_event">Nuværende begivenhed</string>
+<string name="timeout">Timerout</string>
+<string name="message">Besked</string>
+<string name="message_text_hint">Indtast din besked</string>
+<string name="send">Send</string>
+<string name="type">Skriv</string>
+<string-array name="message_types">
+<item>JaNej</item>
+<item>Advarsel</item>
+<item>Info</item>
+<item>Fejl</item>
+</string-array>
+<string name="virtual_remote">Virtuel fjernbetjening</string>
+<string name="login_enabled">Aktivér Login</string>
+<string name="login_enabled_long">Aktivér login for fjernadgang</string>
+<string name="wait_request_finished">Vent venligst indtil den igangværende anmodning er afsluttet!</string>
+<string name="current_service">Nuværende</string>
+<string name="provider">Udbyder</string>
+<string name="now">Nu</string>
+<string name="next">Næste</string>
+<string name="epg_search">EPG-søgning</string>
+<string name="epg_search_hint">Søg EPG</string>
+<string name="standard">Standard layout</string>
+<string name="quickzap">QuickZap Layout</string>
+<string name="no_epg_available">Der er i øjeblikket ingen EPG-information tilgængelig for denne kanal.</string>
+<string name="ok">OK</string>
+<string name="connection_profiles">Forbindelses profiler</string>
+<string name="activate">Aktivér</string>
+<string name="confirm_delete_profile">Vil du virkelig slette denne profil?</string>
+<string name="profile_activated">Aktiveret profil</string>
+<string name="profile_not_activated">Fejl ved aktivering af profil</string>
+<string name="profile_not_deleted">Fejl ved sletning af profil</string>
+<string name="profile_deleted">Slettet profil</string>
+<string name="profile">Profil</string>
+<string name="profile_updated">Opdateret profil</string>
+<string name="profile_added">Tilføjet profil</string>
+<string name="profile_add">Tilføj profil</string>
+<string name="profile_not_added">Kunne ikke tilføje profil</string>
+<string name="profile_not_updated">Kunne ikke opdatere profil</string>
+<string name="no_list_item">Ingen emner at vist</string>
+<string name="locations_default_fallback">Fejl ved hentning af lokationer, indlæser standard</string>
+<string name="tags">Tags</string>
+<string name="screenshot">Skærmdump</string>
+<string name="host_empty">Hostname kan ikke være tomt</string>
+<string name="standby">Standby</string>
+<string name="powerup">Power up</string>
+<string name="restart_gui">Genstart GUI</string>
+<string name="reboot">Reboot</string>
+<string name="shutdown">Luk ned</string>
+<string name="powercontrol">Strømstyring</string>
+<string name="choose_tags">Vælg tags</string>
+<string name="choose_location">Vælg lokation</string>
+<string name="bouquet_overview">Bouquet oversigt</string>
+<string name="set_default">Vælg som standard</string>
+<string name="default_bouquet_set_to">Standard bouquet er sat til:</string>
+<string name="default_bouquet_not_set">Standard bouquet kunne ikke sættes!</string>
+<string name="loading">Henter...</string>
+<string name="about">Om</string>
+<string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Aktiv profil</string>
+<string name="connection_state">Forbindelsestilstand</string>
+<string name="not_available">Ikke tilgængelig</string>
+<string name="checking">Kontrollerer...</string>
+<string name="error">FEJL!</string>
+<string name="check_connectivity">Kontrollér forbindelse</string>
+<string name="version_too_low">Version lt; 1.6</string>
+<string name="connection_error">Forbindelses fejl</string>
+<string name="port_out_of_range">Porten ikke mellem 1 og 65535</string>
+<string name="illegal_host">Ugyldig host</string>
+<string name="edit_timer">Redigér timer</string>
+<string name="cleaning_timerlist">Rydder op i timerliste</string>
+<string name="cleanup">Oprydning</string>
+<string name="in_standby">Enheden er nu i Standby-Mode</string>
+<string name="is_running">Enheden er nu kørende</string>
+<string name="stream">Stream</string>
+<string name="install_vplayer">Streaming kræver at vPlayer er installeret</string>
+<string name="stream_host">Streaming Hostname/IP</string>
+<string name="stream_host_long">Host/IP til streaming (valgfri)</string>
+<string name="stream_current">Stream nuværende</string>
+<string-array name="timer_state">
+<item>Venter...</item>
+<item>Klargjort...</item>
+<item>Kører...</item>
+<item>Afsluttet</item>
+<item>Slået fra</item>
+</string-array>
+<string-array name="timer_action">
+<item>Optag</item>
+<item>zap</item>
+</string-array>
+<string name="sleeptimer">Sleep Timer</string>
+</resources>

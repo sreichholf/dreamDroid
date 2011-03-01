@@ -1,198 +1,199 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	<string name="description">Descrizione</string>
-	<string name="title">Titolo</string>
-	<string name="we">Mer</string>
-	<string name="tue">Mar</string>
-	<string name="mo">Lun</string>
-	<string name="app_name">DreamDroid</string>
-	<string name="menu_timer">Timer</string>
-	<string name="menu_timer_desc">Mostra, aggiungi e modifica timer</string>
-	<string name="menu_movies">Registrazioni</string>
-	<string name="menu_movies_desc">Elenco delle registrazioni disponibili</string>
-	<string-array name="servicelist">
-		<item>Pacchetti (TV)</item>
-		<item>Emittenti (TV)</item>
-		<item>Tutti i servizi (TV)</item>
-		<item>Pacchetti (Radio)</item>
-		<item>Emittenti (Radio)</item>
-		<item>Tutti (Radio)</item>
-	</string-array>
-	<string name="timer">Timer</string>
-	<string name="service">Servizio</string>
-	<string name="afterevent">Azione fine evento</string>
-	<string name="location">Percorso</string>
-	<string-array name="afterevents">
-		<item>Nessuna</item>
-		<item>Standby</item>
-		<item>Spegnimento</item>
-		<item>Automatica</item>
-	</string-array>
-	<string name="begin_time">Ora inizio</string>
-	<string name="repeatings">Repliche</string>
-	<string name="end_time">Ora fine</string>
-	<string name="services">Servizi</string>
-	<string name="movies">Registrazioni</string>
-	<string name="device_info">Info dispositivo</string>
-	<string name="exit">Esci</string>
-	<string name="send_message">Invia messaggio</string>
-	
-	<string name="save">Salva</string>
-	<string name="cancel">Annulla</string>
-	<string name="fetching_data">Raccolta dati...</string>
-	<string name="parsing">Elaborazione...</string>
-	<string name="get_content_error">Errore recupero contenuti!</string>
-	<string name="zap">Cambia</string>
-	<string name="browse_epg">Sfoglia EPG</string>
-	<string name="edit">Modifica</string>
-	<string name="delete">Elimina</string>
-	<string name="epg">EPG</string>
-	<string name="ssl_enabled">Abilita SSL</string>
-	<string name="host">Nome sistema/IP</string>
-	<string name="port">Porta</string>
-	<string name="settings">Impostazioni</string>
-	<string name="host_long">Nome sistema o IP</string>
-	<string name="port_long">Porta in ascolto
-	</string>
-	<string name="ssl_enabled_long">Abilita connessione sicura SSL (https)</string>
-	<string name="close">Chiudi</string>
-	<string name="minutes_short">min.</string>
-	<string name="user">Utente</string>
-	<string name="user_long">Nome utente della connessione</string>
-	<string name="pass">Password</string>
-	<string name="pass_long">Password della connessione</string>
-	<string name="saving">Salvataggio. Attendere prego...</string>
-	<string name="deleting">Eliminazione. Attendere prego...</string>
-	<string name="delete_confirm">Sei sicuro di voler eliminare?</string>
-	<string name="set_timer">Imposta timer</string>
-	<string name="home">Menu principale</string>
-	<string name="pick_action">Scegli azione</string>
-	<string name="set_time_begin">Ora e data inizio</string>
-	<string name="set_time_end">Ora e data fine</string>
-	<string name="apply">Applica</string>
-	<string name="reload">Ricarica</string>
-	<string-array name="weekdays_short">
-		<item>Lun</item>
-		<item>Mar</item>
-		<item>Mer</item>
-		<item>Gio</item>
-		<item>Ven</item>
-		<item>Sab</item>
-		<item>Dom</item>
-	</string-array>
-	<string-array name="weekdays">
-		<item>Lunedì</item>
-		<item>Martedì</item>
-		<item>Mercoledì</item>
-		<item>Giovedì</item>
-		<item>Venerdì</item>
-		<item>Sabato</item>
-		<item>Domenica</item>
-	</string-array>
-	<string name="none">Nessuno</string>
-	<string name="choose_days">Scegli giorni</string>
-	<string name="mo_to_fr">Lunedì a Venerdì</string>
-	<string name="daily">Giornaliero</string>
-	<string name="new_timer">Nuovo timer</string>
-	<string name="locations">Percorsi</string>
-	<string name="gui_version">Versione GUI</string>
-	<string name="image_version">Versione immagine</string>
-	<string name="interface_version">Versione interfaccia</string>
-	<string name="front_processor_version">Versione processore</string>
-	<string name="device_name">Nome dispositivo</string>
-	<string name="frontends">Interfaccia</string>
-	<string name="nics">Connessione di rete</string>
-	<string name="hdds">Disco fisso</string>
-	<string name="not_implemented">Questa funzione non è ancora implementata!</string>
-	<string name="current_event">Evento attuale</string>
-	<string name="timeout">Scadenza</string>
-	<string name="message">Messaggio</string>
-	<string name="message_text_hint">Inserisci testo messaggio</string>
-	<string name="send">Invia</string>
-	<string name="type">Tipo</string>
-	<string-array name="message_types">
-		<item>Sì/No</item>
-		<item>Attenzione</item>
-		<item>Info</item>
-		<item>Errore</item>
-	</string-array>
-	<string name="virtual_remote">Telecomando virtuale</string>
-	<string name="login_enabled">Abilita accesso</string>
-	<string name="login_enabled_long">Abilita accesso remoto</string>
-	<string name="wait_request_finished">Attendere il completamento della richiesta!</string>
-	<string name="current_service">Attuale</string>
-	<string name="provider">Emittente</string>
-	<string name="now">Adesso</string>
-	<string name="next">Successivo</string>
-	<string name="epg_search">Ricerca EPG</string>
-	<string name="epg_search_hint">Cerca eventi EPG</string>
-	<string name="standard">Formato classico</string>
-	<string name="quickzap">Formato ingrandito</string>
-	<string name="no_epg_available">Attualmente non esistono informazioni EPG per questo canale!</string>
-	<string name="ok">OK</string>
-	<string name="connection_profiles">Profili connessione</string>
-	<string name="activate">Attiva</string>
-	<string name="confirm_delete_profile">Sei sicuro di voler eliminare questo profilo?</string>
-	<string name="profile_activated">Profilo attivato</string>
-	<string name="profile_not_activated">Errore attivazione profilo</string>
-	<string name="profile_not_deleted">Errore eliminazione profilo</string>
-	<string name="profile_deleted">Profilo eliminato</string>
-	<string name="profile">Profilo</string>
-	<string name="profile_updated">Profilo aggiornato</string>
-	<string name="profile_added">Profilo aggiunto</string>
-	<string name="profile_add">Aggiungi profilo</string>
-	<string name="profile_not_added">Impossibile aggiungere profilo</string>
-	<string name="profile_not_updated">Impossibile aggiornare profilo</string>
-	<string name="no_list_item">Nessun valore da visualizzare...</string>
-	<string name="locations_default_fallback">Errore caricamento percorso, ripristino predefinito:</string>
-	<string name="tags">Etichette</string>
-	<string name="screenshot">Schermata</string>
-	<string name="host_empty">Il nome sistema non può essere vuoto!</string>
-	<string name="standby">Standby</string>
-	<string name="powerup">Accensione</string>
-	<string name="restart_gui">Riavvia GUI</string>
-	<string name="reboot">Riavvia</string>
-	<string name="shutdown">Spegni</string>
-	<string name="powercontrol">Gestione stato</string>
-	<string name="choose_tags">Scegli etichette</string>
-	<string name="choose_location">Scegli percorso</string>
-	<string name="bouquet_overview">Sommario pacchetti</string>
-	<string name="set_default">Imposta come predefinito</string>
-	<string name="default_bouquet_set_to">Pacchetto predefinito impostato a: </string>	
-	<string name="default_bouquet_not_set">Impossibile impostare il paccheto predefinito!</string>
-	<string name="loading">Caricamento...</string>
-	<string name="about">Info</string>
-	<string name="license">LICENZA:\nLicenziato sotto i termini della Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-	<string name="source_code_link">Codice sorgente disponibile in: http://github.com/sreichholf/dreamDroid</string>
-	<string name="active_profile">Profilo attivo</string>
-	<string name="connection_state">Stato connessione</string>
-	<string name="not_available">Non disponibile</string>
-	<string name="checking">verifica...</string>
-	<string name="error">ERRORE!</string>
-	<string name="check_connectivity">Verifica connettività</string>
-	<string name="version_too_low">Versione &lt; 1.6.5</string>
-	<string name="connection_error">Errore connessione</string>
-	<string name="port_out_of_range">La porta non può essere tra 1 e 65535</string>
-	<string name="illegal_host">Nome sistema non valido</string>
-	<string name="edit_timer">Modifica timer</string>
-	<string name="cleaning_timerlist">Cancellazione elenco timer</string>
-	<string name="cleanup">Cancella</string>
-	<string name="in_standby">Dispositivo in modalità Standby</string>
-	<string name="is_running">Dispositivo in esecuzione</string>
-	<string name="stream">Trasmetti</string>
-	<string name="install_vplayer">La trasmissione richiede che vPlayer sia installato</string>
-	<string name="stream_host">Nome sistema/IP trasmissione</string>
-	<string name="stream_host_long">Nome sistema/IP per la trasmissione (opzionale)</string>
-	<string name="stream_current">Trasmissione attuale</string>
-	<string-array name="timer_state">
-		<item>attendere...</item>
-		<item>preparazione...</item>
-		<item>esecuzione...</item>
-		<item>fine</item>
-		<item>disabilitato</item>
-	</string-array>
-	<string-array name="timer_action">
-		<item>registra</item>
-		<item>cambia</item>
-	</string-array>
+<string name="description">Descrizione</string>
+<string name="title">Titolo</string>
+<string name="we">Mer</string>
+<string name="tue">Mar</string>
+<string name="mo">Lun</string>
+<string name="app_name">DreamDroid</string>
+<string name="menu_timer">Timer</string>
+<string name="menu_timer_desc">Mostra, aggiungi e modifica timer</string>
+<string name="menu_movies">Registrazioni</string>
+<string name="menu_movies_desc">Elenco delle registrazioni disponibili</string>
+<string-array name="servicelist">
+<item>Pacchetti (TV)</item>
+<item>Emittenti (TV)</item>
+<item>Tutti i servizi (TV)</item>
+<item>Pacchetti (Radio)</item>
+<item>Emittenti (Radio)</item>
+<item>Tutti (Radio)</item>
+</string-array>
+<string name="timer">Timer</string>
+<string name="service">Servizio</string>
+<string name="afterevent">Azione fine evento</string>
+<string name="location">Percorso</string>
+<string-array name="afterevents">
+<item>Nessuna</item>
+<item>Standby</item>
+<item>Spegnimento</item>
+<item>Automatica</item>
+</string-array>
+<string name="begin_time">Ora inizio</string>
+<string name="repeatings">Repliche</string>
+<string name="end_time">Ora fine</string>
+<string name="services">Servizi</string>
+<string name="movies">Registrazioni</string>
+<string name="device_info">Info dispositivo</string>
+<string name="exit">Esci</string>
+<string name="send_message">Invia messaggio</string>
+
+<string name="save">Salva</string>
+<string name="cancel">Annulla</string>
+<string name="fetching_data">Raccolta dati...</string>
+<string name="parsing">Elaborazione...</string>
+<string name="get_content_error">Errore recupero contenuti!</string>
+<string name="zap">Cambia</string>
+<string name="browse_epg">Sfoglia EPG</string>
+<string name="edit">Modifica</string>
+<string name="delete">Elimina</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">Abilita SSL</string>
+<string name="host">Nome sistema/IP</string>
+<string name="port">Porta</string>
+<string name="settings">Impostazioni</string>
+<string name="host_long">Nome sistema o IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="ssl_enabled_long">Abilita connessione sicura SSL (https)</string>
+<string name="close">Chiudi</string>
+<string name="minutes_short">min.</string>
+<string name="user">Utente</string>
+<string name="user_long">Nome utente della connessione</string>
+<string name="pass">Password</string>
+<string name="pass_long">Password della connessione</string>
+<string name="saving">Salvataggio. Attendere prego...</string>
+<string name="deleting">Eliminazione. Attendere prego...</string>
+<string name="delete_confirm">Sei sicuro di voler eliminare?</string>
+<string name="set_timer">Imposta timer</string>
+<string name="home">Menu principale</string>
+<string name="pick_action">Scegli azione</string>
+<string name="set_time_begin">Ora e data inizio</string>
+<string name="set_time_end">Ora e data fine</string>
+<string name="apply">Applica</string>
+<string name="reload">Ricarica</string>
+<string-array name="weekdays_short">
+<item>Lun</item>
+<item>Mar</item>
+<item>Mer</item>
+<item>Gio</item>
+<item>Ven</item>
+<item>Sab</item>
+<item>Dom</item>
+</string-array>
+<string-array name="weekdays">
+<item>Lunedì</item>
+<item>Martedì</item>
+<item>Mercoledì</item>
+<item>Giovedì</item>
+<item>Venerdì</item>
+<item>Sabato</item>
+<item>Domenica</item>
+</string-array>
+<string name="none">Nessuno</string>
+<string name="choose_days">Scegli giorni</string>
+<string name="mo_to_fr">Lunedì a Venerdì</string>
+<string name="daily">Giornaliero</string>
+<string name="new_timer">Nuovo timer</string>
+<string name="locations">Percorsi</string>
+<string name="gui_version">Versione GUI</string>
+<string name="image_version">Versione immagine</string>
+<string name="interface_version">Versione interfaccia</string>
+<string name="front_processor_version">Versione processore</string>
+<string name="device_name">Nome dispositivo</string>
+<string name="frontends">Interfaccia</string>
+<string name="nics">Connessione di rete</string>
+<string name="hdds">Disco fisso</string>
+<string name="not_implemented">Questa funzione non è ancora implementata!</string>
+<string name="current_event">Evento attuale</string>
+<string name="timeout">Scadenza</string>
+<string name="message">Messaggio</string>
+<string name="message_text_hint">Inserisci testo messaggio</string>
+<string name="send">Invia</string>
+<string name="type">Tipo</string>
+<string-array name="message_types">
+<item>Sì/No</item>
+<item>Attenzione</item>
+<item>Info</item>
+<item>Errore</item>
+</string-array>
+<string name="virtual_remote">Telecomando virtuale</string>
+<string name="login_enabled">Abilita accesso</string>
+<string name="login_enabled_long">Abilita accesso remoto</string>
+<string name="wait_request_finished">Attendere il completamento della richiesta!</string>
+<string name="current_service">Attuale</string>
+<string name="provider">Emittente</string>
+<string name="now">Adesso</string>
+<string name="next">Successivo</string>
+<string name="epg_search">Ricerca EPG</string>
+<string name="epg_search_hint">Cerca eventi EPG</string>
+<string name="standard">Formato classico</string>
+<string name="quickzap">Formato ingrandito</string>
+<string name="no_epg_available">Attualmente non esistono informazioni EPG per questo canale!</string>
+<string name="ok">OK</string>
+<string name="connection_profiles">Profili connessione</string>
+<string name="activate">Attiva</string>
+<string name="confirm_delete_profile">Sei sicuro di voler eliminare questo profilo?</string>
+<string name="profile_activated">Profilo attivato</string>
+<string name="profile_not_activated">Errore attivazione profilo</string>
+<string name="profile_not_deleted">Errore eliminazione profilo</string>
+<string name="profile_deleted">Profilo eliminato</string>
+<string name="profile">Profilo</string>
+<string name="profile_updated">Profilo aggiornato</string>
+<string name="profile_added">Profilo aggiunto</string>
+<string name="profile_add">Aggiungi profilo</string>
+<string name="profile_not_added">Impossibile aggiungere profilo</string>
+<string name="profile_not_updated">Impossibile aggiornare profilo</string>
+<string name="no_list_item">Nessun elemento da visualizzare...</string>
+<string name="locations_default_fallback">Errore caricamento percorso, ripristino predefinito:</string>
+<string name="tags">Etichette</string>
+<string name="screenshot">Schermata</string>
+<string name="host_empty">Il nome sistema non può essere vuoto!</string>
+<string name="standby">Standby</string>
+<string name="powerup">Accensione</string>
+<string name="restart_gui">Riavvia GUI</string>
+<string name="reboot">Riavvia</string>
+<string name="shutdown">Spegni</string>
+<string name="powercontrol">Gestione stato</string>
+<string name="choose_tags">Scegli etichette</string>
+<string name="choose_location">Scegli percorso</string>
+<string name="bouquet_overview">Sommario pacchetti</string>
+<string name="set_default">Imposta come predefinito</string>
+<string name="default_bouquet_set_to">Pacchetto predefinito impostato a: </string>
+<string name="default_bouquet_not_set">Impossibile impostare il paccheto predefinito!</string>
+<string name="loading">Caricamento...</string>
+<string name="about">Info</string>
+<string name="license">LICENZA:\nLicenziato sotto i termini della Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">Codice sorgente disponibile in: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Profilo attivo</string>
+<string name="connection_state">Stato connessione</string>
+<string name="not_available">Non disponibile</string>
+<string name="checking">verifica...</string>
+<string name="error">ERRORE!</string>
+<string name="check_connectivity">Verifica connettività</string>
+<string name="version_too_low">Versione &lt; 1.6</string>
+<string name="connection_error">Errore connessione</string>
+<string name="port_out_of_range">La porta non può essere tra 1 e 65535</string>
+<string name="illegal_host">Nome sistema non valido</string>
+<string name="edit_timer">Modifica timer</string>
+<string name="cleaning_timerlist">Cancellazione elenco timer</string>
+<string name="cleanup">Cancella</string>
+<string name="in_standby">Dispositivo in modalità Standby</string>
+<string name="is_running">Dispositivo in esecuzione</string>
+<string name="stream">Trasmetti</string>
+<string name="install_vplayer">La trasmissione richiede che vPlayer sia installato</string>
+<string name="stream_host">Nome sistema/IP trasmissione</string>
+<string name="stream_host_long">Nome sistema/IP per la trasmissione (opzionale)</string>
+<string name="stream_current">Trasmissione attuale</string>
+<string-array name="timer_state">
+<item>attendere...</item>
+<item>preparazione...</item>
+<item>esecuzione...</item>
+<item>fine</item>
+<item>disabilitato</item>
+</string-array>
+<string-array name="timer_action">
+<item>registra</item>
+<item>cambia</item>
+</string-array>
+<string name="sleeptimer">Timer spegnimento</string>
 </resources>

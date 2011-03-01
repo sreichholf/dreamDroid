@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Omschrijving</string>
+<string name="title">Titel</string>
+<string name="we">Wo</string>
+<string name="tue">Di</string>
+<string name="mo">Ma</string>
+<string name="app_name">DreamDroid</string>
+<string name="menu_timer">Timer</string>
+<string name="menu_timer_desc">Toon, voeg toe en verander timers</string>
+<string name="menu_movies">Films</string>
+<string name="menu_movies_desc">Lijst van beschikbare opnames</string>
+<string-array name="servicelist">
+<item>Boeketten (TV)</item>
+<item>Provider (TV)</item>
+<item>Alle Kanalen (TV)</item>
+<item>Boeketten (Radio)</item>
+<item>Provider (Radio)</item>
+<item>Alles (Radio)</item>
+</string-array>
+<string name="timer">Timer</string>
+<string name="service">Kanaal</string>
+<string name="afterevent">Afterevent</string>
+<string name="location">Lokatie</string>
+<string-array name="afterevents">
+<item>Niets</item>
+<item>Slaapstand</item>
+<item>Diepe Slaapstand</item>
+<item>Automatisch</item>
+</string-array>
+<string name="begin_time">Begintijd</string>
+<string name="repeatings">Herhalingen</string>
+<string name="end_time">Eindtijd</string>
+<string name="services">Kanalen</string>
+<string name="movies">Films</string>
+<string name="device_info">Apparaat Informatie</string>
+<string name="exit">Verlaat</string>
+<string name="send_message">Stuur Bericht</string>
+
+<string name="save">Opslaan</string>
+<string name="cancel">Annuleren</string>
+<string name="fetching_data">Ophalen data...</string>
+<string name="parsing">Verwerken...</string>
+<string name="get_content_error">Fout in ophalen inhoud!</string>
+<string name="zap">Zap</string>
+<string name="browse_epg">Bekijk Gids (EPG)</string>
+<string name="edit">Bewerk</string>
+<string name="delete">Verwijder</string>
+<string name="epg">Gids (EPG)</string>
+<string name="ssl_enabled">Schakel SSL in</string>
+<string name="host">Hostname/IP</string>
+<string name="port">Poort</string>
+<string name="settings">Instellingen</string>
+<string name="host_long">Hostname of IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="ssl_enabled_long">Schakel ssl beveiligde verbinding in (https)</string>
+<string name="close">Sluit</string>
+<string name="minutes_short">min.</string>
+<string name="user">Gebruiker</string>
+<string name="user_long">Gebruikersnaam voor login</string>
+<string name="pass">Paswoord</string>
+<string name="pass_long">Paswoord voor login</string>
+<string name="saving">Opslaan. Even geduld...</string>
+<string name="deleting">Verwijderen. Even geduld...</string>
+<string name="delete_confirm">Echt verwijderen?</string>
+<string name="set_timer">Aktiveer Timer</string>
+<string name="home">Beginpagina</string>
+<string name="pick_action">Kies een aktie</string>
+<string name="set_time_begin">Startdatum en uur</string>
+<string name="set_time_end">Einddatum en uur</string>
+<string name="apply">Uitvoeren</string>
+<string name="reload">Herladen</string>
+<string-array name="weekdays_short">
+<item>Ma</item>
+<item>Di</item>
+<item>Wo</item>
+<item>Do</item>
+<item>Vr</item>
+<item>Za</item>
+<item>Zo</item>
+</string-array>
+<string-array name="weekdays">
+<item>Maandag</item>
+<item>Dinsdag</item>
+<item>Woensdag</item>
+<item>Donderdag</item>
+<item>Vrijdag</item>
+<item>Zaterdag</item>
+<item>Zondag</item>
+</string-array>
+<string name="none">Geen</string>
+<string name="choose_days">Kies dagen</string>
+<string name="mo_to_fr">Maandag tot Vrijdag</string>
+<string name="daily">Dagelijks</string>
+<string name="new_timer">Nieuwe Timer</string>
+<string name="locations">Lokaties</string>
+<string name="gui_version">Grafische versie</string>
+<string name="image_version">Afbeelding versie</string>
+<string name="interface_version">Interface versie</string>
+<string name="front_processor_version">Frontprocessor versie</string>
+<string name="device_name">Toestelnaam</string>
+<string name="frontends">Frontend</string>
+<string name="nics">Netwerkinterfaces</string>
+<string name="hdds">Harddisks</string>
+<string name="not_implemented">Deze functie is nog niet aanwezig!</string>
+<string name="current_event">Huidige gebeurtenis</string>
+<string name="timeout">Timeout</string>
+<string name="message">Bericht</string>
+<string name="message_text_hint">Voer je berichttekst in</string>
+<string name="send">Zend</string>
+<string name="type">Type</string>
+<string-array name="message_types">
+<item>Ja</item>
+<item>Neen</item>
+<item>Waarschuwing</item>
+<item>Info</item>
+</string-array>
+<string name="virtual_remote">Virtuele Afstandsbediening</string>
+<string name="login_enabled">Login Toestaan</string>
+<string name="login_enabled_long">Login toestaan voor toegang vanop afstand</string>
+<string name="wait_request_finished">Wacht aub tot de lopende aanvraag afgelopen is!</string>
+<string name="current_service">Huidige</string>
+<string name="provider">Provider</string>
+<string name="now">Nu</string>
+<string name="next">Volgende</string>
+<string name="epg_search">Gids-Zoeken</string>
+<string name="epg_search_hint">Doorzoek Gids</string>
+<string name="standard">Standaard Layout</string>
+<string name="quickzap">SnelZap Layout</string>
+<string name="no_epg_available">Er is momenteel geen Gids informatie beschikbaar voor dit kanaal!</string>
+<string name="ok">OK</string>
+<string name="connection_profiles">Gekoppelde Profielen</string>
+<string name="activate">Aktiveer</string>
+<string name="confirm_delete_profile">Wil U dit profiel echt verwijderen?</string>
+<string name="profile_activated">Geaktiveerd Profiel</string>
+<string name="profile_not_activated">Fout bij aktiveren profiel</string>
+<string name="profile_not_deleted">Fout bij verwijderen profiel</string>
+<string name="profile_deleted">Verwijderd profiel</string>
+<string name="profile">Profiel</string>
+<string name="profile_updated">Profiel aangepast</string>
+<string name="profile_added">Profiel toegevoegd</string>
+<string name="profile_add">Profiel toevoegen</string>
+<string name="profile_not_added">Kan profiel niet toevoegen</string>
+<string name="profile_not_updated">Kan profiel niet aanpassen</string>
+<string name="no_list_item">Geen gegevens toonbaar</string>
+<string name="locations_default_fallback">Fout in laden lokaties, val terug op standaard:</string>
+<string name="tags">Tags</string>
+<string name="screenshot">Schermdump</string>
+<string name="host_empty">De hostnaam kan niet leeg zijn</string>
+<string name="standby">Slaapstand</string>
+<string name="powerup">Opstarten</string>
+<string name="restart_gui">Herstart GUI</string>
+<string name="reboot">Herstart</string>
+<string name="shutdown">Afsluiten</string>
+<string name="powercontrol">Power Controle</string>
+<string name="choose_tags">Kies tags</string>
+<string name="choose_location">Kies lokatie</string>
+<string name="bouquet_overview">Boeket overzicht</string>
+<string name="set_default">Zet als standaard</string>
+<string name="default_bouquet_set_to">Standaardboeket is:</string>
+<string name="default_bouquet_not_set">Standaardboeket kan niet ingesteld worden!</string>
+<string name="loading">Laden...</string>
+<string name="about">Over</string>
+<string name="license">Licentie:\nGelicentieerd onder de Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">Broncode beschikbaar op http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Aktief profiel</string>
+<string name="connection_state">Verbindingsstatus</string>
+<string name="not_available">Niet beschikbaar</string>
+<string name="checking">controleren...</string>
+<string name="error">FOUT!</string>
+<string name="check_connectivity">Test verbinding</string>
+<string name="version_too_low">Versie &lt; 1.6</string>
+<string name="connection_error">Verbindingsfout</string>
+<string name="port_out_of_range">Poort niet tussen 1 en 65535</string>
+<string name="illegal_host">Niet toegestane host</string>
+<string name="edit_timer">Bewerk Timer</string>
+<string name="cleaning_timerlist">Opschonen timerlijst</string>
+<string name="cleanup">Opschonen</string>
+<string name="in_standby">Toestel is nu in Slaaptoestand</string>
+<string name="is_running">Toestel is nu in bedrijf</string>
+<string name="stream">Stream</string>
+<string name="install_vplayer">Om te streamen moet vPlayer geinstalleerd zijn</string>
+<string name="stream_host">Streamen van Hostnaam/IP</string>
+<string name="stream_host_long">Host/IP  voor streamen (optioneel)</string>
+<string name="stream_current">Stream huidige</string>
+<string-array name="timer_state">
+<item>wachten...</item>
+<item>voorbereid...</item>
+<item>lopend...</item>
+<item>gestopt</item>
+<item>uitgeschakeld</item>
+</string-array>
+<string-array name="timer_action">
+<item>opnemen</item>
+<item>zap</item>
+</string-array>
+<string name="sleeptimer">SlaapTimer</string>
+</resources>

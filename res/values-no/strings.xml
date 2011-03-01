@@ -6,26 +6,26 @@
 <string name="tue">Tir</string>
 <string name="mo">Man</string>
 <string name="app_name">DreamDroid</string>
-<string name="menu_timer">Timer</string>
+<string name="menu_timer">Hendelser</string>
 <string name="menu_timer_desc">Vis, legg til og rediger </string>
 <string name="menu_movies">Filmer</string>
 <string name="menu_movies_desc">Liste over tilgjengelige opptak</string>
 <string-array name="servicelist">
-<item>Bouquets (TV)</item>
+<item>Grupper (TV)</item>
 <item>Tilbyder (TV)</item>
 <item>Alle Kanaler (TV)</item>
-<item>Bouquets (Radio)</item>
+<item>Grupper (Radio)</item>
 <item>Tilbyder (Radio)</item>
 <item>Alle (Radio)</item>
 </string-array>
-<string name="timer">Timer</string>
+<string name="timer">Hendelse</string>
 <string name="service">Kanal</string>
-<string name="afterevent">Etter hendelse</string>
+<string name="afterevent">Etter Hendelse</string>
 <string name="location">Plassering</string>
 <string-array name="afterevents">
 <item>Ingenting</item>
-<item>Ventemodus</item>
-<item>Dyp Ventemodus</item>
+<item>Dvale</item>
+<item>Dyp Dvale</item>
 <item>Automatisk</item>
 </string-array>
 <string name="begin_time">Start tid</string>
@@ -35,14 +35,14 @@
 <string name="movies">Filmer</string>
 <string name="device_info">Enhets Informasjon</string>
 <string name="exit">Avslutt</string>
-<string name="send_message">Send Beskjed</string>
+<string name="send_message">Send Melding</string>
 
 <string name="save">Lagre</string>
 <string name="cancel">Avbryt</string>
 <string name="fetching_data">Henter data...</string>
 <string name="parsing">Behandler...</string>
 <string name="get_content_error">Feil ved henting av innhold!</string>
-<string name="zap">Skift</string>
+<string name="zap">Se på</string>
 <string name="browse_epg">Bla i EPG</string>
 <string name="edit">Rediger</string>
 <string name="delete">Slett</string>
@@ -64,7 +64,7 @@
 <string name="saving">Lagrer. Venligst vent...</string>
 <string name="deleting">Sletter. Venligst vent...</string>
 <string name="delete_confirm">Virkelig slette?</string>
-<string name="set_timer">Velg Timer</string>
+<string name="set_timer">Legg til Hendelse</string>
 <string name="home">Hjem</string>
 <string name="pick_action">Velg en handling</string>
 <string name="set_time_begin">Start dato og tid</string>
@@ -93,10 +93,10 @@
 <string name="choose_days">Velg dager</string>
 <string name="mo_to_fr">Mandag til Fredag</string>
 <string name="daily">Daglig</string>
-<string name="new_timer">Ny Timer</string>
+<string name="new_timer">Ny Hendelse</string>
 <string name="locations">Plasseringer</string>
 <string name="gui_version">GUI versjon</string>
-<string name="image_version">Bilde versjon</string>
+<string name="image_version">Image versjon</string>
 <string name="interface_version">Grensesnitt versjon</string>
 <string name="front_processor_version">Frontprosessor versjon</string>
 <string name="device_name">Enhetsnavn</string>
@@ -104,12 +104,12 @@
 <string name="nics">Nettverkskort</string>
 <string name="hdds">Harddisker</string>
 <string name="not_implemented">Denne funksjonen er ikke implentert, ennå!</string>
-<string name="current_event">Nåværende </string>
-<string name="timeout">Tidsavbrudd</string>
-<string name="message">Beskjed</string>
-<string name="message_text_hint">Skriv beskjed</string>
+<string name="current_event">Viser nå</string>
+<string name="timeout">Tid</string>
+<string name="message">Melding</string>
+<string name="message_text_hint">Skriv melding</string>
 <string name="send">Send</string>
-<string name="type">Skriv</string>
+<string name="type">Type</string>
 <string-array name="message_types">
 <item>Ja/Nei</item>
 <item>Advarsel</item>
@@ -120,7 +120,7 @@
 <string name="login_enabled">Aktiver Innlogging</string>
 <string name="login_enabled_long">Aktiver innlogging for fjerntilgang</string>
 <string name="wait_request_finished">Vennligst vent til den kjørende forespørselen er ferdig!</string>
-<string name="current_service">Nåværende</string>
+<string name="current_service">Aktuell</string>
 <string name="provider">Tilbyder</string>
 <string name="now">Nå</string>
 <string name="next">Neste</string>
@@ -148,18 +148,18 @@
 <string name="tags">Tags</string>
 <string name="screenshot">Skjermbilde</string>
 <string name="host_empty">Vertsnavn kan ikke være tomt!</string>
-<string name="standby">Hvilemodus</string>
+<string name="standby">Dvale</string>
 <string name="powerup">Slå på</string>
 <string name="restart_gui">Restart GUI</string>
 <string name="reboot">Start på nytt</string>
 <string name="shutdown">Slå av</string>
-<string name="powercontrol">Strøm styring</string>
+<string name="powercontrol">Strømstyring</string>
 <string name="choose_tags">Velg tags</string>
 <string name="choose_location">Velg plassering</string>
-<string name="bouquet_overview">Bouquet oversikt</string>
+<string name="bouquet_overview">Gruppeoversikt</string>
 <string name="set_default">Sett som standard</string>
-<string name="default_bouquet_set_to">Standard bouquet er valgt til:</string>
-<string name="default_bouquet_not_set">Standard bouquet kunne ikke velges!</string>
+<string name="default_bouquet_set_to">Standard gruppe er valgt til:</string>
+<string name="default_bouquet_not_set">Standard gruppe kunne ikke velges!</string>
 <string name="loading">Laster...</string>
 <string name="about">Om</string>
 <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
@@ -170,20 +170,20 @@
 <string name="checking">sjekker...</string>
 <string name="error">FEIL!</string>
 <string name="check_connectivity">Sjekk tilkobling</string>
-<string name="version_too_low">Versjon &lt; 1.6.5</string>
+<string name="version_too_low">Versjon &lt; 1.6</string>
 <string name="connection_error">Tilkoblingsfeil</string>
 <string name="port_out_of_range">Port ikke mellom 1 og 65535</string>
 <string name="illegal_host">Ugyldig vert</string>
-<string name="edit_timer">Rediger Timer</string>
-<string name="cleaning_timerlist">Rensker timer liste</string>
-<string name="cleanup">Rensk</string>
-<string name="in_standby">Enhet er ikke i Standby modus</string>
-<string name="is_running">Enhet kjører</string>
+<string name="edit_timer">Rediger Hendelse</string>
+<string name="cleaning_timerlist">Rydder Hendelser</string>
+<string name="cleanup">Opprydding</string>
+<string name="in_standby">Enheten er nå i Dvale</string>
+<string name="is_running">Enheten er nå i drift</string>
 <string name="stream">Stream</string>
 <string name="install_vplayer">Streaming forutssetter at vPlayer er installert</string>
 <string name="stream_host">Streaming Vertsnavn/IP</string>
 <string name="stream_host_long">Vert/IP for streaming (valgfritt)</string>
-<string name="stream_current">Stream nåværende</string>
+<string name="stream_current">Stream Aktuell</string>
 <string-array name="timer_state">
 <item>venter...</item>
 <item>forberedt...</item>
@@ -192,7 +192,8 @@
 <item>deaktivert</item>
 </string-array>
 <string-array name="timer_action">
-<item>opptak</item>
-<item>skift</item>
+<item>spill inn</item>
+<item>bytt til</item>
 </string-array>
+<string name="sleeptimer">Innsovning</string>
 </resources>
