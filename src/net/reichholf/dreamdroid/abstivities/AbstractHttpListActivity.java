@@ -330,6 +330,8 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		if (mShc == null) {
 			setClient();
 		}
+		
+		getListView().setFastScrollEnabled(true);
 	}
 
 	/*
