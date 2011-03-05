@@ -17,4 +17,12 @@ public class ExtrasActivity extends MainActivity {
 		getIntent().putExtra("extras", true);
 		super.onCreate(savedInstanceState);
 	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onResume()
+	 */
+	protected void onResume (){		
+		super.setAvailableFeatures();
+		super.onResume();
+	}
 }

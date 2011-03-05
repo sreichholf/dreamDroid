@@ -100,8 +100,7 @@ public class TabbedNavigationActivity extends TabActivity {
 		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
 		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
 
-		setProfileName();
-		checkActiveProfile();
+		onProfileChanged();
 	}
 
 	/**
@@ -122,13 +121,19 @@ public class TabbedNavigationActivity extends TabActivity {
 	/**
 	 * 
 	 */
-	public void checkActiveProfile() {
+	public void checkActiveProfile() {		
 		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
 		}
 
 		mCheckProfileTask = new CheckProfileTask();
 		mCheckProfileTask.execute();
+	}
+	
+	public void onProfileChanged(){
+		setProfileName();
+		checkActiveProfile();
+		
 	}
 
 	/**

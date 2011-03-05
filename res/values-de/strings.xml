@@ -144,6 +144,8 @@
 <string name="profile_not_added">Profil konnte nicht hinzugefügt werden</string>
 <string name="profile_not_updated">Profil konnte nicht aktualisiert werden</string>
 <string name="no_list_item">Es wurden keine Listeneinträge gefunden...</string>
+<string name="locations_default_fallback">Fehler beim Laden von Orten, benutzt wird stattdessen der Standardwert :</string>
+<string name="tags">Tags</string>
 <string name="screenshot">Screenshot</string>
 <string name="host_empty">Der Hostname darf nicht leer sein!</string>
 <string name="standby">Standby</string>
@@ -182,6 +184,7 @@
 <string name="stream_host">Streaming Hostname/IP</string>
 <string name="stream_host_long">Host/IP für Streaming (optional)</string>
 <string name="stream_current">Streame laufendes Programm</string>
+<string name="similar">Ähnliche Sendungen</string>
 <string-array name="timer_state">
 <item>wartet...</item>
 <item>vorbereiten...</item>
@@ -193,6 +196,7 @@
 <item>aufnehmen</item>
 <item>umschalten</item>
 </string-array>
+<string name="sleeptimer">Abschalttimer</string>
 <string name="current_volume">Lautstärke ist nun bei %s</string>
 <string name="muted">Stumm</string>
 <string name="enable_volume_control">Lautstärkeregulierung aktivieren</string>

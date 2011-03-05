@@ -23,7 +23,6 @@ import net.reichholf.dreamdroid.widget.NumberPicker;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -63,7 +62,6 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_MESSAGE = 4;
 	public static final int ITEM_REMOTE = 5;
 	public static final int ITEM_SETTINGS = 6;
-	public static final int ITEM_PROFILES = 7;
 	public static final int ITEM_CURRENT = 8;
 	public static final int ITEM_EPG_SEARCH = 9;
 	public static final int ITEM_SCREENSHOT = 10;
@@ -487,23 +485,6 @@ public class MainActivity extends AbstractHttpActivity {
 		return dialog;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onActivityResult(int, int,
-	 * android.content.Intent)
-	 */
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == EDIT_PROFILES_REQUEST) {
-			mParent.setProfileName();
-
-			if (resultCode == Activity.RESULT_OK) {
-				mParent.checkActiveProfile();
-			}
-		}
-	}
-
 	/**
 	 * Execute the proper action for a item ID (<code>ITEM_*</code> statics)
 	 * 
@@ -553,11 +534,6 @@ public class MainActivity extends AbstractHttpActivity {
 		case ITEM_SETTINGS:
 			intent = new Intent(this, DreamDroidPreferenceActivity.class);
 			startActivity(intent);
-			return true;
-
-		case ITEM_PROFILES:
-			intent = new Intent(this, ProfileListActivity.class);
-			startActivityForResult(intent, EDIT_PROFILES_REQUEST);
 			return true;
 
 		case ITEM_MESSAGE:
