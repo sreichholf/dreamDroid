@@ -305,7 +305,7 @@ public class MainActivity extends AbstractHttpActivity {
 		mSleepTimer = new ExtendedHashMap();
 
 		mParent = (TabbedNavigationActivity) getParent();
-		if(mParent == null){
+		if(mParent == null){ //For backwards compat, please do not remove this code! 
 			showToast(getString(R.string.wrong_activity));
 			Intent intent = new Intent(this, TabbedNavigationActivity.class);
 			startActivity(intent);
