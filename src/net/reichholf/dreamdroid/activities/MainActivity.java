@@ -307,6 +307,8 @@ public class MainActivity extends AbstractHttpActivity {
 		mParent = (TabbedNavigationActivity) getParent();
 		if(mParent == null){
 			showToast(getString(R.string.wrong_activity));
+			Intent intent = new Intent(this, TabbedNavigationActivity.class);
+			startActivity(intent);
 			finish();
 		}
 	}
