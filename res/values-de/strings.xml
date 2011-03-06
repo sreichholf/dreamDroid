@@ -207,4 +207,5 @@
 <string name="profiles">Profile</string>
 <string name="enable_instant_zap">Direkt umschalten</string>
 <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
+<string name="reinstall">Unerwarteter Fehler im TabView. Bitte deinstallieren Sie dreamDroid und installieren Sie es erneut vom Market.</string>
 </resources>
