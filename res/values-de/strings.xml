@@ -2,14 +2,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 <string name="description">Beschreibung</string>
 <string name="title">Titel</string>
-<string name="we">Mi</string>
-<string name="tue">Di</string>
 <string name="mo">Mo</string>
 <string name="app_name">DreamDroid</string>
-<string name="menu_timer">Timer</string>
-<string name="menu_timer_desc">Timer anzeigen, hinzufügen und ändern</string>
-<string name="menu_movies">Filme</string>
-<string name="menu_movies_desc">Liste verfügbarer Filme</string>
 <string-array name="servicelist">
 <item>Bouquets (TV)</item>
 <item>Provider (TV)</item>
@@ -34,7 +28,6 @@
 <string name="services">Kanäle</string>
 <string name="movies">Filme</string>
 <string name="device_info">Geräte-Info</string>
-<string name="exit">Exit</string>
 <string name="send_message">Nachricht senden</string>
 
 <string name="save">Speichern</string>
@@ -54,7 +47,6 @@
 <string name="host_long">Hostname oder IP</string>
 <string name="port_long">Listening Port
 </string>
-<string name="ssl_enabled_long">SSL-gesicherte Verbindung aktivieren</string>
 <string name="close">Schließen</string>
 <string name="minutes_short">min.</string>
 <string name="user">Benutzer</string>
@@ -118,7 +110,6 @@
 </string-array>
 <string name="virtual_remote">Virt. Fern-\nbedienung</string>
 <string name="login_enabled">Login aktivieren</string>
-<string name="login_enabled_long">Login für den Fernzugriff aktivieren</string>
 <string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
 <string name="current_service">Es läuft</string>
 <string name="provider">Provider</string>
@@ -130,7 +121,6 @@
 <string name="quickzap">QuickZap-Layout</string>
 <string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur Verfügung!</string>
 <string name="ok">OK</string>
-<string name="connection_profiles">Verbindungsprofile</string>
 <string name="activate">Aktivieren</string>
 <string name="confirm_delete_profile">Wollen Sie dieses Profil wirklich löschen?</string>
 <string name="profile_activated">Profil aktiviert</string>

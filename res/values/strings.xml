@@ -2,14 +2,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 	<string name="description">Description</string>
 	<string name="title">Title</string>
-	<string name="we">We</string>
-	<string name="tue">Tue</string>
 	<string name="mo">Mo</string>
 	<string name="app_name">DreamDroid</string>
-	<string name="menu_timer">Timer</string>
-	<string name="menu_timer_desc">Show, add and edit timers</string>
-	<string name="menu_movies">Movies</string>
-	<string name="menu_movies_desc">A list of available recordings</string>
 	<string-array name="servicelist">
 		<item>Bouquets (TV)</item>
 		<item>Provider (TV)</item>
@@ -34,7 +28,6 @@
 	<string name="services">Services</string>
 	<string name="movies">Movies</string>
 	<string name="device_info">Device Information</string>
-	<string name="exit">Exit</string>
 	<string name="send_message">Send Message</string>
 	
 	<string name="save">Save</string>
@@ -54,7 +47,6 @@
 	<string name="host_long">Hostname or IP</string>
 	<string name="port_long">Listening Port
 	</string>
-	<string name="ssl_enabled_long">Enable ssl secured connection (https)</string>
 	<string name="close">Close</string>
 	<string name="minutes_short">min.</string>
 	<string name="user">User</string>
@@ -118,7 +110,6 @@
 	</string-array>
 	<string name="virtual_remote">Virtual Remote</string>
 	<string name="login_enabled">Enable Login</string>
-	<string name="login_enabled_long">Enable login for remote access</string>
 	<string name="wait_request_finished">Please wait until the running request has finished!</string>
 	<string name="current_service">Current</string>
 	<string name="provider">Provider</string>
@@ -130,7 +121,6 @@
 	<string name="quickzap">QuickZap Layout</string>
 	<string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
 	<string name="ok">OK</string>
-	<string name="connection_profiles">Connection Profiles</string>
 	<string name="activate">Activate</string>
 	<string name="confirm_delete_profile">Do you really want to delete this profile?</string>
 	<string name="profile_activated">Activated profile</string>
