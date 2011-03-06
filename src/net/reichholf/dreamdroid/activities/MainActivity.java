@@ -303,7 +303,11 @@ public class MainActivity extends AbstractHttpActivity {
 		}
 		
 		mSleepTimer = new ExtendedHashMap();
+
 		mParent = (TabbedNavigationActivity) getParent();
+		if(mParent == null){
+			showToast(getText(R.string.reinstall));
+		}
 	}
 
 	/*
