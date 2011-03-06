@@ -64,6 +64,10 @@ public class ProfileListActivity extends ListActivity {
 		});
 		
 		mParent = (TabbedNavigationActivity) getParent();
+		if(mParent == null){
+			showToast(getString(R.string.wrong_activity));
+			finish();
+		}
 	}
 
 	/*

@@ -207,5 +207,5 @@
 	<string name="profiles">Profiles</string>
 	<string name="enable_instant_zap">Instant zap</string>
 	<string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
-	<string name="reinstall">Unexpected error with Tabview, please uninstall dreamDroid and install it again!</string>
+	<string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
 </resources>
