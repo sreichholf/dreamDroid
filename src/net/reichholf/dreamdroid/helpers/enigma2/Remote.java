@@ -34,7 +34,8 @@ public class Remote extends SimpleResult{
 	public static final int KEY_INFO = 358;
 	public static final int KEY_MENU = 139;
 	public static final int KEY_HELP = 138;
-	public static final int KEY_PVR = 393;	
+	public static final int KEY_PVR = 393;
+	public static final int KEY_AUDIO = 392;
 	public static final int KEY_UP = 103;
 	public static final int KEY_DOWN = 108;
 	public static final int KEY_LEFT = 105;

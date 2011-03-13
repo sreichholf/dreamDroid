@@ -68,6 +68,19 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		{ R.id.ButtonYellow, Remote.KEY_YELLOW },
 		{ R.id.ButtonBlue, Remote.KEY_BLUE }
 	};
+	
+	private final int[][] mButtonsExtended = {
+		{ R.id.ButtonRwd, Remote.KEY_REWIND },
+		{ R.id.ButtonPlay, Remote.KEY_PLAY },
+		{ R.id.ButtonStop, Remote.KEY_STOP },
+		{ R.id.ButtonFwd, Remote.KEY_FORWARD },
+		{ R.id.ButtonRec, Remote.KEY_RECORD }
+	};
+	
+	private final int[][] mButtonsSimple = {
+		{ R.id.ButtonAudio, Remote.KEY_AUDIO }
+	};
+	
 	private final int[][] mButtonsStandard = {
 		{ R.id.Button1, Remote.KEY_1 },
 		{ R.id.Button2, Remote.KEY_2 },
@@ -80,18 +93,14 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		{ R.id.Button9, Remote.KEY_9 },
 		{ R.id.Button0, Remote.KEY_0 },
 		{ R.id.ButtonLeftArrow, Remote.KEY_PREV },
-		{ R.id.ButtonRightArrow, Remote.KEY_NEXT },
-		{ R.id.ButtonRwd, Remote.KEY_REWIND },
-		{ R.id.ButtonPlay, Remote.KEY_PLAY },
-		{ R.id.ButtonStop, Remote.KEY_STOP },
-		{ R.id.ButtonFwd, Remote.KEY_FORWARD },
+		{ R.id.ButtonRightArrow, Remote.KEY_NEXT },		
 		{ R.id.ButtonTv, Remote.KEY_TV },
 		{ R.id.ButtonRadio, Remote.KEY_RADIO },
-		{ R.id.ButtonText, Remote.KEY_TEXT },
-		{ R.id.ButtonRec, Remote.KEY_RECORD }
+		{ R.id.ButtonText, Remote.KEY_TEXT }		
 	};
 
 	private boolean mQuickZap;
+	private boolean mSimpleRemote;
 	private String mBaseTitle;
 	private SharedPreferences mPrefs;
 	private SharedPreferences.Editor mEditor;
@@ -115,6 +124,9 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
+		
+		mSimpleRemote = DreamDroid.PROFILE.isSimpleRemote();
+		
 		mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		reinit();
 	}
@@ -190,16 +202,19 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 			setContentView(R.layout.virtual_remote_quick_zap);
 			mBaseTitle = getString(R.string.app_name) + " - " + getString(R.string.quickzap);			
 		} else {
-			setContentView(R.layout.virtual_remote);
+			if(mSimpleRemote){
+				setContentView(R.layout.virtual_remote_simple);
+				registerButtons(mButtonsSimple);
+			} else {
+				setContentView(R.layout.virtual_remote);
+				registerButtons(mButtonsExtended);
+			}
+			registerButtons(mButtonsStandard);
 			mBaseTitle = getString(R.string.app_name) + " - " + getString(R.string.virtual_remote);
 		}
+		registerButtons(mButtonsCommon);
 		setTitle(mBaseTitle);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-		registerButtons(mButtonsCommon);
-		if (!mQuickZap) {
-			registerButtons(mButtonsStandard);
-		}
 	}
 
 	/**
@@ -248,6 +263,11 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
+		if(mSimpleRemote){
+			params.add(new BasicNameValuePair("rcu", "standard"));
+		} else {
+			params.add(new BasicNameValuePair("rcu", "advanced"));
+		}
 		if (longClick) {
 			params.add(new BasicNameValuePair("type", Remote.CLICK_TYPE_LONG));
 		}

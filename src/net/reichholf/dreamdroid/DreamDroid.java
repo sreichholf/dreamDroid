@@ -60,9 +60,10 @@ public class DreamDroid extends Application {
 	public static final String KEY_USER = "user";
 	public static final String KEY_PASS = "pass";
 	public static final String KEY_SSL = "ssl";
+	public static final String KEY_SIMPLE_REMOTE = "simpleremote";
 
 	private static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 4;
 	private static final String PROFILES_TABLE_NAME = "profiles";
 	private static final String PROFILES_TABLE_CREATE =
 
@@ -70,11 +71,14 @@ public class DreamDroid extends Application {
 			+ " INTEGER PRIMARY KEY, " + KEY_PROFILE + " TEXT, " + KEY_HOST
 			+ " TEXT, " + KEY_STREAM_HOST + " TEXT, " + KEY_PORT + " INTEGER, " + KEY_LOGIN + " BOOLEAN, "
 			+ KEY_USER + " TEXT, " + KEY_PASS + " TEXT, " + KEY_SSL
-			+ " BOOLEAN " + ");";
+			+ " BOOLEAN " + KEY_SIMPLE_REMOTE + " BOOLEAN );";
 
 	
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME 
 			+ " ADD " + KEY_STREAM_HOST + " TEXT;";
+	
+	private static final String PROFILES_TABLE_UPGRADE_3_4 = "ALTER TABLE " + PROFILES_TABLE_NAME 
+	+ " ADD " + KEY_SIMPLE_REMOTE + " BOOLEAN;";
 	
 	/**
 	 * @param context
@@ -121,6 +125,10 @@ public class DreamDroid extends Application {
 		if (DB.needUpgrade(DATABASE_VERSION)) {
 			if(DB.getVersion() == 2){
 				DB.execSQL(PROFILES_TABLE_UPGRADE_2_3);
+				DB.execSQL(PROFILES_TABLE_UPGRADE_3_4);
+				DB.setVersion(DATABASE_VERSION);
+			} else if ( DB.getVersion() == 3){
+				DB.execSQL(PROFILES_TABLE_UPGRADE_3_4);
 				DB.setVersion(DATABASE_VERSION);
 			} else {
 				DB.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME);
@@ -149,7 +157,7 @@ public class DreamDroid extends Application {
 			boolean ssl = DreamDroid.SP.getBoolean("ssl", false);
 
 			String profile = "Default";
-			Profile p = new Profile(profile, host, streamHost, port, login, user, pass, ssl);
+			Profile p = new Profile(profile, host, streamHost, port, login, user, pass, ssl, false);
 			DreamDroid.addProfile(p);
 			
 			SharedPreferences.Editor editor = SP.edit();
@@ -165,7 +173,7 @@ public class DreamDroid extends Application {
 		} else {
 			showToast(getText(R.string.profile_not_activated));
 			//However we got here... we're creating an "do-not-crash-default-profile now
-			PROFILE = new Profile("Default", "dm8000", "", 80, false, "", "", false);
+			PROFILE = new Profile("Default", "dm8000", "", 80, false, "", "", false, false);
 		}
 	}
 
@@ -199,6 +207,7 @@ public class DreamDroid extends Application {
 		values.put(KEY_USER, p.getUser());
 		values.put(KEY_PASS, p.getPass());
 		values.put(KEY_SSL, p.isSsl());
+		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
 
 		if (DB.insert(PROFILES_TABLE_NAME, null, values) > -1) {
 			return true;
@@ -224,14 +233,14 @@ public class DreamDroid extends Application {
 	 */
 	public static Cursor getProfiles() {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT,
-				KEY_LOGIN, KEY_USER, KEY_PASS, KEY_SSL };
+				KEY_LOGIN, KEY_USER, KEY_PASS, KEY_SSL, KEY_SIMPLE_REMOTE };
 		return DB.query(PROFILES_TABLE_NAME, columns, null, null, null, null,
 				KEY_PROFILE);
 	}
 
 	public static Cursor getProfile(int id) {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT,
-				KEY_LOGIN, KEY_USER, KEY_PASS, KEY_SSL };
+				KEY_LOGIN, KEY_USER, KEY_PASS, KEY_SSL, KEY_SIMPLE_REMOTE };
 		return DB.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null,
 				null, null, KEY_PROFILE);
 	}
@@ -249,6 +258,7 @@ public class DreamDroid extends Application {
 		values.put(KEY_USER, p.getUser());
 		values.put(KEY_PASS, p.getPass());
 		values.put(KEY_SSL, p.isSsl());
+		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
 
 		int numRows = DB.update(PROFILES_TABLE_NAME, values,
 				KEY_ID + "=" + p.getId(), null);

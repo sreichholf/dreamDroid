@@ -28,8 +28,10 @@ public class Profile implements Serializable{
 	private String mPass;
 	private boolean mLogin;
 	private boolean mSsl;
+	private boolean mSimpleRemote;
 	private int mId;
 	private int mPort;
+	
 	
 	public Profile(Cursor c){
 		set(c);
@@ -39,24 +41,50 @@ public class Profile implements Serializable{
 		setId(-1);
 	}
 	
-	public Profile(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
-		set(profile, host, streamHost, port, login, user, pass, ssl);
-	}
-	
-	public Profile(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
-		set(profile, host, streamHost, port, login, user, pass, ssl);
-	}
-	
 	/**
 	 * @param profile
 	 * @param host
+	 * @param streamHost
 	 * @param port
 	 * @param login
 	 * @param user
 	 * @param pass
 	 * @param ssl
+	 * @param simpleRemote
 	 */
-	public void set(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
+	public Profile(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
+		set(profile, host, streamHost, port, login, user, pass, ssl, simpleRemote);
+	}
+	
+
+	/**
+	 * @param id
+	 * @param profile
+	 * @param host
+	 * @param streamHost
+	 * @param port
+	 * @param login
+	 * @param user
+	 * @param pass
+	 * @param ssl
+	 * @param simpleRemote
+	 */
+	public Profile(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
+		set(id, profile, host, streamHost, port, login, user, pass, ssl, simpleRemote);
+	}
+	
+	/**
+	 * @param profile
+	 * @param host
+	 * @param streamHost
+	 * @param port
+	 * @param login
+	 * @param user
+	 * @param pass
+	 * @param ssl
+	 * @param simpleRemote
+	 */
+	public void set(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
 		setId(-1);
 		setProfile(profile);
 		setHost(host);
@@ -66,19 +94,23 @@ public class Profile implements Serializable{
 		setUser(user);
 		setPass(pass);
 		setSsl(ssl);
+		setSimpleRemote(simpleRemote);
 	}
 	
+
 	/**
 	 * @param id
 	 * @param profile
 	 * @param host
+	 * @param streamHost
 	 * @param port
 	 * @param login
 	 * @param user
 	 * @param pass
 	 * @param ssl
+	 * @param simpleRemote
 	 */
-	public void set(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl){
+	public void set(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
 		setId(id);
 		setProfile(profile);
 		setHost(host);
@@ -88,6 +120,7 @@ public class Profile implements Serializable{
 		setUser(user);
 		setPass(pass);
 		setSsl(ssl);
+		setSimpleRemote(simpleRemote);
 	}
 	
 	public void set(Cursor c){
@@ -98,7 +131,7 @@ public class Profile implements Serializable{
 		setPass ( c.getString(c.getColumnIndex(DreamDroid.KEY_PASS)) );
 		
 		setId( c.getInt(c.getColumnIndex(DreamDroid.KEY_ID)) );
-		setPort( c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT)) );
+		setPort( c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT)) );		
 		
 		int login = c.getInt(c.getColumnIndex(DreamDroid.KEY_LOGIN));
 		if(login == 1){
@@ -113,7 +146,13 @@ public class Profile implements Serializable{
 		} else {
 			setSsl(false);
 		}
-		
+
+		int simpleRemote = c.getInt(c.getColumnIndex(DreamDroid.KEY_SIMPLE_REMOTE));
+		if(simpleRemote == 1){
+			setSimpleRemote(true);
+		} else {
+			setSimpleRemote(false);
+		}
 	}
 	
 	/**
@@ -166,6 +205,13 @@ public class Profile implements Serializable{
 	 */
 	public void setSsl(boolean ssl) {
 		this.mSsl = ssl;
+	}
+	
+	/**
+	 * @param simpleRemote yes/no
+	 */
+	public void setSimpleRemote(boolean simpleRemote){
+		mSimpleRemote = simpleRemote;
 	}
 
 	/**
@@ -265,6 +311,10 @@ public class Profile implements Serializable{
 	 */
 	public boolean isSsl() {
 		return mSsl;
+	}
+	
+	public boolean isSimpleRemote(){
+		return mSimpleRemote;
 	}
 
 	/**

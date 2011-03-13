@@ -154,7 +154,29 @@
 					android:hint="@string/pass_long" 
 					android:singleLine="true"
 					android:inputType="textPassword"/>
-			</LinearLayout>					
+			</LinearLayout>
+			<LinearLayout 
+		  		android:layout_height="wrap_content" 
+		  		android:id="@+id/LinearLayoutIsSimpleRemote" 
+		  		android:layout_width="fill_parent">	
+				
+				<TextView
+			  		android:id="@+id/TextViewSimpleRemote"
+			  		android:layout_width="fill_parent"
+					android:layout_height="wrap_content"			 
+					android:text="@string/simple_remote" 
+					android:paddingLeft="3dip"
+					android:textSize="18sp" 
+					android:textColor="#FFF"
+					android:layout_marginRight="50dip"/>
+						
+				<CheckBox 
+	 				android:layout_width="wrap_content" 
+	 				android:layout_height="wrap_content" 
+	 				android:id="@+id/CheckBoxSimpleRemote"
+	 				android:layout_marginLeft="-45dip"/>
+			</LinearLayout>
+								
 		</LinearLayout>
 	</ScrollView>
 	<TableLayout		

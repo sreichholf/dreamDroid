@@ -36,9 +36,10 @@ public class ProfileEditActivity extends Activity {
 	private EditText mStreamHost;
 	private EditText mPort;
 	private CheckBox mSsl;
-	private CheckBox mLogin;
+	private CheckBox mLogin;	
 	private EditText mUser;
 	private EditText mPass;
+	private CheckBox mSimpleRemote;
 	private Button mSave;
 	private Button mCancel;
 	private LinearLayout mLayoutLogin;
@@ -53,9 +54,10 @@ public class ProfileEditActivity extends Activity {
 		mStreamHost = (EditText) findViewById(R.id.EditTextStreamHost);
 		mPort = (EditText) findViewById(R.id.EditTextPort);
 		mSsl = (CheckBox) findViewById(R.id.CheckBoxSsl);
-		mLogin = (CheckBox) findViewById(R.id.CheckBoxLogin);
+		mLogin = (CheckBox) findViewById(R.id.CheckBoxLogin);		
 		mUser = (EditText) findViewById(R.id.EditTextUser);
 		mPass = (EditText) findViewById(R.id.EditTextPass);
+		mSimpleRemote = (CheckBox) findViewById(R.id.CheckBoxSimpleRemote);
 
 		mLayoutLogin = (LinearLayout) findViewById(R.id.LinearLayoutLogin);
 		mSave = (Button) findViewById(R.id.ButtonSave);
@@ -111,7 +113,7 @@ public class ProfileEditActivity extends Activity {
 		if (checked) {
 			mLayoutLogin.setVisibility(View.VISIBLE);
 		} else {
-			mLayoutLogin.setVisibility(View.INVISIBLE);
+			mLayoutLogin.setVisibility(View.GONE);
 		}
 	}
 
@@ -127,6 +129,7 @@ public class ProfileEditActivity extends Activity {
 		mLogin.setChecked(mCurrentProfile.isLogin());
 		mUser.setText(mCurrentProfile.getUser());
 		mPass.setText(mCurrentProfile.getPass());
+		mSimpleRemote.setChecked(mCurrentProfile.isSimpleRemote());
 	}
 
 	/**
@@ -140,6 +143,7 @@ public class ProfileEditActivity extends Activity {
 		mCurrentProfile.setLogin(mLogin.isChecked());
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
+		mCurrentProfile.setSimpleRemote(mSimpleRemote.isChecked());
 
 		if (mCurrentProfile.getId() > 0) {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {

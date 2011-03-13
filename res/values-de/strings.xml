@@ -198,4 +198,5 @@
 <string name="enable_instant_zap">Direkt umschalten</string>
 <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
 <string name="wrong_activity">Falsche Activity aufgerufen. Bitte erstellen Sie alle Shortcuts zu dreamDroid neu!</string>
+<string name="simple_remote">Einfache Fernbedienung</string>
 </resources>

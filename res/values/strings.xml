@@ -198,4 +198,5 @@
 	<string name="enable_instant_zap">Instant zap</string>
 	<string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
 	<string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
+	<string name="simple_remote">Simple remote layout</string>
 </resources>
