@@ -6,9 +6,13 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -18,8 +22,12 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -39,6 +47,7 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 	public static final int FORMAT_PNG = 1;
 
 	public static final int ITEM_RELOAD = 0;
+	public static final int ITEM_SAVE = 1;
 
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_FORMAT = "format";
@@ -50,8 +59,7 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 	private int mFormat;
 	private int mSize;
 	private String mFilename;
-	@SuppressWarnings("unused")
-	private byte[] mRawImage;
+	private byte[] mRawImage;	
 	private GetScreenshotTask mGetScreenshotTask;
 	
 	private class GetScreenshotTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
@@ -135,6 +143,7 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, ITEM_SAVE, 0, getText(R.string.save)).setIcon(android.R.drawable.ic_menu_save);
 		return true;
 	}
 
@@ -145,7 +154,14 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		reload();
+		switch(item.getItemId()){
+		case ITEM_RELOAD:
+			reload();
+			break;
+		case ITEM_SAVE:
+			saveToFile();
+		}
+		
 		return true;
 	}
 
@@ -208,5 +224,43 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 		}
 		mGetScreenshotTask = new GetScreenshotTask();
 		mGetScreenshotTask.execute(params);
+	}
+	
+	/**
+	 * 
+	 */
+	private void saveToFile(){
+		if(mRawImage != null){
+			long timestamp = GregorianCalendar.getInstance().getTimeInMillis();
+			
+			File root = Environment.getExternalStorageDirectory();			
+			root = new File(String.format("%s%s%s", root.getAbsolutePath(), File.separator, "media/screenshots"));
+			
+			String extension = "";
+			
+			if(mFormat == FORMAT_JPG){
+				extension = "jpg";
+			} else if (mFormat == FORMAT_PNG){
+				extension = "png";
+			}
+				
+			String fileName = String.format("dreamDroid_%s.%s", timestamp, extension);
+			FileOutputStream out;
+			try {
+				if(!root.exists()){
+					root.mkdirs();
+				}
+				
+				File file = new File(root, fileName);
+				file.createNewFile();
+				out = new FileOutputStream(file);
+				out.write(mRawImage);
+				out.close();
+				showToast(String.format("Screenshot saved to file '%s'", file.getAbsolutePath()));
+			} catch (IOException e) {
+				Log.e(DreamDroid.LOG_TAG, e.getLocalizedMessage());
+				showToast(e.toString());
+			}
+		}		
 	}
 }

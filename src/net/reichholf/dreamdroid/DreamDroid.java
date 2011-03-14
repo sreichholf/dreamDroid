@@ -65,13 +65,13 @@ public class DreamDroid extends Application {
 	private static final String DATABASE_NAME = "dreamdroid";
 	private static final int DATABASE_VERSION = 4;
 	private static final String PROFILES_TABLE_NAME = "profiles";
+	
 	private static final String PROFILES_TABLE_CREATE =
-
-	"CREATE TABLE IF NOT EXISTS " + PROFILES_TABLE_NAME + " (" + KEY_ID
+			"CREATE TABLE IF NOT EXISTS " + PROFILES_TABLE_NAME + " (" + KEY_ID
 			+ " INTEGER PRIMARY KEY, " + KEY_PROFILE + " TEXT, " + KEY_HOST
-			+ " TEXT, " + KEY_STREAM_HOST + " TEXT, " + KEY_PORT + " INTEGER, " + KEY_LOGIN + " BOOLEAN, "
-			+ KEY_USER + " TEXT, " + KEY_PASS + " TEXT, " + KEY_SSL
-			+ " BOOLEAN " + KEY_SIMPLE_REMOTE + " BOOLEAN );";
+			+ " TEXT, " + KEY_STREAM_HOST + " TEXT, " + KEY_PORT + " INTEGER, " 
+			+ KEY_LOGIN + " BOOLEAN, " + KEY_USER + " TEXT, " + KEY_PASS + " TEXT, " 
+			+ KEY_SSL + " BOOLEAN, " + KEY_SIMPLE_REMOTE + " BOOLEAN );";
 
 	
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME 
