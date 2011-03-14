@@ -22,11 +22,12 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaScannerConnection;
+import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -59,7 +60,8 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 	private int mFormat;
 	private int mSize;
 	private String mFilename;
-	private byte[] mRawImage;	
+	private byte[] mRawImage;
+	private MediaScannerConnection mScannerConn;
 	private GetScreenshotTask mGetScreenshotTask;
 	
 	private class GetScreenshotTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
@@ -105,6 +107,27 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 			}
 		}
 	}
+	
+	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {
+
+		/* (non-Javadoc)
+		 * @see android.media.MediaScannerConnection.MediaScannerConnectionClient#onMediaScannerConnected()
+		 */
+		@Override
+		public void onMediaScannerConnected() {
+			return;			
+		}
+
+		/* (non-Javadoc)
+		 * @see android.media.MediaScannerConnection.MediaScannerConnectionClient#onScanCompleted(java.lang.String, android.net.Uri)
+		 */
+		@Override
+		public void onScanCompleted(String arg0, Uri arg1) {
+			return;
+		}
+		
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -131,7 +154,8 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
 		mSize = extras.getInt(KEY_SIZE, 720);
 		mFilename = extras.getString(KEY_FILENAME);
-
+		mScannerConn = new MediaScannerConnection(this, new DummyMediaScannerConnectionClient());
+		mScannerConn.connect();
 		reload();
 	}
 
@@ -256,7 +280,9 @@ public class ScreenShotActivity extends AbstractHttpActivity {
 				out = new FileOutputStream(file);
 				out.write(mRawImage);
 				out.close();
-				showToast(String.format("Screenshot saved to file '%s'", file.getAbsolutePath()));
+				mScannerConn.scanFile(file.getAbsolutePath(), "image/*");
+				showToast(getString(R.string.screenshot_saved, file.getAbsolutePath()));
+				
 			} catch (IOException e) {
 				Log.e(DreamDroid.LOG_TAG, e.getLocalizedMessage());
 				showToast(e.toString());
