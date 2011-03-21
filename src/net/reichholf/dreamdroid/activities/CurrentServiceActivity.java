@@ -179,7 +179,25 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 
 		reload();
 	}	
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putSerializable("currentItem", mCurrentItem);
+		super.onSaveInstanceState(outState);
+	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onRestoreInstanceState(android.os.Bundle)
+	 */
+	@Override
+	public void onRestoreInstanceState(Bundle savedInstanceState) {
+		mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
+		super.onRestoreInstanceState(savedInstanceState);
+	}
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -320,55 +338,59 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 
 		switch (id) {
 		case DIALOG_EPG_ITEM_ID:
-
-			String servicename = mCurrentItem.getString(Event.SERVICE_NAME);
-			String title = mCurrentItem.getString(Event.EVENT_TITLE);
-			String date = mCurrentItem.getString(Event.EVENT_START_READABLE);
-			if (!"N/A".equals(title) && date != null) {
-				date = date.concat(" (" + (String) mCurrentItem.getString(Event.EVENT_DURATION_READABLE) + " "
-						+ getText(R.string.minutes_short) + ")");
-				String descEx = mCurrentItem.getString(Event.EVENT_DESCRIPTION_EXTENDED);
-
-				dialog = new Dialog(this);
-				dialog.setContentView(R.layout.epg_item_dialog);
-				dialog.setTitle(title);
-
-				TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
-				textServiceName.setText(servicename);
-
-				TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
-				textTime.setText(date);
-
-				TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
-				textDescEx.setText(descEx);
-
-				Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
-				buttonSetTimer.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						setTimerById(mCurrentItem);
-						dialog.dismiss();
-					}
-				});
-
-				Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
-				buttonEditTimer.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						setTimerByEventData(mCurrentItem);
-						dialog.dismiss();
-					}
-				});
+			if(mCurrentItem != null){
+				String servicename = mCurrentItem.getString(Event.SERVICE_NAME);
+				String title = mCurrentItem.getString(Event.EVENT_TITLE);
+				String date = mCurrentItem.getString(Event.EVENT_START_READABLE);
+				if (!"N/A".equals(title) && date != null) {
+					date = date.concat(" (" + (String) mCurrentItem.getString(Event.EVENT_DURATION_READABLE) + " "
+							+ getText(R.string.minutes_short) + ")");
+					String descEx = mCurrentItem.getString(Event.EVENT_DESCRIPTION_EXTENDED);
+	
+					dialog = new Dialog(this);
+					dialog.setContentView(R.layout.epg_item_dialog);
+					dialog.setTitle(title);
+	
+					TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
+					textServiceName.setText(servicename);
+	
+					TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
+					textTime.setText(date);
+	
+					TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
+					textDescEx.setText(descEx);
+	
+					Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
+					buttonSetTimer.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							setTimerById(mCurrentItem);
+							dialog.dismiss();
+						}
+					});
+	
+					Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
+					buttonEditTimer.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							setTimerByEventData(mCurrentItem);
+							dialog.dismiss();
+						}
+					});
+				} else {
+					// No EPG Information is available!
+					AlertDialog.Builder builder = new AlertDialog.Builder(this);
+					builder.setMessage(R.string.no_epg_available).setCancelable(true)
+							.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									dialog.cancel();
+								}
+							});
+					dialog = builder.create();
+				}
 			} else {
-				// No EPG Information is available!
-				AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setMessage(R.string.no_epg_available).setCancelable(true)
-						.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.cancel();
-							}
-						});
-				dialog = builder.create();
+				showToast(getText(R.string.not_available));
+				dialog = null;
 			}
 			break;
 		default:
