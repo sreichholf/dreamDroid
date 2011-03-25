@@ -2,39 +2,32 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 <string name="description">Descrizione</string>
 <string name="title">Titolo</string>
-<string name="we">Mer</string>
-<string name="tue">Mar</string>
 <string name="mo">Lun</string>
 <string name="app_name">DreamDroid</string>
-<string name="menu_timer">Timer</string>
-<string name="menu_timer_desc">Mostra, aggiungi e modifica timer</string>
-<string name="menu_movies">Registrazioni</string>
-<string name="menu_movies_desc">Elenco delle registrazioni disponibili</string>
 <string-array name="servicelist">
 <item>Pacchetti (TV)</item>
 <item>Emittenti (TV)</item>
-<item>Tutti i servizi (TV)</item>
+<item>Tutti i canali (TV)</item>
 <item>Pacchetti (Radio)</item>
 <item>Emittenti (Radio)</item>
 <item>Tutti (Radio)</item>
 </string-array>
 <string name="timer">Timer</string>
-<string name="service">Servizio</string>
+<string name="service">Canale</string>
 <string name="afterevent">Azione fine evento</string>
 <string name="location">Percorso</string>
 <string-array name="afterevents">
 <item>Nessuna</item>
-<item>Standby</item>
+<item>In attesa</item>
 <item>Spegnimento</item>
 <item>Automatica</item>
 </string-array>
 <string name="begin_time">Ora inizio</string>
 <string name="repeatings">Repliche</string>
 <string name="end_time">Ora fine</string>
-<string name="services">Servizi</string>
+<string name="services">Canali</string>
 <string name="movies">Registrazioni</string>
 <string name="device_info">Info dispositivo</string>
-<string name="exit">Esci</string>
 <string name="send_message">Invia messaggio</string>
 
 <string name="save">Salva</string>
@@ -54,7 +47,6 @@
 <string name="host_long">Nome sistema o IP</string>
 <string name="port_long">Listening Port
 </string>
-<string name="ssl_enabled_long">Abilita connessione sicura SSL (https)</string>
 <string name="close">Chiudi</string>
 <string name="minutes_short">min.</string>
 <string name="user">Utente</string>
@@ -89,7 +81,7 @@
 <item>Sabato</item>
 <item>Domenica</item>
 </string-array>
-<string name="none">Nessuno</string>
+<string name="none">Nessuna</string>
 <string name="choose_days">Scegli giorni</string>
 <string name="mo_to_fr">Lunedì a Venerdì</string>
 <string name="daily">Giornaliero</string>
@@ -118,7 +110,6 @@
 </string-array>
 <string name="virtual_remote">Telecomando virtuale</string>
 <string name="login_enabled">Abilita accesso</string>
-<string name="login_enabled_long">Abilita accesso remoto</string>
 <string name="wait_request_finished">Attendere il completamento della richiesta!</string>
 <string name="current_service">Attuale</string>
 <string name="provider">Emittente</string>
@@ -130,7 +121,6 @@
 <string name="quickzap">Formato ingrandito</string>
 <string name="no_epg_available">Attualmente non esistono informazioni EPG per questo canale!</string>
 <string name="ok">OK</string>
-<string name="connection_profiles">Profili connessione</string>
 <string name="activate">Attiva</string>
 <string name="confirm_delete_profile">Sei sicuro di voler eliminare questo profilo?</string>
 <string name="profile_activated">Profilo attivato</string>
@@ -148,7 +138,7 @@
 <string name="tags">Etichette</string>
 <string name="screenshot">Schermata</string>
 <string name="host_empty">Il nome sistema non può essere vuoto!</string>
-<string name="standby">Standby</string>
+<string name="standby">In attesa</string>
 <string name="powerup">Accensione</string>
 <string name="restart_gui">Riavvia GUI</string>
 <string name="reboot">Riavvia</string>
@@ -158,7 +148,7 @@
 <string name="choose_location">Scegli percorso</string>
 <string name="bouquet_overview">Sommario pacchetti</string>
 <string name="set_default">Imposta come predefinito</string>
-<string name="default_bouquet_set_to">Pacchetto predefinito impostato a: </string>
+<string name="default_bouquet_set_to">Pacchetto predefinito impostato a:</string>
 <string name="default_bouquet_not_set">Impossibile impostare il paccheto predefinito!</string>
 <string name="loading">Caricamento...</string>
 <string name="about">Info</string>
@@ -170,20 +160,21 @@
 <string name="checking">verifica...</string>
 <string name="error">ERRORE!</string>
 <string name="check_connectivity">Verifica connettività</string>
-<string name="version_too_low">Versione &lt; 1.6</string>
+<string name="version_too_low">Versione &lt; 1.6.5</string>
 <string name="connection_error">Errore connessione</string>
 <string name="port_out_of_range">La porta non può essere tra 1 e 65535</string>
 <string name="illegal_host">Nome sistema non valido</string>
 <string name="edit_timer">Modifica timer</string>
-<string name="cleaning_timerlist">Cancellazione elenco timer</string>
-<string name="cleanup">Cancella</string>
-<string name="in_standby">Dispositivo in modalità Standby</string>
+<string name="cleaning_timerlist">Pulizia elenco timer</string>
+<string name="cleanup">Pulisci</string>
+<string name="in_standby">Dispositivo in modalità attesa</string>
 <string name="is_running">Dispositivo in esecuzione</string>
 <string name="stream">Trasmetti</string>
-<string name="install_vplayer">La trasmissione richiede che vPlayer sia installato</string>
+
 <string name="stream_host">Nome sistema/IP trasmissione</string>
 <string name="stream_host_long">Nome sistema/IP per la trasmissione (opzionale)</string>
 <string name="stream_current">Trasmissione attuale</string>
+<string name="similar">Eventi simili</string>
 <string-array name="timer_state">
 <item>attendere...</item>
 <item>preparazione...</item>
@@ -192,8 +183,21 @@
 <item>disabilitato</item>
 </string-array>
 <string-array name="timer_action">
-<item>registra</item>
-<item>cambia</item>
+<item>registrazione</item>
+<item>cambio</item>
 </string-array>
 <string name="sleeptimer">Timer spegnimento</string>
+<string name="current_volume">Volume impostato a %s</string>
+<string name="muted">Muto</string>
+<string name="enable_volume_control">Abilita controllo volume</string>
+<string name="enable_volume_control_long">Abilita il controllo volume diretto usando i tasti fisici</string>
+<string name="download">Scarica</string>
+<string name="extras">Altro</string>
+<string name="main_menu">Principale</string>
+<string name="profiles">Profili</string>
+<string name="enable_instant_zap">Cambio istantaneo</string>
+<string name="enable_instant_zap_long">Breve tocco su un canale per il cambio istantaneo</string>
+<string name="wrong_activity">Errore attività! Ricrea i collegamenti precedenti per dreamDroid!</string>
+<string name="simple_remote">Formato telecomando semplice</string>
+<string name="screenshot_saved">Schermata salvata in \'%s\'</string>
 </resources>

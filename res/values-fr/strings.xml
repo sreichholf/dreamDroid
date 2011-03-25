@@ -2,14 +2,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 <string name="description">Description</string>
 <string name="title">Titre</string>
-<string name="we">Mer</string>
-<string name="tue">Mar</string>
 <string name="mo">Lun</string>
 <string name="app_name">DreamDroid</string>
-<string name="menu_timer">Programmation</string>
-<string name="menu_timer_desc">Vérifier, ajouter et editer les programmations</string>
-<string name="menu_movies">Films</string>
-<string name="menu_movies_desc">Liste des enregistrements disponibles</string>
 <string-array name="servicelist">
 <item>Bouquets (TV)</item>
 <item>Fournisseurs (TV)</item>
@@ -34,7 +28,6 @@
 <string name="services">Services</string>
 <string name="movies">Films</string>
 <string name="device_info">Information</string>
-<string name="exit">Quitter</string>
 <string name="send_message">Envoyer un Message</string>
 
 <string name="save">Enregistrer</string>
@@ -54,7 +47,6 @@
 <string name="host_long">Nom Hôte ou IP</string>
 <string name="port_long">Listening Port
 </string>
-<string name="ssl_enabled_long">Activer les connexions securisées SSL(https)</string>
 <string name="close">Fermer</string>
 <string name="minutes_short">min.</string>
 <string name="user">Utilisateur</string>
@@ -118,7 +110,6 @@
 </string-array>
 <string name="virtual_remote">Télécommande</string>
 <string name="login_enabled">Connexion par nom d \'utilisateur mot de passe</string>
-<string name="login_enabled_long">Permettre un accès par nom d\'utilsateur et mot de passe</string>
 <string name="wait_request_finished">Merci de patienter jusqu\'a la fin de la requête courante!</string>
 <string name="current_service">Actuellement</string>
 <string name="provider">Fournisseur</string>
@@ -130,7 +121,6 @@
 <string name="quickzap">Agencement QuickZap</string>
 <string name="no_epg_available">Actuellement il n\'y a pas EPG disponible pour cette chaîne!</string>
 <string name="ok">OK</string>
-<string name="connection_profiles">Profils de connexion</string>
 <string name="activate">Activé</string>
 <string name="confirm_delete_profile">Confirmez vous la suppression du profil?</string>
 <string name="profile_activated">Profil activé</string>
@@ -184,6 +174,7 @@
 <string name="stream_host">Nom/IP de streaming</string>
 <string name="stream_host_long">Nom/IP pour diffuser en continu (optionel)</string>
 <string name="stream_current">Diffusion courante</string>
+<string name="similar">Evènements similaires</string>
 <string-array name="timer_state">
 <item>attente...</item>
 <item>préparé...</item>
@@ -196,4 +187,15 @@
 <item>zap</item>
 </string-array>
 <string name="sleeptimer">mise en veille</string>
+<string name="current_volume">Volume actuel %s</string>
+<string name="muted">Muet</string>
+<string name="enable_volume_control">Activer le contrôle du volume</string>
+<string name="enable_volume_control_long">Activer le contrôle du volume avec les boutons physiques</string>
+<string name="download">Téléchargement</string>
+<string name="extras">Extras</string>
+<string name="main_menu">Menu principal</string>
+<string name="profiles">Profiles</string>
+<string name="enable_instant_zap">Zap maintenant</string>
+<string name="enable_instant_zap_long">Zapper instantanément quand appuis court sur service</string>
+<string name="wrong_activity">Mauvaise activité lancée! Refaire les raccourcis dreamDroid</string>
 </resources>
