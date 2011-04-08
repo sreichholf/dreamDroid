@@ -184,7 +184,7 @@
 </string-array>
 <string-array name="timer_action">
 <item>registrazione</item>
-<item>cambio</item>
+<item>sintonia</item>
 </string-array>
 <string name="sleeptimer">Timer spegnimento</string>
 <string name="current_volume">Volume impostato a %s</string>
@@ -195,8 +195,8 @@
 <string name="extras">Altro</string>
 <string name="main_menu">Principale</string>
 <string name="profiles">Profili</string>
-<string name="enable_instant_zap">Cambio istantaneo</string>
-<string name="enable_instant_zap_long">Breve tocco su un canale per il cambio istantaneo</string>
+<string name="enable_instant_zap">Sintonia veloce</string>
+<string name="enable_instant_zap_long">Breve tocco su un canale per la sintonia veloce</string>
 <string name="wrong_activity">Errore attività! Ricrea i collegamenti precedenti per dreamDroid!</string>
 <string name="simple_remote">Formato telecomando semplice</string>
 <string name="screenshot_saved">Schermata salvata in \'%s\'</string>

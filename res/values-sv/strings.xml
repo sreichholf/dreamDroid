@@ -187,7 +187,7 @@
 <item>Zappa</item>
 </string-array>
 <string name="sleeptimer">Insomningstimer</string>
-<string name="current_volume">Volym är nu %</string>
+<string name="current_volume">Volym är nu %s</string>
 <string name="muted">Tyst</string>
 <string name="enable_volume_control">Volymkontroll till</string>
 <string name="enable_volume_control_long">Direkt volymkontroll med H/W knappar</string>
@@ -197,4 +197,5 @@
 <string name="profiles">Profiler</string>
 <string name="enable_instant_zap">Slå till zap funktion</string>
 <string name="wrong_activity">Fel aktivitet påkallad. Uppdatera ny genväg för DreamDroid</string>
+<string name="simple_remote">Enkel fjärrkontroll </string>
 </resources>
