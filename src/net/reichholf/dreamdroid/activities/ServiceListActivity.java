@@ -67,11 +67,11 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 * @author sreichholf Fetches a service list async. Does all the
 	 *         error-handling, refreshing and title-setting
 	 */
-	private class GetServiceListTask extends AsyncListUpdateTask {		
-		public GetServiceListTask(){
+	private class GetServiceListTask extends AsyncListUpdateTask {
+		public GetServiceListTask() {
 			super(getString(R.string.services));
 		}
-		
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -149,14 +149,14 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		}
 
 		setAdapter();
-		
+
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
 				return onListItemLongClick(a, v, position, id);
 			}
 		});
-		
+
 		reload();
 	}
 
@@ -188,14 +188,18 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		super.onPause();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle
+	 * ()
 	 */
 	@Override
-	protected String genWindowTitle(String title){
+	protected String genWindowTitle(String title) {
 		return title + " - " + mName;
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -232,33 +236,40 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// back to standard back-button-behaviour when we're already at root
 		// level
-		if (!"default".equals(mReference)) {
-			int index = mHistory.size() - 1;
-			if (index >= 0) {
-				ExtendedHashMap map = (mHistory.get(index));
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (!"default".equals(mReference)) {
+				int idx = mHistory.size() - 1;
+				if (idx >= 0) {
+					ExtendedHashMap map = null;
 
-				String oldref = (String) map.get(Event.SERVICE_REFERENCE);
-				String oldname = (String) map.get(Event.SERVICE_NAME);
-
-				if ((keyCode == KeyEvent.KEYCODE_BACK) && !mReference.equals(oldref)) {
-					// there is a download Task running, the list may have
-					// already been altered so we let that request finish
-
-					if (!isListTaskRunning()) {
-						mReference = String.valueOf(oldref);
-						mName = String.valueOf(oldname);
-
-						mHistory.remove(index);
-
-						if (isBouquetReference(mReference)) {
-							mIsBouquetList = true;
-						}
-						reload();
-
-					} else {
-						showToast(getText(R.string.wait_request_finished));
+					try {
+						map = (mHistory.get(idx));
+					} catch (ClassCastException ex) {
+						return super.onKeyDown(keyCode, event);
 					}
-					return true;
+					if (map != null) {
+						String oldref = map.getString(Event.SERVICE_REFERENCE);
+						String oldname = map.getString(Event.SERVICE_NAME);
+
+						if (!mReference.equals(oldref) && oldref != null) {
+							// there is a download Task running, the list may
+							// have already been altered so we let that request finish
+							if (!isListTaskRunning()) {
+								mReference = oldref;
+								mName = oldname;
+								mHistory.remove(idx);
+
+								if (isBouquetReference(mReference)) {
+									mIsBouquetList = true;
+								}
+								reload();
+
+							} else {
+								showToast(getText(R.string.wait_request_finished));
+							}
+							return true;
+						}
+					}
 				}
 			}
 		}
@@ -275,7 +286,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		onListItemClick(v, position, id, false);
 	}
-	
+
 	/**
 	 * @param a
 	 * @param v
@@ -287,7 +298,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		onListItemClick(v, position, id, true);
 		return true;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -296,7 +307,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		
+
 		menu.add(0, MENU_SET_AS_DEFAULT, 0, getText(R.string.set_default)).setIcon(android.R.drawable.ic_menu_set_as);
 		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, MENU_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(R.drawable.ic_menu_list_overview);
@@ -318,9 +329,9 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		} else {
 			overview.setEnabled(true);
 		}
-		
+
 		MenuItem reload = menu.getItem(1);
-		if(!mIsBouquetList && !mPickMode){
+		if (!mIsBouquetList && !mPickMode) {
 			reload.setEnabled(true);
 		} else {
 			reload.setEnabled(false);
@@ -328,12 +339,15 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		return true;
 	}
 
-	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onItemClicked(int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onItemClicked
+	 * (int)
 	 */
 	@Override
-	protected boolean onItemClicked(int id){
+	protected boolean onItemClicked(int id) {
 		switch (id) {
 		case MENU_OVERVIEW:
 			mReference = "default";
@@ -357,7 +371,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			return true;
 		default:
 			return super.onItemClicked(id);
-		}	
+		}
 	}
 
 	/**
@@ -382,7 +396,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		intent.putExtra(SearchManager.QUERY, title);
 		startActivity(intent);
 	}
-	
+
 	/**
 	 * @param ref
 	 *            The ServiceReference to catch the EPG for
@@ -402,18 +416,18 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 	/**
 	 * @param ref
-	 * 			A ServiceReference
+	 *            A ServiceReference
 	 */
-	private void streamService(String ref){
+	private void streamService(String ref) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "http://" + DreamDroid.PROFILE.getStreamHost().trim() + ":8001/" + ref;
 		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
-		
-		intent.setDataAndType(Uri.parse(uriString) , "video/*");		
+
+		intent.setDataAndType(Uri.parse(uriString), "video/*");
 		startActivity(intent);
 	}
-	
-	private void onListItemClick(View v, int position, long id, boolean isLong){
+
+	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mCurrentItem = mMapList.get(position);
 		final String ref = mCurrentItem.getString(Event.SERVICE_REFERENCE);
 		final String nam = mCurrentItem.getString(Event.SERVICE_NAME);
@@ -451,51 +465,52 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 				setResult(RESULT_OK, intent);
 				finish();
-			} else {				
+			} else {
 				boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
-				if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
+				if ((isInsta && !isLong) || (!isInsta && isLong)) {
 					zapTo(ref);
 				} else {
-				
+
 					CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
 							getText(R.string.zap), getText(R.string.similar), getText(R.string.stream) };
-	
+
 					AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
 					adBuilder.setTitle(getText(R.string.pick_action));
 					adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-	
+
 						public void onClick(DialogInterface dialog, int which) {
 							switch (which) {
 							case 0:
 								removeDialog(DIALOG_EPG_ITEM_ID);
 								showDialog(DIALOG_EPG_ITEM_ID);
 								break;
-	
+
 							case 1:
 								openEpg(ref, nam);
 								break;
-	
+
 							case 2:
 								zapTo(ref);
 								break;
-	
+
 							case 3:
 								openSimilar(title);
 								break;
-	
+
 							case 4:
 								streamService(ref);
 								break;
 							}
 						}
 					});
-	
+
 					AlertDialog alert = adBuilder.create();
 					alert.show();
 				}
 			}
 		}
 	}
+
 	/**
 	 * 
 	 */
@@ -534,7 +549,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		String title = getText(R.string.app_name) + "::" + getText(R.string.services);
 		setTitle(title);
 		mIsBouquetList = true;
-		
+
 		mMapList.clear();
 
 		String[] servicelist = getResources().getStringArray(R.array.servicelist);
@@ -546,8 +561,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			map.put(Event.SERVICE_REFERENCE, servicerefs[i]);
 			mMapList.add(map);
 		}
-		
-		
+
 		mAdapter.notifyDataSetChanged();
 	}
 }
