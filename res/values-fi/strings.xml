@@ -3,23 +3,10 @@
 <string name="description">Kuvaus</string>
 <string name="title">Otsikko</string>
 <string name="mo">Maa</string>
-<string-array name="servicelist">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
 <string name="timer">Ajastin</string>
 <string name="service">Palvelu</string>
 <string name="location">Sijainti</string>
-<string-array name="afterevents">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
+
 <string name="begin_time">Aloitusaika</string>
 <string name="repeatings">Toistot</string>
 <string name="end_time">Loppumisaika</string>
@@ -58,15 +45,6 @@
 <string name="set_time_end">Aseta loppumisaika</string>
 <string name="apply">Hyväksy</string>
 <string name="reload">Uudelleenlataus</string>
-<string-array name="weekdays_short">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
 <string-array name="weekdays">
 <item>Maanantai</item>
 <item>Tiistai</item>
@@ -90,17 +68,15 @@
 <string name="nics">Verkkoadapterit</string>
 <string name="hdds">Kovalevyt</string>
 <string name="not_implemented">ei kehitetty</string>
+<string name="current_event">Nykyinen tapahtuma</string>
+<string name="timeout">Aikakatkaisu</string>
 <string name="message">Viesti</string>
 <string name="message_text_hint">Kirjoita viesti</string>
 <string name="send">Lähetä</string>
 <string name="type">Kirjoita</string>
-<string-array name="message_types">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
 <string name="virtual_remote">Virtuaali kaukosäädin</string>
+<string name="login_enabled">Salli kirjautuminen</string>
+<string name="wait_request_finished">Odota kunnes nykyinen pyyntö on suoritettu!</string>
 <string name="current_service">Nykyinen palvelu</string>
 <string name="provider">Toimittaja</string>
 <string name="now">Nyt</string>
@@ -111,6 +87,7 @@
 <string name="ok">OK</string>
 <string name="activate">Ota käyttöön</string>
 <string name="confirm_delete_profile">Haluatko varmasti poistaa profiilin?</string>
+<string name="profile_activated">Käytössä oleva profiili</string>
 <string name="tags">Tagit</string>
 <string name="screenshot">Ruudunkaappaus</string>
 <string name="standby">Valmiustila</string>
@@ -118,6 +95,7 @@
 <string name="restart_gui">Uudelleenkäynnistä GUI</string>
 <string name="reboot">Uudelleenkäynnistys</string>
 <string name="shutdown">Sammuta</string>
+<string name="powercontrol">Virranhallinta</string>
 <string name="choose_location">Valitse sijainti</string>
 <string name="set_default">Aseta oletukseksi</string>
 <string name="loading">Lataa</string>
@@ -130,23 +108,12 @@
 <string name="error">Virhe</string>
 <string name="check_connectivity">Tarkista yhteys</string>
 <string name="connection_error">Yhteysvirhe</string>
-
-<string-array name="timer_state">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="timer_action">
-<item></item>
-<item></item>
-</string-array>
+<string name="enable_volume_control">Salli äänenvoimakkuuden säätö</string>
 <string name="download">Lataa</string>
 <string name="extras">extrat</string>
 <string name="main_menu">Päävalikko</string>
 <string name="profiles">Profiilit</string>
 <string name="wrong_activity">Väärä aktiviteetti</string>
 <string name="simple_remote">yksinkertainen säädin</string>
-<string name="screenshot_saved">Ruudunkaappaus tallennettu</string>
+<string name="screenshot_saved">Ruudunkaappaus tallennettu \'%s\'</string>
 </resources>

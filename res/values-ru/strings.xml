@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>Фавориты (TV)</item>
+<item>Провайдер (TV)</item>
+<item>Все Сервисы (TV)</item>
+<item>Фавориты (Radio)</item>
+<item>Провайдер (Radio)</item>
+<item>Все (Radio)</item>
+</string-array>
+<string name="timer">Таймер</string>
+<string name="service">Сервис</string>
+<string name="afterevent">Следующее событие</string>
+<string name="location">Местоположение</string>
+<string-array name="afterevents">
+<item>Ничего</item>
+<item>Ожидание</item>
+<item>Полное Выключение</item>
+<item>Автовыбор</item>
+</string-array>
+<string name="begin_time">Время начала</string>
+<string name="repeatings">Повторы</string>
+<string name="end_time">Время окончания</string>
+<string name="services">Сервисы</string>
+<string name="movies">Фильмы</string>
+<string name="device_info">Информация об устройстве</string>
+<string name="send_message">Отправить сообщение</string>
+
+<string name="save">Сохранить</string>
+<string name="cancel">Отмена</string>
+<string name="browse_epg">Просмотр Телегида</string>
+<string name="edit">Изменить</string>
+<string name="delete">Удалить</string>
+<string name="epg">Телегид</string>
+<string name="ssl_enabled">Использовать шифрование SSL</string>
+<string name="port">Порт</string>
+<string name="settings">Настройки</string>
+<string name="host_long">Хост или IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">Закрыть</string>
+<string name="user">Пользователь</string>
+<string name="user_long">Имя пользователя</string>
+<string name="pass">Пароль</string>
+<string name="pass_long">Пароль для авторизации</string>
+<string name="saving">Сохранение. Подождите...</string>
+<string name="deleting">Удаление. Подождите..</string>
+<string name="delete_confirm">Подтвердить удаление</string>
+<string name="apply">Применить</string>
+<string name="choose_days">Выбрать дни</string>
+<string name="mo_to_fr">Рабочие дни</string>
+<string name="daily">Ежедневно</string>
+<string name="nics">Сетевые адаптеры</string>
+<string name="hdds">Встроенные накопители</string>
+<string name="current_event">Текущее событие</string>
+<string name="timeout">Время ожидания</string>
+<string name="message">Сообщение</string>
+<string name="send">Отправить</string>
+<string name="current_service">Текущий сервис</string>
+<string name="now">Сейчас</string>
+<string name="next">Следующее событие</string>
+<string name="epg_search">Поиск по телегиду</string>
+<string name="standard">Стандартная раскладка кнопок</string>
+<string name="restart_gui">Перезагрузить оболочку</string>
+<string name="reboot">Полная перезагрузка</string>
+<string name="shutdown">Выключить</string>
+<string name="set_default">Установить по умолчанию</string>
+<string name="check_connectivity">Проверка соединения</string>
+<string name="connection_error">Ошибка соединения</string>
+<string name="cleaning_timerlist">Очистить задачи таймер</string>
+<string name="cleanup">Очистить</string>
+<string name="in_standby">Устройство в режиме ожидания</string>
+<string name="is_running">Устройство работает</string>
+<string name="stream">Потоковое вещание</string>
+
+<string name="stream_current">Потоковое вещание</string>
+<string-array name="timer_state">
+<item>ожидание...</item>
+<item>подготовка...</item>
+<item>выполнение...</item>
+<item>закончено</item>
+<item>отключено</item>
+</string-array>
+<string name="sleeptimer">Таймер сна</string>
+<string name="current_volume">Текущий уровень звука</string>
+<string name="muted">Без звука</string>
+<string name="enable_volume_control">Включить регулировку громкости</string>
+<string name="download">Скачать</string>
+<string name="main_menu">Главное меню</string>
+<string name="profiles">Профили</string>
+<string name="simple_remote">Упрощенная раскладка кнопок</string>
+<string name="screenshot_saved">Скриншот сохранен в  \'%s\'</string>
+</resources>

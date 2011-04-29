@@ -174,6 +174,7 @@
 <string name="stream_host">Streaming Hostname/IP</string>
 <string name="stream_host_long">Host/IP til streaming (valgfri)</string>
 <string name="stream_current">Stream nuværende</string>
+<string name="similar">Lignende programmer</string>
 <string-array name="timer_state">
 <item>Venter...</item>
 <item>Klargjort...</item>
@@ -186,4 +187,17 @@
 <item>zap</item>
 </string-array>
 <string name="sleeptimer">Sleep Timer</string>
+<string name="current_volume">Volumen er nu %s</string>
+<string name="muted">Lydløs</string>
+<string name="enable_volume_control">Aktivér Volume Kontrol</string>
+<string name="enable_volume_control_long">Aktivér direkte Volume Kontrol med H/W-knapper</string>
+<string name="download">Download</string>
+<string name="extras">Ekstra</string>
+<string name="main_menu">Forsiden</string>
+<string name="profiles">profiler</string>
+<string name="enable_instant_zap">Direkte zap</string>
+<string name="enable_instant_zap_long">Øjeblikkelig ZAP ved kort tryk på en tjeneste</string>
+<string name="wrong_activity">Forkert Aktivitet kaldet! Venligst genskab de genveje, du har oprettet for dreamDroid!</string>
+<string name="simple_remote">Simpel fjernbetjenings layout</string>
+<string name="screenshot_saved">Skærmbillede gemt i \'%s\'</string>
 </resources>

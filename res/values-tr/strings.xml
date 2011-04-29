@@ -57,6 +57,7 @@
 <string name="deleting">Siliniyor. Lütfen bekleyin...</string>
 <string name="delete_confirm">Gerçekten silinsin mi?</string>
 <string name="set_timer">Zamanı ayarla</string>
+<string name="home">Ev</string>
 <string name="pick_action">Eylem seçiniz</string>
 <string name="set_time_begin">Başlama tarihi ve zamanı</string>
 <string name="set_time_end">Bitiş tarihi ve zamanı</string>
@@ -78,9 +79,9 @@
 <item>Perşembe</item>
 <item>Cuma</item>
 <item>Cumartesi</item>
-<item>Pazar 	</item>
+<item>Pazar </item>
 </string-array>
-<string name="none">Yok</string>
+<string name="none">Hiçbiri</string>
 <string name="choose_days">Günleri seç</string>
 <string name="mo_to_fr">Pazartesi\'den Cuma\'ya</string>
 <string name="daily">Günlük</string>
@@ -88,7 +89,7 @@
 <string name="locations">Konumlar</string>
 <string name="gui_version">GUI sürümü</string>
 <string name="image_version">Image sürümü</string>
-<string name="interface_version">Interface sürümü</string>
+<string name="interface_version">Arayüz sürümü</string>
 <string name="front_processor_version">Frontprocessor sürümü</string>
 <string name="device_name">Cihaz adı</string>
 <string name="frontends">Önyüzler</string>
@@ -108,6 +109,7 @@
 <item>Hata</item>
 </string-array>
 <string name="virtual_remote">Sanal Kumanda</string>
+<string name="login_enabled">Giriş Aktif</string>
 <string name="wait_request_finished">Lütfen çalışan işlem tamamlanana kadar bekleyin!</string>
 <string name="current_service">Geçerli</string>
 <string name="provider">Sağlayıcı</string>
@@ -137,17 +139,20 @@
 <string name="screenshot">Ekran görüntüsü</string>
 <string name="host_empty">Host adı boş olamaz!</string>
 <string name="standby">Bekleme</string>
+<string name="powerup">Güç Açık</string>
 <string name="restart_gui">GUI yeniden başlat</string>
 <string name="reboot">Yeniden başlat</string>
 <string name="shutdown">Kapat</string>
 <string name="powercontrol">Güç kontrolü</string>
 <string name="choose_tags">Etiket seçimi</string>
 <string name="choose_location">Yer seçimi</string>
+<string name="bouquet_overview">Buket Görünümü</string>
 <string name="set_default">Varsayılan olarak kaydet</string>
 <string name="default_bouquet_set_to">Varsayılan buket olarak ayarlandı: </string>
 <string name="default_bouquet_not_set">Varsayılan buket ayarlanamadı!</string>
 <string name="loading">Yükleniyor...</string>
 <string name="about">Hakkında</string>
+<string name="license">Lisans</string>
 <string name="source_code_link">Kaynak kodu mevcut: http://github.com/sreichholf/dreamDroid</string>
 <string name="active_profile">Profili etkinleştir</string>
 <string name="connection_state">Bağlantı durumu</string>
@@ -157,13 +162,19 @@
 <string name="check_connectivity">Bağlantıyı kontrol et</string>
 <string name="version_too_low">Sürüm &lt; 1.6.5</string>
 <string name="connection_error">Bağlantı hatası</string>
-<string name="port_out_of_range">Port  1 ile 65535 arasında değil</string>
+<string name="port_out_of_range">Port 1 ile 65535 arasında değil</string>
 <string name="illegal_host">İllegal host</string>
 <string name="edit_timer">Zamanı ayarla</string>
+<string name="cleaning_timerlist">Zamanlayıcı listesi temizleniyor</string>
+<string name="cleanup">Temizleme</string>
 <string name="in_standby">Cihaz şimdi bekleme modunda</string>
 <string name="is_running">Cihaz şimdi çalışıyor</string>
 <string name="stream">Akış</string>
 
+<string name="stream_host">Akış Host Adı / IP</string>
+<string name="stream_host_long">Akış için Host Adı / IP (opsiyonel)</string>
+<string name="stream_current">Şuanki Akış</string>
+<string name="similar">Benzer</string>
 <string-array name="timer_state">
 <item>bekliyor...</item>
 <item>hazır...</item>
@@ -179,12 +190,14 @@
 <string name="current_volume">Ses şuan %s</string>
 <string name="muted">Sessiz</string>
 <string name="enable_volume_control">Ses Kontrolünü Etkinleştir</string>
-<string name="enable_volume_control_long">H/W-Butonlarını kullanarak doğrudan ses kontrolünü etkinleştir</string>
+<string name="enable_volume_control_long">H/W-Düğmelerini kullanarak doğrudan ses kontrolünü etkinleştir</string>
 <string name="download">İndir</string>
 <string name="extras">Ekstralar</string>
 <string name="main_menu">Ana</string>
 <string name="profiles">Profiller</string>
 <string name="enable_instant_zap">Anlık zap</string>
 <string name="enable_instant_zap_long">Bir kanala kısa dokunulduğunda anlık zapla</string>
+<string name="wrong_activity">Yanlış Kısayol </string>
+<string name="simple_remote">Klasik Uzaktan Kumanda </string>
 <string name="screenshot_saved">Ekran görüntüsü kaydedildi \'%s\'</string>
 </resources>
