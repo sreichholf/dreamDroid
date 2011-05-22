@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.SearchEpgActivity;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -26,6 +27,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -303,6 +305,16 @@ public abstract class AbstractHttpActivity extends Activity {
 			intent.setData(Uri.parse(uriString));
 			startActivity(intent);
 		}
+	}
+	
+	/**
+	 * @param event
+	 */
+	protected void findSimilarEvents(ExtendedHashMap event){
+		Intent intent = new Intent(this, SearchEpgActivity.class);
+		intent.setAction(Intent.ACTION_SEARCH);
+		intent.putExtra(SearchManager.QUERY, event.getString(Event.EVENT_TITLE));
+		startActivity(intent);
 	}
 	
 	/**

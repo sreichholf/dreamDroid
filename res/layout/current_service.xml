@@ -138,42 +138,17 @@
 			
 				</LinearLayout>
 			</LinearLayout>
-			<LinearLayout
-					android:layout_width="fill_parent"
-					android:layout_height="wrap_content"
-					android:orientation="horizontal" >
-				<Button
-					android:id="@+id/ButtonStream"
-					android:layout_width="fill_parent"
-					android:layout_height="wrap_content"
-					android:layout_marginTop="15dp"
-					android:layout_gravity="center_horizontal"
-					android:layout_weight="1"
-					android:text="@string/stream"
-					android:gravity="center_vertical"
-					android:drawableLeft="@drawable/ic_menu_movie" />
-				<Button
-					android:id="@+id/ButtonSimilar"
-					android:layout_width="fill_parent"
-					android:layout_height="wrap_content"
-					android:layout_marginTop="1dp"
-					android:layout_gravity="center_horizontal"
-					android:layout_weight="1"
-					android:text="@string/similar"
-					android:gravity="center_vertical"
-					android:drawableLeft="@drawable/ic_menu_list" />
-			</LinearLayout>
-			
+
 			<Button
-				android:id="@+id/ButtonImdb"
-				android:layout_width="150dp"
+				android:id="@+id/ButtonStream"
+				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
+				android:layout_marginTop="15dp"
 				android:layout_gravity="center_horizontal"
-				android:layout_marginTop="-15dp"
-				android:text="@string/imdb"
+				android:text="@string/stream_current"
 				android:gravity="center_vertical"
 				android:drawableLeft="@drawable/ic_menu_movie" />
-
+				
 		</LinearLayout>		
 	</ScrollView>
 </LinearLayout>

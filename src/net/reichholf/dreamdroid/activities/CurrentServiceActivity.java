@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.activities;
 
 import java.util.ArrayList;
 
-import android.app.SearchManager;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
@@ -47,8 +46,8 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	public static final int ITEM_NOW = 0;
 	public static final int ITEM_NEXT = 1;
 	public static final int ITEM_STREAM = 2;
-	public static final int ITEM_SIMILAR = 3;
-	public static final int ITEM_IMDB = 4;
+//	public static final int ITEM_SIMILAR = 3;
+//	public static final int ITEM_IMDB = 4;
 	public static final int DIALOG_EPG_ITEM_ID = 9382893;
 
 	private ExtendedHashMap mCurrent;
@@ -63,8 +62,8 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	private TextView mNextTitle;
 	private TextView mNextDuration;
 	private Button mStream;
-	private Button mSimilar;
-	private Button mImdb;
+//	private Button mSimilar;
+//	private Button mImdb;
 	private LinearLayout mNowLayout;
 	private LinearLayout mNextLayout;	
 	protected ProgressDialog mProgress;
@@ -170,16 +169,16 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		mCurrent = new ExtendedHashMap();
 		
 		mStream = (Button) findViewById(R.id.ButtonStream);
-		mSimilar = (Button) findViewById(R.id.ButtonSimilar);
-		mImdb = (Button) findViewById(R.id.ButtonImdb);
+//		mSimilar = (Button) findViewById(R.id.ButtonSimilar);
+//		mImdb = (Button) findViewById(R.id.ButtonImdb);
 		mNowLayout = (LinearLayout) findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) findViewById(R.id.layout_next);
 		
 		registerOnClickListener(mNowLayout, ITEM_NOW);
 		registerOnClickListener(mNextLayout, ITEM_NEXT);
 		registerOnClickListener(mStream, ITEM_STREAM);
-		registerOnClickListener(mSimilar, ITEM_SIMILAR);
-		registerOnClickListener(mImdb, ITEM_IMDB);
+//		registerOnClickListener(mSimilar, ITEM_SIMILAR);
+//		registerOnClickListener(mImdb, ITEM_IMDB);
 
 		reload();
 	}	
@@ -272,19 +271,9 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 					showToast( getText(R.string.not_available) );
 				}
 				return true;
-			case ITEM_SIMILAR:
-				String title = mNow.getString(Event.EVENT_TITLE);
-				if(!"N/A".equals(title) && title != null){					
-					Intent intent = new Intent(this, SearchEpgActivity.class);
-					intent.setAction(Intent.ACTION_SEARCH);
-					intent.putExtra(SearchManager.QUERY, title);
-					startActivity(intent);
-				} else {
-					showToast( getText(R.string.not_available) );
-				}
-				return true;
-			case ITEM_IMDB:
-				queryImdb(mNow);
+//			case ITEM_IMDB:
+//				queryImdb(mNow);
+//				return true;
 			default:
 				return false;
 			}
@@ -380,6 +369,24 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 						@Override
 						public void onClick(View v) {
 							setTimerByEventData(mCurrentItem);
+							dialog.dismiss();
+						}
+					});
+					
+					Button buttonIMDb = (Button) dialog.findViewById(R.id.ButtonImdb);
+					buttonIMDb.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							queryImdb(mCurrentItem);
+							dialog.dismiss();
+						}
+					});
+					
+					Button buttonSimilar = (Button) dialog.findViewById(R.id.ButtonSimilar);
+					buttonSimilar.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							findSimilarEvents(mCurrentItem);
 							dialog.dismiss();
 						}
 					});

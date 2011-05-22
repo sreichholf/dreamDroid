@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.abstivities;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.SearchEpgActivity;
 import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -12,6 +13,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEv
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.View;
@@ -94,6 +96,15 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 							dialog.dismiss();
 						}
 					});
+					
+					Button buttonSimilar = (Button) dialog.findViewById(R.id.ButtonSimilar);
+					buttonSimilar.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							findSimilarEvents(mCurrentItem);
+							dialog.dismiss();
+						}
+					});
 				} else {
 					// No EPG Information is available!
 					AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -129,7 +140,17 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 		mProgress = ProgressDialog.show(this, "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
-
+	
+	/**
+	 * @param event
+	 */
+	protected void findSimilarEvents(ExtendedHashMap event){
+		Intent intent = new Intent(this, SearchEpgActivity.class);
+		intent.setAction(Intent.ACTION_SEARCH);
+		intent.putExtra(SearchManager.QUERY, event.getString(Event.EVENT_TITLE));
+		startActivity(intent);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
