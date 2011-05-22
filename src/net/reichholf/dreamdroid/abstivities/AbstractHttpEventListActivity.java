@@ -11,8 +11,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEv
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -84,6 +86,15 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 							dialog.dismiss();
 						}
 					});
+					
+					Button buttonIMDb = (Button) dialog.findViewById(R.id.ButtonImdb);
+					buttonIMDb.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							callImdb(mCurrentItem);
+							dialog.dismiss();
+						}
+					});
 				} else {
 					// No EPG Information is available!
 					AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -105,7 +116,23 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 		}
 		return dialog;
 	}
-
+	
+	/**
+	 * @param event
+	 */
+	protected void callImdb(ExtendedHashMap event){
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		String uriString = "imdb:///find?q=" + event.getString(Event.EVENT_TITLE);
+		intent.setData(Uri.parse(uriString));
+		try{			
+			startActivity(intent);
+		} catch(ActivityNotFoundException anfex) {
+			uriString = "http://www.imdb.com/find?q=" + event.getString(Event.EVENT_TITLE);
+			intent.setData(Uri.parse(uriString));
+			startActivity(intent);
+		}
+	}
+	
 	/**
 	 * @param event
 	 */

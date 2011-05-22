@@ -200,4 +200,5 @@
 	<string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
 	<string name="simple_remote">Simple remote layout</string>
 	<string name="screenshot_saved">Screenshot saved to \'%s\'</string>
+	<string name="imdb">IMDb</string>
 </resources>
