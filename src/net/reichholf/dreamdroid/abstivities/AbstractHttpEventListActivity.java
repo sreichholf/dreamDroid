@@ -8,13 +8,12 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEventIdRequestHandler;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -91,7 +90,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							callImdb(mCurrentItem);
+							queryImdb(mCurrentItem);
 							dialog.dismiss();
 						}
 					});
@@ -115,22 +114,6 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 			showToast(getString(R.string.error));
 		}
 		return dialog;
-	}
-	
-	/**
-	 * @param event
-	 */
-	protected void callImdb(ExtendedHashMap event){
-		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "imdb:///find?q=" + event.getString(Event.EVENT_TITLE);
-		intent.setData(Uri.parse(uriString));
-		try{			
-			startActivity(intent);
-		} catch(ActivityNotFoundException anfex) {
-			uriString = "http://www.imdb.com/find?q=" + event.getString(Event.EVENT_TITLE);
-			intent.setData(Uri.parse(uriString));
-			startActivity(intent);
-		}
 	}
 	
 	/**

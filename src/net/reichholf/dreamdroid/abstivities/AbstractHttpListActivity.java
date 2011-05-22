@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ListRequestHandler;
@@ -26,7 +27,9 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -231,6 +234,21 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		}
 	}
 
+	/**
+	 * @param event
+	 */
+	protected void queryImdb(ExtendedHashMap event){
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		String uriString = "imdb:///find?q=" + event.getString(Event.EVENT_TITLE);
+		intent.setData(Uri.parse(uriString));
+		try{			
+			startActivity(intent);
+		} catch(ActivityNotFoundException anfex) {
+			uriString = "http://www.imdb.com/find?q=" + event.getString(Event.EVENT_TITLE);
+			intent.setData(Uri.parse(uriString));
+			startActivity(intent);
+		}
+	}
 	
 	protected class SetVolumeTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mVolume;
