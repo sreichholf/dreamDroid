@@ -482,7 +482,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 								zapTo(ref);
 								break;
 
-							case 4:
+							case 3:
 								streamService(ref);
 								break;
 							}
