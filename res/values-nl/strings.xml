@@ -32,7 +32,7 @@
 
 <string name="save">Opslaan</string>
 <string name="cancel">Annuleren</string>
-<string name="fetching_data">Ophalen data...</string>
+<string name="fetching_data">Data ophalen...</string>
 <string name="parsing">Verwerken...</string>
 <string name="get_content_error">Fout in ophalen inhoud!</string>
 <string name="zap">Zap</string>
@@ -51,8 +51,8 @@
 <string name="minutes_short">min.</string>
 <string name="user">Gebruiker</string>
 <string name="user_long">Gebruikersnaam voor login</string>
-<string name="pass">Paswoord</string>
-<string name="pass_long">Paswoord voor login</string>
+<string name="pass">Wachtwoord</string>
+<string name="pass_long">Wachtwoord voor login</string>
 <string name="saving">Opslaan. Even geduld...</string>
 <string name="deleting">Verwijderen. Even geduld...</string>
 <string name="delete_confirm">Echt verwijderen?</string>
@@ -104,7 +104,7 @@
 <string name="type">Type</string>
 <string-array name="message_types">
 <item>Ja</item>
-<item>Neen</item>
+<item>Nee</item>
 <item>Waarschuwing</item>
 <item>Info</item>
 </string-array>
@@ -122,7 +122,7 @@
 <string name="no_epg_available">Er is momenteel geen Gids informatie beschikbaar voor dit kanaal!</string>
 <string name="ok">OK</string>
 <string name="activate">Aktiveer</string>
-<string name="confirm_delete_profile">Wil U dit profiel echt verwijderen?</string>
+<string name="confirm_delete_profile">Wilt U dit profiel echt verwijderen?</string>
 <string name="profile_activated">Geaktiveerd Profiel</string>
 <string name="profile_not_activated">Fout bij aktiveren profiel</string>
 <string name="profile_not_deleted">Fout bij verwijderen profiel</string>
@@ -198,6 +198,6 @@
 <string name="enable_instant_zap">gelijk zappen</string>
 <string name="enable_instant_zap_long">Gelijk zappen bij het kort aan klikken van een service</string>
 <string name="wrong_activity">Verkeerde activiteit aangeroepen! Her creëer de snelkoppeling voor dreamDroid!</string>
-<string name="simple_remote">simpele Afstandbediening</string>
+<string name="simple_remote">Simpele Afstandbediening</string>
 <string name="screenshot_saved">Screenshot opgeslagen als \'%s\'</string>
 </resources>

@@ -2,6 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 <string name="description">Descripción</string>
 <string name="title">Título</string>
+<string name="mo">Mo</string>
 <string name="app_name">DreamDroid</string>
 <string-array name="servicelist">
 <item>Bouquets(TV)</item>
@@ -13,6 +14,7 @@
 </string-array>
 <string name="timer">Temporizador</string>
 <string name="service">Servicio</string>
+<string name="afterevent">Después</string>
 <string name="location">Localización</string>
 <string-array name="afterevents">
 <item>Nada</item>
@@ -33,6 +35,7 @@
 <string name="fetching_data">Recepcionando datos...</string>
 <string name="parsing">Analizando...</string>
 <string name="get_content_error">Error de conexión</string>
+<string name="zap">Zapear</string>
 <string name="browse_epg">Buscar EPG</string>
 <string name="edit">Editar</string>
 <string name="delete">Borrar</string>
@@ -74,21 +77,22 @@
 <item>Martes</item>
 <item>Miercoles</item>
 <item>Jueves</item>
-<item>Sabado</item>
+<item>Sábado</item>
 <item>Domingo</item>
 <item></item>
 </string-array>
 <string name="none">Ninguno</string>
-<string name="choose_days">Seleciona los dias</string>
+<string name="choose_days">Seleciona los días</string>
 <string name="mo_to_fr">Lunes a Viernes</string>
-<string name="daily">Cada dia</string>
+<string name="daily">Cada día</string>
 <string name="new_timer">Nuevo temporizador</string>
 <string name="locations">Sitios</string>
 <string name="gui_version">Versión GUI</string>
 <string name="image_version">Versión de la imagen</string>
-<string name="interface_version">Version del interfaz</string>
-<string name="front_processor_version">Version procesador frontal</string>
+<string name="interface_version">Versión del interfaz</string>
+<string name="front_processor_version">Versión procesador frontal</string>
 <string name="device_name">Nombre del equipo</string>
+<string name="frontends">Frentes</string>
 <string name="nics">Adaptador de red</string>
 <string name="hdds">Discos duros</string>
 <string name="not_implemented">Esta función no esta implementada todavía</string>
@@ -165,6 +169,9 @@
 <string name="in_standby">Equipo en modo Espera</string>
 <string name="is_running">Equipo en funcionamiento</string>
 
+<string name="stream_host">Nombre del host del stream/IP</string>
+<string name="stream_host_long">Host/ip para el streaming (opcional)</string>
+<string name="stream_current">Stream actual</string>
 <string name="similar">Eventos similares</string>
 <string-array name="timer_state">
 <item>esperando...</item>
@@ -174,8 +181,8 @@
 <item>deshabilitado</item>
 </string-array>
 <string-array name="timer_action">
-<item></item>
-<item></item>
+<item>grabar</item>
+<item>zapear</item>
 </string-array>
 <string name="sleeptimer">temporizador desconexión</string>
 <string name="current_volume">Volumen a %s</string>
@@ -186,7 +193,9 @@
 <string name="extras">Extras</string>
 <string name="main_menu">Menu principal</string>
 <string name="profiles">Perfil</string>
+<string name="enable_instant_zap">zapeo instantáneo</string>
+<string name="enable_instant_zap_long">Zapeo instantáneo en presión corta sobre el servicio</string>
 <string name="wrong_activity">Llamada erronea! Rehacer los acceso directos creados para dreamDroid</string>
-<string name="simple_remote">Vissta simple control remoto</string>
+<string name="simple_remote">Vista simple control remoto</string>
 <string name="screenshot_saved">Captura pantalla guardada en \'%s\'</string>
 </resources>

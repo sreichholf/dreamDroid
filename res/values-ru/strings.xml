@@ -48,6 +48,24 @@
 <string name="deleting">Удаление. Подождите..</string>
 <string name="delete_confirm">Подтвердить удаление</string>
 <string name="apply">Применить</string>
+<string-array name="weekdays_short">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string-array name="weekdays">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
 <string name="choose_days">Выбрать дни</string>
 <string name="mo_to_fr">Рабочие дни</string>
 <string name="daily">Ежедневно</string>
@@ -57,6 +75,12 @@
 <string name="timeout">Время ожидания</string>
 <string name="message">Сообщение</string>
 <string name="send">Отправить</string>
+<string-array name="message_types">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
 <string name="current_service">Текущий сервис</string>
 <string name="now">Сейчас</string>
 <string name="next">Следующее событие</string>
@@ -81,6 +105,10 @@
 <item>выполнение...</item>
 <item>закончено</item>
 <item>отключено</item>
+</string-array>
+<string-array name="timer_action">
+<item></item>
+<item></item>
 </string-array>
 <string name="sleeptimer">Таймер сна</string>
 <string name="current_volume">Текущий уровень звука</string>

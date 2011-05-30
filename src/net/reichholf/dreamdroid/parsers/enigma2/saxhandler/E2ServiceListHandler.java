@@ -4,7 +4,6 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
 import java.util.ArrayList;

@@ -341,27 +341,6 @@ public class MainActivity extends AbstractHttpActivity {
 		return onItemClicked(item.getItemId());
 	}
 
-	// private String getTextAsset(String assetName){
-	// InputStream is;
-	// StringBuffer sb = new StringBuffer();
-	// AssetManager am = getResources().getAssets();
-	// try {
-	// is = am.open(assetName);
-	// while( true ) {
-	// int c = is.read();
-	// if( c < 0 )
-	// break;
-	// if( c >= 32 )
-	// sb.append( (char)c );
-	// }
-	// return sb.toString();
-	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// return null;
-	// }
-
 	/*
 	 * (non-Javadoc)
 	 * 
