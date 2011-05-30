@@ -3,11 +3,10 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="net.reichholf.dreamdroid" 
 	android:installLocation="auto" 
-	android:versionName="0.9.6.6" android:versionCode="94">
+	android:versionCode="99" android:versionName="0.9.6.7b4">
 	
 	<uses-sdk 
-		android:maxSdkVersion="11"
-		android:targetSdkVersion="4" android:minSdkVersion="4"></uses-sdk>
+		android:minSdkVersion="4" android:maxSdkVersion="12" android:targetSdkVersion="4"></uses-sdk>
 	
 	<supports-screens
 		android:largeScreens="true"
@@ -19,6 +18,8 @@
 	<uses-permission android:name="android.permission.INTERNET" ></uses-permission>	
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" ></uses-permission>
 	<uses-permission android:name="android.permission.VIBRATE"></uses-permission>
+	<uses-permission android:name="com.flattr4android.permission.READ_THING"/>
+	
 	
 	<application 
 		android:icon="@drawable/ic_launcher_dreamdroid" 
@@ -75,7 +76,6 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>		
 		</activity>
-		
 		<meta-data 
 			android:name="android.app.default_searchable"
 			android:value=".activities.SearchEpgActivity" ></meta-data>

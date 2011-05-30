@@ -26,6 +26,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -83,18 +84,18 @@ public class MainActivity extends AbstractHttpActivity {
 	private Button mButtonEpgSearch;
 	private Button mButtonRemote;
 	private Button mButtonSleepTimer;
-	private Button mButtonScreenshot;	
-	private Button mButtonDeviceInfo;	
+	private Button mButtonScreenshot;
+	private Button mButtonDeviceInfo;
 	private Button mButtonMessage;
 	private Button mButtonAbout;
-	
+
 	private boolean mExtras;
-	
+
 	private SetPowerStateTask mSetPowerStateTask;
 	private SleepTimerTask mSleepTimerTask;
-	
+
 	private ExtendedHashMap mSleepTimer;
-	
+
 	private TabbedNavigationActivity mParent;
 
 	/**
@@ -146,20 +147,20 @@ public class MainActivity extends AbstractHttpActivity {
 		}
 	}
 
-
 	/**
 	 * @author sre
-	 *
+	 * 
 	 */
 	private class SleepTimerTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mResult;
 		private SleepTimerRequestHandler mHandler;
 		private boolean mDialogOnFinish;
-		
-		public SleepTimerTask(boolean dialogOnFinish){
+
+		public SleepTimerTask(boolean dialogOnFinish) {
 			mHandler = new SleepTimerRequestHandler();
-			mDialogOnFinish = dialogOnFinish;			
+			mDialogOnFinish = dialogOnFinish;
 		}
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -201,15 +202,15 @@ public class MainActivity extends AbstractHttpActivity {
 		 */
 		protected void onPostExecute(Boolean result) {
 			removeDialog(DIALOG_SLEEPTIMER_PROGRESS_ID);
-			
+
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 			}
-			
+
 			onSleepTimerResult(result, mResult, mDialogOnFinish);
 		}
 	}
-	
+
 	/**
 	 * @param time
 	 * @param action
@@ -220,20 +221,20 @@ public class MainActivity extends AbstractHttpActivity {
 		params.add(new BasicNameValuePair("cmd", SleepTimer.CMD_SET));
 		params.add(new BasicNameValuePair("time", time));
 		params.add(new BasicNameValuePair("action", action));
-		
-		if(enabled){
+
+		if (enabled) {
 			params.add(new BasicNameValuePair("enabled", Python.TRUE));
 		} else {
 			params.add(new BasicNameValuePair("enabled", Python.FALSE));
 		}
-		
+
 		execSleepTimerTask(params, false);
 	}
-	
+
 	/**
 	 * 
 	 */
-	private void getSleepTimer(boolean showDialogOnFinish){
+	private void getSleepTimer(boolean showDialogOnFinish) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		execSleepTimerTask(params, showDialogOnFinish);
 
@@ -243,7 +244,7 @@ public class MainActivity extends AbstractHttpActivity {
 	 * @param params
 	 */
 	@SuppressWarnings("unchecked")
-	private void execSleepTimerTask(ArrayList<NameValuePair> params, boolean showDialogOnFinish){
+	private void execSleepTimerTask(ArrayList<NameValuePair> params, boolean showDialogOnFinish) {
 		if (mSleepTimerTask != null) {
 			mSleepTimerTask.cancel(true);
 		}
@@ -251,7 +252,7 @@ public class MainActivity extends AbstractHttpActivity {
 		mSleepTimerTask = new SleepTimerTask(showDialogOnFinish);
 		mSleepTimerTask.execute(params);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -263,37 +264,37 @@ public class MainActivity extends AbstractHttpActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mExtras = getIntent().getBooleanExtra("extras", false);
-		if(mExtras){
+		if (mExtras) {
 			setContentView(R.layout.extras);
-				mButtonSleepTimer = (Button) findViewById(R.id.ButtonSleeptimer);
-				mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
-				
-				mButtonScreenshot = (Button) findViewById(R.id.ButtonScreenshot);
-				mButtonDeviceInfo = (Button) findViewById(R.id.ButtonDeviceInfo);
-				mButtonAbout = (Button) findViewById(R.id.ButtonAbout);				
-				mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
-				
-				registerOnClickListener(mButtonSleepTimer, ITEM_SLEEPTIMER);
-				registerOnClickListener(mButtonScreenshot, ITEM_SCREENSHOT);
-				registerOnClickListener(mButtonDeviceInfo, ITEM_INFO);
-				registerOnClickListener(mButtonAbout, ITEM_ABOUT);
-				registerOnClickListener(mButtonMessage, ITEM_MESSAGE);			
+			mButtonSleepTimer = (Button) findViewById(R.id.ButtonSleeptimer);
+			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
+
+			mButtonScreenshot = (Button) findViewById(R.id.ButtonScreenshot);
+			mButtonDeviceInfo = (Button) findViewById(R.id.ButtonDeviceInfo);
+			mButtonAbout = (Button) findViewById(R.id.ButtonAbout);
+			mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
+
+			registerOnClickListener(mButtonSleepTimer, ITEM_SLEEPTIMER);
+			registerOnClickListener(mButtonScreenshot, ITEM_SCREENSHOT);
+			registerOnClickListener(mButtonDeviceInfo, ITEM_INFO);
+			registerOnClickListener(mButtonAbout, ITEM_ABOUT);
+			registerOnClickListener(mButtonMessage, ITEM_MESSAGE);
 		} else {
 			setContentView(R.layout.main);
-	
+
 			mButtonPower = (Button) findViewById(R.id.ButtonPower);
 			mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
-	
+
 			mButtonConnectivity = (Button) findViewById(R.id.ButtonCheckConnection);
 			mButtonMovies = (Button) findViewById(R.id.ButtonMovies);
 			mButtonServices = (Button) findViewById(R.id.ButtonServices);
 			mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
 			mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
 			mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
-	
+
 			registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
 			registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
-	
+
 			registerOnClickListener(mButtonConnectivity, ITEM_CHECK_CONN);
 			registerOnClickListener(mButtonMovies, ITEM_MOVIES);
 			registerOnClickListener(mButtonServices, ITEM_SERVICES);
@@ -301,11 +302,12 @@ public class MainActivity extends AbstractHttpActivity {
 			registerOnClickListener(mButtonRemote, ITEM_REMOTE);
 			registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
 		}
-		
+
 		mSleepTimer = new ExtendedHashMap();
 
 		mParent = (TabbedNavigationActivity) getParent();
-		if(mParent == null){ //For backwards compat, please do not remove this code! 
+		if (mParent == null) { // For backwards compat, please do not remove
+								// this code!
 			showToast(getString(R.string.wrong_activity));
 			Intent intent = new Intent(this, TabbedNavigationActivity.class);
 			startActivity(intent);
@@ -323,12 +325,12 @@ public class MainActivity extends AbstractHttpActivity {
 		menu.add(0, ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		return true;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -338,6 +340,27 @@ public class MainActivity extends AbstractHttpActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
 	}
+
+	// private String getTextAsset(String assetName){
+	// InputStream is;
+	// StringBuffer sb = new StringBuffer();
+	// AssetManager am = getResources().getAssets();
+	// try {
+	// is = am.open(assetName);
+	// while( true ) {
+	// int c = is.read();
+	// if( c < 0 )
+	// break;
+	// if( c >= 32 )
+	// sb.append( (char)c );
+	// }
+	// return sb.toString();
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// return null;
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -410,13 +433,13 @@ public class MainActivity extends AbstractHttpActivity {
 		case DIALOG_ABOUT_ID:
 			dialog = new Dialog(this);
 			dialog.setContentView(R.layout.about);
-			dialog.setTitle(R.string.about);
-
+			dialog.setTitle(R.string.about);			
+			
 			TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
 			CharSequence text = DreamDroid.VERSION_STRING + "\n\n" + getText(R.string.license) + "\n\n"
 					+ getText(R.string.source_code_link);
 			aboutText.setText(text);
-
+			
 			Button buttonCloseAbout = (Button) dialog.findViewById(R.id.ButtonClose);
 
 			buttonCloseAbout.setOnClickListener(new OnClickListener() {
@@ -426,6 +449,17 @@ public class MainActivity extends AbstractHttpActivity {
 				}
 
 			});
+			
+			Button buttonDonate = (Button) dialog.findViewById(R.id.ButtonDonate);
+			buttonDonate.setOnClickListener(new OnClickListener(){
+				@Override
+				public void onClick(View view) {
+					Uri uriUrl = Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=stephan%40reichholf%2enet&item_name=dreamDroid&lc=EN&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted");
+					Intent i = new Intent(Intent.ACTION_VIEW, uriUrl);
+					startActivity(i);					
+				}				
+			});
+						
 			break;
 		
 		case DIALOG_SLEEPTIMER_ID:
@@ -583,18 +617,16 @@ public class MainActivity extends AbstractHttpActivity {
 		case ITEM_CHECK_CONN:
 			mParent.checkActiveProfile();
 			return true;
-		
+
 		case ITEM_SLEEPTIMER:
 			getSleepTimer(true);
 			return true;
-			
+
 		default:
 			return super.onItemClicked(id);
 		}
 	}
-	
-	
-	
+
 	/**
 	 * @param state
 	 *            The powerstate to set. For example defined in
@@ -615,10 +647,10 @@ public class MainActivity extends AbstractHttpActivity {
 	 * @param isRunning
 	 */
 	private void onPowerStateSet(boolean isRunning) {
-		if(isRunning){
+		if (isRunning) {
 			showToast(getString(R.string.is_running));
 		} else {
-			showToast(getString(R.string.in_standby));			
+			showToast(getString(R.string.in_standby));
 		}
 	}
 
@@ -638,24 +670,24 @@ public class MainActivity extends AbstractHttpActivity {
 		msg.put(Message.TEXT, text);
 		msg.put(Message.TYPE, type);
 		msg.put(Message.TIMEOUT, timeout);
-		
+
 		execSimpleResultTask(new MessageRequestHandler(), Message.getParams(msg));
 	}
-	
-	public void setAvailableFeatures(){
-		if(mExtras){
+
+	public void setAvailableFeatures() {
+		if (mExtras) {
 			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
 		}
 	}
-	
+
 	/**
 	 * @param success
 	 * @param sleepTimer
 	 */
-	private void onSleepTimerResult(boolean success, ExtendedHashMap sleepTimer, boolean openDialog){
-		if(success){
+	private void onSleepTimerResult(boolean success, ExtendedHashMap sleepTimer, boolean openDialog) {
+		if (success) {
 			mSleepTimer = sleepTimer;
-			if(openDialog){
+			if (openDialog) {
 				showDialog(DIALOG_SLEEPTIMER_ID);
 				return;
 			}
@@ -665,5 +697,5 @@ public class MainActivity extends AbstractHttpActivity {
 			showToast(getString(R.string.error));
 		}
 	}
-	
+
 }
