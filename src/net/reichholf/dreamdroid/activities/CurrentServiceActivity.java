@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEventIdRequestHandler;
+import net.reichholf.dreamdroid.intents.IntentFactory;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -29,8 +30,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -377,7 +378,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							queryImdb(mCurrentItem);
+							startActivity( IntentFactory.getIMDbQueryIntent(mCurrentItem) );
 							dialog.dismiss();
 						}
 					});

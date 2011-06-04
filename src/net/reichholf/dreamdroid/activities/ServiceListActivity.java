@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.intents.IntentFactory;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -22,10 +23,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -401,19 +400,6 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		startActivity(intent);
 	}
 
-	/**
-	 * @param ref
-	 *            A ServiceReference
-	 */
-	private void streamService(String ref) {
-		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "http://" + DreamDroid.PROFILE.getStreamHost().trim() + ":8001/" + ref;
-		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
-
-		intent.setDataAndType(Uri.parse(uriString), "video/*");
-		startActivity(intent);
-	}
-
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mCurrentItem = mMapList.get(position);
 		final String ref = mCurrentItem.getString(Event.SERVICE_REFERENCE);
@@ -483,7 +469,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 								break;
 
 							case 3:
-								streamService(ref);
+								startActivity( IntentFactory.getStreamServiceIntent(ref) );
 								break;
 							}
 						}

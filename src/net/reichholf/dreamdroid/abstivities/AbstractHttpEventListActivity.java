@@ -15,7 +15,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEventIdRequestHandler;
-
+import net.reichholf.dreamdroid.intents.IntentFactory;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -98,7 +98,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							queryImdb(mCurrentItem);
+							startActivity( IntentFactory.getIMDbQueryIntent(mCurrentItem) );
 							dialog.dismiss();
 						}
 					});

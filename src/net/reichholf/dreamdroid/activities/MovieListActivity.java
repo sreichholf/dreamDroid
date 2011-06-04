@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieDeleteRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieListRequestHandler;
+import net.reichholf.dreamdroid.intents.IntentFactory;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -338,6 +339,12 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		return dialog;
 	}
 	
+	/**
+	 * @param v
+	 * @param position
+	 * @param id
+	 * @param isLong
+	 */
 	private void onListItemClick(View v, int position, long id, boolean isLong){
 		mMovie = mMapList.get(position);
 		boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
@@ -369,7 +376,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 						startActivity(intent);
 						break;
 					case 3:
-						streamFile(mMovie.getString(Movie.FILE_NAME));
+						startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.FILE_NAME)) );
 						break;
 					default:
 						return;
@@ -419,21 +426,6 @@ public class MovieListActivity extends AbstractHttpListActivity {
 				mReloadOnSimpleResult = false;
 			}
 		}
-	}
-
-	/**
-	 * @param ref
-	 *            A ServiceReference
-	 */
-	private void streamFile(String fileName) {
-		Intent intent = new Intent(Intent.ACTION_VIEW);
-		SimpleHttpClient shc = SimpleHttpClient.getInstance();
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("file", fileName));
-		String uriString = shc.buildStreamUrl(URIStore.FILE, params);
-
-		intent.setDataAndType(Uri.parse(uriString), "video/*");
-		startActivity(intent);
 	}
 
 	/**
