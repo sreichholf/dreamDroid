@@ -18,9 +18,9 @@ import org.apache.http.message.BasicNameValuePair;
  *
  */
 public class Message extends SimpleResult {
-	public static final String TEXT = "message";
-	public static final String TYPE = "type";
-	public static final String TIMEOUT = "timeout";	
+	public static final String KEY_TEXT = "message";
+	public static final String KEY_TYPE = "type";
+	public static final String KEY_TIMEOUT = "timeout";	
 	public static final String MESSAGE_TYPE_WARNING = "1";
 	public static final String MESSAGE_TYPE_INFO = "2";
 	public static final String MESSAGE_TYPE_ERROR = "3";
@@ -41,9 +41,9 @@ public class Message extends SimpleResult {
 	
 	public static ArrayList<NameValuePair> getParams(ExtendedHashMap message){
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("text", message.getString(TEXT)));
-		params.add(new BasicNameValuePair("type", message.getString(TYPE)));
-		params.add(new BasicNameValuePair("timeout", message.getString(TIMEOUT)));
+		params.add(new BasicNameValuePair("text", message.getString(KEY_TEXT)));
+		params.add(new BasicNameValuePair("type", message.getString(KEY_TYPE)));
+		params.add(new BasicNameValuePair("timeout", message.getString(KEY_TIMEOUT)));
 		
 		return params;
 	}

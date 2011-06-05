@@ -140,7 +140,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	 */
 	private void setAdapter() {
 		mAdapter = new SimpleAdapter(this, mMapList, R.layout.epg_multi_service_list_item, new String[] {
-				Event.SERVICE_NAME, Event.EVENT_TITLE, Event.EVENT_START_READABLE, Event.EVENT_DURATION_READABLE },
+				Event.KEY_SERVICE_NAME, Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_READABLE, Event.KEY_EVENT_DURATION_READABLE },
 				new int[] { R.id.service_name, R.id.event_title, R.id.event_start, R.id.event_duration });
 		setListAdapter(mAdapter);
 	}

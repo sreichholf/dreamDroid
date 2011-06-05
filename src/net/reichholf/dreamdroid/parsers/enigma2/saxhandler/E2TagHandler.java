@@ -12,6 +12,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class E2TagHandler extends DefaultHandler {
+
+	protected static final String TAG_E2TAG = "e2tag";
+
 	private boolean inTag;
 	private String tag;
 	private ArrayList<String> mTaglist; // List of locations
@@ -31,7 +34,7 @@ public class E2TagHandler extends DefaultHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals("e2tag")) {
+		if (localName.equals(TAG_E2TAG)) {
 			inTag = true;
 			tag = "";
 		}
@@ -45,7 +48,7 @@ public class E2TagHandler extends DefaultHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2tag")) {
+		if (localName.equals(TAG_E2TAG)) {
 			inTag = false;
 			mTaglist.add(tag.trim());
 		}

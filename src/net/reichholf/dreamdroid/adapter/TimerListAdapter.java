@@ -62,23 +62,23 @@ public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			TextView state = (TextView) view.findViewById(R.id.timer_state);
 			TextView stateIndicator = (TextView) view.findViewById(R.id.timer_state_indicator);
 			
-			timerName.setText(timer.getString(Timer.NAME));
-			serviceName.setText(timer.getString(Timer.SERVICE_NAME));
-			begin.setText(timer.getString(Timer.BEGIN_READEABLE));
-			end.setText(timer.getString(Timer.END_READABLE));
+			timerName.setText(timer.getString(Timer.KEY_NAME));
+			serviceName.setText(timer.getString(Timer.KEY_SERVICE_NAME));
+			begin.setText(timer.getString(Timer.KEY_BEGIN_READEABLE));
+			end.setText(timer.getString(Timer.KEY_END_READABLE));
 			
 			int actionId = 0;
 			
 			try{			
-				actionId = Integer.parseInt(timer.getString(Timer.JUST_PLAY));
+				actionId = Integer.parseInt(timer.getString(Timer.KEY_JUST_PLAY));
 			} catch (Exception e){
 				Log.e(DreamDroid.LOG_TAG, "[TimerListAdapter] Error getting timer action: " + e.getMessage());
 			}
 			
 			action.setText(mAction[actionId]);
 			
-			int stateId = Integer.parseInt(timer.getString(Timer.STATE));
-			int disabled = Integer.parseInt(timer.getString(Timer.DISABLED));
+			int stateId = Integer.parseInt(timer.getString(Timer.KEY_STATE));
+			int disabled = Integer.parseInt(timer.getString(Timer.KEY_DISABLED));
 			//The state for disabled timers is 3 
 			//If any timer is disabled we add 1 to the state get the disabled color/text
 			stateId += disabled;

@@ -22,10 +22,10 @@ public class SleepTimer {
 	public static final String CMD_GET = "get";
 	public static final String CMD_SET = "set";
 	
-	public static final String ENABLED = "enabled";
-	public static final String MINUTES = "minutes";
-	public static final String ACTION = "action";
-	public static final String TEXT = "text";
+	public static final String KEY_ENABLED = "enabled";
+	public static final String KEY_MINUTES = "minutes";
+	public static final String KEY_ACTION = "action";
+	public static final String KEY_TEXT = "text";
 	
 	public static ExtendedHashMap parse(String xml){
 		ExtendedHashMap result = new ExtendedHashMap();

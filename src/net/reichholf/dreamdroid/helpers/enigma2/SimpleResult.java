@@ -14,8 +14,8 @@ import net.reichholf.dreamdroid.parsers.GenericSaxParser;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleResultHandler;
 
 public class SimpleResult {
-	public static final String STATE = "state";
-	public static final String STATE_TEXT = "statetext";
+	public static final String KEY_STATE = "state";
+	public static final String KEY_STATE_TEXT = "statetext";
 	
 	public static ExtendedHashMap parseSimpleResult(String xml) {
 		ExtendedHashMap result = new ExtendedHashMap();
@@ -28,8 +28,8 @@ public class SimpleResult {
 		if (sdp.parse(xml)) {
 			return result;
 		} else {
-			result.put(STATE, Python.FALSE);
-			result.put(STATE_TEXT, null);
+			result.put(KEY_STATE, Python.FALSE);
+			result.put(KEY_STATE_TEXT, null);
 			return result;
 		}
 	}

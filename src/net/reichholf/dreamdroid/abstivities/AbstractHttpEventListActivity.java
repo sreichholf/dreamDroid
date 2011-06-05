@@ -55,13 +55,13 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 			switch (id) {
 			case DIALOG_EPG_ITEM_ID:
 	
-				String servicename = mCurrentItem.getString(Event.SERVICE_NAME);
-				String title = mCurrentItem.getString(Event.EVENT_TITLE);
-				String date = mCurrentItem.getString(Event.EVENT_START_READABLE);
+				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
+				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);
+				String date = mCurrentItem.getString(Event.KEY_EVENT_START_READABLE);
 				if (!"N/A".equals(title) && date != null) {
-					date = date.concat(" (" + (String) mCurrentItem.getString(Event.EVENT_DURATION_READABLE) + " "
+					date = date.concat(" (" + (String) mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
 							+ getText(R.string.minutes_short) + ")");
-					String descEx = mCurrentItem.getString(Event.EVENT_DESCRIPTION_EXTENDED);
+					String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 	
 					dialog = new Dialog(this);
 					dialog.setContentView(R.layout.epg_item_dialog);
@@ -153,7 +153,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 	protected void findSimilarEvents(ExtendedHashMap event){
 		Intent intent = new Intent(this, SearchEpgActivity.class);
 		intent.setAction(Intent.ACTION_SEARCH);
-		intent.putExtra(SearchManager.QUERY, event.getString(Event.EVENT_TITLE));
+		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
 		startActivity(intent);
 	}
 	
@@ -196,7 +196,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 
 		String toastText = (String) getText(R.string.get_content_error);
 
-		String stateText = result.getString(SimpleResult.STATE_TEXT);
+		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
 
 		if (stateText != null && !"".equals(stateText)) {
 			toastText = stateText;

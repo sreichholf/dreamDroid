@@ -31,6 +31,13 @@ public class URIStore {
 	public static final String SUBSERVICES 				= "/web/subservices";
 	public static final String SUBSERVICES_STREAM 		= "/web/streamsubservices?";
 	public static final String TAGS 					= "/web/gettags";
+	public static final String MEDIA_PLAYER_ADD 		= "/web/mediaplayeradd?";
+	public static final String MEDIA_PLAYER_CMD 		= "/web/mediaplayercmd?";
+	public static final String MEDIA_PLAYER_CURRENT		= "/web/mediaplayercurrent?";
+	public static final String MEDIA_PLAYER_LIST		= "/web/mediaplayerlist?";
+	public static final String MEDIA_PLAYER_PLAY		= "/web/mediaplayerplay?";
+	public static final String MEDIA_PLAYER_REMOVE		= "/web/mediaplayerremove?";
+	public static final String MEDIA_PLAYER_WRITE		= "/web/mediaplayerwrite?";	
 	public static final String MOVIES					= "/web/movielist?";
 	public static final String MOVIE_DELETE				= "/web/moviedelete?";
 	public static final String TIMER_LIST				= "/web/timerlist";

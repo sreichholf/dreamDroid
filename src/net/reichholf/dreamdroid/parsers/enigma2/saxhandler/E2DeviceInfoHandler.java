@@ -20,6 +20,24 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class E2DeviceInfoHandler extends DefaultHandler {
 
+	protected static final String TAG_E2ENIGMAVERSION = "e2enigmaversion";
+	protected static final String TAG_E2IMAGEVERSION = "e2imageversion";
+	protected static final String TAG_E2WEBIFVERSION = "e2webifversion";
+	protected static final String TAG_E2FPVERSION = "e2fpversion";
+	protected static final String TAG_E2DEVICENAME = "e2devicename";
+	protected static final String TAG_E2FRONTEND = "e2frontend";
+	protected static final String TAG_E2NAME = "e2name";
+	protected static final String TAG_E2MODEL = "e2model";
+	protected static final String TAG_E2INTERFACE = "e2interface";
+	protected static final String TAG_E2MAC = "e2mac";
+	protected static final String TAG_E2DHCP = "e2dhcp";
+	protected static final String TAG_E2IP = "e2ip";
+	protected static final String TAG_E2GATEWAY = "e2gateway";
+	protected static final String TAG_E2NETMASK = "e2netmask";
+	protected static final String TAG_E2HDD = "e2hdd";
+	protected static final String TAG_E2CAPACITY = "e2capacity";
+	protected static final String TAG_E2FREE = "e2free";
+
 	public E2DeviceInfoHandler(ExtendedHashMap map) {
 		mDeviceInfo = map;
 	}
@@ -70,44 +88,43 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
-	public void startElement(String namespaceUri, String localName,
-			String qName, Attributes attrs) {
-		if (localName.equals("e2enigmaversion")) {
+	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
+		if (localName.equals(TAG_E2ENIGMAVERSION)) {
 			inGuiV = true;
-		} else if (localName.equals("e2imageversion")) {
+		} else if (localName.equals(TAG_E2IMAGEVERSION)) {
 			inImageV = true;
-		} else if (localName.equals("e2webifversion")) {
+		} else if (localName.equals(TAG_E2WEBIFVERSION)) {
 			inInterfaceV = true;
-		} else if (localName.equals("e2fpversion")) {
+		} else if (localName.equals(TAG_E2FPVERSION)) {
 			inFpV = true;
-		} else if (localName.equals("e2devicename")) {
+		} else if (localName.equals(TAG_E2DEVICENAME)) {
 			inDeviceName = true;
-		} else if (localName.equals("e2frontend")) {
+		} else if (localName.equals(TAG_E2FRONTEND)) {
 			inFrontend = true;
 			mFrontendData = new ExtendedHashMap();
-		} else if (localName.equals("e2name")) {
+		} else if (localName.equals(TAG_E2NAME)) {
 			inName = true;
-		} else if (localName.equals("e2model")) {
+		} else if (localName.equals(TAG_E2MODEL)) {
 			inModel = true;
-		} else if (localName.equals("e2interface")) {
+		} else if (localName.equals(TAG_E2INTERFACE)) {
 			inInterface = true;
 			mNicData = new ExtendedHashMap();
-		} else if (localName.equals("e2mac")) {
+		} else if (localName.equals(TAG_E2MAC)) {
 			inMac = true;
-		} else if (localName.equals("e2dhcp")) {
+		} else if (localName.equals(TAG_E2DHCP)) {
 			inDhcp = true;
-		} else if (localName.equals("e2ip")) {
+		} else if (localName.equals(TAG_E2IP)) {
 			inIp = true;
-		} else if (localName.equals("e2gateway")) {
+		} else if (localName.equals(TAG_E2GATEWAY)) {
 			inGateway = true;
-		} else if (localName.equals("e2netmask")) {
+		} else if (localName.equals(TAG_E2NETMASK)) {
 			inNetmask = true;
-		} else if (localName.equals("e2hdd")) {
+		} else if (localName.equals(TAG_E2HDD)) {
 			inHdd = true;
 			mHddData = new ExtendedHashMap();
-		} else if (localName.equals("e2capacity")) {
+		} else if (localName.equals(TAG_E2CAPACITY)) {
 			inCapacity = true;
-		} else if (localName.equals("e2free")) {
+		} else if (localName.equals(TAG_E2FREE)) {
 			inFree = true;
 		}
 	}
@@ -121,67 +138,67 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
 		try {
-			if (localName.equals("e2enigmaversion")) {
+			if (localName.equals(TAG_E2ENIGMAVERSION)) {
 				inGuiV = false;
 
-			} else if (localName.equals("e2imageversion")) {
+			} else if (localName.equals(TAG_E2IMAGEVERSION)) {
 				inImageV = false;
 
-			} else if (localName.equals("e2webifversion")) {
+			} else if (localName.equals(TAG_E2WEBIFVERSION)) {
 				inInterfaceV = false;
 
-			} else if (localName.equals("e2fpversion")) {
+			} else if (localName.equals(TAG_E2FPVERSION)) {
 				inFpV = false;
 
-			} else if (localName.equals("e2devicename")) {
+			} else if (localName.equals(TAG_E2DEVICENAME)) {
 				inDeviceName = false;
 
-			} else if (localName.equals("e2frontend")) {
+			} else if (localName.equals(TAG_E2FRONTEND)) {
 				inFrontend = false;
 				mFrontends.add(mFrontendData);
 
 			} else if (localName.equals("e2frontends")) {
-				mDeviceInfo.putOrConcat(DeviceInfo.FRONTENDS, mFrontends);
+				mDeviceInfo.putOrConcat(DeviceInfo.KEY_FRONTENDS, mFrontends);
 
-			} else if (localName.equals("e2name")) {
+			} else if (localName.equals(TAG_E2NAME)) {
 				inName = false;
 
-			} else if (localName.equals("e2model")) {
+			} else if (localName.equals(TAG_E2MODEL)) {
 				inModel = false;
 
-			} else if (localName.equals("e2interface")) {
+			} else if (localName.equals(TAG_E2INTERFACE)) {
 				inInterface = false;
 				mNics.add(mNicData);
 
 			} else if (localName.equals("e2network")) {
-				mDeviceInfo.putOrConcat(DeviceInfo.NICS, mNics);
+				mDeviceInfo.putOrConcat(DeviceInfo.KEY_NICS, mNics);
 
-			} else if (localName.equals("e2mac")) {
+			} else if (localName.equals(TAG_E2MAC)) {
 				inMac = false;
 
-			} else if (localName.equals("e2dhcp")) {
+			} else if (localName.equals(TAG_E2DHCP)) {
 				inDhcp = false;
 
-			} else if (localName.equals("e2ip")) {
+			} else if (localName.equals(TAG_E2IP)) {
 				inIp = false;
 
-			} else if (localName.equals("e2gateway")) {
+			} else if (localName.equals(TAG_E2GATEWAY)) {
 				inGateway = false;
 
-			} else if (localName.equals("e2netmask")) {
+			} else if (localName.equals(TAG_E2NETMASK)) {
 				inNetmask = false;
 
-			} else if (localName.equals("e2hdd")) {
+			} else if (localName.equals(TAG_E2HDD)) {
 				inHdd = false;
 				mHdds.add(mHddData);
 
 			} else if (localName.equals("e2hdds")) {
-				mDeviceInfo.putOrConcat(DeviceInfo.HDDS, mHdds);
+				mDeviceInfo.putOrConcat(DeviceInfo.KEY_HDDS, mHdds);
 
-			} else if (localName.equals("e2capacity")) {
+			} else if (localName.equals(TAG_E2CAPACITY)) {
 				inCapacity = false;
 
-			} else if (localName.equals("e2free")) {
+			} else if (localName.equals(TAG_E2FREE)) {
 				inFree = false;
 
 			}
@@ -200,47 +217,44 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 		String value = new String(ch, start, length);
 
 		if (inGuiV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.GUI_VERSION, value.trim());
+			mDeviceInfo.putOrConcat(DeviceInfo.KEY_GUI_VERSION, value.trim());
 		} else if (inImageV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.IMAGE_VERSION, value.trim());
+			mDeviceInfo.putOrConcat(DeviceInfo.KEY_IMAGE_VERSION, value.trim());
 		} else if (inInterfaceV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.INTERFACE_VERSION, value.trim());
+			mDeviceInfo.putOrConcat(DeviceInfo.KEY_INTERFACE_VERSION, value.trim());
 		} else if (inFpV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.FRONT_PROCESSOR_VERSION, value
-					.trim());
+			mDeviceInfo.putOrConcat(DeviceInfo.KEY_FRONT_PROCESSOR_VERSION, value.trim());
 		} else if (inDeviceName) {
-			mDeviceInfo.putOrConcat(DeviceInfo.DEVICE_NAME, value.trim());
+			mDeviceInfo.putOrConcat(DeviceInfo.KEY_DEVICE_NAME, value.trim());
 		} else if (inFrontend) {
 			if (inName) {
-				mFrontendData
-						.putOrConcat(DeviceInfo.FRONTEND_NAME, value.trim());
+				mFrontendData.putOrConcat(DeviceInfo.KEY_FRONTEND_NAME, value.trim());
 			} else if (inModel) {
-				mFrontendData.putOrConcat(DeviceInfo.FRONTEND_MODEL, value
-						.trim());
+				mFrontendData.putOrConcat(DeviceInfo.KEY_FRONTEND_MODEL, value.trim());
 			}
 
 		} else if (inInterface) {
 			if (inName) {
-				mNicData.putOrConcat(DeviceInfo.NIC_NAME, value.trim());
+				mNicData.putOrConcat(DeviceInfo.KEY_NIC_NAME, value.trim());
 			} else if (inMac) {
-				mNicData.putOrConcat(DeviceInfo.NIC_MAC, value.trim());
+				mNicData.putOrConcat(DeviceInfo.KEY_NIC_MAC, value.trim());
 			} else if (inDhcp) {
-				mNicData.putOrConcat(DeviceInfo.NIC_DHCP, value.trim());
+				mNicData.putOrConcat(DeviceInfo.KEY_NIC_DHCP, value.trim());
 			} else if (inIp) {
-				mNicData.putOrConcat(DeviceInfo.NIC_IP, value.trim());
+				mNicData.putOrConcat(DeviceInfo.KEY_NIC_IP, value.trim());
 			} else if (inGateway) {
-				mNicData.putOrConcat(DeviceInfo.NIC_GATEWAY, value.trim());
+				mNicData.putOrConcat(DeviceInfo.KEY_NIC_GATEWAY, value.trim());
 			} else if (inNetmask) {
-				mNicData.putOrConcat(DeviceInfo.NIC_NETMASK, value.trim());
+				mNicData.putOrConcat(DeviceInfo.KEY_NIC_NETMASK, value.trim());
 			}
 
 		} else if (inHdd) {
 			if (inModel) {
-				mHddData.putOrConcat(DeviceInfo.HDD_MODEL, value.trim());
+				mHddData.putOrConcat(DeviceInfo.KEY_HDD_MODEL, value.trim());
 			} else if (inCapacity) {
-				mHddData.putOrConcat(DeviceInfo.HDD_CAPACITY, value.trim());
+				mHddData.putOrConcat(DeviceInfo.KEY_HDD_CAPACITY, value.trim());
 			} else if (inFree) {
-				mHddData.putOrConcat(DeviceInfo.HDD_FREE_SPACE, value.trim());
+				mHddData.putOrConcat(DeviceInfo.KEY_HDD_FREE_SPACE, value.trim());
 			}
 		}
 	}

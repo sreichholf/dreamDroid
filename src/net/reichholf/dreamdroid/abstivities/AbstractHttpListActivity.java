@@ -249,7 +249,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			if (xml != null) {
 				ExtendedHashMap volume = mHandler.parse(xml);
 
-				String current = volume.getString(Volume.CURRENT);
+				String current = volume.getString(Volume.KEY_CURRENT);
 				if(current != null){
 					mVolume = volume;
 					return true;
@@ -517,7 +517,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	 */
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		String toastText = (String) getText(R.string.get_content_error);
-		String stateText = result.getString(SimpleResult.STATE_TEXT);
+		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
 
 		if (stateText != null && !"".equals(stateText)) {
 			toastText = stateText;
@@ -562,11 +562,11 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 		if( DreamDroid.SP.getBoolean("volume_control", false) ) {
 			switch (keyCode) {
 				case KeyEvent.KEYCODE_VOLUME_UP:
-					onVolumeButtonClicked(Volume.COMMAND_UP);
+					onVolumeButtonClicked(Volume.CMD_UP);
 					return true;
 	
 				case KeyEvent.KEYCODE_VOLUME_DOWN:
-					onVolumeButtonClicked(Volume.COMMAND_DOWN);
+					onVolumeButtonClicked(Volume.CMD_DOWN);
 					return true;
 			}
 		}
@@ -605,9 +605,9 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	private void onVolumeSet(boolean success, ExtendedHashMap volume){
 		String text = getString(R.string.get_content_error);
 		if(success){
-			if(Python.TRUE.equals( volume.getString(Volume.RESULT)) ){
-				String current = volume.getString(Volume.CURRENT);
-				boolean muted = Python.TRUE.equals( volume.getString(Volume.MUTED) );
+			if(Python.TRUE.equals( volume.getString(Volume.KEY_RESULT)) ){
+				String current = volume.getString(Volume.KEY_CURRENT);
+				boolean muted = Python.TRUE.equals( volume.getString(Volume.KEY_MUTED) );
 				if(muted){
 					text = getString(R.string.current_volume, getString(R.string.muted));					
 				} else {

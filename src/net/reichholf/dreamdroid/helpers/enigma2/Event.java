@@ -15,27 +15,27 @@ import net.reichholf.dreamdroid.helpers.Python;
  * 
  */
 public class Event{	
-	public static final String EVENT_ID = "eventid";
-	public static final String EVENT_NAME = "eventname";
-	public static final String EVENT_START = "eventstart";
-	public static final String EVENT_START_READABLE = "eventstart_readable";
-	public static final String EVENT_START_TIME_READABLE = "eventstarttime_readable";
-	public static final String EVENT_DURATION = "eventduration";
-	public static final String EVENT_DURATION_READABLE = "eventduration_readable";
-	public static final String EVENT_REMAINING = "eventremaining";
-	public static final String EVENT_REMAINING_READABLE = "eventremaining_readable";
-	public static final String CURRENT_TIME = "currenttime";
-	public static final String EVENT_TITLE = "eventtitle";
-	public static final String EVENT_DESCRIPTION = "eventdescription";
-	public static final String EVENT_DESCRIPTION_EXTENDED = "eventdescriptionextended";
-	public static final String SERVICE_REFERENCE = "reference";
-	public static final String SERVICE_NAME = "name";
+	public static final String KEY_EVENT_ID = "eventid";
+	public static final String KEY_EVENT_NAME = "eventname";
+	public static final String KEY_EVENT_START = "eventstart";
+	public static final String KEY_EVENT_START_READABLE = "eventstart_readable";
+	public static final String KEY_EVENT_START_TIME_READABLE = "eventstarttime_readable";
+	public static final String KEY_EVENT_DURATION = "eventduration";
+	public static final String KEY_EVENT_DURATION_READABLE = "eventduration_readable";
+	public static final String KEY_EVENT_REMAINING = "eventremaining";
+	public static final String KEY_EVENT_REMAINING_READABLE = "eventremaining_readable";
+	public static final String KEY_CURRENT_TIME = "currenttime";
+	public static final String KEY_EVENT_TITLE = "eventtitle";
+	public static final String KEY_EVENT_DESCRIPTION = "eventdescription";
+	public static final String KEY_EVENT_DESCRIPTION_EXTENDED = "eventdescriptionextended";
+	public static final String KEY_SERVICE_REFERENCE = "reference";
+	public static final String KEY_SERVICE_NAME = "name";
 	
 	/**
 	 * @param event
 	 */
 	public static void supplementReadables(ExtendedHashMap event) {
-		String eventstart = event.getString(EVENT_START);
+		String eventstart = event.getString(KEY_EVENT_START);
 
 		if (!Python.NONE.equals(eventstart) && eventstart != null) {
 
@@ -43,25 +43,25 @@ public class Event{
 			String starttime = DateTime.getTimeString(eventstart);
 			String duration;
 			try {
-				duration = DateTime.getDurationString(event.getString(EVENT_DURATION), eventstart);
+				duration = DateTime.getDurationString(event.getString(KEY_EVENT_DURATION), eventstart);
 			} catch (NumberFormatException e) {
 				// deal with WebInterface 1.5 => EVENT_DURATION is already a string
-				duration = event.getString(EVENT_DURATION);
+				duration = event.getString(KEY_EVENT_DURATION);
 			}
 
-			event.put(EVENT_START_READABLE, start);
-			event.put(EVENT_START_TIME_READABLE, starttime);
-			event.put(EVENT_DURATION_READABLE, duration);
+			event.put(KEY_EVENT_START_READABLE, start);
+			event.put(KEY_EVENT_START_TIME_READABLE, starttime);
+			event.put(KEY_EVENT_DURATION_READABLE, duration);
 		}
 
-		String eventtitle = event.getString(EVENT_TITLE);
+		String eventtitle = event.getString(KEY_EVENT_TITLE);
 		if (Python.NONE.equals(eventtitle) || eventtitle == null) {
 			// deal with WebInterface 1.5 => try EVENT_NAME instead of EVENT_TITLE
-			eventtitle = event.getString(EVENT_NAME);
+			eventtitle = event.getString(KEY_EVENT_NAME);
 			if (eventtitle != null) {
-				event.put(EVENT_TITLE, eventtitle);
+				event.put(KEY_EVENT_TITLE, eventtitle);
 			} else {
-				event.put(EVENT_TITLE, "N/A");
+				event.put(KEY_EVENT_TITLE, "N/A");
 			}
 		}
 	}

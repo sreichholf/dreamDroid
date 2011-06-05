@@ -16,9 +16,6 @@ import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2LocationHandler;
 import org.apache.http.NameValuePair;
 
 public class Location {
-
-	public static final String E2_LOCATION = "e2location";
-
 	/**
 	 * @param shc
 	 * @param params

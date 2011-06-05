@@ -197,7 +197,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mAfterevent.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-				mTimer.put(Timer.AFTER_EVENT, new Integer(position).toString());
+				mTimer.put(Timer.KEY_AFTER_EVENT, new Integer(position).toString());
 			}
 
 			@Override
@@ -210,7 +210,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mLocation.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-				mTimer.put(Timer.LOCATION, DreamDroid.LOCATIONS.get(position));
+				mTimer.put(Timer.KEY_LOCATION, DreamDroid.LOCATIONS.get(position));
 			}
 
 			@Override
@@ -262,9 +262,9 @@ public class TimerEditActivity extends AbstractHttpActivity {
 				ExtendedHashMap map = new ExtendedHashMap();
 				map.putAll((HashMap<String, Object>) data.getSerializableExtra(sData));
 
-				mTimer.put(Timer.SERVICE_NAME, map.getString(Service.NAME));
-				mTimer.put(Timer.REFERENCE, map.getString(Service.REFERENCE));
-				mService.setText(mTimer.getString(Timer.SERVICE_NAME));
+				mTimer.put(Timer.KEY_SERVICE_NAME, map.getString(Service.KEY_NAME));
+				mTimer.put(Timer.KEY_REFERENCE, map.getString(Service.KEY_REFERENCE));
+				mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 			}
 		}
 	}
@@ -454,7 +454,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 					if (mTagsChanged) {
 						// TODO Update current Tags
 						String tags = Tag.implodeTags(mSelectedTags);
-						mTimer.put(Timer.TAGS, tags);
+						mTimer.put(Timer.KEY_TAGS, tags);
 						mTags.setText(tags);
 					}
 					dialog.dismiss();
@@ -540,7 +540,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		Intent intent = new Intent(this, ServiceListActivity.class);
 
 		ExtendedHashMap map = new ExtendedHashMap();
-		map.put(Service.REFERENCE, "default");
+		map.put(Service.KEY_REFERENCE, "default");
 
 		intent.putExtra(sData, map);
 		intent.setAction(Intent.ACTION_PICK);
@@ -553,22 +553,22 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 */
 	private void reload() {
 		// Name
-		mName.setText(mTimer.getString(Timer.NAME));
+		mName.setText(mTimer.getString(Timer.KEY_NAME));
 		mName.setHint(R.string.title);
 
 		// Description
-		mDescription.setText(mTimer.getString(Timer.DESCRIPTION));
+		mDescription.setText(mTimer.getString(Timer.KEY_DESCRIPTION));
 		mDescription.setHint(R.string.description);
 
 		// Enabled
-		int disabled = new Integer(mTimer.getString(Timer.DISABLED));
+		int disabled = new Integer(mTimer.getString(Timer.KEY_DISABLED));
 		if (disabled == 0) {
 			mEnabled.setChecked(true);
 		} else {
 			mEnabled.setChecked(false);
 		}
 
-		mService.setText(mTimer.getString(Timer.SERVICE_NAME));
+		mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 
 		// Afterevents
 		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(this, R.array.afterevents,
@@ -576,7 +576,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
 
-		int aeValue = new Integer(mTimer.getString(Timer.AFTER_EVENT)).intValue();
+		int aeValue = new Integer(mTimer.getString(Timer.KEY_AFTER_EVENT)).intValue();
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
@@ -585,7 +585,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
 
-		String timerLoc = mTimer.getString(Timer.LOCATION);
+		String timerLoc = mTimer.getString(Timer.KEY_LOCATION);
 		for (int i = 0; i < DreamDroid.LOCATIONS.size(); i++) {
 			String loc = DreamDroid.LOCATIONS.get(i);
 
@@ -597,8 +597,8 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 
 		// Start and Endtime
-		int begin = new Integer(mTimer.getString(Timer.BEGIN));
-		int end = new Integer(mTimer.getString(Timer.END));
+		int begin = new Integer(mTimer.getString(Timer.KEY_BEGIN));
+		int end = new Integer(mTimer.getString(Timer.KEY_END));
 		long b = ((long) begin) * 1000;
 		long e = ((long) end) * 1000;
 		Date dateBegin = new Date(b);
@@ -608,11 +608,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mEnd.setText(dateEnd.toLocaleString());
 
 		// Repeatings
-		int repeatedValue = new Integer(mTimer.getString(Timer.REPEATED));
+		int repeatedValue = new Integer(mTimer.getString(Timer.KEY_REPEATED));
 		String repeatedText = getRepeated(repeatedValue);
 		mRepeatings.setText(repeatedText);
 
-		String text = mTimer.getString(Timer.TAGS);
+		String text = mTimer.getString(Timer.KEY_TAGS);
 		if (text == null) {
 			text = "";
 		}
@@ -681,7 +681,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 
 		String repeated = new Integer(value).toString();
-		timer.put(Timer.REPEATED, repeated);
+		timer.put(Timer.KEY_REPEATED, repeated);
 
 		if (value == 31) {
 			text = (String) getText(R.string.mo_to_fr);
@@ -701,17 +701,17 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 * Afterevent from the GUI-Elements to <code>mTimer</code>
 	 */
 	private void applyViewValues() {
-		mTimer.put(Timer.NAME, mName.getText().toString());
-		mTimer.put(Timer.DESCRIPTION, mDescription.getText().toString());
+		mTimer.put(Timer.KEY_NAME, mName.getText().toString());
+		mTimer.put(Timer.KEY_DESCRIPTION, mDescription.getText().toString());
 
 		if (mEnabled.isChecked()) {
-			mTimer.put(Timer.DISABLED, "0");
+			mTimer.put(Timer.KEY_DISABLED, "0");
 		} else {
-			mTimer.put(Timer.DISABLED, "1");
+			mTimer.put(Timer.KEY_DISABLED, "1");
 		}
 
 		String ae = new Integer(mAfterevent.getSelectedItemPosition()).toString();
-		mTimer.put(Timer.AFTER_EVENT, ae);
+		mTimer.put(Timer.KEY_AFTER_EVENT, ae);
 	}
 
 	/**
@@ -747,7 +747,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		}
 		super.onSimpleResult(success, result);
 
-		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
+		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			setResult(RESULT_OK);
 			finish();
 		}
@@ -836,7 +836,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 */
 	private void onTimerBeginSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
-		mTimer.put(Timer.BEGIN, seconds);
+		mTimer.put(Timer.KEY_BEGIN, seconds);
 		removeDialog(DIALOG_PICK_BEGIN_ID);
 		reload();
 	}
@@ -849,7 +849,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 	 */
 	private void onTimerEndSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
-		mTimer.put(Timer.END, seconds);
+		mTimer.put(Timer.KEY_END, seconds);
 		removeDialog(DIALOG_PICK_END_ID);
 		reload();
 	}

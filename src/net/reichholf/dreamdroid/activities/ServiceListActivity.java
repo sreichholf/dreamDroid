@@ -129,8 +129,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		String name = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
 				(String) getText(R.string.bouquet_overview));
 
-		mReference = getDataForKey(Event.SERVICE_REFERENCE, ref);
-		mName = getDataForKey(Event.SERVICE_NAME, name);
+		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE, ref);
+		mName = getDataForKey(Event.KEY_SERVICE_NAME, name);
 
 		if (savedInstanceState != null) {
 			mIsBouquetList = savedInstanceState.getBoolean("isBouquetList", true);
@@ -141,8 +141,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			mHistory = new ArrayList<ExtendedHashMap>();
 
 			ExtendedHashMap map = new ExtendedHashMap();
-			map.put(Event.SERVICE_REFERENCE, mReference);
-			map.put(Event.SERVICE_NAME, mName);
+			map.put(Event.KEY_SERVICE_REFERENCE, mReference);
+			map.put(Event.KEY_SERVICE_NAME, mName);
 
 			mHistory.add(map);
 		}
@@ -203,8 +203,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 * 
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(this, mMapList, R.layout.service_list_item, new String[] { Event.SERVICE_NAME,
-				Event.EVENT_TITLE, Event.EVENT_START_TIME_READABLE, Event.EVENT_DURATION_READABLE }, new int[] {
+		mAdapter = new SimpleAdapter(this, mMapList, R.layout.service_list_item, new String[] { Event.KEY_SERVICE_NAME,
+				Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_TIME_READABLE, Event.KEY_EVENT_DURATION_READABLE }, new int[] {
 				R.id.service_name, R.id.event_title, R.id.event_start, R.id.event_duration });
 
 		setListAdapter(mAdapter);
@@ -247,8 +247,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 						return super.onKeyDown(keyCode, event);
 					}
 					if (map != null) {
-						String oldref = map.getString(Event.SERVICE_REFERENCE);
-						String oldname = map.getString(Event.SERVICE_NAME);
+						String oldref = map.getString(Event.KEY_SERVICE_REFERENCE);
+						String oldname = map.getString(Event.KEY_SERVICE_NAME);
 
 						if (!mReference.equals(oldref) && oldref != null) {
 							// there is a download Task running, the list may
@@ -393,8 +393,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	public void openEpg(String ref, String nam) {
 		Intent intent = new Intent(this, ServiceEpgListActivity.class);
 		ExtendedHashMap map = new ExtendedHashMap();
-		map.put(Event.SERVICE_REFERENCE, ref);
-		map.put(Event.SERVICE_NAME, nam);
+		map.put(Event.KEY_SERVICE_REFERENCE, ref);
+		map.put(Event.KEY_SERVICE_NAME, nam);
 
 		intent.putExtra(sData, map);
 
@@ -403,8 +403,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mCurrentItem = mMapList.get(position);
-		final String ref = mCurrentItem.getString(Event.SERVICE_REFERENCE);
-		final String nam = mCurrentItem.getString(Event.SERVICE_NAME);
+		final String ref = mCurrentItem.getString(Event.KEY_SERVICE_REFERENCE);
+		final String nam = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 
 		if (isBouquetReference(ref)) {
 			if (!isListTaskRunning()) {
@@ -416,8 +416,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 				}
 
 				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(Event.SERVICE_REFERENCE, String.valueOf(mReference));
-				map.put(Event.SERVICE_NAME, String.valueOf(mName));
+				map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(mReference));
+				map.put(Event.KEY_SERVICE_NAME, String.valueOf(mName));
 				mHistory.add(map);
 
 				mReference = ref;
@@ -430,8 +430,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		} else {
 			if (mPickMode) {
 				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(Event.SERVICE_REFERENCE, ref);
-				map.put(Event.SERVICE_NAME, nam);
+				map.put(Event.KEY_SERVICE_REFERENCE, ref);
+				map.put(Event.KEY_SERVICE_NAME, nam);
 
 				Intent intent = new Intent();
 				intent.putExtra(sData, map);
@@ -497,8 +497,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 		}
 
 		ExtendedHashMap data = new ExtendedHashMap();
-		data.put(Event.SERVICE_REFERENCE, String.valueOf(mReference));
-		data.put(Event.SERVICE_NAME, String.valueOf(mName));
+		data.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(mReference));
+		data.put(Event.KEY_SERVICE_NAME, String.valueOf(mName));
 		mExtras.putSerializable(sData, data);
 
 		if (mReference.equals("default")) {
@@ -533,8 +533,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 
 		for (int i = 0; i < servicelist.length; i++) {
 			ExtendedHashMap map = new ExtendedHashMap();
-			map.put(Event.SERVICE_NAME, servicelist[i]);
-			map.put(Event.SERVICE_REFERENCE, servicerefs[i]);
+			map.put(Event.KEY_SERVICE_NAME, servicelist[i]);
+			map.put(Event.KEY_SERVICE_REFERENCE, servicerefs[i]);
 			mMapList.add(map);
 		}
 

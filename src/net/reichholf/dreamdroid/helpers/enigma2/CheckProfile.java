@@ -64,9 +64,9 @@ public class CheckProfile {
 
 						if (DeviceInfo.parse(xml, deviceInfo)) {
 							addEntry(resultList, R.string.device_name, false,
-									deviceInfo.getString(DeviceInfo.DEVICE_NAME));
+									deviceInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 
-							String version = deviceInfo.getString(DeviceInfo.INTERFACE_VERSION, "0");
+							String version = deviceInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION, "0");
 							
 							int vc = checkVersion(version);
 							if (vc >= 0 ) {

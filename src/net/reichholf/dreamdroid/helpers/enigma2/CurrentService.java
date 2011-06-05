@@ -22,23 +22,23 @@ import org.apache.http.NameValuePair;
  */
 public class CurrentService {
 	// Service
-	public static final String SERVICE = "service";
-	public static final String SERVICE_REFERENCE = "reference";
-	public static final String SERVICE_NAME = "name";
-	public static final String SERVICE_PROVIDER = "provider";
-	public static final String SERVICE_VIDEO_WIDTH = "videowidth";
-	public static final String SERVICE_VIDEO_HEIGHT = "videoheight";
-	public static final String SERVICE_VIDEO_SIZE = "videosize";
-	public static final String SERVICE_IS_WIDESCREEN = "widescreen";
-	public static final String SERVICE_APID = "apid";
-	public static final String SERVICE_VPID = "vpid";
-	public static final String SERVICE_PCRPID = "pcrpid";
-	public static final String SERVICE_PMTPID = "pmtpid";
-	public static final String SERVICE_TXTPID = "txtpid";
-	public static final String SERVICE_TSID = "tsid";
-	public static final String SERVICE_ONID = "onid";
-	public static final String SERVICE_SID = "sid";
-	public static final String EVENTS = "event";
+	public static final String KEY_SERVICE = "service";
+	public static final String KEY_SERVICE_REFERENCE = "reference";
+	public static final String KEY_SERVICE_NAME = "name";
+	public static final String KEY_SERVICE_PROVIDER = "provider";
+	public static final String KEY_SERVICE_VIDEO_WIDTH = "videowidth";
+	public static final String KEY_SERVICE_VIDEO_HEIGHT = "videoheight";
+	public static final String KEY_SERVICE_VIDEO_SIZE = "videosize";
+	public static final String KEY_SERVICE_IS_WIDESCREEN = "widescreen";
+	public static final String KEY_SERVICE_APID = "apid";
+	public static final String KEY_SERVICE_VPID = "vpid";
+	public static final String KEY_SERVICE_PCRPID = "pcrpid";
+	public static final String KEY_SERVICE_PMTPID = "pmtpid";
+	public static final String KEY_SERVICE_TXTPID = "txtpid";
+	public static final String KEY_SERVICE_TSID = "tsid";
+	public static final String KEY_SERVICE_ONID = "onid";
+	public static final String KEY_SERVICE_SID = "sid";
+	public static final String KEY_EVENTS = "event";
 
 	/**
 	 * @param shc

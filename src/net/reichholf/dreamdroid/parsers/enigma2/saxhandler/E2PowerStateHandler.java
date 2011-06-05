@@ -13,8 +13,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class E2PowerStateHandler extends DefaultHandler {
-	private boolean inState;
 
+	protected static final String TAG_E2INSTANDBY = "e2instandby";
+
+	private boolean inState;
 	private ExtendedHashMap mResult;
 
 	/**
@@ -31,9 +33,8 @@ public class E2PowerStateHandler extends DefaultHandler {
 	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
-	public void startElement(String namespaceUri, String localName,
-			String qName, Attributes attrs) {
-		if (localName.equals("e2instandby")) {
+	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
+		if (localName.equals(TAG_E2INSTANDBY)) {
 			inState = true;
 		}
 	}
@@ -46,7 +47,7 @@ public class E2PowerStateHandler extends DefaultHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2instandby")) {
+		if (localName.equals(TAG_E2INSTANDBY)) {
 			inState = false;
 		}
 	}
@@ -62,9 +63,9 @@ public class E2PowerStateHandler extends DefaultHandler {
 
 		if (inState) {
 			if ("false".equals(value.trim()))
-				mResult.put(PowerState.IN_STANDBY, true);
-			else if ("true".equals(value.trim())){
-				mResult.put(PowerState.IN_STANDBY, false);
+				mResult.put(PowerState.KEY_IN_STANDBY, true);
+			else if ("true".equals(value.trim())) {
+				mResult.put(PowerState.KEY_IN_STANDBY, false);
 			}
 		}
 	}

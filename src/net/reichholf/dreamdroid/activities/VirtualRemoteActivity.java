@@ -280,8 +280,8 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		boolean hasError = false;
 		String toastText = getString(R.string.get_content_error);					
-		String stateText = result.getString(SimpleResult.STATE_TEXT);
-		String state = result.getString(SimpleResult.STATE);		
+		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
+		String state = result.getString(SimpleResult.KEY_STATE);		
 			
 		if (stateText == null || "".equals(stateText)) {			
 			hasError = true;

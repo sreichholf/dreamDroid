@@ -230,7 +230,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	private void deleteTimerConfirm() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-		builder.setTitle(mTimer.getString(Timer.NAME)).setMessage(getText(R.string.delete_confirm))
+		builder.setTitle(mTimer.getString(Timer.KEY_NAME)).setMessage(getText(R.string.delete_confirm))
 				.setCancelable(false).setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						deleteTimer(mTimer);
@@ -287,7 +287,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 		}
 		super.onSimpleResult(success, result);
 		
-		if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
+		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			reload();
 		}
 	}

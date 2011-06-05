@@ -31,12 +31,12 @@ public class IntentFactory {
 	 */
 	public static Intent getIMDbQueryIntent(ExtendedHashMap event){
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "imdb:///find?q=" + event.getString(Event.EVENT_TITLE);
+		String uriString = "imdb:///find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 		intent.setData(Uri.parse(uriString));
 		try{			
 			return intent;
 		} catch(ActivityNotFoundException anfex) {
-			uriString = "http://m.imdb.com/find?q=" + event.getString(Event.EVENT_TITLE);
+			uriString = "http://m.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 			intent.setData(Uri.parse(uriString));
 			return intent;
 		}

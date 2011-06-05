@@ -265,7 +265,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 				showEpgDetail(mNext);
 				return true;
 			case ITEM_STREAM:
-				ref = mService.getString(Service.REFERENCE);
+				ref = mService.getString(Service.KEY_REFERENCE);
 				if(!"".equals(ref) && ref != null){
 					streamService(ref);
 				} else {
@@ -312,21 +312,21 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	@SuppressWarnings("unchecked")
 	private void onCurrentServiceReady() {
 		mCurrentServiceReady = true;
-		mService = (ExtendedHashMap) mCurrent.get(CurrentService.SERVICE);
-		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.EVENTS);
+		mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
+		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
 		mNow = events.get(0);
 		mNext = events.get(1);
 
-		mServiceName.setText(mService.getString(CurrentService.SERVICE_NAME));
-		mProvider.setText(mService.getString(CurrentService.SERVICE_PROVIDER));
+		mServiceName.setText(mService.getString(CurrentService.KEY_SERVICE_NAME));
+		mProvider.setText(mService.getString(CurrentService.KEY_SERVICE_PROVIDER));
 		// Now
-		mNowStart.setText(mNow.getString(Event.EVENT_START_READABLE));
-		mNowTitle.setText(mNow.getString(Event.EVENT_TITLE));
-		mNowDuration.setText(mNow.getString(Event.EVENT_DURATION_READABLE));
+		mNowStart.setText(mNow.getString(Event.KEY_EVENT_START_READABLE));
+		mNowTitle.setText(mNow.getString(Event.KEY_EVENT_TITLE));
+		mNowDuration.setText(mNow.getString(Event.KEY_EVENT_DURATION_READABLE));
 		// Next
-		mNextStart.setText(mNext.getString(Event.EVENT_START_READABLE));
-		mNextTitle.setText(mNext.getString(Event.EVENT_TITLE));
-		mNextDuration.setText(mNext.getString(Event.EVENT_DURATION_READABLE));
+		mNextStart.setText(mNext.getString(Event.KEY_EVENT_START_READABLE));
+		mNextTitle.setText(mNext.getString(Event.KEY_EVENT_TITLE));
+		mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 	}
 	
 	protected Dialog onCreateDialog(int id) {
@@ -335,13 +335,13 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		switch (id) {
 		case DIALOG_EPG_ITEM_ID:
 			if(mCurrentItem != null){
-				String servicename = mCurrentItem.getString(Event.SERVICE_NAME);
-				String title = mCurrentItem.getString(Event.EVENT_TITLE);
-				String date = mCurrentItem.getString(Event.EVENT_START_READABLE);
+				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
+				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);
+				String date = mCurrentItem.getString(Event.KEY_EVENT_START_READABLE);
 				if (!"N/A".equals(title) && date != null) {
-					date = date.concat(" (" + (String) mCurrentItem.getString(Event.EVENT_DURATION_READABLE) + " "
+					date = date.concat(" (" + (String) mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
 							+ getText(R.string.minutes_short) + ")");
-					String descEx = mCurrentItem.getString(Event.EVENT_DESCRIPTION_EXTENDED);
+					String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 	
 					dialog = new Dialog(this);
 					dialog.setContentView(R.layout.epg_item_dialog);

@@ -54,8 +54,8 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mReference = getDataForKey(Event.SERVICE_REFERENCE);
-		mName = getDataForKey(Event.SERVICE_NAME);
+		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
+		mName = getDataForKey(Event.KEY_SERVICE_NAME);
 
 		if (mReference != null) {
 			setAdapter();
@@ -100,8 +100,8 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(this, mMapList, R.layout.epg_list_item, new String[] { Event.EVENT_TITLE,
-				Event.EVENT_START_READABLE, Event.EVENT_DURATION_READABLE }, new int[] { R.id.event_title,
+		mAdapter = new SimpleAdapter(this, mMapList, R.layout.epg_list_item, new String[] { Event.KEY_EVENT_TITLE,
+				Event.KEY_EVENT_START_READABLE, Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.event_title,
 				R.id.event_start, R.id.event_duration });
 		setListAdapter(mAdapter);
 	}

@@ -141,7 +141,7 @@ public class MainActivity extends AbstractHttpActivity {
 					showToast(getText(R.string.get_content_error));
 				}
 			} else {
-				onPowerStateSet((Boolean) mResult.get(PowerState.IN_STANDBY));
+				onPowerStateSet((Boolean) mResult.get(PowerState.KEY_IN_STANDBY));
 			}
 
 		}
@@ -174,7 +174,7 @@ public class MainActivity extends AbstractHttpActivity {
 			if (xml != null) {
 				ExtendedHashMap result = mHandler.parse(xml);
 
-				String enabled = result.getString(SleepTimer.ENABLED);
+				String enabled = result.getString(SleepTimer.KEY_ENABLED);
 
 				if (enabled != null) {
 					mResult = result;
@@ -453,11 +453,11 @@ public class MainActivity extends AbstractHttpActivity {
 			
 			int min = 90;
 			try {
-				min = Integer.parseInt(mSleepTimer.getString(SleepTimer.MINUTES));
+				min = Integer.parseInt(mSleepTimer.getString(SleepTimer.KEY_MINUTES));
 			} catch (NumberFormatException nfe){}
 			
-			boolean enable = Python.TRUE.equals(mSleepTimer.getString(SleepTimer.ENABLED));
-			String act = mSleepTimer.getString(SleepTimer.ACTION);
+			boolean enable = Python.TRUE.equals(mSleepTimer.getString(SleepTimer.KEY_ENABLED));
+			String act = mSleepTimer.getString(SleepTimer.KEY_ACTION);
 			
 			time.setCurrent(min);
 			enabled.setChecked( enable );
@@ -646,9 +646,9 @@ public class MainActivity extends AbstractHttpActivity {
 	 */
 	private void sendMessage(String text, String type, String timeout) {
 		ExtendedHashMap msg = new ExtendedHashMap();
-		msg.put(Message.TEXT, text);
-		msg.put(Message.TYPE, type);
-		msg.put(Message.TIMEOUT, timeout);
+		msg.put(Message.KEY_TEXT, text);
+		msg.put(Message.KEY_TYPE, type);
+		msg.put(Message.KEY_TIMEOUT, timeout);
 
 		execSimpleResultTask(new MessageRequestHandler(), Message.getParams(msg));
 	}
@@ -670,7 +670,7 @@ public class MainActivity extends AbstractHttpActivity {
 				showDialog(DIALOG_SLEEPTIMER_ID);
 				return;
 			}
-			String text = sleepTimer.getString(SleepTimer.TEXT);
+			String text = sleepTimer.getString(SleepTimer.KEY_TEXT);
 			showToast(text);
 		} else {
 			showToast(getString(R.string.error));

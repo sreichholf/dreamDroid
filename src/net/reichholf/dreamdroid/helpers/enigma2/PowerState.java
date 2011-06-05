@@ -22,8 +22,9 @@ import org.apache.http.message.BasicNameValuePair;
  *
  */
 public class PowerState {
-	public static String IN_STANDBY = "standby";
-	public static String SET = "set";
+	public static String KEY_IN_STANDBY = "standby";
+	
+	public static String CMD_SET = "set";
 	
 	public static String STATE_GET = "-1";
 	public static String STATE_TOGGLE = "0";

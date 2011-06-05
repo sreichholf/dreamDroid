@@ -4,7 +4,6 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
 import java.util.ArrayList;
@@ -17,9 +16,20 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
- *
+ * 
  */
 public class E2EventHandler extends DefaultHandler {
+
+	protected static final String TAG_E2EVENT = "e2event";
+	protected static final String TAG_E2EVENTID = "e2eventid";
+	protected static final String TAG_E2EVENTSTART = "e2eventstart";
+	protected static final String TAG_E2EVENTDURATION = "e2eventduration";
+	protected static final String TAG_E2EVENTCURRENTTIME = "e2eventcurrenttime";
+	protected static final String TAG_E2EVENTTITLE = "e2eventtitle";
+	protected static final String TAG_E2EVENTDESCRIPTION = "e2eventdescription";
+	protected static final String TAG_E2EVENTDESCRIPTIONEXTENDED = "e2eventdescriptionextended";
+	protected static final String TAG_E2EVENTSERVICEREFERENCE = "e2eventservicereference";
+	protected static final String TAG_E2EVENTSERVICENAME = "e2eventservicename";
 
 	private boolean inEvent = false;
 	private boolean inId = false;
@@ -42,67 +52,75 @@ public class E2EventHandler extends DefaultHandler {
 		mEventlist = list;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals("e2event")) {
+		if (localName.equals(TAG_E2EVENT)) {
 			inEvent = true;
 			mEvent = new ExtendedHashMap();
 
-		} else if (localName.equals("e2eventid")) {
+		} else if (localName.equals(TAG_E2EVENTID)) {
 			inId = true;
-		} else if (localName.equals("e2eventstart")) {
+		} else if (localName.equals(TAG_E2EVENTSTART)) {
 			inStart = true;
-		} else if (localName.equals("e2eventduration")) {
+		} else if (localName.equals(TAG_E2EVENTDURATION)) {
 			inDuration = true;
-		} else if (localName.equals("e2eventcurrenttime")) {
+		} else if (localName.equals(TAG_E2EVENTCURRENTTIME)) {
 			inCurrentTime = true;
-		} else if (localName.equals("e2eventtitle")) {
+		} else if (localName.equals(TAG_E2EVENTTITLE)) {
 			inTitle = true;
-		} else if (localName.equals("e2eventdescription")) {
+		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
 			inDescription = true;
-		} else if (localName.equals("e2eventdescriptionextended")) {
+		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
 			inDescriptionEx = true;
-		} else if (localName.equals("e2eventservicereference")) {
+		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
 			inServiceRef = true;
-		} else if (localName.equals("e2eventservicename")) {
+		} else if (localName.equals(TAG_E2EVENTSERVICENAME)) {
 			inServiceName = true;
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2event")) {
-			inEvent = false;			
-			Event.supplementReadables(mEvent);			
+		if (localName.equals(TAG_E2EVENT)) {
+			inEvent = false;
+			Event.supplementReadables(mEvent);
 			mEventlist.add(mEvent);
-		} else if (localName.equals("e2eventid")) {
+		} else if (localName.equals(TAG_E2EVENTID)) {
 			inId = false;
-		} else if (localName.equals("e2eventstart")) {
+		} else if (localName.equals(TAG_E2EVENTSTART)) {
 			inStart = false;
-		} else if (localName.equals("e2eventduration")) {
+		} else if (localName.equals(TAG_E2EVENTDURATION)) {
 			inDuration = false;
-		} else if (localName.equals("e2eventcurrenttime")) {
+		} else if (localName.equals(TAG_E2EVENTCURRENTTIME)) {
 			inCurrentTime = false;
-		} else if (localName.equals("e2eventtitle")) {
+		} else if (localName.equals(TAG_E2EVENTTITLE)) {
 			inTitle = false;
-		} else if (localName.equals("e2eventdescription")) {
+		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
 			inDescription = false;
-		} else if (localName.equals("e2eventdescriptionextended")) {
+		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
 			inDescriptionEx = false;
-		} else if (localName.equals("e2eventservicereference")) {
+		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
 			inServiceRef = false;
-		} else if (localName.equals("e2eventservicename")) {
+		} else if (localName.equals(TAG_E2EVENTSERVICENAME)) {
 			inServiceName = false;
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
 	 */
 	public void characters(char ch[], int start, int length) {
@@ -110,23 +128,23 @@ public class E2EventHandler extends DefaultHandler {
 
 		if (inEvent) {
 			if (inId) {
-				mEvent.putOrConcat(Event.EVENT_ID, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_ID, value.trim());
 			} else if (inStart) {
-				mEvent.putOrConcat(Event.EVENT_START, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_START, value.trim());
 			} else if (inDuration) {
-				mEvent.putOrConcat(Event.EVENT_DURATION, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_DURATION, value.trim());
 			} else if (inCurrentTime) {
-				mEvent.putOrConcat(Event.CURRENT_TIME, value.trim());
+				mEvent.putOrConcat(Event.KEY_CURRENT_TIME, value.trim());
 			} else if (inTitle) {
-				mEvent.putOrConcat(Event.EVENT_TITLE, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_TITLE, value.trim());
 			} else if (inDescription) {
-				mEvent.putOrConcat(Event.EVENT_DESCRIPTION, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_DESCRIPTION, value.trim());
 			} else if (inDescriptionEx) {
-				mEvent.putOrConcat(Event.EVENT_DESCRIPTION_EXTENDED, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_DESCRIPTION_EXTENDED, value.trim());
 			} else if (inServiceRef) {
-				mEvent.putOrConcat(Event.SERVICE_REFERENCE, value.trim());
+				mEvent.putOrConcat(Event.KEY_SERVICE_REFERENCE, value.trim());
 			} else if (inServiceName) {
-				mEvent.putOrConcat(Event.SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "").trim());
+				mEvent.putOrConcat(Event.KEY_SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "").trim());
 			}
 		}
 	}

@@ -16,13 +16,13 @@ import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2VolumeHandler;
  *
  */
 public class Volume {
-	public static final String RESULT = "result";
-	public static final String CURRENT = "current";
-	public static final String MUTED = "muted";
+	public static final String KEY_RESULT = "result";
+	public static final String KEY_CURRENT = "current";
+	public static final String KEY_MUTED = "muted";
 	
-	public static final String COMMAND_UP = "up";
-	public static final String COMMAND_DOWN = "down";
-	public static final String COMMAND_MUTE = "mute";
+	public static final String CMD_UP = "up";
+	public static final String CMD_DOWN = "down";
+	public static final String CMD_MUTE = "mute";
 	
 	public static ExtendedHashMap parse(String xml){
 		ExtendedHashMap volume = new ExtendedHashMap();

@@ -186,20 +186,20 @@ public class DeviceInfoActivity extends ListActivity {
 	 */
 	private void setAdapter() {
 		mFrontendAdapter = new SimpleAdapter(this, mFrontends, android.R.layout.two_line_list_item, new String[] {
-				DeviceInfo.FRONTEND_NAME, DeviceInfo.FRONTEND_MODEL }, new int[] { android.R.id.text1,
+				DeviceInfo.KEY_FRONTEND_NAME, DeviceInfo.KEY_FRONTEND_MODEL }, new int[] { android.R.id.text1,
 				android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.frontends));
 		mMerge.addAdapter(mFrontendAdapter);
 
 		mNicAdapter = new SimpleAdapter(this, mNics, android.R.layout.two_line_list_item, new String[] {
-				DeviceInfo.NIC_NAME, DeviceInfo.NIC_IP }, new int[] { android.R.id.text1, android.R.id.text2 });
+				DeviceInfo.KEY_NIC_NAME, DeviceInfo.KEY_NIC_IP }, new int[] { android.R.id.text1, android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.nics));
 		mMerge.addAdapter(mNicAdapter);
 
 		mHddAdapter = new SimpleAdapter(this, mHdds, android.R.layout.two_line_list_item, new String[] {
-				DeviceInfo.HDD_MODEL, DeviceInfo.HDD_CAPACITY }, new int[] { android.R.id.text1, android.R.id.text2 });
+				DeviceInfo.KEY_HDD_MODEL, DeviceInfo.KEY_HDD_CAPACITY }, new int[] { android.R.id.text1, android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.hdds));
 		mMerge.addAdapter(mHddAdapter);
@@ -210,15 +210,15 @@ public class DeviceInfoActivity extends ListActivity {
 	 */
 	@SuppressWarnings("unchecked")
 	private void onInfoReady() {
-		mFrontends = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.FRONTENDS);
-		mNics = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.NICS);
-		mHdds = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.HDDS);
+		mFrontends = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_FRONTENDS);
+		mNics = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_NICS);
+		mHdds = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_HDDS);
 
-		mGuiVersion.setText(mInfo.getString(DeviceInfo.GUI_VERSION));
-		mImageVersion.setText(mInfo.getString(DeviceInfo.IMAGE_VERSION));
-		mInterfaceVersion.setText(mInfo.getString(DeviceInfo.INTERFACE_VERSION));
-		mFrontprocessorVersion.setText(mInfo.getString(DeviceInfo.FRONT_PROCESSOR_VERSION));
-		mDeviceName.setText(mInfo.getString(DeviceInfo.DEVICE_NAME));
+		mGuiVersion.setText(mInfo.getString(DeviceInfo.KEY_GUI_VERSION));
+		mImageVersion.setText(mInfo.getString(DeviceInfo.KEY_IMAGE_VERSION));
+		mInterfaceVersion.setText(mInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION));
+		mFrontprocessorVersion.setText(mInfo.getString(DeviceInfo.KEY_FRONT_PROCESSOR_VERSION));
+		mDeviceName.setText(mInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 
 		if (getListAdapter() == null) {
 			setAdapter();

@@ -12,7 +12,14 @@ import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class E2SleepTimerHandler extends DefaultHandler{
+public class E2SleepTimerHandler extends DefaultHandler {
+
+	protected static final String TAG_E2SLEEPTIMER = "e2sleeptimer";
+	protected static final String TAG_E2ENABLED = "e2enabled";
+	protected static final String TAG_E2MINUTES = "e2minutes";
+	protected static final String TAG_E2ACTION = "e2action";
+	protected static final String TAG_E2TEXT = "e2text";
+
 	private boolean inSleeptimer = false;
 	private boolean inEnabled = false;
 	private boolean inMinutes = false;
@@ -28,47 +35,55 @@ public class E2SleepTimerHandler extends DefaultHandler{
 		mResult = res;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if(localName.equals("e2sleeptimer")){
+		if (localName.equals(TAG_E2SLEEPTIMER)) {
 			inSleeptimer = true;
-		} else if (inSleeptimer){
-			if(localName.equals("e2enabled")){
+		} else if (inSleeptimer) {
+			if (localName.equals(TAG_E2ENABLED)) {
 				inEnabled = true;
-			} else if(localName.equals("e2minutes")){
+			} else if (localName.equals(TAG_E2MINUTES)) {
 				inMinutes = true;
-			} else if(localName.equals("e2action")){
+			} else if (localName.equals(TAG_E2ACTION)) {
 				inAction = true;
-			} else if(localName.equals("e2text")){
+			} else if (localName.equals(TAG_E2TEXT)) {
 				inText = true;
 			}
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if(localName.equals("e2sleeptimer")){
+		if (localName.equals(TAG_E2SLEEPTIMER)) {
 			inSleeptimer = false;
-		} else if (inSleeptimer){
-			if(localName.equals("e2enabled")){
+		} else if (inSleeptimer) {
+			if (localName.equals(TAG_E2ENABLED)) {
 				inEnabled = false;
-			} else if(localName.equals("e2minutes")){
+			} else if (localName.equals(TAG_E2MINUTES)) {
 				inMinutes = false;
-			} else if(localName.equals("e2action")){
+			} else if (localName.equals(TAG_E2ACTION)) {
 				inAction = false;
-			} else if(localName.equals("e2text")){
+			} else if (localName.equals(TAG_E2TEXT)) {
 				inText = false;
 			}
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
 	 */
 	@Override
@@ -76,13 +91,13 @@ public class E2SleepTimerHandler extends DefaultHandler{
 		String value = new String(ch, start, length);
 
 		if (inEnabled) {
-			mResult.putOrConcat(SleepTimer.ENABLED, value);
-		} else if(inMinutes){
-			mResult.putOrConcat(SleepTimer.MINUTES, value);
-		} else if(inAction){
-			mResult.putOrConcat(SleepTimer.ACTION, value);
-		} else if(inText){
-			mResult.putOrConcat(SleepTimer.TEXT, value);
+			mResult.putOrConcat(SleepTimer.KEY_ENABLED, value);
+		} else if (inMinutes) {
+			mResult.putOrConcat(SleepTimer.KEY_MINUTES, value);
+		} else if (inAction) {
+			mResult.putOrConcat(SleepTimer.KEY_ACTION, value);
+		} else if (inText) {
+			mResult.putOrConcat(SleepTimer.KEY_TEXT, value);
 		}
 	}
 }

@@ -12,10 +12,15 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class E2SimpleResultHandler extends DefaultHandler{
+public class E2SimpleResultHandler extends DefaultHandler {
+
+	protected static final String TAG_E2RESULTTEXT = "e2resulttext";
+	protected static final String TAG_E2STATETEXT = "e2statetext";
+	protected static final String TAG_E2RESULT = "e2result";
+	protected static final String TAG_E2STATE = "e2state";
+
 	private boolean inState;
 	private boolean inStateText;
-
 	private ExtendedHashMap mResult;
 
 	/**
@@ -25,31 +30,39 @@ public class E2SimpleResultHandler extends DefaultHandler{
 		mResult = res;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals("e2state") || localName.equals("e2result")) {
+		if (localName.equals(TAG_E2STATE) || localName.equals(TAG_E2RESULT)) {
 			inState = true;
-		} else if (localName.equals("e2statetext") || localName.equals("e2resulttext")) {
+		} else if (localName.equals(TAG_E2STATETEXT) || localName.equals(TAG_E2RESULTTEXT)) {
 			inStateText = true;
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2state") || localName.equals("e2result")) {
+		if (localName.equals(TAG_E2STATE) || localName.equals(TAG_E2RESULT)) {
 			inState = false;
-		} else if (localName.equals("e2statetext") || localName.equals("e2resulttext")) {
+		} else if (localName.equals(TAG_E2STATETEXT) || localName.equals(TAG_E2RESULTTEXT)) {
 			inStateText = false;
-		} 
+		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
 	 */
 	@Override
@@ -57,9 +70,9 @@ public class E2SimpleResultHandler extends DefaultHandler{
 		String value = new String(ch, start, length);
 
 		if (inState) {
-			mResult.putOrConcat(SimpleResult.STATE, value);
-		} else if(inStateText){
-			mResult.putOrConcat(SimpleResult.STATE_TEXT, value);
+			mResult.putOrConcat(SimpleResult.KEY_STATE, value);
+		} else if (inStateText) {
+			mResult.putOrConcat(SimpleResult.KEY_STATE_TEXT, value);
 		}
 	}
 }

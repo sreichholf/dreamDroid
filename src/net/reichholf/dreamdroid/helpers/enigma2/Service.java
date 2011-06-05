@@ -22,8 +22,8 @@ import org.apache.http.NameValuePair;
  * 
  */
 public class Service extends SimpleResult {
-	public static final String NAME = "name";
-	public static final String REFERENCE = "reference";
+	public static final String KEY_NAME = "name";
+	public static final String KEY_REFERENCE = "reference";
 
 	/**
 	 * @param shc

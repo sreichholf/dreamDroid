@@ -97,8 +97,8 @@ public class MovieListActivity extends AbstractHttpListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mAdapter = new SimpleAdapter(this, mMapList, R.layout.movie_list_item, new String[] { Movie.TITLE,
-				Movie.SERVICE_NAME, Movie.FILE_SIZE_READABLE, Movie.TIME_READABLE, Movie.LENGTH }, new int[] {
+		mAdapter = new SimpleAdapter(this, mMapList, R.layout.movie_list_item, new String[] { Movie.KEY_TITLE,
+				Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE, Movie.KEY_LENGTH }, new int[] {
 				R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
 
 		setListAdapter(mAdapter);
@@ -211,7 +211,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		switch (id) {
 		case (DIALOG_DELETE_MOVIE_CONFIRM_ID):
 			builder = new AlertDialog.Builder(this);
-			builder.setTitle(mMovie.getString(Movie.TITLE)).setMessage(getText(R.string.delete_confirm))
+			builder.setTitle(mMovie.getString(Movie.KEY_TITLE)).setMessage(getText(R.string.delete_confirm))
 					.setCancelable(false)
 					.setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
@@ -350,7 +350,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		mMovie = mMapList.get(position);
 		boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
 		if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
-			zapTo(mMovie.getString(Movie.REFERENCE));
+			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
 		
 			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
@@ -363,14 +363,14 @@ public class MovieListActivity extends AbstractHttpListActivity {
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case 0:
-						zapTo(mMovie.getString(Movie.REFERENCE));
+						zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 						break;
 					case 1:
 						showDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						break;
 					case 2:
 						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-						params.add(new BasicNameValuePair("file", mMovie.getString(Movie.FILE_NAME)));
+						params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
 						String url = mShc.buildUrl(URIStore.FILE, params);
 	
 						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -378,7 +378,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 						break;
 					case 3:
 						try{
-							startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.FILE_NAME)) );
+							startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)) );
 						} catch(ActivityNotFoundException e){
 							showToast(getText(R.string.missing_stream_player));
 						}
@@ -426,7 +426,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		super.onSimpleResult(success, result);
 
 		if (mReloadOnSimpleResult) {
-			if (Python.TRUE.equals(result.getString(SimpleResult.STATE))) {
+			if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 				reload();
 				mReloadOnSimpleResult = false;
 			}

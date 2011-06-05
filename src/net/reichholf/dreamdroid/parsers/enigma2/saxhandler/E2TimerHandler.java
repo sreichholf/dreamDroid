@@ -21,6 +21,33 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class E2TimerHandler extends DefaultHandler {
 
+	protected static final String TAG_E2TIMER = "e2timer";
+	protected static final String TAG_E2SERVICEREFERENCE = "e2servicereference";
+	protected static final String TAG_E2SERVICENAME = "e2servicename";
+	protected static final String TAG_E2EIT = "e2eit";
+	protected static final String TAG_E2NAME = "e2name";
+	protected static final String TAG_E2DESCRIPTION = "e2description";
+	protected static final String TAG_E2DESCRIPTIONEXTENDED = "e2descriptionextended";
+	protected static final String TAG_E2DISABLED = "e2disabled";
+	protected static final String TAG_E2TIMEBEGIN = "e2timebegin";
+	protected static final String TAG_E2TIMEEND = "e2timeend";
+	protected static final String TAG_E2DURATION = "e2duration";
+	protected static final String TAG_E2STARTPREPARE = "e2startprepare";
+	protected static final String TAG_E2JUSTPLAY = "e2justplay";
+	protected static final String TAG_E2AFTEREVENT = "e2afterevent";
+	protected static final String TAG_E2LOCATION = "e2location";
+	protected static final String TAG_E2TAGS = "e2tags";
+	protected static final String TAG_E2LOGENTRIES = "e2logentries";
+	protected static final String TAG_E2FILENAME = "e2filename";
+	protected static final String TAG_E2BACKOFF = "e2backoff";
+	protected static final String TAG_E2NEXTACTIVATION = "e2nextactivation";
+	protected static final String TAG_E2FIRSTTRYPREPARE = "e2firsttryprepare";
+	protected static final String TAG_E2STATE = "e2state";
+	protected static final String TAG_E2REPEATED = "e2repeated";
+	protected static final String TAG_E2DONTSAVE = "e2dontsave";
+	protected static final String TAG_E2CANCLED = "e2cancled";
+	protected static final String TAG_E2TOGGLEDISABLED = "e2toggledisabled";
+
 	private boolean inTimer = false;
 	private boolean inServicename = false;
 	private boolean inReference = false;
@@ -66,58 +93,58 @@ public class E2TimerHandler extends DefaultHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals("e2timer")) {
+		if (localName.equals(TAG_E2TIMER)) {
 			inTimer = true;
 			mTimer = new ExtendedHashMap();
-		} else if (localName.equals("e2servicereference")) {
+		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = true;
-		} else if (localName.equals("e2servicename")) {
+		} else if (localName.equals(TAG_E2SERVICENAME)) {
 			inServicename = true;
-		} else if (localName.equals("e2eit")) {
+		} else if (localName.equals(TAG_E2EIT)) {
 			inEit = true;
-		} else if (localName.equals("e2name")) {
+		} else if (localName.equals(TAG_E2NAME)) {
 			inName = true;
-		} else if (localName.equals("e2description")) {
+		} else if (localName.equals(TAG_E2DESCRIPTION)) {
 			inDescription = true;
-		} else if (localName.equals("e2descriptionextended")) {
+		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
 			inDescriptionEx = true;
-		} else if (localName.equals("e2disabled")) {
+		} else if (localName.equals(TAG_E2DISABLED)) {
 			inDisabled = true;
-		} else if (localName.equals("e2timebegin")) {
+		} else if (localName.equals(TAG_E2TIMEBEGIN)) {
 			inBegin = true;
-		} else if (localName.equals("e2timeend")) {
+		} else if (localName.equals(TAG_E2TIMEEND)) {
 			inEnd = true;
-		} else if (localName.equals("e2duration")) {
+		} else if (localName.equals(TAG_E2DURATION)) {
 			inDuration = true;
-		} else if (localName.equals("e2startprepare")) {
+		} else if (localName.equals(TAG_E2STARTPREPARE)) {
 			inStartPrepare = true;
-		} else if (localName.equals("e2justplay")) {
+		} else if (localName.equals(TAG_E2JUSTPLAY)) {
 			inJustPlay = true;
-		} else if (localName.equals("e2afterevent")) {
+		} else if (localName.equals(TAG_E2AFTEREVENT)) {
 			inAfterevent = true;
-		} else if (localName.equals("e2location")) {
+		} else if (localName.equals(TAG_E2LOCATION)) {
 			inLocation = true;
-		} else if (localName.equals("e2tags")) {
+		} else if (localName.equals(TAG_E2TAGS)) {
 			inTags = true;
-		} else if (localName.equals("e2logentries")) {
+		} else if (localName.equals(TAG_E2LOGENTRIES)) {
 			inLogEntries = true;
-		} else if (localName.equals("e2filename")) {
+		} else if (localName.equals(TAG_E2FILENAME)) {
 			inFilename = true;
-		} else if (localName.equals("e2backoff")) {
+		} else if (localName.equals(TAG_E2BACKOFF)) {
 			inBackoff = true;
-		} else if (localName.equals("e2nextactivation")) {
+		} else if (localName.equals(TAG_E2NEXTACTIVATION)) {
 			inNextActivation = true;
-		} else if (localName.equals("e2firsttryprepare")) {
+		} else if (localName.equals(TAG_E2FIRSTTRYPREPARE)) {
 			inFirstTryPrepare = true;
-		} else if (localName.equals("e2state")) {
+		} else if (localName.equals(TAG_E2STATE)) {
 			inState = true;
-		} else if (localName.equals("e2repeated")) {
+		} else if (localName.equals(TAG_E2REPEATED)) {
 			inRepeated = true;
-		} else if (localName.equals("e2dontsave")) {
+		} else if (localName.equals(TAG_E2DONTSAVE)) {
 			inDontSave = true;
-		} else if (localName.equals("e2cancled")) {
+		} else if (localName.equals(TAG_E2CANCLED)) {
 			inCanceled = true;
-		} else if (localName.equals("e2toggledisabled")) {
+		} else if (localName.equals(TAG_E2TOGGLEDISABLED)) {
 			inToggleDisabled = true;
 		}
 	}
@@ -130,58 +157,58 @@ public class E2TimerHandler extends DefaultHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2timer")) {
+		if (localName.equals(TAG_E2TIMER)) {
 			inTimer = false;
 			mTimerlist.add(mTimer);
-		} else if (localName.equals("e2servicereference")) {
+		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = false;
-		} else if (localName.equals("e2servicename")) {
+		} else if (localName.equals(TAG_E2SERVICENAME)) {
 			inServicename = false;
-		} else if (localName.equals("e2eit")) {
+		} else if (localName.equals(TAG_E2EIT)) {
 			inEit = false;
-		} else if (localName.equals("e2name")) {
+		} else if (localName.equals(TAG_E2NAME)) {
 			inName = false;
-		} else if (localName.equals("e2description")) {
+		} else if (localName.equals(TAG_E2DESCRIPTION)) {
 			inDescription = false;
-		} else if (localName.equals("e2descriptionextended")) {
+		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
 			inDescriptionEx = false;
-		} else if (localName.equals("e2disabled")) {
+		} else if (localName.equals(TAG_E2DISABLED)) {
 			inDisabled = false;
-		} else if (localName.equals("e2timebegin")) {
+		} else if (localName.equals(TAG_E2TIMEBEGIN)) {
 			inBegin = false;
-		} else if (localName.equals("e2timeend")) {
+		} else if (localName.equals(TAG_E2TIMEEND)) {
 			inEnd = false;
-		} else if (localName.equals("e2duration")) {
+		} else if (localName.equals(TAG_E2DURATION)) {
 			inDuration = false;
-		} else if (localName.equals("e2startprepare")) {
+		} else if (localName.equals(TAG_E2STARTPREPARE)) {
 			inStartPrepare = false;
-		} else if (localName.equals("e2justplay")) {
+		} else if (localName.equals(TAG_E2JUSTPLAY)) {
 			inJustPlay = false;
-		} else if (localName.equals("e2afterevent")) {
+		} else if (localName.equals(TAG_E2AFTEREVENT)) {
 			inAfterevent = false;
-		} else if (localName.equals("e2location")) {
+		} else if (localName.equals(TAG_E2LOCATION)) {
 			inLocation = false;
-		} else if (localName.equals("e2tags")) {
+		} else if (localName.equals(TAG_E2TAGS)) {
 			inTags = false;
-		} else if (localName.equals("e2logentries")) {
+		} else if (localName.equals(TAG_E2LOGENTRIES)) {
 			inLogEntries = false;
-		} else if (localName.equals("e2filename")) {
+		} else if (localName.equals(TAG_E2FILENAME)) {
 			inFilename = false;
-		} else if (localName.equals("e2backoff")) {
+		} else if (localName.equals(TAG_E2BACKOFF)) {
 			inBackoff = false;
-		} else if (localName.equals("e2nextactivation")) {
+		} else if (localName.equals(TAG_E2NEXTACTIVATION)) {
 			inNextActivation = false;
-		} else if (localName.equals("e2firsttryprepare")) {
+		} else if (localName.equals(TAG_E2FIRSTTRYPREPARE)) {
 			inFirstTryPrepare = false;
-		} else if (localName.equals("e2state")) {
+		} else if (localName.equals(TAG_E2STATE)) {
 			inState = false;
-		} else if (localName.equals("e2repeated")) {
+		} else if (localName.equals(TAG_E2REPEATED)) {
 			inRepeated = false;
-		} else if (localName.equals("e2dontsave")) {
+		} else if (localName.equals(TAG_E2DONTSAVE)) {
 			inDontSave = false;
-		} else if (localName.equals("e2cancled")) {
+		} else if (localName.equals(TAG_E2CANCLED)) {
 			inCanceled = false;
-		} else if (localName.equals("e2toggledisabled")) {
+		} else if (localName.equals(TAG_E2TOGGLEDISABLED)) {
 			inToggleDisabled = false;
 		}
 	}
@@ -197,58 +224,58 @@ public class E2TimerHandler extends DefaultHandler {
 
 		if (inTimer) {
 			if (inReference) {
-				mTimer.putOrConcat(Timer.REFERENCE, value);
+				mTimer.putOrConcat(Timer.KEY_REFERENCE, value);
 			} else if (inServicename) {
-				mTimer.putOrConcat(Timer.SERVICE_NAME, value.replaceAll("\\p{Cntrl}", ""));
+				mTimer.putOrConcat(Timer.KEY_SERVICE_NAME, value.replaceAll("\\p{Cntrl}", ""));
 			} else if (inEit) {
-				mTimer.put(Timer.EIT, value);
+				mTimer.put(Timer.KEY_EIT, value);
 			} else if (inName) {
-				mTimer.putOrConcat(Timer.NAME, value);
+				mTimer.putOrConcat(Timer.KEY_NAME, value);
 			} else if (inDescription) {
-				mTimer.putOrConcat(Timer.DESCRIPTION, value);
+				mTimer.putOrConcat(Timer.KEY_DESCRIPTION, value);
 			} else if (inDescriptionEx) {
-				mTimer.putOrConcat(Timer.DESCRIPTION_EXTENDED, value);
+				mTimer.putOrConcat(Timer.KEY_DESCRIPTION_EXTENDED, value);
 			} else if (inDisabled) {
-				mTimer.put(Timer.DISABLED, value);
+				mTimer.put(Timer.KEY_DISABLED, value);
 			} else if (inBegin) {
-				mTimer.put(Timer.BEGIN, value);
-				mTimer.put(Timer.BEGIN_READEABLE, DateTime.getYearDateTimeString(value));
+				mTimer.put(Timer.KEY_BEGIN, value);
+				mTimer.put(Timer.KEY_BEGIN_READEABLE, DateTime.getYearDateTimeString(value));
 			} else if (inEnd) {
-				mTimer.put(Timer.END, value);
-				mTimer.put(Timer.END_READABLE, DateTime.getYearDateTimeString(value));
+				mTimer.put(Timer.KEY_END, value);
+				mTimer.put(Timer.KEY_END_READABLE, DateTime.getYearDateTimeString(value));
 			} else if (inDuration) {
-				mTimer.put(Timer.DURATION, value);
-				mTimer.put(Timer.DURATION_READABLE, DateTime.getDurationString(value, null));
+				mTimer.put(Timer.KEY_DURATION, value);
+				mTimer.put(Timer.KEY_DURATION_READABLE, DateTime.getDurationString(value, null));
 			} else if (inStartPrepare) {
-				mTimer.put(Timer.START_PREPARE, value);
+				mTimer.put(Timer.KEY_START_PREPARE, value);
 			} else if (inJustPlay) {
-				mTimer.put(Timer.JUST_PLAY, value);
+				mTimer.put(Timer.KEY_JUST_PLAY, value);
 			} else if (inAfterevent) {
-				mTimer.put(Timer.AFTER_EVENT, value);
+				mTimer.put(Timer.KEY_AFTER_EVENT, value);
 			} else if (inLocation) {
-				mTimer.putOrConcat(Timer.LOCATION, value);
+				mTimer.putOrConcat(Timer.KEY_LOCATION, value);
 			} else if (inTags) {
-				mTimer.putOrConcat(Timer.TAGS, value);
+				mTimer.putOrConcat(Timer.KEY_TAGS, value);
 			} else if (inLogEntries) {
-				mTimer.putOrConcat(Timer.LOG_ENTRIES, value);
+				mTimer.putOrConcat(Timer.KEY_LOG_ENTRIES, value);
 			} else if (inFilename) {
-				mTimer.putOrConcat(Timer.FILE_NAME, value);
+				mTimer.putOrConcat(Timer.KEY_FILE_NAME, value);
 			} else if (inBackoff) {
-				mTimer.put(Timer.BACK_OFF, value);
+				mTimer.put(Timer.KEY_BACK_OFF, value);
 			} else if (inNextActivation) {
-				mTimer.put(Timer.NEXT_ACTIVATION, value);
+				mTimer.put(Timer.KEY_NEXT_ACTIVATION, value);
 			} else if (inFirstTryPrepare) {
-				mTimer.put(Timer.FIRST_TRY_PREPARE, value);
+				mTimer.put(Timer.KEY_FIRST_TRY_PREPARE, value);
 			} else if (inState) {
-				mTimer.put(Timer.STATE, value);
+				mTimer.put(Timer.KEY_STATE, value);
 			} else if (inRepeated) {
-				mTimer.put(Timer.REPEATED, value);
+				mTimer.put(Timer.KEY_REPEATED, value);
 			} else if (inDontSave) {
-				mTimer.put(Timer.DONT_SAVE, value);
+				mTimer.put(Timer.KEY_DONT_SAVE, value);
 			} else if (inCanceled) {
-				mTimer.put(Timer.CANCELED, value);
+				mTimer.put(Timer.KEY_CANCELED, value);
 			} else if (inToggleDisabled) {
-				mTimer.put(Timer.TOGGLE_DISABLED, value);
+				mTimer.put(Timer.KEY_TOGGLE_DISABLED, value);
 			}
 		}
 	}

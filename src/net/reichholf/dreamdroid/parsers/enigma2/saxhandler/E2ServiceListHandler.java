@@ -16,9 +16,13 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 
 /**
  * @author sreichholf
- *
+ * 
  */
 public class E2ServiceListHandler extends DefaultHandler {
+
+	protected static final String TAG_E2SERVICENAME = "e2servicename";
+	protected static final String TAG_E2SERVICEREFERENCE = "e2servicereference";
+	protected static final String TAG_E2SERVICE = "e2service";
 
 	private boolean inService;
 	private boolean inReference;
@@ -34,37 +38,45 @@ public class E2ServiceListHandler extends DefaultHandler {
 		mServicelist = list;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals("e2service")) {
+		if (localName.equals(TAG_E2SERVICE)) {
 			inService = true;
 			mService = new ExtendedHashMap();
-		} else if (localName.equals("e2servicereference")) {
+		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = true;
-		} else if (localName.equals("e2servicename")) {
+		} else if (localName.equals(TAG_E2SERVICENAME)) {
 			inName = true;
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2service")) {
+		if (localName.equals(TAG_E2SERVICE)) {
 			inService = false;
 			mServicelist.add(mService);
-		} else if (localName.equals("e2servicereference")) {
+		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = false;
-		} else if (localName.equals("e2servicename")) {
+		} else if (localName.equals(TAG_E2SERVICENAME)) {
 			inName = false;
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
 	 */
 	@Override
@@ -73,9 +85,9 @@ public class E2ServiceListHandler extends DefaultHandler {
 
 		if (inService) {
 			if (inReference) {
-				mService.putOrConcat(Service.REFERENCE, value);
+				mService.putOrConcat(Service.KEY_REFERENCE, value);
 			} else if (inName) {
-				mService.putOrConcat(Service.NAME, value.replaceAll("\\p{Cntrl}", ""));
+				mService.putOrConcat(Service.KEY_NAME, value.replaceAll("\\p{Cntrl}", ""));
 			}
 		}
 	}

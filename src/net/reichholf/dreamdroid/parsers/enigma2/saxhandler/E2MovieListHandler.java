@@ -4,7 +4,6 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
 import java.util.ArrayList;
@@ -18,9 +17,22 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
- *
+ * 
  */
 public class E2MovieListHandler extends DefaultHandler {
+
+	protected static final String TAG_E2MOVIE = "e2movie";
+	protected static final String TAG_E2SERVICEREFERENCE = "e2servicereference";
+	protected static final String TAG_E2TITLE = "e2title";
+	protected static final String TAG_E2DESCRIPTION = "e2description";
+	protected static final String TAG_E2DESCRIPTIONEXTENDED = "e2descriptionextended";
+	protected static final String TAG_E2SERVICENAME = "e2servicename";
+	protected static final String TAG_E2TIME = "e2time";
+	protected static final String TAG_E2LENGTH = "e2length";
+	protected static final String TAG_E2TAGS = "e2tags";
+	protected static final String TAG_E2FILENAME = "e2filename";
+	protected static final String TAG_E2FILESIZE = "e2filesize";
+
 	private boolean inMovie = false;
 	private boolean inReference = false;
 	private boolean inTitle = false;
@@ -43,70 +55,78 @@ public class E2MovieListHandler extends DefaultHandler {
 		mMovielist = list;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		
-		if (localName.equals("e2movie")) {
+
+		if (localName.equals(TAG_E2MOVIE)) {
 			inMovie = true;
 			mMovie = new ExtendedHashMap();
-		} else if (localName.equals("e2servicereference")){
+		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = true;
-		} else if (localName.equals("e2title")) {
+		} else if (localName.equals(TAG_E2TITLE)) {
 			inTitle = true;
-		} else if (localName.equals("e2description")) {
+		} else if (localName.equals(TAG_E2DESCRIPTION)) {
 			inDescription = true;
-		} else if (localName.equals("e2descriptionextended")) {
+		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
 			inDescriptionEx = true;
-		} else if (localName.equals("e2servicename")) {
+		} else if (localName.equals(TAG_E2SERVICENAME)) {
 			inName = true;
-		} else if (localName.equals("e2time")) {
+		} else if (localName.equals(TAG_E2TIME)) {
 			inTime = true;
-		} else if (localName.equals("e2length")) {
+		} else if (localName.equals(TAG_E2LENGTH)) {
 			inLength = true;
-		} else if (localName.equals("e2tags")) {
+		} else if (localName.equals(TAG_E2TAGS)) {
 			inTags = true;
-		} else if (localName.equals("e2filename")) {
+		} else if (localName.equals(TAG_E2FILENAME)) {
 			inFilename = true;
-		} else if (localName.equals("e2filesize")) {
+		} else if (localName.equals(TAG_E2FILESIZE)) {
 			inFilesize = true;
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2movie")) {
+		if (localName.equals(TAG_E2MOVIE)) {
 			inMovie = false;
 			mMovielist.add(mMovie);
-		} else if (localName.equals("e2servicereference")) {
+		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = false;
-		} else if (localName.equals("e2title")) {
+		} else if (localName.equals(TAG_E2TITLE)) {
 			inTitle = false;
-		} else if (localName.equals("e2description")) {
+		} else if (localName.equals(TAG_E2DESCRIPTION)) {
 			inDescription = false;
-		} else if (localName.equals("e2descriptionextended")) {
+		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
 			inDescriptionEx = false;
-		} else if (localName.equals("e2servicename")) {
+		} else if (localName.equals(TAG_E2SERVICENAME)) {
 			inName = false;
-		} else if (localName.equals("e2time")) {
+		} else if (localName.equals(TAG_E2TIME)) {
 			inTime = false;
-		} else if (localName.equals("e2length")) {
+		} else if (localName.equals(TAG_E2LENGTH)) {
 			inLength = false;
-		} else if (localName.equals("e2tags")) {
+		} else if (localName.equals(TAG_E2TAGS)) {
 			inTags = false;
-		} else if (localName.equals("e2filename")) {
+		} else if (localName.equals(TAG_E2FILENAME)) {
 			inFilename = false;
-		} else if (localName.equals("e2filesize")) {
+		} else if (localName.equals(TAG_E2FILESIZE)) {
 			inFilesize = false;
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
 	 */
 	@Override
@@ -115,30 +135,32 @@ public class E2MovieListHandler extends DefaultHandler {
 
 		if (inMovie) {
 			if (inReference) {
-				mMovie.putOrConcat(Movie.REFERENCE, value);
+				mMovie.putOrConcat(Movie.KEY_REFERENCE, value);
 			} else if (inTitle) {
-				mMovie.putOrConcat(Movie.TITLE, value);
+				mMovie.putOrConcat(Movie.KEY_TITLE, value);
 			} else if (inDescription) {
-				mMovie.putOrConcat(Movie.DESCRIPTION, value);
+				mMovie.putOrConcat(Movie.KEY_DESCRIPTION, value);
 			} else if (inDescriptionEx) {
-				mMovie.putOrConcat(Movie.DESCRIPTION_EXTENDED, value);
+				mMovie.putOrConcat(Movie.KEY_DESCRIPTION_EXTENDED, value);
 			} else if (inName) {
-				mMovie.putOrConcat(Movie.SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "")); //remove illegal chars
+				mMovie.putOrConcat(Movie.KEY_SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "")); // remove
+																								// illegal
+																								// chars
 			} else if (inTime) {
-				mMovie.putOrConcat(Movie.TIME, value);
-				mMovie.putOrConcat(Movie.TIME_READABLE, DateTime.getDateTimeString(value));
+				mMovie.putOrConcat(Movie.KEY_TIME, value);
+				mMovie.putOrConcat(Movie.KEY_TIME_READABLE, DateTime.getDateTimeString(value));
 			} else if (inLength) {
-				mMovie.putOrConcat(Movie.LENGTH, value);				
+				mMovie.putOrConcat(Movie.KEY_LENGTH, value);
 			} else if (inTags) {
-				mMovie.putOrConcat(Movie.TAGS, value);
+				mMovie.putOrConcat(Movie.KEY_TAGS, value);
 			} else if (inFilename) {
-				mMovie.putOrConcat(Movie.FILE_NAME, value);
+				mMovie.putOrConcat(Movie.KEY_FILE_NAME, value);
 			} else if (inFilesize) {
-				mMovie.putOrConcat(Movie.FILE_SIZE, value);
+				mMovie.putOrConcat(Movie.KEY_FILE_SIZE, value);
 				Long size = new Long(value);
-				size /= ( 1024 * 1024);
+				size /= (1024 * 1024);
 				String size_readable = size + " MB";
-				mMovie.putOrConcat(Movie.FILE_SIZE_READABLE, size_readable);
+				mMovie.putOrConcat(Movie.KEY_FILE_SIZE_READABLE, size_readable);
 			}
 		}
 	}
