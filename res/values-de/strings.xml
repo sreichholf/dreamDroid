@@ -200,4 +200,5 @@
 <string name="wrong_activity">Falsche Activity aufgerufen. Bitte erstellen Sie alle Shortcuts zu dreamDroid neu!</string>
 <string name="simple_remote">Einfache Fernbedienung</string>
 <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
+<string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
 </resources>

@@ -20,6 +20,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
@@ -469,7 +470,11 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 								break;
 
 							case 3:
-								startActivity( IntentFactory.getStreamServiceIntent(ref) );
+								try{
+									startActivity( IntentFactory.getStreamServiceIntent(ref) );
+								} catch(ActivityNotFoundException e){
+									showToast(getText(R.string.missing_stream_player));
+								}
 								break;
 							}
 						}

@@ -30,6 +30,7 @@ import net.reichholf.dreamdroid.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
@@ -376,7 +377,11 @@ public class MovieListActivity extends AbstractHttpListActivity {
 						startActivity(intent);
 						break;
 					case 3:
-						startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.FILE_NAME)) );
+						try{
+							startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.FILE_NAME)) );
+						} catch(ActivityNotFoundException e){
+							showToast(getText(R.string.missing_stream_player));
+						}
 						break;
 					default:
 						return;
