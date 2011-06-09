@@ -35,6 +35,7 @@ public class URIStore {
 	public static final String MEDIA_PLAYER_CMD 		= "/web/mediaplayercmd?";
 	public static final String MEDIA_PLAYER_CURRENT		= "/web/mediaplayercurrent?";
 	public static final String MEDIA_PLAYER_LIST		= "/web/mediaplayerlist?";
+	public static final String MEDIA_PLAYER_LOAD		= "/web/mediaplayerload?";
 	public static final String MEDIA_PLAYER_PLAY		= "/web/mediaplayerplay?";
 	public static final String MEDIA_PLAYER_REMOVE		= "/web/mediaplayerremove?";
 	public static final String MEDIA_PLAYER_WRITE		= "/web/mediaplayerwrite?";	

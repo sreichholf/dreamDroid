@@ -6,30 +6,27 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
-import java.util.ArrayList;
-
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleResultHandler;
 
-import org.apache.http.NameValuePair;
+public abstract class SimpleResultRequestHandler extends AbstractSimpleRequestParamHandler {
+	public SimpleResultRequestHandler(String uri) {
+		super(uri, new E2SimpleResultHandler());
+	}
 
-public abstract class SimpleResultRequestHandler{
-	protected String mUri;
-	
-	public SimpleResultRequestHandler(String uri){
-		mUri = uri;
+	public ExtendedHashMap parseSimpleResult(String xml) {
+		ExtendedHashMap result = new ExtendedHashMap();
+		parse(xml, result);
+		return result;
 	}
 	
-	public String get(SimpleHttpClient shc, ArrayList<NameValuePair> params){
-		if (shc.fetchPageContent(mUri, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-	
-	public ExtendedHashMap parseSimpleResult(String xml){
-		return SimpleResult.parseSimpleResult(xml);
+	public ExtendedHashMap getDefault(){
+		ExtendedHashMap result = new ExtendedHashMap();
+		result.put(SimpleResult.KEY_STATE, Python.FALSE);
+		result.put(SimpleResult.KEY_STATE_TEXT, null);
+		
+		return result;
 	}
 }

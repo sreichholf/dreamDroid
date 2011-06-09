@@ -4,7 +4,7 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
+package net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces;
 
 import java.util.ArrayList;
 
@@ -17,7 +17,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
  * @author sre
  *
  */
-public interface ListRequestHandler{
-	public String getList(SimpleHttpClient shc, ArrayList<NameValuePair>... params);
+public interface ListRequestInterface extends RequestHandlerInterrface{
+	public String getList(SimpleHttpClient shc, ArrayList<NameValuePair> params);
 	public boolean parseList(String xml, ArrayList<ExtendedHashMap> list);
 }

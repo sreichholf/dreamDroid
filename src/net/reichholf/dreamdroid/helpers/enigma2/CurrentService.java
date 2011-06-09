@@ -6,15 +6,6 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
-import java.util.ArrayList;
-
-import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.parsers.GenericSaxParser;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2CurrentServiceHandler;
-
-import org.apache.http.NameValuePair;
 
 /**
  * @author sreichholf
@@ -39,34 +30,4 @@ public class CurrentService {
 	public static final String KEY_SERVICE_ONID = "onid";
 	public static final String KEY_SERVICE_SID = "sid";
 	public static final String KEY_EVENTS = "event";
-
-	/**
-	 * @param shc
-	 * @return
-	 */
-	public static String get(SimpleHttpClient shc) {
-		if (shc.fetchPageContent(URIStore.CURRENT, new ArrayList<NameValuePair>())) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param xml
-	 * @param map
-	 * @return
-	 */
-	public static boolean parse(String xml, ExtendedHashMap map) {
-		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
-
-		E2CurrentServiceHandler handler = new E2CurrentServiceHandler(map);
-		sdp.getParser().setHandler(handler);
-
-		if (sdp.parse(xml)) {
-			return true;
-		}
-
-		return false;
-	}
 }

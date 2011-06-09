@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 
 /**
  * Check a profile for data-consistency and connectivity. Checks hostname, port,
@@ -56,13 +57,13 @@ public class CheckProfile {
 
 				if (port > 0 && port <= 65535) {
 					addEntry(resultList, R.string.port, false, Integer.toString(port));
-
-					String xml = DeviceInfo.get(shc);
+					DeviceInfoRequestHandler dirh = new DeviceInfoRequestHandler();
+					String xml = dirh.get(shc);
 
 					if (xml != null && !shc.hasError()) {
 						ExtendedHashMap deviceInfo = new ExtendedHashMap();
 
-						if (DeviceInfo.parse(xml, deviceInfo)) {
+						if (dirh.parse(xml, deviceInfo)) {
 							addEntry(resultList, R.string.device_name, false,
 									deviceInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 
