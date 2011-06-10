@@ -6,19 +6,16 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import java.util.ArrayList;
-
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
  * 
  */
-public class E2EventHandler extends DefaultHandler {
+public class E2EventListHandler extends E2ListHandler {
 
 	protected static final String TAG_E2EVENT = "e2event";
 	protected static final String TAG_E2EVENTID = "e2eventid";
@@ -43,14 +40,6 @@ public class E2EventHandler extends DefaultHandler {
 	private boolean inServiceName = false;
 
 	private ExtendedHashMap mEvent;
-	private ArrayList<ExtendedHashMap> mEventlist;
-
-	/**
-	 * @param list
-	 */
-	public E2EventHandler(ArrayList<ExtendedHashMap> list) {
-		mEventlist = list;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -96,7 +85,7 @@ public class E2EventHandler extends DefaultHandler {
 		if (localName.equals(TAG_E2EVENT)) {
 			inEvent = false;
 			Event.supplementReadables(mEvent);
-			mEventlist.add(mEvent);
+			mList.add(mEvent);
 		} else if (localName.equals(TAG_E2EVENTID)) {
 			inId = false;
 		} else if (localName.equals(TAG_E2EVENTSTART)) {

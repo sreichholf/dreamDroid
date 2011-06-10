@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.EpgListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -39,7 +39,7 @@ public class ServiceEpgListActivity extends AbstractHttpEventListActivity {
 	 */
 	private class GetEpgListTask extends AsyncListUpdateTask{
 		public GetEpgListTask() {
-			super(getString(R.string.epg), new EpgListRequestHandler(), false);
+			super(getString(R.string.epg), new EventListRequestHandler(), false);
 		}
 	}
 

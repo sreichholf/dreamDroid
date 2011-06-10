@@ -16,9 +16,9 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerCleanupRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerDeleteRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
 
 import org.apache.http.NameValuePair;
 

@@ -16,8 +16,9 @@ import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MessageRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.SleepTimerRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
 import net.reichholf.dreamdroid.widget.NumberPicker;
 
 import org.apache.http.NameValuePair;
@@ -114,10 +115,14 @@ public class MainActivity extends AbstractHttpActivity {
 		 */
 		@Override
 		protected Boolean doInBackground(String... params) {
-			String xml = PowerState.set(mShc, params[0]);
+			PowerStateRequestHandler handler = new PowerStateRequestHandler();
+			String xml = handler.get(mShc, PowerState.getStateParams(params[0]));
 
 			if (xml != null) {
-				ExtendedHashMap result = PowerState.parseResult(xml);
+				
+				ExtendedHashMap result = new ExtendedHashMap();
+				handler.parse(xml, result);
+				
 				mResult = result;
 				return true;
 			}
@@ -172,7 +177,8 @@ public class MainActivity extends AbstractHttpActivity {
 			String xml = mHandler.get(mShc, params[0]);
 
 			if (xml != null) {
-				ExtendedHashMap result = mHandler.parse(xml);
+				ExtendedHashMap result = new ExtendedHashMap();
+				mHandler.parse(xml, result);
 
 				String enabled = result.getString(SleepTimer.KEY_ENABLED);
 

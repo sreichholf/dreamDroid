@@ -17,8 +17,9 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
  * @author sre
  *
  */
-public interface ListRequestInterface {
-	public String getList(SimpleHttpClient shc, ArrayList<NameValuePair> params);
-	public String getList(SimpleHttpClient shc);
-	public boolean parseList(String xml, ArrayList<ExtendedHashMap> list);
+public interface SimpleRequestInterface {
+	public String get(SimpleHttpClient shc);
+	public String get(SimpleHttpClient shc, ArrayList<NameValuePair> params);
+	public boolean parse(String xml, ExtendedHashMap result);
+	public ExtendedHashMap getDefault();
 }

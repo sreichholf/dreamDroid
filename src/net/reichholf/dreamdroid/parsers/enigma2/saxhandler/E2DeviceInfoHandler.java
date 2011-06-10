@@ -12,13 +12,12 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
  * 
  */
-public class E2DeviceInfoHandler extends DefaultHandler {
+public class E2DeviceInfoHandler extends E2SimpleHandler {
 
 	protected static final String TAG_E2ENIGMAVERSION = "e2enigmaversion";
 	protected static final String TAG_E2IMAGEVERSION = "e2imageversion";
@@ -38,10 +37,6 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 	protected static final String TAG_E2CAPACITY = "e2capacity";
 	protected static final String TAG_E2FREE = "e2free";
 
-	public E2DeviceInfoHandler(ExtendedHashMap map) {
-		mDeviceInfo = map;
-	}
-
 	private boolean inGuiV = false;
 	private boolean inImageV = false;
 	private boolean inInterfaceV = false;
@@ -60,7 +55,6 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 	private boolean inCapacity = false;
 	private boolean inFree = false;
 
-	private ExtendedHashMap mDeviceInfo;
 	private ExtendedHashMap mFrontendData;
 	private ExtendedHashMap mHddData;
 	private ExtendedHashMap mNicData;
@@ -158,7 +152,7 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 				mFrontends.add(mFrontendData);
 
 			} else if (localName.equals("e2frontends")) {
-				mDeviceInfo.putOrConcat(DeviceInfo.KEY_FRONTENDS, mFrontends);
+				mResult.putOrConcat(DeviceInfo.KEY_FRONTENDS, mFrontends);
 
 			} else if (localName.equals(TAG_E2NAME)) {
 				inName = false;
@@ -171,7 +165,7 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 				mNics.add(mNicData);
 
 			} else if (localName.equals("e2network")) {
-				mDeviceInfo.putOrConcat(DeviceInfo.KEY_NICS, mNics);
+				mResult.putOrConcat(DeviceInfo.KEY_NICS, mNics);
 
 			} else if (localName.equals(TAG_E2MAC)) {
 				inMac = false;
@@ -193,7 +187,7 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 				mHdds.add(mHddData);
 
 			} else if (localName.equals("e2hdds")) {
-				mDeviceInfo.putOrConcat(DeviceInfo.KEY_HDDS, mHdds);
+				mResult.putOrConcat(DeviceInfo.KEY_HDDS, mHdds);
 
 			} else if (localName.equals(TAG_E2CAPACITY)) {
 				inCapacity = false;
@@ -217,15 +211,15 @@ public class E2DeviceInfoHandler extends DefaultHandler {
 		String value = new String(ch, start, length);
 
 		if (inGuiV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.KEY_GUI_VERSION, value.trim());
+			mResult.putOrConcat(DeviceInfo.KEY_GUI_VERSION, value.trim());
 		} else if (inImageV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.KEY_IMAGE_VERSION, value.trim());
+			mResult.putOrConcat(DeviceInfo.KEY_IMAGE_VERSION, value.trim());
 		} else if (inInterfaceV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.KEY_INTERFACE_VERSION, value.trim());
+			mResult.putOrConcat(DeviceInfo.KEY_INTERFACE_VERSION, value.trim());
 		} else if (inFpV) {
-			mDeviceInfo.putOrConcat(DeviceInfo.KEY_FRONT_PROCESSOR_VERSION, value.trim());
+			mResult.putOrConcat(DeviceInfo.KEY_FRONT_PROCESSOR_VERSION, value.trim());
 		} else if (inDeviceName) {
-			mDeviceInfo.putOrConcat(DeviceInfo.KEY_DEVICE_NAME, value.trim());
+			mResult.putOrConcat(DeviceInfo.KEY_DEVICE_NAME, value.trim());
 		} else if (inFrontend) {
 			if (inName) {
 				mFrontendData.putOrConcat(DeviceInfo.KEY_FRONTEND_NAME, value.trim());

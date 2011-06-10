@@ -6,16 +6,30 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
+import java.util.ArrayList;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
-public class E2PowerStateHandler extends E2SimpleHandler {
-
-	protected static final String TAG_E2INSTANDBY = "e2instandby";
-
-	private boolean inState;
-
+public abstract class E2SimpleListHandler extends DefaultHandler {
+	
+	private boolean inItem;
+	
+	private String mTag;
+	private String mItem;
+	
+	protected ArrayList<String> mList;
+	
+	/**
+	 * @param list
+	 */
+	protected E2SimpleListHandler(String tag){
+		mTag = tag;
+	}
+	
+	public void setList(ArrayList<String> list){
+		mList = list;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -25,8 +39,9 @@ public class E2PowerStateHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2INSTANDBY)) {
-			inState = true;
+		if (localName.equals(mTag)) {
+			inItem = true;
+			mItem = "";
 		}
 	}
 
@@ -38,8 +53,9 @@ public class E2PowerStateHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2INSTANDBY)) {
-			inState = false;
+		if (localName.equals(mTag)) {
+			inItem = false;
+			mList.add(mItem.trim());
 		}
 	}
 
@@ -51,13 +67,8 @@ public class E2PowerStateHandler extends E2SimpleHandler {
 	@Override
 	public void characters(char ch[], int start, int length) {
 		String value = new String(ch, start, length);
-
-		if (inState) {
-			if ("false".equals(value.trim()))
-				mResult.put(PowerState.KEY_IN_STANDBY, true);
-			else if ("true".equals(value.trim())) {
-				mResult.put(PowerState.KEY_IN_STANDBY, false);
-			}
+		if (inItem) {
+			mItem += value;
 		}
 	}
 }

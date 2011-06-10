@@ -11,7 +11,7 @@ import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleResultHandler;
 
-public abstract class SimpleResultRequestHandler extends AbstractSimpleRequestParamHandler {
+public abstract class SimpleResultRequestHandler extends AbstractSimpleRequestHandler {
 	public SimpleResultRequestHandler(String uri) {
 		super(uri, new E2SimpleResultHandler());
 	}

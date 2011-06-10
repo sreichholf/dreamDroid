@@ -16,7 +16,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerAddByEventIdRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -47,8 +48,6 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	public static final int ITEM_NOW = 0;
 	public static final int ITEM_NEXT = 1;
 	public static final int ITEM_STREAM = 2;
-//	public static final int ITEM_SIMILAR = 3;
-//	public static final int ITEM_IMDB = 4;
 	public static final int DIALOG_EPG_ITEM_ID = 9382893;
 
 	private ExtendedHashMap mCurrent;
@@ -63,8 +62,6 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	private TextView mNextTitle;
 	private TextView mNextDuration;
 	private Button mStream;
-//	private Button mSimilar;
-//	private Button mImdb;
 	private LinearLayout mNowLayout;
 	private LinearLayout mNextLayout;	
 	protected ProgressDialog mProgress;
@@ -94,13 +91,13 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 					+ getText(R.string.fetching_data));
 
 			mCurrent.clear();
-
-			String xml = CurrentService.get(mShc);
+			CurrentServiceRequestHandler handler = new CurrentServiceRequestHandler();
+			String xml = handler.get(mShc);
 			if (xml != null) {
 				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.current_service) + " - "
 						+ getText(R.string.parsing));
 
-				if (CurrentService.parse(xml, mCurrent)) {
+				if (handler.parse(xml, mCurrent)) {
 					return true;
 				}
 			}
@@ -170,16 +167,12 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 		mCurrent = new ExtendedHashMap();
 		
 		mStream = (Button) findViewById(R.id.ButtonStream);
-//		mSimilar = (Button) findViewById(R.id.ButtonSimilar);
-//		mImdb = (Button) findViewById(R.id.ButtonImdb);
 		mNowLayout = (LinearLayout) findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) findViewById(R.id.layout_next);
 		
 		registerOnClickListener(mNowLayout, ITEM_NOW);
 		registerOnClickListener(mNextLayout, ITEM_NEXT);
 		registerOnClickListener(mStream, ITEM_STREAM);
-//		registerOnClickListener(mSimilar, ITEM_SIMILAR);
-//		registerOnClickListener(mImdb, ITEM_IMDB);
 
 		reload();
 	}	
@@ -272,9 +265,6 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 					showToast( getText(R.string.not_available) );
 				}
 				return true;
-//			case ITEM_IMDB:
-//				queryImdb(mNow);
-//				return true;
 			default:
 				return false;
 			}

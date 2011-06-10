@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.helpers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -124,7 +125,11 @@ public class SimpleHttpClient {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
 		return "http://" + mStreamHostname + ":" + 80 + uri + parms;
 	}
-
+	
+	public boolean fetchPageContent(String uri){
+		return fetchPageContent(uri, new ArrayList<NameValuePair>());
+	}
+	
 	/**
 	 * @param uri
 	 * @param parameters

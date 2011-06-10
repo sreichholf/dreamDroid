@@ -13,7 +13,10 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 
 import org.apache.http.NameValuePair;
@@ -82,23 +85,18 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
 
 			String xml;
-
+			AbstractListRequestHandler handler;
 			if (!mIsBouquetList && !mPickMode) {
-				xml = Service.getEpgBouquetList(mShc, params);
+				handler = new EventListRequestHandler(URIStore.EPG_NOW);				
 			} else {
-				xml = Service.getList(mShc, params);
+				handler = new ServiceListRequestHandler();
 			}
+			xml = handler.getList(mShc, params[0]);
 
 			if (xml != null) {
 				publishProgress(mBaseTitle + " - " + getText(R.string.parsing));
 				boolean result = false;
-
-				if (!mIsBouquetList && !mPickMode) {
-					result = Service.parseEpgBouquetList(xml, mTaskList);
-				} else {
-					result = Service.parseList(xml, mTaskList);
-				}
-
+				result = handler.parseList(xml, mTaskList);
 				return result;
 
 			}

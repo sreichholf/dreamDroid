@@ -23,7 +23,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.TimerChangeRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

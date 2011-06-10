@@ -6,19 +6,16 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import java.util.ArrayList;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
-
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
+
+import org.xml.sax.Attributes;
 
 /**
  * @author sreichholf
  * 
  */
-public class E2ServiceListHandler extends DefaultHandler {
+public class E2ServiceListHandler extends E2ListHandler {
 
 	protected static final String TAG_E2SERVICENAME = "e2servicename";
 	protected static final String TAG_E2SERVICEREFERENCE = "e2servicereference";
@@ -29,14 +26,6 @@ public class E2ServiceListHandler extends DefaultHandler {
 	private boolean inName;
 
 	private ExtendedHashMap mService;
-	private ArrayList<ExtendedHashMap> mServicelist;
-
-	/**
-	 * @param list
-	 */
-	public E2ServiceListHandler(ArrayList<ExtendedHashMap> list) {
-		mServicelist = list;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -66,7 +55,7 @@ public class E2ServiceListHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName) {
 		if (localName.equals(TAG_E2SERVICE)) {
 			inService = false;
-			mServicelist.add(mService);
+			mList.add(mService);
 		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = false;
 		} else if (localName.equals(TAG_E2SERVICENAME)) {

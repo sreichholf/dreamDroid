@@ -6,13 +6,11 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
-public class E2SimpleResultHandler extends DefaultHandler {
+public class E2SimpleResultHandler extends E2SimpleHandler {
 
 	protected static final String TAG_E2RESULTTEXT = "e2resulttext";
 	protected static final String TAG_E2STATETEXT = "e2statetext";
@@ -21,14 +19,6 @@ public class E2SimpleResultHandler extends DefaultHandler {
 
 	private boolean inState;
 	private boolean inStateText;
-	private ExtendedHashMap mResult;
-
-	/**
-	 * @param list
-	 */
-	public E2SimpleResultHandler(ExtendedHashMap res) {
-		mResult = res;
-	}
 
 	/*
 	 * (non-Javadoc)

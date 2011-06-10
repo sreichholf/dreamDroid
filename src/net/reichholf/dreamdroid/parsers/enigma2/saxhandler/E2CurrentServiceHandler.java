@@ -13,13 +13,12 @@ import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
  * 
  */
-public class E2CurrentServiceHandler extends DefaultHandler {
+public class E2CurrentServiceHandler extends E2SimpleHandler {
 
 	protected static final String TAG_E2CURRENTSERVICEINFORMATION = "e2currentserviceinformation";
 	protected static final String TAG_E2EVENTDESCRIPTIONEXTENDED = "e2eventdescriptionextended";
@@ -84,13 +83,12 @@ public class E2CurrentServiceHandler extends DefaultHandler {
 	private ExtendedHashMap mService;
 	private ExtendedHashMap mEvent;
 	private ArrayList<ExtendedHashMap> mEvents;
-	private ExtendedHashMap mCurrent;
 
 	/**
 	 * @param list
 	 */
-	public E2CurrentServiceHandler(ExtendedHashMap cur) {
-		mCurrent = cur;
+	public E2CurrentServiceHandler() {
+		super();
 		mEvents = new ArrayList<ExtendedHashMap>();
 	}
 
@@ -175,7 +173,7 @@ public class E2CurrentServiceHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName) {
 		if (localName.equals("e2service")) {
 			inService = false;
-			mCurrent.put(CurrentService.KEY_SERVICE, mService);
+			mResult.put(CurrentService.KEY_SERVICE, mService);
 		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inServiceReference = false;
 		} else if (localName.equals(TAG_E2SERVICENAME)) {
@@ -235,7 +233,7 @@ public class E2CurrentServiceHandler extends DefaultHandler {
 		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
 			inEventDescriptionExtended = false;
 		} else if (localName.equals(TAG_E2CURRENTSERVICEINFORMATION)) {
-			mCurrent.put(CurrentService.KEY_EVENTS, mEvents);
+			mResult.put(CurrentService.KEY_EVENTS, mEvents);
 		}
 
 	}

@@ -7,14 +7,14 @@
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SleepTimerHandler;
+import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2LocationHandler;
 
 /**
  * @author sre
- * 
+ *
  */
-public class SleepTimerRequestHandler extends AbstractSimpleRequestHandler{
-	public SleepTimerRequestHandler(){
-		super(URIStore.SLEEPTIMER, new E2SleepTimerHandler());
+public class LocationListRequestHandler extends AbstractSimpleListRequestHandler{
+	public LocationListRequestHandler(){
+		super(URIStore.LOCATIONS, new E2LocationHandler());
 	}
 }

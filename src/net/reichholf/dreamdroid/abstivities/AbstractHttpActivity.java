@@ -20,8 +20,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.VolumeRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.ZapRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -126,7 +126,8 @@ public abstract class AbstractHttpActivity extends Activity {
 			String xml = mHandler.get(mShc, params[0]);
 
 			if (xml != null) {
-				ExtendedHashMap volume = mHandler.parse(xml);
+				ExtendedHashMap volume = new ExtendedHashMap();
+				mHandler.parse(xml, volume);
 
 				String current = volume.getString(Volume.KEY_CURRENT);
 				if(current != null){

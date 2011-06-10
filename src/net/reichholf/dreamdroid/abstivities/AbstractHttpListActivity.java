@@ -17,10 +17,10 @@ import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.VolumeRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.ZapRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -70,7 +70,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		protected ArrayList<ExtendedHashMap> mTaskList;
 
-		protected ListRequestHandler mListRequestHandler;
+		protected ListRequestInterface mListRequestHandler;
 		protected boolean mRequireLocsAndTags;
 		protected ArrayList<String> mLocations;
 		protected ArrayList<String> mTags;
@@ -80,7 +80,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			mListRequestHandler = null;
 		}
 
-		public AsyncListUpdateTask(String baseTitle, ListRequestHandler listRequestHandler, boolean requireLocsAndTags) {
+		public AsyncListUpdateTask(String baseTitle, ListRequestInterface listRequestHandler, boolean requireLocsAndTags) {
 			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
 			mListRequestHandler = listRequestHandler;
 			mRequireLocsAndTags = requireLocsAndTags;
@@ -101,7 +101,7 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			mTaskList = new ArrayList<ExtendedHashMap>();
 			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
 
-			String xml = mListRequestHandler.getList(mShc, params);
+			String xml = mListRequestHandler.getList(mShc, params[0]);
 			if (xml != null) {
 				publishProgress(mBaseTitle + " - " + getText(R.string.parsing));
 
@@ -247,7 +247,8 @@ public abstract class AbstractHttpListActivity extends ListActivity {
 			String xml = mHandler.get(mShc, params[0]);
 
 			if (xml != null) {
-				ExtendedHashMap volume = mHandler.parse(xml);
+				ExtendedHashMap volume = new ExtendedHashMap();
+				mHandler.parse(xml, volume);
 
 				String current = volume.getString(Volume.KEY_CURRENT);
 				if(current != null){

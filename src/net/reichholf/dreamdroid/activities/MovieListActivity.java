@@ -18,8 +18,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieDeleteRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.MovieListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 
 import org.apache.http.NameValuePair;

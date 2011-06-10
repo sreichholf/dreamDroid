@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 import android.app.ListActivity;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -66,13 +67,13 @@ public class DeviceInfoActivity extends ListActivity {
 					+ getText(R.string.fetching_data));
 
 			mInfo.clear();
-
-			String xml = DeviceInfo.get(mShc);
+			DeviceInfoRequestHandler handler = new DeviceInfoRequestHandler();
+			String xml = handler.get(mShc);
 			if (xml != null) {
 				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.device_info) + " - "
 						+ getText(R.string.parsing));
 
-				if (DeviceInfo.parse(xml, mInfo)) {
+				if (handler.parse(xml, mInfo)) {
 					return true;
 				}
 			}

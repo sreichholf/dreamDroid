@@ -12,7 +12,8 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.impl.EpgSearchRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -44,7 +45,7 @@ public class SearchEpgActivity extends AbstractHttpEventListActivity {
 	 */
 	private class SearchEpgListTask extends AsyncListUpdateTask {
 		public SearchEpgListTask(){
-			super(getString(R.string.epg_search), new EpgSearchRequestHandler(), false);
+			super(getString(R.string.epg_search), new EventListRequestHandler(URIStore.EPG_SEARCH), false);
 		}
 	}
 

@@ -13,7 +13,7 @@ import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2VolumeHandler;
  * @author sre
  * 
  */
-public class VolumeRequestHandler extends AbstractSimpleRequestParamHandler{
+public class VolumeRequestHandler extends AbstractSimpleRequestHandler{
 	public VolumeRequestHandler(){
 		super(URIStore.VOLUME, new E2VolumeHandler());
 	}

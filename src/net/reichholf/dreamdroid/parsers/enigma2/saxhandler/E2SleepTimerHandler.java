@@ -6,13 +6,11 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
-public class E2SleepTimerHandler extends DefaultHandler {
+public class E2SleepTimerHandler extends E2SimpleHandler {
 
 	protected static final String TAG_E2SLEEPTIMER = "e2sleeptimer";
 	protected static final String TAG_E2ENABLED = "e2enabled";
@@ -25,15 +23,6 @@ public class E2SleepTimerHandler extends DefaultHandler {
 	private boolean inMinutes = false;
 	private boolean inAction = false;
 	private boolean inText = false;
-
-	private ExtendedHashMap mResult;
-
-	/**
-	 * @param list
-	 */
-	public E2SleepTimerHandler(ExtendedHashMap res) {
-		mResult = res;
-	}
 
 	/*
 	 * (non-Javadoc)

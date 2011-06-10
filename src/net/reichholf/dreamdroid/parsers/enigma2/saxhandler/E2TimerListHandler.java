@@ -6,20 +6,17 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import java.util.ArrayList;
-
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
  * 
  */
-public class E2TimerHandler extends DefaultHandler {
+public class E2TimerListHandler extends E2ListHandler {
 
 	protected static final String TAG_E2TIMER = "e2timer";
 	protected static final String TAG_E2SERVICEREFERENCE = "e2servicereference";
@@ -75,15 +72,7 @@ public class E2TimerHandler extends DefaultHandler {
 	private boolean inCanceled = false;
 	private boolean inToggleDisabled = false;
 
-	private ArrayList<ExtendedHashMap> mTimerlist;
 	private ExtendedHashMap mTimer;
-
-	/**
-	 * @param list
-	 */
-	public E2TimerHandler(ArrayList<ExtendedHashMap> list) {
-		mTimerlist = list;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -159,7 +148,7 @@ public class E2TimerHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName) {
 		if (localName.equals(TAG_E2TIMER)) {
 			inTimer = false;
-			mTimerlist.add(mTimer);
+			mList.add(mTimer);
 		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = false;
 		} else if (localName.equals(TAG_E2SERVICENAME)) {

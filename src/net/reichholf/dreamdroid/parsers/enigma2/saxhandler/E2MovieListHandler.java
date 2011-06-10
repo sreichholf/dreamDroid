@@ -6,20 +6,17 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import java.util.ArrayList;
-
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
  * 
  */
-public class E2MovieListHandler extends DefaultHandler {
+public class E2MovieListHandler extends E2ListHandler {
 
 	protected static final String TAG_E2MOVIE = "e2movie";
 	protected static final String TAG_E2SERVICEREFERENCE = "e2servicereference";
@@ -46,14 +43,6 @@ public class E2MovieListHandler extends DefaultHandler {
 	private boolean inFilesize = false;
 
 	private ExtendedHashMap mMovie;
-	private ArrayList<ExtendedHashMap> mMovielist;
-
-	/**
-	 * @param list
-	 */
-	public E2MovieListHandler(ArrayList<ExtendedHashMap> list) {
-		mMovielist = list;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -100,7 +89,7 @@ public class E2MovieListHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName) {
 		if (localName.equals(TAG_E2MOVIE)) {
 			inMovie = false;
-			mMovielist.add(mMovie);
+			mList.add(mMovie);
 		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
 			inReference = false;
 		} else if (localName.equals(TAG_E2TITLE)) {

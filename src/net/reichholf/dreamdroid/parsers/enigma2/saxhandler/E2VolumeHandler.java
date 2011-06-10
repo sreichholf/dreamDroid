@@ -6,13 +6,11 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
-public class E2VolumeHandler extends DefaultHandler {
+public class E2VolumeHandler extends E2SimpleHandler {
 
 	protected static final String TAG_E2ISMUTED = "e2ismuted";
 	protected static final String TAG_E2CURRENT = "e2current";
@@ -21,15 +19,6 @@ public class E2VolumeHandler extends DefaultHandler {
 	private boolean inResult;
 	private boolean inCurrent;
 	private boolean inMuted;
-
-	private ExtendedHashMap mResult;
-
-	/**
-	 * @param list
-	 */
-	public E2VolumeHandler(ExtendedHashMap res) {
-		mResult = res;
-	}
 
 	/*
 	 * (non-Javadoc)

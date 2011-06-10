@@ -13,27 +13,27 @@ import net.reichholf.dreamdroid.dataProviders.interfaces.DataParser;
  * 
  */
 public abstract class AbstractDataProvider {
-	protected DataParser parser;
+	protected DataParser mParser;
 
 	/**
 	 * @param dp
 	 */
 	public AbstractDataProvider(DataParser dp) {
-		this.parser = dp;
+		mParser = dp;
 	}
 
 	/**
 	 * @param dp
 	 */
 	public void setParser(DataParser dp) {
-		this.parser = dp;
+		mParser = dp;
 	}
 
 	/**
 	 * @return
 	 */
 	public DataParser getParser() {
-		return this.parser;
+		return mParser;
 	}
 
 	/**
@@ -41,6 +41,6 @@ public abstract class AbstractDataProvider {
 	 * @return
 	 */
 	public boolean parse(String input) {
-		return this.parser.parse(input);
+		return mParser.parse(input);
 	}
 }
