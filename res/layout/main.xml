@@ -105,16 +105,14 @@
 					android:drawableLeft="@drawable/ic_menu_power_off" 
 					android:layout_weight="1" />
 				<Button 
-					android:id="@+id/ButtonCheckConnection" 
-					android:text="@string/check_connectivity" 
+					android:id="@+id/ButtonMediaplayer" 
+					android:text="@string/mediaplayer" 
 					android:layout_width="fill_parent" 
 					android:layout_height="65dp"
 					android:layout_gravity="center_vertical" 
-					android:drawableLeft="@drawable/ic_menu_link" 
+					android:drawableLeft="@drawable/ic_menu_music" 
 					android:layout_weight="1" />
 			</LinearLayout>
-		
-			
 		</LinearLayout>	
 	</ScrollView>	
 </LinearLayout>

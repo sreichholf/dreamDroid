@@ -196,7 +196,7 @@
 <string name="main_menu">Ana</string>
 <string name="profiles">Profiller</string>
 <string name="enable_instant_zap">Anlık zap</string>
-<string name="enable_instant_zap_long">Bir kanala kısa dokunulduğunda anlık zapla</string>
+<string name="enable_instant_zap_long">Bir kanala kısa dokunulduğunda kanal değiştir</string>
 <string name="wrong_activity">Yanlış Kısayol </string>
 <string name="simple_remote">Klasik Uzaktan Kumanda </string>
 <string name="screenshot_saved">Ekran görüntüsü kaydedildi \'%s\'</string>

@@ -80,6 +80,14 @@
 					android:layout_gravity="center_vertical"
 					android:drawableLeft="@drawable/ic_menu_help" 
 					android:layout_weight="1"/>
+				<Button 
+					android:id="@+id/ButtonCheckConnection" 
+					android:text="@string/check_connectivity" 
+					android:layout_width="fill_parent" 
+					android:layout_height="65dp"
+					android:layout_gravity="center_vertical" 
+					android:drawableLeft="@drawable/ic_menu_link" 
+					android:layout_weight="1" />
 			</LinearLayout>
 		</LinearLayout>	
 	</ScrollView>

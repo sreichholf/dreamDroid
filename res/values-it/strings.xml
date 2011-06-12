@@ -200,4 +200,6 @@
 <string name="wrong_activity">Errore attività! Ricrea i collegamenti precedenti per dreamDroid!</string>
 <string name="simple_remote">Formato telecomando semplice</string>
 <string name="screenshot_saved">Schermata salvata in \'%s\'</string>
+<string name="imdb">IMDb</string>
+<string name="missing_stream_player">Nessun Player per la trasmissione video installato nel dispositivo!</string>
 </resources>
