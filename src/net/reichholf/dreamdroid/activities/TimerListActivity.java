@@ -215,11 +215,7 @@ public class TimerListActivity extends AbstractHttpListActivity {
 	/**
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
-	private void setAdapter() {
-//		mAdapter = new SimpleAdapter(this, mMapList, R.layout.timer_list_item, new String[] { Timer.NAME,
-//				Timer.SERVICE_NAME, Timer.BEGIN_READEABLE, Timer.END_READABLE }, new int[] { R.id.timer_name,
-//				R.id.service_name, R.id.timer_start, R.id.timer_end });
-		
+	private void setAdapter() {		
 		mAdapter = new TimerListAdapter(this, R.layout.timer_list_item, mMapList);
 		setListAdapter(mAdapter);
 	}

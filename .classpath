@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/flattr-android-sdk-0.0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/java-flattr-rest-0.0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/signpost-core-1.2.1.1.jar"/>
+	<classpathentry kind="lib" path="D:/android-sdk-windows/extras/android/compatibility/v4/android-support-v4.jar"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

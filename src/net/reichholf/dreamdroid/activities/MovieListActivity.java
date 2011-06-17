@@ -221,7 +221,7 @@ public class MovieListActivity extends AbstractHttpListActivity {
 					}).setNegativeButton(getText(android.R.string.no), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							dialog.dismiss();
-							removeDialog(DIALOG_PICK_LOCATION_ID);
+							removeDialog(DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						}
 					});
 			dialog = builder.create();
@@ -248,10 +248,11 @@ public class MovieListActivity extends AbstractHttpListActivity {
 				public void onClick(DialogInterface dialog, int which) {
 					String selectedLoc = DreamDroid.LOCATIONS.get(which);
 					if (!selectedLoc.equals(mCurrentLocation)) {
-						mCurrentLocation = DreamDroid.LOCATIONS.get(which);
+						mCurrentLocation = selectedLoc;
 						reload();
 					}
 					dialog.dismiss();
+					removeDialog(DIALOG_PICK_LOCATION_ID);
 				}
 			});
 
@@ -338,6 +339,18 @@ public class MovieListActivity extends AbstractHttpListActivity {
 		}
 
 		return dialog;
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#finishListProgress(java.lang.String, java.util.ArrayList)
+	 */
+	@Override
+	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
+		super.finishListProgress(title, list);
+		
+		if(mCurrentLocation == null){
+			setDefaultLocation();
+		}		
 	}
 	
 	/**

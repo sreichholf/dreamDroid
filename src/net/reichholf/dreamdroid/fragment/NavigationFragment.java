@@ -4,13 +4,24 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.activities;
+package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.AbstractHttpActivity;
+import net.reichholf.dreamdroid.activities.DeviceInfoActivity;
+import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
+import net.reichholf.dreamdroid.activities.FragmentMainActivity;
+import net.reichholf.dreamdroid.activities.MediaplayerNavigationActivity;
+import net.reichholf.dreamdroid.activities.MovieListActivity;
+import net.reichholf.dreamdroid.activities.ProfileListActivity;
+import net.reichholf.dreamdroid.activities.ScreenShotActivity;
+import net.reichholf.dreamdroid.activities.ServiceListActivity;
+import net.reichholf.dreamdroid.activities.TimerListActivity;
+import net.reichholf.dreamdroid.activities.VirtualRemoteActivity;
+import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
@@ -31,12 +42,14 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -48,7 +61,7 @@ import android.widget.TextView;
  * @author sreichholf
  * 
  */
-public class MainActivity extends AbstractHttpActivity {
+public class NavigationFragment extends AbstractHttpListFragment implements ActivityCallbackHandler{
 	public static final int DIALOG_SEND_MESSAGE_ID = 0;
 	public static final int DIALOG_SET_POWERSTATE_ID = 1;
 	public static final int DIALOG_ABOUT_ID = 2;
@@ -76,30 +89,33 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_CHECK_CONN = 17;
 	public static final int ITEM_SLEEPTIMER = 18;
 	public static final int ITEM_MEDIA_PLAYER = 19;
-
-	private Button mButtonPower;
-	private Button mButtonCurrent;
-	private Button mButtonConnectivity;
-	private Button mButtonMovies;
-	private Button mButtonServices;
-	private Button mButtonTimer;
-	private Button mButtonEpgSearch;
-	private Button mButtonRemote;
-	private Button mButtonSleepTimer;
-	private Button mButtonScreenshot;
-	private Button mButtonDeviceInfo;
-	private Button mButtonMessage;
-	private Button mButtonAbout;
-	private Button mButtonMediaplayer;
-
-	private boolean mExtras;
+	public static final int ITEM_PROFILES = 20;
+	
+	public static final int[][] MENU_ITEMS = {
+		{ ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list },
+		{ ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie },
+		{ ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock },
+		{ ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles },
+		{ ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help },
+		{ ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off },
+		{ ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music },
+		{ ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock },
+		{ ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture },
+		{ ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info },
+		{ ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail },
+		{ ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help },
+		{ ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link },
+		{ ITEM_SETTINGS, R.string.settings, android.R.drawable.ic_menu_edit },
+		{ ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list },
+	};
+	
+	private int[] mCurrent;
 
 	private SetPowerStateTask mSetPowerStateTask;
 	private SleepTimerTask mSleepTimerTask;
 
 	private ExtendedHashMap mSleepTimer;
-
-	private TabbedNavigationActivity mParent;
+	private FragmentMainActivity mActivity;
 
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
@@ -200,7 +216,7 @@ public class MainActivity extends AbstractHttpActivity {
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			showDialog(DIALOG_SLEEPTIMER_PROGRESS_ID);
+			mActivity.showDialog(DIALOG_SLEEPTIMER_PROGRESS_ID);
 		}
 
 		/*
@@ -209,7 +225,7 @@ public class MainActivity extends AbstractHttpActivity {
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			removeDialog(DIALOG_SLEEPTIMER_PROGRESS_ID);
+			mActivity.removeDialog(DIALOG_SLEEPTIMER_PROGRESS_ID);
 
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -271,72 +287,31 @@ public class MainActivity extends AbstractHttpActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mExtras = getIntent().getBooleanExtra("extras", false);
-		if (mExtras) {
-			setContentView(R.layout.extras);
-			mButtonSleepTimer = (Button) findViewById(R.id.ButtonSleeptimer);
-			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
-
-			mButtonScreenshot = (Button) findViewById(R.id.ButtonScreenshot);
-			mButtonDeviceInfo = (Button) findViewById(R.id.ButtonDeviceInfo);
-			mButtonAbout = (Button) findViewById(R.id.ButtonAbout);
-			mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
-			mButtonConnectivity = (Button) findViewById(R.id.ButtonCheckConnection);
-			
-			registerOnClickListener(mButtonSleepTimer, ITEM_SLEEPTIMER);
-			registerOnClickListener(mButtonScreenshot, ITEM_SCREENSHOT);
-			registerOnClickListener(mButtonDeviceInfo, ITEM_INFO);
-			registerOnClickListener(mButtonAbout, ITEM_ABOUT);
-			registerOnClickListener(mButtonMessage, ITEM_MESSAGE);
-			registerOnClickListener(mButtonConnectivity, ITEM_CHECK_CONN);
-		} else {
-			setContentView(R.layout.main);
-
-			mButtonPower = (Button) findViewById(R.id.ButtonPower);
-			mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
-			mButtonMovies = (Button) findViewById(R.id.ButtonMovies);
-			mButtonServices = (Button) findViewById(R.id.ButtonServices);
-			mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
-			mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
-			mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
-			mButtonMediaplayer = (Button) findViewById(R.id.ButtonMediaplayer);
-
-			registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
-			registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
-			registerOnClickListener(mButtonMovies, ITEM_MOVIES);
-			registerOnClickListener(mButtonServices, ITEM_SERVICES);
-			registerOnClickListener(mButtonTimer, ITEM_TIMER);
-			registerOnClickListener(mButtonRemote, ITEM_REMOTE);
-			registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
-			registerOnClickListener(mButtonMediaplayer, ITEM_MEDIA_PLAYER);
-		}
-
+		mActivity = (FragmentMainActivity) getActivity();
 		mSleepTimer = new ExtendedHashMap();
-
-		mParent = (TabbedNavigationActivity) getParent();
-		if (mParent == null) { // For backwards compat, please do not remove
-								// this code!
-			showToast(getString(R.string.wrong_activity));
-			Intent intent = new Intent(this, TabbedNavigationActivity.class);
-			startActivity(intent);
-			finish();
-		}
+		setAdapter();		
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-	 */
+	
+	public void onActivityCreated(Bundle savedInstanceState){
+		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		super.onActivityCreated(savedInstanceState);		
+	}
+	
+	public void onListItemClick(ListView l, View v, int position, long id){
+		mCurrent = MENU_ITEMS[position];
+		getListView().setItemChecked(position, true);
+		
+		onItemClicked(mCurrent[0]);
+	}
+	
+	private void setAdapter() {
+		mAdapter = new NavigationListAdapter(mActivity, R.layout.nav_list_item, MENU_ITEMS);
+		setListAdapter(mAdapter);
+	}
+	
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		menu.add(0, ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
-		return true;
-	}
-
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		return true;
 	}
 
 	/*
@@ -349,18 +324,12 @@ public class MainActivity extends AbstractHttpActivity {
 		return onItemClicked(item.getItemId());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateDialog(int)
-	 */
-	@Override
-	protected Dialog onCreateDialog(int id) {
+	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
 
 		switch (id) {
 		case DIALOG_SEND_MESSAGE_ID:
-			dialog = new Dialog(this);
+			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.send_message_dialog);
 			dialog.setTitle(R.string.send_message);
 
@@ -392,7 +361,7 @@ public class MainActivity extends AbstractHttpActivity {
 			break;
 
 		case DIALOG_SET_POWERSTATE_ID:
-			dialog = new Dialog(this);
+			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.powercontrol);
 			dialog.setTitle(R.string.powercontrol);
 
@@ -409,7 +378,7 @@ public class MainActivity extends AbstractHttpActivity {
 			break;
 			
 		case DIALOG_ABOUT_ID:
-			dialog = new Dialog(this);
+			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.about);
 			dialog.setTitle(R.string.about);			
 			
@@ -431,7 +400,7 @@ public class MainActivity extends AbstractHttpActivity {
 			break;
 		
 		case DIALOG_SLEEPTIMER_ID:
-			dialog = new Dialog(this);
+			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.sleeptimer);
 			dialog.setTitle(R.string.sleeptimer);
 			final NumberPicker time = (NumberPicker) dialog.findViewById(R.id.NumberPicker);
@@ -485,7 +454,7 @@ public class MainActivity extends AbstractHttpActivity {
 			
 			break;
 		case DIALOG_SLEEPTIMER_PROGRESS_ID:
-			dialog = ProgressDialog.show(this, getText(R.string.sleeptimer), getText(R.string.loading));
+			dialog = ProgressDialog.show(mActivity, getText(R.string.sleeptimer), getText(R.string.loading));
 			break;
 		default:
 			dialog = null;
@@ -506,17 +475,17 @@ public class MainActivity extends AbstractHttpActivity {
 
 		switch (id) {
 		case ITEM_TIMER:
-			intent = new Intent(this, TimerListActivity.class);
+			intent = new Intent(mActivity, TimerListActivity.class);
 			startActivity(intent);
 			return true;
 
 		case ITEM_MOVIES:
-			intent = new Intent(this, MovieListActivity.class);
+			intent = new Intent(mActivity, MovieListActivity.class);
 			startActivity(intent);
 			return true;
 
 		case ITEM_SERVICES:
-			intent = new Intent(this, ServiceListActivity.class);
+			intent = new Intent(mActivity, ServiceListActivity.class);
 			ExtendedHashMap map = new ExtendedHashMap();
 
 			intent.putExtra(sData, map);
@@ -526,35 +495,34 @@ public class MainActivity extends AbstractHttpActivity {
 			return true;
 
 		case ITEM_INFO:
-			intent = new Intent(this, DeviceInfoActivity.class);
+			intent = new Intent(mActivity, DeviceInfoActivity.class);
 			startActivity(intent);
 			return true;
 
 		case ITEM_CURRENT:
-			intent = new Intent(this, CurrentServiceActivity.class);
-			startActivity(intent);
+			mActivity.showDetails(CurrentServiceFragment.class);
 			return true;
 
 		case ITEM_REMOTE:
-			intent = new Intent(this, VirtualRemoteActivity.class);
+			intent = new Intent(mActivity, VirtualRemoteActivity.class);
 			startActivity(intent);
 			return true;
 
 		case ITEM_SETTINGS:
-			intent = new Intent(this, DreamDroidPreferenceActivity.class);
+			intent = new Intent(mActivity, DreamDroidPreferenceActivity.class);
 			startActivity(intent);
 			return true;
 
 		case ITEM_MESSAGE:
-			showDialog(DIALOG_SEND_MESSAGE_ID);
+			mActivity.showDialog(DIALOG_SEND_MESSAGE_ID);
 			return true;
 
 		case ITEM_EPG_SEARCH:
-			onSearchRequested();
+			mActivity.onSearchRequested();
 			return true;
 
 		case ITEM_SCREENSHOT:
-			intent = new Intent(this, ScreenShotActivity.class);
+			intent = new Intent(mActivity, ScreenShotActivity.class);
 			startActivity(intent);
 			return true;
 
@@ -575,15 +543,15 @@ public class MainActivity extends AbstractHttpActivity {
 			return true;
 
 		case ITEM_POWERSTATE_DIALOG:
-			showDialog(DIALOG_SET_POWERSTATE_ID);
+			mActivity.showDialog(DIALOG_SET_POWERSTATE_ID);
 			return true;
 
 		case ITEM_ABOUT:
-			showDialog(DIALOG_ABOUT_ID);
+			mActivity.showDialog(DIALOG_ABOUT_ID);
 			return true;
 
 		case ITEM_CHECK_CONN:
-			mParent.checkActiveProfile();
+//			mParent.checkActiveProfile();
 			return true;
 
 		case ITEM_SLEEPTIMER:
@@ -591,8 +559,10 @@ public class MainActivity extends AbstractHttpActivity {
 			return true;
 		
 		case ITEM_MEDIA_PLAYER:
-			startActivity( new Intent(this, MediaplayerNavigationActivity.class) );
+			startActivity( new Intent(mActivity, MediaplayerNavigationActivity.class) );
 		
+		case ITEM_PROFILES:
+			startActivity( new Intent(mActivity, ProfileListActivity.class));
 		default:
 			return super.onItemClicked(id);
 		}
@@ -646,9 +616,9 @@ public class MainActivity extends AbstractHttpActivity {
 	}
 
 	public void setAvailableFeatures() {
-		if (mExtras) {
-			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
-		}
+//		if (mExtras) {
+//			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
+//		}
 	}
 
 	/**
@@ -659,7 +629,7 @@ public class MainActivity extends AbstractHttpActivity {
 		if (success) {
 			mSleepTimer = sleepTimer;
 			if (openDialog) {
-				showDialog(DIALOG_SLEEPTIMER_ID);
+				mActivity.showDialog(DIALOG_SLEEPTIMER_ID);
 				return;
 			}
 			String text = sleepTimer.getString(SleepTimer.KEY_TEXT);
@@ -668,5 +638,4 @@ public class MainActivity extends AbstractHttpActivity {
 			showToast(getString(R.string.error));
 		}
 	}
-
 }

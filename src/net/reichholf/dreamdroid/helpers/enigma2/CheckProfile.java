@@ -9,8 +9,8 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;

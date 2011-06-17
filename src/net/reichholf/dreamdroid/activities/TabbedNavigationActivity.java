@@ -77,7 +77,6 @@ public class TabbedNavigationActivity extends TabActivity {
 		Intent intent;
 
 		intent = new Intent().setClass(this, MainActivity.class);
-
 		spec = tabHost.newTabSpec("menu")
 				.setIndicator(getText(R.string.main_menu), res.getDrawable(android.R.drawable.ic_menu_view))
 				.setContent(intent);

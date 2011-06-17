@@ -35,7 +35,7 @@ public class ProfileListActivity extends ListActivity {
 	private SimpleCursorAdapter mAdapter;
 	private Profile mProfile;
 	private Cursor mCursor;
-	private TabbedNavigationActivity mParent;
+//	private TabbedNavigationActivity mParent;
 
 	public static final int ITEM_ADD_PROFILE = 0;
 	public static final int DIALOG_PROFILE_ID = 0;
@@ -63,11 +63,11 @@ public class ProfileListActivity extends ListActivity {
 			}
 		});
 		
-		mParent = (TabbedNavigationActivity) getParent();
-		if(mParent == null){
-			showToast(getString(R.string.wrong_activity));
-			finish();
-		}
+//		mParent = (TabbedNavigationActivity) getParent();
+//		if(mParent == null){
+//			showToast(getString(R.string.wrong_activity));
+//			finish();
+//		}
 	}
 
 	/*
@@ -168,7 +168,7 @@ public class ProfileListActivity extends ListActivity {
 				// Reload the current profile as it may have been
 				// changed/altered
 				DreamDroid.reloadActiveProfile();
-				mParent.onProfileChanged();
+//				mParent.onProfileChanged();
 			}
 		}
 	}
@@ -218,7 +218,7 @@ public class ProfileListActivity extends ListActivity {
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getProfile() + "'");
-			mParent.onProfileChanged();
+//			mParent.onProfileChanged();
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getProfile() + "'");
 		}
