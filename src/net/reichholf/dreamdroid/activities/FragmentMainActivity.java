@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.activities;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import android.app.Dialog;
@@ -16,17 +17,19 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 /**
  * @author sre
  *
  */
-public class FragmentMainActivity extends FragmentActivity{	
+public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler {	
 	private boolean mMultiPane;
 	
 	private FragmentManager mFragmentManager;
@@ -43,6 +46,16 @@ public class FragmentMainActivity extends FragmentActivity{
 		mFragmentManager = getSupportFragmentManager();
 		FragmentTransaction ft = mFragmentManager.beginTransaction();
 		mNavigationFragment = new NavigationFragment();
+		
+		mFragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener(){
+
+			@Override
+			public void onBackStackChanged() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 		
 		if(mMultiPane){
 			setContentView(R.layout.dualpane);
@@ -92,6 +105,7 @@ public class FragmentMainActivity extends FragmentActivity{
 		mFragmentManager.popBackStackImmediate();
 	}
 	
+	@Override
 	public void showDetails(Fragment fragment){
 		showDetails(fragment, true);
 	}
@@ -101,11 +115,12 @@ public class FragmentMainActivity extends FragmentActivity{
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
+	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack){		
 		if(mMultiPane){
 			mCallBackHandler = (ActivityCallbackHandler) fragment;
-			
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
+			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			ft.replace(R.id.detail_view, fragment, fragment.getClass().getSimpleName());
 			
 			if(addToBackStack){
@@ -118,6 +133,17 @@ public class FragmentMainActivity extends FragmentActivity{
 			intent.putExtra("fragment", fragment.getClass());
 			startActivity(intent);
 		}
+	}
+	
+	@Override
+	public void setTitle(CharSequence title){
+		if(mMultiPane){
+			TextView t = (TextView) findViewById(R.id.detail_title);
+			String replaceMe = getText(R.string.app_name) + "::";
+			t.setText(title.toString().replace(replaceMe, ""));
+			return;
+		}
+		super.setTitle(title);
 	}
 	
 	public void setIsNavgationDialog(boolean is){

@@ -12,7 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckedTextView;
+import android.widget.TextView;
 
 /**
  * @author sre
@@ -42,7 +42,7 @@ public class NavigationListAdapter extends ArrayAdapter<int[]> {
 		}
 		
 		int[] item = mItems[position];
-		CheckedTextView text = (CheckedTextView) view.findViewById(R.id.text1);
+		TextView text = (TextView) view.findViewById(android.R.id.text1);
 		text.setText(item[1]);
 		text.setCompoundDrawablesWithIntrinsicBounds(item[2], 0, 0, 0);
 		return view;

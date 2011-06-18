@@ -201,4 +201,5 @@
 <string name="simple_remote">Einfache Fernbedienung</string>
 <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
 <string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
+<string name="edit_profile">Profile bearbeiten</string>
 </resources>

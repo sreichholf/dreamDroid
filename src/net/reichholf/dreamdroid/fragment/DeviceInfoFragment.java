@@ -9,11 +9,11 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
+import android.app.Activity;
 import android.app.Dialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -51,7 +51,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 	private SimpleHttpClient mShc;
 	private LayoutInflater mInflater;
 	
-	private FragmentMainActivity mActivity;
+	private Activity mActivity;
 	
 	/**
 	 * <code>AsyncTask</code> to Fetch the device information async.
@@ -130,7 +130,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mActivity = (FragmentMainActivity) getActivity();
+		mActivity = getActivity();
 
 		mMerge = new MergeAdapter();
 		mInfo = new ExtendedHashMap();

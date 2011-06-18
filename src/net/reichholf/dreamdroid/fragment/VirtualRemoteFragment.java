@@ -204,7 +204,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		View view = null;
 		if (mQuickZap) {			
 			view = inflater.inflate(R.layout.virtual_remote_quick_zap, null, false);
-			mBaseTitle = getString(R.string.app_name) + " - " + getString(R.string.quickzap);			
+			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.quickzap);			
 		} else {
 			if(mSimpleRemote){
 				view = inflater.inflate(R.layout.virtual_remote_simple, null, false);
@@ -214,7 +214,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 				registerButtons(view, mButtonsExtended);
 			}
 			registerButtons(view, mButtonsStandard);
-			mBaseTitle = getString(R.string.app_name) + " - " + getString(R.string.virtual_remote);
+			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.virtual_remote);
 		}
 		registerButtons(view, mButtonsCommon);
 		getActivity().setTitle(mBaseTitle);

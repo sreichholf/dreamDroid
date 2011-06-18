@@ -9,7 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.FragmentMainActivity;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -40,8 +40,8 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	private SimpleCursorAdapter mAdapter;
 	private Profile mProfile;
 	private Cursor mCursor;
-	private FragmentMainActivity mActivity;
-//	private TabbedNavigationActivity mParent;
+	private Activity mActivity;
+	private MultiPaneHandler mMultiPaneHandler;
 
 	public static final int ITEM_ADD_PROFILE = 0;
 	public static final int DIALOG_PROFILE_ID = 0;
@@ -57,7 +57,10 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		
-		mActivity = (FragmentMainActivity) getActivity();
+		mActivity = getActivity();
+		mActivity.setTitle( getString(R.string.app_name) + "::" + getString(R.string.profiles) );
+		mMultiPaneHandler = (MultiPaneHandler) getActivity();
+		
 		mCursor = DreamDroid.getProfiles();		
 	}
 	
@@ -241,7 +244,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		
 		Fragment f = new ProfileEditFragment();		
 		f.setArguments(args);
-		mActivity.showDetails(f);
+		mMultiPaneHandler.showDetails(f);
 		
 	}
 
@@ -257,7 +260,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		
 		Fragment f = new ProfileEditFragment();		
 		f.setArguments(args);		
-		mActivity.showDetails(f);
+		mMultiPaneHandler.showDetails(f);
 	}
 
 	/**

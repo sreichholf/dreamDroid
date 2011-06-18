@@ -286,13 +286,14 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	
 	public void onActivityCreated(Bundle savedInstanceState){		
 		super.onActivityCreated(savedInstanceState);
-		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);	
+		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		getListView().setTextFilterEnabled(true);
 	}
 	
-	public void onListItemClick(ListView l, View v, int position, long id){
-		mCurrent = MENU_ITEMS[position];
-
-		l.setItemChecked(position, true);		
+	public void onListItemClick(ListView l, View v, int position, long id){		
+		getListView().setItemChecked(position, true);
+		
+		mCurrent = (int[]) getListView().getItemAtPosition(position);		
 		onItemClicked(mCurrent[0]);
 	}
 	

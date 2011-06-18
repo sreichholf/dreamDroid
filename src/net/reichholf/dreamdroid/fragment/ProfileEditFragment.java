@@ -9,7 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.FragmentMainActivity;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -49,11 +49,12 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	private Button mCancel;
 	private LinearLayout mLayoutLogin;
 	
-	private FragmentMainActivity mActivity;
+	private Activity mActivity;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mActivity = (FragmentMainActivity) getActivity();
+		mActivity = getActivity();
+		mActivity.setTitle( getString(R.string.app_name) + "::" + getString(R.string.edit_profile) );
 	}
 	
 	@Override
@@ -95,13 +96,11 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 		mCancel.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-//				mActivity.setResult(Activity.RESULT_CANCELED);
 //				TODO Cancel-Handling
 				finish();
 			}
 
-		});
-
+		});		
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
 			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
 
@@ -118,7 +117,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	}
 	
 	private void finish(){
-		mActivity.back();
+		getFragmentManager().popBackStackImmediate();
 	}
 	
 	/**
