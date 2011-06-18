@@ -47,7 +47,4 @@ public class NavigationListAdapter extends ArrayAdapter<int[]> {
 		text.setCompoundDrawablesWithIntrinsicBounds(item[2], 0, 0, 0);
 		return view;
 	}
-	
-	
-
 }

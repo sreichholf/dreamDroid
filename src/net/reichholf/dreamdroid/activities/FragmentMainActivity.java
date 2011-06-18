@@ -17,7 +17,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.ListFragment;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Window;
@@ -31,8 +30,10 @@ public class FragmentMainActivity extends FragmentActivity{
 	private boolean mMultiPane;
 	
 	private FragmentManager mFragmentManager;
-	private ListFragment mNavigationFragment;
+	private NavigationFragment mNavigationFragment;
 	private ActivityCallbackHandler mCallBackHandler;
+	
+	private boolean isNavigationDialog = false;
 	
 	public void onCreate(Bundle savedInstanceState){		
 		super.onCreate(savedInstanceState);	
@@ -45,11 +46,11 @@ public class FragmentMainActivity extends FragmentActivity{
 		
 		if(mMultiPane){
 			setContentView(R.layout.dualpane);
-			ft.add(R.id.navigation_view, mNavigationFragment);
+			ft.add(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
 			ft.commit();
 		} else {
 			setContentView(R.layout.list_or_empty);
-			ft.add(R.id.content, mNavigationFragment);
+			ft.add(R.id.content, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
 			ft.commit();
 		}	
 	}
@@ -65,17 +66,13 @@ public class FragmentMainActivity extends FragmentActivity{
 		}		
 	}
 	
-	/**
-	 * @param fragment
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
-	 */
+	
 	@SuppressWarnings("rawtypes")
 	public void showDetails(Class fragmentClass){
 		if(mMultiPane){
-			Fragment fragment = null;
 			try {
-				fragment = (Fragment) fragmentClass.newInstance();
+				Fragment fragment = (Fragment) fragmentClass.newInstance();
+				showDetails(fragment);
 			} catch (InstantiationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -83,24 +80,60 @@ public class FragmentMainActivity extends FragmentActivity{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if(fragment != null){
-				mCallBackHandler = (ActivityCallbackHandler) fragment;
-				
-				FragmentTransaction ft = mFragmentManager.beginTransaction();
-				ft.replace(R.id.detail_view, fragment);
-				ft.addToBackStack(null);
-				ft.commit();
-			} //TODO Error Handling
 		} else {
 			Intent intent = new Intent(this, SimpleFragmentActivity.class);
 			intent.putExtra("fragment", fragmentClass);
 			startActivity(intent);
 		}
+			
+	}
+	
+	public void back(){
+		mFragmentManager.popBackStackImmediate();
+	}
+	
+	public void showDetails(Fragment fragment){
+		showDetails(fragment, true);
+	}
+	
+	/**
+	 * @param fragment
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 */
+	public void showDetails(Fragment fragment, boolean addToBackStack){		
+		if(mMultiPane){
+			mCallBackHandler = (ActivityCallbackHandler) fragment;
+			
+			FragmentTransaction ft = mFragmentManager.beginTransaction();
+			ft.replace(R.id.detail_view, fragment, fragment.getClass().getSimpleName());
+			
+			if(addToBackStack){
+				ft.addToBackStack(null);
+			}
+			
+			ft.commit();
+		} else { //TODO Error Handling
+			Intent intent = new Intent(this, SimpleFragmentActivity.class);
+			intent.putExtra("fragment", fragment.getClass());
+			startActivity(intent);
+		}
+	}
+	
+	public void setIsNavgationDialog(boolean is){
+		isNavigationDialog = is;
 	}
 	
 	@Override
 	protected Dialog onCreateDialog(int id){
-		Dialog dialog = mCallBackHandler.onCreateDialog(id);
+		Dialog dialog = null;
+		if(isNavigationDialog){
+			dialog = mNavigationFragment.onCreateDialog(id);
+			isNavigationDialog = false;
+		} else {
+			dialog = mCallBackHandler.onCreateDialog(id);
+		}
+		
 		if(dialog == null){
 			dialog = super.onCreateDialog(id);
 		}

@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.helpers.DialogHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -30,6 +31,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -48,8 +51,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	public static final int MENU_RELOAD = 0;
 	public static final int ITEM_NOW = 0;
 	public static final int ITEM_NEXT = 1;
-	public static final int ITEM_STREAM = 2;
-	public static final int DIALOG_EPG_ITEM_ID = 9382893;
+	public static final int ITEM_STREAM = 2;	
 
 	private ExtendedHashMap mCurrent;
 	private GetCurrentServiceTask mCurrentServiceTask;
@@ -152,7 +154,9 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		if(savedInstanceState != null){
+			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
+		}
 		mCurrentServiceReady = false;
 	}
 	
@@ -188,29 +192,10 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		super.onSaveInstanceState(outState);
 	}
 
-//	/*
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see android.app.Activity#onRestoreInstanceState(android.os.Bundle)
-//	 */
-//	@Override
-//	public void onRestoreInstanceState(Bundle savedInstanceState) {
-//		mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
-//		super.onRestoreInstanceState(savedInstanceState);
-//	}
-//	
-//	
-//	/*
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-//	 */
-//	@Override
-//	public boolean onCreateOptionsMenu(Menu menu) {
-//		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-//
-//		return true;
-//	}
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -282,8 +267,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	private void showEpgDetail(ExtendedHashMap event){
 		if(event != null){
 			mCurrentItem = event;
-			getActivity().removeDialog(DIALOG_EPG_ITEM_ID);
-			getActivity().showDialog(DIALOG_EPG_ITEM_ID);
+			getActivity().removeDialog(DialogHelper.DIALOG_EPG_ITEM_ID);
+			getActivity().showDialog(DialogHelper.DIALOG_EPG_ITEM_ID);
 		}
 	}
 	
@@ -328,7 +313,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		final Dialog dialog;
 
 		switch (id) {
-		case DIALOG_EPG_ITEM_ID:
+		case DialogHelper.DIALOG_EPG_ITEM_ID:
 			if(mCurrentItem != null){
 				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);

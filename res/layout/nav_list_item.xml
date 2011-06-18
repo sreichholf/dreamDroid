@@ -8,13 +8,14 @@
 		android:layout_height="wrap_content"
 		android:layout_width="30dp"
 		android:id="@+id/drawable" />		
+	
 	<CheckedTextView
 		android:id="@+id/text1"
 		android:textSize="18sp" 
 		android:textColor="#FFF" 
 		android:layout_height="?android:attr/listPreferredItemHeight" 
 		android:layout_width="fill_parent"
-		android:gravity="center_vertical"
-		android:checkMark="?android:attr/listChoiceIndicatorSingle"
+		android:gravity="center_vertical"		
+		android:checked="false"
 		android:textStyle="bold"/>
 </LinearLayout>
