@@ -6,9 +6,8 @@
 	android:orientation="vertical"
 	android:minWidth="150dip">
 	
-	<View 
-		android:id="@+id/divider"
-	    android:background="@drawable/black_white_gradient"
+	<View android:id="@+id/divider"
+	    android:background="@android:drawable/divider_horizontal_bright"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_marginBottom="3dp"/>
@@ -16,8 +15,7 @@
 	<ScrollView
   		android:id="@+id/ScrollView"
   		android:layout_width="fill_parent"
-  		android:layout_height="fill_parent"
-  		android:layout_marginBottom="75dp">
+  		android:layout_height="fill_parent">
   		
 		<LinearLayout		
 			android:orientation="vertical"
@@ -60,18 +58,4 @@
 			</LinearLayout>			
 		</LinearLayout>
 	</ScrollView>
-	<LinearLayout
-		android:orientation="vertical"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content" 
-		android:layout_marginTop="-52dip"
-		android:gravity="center_horizontal">
-		<Button 
-			android:text="@string/close" 
-			android:id="@+id/ButtonClose" 
-			android:layout_width="wrap_content"		 
-			android:layout_height="wrap_content" 
-			android:drawableLeft="@drawable/ic_btn_close"
-			/>	
-	</LinearLayout>
 </LinearLayout>

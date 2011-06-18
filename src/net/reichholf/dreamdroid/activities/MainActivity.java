@@ -75,6 +75,7 @@ public class MainActivity extends AbstractHttpActivity {
 	public static final int ITEM_ABOUT = 16;
 	public static final int ITEM_CHECK_CONN = 17;
 	public static final int ITEM_SLEEPTIMER = 18;
+	public static final int ITEM_MEDIA_PLAYER = 19;
 
 	private Button mButtonPower;
 	private Button mButtonCurrent;
@@ -89,6 +90,7 @@ public class MainActivity extends AbstractHttpActivity {
 	private Button mButtonDeviceInfo;
 	private Button mButtonMessage;
 	private Button mButtonAbout;
+	private Button mButtonMediaplayer;
 
 	private boolean mExtras;
 
@@ -279,34 +281,34 @@ public class MainActivity extends AbstractHttpActivity {
 			mButtonDeviceInfo = (Button) findViewById(R.id.ButtonDeviceInfo);
 			mButtonAbout = (Button) findViewById(R.id.ButtonAbout);
 			mButtonMessage = (Button) findViewById(R.id.ButtonMessage);
-
+			mButtonConnectivity = (Button) findViewById(R.id.ButtonCheckConnection);
+			
 			registerOnClickListener(mButtonSleepTimer, ITEM_SLEEPTIMER);
 			registerOnClickListener(mButtonScreenshot, ITEM_SCREENSHOT);
 			registerOnClickListener(mButtonDeviceInfo, ITEM_INFO);
 			registerOnClickListener(mButtonAbout, ITEM_ABOUT);
 			registerOnClickListener(mButtonMessage, ITEM_MESSAGE);
+			registerOnClickListener(mButtonConnectivity, ITEM_CHECK_CONN);
 		} else {
 			setContentView(R.layout.main);
 
 			mButtonPower = (Button) findViewById(R.id.ButtonPower);
 			mButtonCurrent = (Button) findViewById(R.id.ButtonCurrent);
-
-			mButtonConnectivity = (Button) findViewById(R.id.ButtonCheckConnection);
 			mButtonMovies = (Button) findViewById(R.id.ButtonMovies);
 			mButtonServices = (Button) findViewById(R.id.ButtonServices);
 			mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
 			mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
 			mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
+			mButtonMediaplayer = (Button) findViewById(R.id.ButtonMediaplayer);
 
 			registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
 			registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
-
-			registerOnClickListener(mButtonConnectivity, ITEM_CHECK_CONN);
 			registerOnClickListener(mButtonMovies, ITEM_MOVIES);
 			registerOnClickListener(mButtonServices, ITEM_SERVICES);
 			registerOnClickListener(mButtonTimer, ITEM_TIMER);
 			registerOnClickListener(mButtonRemote, ITEM_REMOTE);
 			registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
+			registerOnClickListener(mButtonMediaplayer, ITEM_MEDIA_PLAYER);
 		}
 
 		mSleepTimer = new ExtendedHashMap();
@@ -398,20 +400,11 @@ public class MainActivity extends AbstractHttpActivity {
 			Button buttonGui = (Button) dialog.findViewById(R.id.ButtonGui);
 			Button buttonReboot = (Button) dialog.findViewById(R.id.ButtonReboot);
 			Button buttonShutdown = (Button) dialog.findViewById(R.id.ButtonShutdown);
-			Button buttonClosePowerState = (Button) dialog.findViewById(R.id.ButtonClose);
 
 			registerOnClickListener(buttonToggle, ITEM_TOGGLE_STANDBY);
 			registerOnClickListener(buttonGui, ITEM_RESTART_GUI);
 			registerOnClickListener(buttonReboot, ITEM_REBOOT);
 			registerOnClickListener(buttonShutdown, ITEM_SHUTDOWN);
-
-			buttonClosePowerState.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dialog.dismiss();
-				}
-
-			});
 
 			break;
 			
@@ -424,16 +417,6 @@ public class MainActivity extends AbstractHttpActivity {
 			CharSequence text = DreamDroid.VERSION_STRING + "\n\n" + getText(R.string.license) + "\n\n"
 					+ getText(R.string.source_code_link);
 			aboutText.setText(text);
-			
-			Button buttonCloseAbout = (Button) dialog.findViewById(R.id.ButtonClose);
-
-			buttonCloseAbout.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dialog.dismiss();
-				}
-
-			});
 			
 			Button buttonDonate = (Button) dialog.findViewById(R.id.ButtonDonate);
 			buttonDonate.setOnClickListener(new OnClickListener(){
@@ -606,7 +589,10 @@ public class MainActivity extends AbstractHttpActivity {
 		case ITEM_SLEEPTIMER:
 			getSleepTimer(true);
 			return true;
-
+		
+		case ITEM_MEDIA_PLAYER:
+			startActivity( new Intent(this, MediaplayerNavigationActivity.class) );
+		
 		default:
 			return super.onItemClicked(id);
 		}

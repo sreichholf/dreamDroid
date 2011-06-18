@@ -7,7 +7,7 @@
 	android:orientation="vertical">
 	
 	<View android:id="@+id/divider"
-	    android:background="@drawable/black_white_gradient"
+	    android:background="@android:drawable/divider_horizontal_bright"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_marginBottom="3dp"/>

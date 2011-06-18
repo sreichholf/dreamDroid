@@ -4,18 +4,16 @@
 	xmlns:flattr_sdk="http://schemas.flattr4android.com/sdk"
 	android:layout_height="wrap_content"
 	android:orientation="vertical" android:layout_width="480dp">
-	
+		
 	<View android:id="@+id/divider"
-	    android:background="@drawable/black_white_gradient"
+	    android:background="@android:drawable/divider_horizontal_bright"
 	    android:layout_width="fill_parent"
 	    android:layout_height="1dp"
 	    android:layout_marginBottom="3dp"/>
 	
-	
 	<ScrollView
   		android:id="@+id/ScrollView"
   		android:layout_height="fill_parent"
-  		android:layout_marginBottom="53dip"
   		android:padding="10dip" android:layout_width="match_parent">
   	
 	  	<LinearLayout
@@ -51,28 +49,7 @@
 				    android:layout_gravity="center_horizontal"
 					android:layout_marginTop="5dp"
 				    flattr_sdk:button_style="horizontal"/>
-			</LinearLayout>			
-			
-
+			</LinearLayout>
 		</LinearLayout>
 	</ScrollView>
-	<LinearLayout
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="-50dp"
-		android:orientation="vertical">
-		<View android:id="@+id/divider"
-		    android:background="@drawable/black_white_gradient"
-		    android:layout_width="fill_parent"
-		    android:layout_height="1dp"
-		    android:layout_marginTop="3dp"		    
-		    android:layout_marginBottom="3dp"/>
-		<Button 
-			android:text="@string/close" 
-			android:id="@+id/ButtonClose" 
-			android:layout_width="wrap_content"
-			android:minWidth="100dp"
-			android:layout_height="wrap_content" 
-			android:layout_gravity="center_horizontal"/>
-	</LinearLayout>
 </LinearLayout>
