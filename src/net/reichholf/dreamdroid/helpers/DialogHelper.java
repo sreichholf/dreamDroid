@@ -17,4 +17,12 @@ public class DialogHelper {
 	public static final int DIALOG_SLEEPTIMER_ID = 0x8003;
 	public static final int DIALOG_SLEEPTIMER_PROGRESS_ID = 0x8004;
 	public static final int DIALOG_EPG_ITEM_ID = 0x8005;
+	public static final int DIALOG_PICK_LOCATION_ID = 0x8006;
+	public static final int DIALOG_PICK_TAGS_ID = 0x8007;
+	public static final int DIALOG_DELETE_MOVIE_CONFIRM_ID = 0x8008;
+	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
+	public static final int DIALOG_TIMER_PICK_END_ID = 0x8010;
+	public static final int DIALOG_TIMER_PICK_REPEATED_ID = 0x8011;
+	public static final int DIALOG_TIMER_PICK_TAGS_ID = 0x8012;
+	public static final int DIALOG_TIMER_LOADING_ID = 0x8013;
 }

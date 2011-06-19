@@ -56,21 +56,13 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			}
 			
 		});
-		
-		if(mMultiPane){
-			setContentView(R.layout.dualpane);
-			ft.add(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
-			ft.commit();
-		} else {
-			setContentView(R.layout.list_or_empty);
-			ft.add(R.id.content, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
-			ft.commit();
-		}	
+		setContentView(R.layout.dualpane);
+		ft.add(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
+		ft.commit();
 	}
 	
 	private void checkLayout(){
 		mMultiPane = false;
-		
 		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay(); 
 		int width = display.getWidth();
 		int height = display.getHeight();
@@ -95,19 +87,19 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			}
 		} else {
 			Intent intent = new Intent(this, SimpleFragmentActivity.class);
-			intent.putExtra("fragment", fragmentClass);
+			intent.putExtra("fragmentClass", fragmentClass);
 			startActivity(intent);
 		}
 			
 	}
 	
-	public void back(){
-		mFragmentManager.popBackStackImmediate();
-	}
-	
 	@Override
 	public void showDetails(Fragment fragment){
 		showDetails(fragment, true);
+	}
+	
+	public void back(){
+		mFragmentManager.popBackStackImmediate();
 	}
 	
 	/**
@@ -116,9 +108,9 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	 * @throws InstantiationException 
 	 */
 	@Override
-	public void showDetails(Fragment fragment, boolean addToBackStack){		
-		if(mMultiPane){
-			mCallBackHandler = (ActivityCallbackHandler) fragment;
+	public void showDetails(Fragment fragment, boolean addToBackStack){	
+		mCallBackHandler = (ActivityCallbackHandler) fragment;
+		if(mMultiPane){			
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			ft.replace(R.id.detail_view, fragment, fragment.getClass().getSimpleName());
@@ -130,7 +122,8 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			ft.commit();
 		} else { //TODO Error Handling
 			Intent intent = new Intent(this, SimpleFragmentActivity.class);
-			intent.putExtra("fragment", fragment.getClass());
+			intent.putExtra("fragmentClass", fragment.getClass());
+			intent.putExtras(fragment.getArguments());
 			startActivity(intent);
 		}
 	}

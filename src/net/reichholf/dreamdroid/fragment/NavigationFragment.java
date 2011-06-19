@@ -13,9 +13,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.MediaplayerNavigationActivity;
-import net.reichholf.dreamdroid.activities.MovieListActivity;
 import net.reichholf.dreamdroid.activities.ServiceListActivity;
-import net.reichholf.dreamdroid.activities.TimerListActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.DialogHelper;
@@ -468,13 +466,11 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		switch (id) {
 		case ITEM_TIMER:
-			intent = new Intent(mActivity, TimerListActivity.class);
-			startActivity(intent);
+			mActivity.showDetails(TimerListFragment.class);
 			return true;
 
 		case ITEM_MOVIES:
-			intent = new Intent(mActivity, MovieListActivity.class);
-			startActivity(intent);
+			mActivity.showDetails(MovieListFragment.class);			
 			return true;
 
 		case ITEM_SERVICES:

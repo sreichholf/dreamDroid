@@ -35,7 +35,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -56,7 +55,6 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	protected BaseAdapter mAdapter;
 	protected SimpleHttpClient mShc;
 
-	protected TextView mEmpty;
 	protected SimpleResultTask mSimpleResultTask;
 	protected SetVolumeTask mVolumeTask;
 
@@ -522,7 +520,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	 */
 	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
 		finishProgress(title);
-		mEmpty.setText(R.string.no_list_item);
+		setEmptyText(getText(R.string.no_list_item));
 
 		mMapList.clear();
 		mMapList.addAll(list);

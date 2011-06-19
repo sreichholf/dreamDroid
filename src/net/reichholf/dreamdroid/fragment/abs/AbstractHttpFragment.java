@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.SearchEpgActivity;
-import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -235,7 +235,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 		Intent intent;
 		switch (id) {
 		case MENU_HOME:
-			intent = new Intent(getActivity(), TabbedNavigationActivity.class);
+			intent = new Intent(getActivity(), FragmentMainActivity.class);
 			startActivity(intent);
 			return true;
 		default:

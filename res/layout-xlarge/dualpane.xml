@@ -9,6 +9,7 @@
    		android:id="@+id/navigation_view" 
    		android:layout_width="250dp"
    		android:layout_marginTop="30dp"
+   		android:layout_marginBottom="50dp"
    		android:layout_height="fill_parent" />
 	
 	<LinearLayout
@@ -26,7 +27,8 @@
 			android:orientation="vertical"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent"
-			android:background="#212121">
+			android:background="#212121"
+			android:layout_marginBottom="50dp">
 			
 			<FrameLayout 
 		   		android:id="@+id/detail_view" 
