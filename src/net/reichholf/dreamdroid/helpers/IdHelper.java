@@ -10,7 +10,7 @@ package net.reichholf.dreamdroid.helpers;
  * @author sre
  *
  */
-public class DialogHelper {
+public class IdHelper {
 	public static final int DIALOG_SEND_MESSAGE_ID = 0x8000;
 	public static final int DIALOG_SET_POWERSTATE_ID = 0x8001;
 	public static final int DIALOG_ABOUT_ID = 0x8002;
@@ -25,4 +25,8 @@ public class DialogHelper {
 	public static final int DIALOG_TIMER_PICK_REPEATED_ID = 0x8011;
 	public static final int DIALOG_TIMER_PICK_TAGS_ID = 0x8012;
 	public static final int DIALOG_TIMER_LOADING_ID = 0x8013;
+	
+	public static final int MENU_OVERVIEW = 0x7000;
+	public static final int MENU_SET_AS_DEFAULT = 0x7001;
+	public static final int MENU_RELOAD = 0x7002;
 }

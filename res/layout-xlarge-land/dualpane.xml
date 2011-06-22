@@ -1,40 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="horizontal"
+	android:orientation="vertical"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:layout_margin="25dp">
-
+	
+	<TextView 
+		android:id="@+id/detail_title"
+		android:layout_width="fill_parent"
+		android:layout_height="30dp"
+		android:layout_marginLeft="270dp"
+		android:textAppearance="?android:attr/textAppearanceLarge"/>
 	<FrameLayout 
    		android:id="@+id/navigation_view" 
    		android:layout_width="300dp" 
-   		android:layout_height="fill_parent" />
+   		android:layout_height="fill_parent"
+   		android:layout_marginTop="0dp"
+   		android:layout_below="@id/detail_title" />
 	
-	<LinearLayout
-		android:orientation="vertical"
+	<FrameLayout
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent">
-	
-		<TextView 
-			android:id="@+id/detail_title"
-			android:layout_width="fill_parent"
-			android:layout_height="30dp"
-			android:textAppearance="?android:attr/textAppearanceLarge"
-			android:layout_marginBottom="-20dp"/>	
-	
-		<LinearLayout
-			android:orientation="vertical"
-			android:layout_width="fill_parent"
-			android:layout_height="fill_parent"
-			android:layout_margin="25dp"
-			android:background="#212121">
-			
-			<FrameLayout 
-		   		android:id="@+id/detail_view" 
-		   		android:layout_width="fill_parent" 
-		   		android:layout_height="fill_parent"
-		   		android:layout_margin="10dp" />
-		</LinearLayout>
-	</LinearLayout>
-</LinearLayout>
+		android:layout_height="fill_parent"
+		android:layout_marginLeft="0dp"
+		android:layout_marginTop="0dp"
+		android:layout_marginRight="25dp"
+		android:layout_marginBottom="25dp"		
+		android:background="#212121"
+		android:layout_toRightOf="@id/navigation_view"
+		android:layout_below="@id/detail_title">
+
+		<FrameLayout 
+	   		android:id="@+id/detail_view" 
+	   		android:layout_width="fill_parent" 
+	   		android:layout_height="fill_parent"
+	   		android:layout_margin="10dp"
+	   		android:background="#212121" />
+	</FrameLayout>
+</RelativeLayout>

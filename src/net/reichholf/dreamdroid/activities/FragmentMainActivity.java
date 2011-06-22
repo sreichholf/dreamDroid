@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -43,21 +42,14 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		checkLayout();
 		
-		mFragmentManager = getSupportFragmentManager();
+		mFragmentManager = getSupportFragmentManager();		
 		FragmentTransaction ft = mFragmentManager.beginTransaction();
-		mNavigationFragment = new NavigationFragment();
 		
-		mFragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener(){
-
-			@Override
-			public void onBackStackChanged() {
-				// TODO Auto-generated method stub
-				
-			}
-			
-		});
+		mNavigationFragment = new NavigationFragment();
+		mNavigationFragment.setHighlightCurrent(mMultiPane);
+		
 		setContentView(R.layout.dualpane);
-		ft.add(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
+		ft.replace(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
 		ft.commit();
 	}
 	
@@ -116,7 +108,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			ft.replace(R.id.detail_view, fragment, fragment.getClass().getSimpleName());
 			
 			if(addToBackStack){
-				ft.addToBackStack(null);
+//				ft.addToBackStack(null);
 			}
 			
 			ft.commit();
@@ -132,6 +124,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	public void setTitle(CharSequence title){
 		if(mMultiPane){
 			TextView t = (TextView) findViewById(R.id.detail_title);
+			t.bringToFront();
 			String replaceMe = getText(R.string.app_name) + "::";
 			t.setText(title.toString().replace(replaceMe, ""));
 			return;

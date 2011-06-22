@@ -14,7 +14,6 @@ import java.util.GregorianCalendar;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 
@@ -67,8 +66,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	private byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
 	private GetScreenshotTask mGetScreenshotTask;
-	
-	private FragmentMainActivity mActivity;
 	
 	private class GetScreenshotTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private byte[] mBytes;
@@ -143,12 +140,11 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		mActivity = (FragmentMainActivity) getActivity();
-		mActivity.setTitle(getText(R.string.app_name) + "::" + getText(R.string.screenshot));
+		getActivity().setTitle(getText(R.string.app_name) + "::" + getText(R.string.screenshot));
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		mImageView = new ImageView(mActivity);
+		mImageView = new ImageView(getActivity());
 		mImageView.setBackgroundColor(Color.BLACK);
 
 		Bundle extras = getArguments();
@@ -161,7 +157,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
 		mSize = extras.getInt(KEY_SIZE, 720);
 		mFilename = extras.getString(KEY_FILENAME);
-		mScannerConn = new MediaScannerConnection(mActivity, new DummyMediaScannerConnectionClient());
+		mScannerConn = new MediaScannerConnection(getActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
 		
 		reload();
@@ -201,7 +197,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	private void updateProgress(){
-		mActivity.setProgressBarIndeterminateVisibility(true);
+		getActivity().setProgressBarIndeterminateVisibility(true);
 	}
 	
 	/**
@@ -210,7 +206,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	private void onScreenshotAvailable(byte[] bytes){
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
-		mActivity.setProgressBarIndeterminateVisibility(false);
+		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
 	/**

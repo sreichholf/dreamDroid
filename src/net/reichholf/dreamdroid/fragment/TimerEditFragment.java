@@ -14,9 +14,10 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.ServiceListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.helpers.DialogHelper;
+import net.reichholf.dreamdroid.helpers.IdHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
@@ -333,7 +334,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 		switch (id) {
 
-		case (DialogHelper.DIALOG_TIMER_PICK_BEGIN_ID):
+		case (IdHelper.DIALOG_TIMER_PICK_BEGIN_ID):
 			cal = getCalendarFromTimestamp(mTimer.getString("begin"));
 
 			dialog = new Dialog(getActivity());
@@ -354,7 +355,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			dialog.show();
 			break;
 
-		case (DialogHelper.DIALOG_TIMER_PICK_END_ID):
+		case (IdHelper.DIALOG_TIMER_PICK_END_ID):
 			cal = getCalendarFromTimestamp(mTimer.getString("end"));
 
 			dialog = new Dialog(getActivity());
@@ -375,7 +376,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			dialog.show();
 			break;
 
-		case (DialogHelper.DIALOG_TIMER_PICK_REPEATED_ID):
+		case (IdHelper.DIALOG_TIMER_PICK_REPEATED_ID):
 			CharSequence[] days = getResources().getTextArray(R.array.weekdays);
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(getText(R.string.choose_days));
@@ -395,7 +396,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 			break;
 
-		case (DialogHelper.DIALOG_TIMER_PICK_TAGS_ID):
+		case (IdHelper.DIALOG_TIMER_PICK_TAGS_ID):
 			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
 			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
 
@@ -455,7 +456,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 						mTags.setText(tags);
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(DialogHelper.DIALOG_TIMER_PICK_TAGS_ID);
+					getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_TAGS_ID);
 				}
 
 			});
@@ -466,7 +467,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 					mSelectedTags.clear();
 					mSelectedTags.addAll(mOldTags);
 					dialog.dismiss();
-					getActivity().removeDialog(DialogHelper.DIALOG_TIMER_PICK_TAGS_ID);
+					getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_TAGS_ID);
 				}
 
 			});
@@ -511,19 +512,19 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			return true;
 
 		case ITEM_PICK_START:
-			getActivity().showDialog(DialogHelper.DIALOG_TIMER_PICK_BEGIN_ID);
+			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_BEGIN_ID);
 			return true;
 
 		case ITEM_PICK_END:
-			getActivity().showDialog(DialogHelper.DIALOG_TIMER_PICK_END_ID);
+			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_END_ID);
 			return true;
 
 		case ITEM_PICK_REPEATED:
-			getActivity().showDialog(DialogHelper.DIALOG_TIMER_PICK_REPEATED_ID);
+			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_REPEATED_ID);
 			return true;
 
 		case ITEM_PICK_TAGS:
-			getActivity().showDialog(DialogHelper.DIALOG_TIMER_PICK_TAGS_ID);
+			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_TAGS_ID);
 		default:
 			return super.onItemClicked(id);
 		}
@@ -833,7 +834,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private void onTimerBeginSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_BEGIN, seconds);
-		getActivity().removeDialog(DialogHelper.DIALOG_TIMER_PICK_BEGIN_ID);
+		getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_BEGIN_ID);
 		reload();
 	}
 
@@ -846,7 +847,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private void onTimerEndSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_END, seconds);
-		getActivity().removeDialog(DialogHelper.DIALOG_TIMER_PICK_END_ID);
+		getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_END_ID);
 		reload();
 	}
 	
@@ -855,15 +856,14 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	}
 	
 	private void finish(boolean reloadList){
-		//TODO move this to the Activity and handle single/dualpane correctly
-		getFragmentManager().popBackStackImmediate();
+		//TODO move this to the Activity and handle single/dualpane correctly		
 		if(reloadList){
 			TimerListFragment f = (TimerListFragment) getFragmentManager().findFragmentByTag(TimerListFragment.class.getSimpleName());
 			if(f != null){
-				if(f.isVisible()){
-					f.reload();
-				}
+				f.reload();
 			}
 		}
+		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+		mph.finish();
 	}
 }

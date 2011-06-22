@@ -13,10 +13,9 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.MediaplayerNavigationActivity;
-import net.reichholf.dreamdroid.activities.ServiceListActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.helpers.DialogHelper;
+import net.reichholf.dreamdroid.helpers.IdHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
@@ -33,6 +32,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -80,22 +80,23 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	public static final int ITEM_MEDIA_PLAYER = 19;
 	public static final int ITEM_PROFILES = 20;
 	
+	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog  (1=yes, 0=no) ] 
 	public static final int[][] MENU_ITEMS = {
-		{ ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list },
-		{ ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie },
-		{ ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock },
-		{ ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles },
-		{ ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help },
-		{ ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off },
-		{ ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music },
-		{ ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock },
-		{ ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture },
-		{ ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info },
-		{ ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail },
-		{ ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help },
-		{ ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link },
-		{ ITEM_SETTINGS, R.string.settings, android.R.drawable.ic_menu_edit },
-		{ ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list },
+		{ ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
+		{ ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0},
+		{ ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0},
+		{ ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0},
+		{ ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0},
+		{ ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
+		{ ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music, 1, 0 },
+		{ ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1: 0 ,1 },
+		{ ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
+		{ ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
+		{ ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1 , 1 },
+		{ ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
+		{ ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 0 },
+//		{ ITEM_SETTINGS, R.string.settings, android.R.drawable.ic_menu_edit, 1, 0 },
+		{ ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
 	};
 	
 	private int[] mCurrent;
@@ -105,7 +106,14 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	private ExtendedHashMap mSleepTimer;
 	private FragmentMainActivity mActivity;
-
+	private int mCurrentListItem;
+	private boolean mHighlightCurrent;
+	
+	public NavigationFragment(){
+		super();
+		setHighlightCurrent(true);
+	}
+	
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
 	 * 
@@ -206,7 +214,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(DialogHelper.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			mActivity.showDialog(IdHelper.DIALOG_SLEEPTIMER_PROGRESS_ID);
 		}
 
 		/*
@@ -215,7 +223,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			mActivity.removeDialog(DialogHelper.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			mActivity.removeDialog(IdHelper.DIALOG_SLEEPTIMER_PROGRESS_ID);
 
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -224,7 +232,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			onSleepTimerResult(result, mResult, mDialogOnFinish);
 		}
 	}
-
+	
 	/**
 	 * @param time
 	 * @param action
@@ -279,7 +287,14 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		super.onCreate(savedInstanceState);
 		mActivity = (FragmentMainActivity) getActivity();
 		mSleepTimer = new ExtendedHashMap();
+		mCurrentListItem = -1;
+		
+		setHasOptionsMenu(true);
 		setAdapter();		
+	}
+	
+	public void setHighlightCurrent(boolean highlight){
+		mHighlightCurrent = highlight;
 	}
 	
 	public void onActivityCreated(Bundle savedInstanceState){		
@@ -288,21 +303,35 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		getListView().setTextFilterEnabled(true);
 	}
 	
+	@Override
 	public void onListItemClick(ListView l, View v, int position, long id){		
-		getListView().setItemChecked(position, true);
-		
-		mCurrent = (int[]) getListView().getItemAtPosition(position);		
+		mCurrent = (int[]) l.getItemAtPosition(position);
+
+		//only mark the entry if it isn't a "dialog-only-item"
+		if(mHighlightCurrent){
+			if(mCurrent[4] == 0){			 
+				if(mCurrentListItem > -1){
+					View prevItem = l.getChildAt(mCurrentListItem);
+					prevItem.setBackgroundColor(Color.TRANSPARENT);
+				}
+				
+				mCurrentListItem = position;
+				l.setItemChecked(position, true);		
+				v.setBackgroundColor(0xbb0000aa);
+			}
+		}
 		onItemClicked(mCurrent[0]);
 	}
 	
 	private void setAdapter() {
-		mAdapter = new NavigationListAdapter(mActivity, R.layout.nav_list_item, MENU_ITEMS);
+		mAdapter = new NavigationListAdapter(mActivity, MENU_ITEMS);
 		setListAdapter(mAdapter);
 	}
 	
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		menu.add(0, ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
+//		menu.add(0, ITEM_PROFILES, 0, getText(R.string.profiles)).setIcon(R.drawable.ic_menu_list);
 	}
 
 	/*
@@ -319,7 +348,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		final Dialog dialog;
 
 		switch (id) {
-		case DialogHelper.DIALOG_SEND_MESSAGE_ID:
+		case IdHelper.DIALOG_SEND_MESSAGE_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.send_message_dialog);
 			dialog.setTitle(R.string.send_message);
@@ -351,7 +380,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 			break;
 
-		case DialogHelper.DIALOG_SET_POWERSTATE_ID:
+		case IdHelper.DIALOG_SET_POWERSTATE_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.powercontrol);
 			dialog.setTitle(R.string.powercontrol);
@@ -368,7 +397,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 			break;
 			
-		case DialogHelper.DIALOG_ABOUT_ID:
+		case IdHelper.DIALOG_ABOUT_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.about);
 			dialog.setTitle(R.string.about);			
@@ -390,7 +419,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 						
 			break;
 		
-		case DialogHelper.DIALOG_SLEEPTIMER_ID:
+		case IdHelper.DIALOG_SLEEPTIMER_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.sleeptimer);
 			dialog.setTitle(R.string.sleeptimer);
@@ -444,7 +473,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			});
 			
 			break;
-		case DialogHelper.DIALOG_SLEEPTIMER_PROGRESS_ID:
+		case IdHelper.DIALOG_SLEEPTIMER_PROGRESS_ID:
 			dialog = ProgressDialog.show(mActivity, getText(R.string.sleeptimer), getText(R.string.loading));
 			break;
 		default:
@@ -474,13 +503,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			return true;
 
 		case ITEM_SERVICES:
-			intent = new Intent(mActivity, ServiceListActivity.class);
-			ExtendedHashMap map = new ExtendedHashMap();
-
-			intent.putExtra(sData, map);
-			intent.setAction(Intent.ACTION_VIEW);
-
-			startActivity(intent);
+//			intent = new Intent(mActivity, ServiceListActivity.class);
+//			ExtendedHashMap map = new ExtendedHashMap();
+//			Bundle args = new Bundle();
+//			args.putSerializable(sData, map);
+//			args.putString("action", Intent.ACTION_VIEW);
+			
+			mActivity.showDetails(NewServiceListFragment.class);
 			return true;
 
 		case ITEM_INFO:
@@ -502,7 +531,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		case ITEM_MESSAGE:
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(DialogHelper.DIALOG_SEND_MESSAGE_ID);
+			mActivity.showDialog(IdHelper.DIALOG_SEND_MESSAGE_ID);
 			return true;
 
 		case ITEM_EPG_SEARCH:
@@ -533,12 +562,12 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		case ITEM_POWERSTATE_DIALOG:
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(DialogHelper.DIALOG_SET_POWERSTATE_ID);
+			mActivity.showDialog(IdHelper.DIALOG_SET_POWERSTATE_ID);
 			return true;
 
 		case ITEM_ABOUT:
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(DialogHelper.DIALOG_ABOUT_ID);
+			mActivity.showDialog(IdHelper.DIALOG_ABOUT_ID);
 			return true;
 
 		case ITEM_CHECK_CONN:
@@ -623,7 +652,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			mSleepTimer = sleepTimer;
 			if (openDialog) {
 				mActivity.setIsNavgationDialog(true);
-				mActivity.showDialog(DialogHelper.DIALOG_SLEEPTIMER_ID);
+				mActivity.showDialog(IdHelper.DIALOG_SLEEPTIMER_ID);
 				return;
 			}
 			String text = sleepTimer.getString(SleepTimer.KEY_TEXT);

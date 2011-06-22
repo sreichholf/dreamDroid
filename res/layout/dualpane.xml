@@ -9,10 +9,5 @@
    		android:id="@+id/navigation_view" 
    		android:layout_width="fill_parent" 
    		android:layout_height="fill_parent" />
-<!-- 
-   <FrameLayout 
-   		android:id="@+id/detail_view" 
-   		android:layout_width="fill_parent" 
-   		android:layout_height="fill_parent" />
- -->
+
 </LinearLayout>

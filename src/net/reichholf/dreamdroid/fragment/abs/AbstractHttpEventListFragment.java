@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.SearchEpgActivity;
 import net.reichholf.dreamdroid.activities.TimerEditActivity;
+import net.reichholf.dreamdroid.helpers.IdHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
@@ -32,9 +33,7 @@ import android.widget.Toast;
  * @author sreichholf
  * 
  */
-public abstract class AbstractHttpEventListFragment extends AbstractHttpListFragment {
-	public static final int DIALOG_EPG_ITEM_ID = 9382893;
-
+public abstract class AbstractHttpEventListFragment extends AbstractHttpListFragment {	
 	protected String mReference;
 	protected String mName;
 
@@ -53,7 +52,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		if(mCurrentItem != null){
 		
 			switch (id) {
-			case DIALOG_EPG_ITEM_ID:
+			case IdHelper.DIALOG_EPG_ITEM_ID:
 	
 				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);

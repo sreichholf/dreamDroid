@@ -9,7 +9,7 @@ package net.reichholf.dreamdroid.activities;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
+import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -32,7 +32,7 @@ import android.widget.SimpleAdapter;
  * @author sreichholf
  * 
  */
-public class SearchEpgActivity extends AbstractHttpEventListActivity {
+public class SearchEpgActivity extends AbstractHttpEventListFragment {
 	private SearchEpgListTask mSearchEpgListTask;
 	private String mQuery;
 

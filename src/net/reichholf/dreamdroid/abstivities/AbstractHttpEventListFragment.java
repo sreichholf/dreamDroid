@@ -32,7 +32,7 @@ import android.widget.Toast;
  * @author sreichholf
  * 
  */
-public abstract class AbstractHttpEventListActivity extends AbstractHttpListActivity {
+public abstract class AbstractHttpEventListFragment extends AbstractHttpListActivity {
 	public static final int DIALOG_EPG_ITEM_ID = 9382893;
 
 	protected String mReference;

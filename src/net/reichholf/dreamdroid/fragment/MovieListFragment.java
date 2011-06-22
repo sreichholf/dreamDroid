@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.helpers.DialogHelper;
+import net.reichholf.dreamdroid.helpers.IdHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -191,10 +191,10 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			reload();
 			return true;
 		case MENU_LOCATIONS:
-			getActivity().showDialog(DialogHelper.DIALOG_PICK_LOCATION_ID);
+			getActivity().showDialog(IdHelper.DIALOG_PICK_LOCATION_ID);
 			return true;
 		case MENU_TAGS:
-			getActivity().showDialog(DialogHelper.DIALOG_PICK_TAGS_ID);
+			getActivity().showDialog(IdHelper.DIALOG_PICK_TAGS_ID);
 			return true;
 		default:
 			return super.onItemClicked(id);
@@ -212,7 +212,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		AlertDialog.Builder builder;
 
 		switch (id) {
-		case (DialogHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID):
+		case (IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID):
 			builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(mMovie.getString(Movie.KEY_TITLE)).setMessage(getText(R.string.delete_confirm))
 					.setCancelable(false)
@@ -224,13 +224,13 @@ public class MovieListFragment extends AbstractHttpListFragment {
 					}).setNegativeButton(getText(android.R.string.no), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							dialog.dismiss();
-							getActivity().removeDialog(DialogHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+							getActivity().removeDialog(IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						}
 					});
 			dialog = builder.create();
 			break;
 
-		case (DialogHelper.DIALOG_PICK_LOCATION_ID):
+		case (IdHelper.DIALOG_PICK_LOCATION_ID):
 			CharSequence[] locations = new CharSequence[DreamDroid.LOCATIONS.size()];
 
 			int selectedIndex = 0;
@@ -255,14 +255,14 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						reload();
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(DialogHelper.DIALOG_PICK_LOCATION_ID);
+					getActivity().removeDialog(IdHelper.DIALOG_PICK_LOCATION_ID);
 				}
 			});
 
 			dialog = builder.create();
 			break;
 
-		case (DialogHelper.DIALOG_PICK_TAGS_ID):
+		case (IdHelper.DIALOG_PICK_TAGS_ID):
 			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
 			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
 
@@ -319,7 +319,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						reload();
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(DialogHelper.DIALOG_PICK_TAGS_ID);
+					getActivity().removeDialog(IdHelper.DIALOG_PICK_TAGS_ID);
 				}
 
 			});
@@ -330,7 +330,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 					mSelectedTags.clear();
 					mSelectedTags.addAll(mOldTags);
 					dialog.dismiss();
-					getActivity().removeDialog(DialogHelper.DIALOG_PICK_TAGS_ID);
+					getActivity().removeDialog(IdHelper.DIALOG_PICK_TAGS_ID);
 				}
 
 			});
@@ -382,7 +382,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 						break;
 					case 1:
-						getActivity().showDialog(DialogHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+						getActivity().showDialog(IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						break;
 					case 2:
 						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -414,7 +414,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 * Delete the selected movie
 	 */
 	private void deleteMovie() {
-		getActivity().removeDialog(DialogHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+		getActivity().removeDialog(IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();

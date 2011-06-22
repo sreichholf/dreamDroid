@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.helpers.DialogHelper;
+import net.reichholf.dreamdroid.helpers.IdHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -267,8 +267,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	private void showEpgDetail(ExtendedHashMap event){
 		if(event != null){
 			mCurrentItem = event;
-			getActivity().removeDialog(DialogHelper.DIALOG_EPG_ITEM_ID);
-			getActivity().showDialog(DialogHelper.DIALOG_EPG_ITEM_ID);
+			getActivity().removeDialog(IdHelper.DIALOG_EPG_ITEM_ID);
+			getActivity().showDialog(IdHelper.DIALOG_EPG_ITEM_ID);
 		}
 	}
 	
@@ -313,7 +313,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		final Dialog dialog;
 
 		switch (id) {
-		case DialogHelper.DIALOG_EPG_ITEM_ID:
+		case IdHelper.DIALOG_EPG_ITEM_ID:
 			if(mCurrentItem != null){
 				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);

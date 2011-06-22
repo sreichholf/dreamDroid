@@ -15,4 +15,5 @@ import android.support.v4.app.Fragment;
 public interface MultiPaneHandler {
 	public void showDetails(Fragment fragment);
 	public void showDetails(Fragment fragment, boolean addToBackStack);
+	public void finish();
 }
