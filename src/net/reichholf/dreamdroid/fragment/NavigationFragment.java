@@ -514,7 +514,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 //			args.putSerializable(sData, map);
 //			args.putString("action", Intent.ACTION_VIEW);
 			
-			mActivity.showDetails(NewServiceListFragment.class);
+			mActivity.showDetails(ServiceListFragment.class);
 			return true;
 
 		case ITEM_INFO:

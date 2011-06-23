@@ -7,10 +7,11 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.activities.ServiceEpgListActivity;
 import net.reichholf.dreamdroid.helpers.IdHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -19,11 +20,13 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -32,14 +35,18 @@ import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 /**
  * Handles ServiceLists of (based on service references).
@@ -54,27 +61,55 @@ import android.widget.SimpleAdapter;
  * @author sreichholf
  * 
  */
-/**
- * @author sre
- *
- */
-public class ServiceListFragment extends AbstractHttpEventListFragment {
-	private String mReference;
-	private String mName;
-	private boolean mIsBouquetList;
+public class ServiceListFragment extends AbstractHttpFragment {
+	/**
+	 * 
+	 */
+	public static final String SERVICE_REF_ROOT = "root";
+	public ListView mNavList;
+	public ListView mDetailList;
+	public TextView mDetailHeader;
 
-	private ArrayList<ExtendedHashMap> mHistory;
+	private String mBaseTitle;
+
+	private String mNavReference;
+	private String mNavName;
+	
+	private String mDetailReference;
+	private String mDetailName;
+	
+//	private boolean mIsBouquetList;
+
+	private ArrayList<ExtendedHashMap> mNavHistory;
 	private boolean mPickMode;
 
 	private GetServiceListTask mListTask;
+	private ArrayList<GetServiceListTask> mListTasks;
+	
+//	private ExtendedHashMap mCurrentItem;
+	
+	protected Bundle mExtras;
+	protected ExtendedHashMap mData;
+	protected ArrayList<ExtendedHashMap> mNavMapList;
+	protected ArrayList<ExtendedHashMap> mDetailMapList;
 
-	/**
-	 * @author sreichholf Fetches a service list async. Does all the
-	 *         error-handling, refreshing and title-setting
-	 */
-	private class GetServiceListTask extends AsyncListUpdateTask {
-		public GetServiceListTask() {
-			super(getString(R.string.services));
+	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
+		protected ArrayList<ExtendedHashMap> mTaskList;
+
+		protected ListRequestInterface mListRequestHandler;
+		protected boolean mRequireLocsAndTags;
+		protected ArrayList<String> mLocations;
+		protected ArrayList<String> mTags;
+
+		public AsyncListUpdateTask(String baseTitle) {
+			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
+			mListRequestHandler = null;
+		}
+
+		public AsyncListUpdateTask(String baseTitle, ListRequestInterface listRequestHandler, boolean requireLocsAndTags) {
+			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
+			mListRequestHandler = listRequestHandler;
+			mRequireLocsAndTags = requireLocsAndTags;
 		}
 
 		/*
@@ -84,15 +119,89 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			if (mListRequestHandler == null) {
+				throw new UnsupportedOperationException(
+						"Method doInBackground not re-implemented while no ListRequestHandler has been given");
+			}
+
 			mTaskList = new ArrayList<ExtendedHashMap>();
 			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
 
+			String xml = mListRequestHandler.getList(mShc, params[0]);
+			if (xml != null) {
+				publishProgress(mBaseTitle + " - " + getText(R.string.parsing));
+
+				mTaskList.clear();
+
+				if (mListRequestHandler.parseList(xml, mTaskList)) {
+					if (mRequireLocsAndTags) {
+						if (DreamDroid.LOCATIONS.size() == 0) {
+							publishProgress(mBaseTitle + " - " + getText(R.string.locations) + " - "
+									+ getText(R.string.fetching_data));
+
+							if (!DreamDroid.loadLocations(mShc)) {
+								// TODO Add Error-Msg when loadLocations fails
+							}
+						}
+
+						if (DreamDroid.TAGS.size() == 0) {
+							publishProgress(mBaseTitle + " - " + getText(R.string.tags) + " - "
+									+ getText(R.string.fetching_data));
+
+							if (!DreamDroid.loadTags(mShc)) {
+								// TODO Add Error-Msg when loadTags fails
+							}
+						}
+					}
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	/**
+	 * @author sreichholf Fetches a service list async. Does all the
+	 *         error-handling, refreshing and title-setting
+	 */
+	private class GetServiceListTask extends AsyncListUpdateTask {
+		ArrayList<NameValuePair> mParams;
+		private boolean mIsBouquetList;
+		
+		public GetServiceListTask() {			
+			super(getString(R.string.services));
+			mParams = null;
+		}
+		
+		public void setParams(ArrayList<NameValuePair> params, boolean isBouquetList){
+			mIsBouquetList = isBouquetList;
+			mParams = params;
+		}
+		
+		public ArrayList<NameValuePair> getParams(){
+			if(mParams != null){
+				return mParams;
+			} else {
+				return new ArrayList<NameValuePair>();
+			}			
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {		
+			mTaskList = new ArrayList<ExtendedHashMap>();
+			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
+			
 			String xml;
 			AbstractListRequestHandler handler;
-			if (!mIsBouquetList && !mPickMode) {
-				handler = new EventListRequestHandler(URIStore.EPG_NOW);				
+			if (mIsBouquetList || mPickMode) {
+				handler = new ServiceListRequestHandler();				
 			} else {
-				handler = new ServiceListRequestHandler();
+				handler = new EventListRequestHandler(URIStore.EPG_NOW);
 			}
 			xml = handler.getList(mShc, params[0]);
 
@@ -104,6 +213,41 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 
 			}
 			return false;
+		}
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(String... progress) {
+			updateProgress(progress[0]);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(Boolean result) {
+			String title = null;
+
+			if (result) {
+				title = mBaseTitle;
+			} else {
+				title = mBaseTitle + " - " + getString(R.string.get_content_error);
+
+				if (mShc.hasError()) {
+					showToast(getString(R.string.get_content_error) + "\n" + mShc.getErrorText());
+				}
+			}
+
+			if (mRequireLocsAndTags) {
+				//TODO setDefaultLocation();
+//				setDefaultLocation();
+			}
+			finishListProgress(title, mTaskList, mIsBouquetList);
 		}
 	}
 
@@ -120,53 +264,159 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 		super.onCreate(savedInstanceState);
 		Bundle args = getArguments();
 		String mode = null;
-		
-		if(args != null){
+
+		if (args != null) {
 			mode = args.getString("action");
 		}
-		
-		if( Intent.ACTION_PICK.equals(mode) ) {
+
+		if (Intent.ACTION_PICK.equals(mode)) {
 			mPickMode = true;
 		} else {
 			mPickMode = false;
 		}
-
-		String ref = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "default");
-		String name = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
+		
+		mDetailReference = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, SERVICE_REF_ROOT);
+		mDetailName = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
 				(String) getText(R.string.bouquet_overview));
 
-		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE, ref);
-		mName = getDataForKey(Event.KEY_SERVICE_NAME, name);
+//		mDetailReference = getDataForKey(Event.KEY_SERVICE_REFERENCE, null);
+//		mDetailName = getDataForKey(Event.KEY_SERVICE_NAME, null);
 
 		if (savedInstanceState != null) {
-			mIsBouquetList = savedInstanceState.getBoolean("isBouquetList", true);
-			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
-
+			mNavHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");			
 		} else {
-			mIsBouquetList = DreamDroid.SP.getBoolean(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_IS_LIST, true);
-			mHistory = new ArrayList<ExtendedHashMap>();
-
-			ExtendedHashMap map = new ExtendedHashMap();
-			map.put(Event.KEY_SERVICE_REFERENCE, mReference);
-			map.put(Event.KEY_SERVICE_NAME, mName);
-
-			mHistory.add(map);
+			mNavHistory = new ArrayList<ExtendedHashMap>();
+			if(!SERVICE_REF_ROOT.equals(mNavReference)){
+				ExtendedHashMap map = new ExtendedHashMap();
+				map.put(Event.KEY_SERVICE_REFERENCE, mNavReference);
+				map.put(Event.KEY_SERVICE_NAME, mNavName);
+	
+				mNavHistory.add(map);
+			}
 		}
+		
+		mExtras = getActivity().getIntent().getExtras();
+		mNavMapList = new ArrayList<ExtendedHashMap>();
+		mDetailMapList = new ArrayList<ExtendedHashMap>();
+		mListTasks = new ArrayList<GetServiceListTask>();
 
-		setAdapter();
+		if (mExtras != null) {
+			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
+			if (map != null) {
+				mData = new ExtendedHashMap();
+				mData.putAll(map);
+			}
+		} else {
+			mExtras = new Bundle();
+			getActivity().getIntent().putExtras(mExtras);
+		}
 	}
 	
-	@Override 
-	public void onActivityCreated(Bundle savedInstanceState){
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.Fragment#onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)
+	 */
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+		View v = inflater.inflate(R.layout.dual_list_view, null, false);
+		mNavList = (ListView) v.findViewById(R.id.listView1);
+		mDetailList = (ListView) v.findViewById(R.id.listView2);
+
+		//Some may call this a Hack I call it a smart solution
+		//On devices with resolutions other than xlarge, there is no second ListView. 
+		//So we just use the only one available and the rest runs as normal.
+		if(mDetailList == null){
+			mDetailList = mNavList;
+			mDetailMapList = mNavMapList;
+		}
+		mDetailHeader = (TextView) v.findViewById(R.id.listView2Header);
+		if(mDetailHeader == null){
+			//Dummy TextView for Header. Applies for non-xlarge devices
+			mDetailHeader = new TextView(getActivity());
+		}
+		
+		mNavList.setFastScrollEnabled(true);
+		mDetailList.setFastScrollEnabled(true);
+		setAdapter();
+		
+		return v;
+	}
+	/**
+	 * @param key
+	 * @return
+	 */
+	public String getDataForKey(String key) {
+		if (mData != null) {
+			return (String) mData.get(key);
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param key
+	 * @param dfault
+	 * @return
+	 */
+	public String getDataForKey(String key, String dfault) {
+		if (mData != null) {
+			String str = (String) mData.get(key);
+			if (str != null) {
+				return str;
+			}
+		}
+		return dfault;
+	}
+
+	/**
+	 * @param key
+	 * @param dfault
+	 * @return
+	 */
+	public boolean getDataForKey(String key, boolean dfault) {
+		if (mData != null) {
+			Boolean b = (Boolean) mData.get(key);
+			if (b != null) {
+				return b.booleanValue();
+			}
+		}
+
+		return dfault;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
+		
+		mNavList.setOnItemClickListener(new OnItemClickListener(){
+			@Override
+			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+				onListItemClick((ListView) a, v, position, id);				
+			}			
+		});
+		
+		mDetailList.setOnItemClickListener(new OnItemClickListener(){
+			@Override
+			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+				onListItemClick((ListView) a, v, position, id);				
+			}			
+		});
+		
+		mNavList.setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-				return onListItemLongClick(a, v, position, id);
+				return onListItemLongClick((ListView) a, v, position, id);
 			}
 		});
 
-		reload();
+		mDetailList.setOnItemLongClickListener(new OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
+				return onListItemLongClick((ListView) a, v, position, id);
+			}
+		});
+
+		loadNavRoot();
+		reloadDetail();
 	}
 
 	/*
@@ -178,9 +428,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putSerializable("history", mHistory);
-		outState.putBoolean("isBouquetList", mIsBouquetList);
-
+		outState.putSerializable("history", mNavHistory);
 	}
 
 	/*
@@ -204,20 +452,26 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle
 	 * ()
 	 */
-	@Override
-	protected String genWindowTitle(String title) {
-		return title + " - " + mName;
+	public String genWindowTitle(String title) {
+		return title + " - " + mNavName;
 	}
 
 	/**
 	 * 
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(getActivity(), mMapList, R.layout.service_list_item, new String[] { Event.KEY_SERVICE_NAME,
-				Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_TIME_READABLE, Event.KEY_EVENT_DURATION_READABLE }, new int[] {
-				R.id.service_name, R.id.event_title, R.id.event_start, R.id.event_duration });
-
-		setListAdapter(mAdapter);
+		SimpleAdapter adapter;
+		if(!mNavList.equals(mDetailList)){
+			adapter = new SimpleAdapter(getActivity(), mNavMapList, android.R.layout.simple_list_item_1,
+					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
+			mNavList.setAdapter(adapter);
+		}
+		
+		adapter = new SimpleAdapter(getActivity(), mDetailMapList, R.layout.service_list_item, new String[] {
+				Event.KEY_SERVICE_NAME, Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_TIME_READABLE,
+				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.service_name, R.id.event_title, R.id.event_start,
+				R.id.event_duration });
+		mDetailList.setAdapter(adapter);
 	}
 
 	/**
@@ -245,43 +499,41 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// back to standard back-button-behaviour when we're already at root
 		// level
-//		if (keyCode == KeyEvent.KEYCODE_BACK) {
-//			if (!"default".equals(mReference)) {
-//				int idx = mHistory.size() - 1;
-//				if (idx >= 0) {
-//					ExtendedHashMap map = null;
-//
-//					try {
-//						map = (mHistory.get(idx));
-//					} catch (ClassCastException ex) {
-//						return super.onKeyDown(keyCode, event);
-//					}
-//					if (map != null) {
-//						String oldref = map.getString(Event.KEY_SERVICE_REFERENCE);
-//						String oldname = map.getString(Event.KEY_SERVICE_NAME);
-//
-//						if (!mReference.equals(oldref) && oldref != null) {
-//							// there is a download Task running, the list may
-//							// have already been altered so we let that request finish
-//							if (!isListTaskRunning()) {
-//								mReference = oldref;
-//								mName = oldname;
-//								mHistory.remove(idx);
-//
-//								if (isBouquetReference(mReference)) {
-//									mIsBouquetList = true;
-//								}
-//								reload();
-//
-//							} else {
-//								showToast(getText(R.string.wait_request_finished));
-//							}
-//							return true;
-//						}
-//					}
-//				}
-//			}
-//		}
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (!SERVICE_REF_ROOT.equals(mNavReference)) {
+				int idx = mNavHistory.size() - 1;
+				if (idx >= 0) {
+					ExtendedHashMap map = null;
+
+					try {
+						map = (mNavHistory.get(idx));
+					} catch (ClassCastException ex) {
+						return super.onKeyDown(keyCode, event);
+					}
+					if (map != null) {
+						String oldref = map.getString(Event.KEY_SERVICE_REFERENCE);
+						String oldname = map.getString(Event.KEY_SERVICE_NAME);
+
+						if (!mNavReference.equals(oldref) && oldref != null) {
+							// there is a download Task running, the list may
+							// have already been altered so we let that request
+							// finish
+							if (!isListTaskRunning()) {
+								mNavReference = oldref;
+								mNavName = oldname;
+								mNavHistory.remove(idx);
+
+								reloadNav();
+
+							} else {
+								showToast(getText(R.string.wait_request_finished));
+							}
+							return true;
+						}
+					}
+				}
+			}
+		}
 		return super.onKeyDown(keyCode, event);
 	}
 
@@ -291,9 +543,9 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView,
 	 * android.view.View, int, long)
 	 */
-	@Override
+//	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		onListItemClick(v, position, id, false);
+		onListItemClick(l, v, position, id, false);
 	}
 
 	/**
@@ -303,8 +555,9 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 	 * @param id
 	 * @return
 	 */
-	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
-		onListItemClick(v, position, id, true);
+	protected boolean onListItemLongClick(ListView l, View v, int position, long id) {
+		onListItemClick(l, v, position, id, true);
+
 		return true;
 	}
 
@@ -330,45 +583,53 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 	public void onPrepareOptionsMenu(Menu menu) {
 		MenuItem overview = menu.getItem(2);
 
-		if (mReference.equals("default")) {
-			overview.setEnabled(false);
-		} else {
+		if (!mNavReference.equals(SERVICE_REF_ROOT) || mNavList.equals(mDetailList)) {
 			overview.setEnabled(true);
+		} else {
+			overview.setEnabled(false);
 		}
 
 		MenuItem reload = menu.getItem(1);
-		if (!mIsBouquetList && !mPickMode) {
+		if (!mPickMode) {
 			reload.setEnabled(true);
 		} else {
 			reload.setEnabled(false);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onItemClicked(int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onItemClicked
+	 * (int)
 	 */
 	@Override
 	protected boolean onItemClicked(int id) {
 		switch (id) {
 		case IdHelper.MENU_OVERVIEW:
-			mReference = "default";
-			mName = (String) getText(R.string.bouquet_overview);
-			reload();
+			mNavReference = SERVICE_REF_ROOT;
+			mNavName = (String) getText(R.string.bouquet_overview);
+			reloadNav();
 			return true;
 		case IdHelper.MENU_SET_AS_DEFAULT:
-			Editor editor = DreamDroid.SP.edit();
-			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mReference);
-			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mName);
-			editor.putBoolean(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_IS_LIST, mIsBouquetList);
+			if(mDetailReference != null){
+				Editor editor = DreamDroid.SP.edit();			
+				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mDetailReference);
+				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mDetailName);
 
-			if (editor.commit()) {
-				showToast(getText(R.string.default_bouquet_set_to) + " '" + mName + "'");
+				if (editor.commit()) {
+					showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
+				} else {
+					showToast(getText(R.string.default_bouquet_not_set));
+				}
 			} else {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
 			return true;
 		case IdHelper.MENU_RELOAD:
-			reload();
+			reloadNav();
+			reloadDetail();
 			return true;
 		default:
 			return super.onItemClicked(id);
@@ -379,7 +640,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 	 * @param ref
 	 * @return
 	 */
-	private boolean isBouquetReference(String ref) {
+	private boolean isBouquetList(String ref) {
 		if (ref.startsWith("1:7:")) {
 			return true;
 		}
@@ -403,33 +664,35 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 		startActivity(intent);
 	}
 
-	private void onListItemClick(View v, int position, long id, boolean isLong) {
-		mCurrentItem = mMapList.get(position);
-		final String ref = mCurrentItem.getString(Event.KEY_SERVICE_REFERENCE);
-		final String nam = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
+	/**
+	 * @param l
+	 * @param v
+	 * @param position
+	 * @param id
+	 * @param isLong
+	 */
+	private void onListItemClick(ListView l, View v, int position, long id, boolean isLong) {		
+		ExtendedHashMap item = (ExtendedHashMap) l.getItemAtPosition(position);
+		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
+		final String nam = item.getString(Event.KEY_SERVICE_NAME);
+		if (isBouquetList(ref)) {
+			if (l.equals(mNavList)) {		
+				if(SERVICE_REF_ROOT.equals(mNavReference)){
+					ExtendedHashMap map = new ExtendedHashMap();
+					map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
+					map.put(Event.KEY_SERVICE_NAME, String.valueOf(nam));				
 
-		if (isBouquetReference(ref)) {
-			if (!isListTaskRunning()) {
-				mIsBouquetList = true;
-
-				// Second hierarchy level -> we get a List of Services now
-				if (isBouquetReference(mReference)) {
-					mIsBouquetList = false;
+					mNavHistory.add(map);
+					mNavReference = ref;
+					mNavName = nam;	
+					reloadNav();
+				} else {
+					mDetailReference = ref;
+					mDetailName = nam;
+					reloadDetail();
 				}
-
-				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(mReference));
-				map.put(Event.KEY_SERVICE_NAME, String.valueOf(mName));
-				mHistory.add(map);
-
-				mReference = ref;
-				mName = nam;
-
-				reload();
-			} else {
-				showToast(getText(R.string.wait_request_finished));
 			}
-		} else {
+		} else { //It's a listitem in the servicelist
 			if (mPickMode) {
 				ExtendedHashMap map = new ExtendedHashMap();
 				map.put(Event.KEY_SERVICE_REFERENCE, ref);
@@ -437,20 +700,16 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 
 				Intent intent = new Intent();
 				intent.putExtra(sData, map);
-
-//				setResult(RESULT_OK, intent);
-//				finish();
+				// TODO Activity.setResult Handling
+				getActivity().setResult(Activity.RESULT_OK, intent);
+				getActivity().finish();
 			} else {
-				boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
-				if ((isInsta && !isLong) || (!isInsta && isLong)) {
+				boolean instantZap = DreamDroid.SP.getBoolean("instant_zap", false);
+				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
 				} else {
-
-					CharSequence[] actions = { 
-							getText(R.string.current_event), 
-							getText(R.string.browse_epg),
-							getText(R.string.zap), 
-							getText(R.string.stream) };
+					CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
+							getText(R.string.zap), getText(R.string.stream) };
 
 					AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
 					adBuilder.setTitle(getText(R.string.pick_action));
@@ -472,9 +731,9 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 								break;
 
 							case 3:
-								try{
-									startActivity( IntentFactory.getStreamServiceIntent(ref) );
-								} catch(ActivityNotFoundException e){
+								try {
+									startActivity(IntentFactory.getStreamServiceIntent(ref));
+								} catch (ActivityNotFoundException e) {
 									showToast(getText(R.string.missing_stream_player));
 								}
 								break;
@@ -488,47 +747,89 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 			}
 		}
 	}
-
+	
+	public void reloadNav(){
+		reload(mNavReference, true);
+	}
+	
+	public void reloadDetail(){
+		//Hide ListView so @android:id/empty appears
+		mDetailList.setVisibility(View.GONE);
+		mDetailHeader.setText(mDetailName);
+		
+		if(mDetailReference != null){
+			reload(mDetailReference, false);
+		}
+	}
+	
 	/**
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
-	public void reload() {
+	public void reload(String ref, boolean isBouquetList) {
 		if (mListTask != null) {
 			mListTask.cancel(true);
 		}
 
 		ExtendedHashMap data = new ExtendedHashMap();
-		data.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(mReference));
-		data.put(Event.KEY_SERVICE_NAME, String.valueOf(mName));
+		data.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
+		data.put(Event.KEY_SERVICE_NAME, String.valueOf(ref));
 		mExtras.putSerializable(sData, data);
 
-		if (mReference.equals("default")) {
-			loadDefault();
-			return;
-		}
+
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
-		if (!mIsBouquetList && !mPickMode) {
-			params.add(new BasicNameValuePair("bRef", mReference));
+		if (isBouquetList && !mPickMode) {
+			if (ref.equals(SERVICE_REF_ROOT)) {
+				loadNavRoot();
+				return;
+			}
+			params.add(new BasicNameValuePair("sRef", ref));
 		} else {
-			params.add(new BasicNameValuePair("sRef", mReference));
+			params.add(new BasicNameValuePair("bRef", ref));			
 		}
 
-		mListTask = new GetServiceListTask();
-		mListTask.execute(params);
+		GetServiceListTask task = new GetServiceListTask();
+		task.setParams(params, isBouquetList);
+		enqueueListTask(task);
+	}
+	
+	/**
+	 * @param task
+	 */
+	public void enqueueListTask(GetServiceListTask task){
+		mListTasks.add(task);
+		if(mListTasks.size() == 1){
+			nextListTaskPlease();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void nextListTaskPlease(){
+		if(mListTasks.size() > 0){
+			GetServiceListTask task = mListTasks.get(0);
+			
+			if( task.equals(mListTask) ){
+				mListTasks.remove(0);
+				if(mListTasks.size() > 0){
+					mListTask = mListTasks.get(0);
+					mListTask.execute(mListTask.getParams());
+				}
+			} else {
+				mListTask = task;
+				mListTask.execute(mListTask.getParams());
+			}
+		}
 	}
 
 	/**
 	 * 
 	 */
-	public void loadDefault() {
+	public void loadNavRoot() {
 		String title = getText(R.string.app_name) + "::" + getText(R.string.services);
 		getActivity().setTitle(title);
-		mIsBouquetList = true;
 
-		mMapList.clear();
+		mNavMapList.clear();
 
 		String[] servicelist = getResources().getStringArray(R.array.servicelist);
 		String[] servicerefs = getResources().getStringArray(R.array.servicerefs);
@@ -537,9 +838,32 @@ public class ServiceListFragment extends AbstractHttpEventListFragment {
 			ExtendedHashMap map = new ExtendedHashMap();
 			map.put(Event.KEY_SERVICE_NAME, servicelist[i]);
 			map.put(Event.KEY_SERVICE_REFERENCE, servicerefs[i]);
-			mMapList.add(map);
+			mNavMapList.add(map);
 		}
+		
+		mNavReference = SERVICE_REF_ROOT;
+		mNavName = "";
 
-		mAdapter.notifyDataSetChanged();
+		((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
+	}
+	
+	/**
+	 * @param title
+	 * @param list
+	 */
+	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list, boolean isBouquetList) {
+		finishProgress(title);
+
+		if(isBouquetList){
+			mNavMapList.clear();
+			mNavMapList.addAll(list);
+			((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();			
+		} else {
+			mDetailList.setVisibility(View.VISIBLE);
+			mDetailMapList.clear();
+			mDetailMapList.addAll(list);
+			((SimpleAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
+		}
+		nextListTaskPlease();
 	}
 }
