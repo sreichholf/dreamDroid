@@ -41,14 +41,14 @@
     	android:layout_width="fill_parent"
     	android:layout_below="@id/listView2Header"
     	android:layout_weight="1"/>
-<!-- 
+
     <LinearLayout 
     	android:id="@android:id/empty"
     	android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
 		android:gravity="center"
 		android:orientation="horizontal"
-		android:layout_below="@id/listView1">
+		android:layout_below="@id/listView2">
 		
 		<ProgressBar
 			android:id="@+id/progressBarEmpty"
@@ -61,5 +61,5 @@
 			android:layout_marginLeft="5dp"/>	    
 	    
 	</LinearLayout>
- -->
+
 </RelativeLayout>

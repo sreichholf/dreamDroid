@@ -69,8 +69,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private boolean mReload;
 	
 	private ListView mNavList;
-	private ListView mDetailList;
+	private ListView mDetailList;	
 	private TextView mDetailHeader;
+	private View mEmpty;
 
 	private String mBaseTitle;	
 	private String mNavReference;
@@ -325,6 +326,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		View v = inflater.inflate(R.layout.dual_list_view, null, false);
+		
+		mEmpty = (View) v.findViewById(android.R.id.empty);
+		
 		mNavList = (ListView) v.findViewById(R.id.listView1);
 		mDetailList = (ListView) v.findViewById(R.id.listView2);
 
@@ -783,8 +787,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	}
 	
 	public void reloadDetail(){
-		//Hide ListView so @android:id/empty appears
-		mDetailList.setVisibility(View.GONE);
+		//Hide ListView show empty/progress
+		mEmpty.setVisibility(View.VISIBLE);
+		mDetailList.setVisibility(View.GONE);		
 		mDetailHeader.setText(mDetailName);
 		
 		if(mDetailReference != null){
@@ -889,6 +894,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mNavItems.addAll(list);
 			((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();			
 		} else {
+			mEmpty.setVisibility(View.GONE);
 			mDetailList.setVisibility(View.VISIBLE);
 			mDetailItems.clear();
 			mDetailItems.addAll(list);
