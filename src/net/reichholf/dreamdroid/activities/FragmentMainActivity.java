@@ -57,13 +57,22 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	private void initViews(){
 		setContentView(R.layout.dualpane);
-		FragmentTransaction ft = mFragmentManager.beginTransaction();
-		ft.replace(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
-		ft.commit();
 		
+		FragmentTransaction ft = mFragmentManager.beginTransaction();
+		showFragment(ft, R.id.navigation_view, mNavigationFragment);
 		if(mCurrentDetailFragment != null){
-			ft.replace(R.id.detail_view, mCurrentDetailFragment);
+			showFragment(ft, R.id.detail_view, mCurrentDetailFragment);
 		}
+		ft.commit();
+	}
+	
+	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){
+		Fragment f = mFragmentManager.findFragmentById(fragment.getId());
+		//TODO remove this hack
+		if( f != null){
+			ft.remove(f);
+		}
+		ft.replace(viewId, fragment, fragment.getClass().getSimpleName());
 	}
 	
 	/*
@@ -91,18 +100,20 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	 */
 	private void checkLayout(){
 		mMultiPane = false;
-		if( getResources().getConfiguration().isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_XLARGE) ){
-			mMultiPane = true;
-		}		
+		final int SCREENLAYOUT_SIZE_XLARGE = 4; // Not available until API 9.
+        mMultiPane = (getResources().getConfiguration().screenLayout & SCREENLAYOUT_SIZE_XLARGE) != 0;
 	}
 	
 	@Override
-	public void onConfigurationChanged(Configuration newConfig){
-		super.onConfigurationChanged(newConfig);
+	public void onConfigurationChanged(Configuration newConfig){		
 		initViews();
+		super.onConfigurationChanged(newConfig);
 	}
 	
 	
+	/**
+	 * @param fragmentClass
+	 */
 	@SuppressWarnings("rawtypes")
 	public void showDetails(Class fragmentClass){
 		if(mMultiPane){
@@ -146,11 +157,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			mCurrentDetailFragment = fragment;
 			ft.replace(R.id.detail_view, fragment, mCurrentDetailFragment.getClass().getSimpleName());
-			
-//			if(addToBackStack){
-//				ft.addToBackStack(null);
-//			}
-			
 			ft.commit();
 		} else { //TODO Error Handling
 			Intent intent = new Intent(this, SimpleFragmentActivity.class);

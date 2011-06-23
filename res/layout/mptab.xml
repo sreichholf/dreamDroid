@@ -2,21 +2,24 @@
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:orientation="vertical"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
     <TabHost 
     	android:id="@android:id/tabhost" 
-    	android:layout_width="match_parent" 
-    	android:layout_height="match_parent">
+    	android:layout_width="fill_parent" 
+    	android:layout_height="fill_parent">
         
-        <LinearLayout android:id="@+id/linearLayout1" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+        <LinearLayout android:id="@+id/linearLayout1" 
+        	android:layout_width="fill_parent" 
+        	android:layout_height="fill_parent" 
+        	android:orientation="vertical">
             <TabWidget 
-            	android:layout_width="match_parent" 
+            	android:layout_width="fill_parent" 
             	android:layout_height="wrap_content" 
             	android:id="@android:id/tabs" />
             <FrameLayout 
-            	android:layout_width="match_parent" 
-            	android:layout_height="match_parent" 
+            	android:layout_width="fill_parent" 
+            	android:layout_height="fill_parent" 
             	android:id="@android:id/tabcontent" />
         </LinearLayout>
     </TabHost>
