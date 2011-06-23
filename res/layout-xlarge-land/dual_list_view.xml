@@ -4,21 +4,21 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
     
+    <ListView 
+    	android:id="@+id/listView1" 
+    	android:layout_height="fill_parent" 
+    	android:layout_width="250dp"    	
+    	android:drawSelectorOnTop="false"/>
+    	
     <TextView
 		android:id="@+id/listView2Header"
 		android:layout_width="fill_parent"
 		android:layout_height="35dp"		
-		android:layout_marginLeft="240dp"
+		android:layout_marginLeft="250dp"
 		android:layout_weight="1"
+		android:layout_toRightOf="@id/listView2Header"
 		android:textSize="20dp"
 		android:textStyle="bold" />
-    
-    <ListView 
-    	android:id="@+id/listView1" 
-    	android:layout_height="fill_parent" 
-    	android:layout_width="250dp"
-    	android:layout_below="@id/listView2Header"
-    	android:drawSelectorOnTop="false"/>
     
 	<TextView
 		android:id="@+id/divider"

@@ -172,4 +172,8 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 		return super.onKeyUp(keyCode, event);
 	}
+	
+	public boolean isMultiPane(){
+		return mMultiPane;
+	}
 }

@@ -305,6 +305,11 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id){		
+		if(mCurrentListItem == position && mActivity.isMultiPane()){
+			//Don't reload what we already see
+			return;
+		}
+		
 		mCurrent = (int[]) l.getItemAtPosition(position);
 
 		//only mark the entry if it isn't a "dialog-only-item"
@@ -319,7 +324,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 				l.setItemChecked(position, true);		
 				v.setBackgroundColor(0xbb0000aa);
 			}
-		}
+		}		
 		onItemClicked(mCurrent[0]);
 	}
 	

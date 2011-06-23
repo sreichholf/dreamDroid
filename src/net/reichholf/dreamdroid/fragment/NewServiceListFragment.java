@@ -579,10 +579,10 @@ public class NewServiceListFragment extends AbstractHttpFragment {
 	public void onPrepareOptionsMenu(Menu menu) {
 		MenuItem overview = menu.getItem(2);
 
-		if (mNavReference.equals(SERVICE_REF_ROOT)) {
-			overview.setEnabled(false);
-		} else {
+		if (!mNavReference.equals(SERVICE_REF_ROOT) || mNavList.equals(mDetailList)) {
 			overview.setEnabled(true);
+		} else {
+			overview.setEnabled(false);
 		}
 
 		MenuItem reload = menu.getItem(1);
