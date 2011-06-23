@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -28,31 +29,52 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	private Fragment mFragment;
 	private ActivityCallbackHandler mCallBackHandler;
 		
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		if(savedInstanceState != null){
+			mFragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
+		}
+		initViews();
+	}
+	
+	private void initViews(){
 		setContentView(R.layout.simple_layout); 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		
-		Fragment f = null;
-		Class<Fragment> c = (Class<Fragment>) getIntent().getExtras().get("fragmentClass");
-		Bundle args = new Bundle();
-		try {
-			f = (Fragment) c.newInstance();
-			args.putAll(getIntent().getExtras());
-			f.setArguments(args);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(mFragment == null){
+			Fragment f = null;
+			@SuppressWarnings("unchecked")
+			Class<Fragment> c = (Class<Fragment>) getIntent().getExtras().get("fragmentClass");
+			Bundle args = new Bundle();
+			try {
+				f = (Fragment) c.newInstance();
+				args.putAll(getIntent().getExtras());
+				f.setArguments(args);
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			mFragment = f;
 		}
-		mFragment = f;
-		mCallBackHandler = (ActivityCallbackHandler) f;
-		ft.add(R.id.content, mFragment);
+		mCallBackHandler = (ActivityCallbackHandler) mFragment;
+		ft.replace(R.id.content, mFragment);
 		ft.commit();
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig){
+		initViews();
+		super.onConfigurationChanged(newConfig);		
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		getSupportFragmentManager().putFragment(outState, "fragment", mFragment);
+		super.onSaveInstanceState(outState);
 	}
 	
 	@SuppressWarnings("rawtypes")

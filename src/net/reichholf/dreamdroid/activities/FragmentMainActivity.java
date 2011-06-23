@@ -11,17 +11,15 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.TextView;
 
 /**
@@ -30,37 +28,78 @@ import android.widget.TextView;
  */
 public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler {	
 	private boolean mMultiPane;
+	private Fragment mCurrentDetailFragment;
 	
 	private FragmentManager mFragmentManager;
 	private NavigationFragment mNavigationFragment;
 	private ActivityCallbackHandler mCallBackHandler;
 	
+	
 	private boolean isNavigationDialog = false;
 	
+	@Override
 	public void onCreate(Bundle savedInstanceState){		
 		super.onCreate(savedInstanceState);	
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		checkLayout();
 		
-		mFragmentManager = getSupportFragmentManager();		
-		FragmentTransaction ft = mFragmentManager.beginTransaction();
+		mFragmentManager = getSupportFragmentManager();				
 		
 		mNavigationFragment = new NavigationFragment();
 		mNavigationFragment.setHighlightCurrent(mMultiPane);
-		
-		setContentView(R.layout.dualpane);
-		ft.replace(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
-		ft.commit();
+				
+		if(savedInstanceState != null){
+			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
+		}
+				
+		initViews();
 	}
 	
+	private void initViews(){
+		setContentView(R.layout.dualpane);
+		FragmentTransaction ft = mFragmentManager.beginTransaction();
+		ft.replace(R.id.navigation_view, mNavigationFragment, mNavigationFragment.getClass().getSimpleName());
+		ft.commit();
+		
+		if(mCurrentDetailFragment != null){
+			ft.replace(R.id.detail_view, mCurrentDetailFragment);
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
+	 * onSaveInstanceState(android.os.Bundle)
+	 */
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		if(mCurrentDetailFragment != null){
+			mFragmentManager.putFragment(outState, "current", mCurrentDetailFragment);
+		}
+		super.onSaveInstanceState(outState);
+	}
+	
+	@Override
+	public void onResume(){
+		super.onResume();
+	}
+	
+	
+	/**
+	 * Set mMultiPane to true if screen size is at least SCREENLAYOUT_SIZE_XLARGE, else false
+	 */
 	private void checkLayout(){
 		mMultiPane = false;
-		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay(); 
-		int width = display.getWidth();
-		int height = display.getHeight();
-		if(height >= 1024 || width >= 1024){
+		if( getResources().getConfiguration().isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_XLARGE) ){
 			mMultiPane = true;
 		}		
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig){
+		super.onConfigurationChanged(newConfig);
+		initViews();
 	}
 	
 	
@@ -105,11 +144,12 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		if(mMultiPane){			
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-			ft.replace(R.id.detail_view, fragment, fragment.getClass().getSimpleName());
+			mCurrentDetailFragment = fragment;
+			ft.replace(R.id.detail_view, fragment, mCurrentDetailFragment.getClass().getSimpleName());
 			
-			if(addToBackStack){
+//			if(addToBackStack){
 //				ft.addToBackStack(null);
-			}
+//			}
 			
 			ft.commit();
 		} else { //TODO Error Handling

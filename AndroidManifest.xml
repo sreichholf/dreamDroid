@@ -77,8 +77,8 @@
 		<activity android:name=".activities.MediaplayerFilebrowserActivity"></activity>
 		<activity android:name=".activities.MediaplayerNavigationActivity"></activity>
 		<activity android:name=".activities.MediaplayerPlaylistActivity"></activity>
-		
-		<activity android:name=".activities.FragmentMainActivity">
+		<activity android:name=".activities.SimpleFragmentActivity" android:configChanges="orientation|keyboardHidden"></activity>
+		<activity android:name=".activities.FragmentMainActivity" android:configChanges="orientation|keyboardHidden">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />	
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -87,7 +87,7 @@
 		<meta-data 
 			android:name="android.app.default_searchable"
 			android:value=".activities.SearchEpgActivity" ></meta-data>
-		<activity android:name=".activities.SimpleFragmentActivity"></activity>
+		
 		
 		
 	</application><uses-library></uses-library>

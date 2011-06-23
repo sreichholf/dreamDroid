@@ -17,7 +17,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.ServiceListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.helpers.IdHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
@@ -60,22 +60,6 @@ import android.widget.TimePicker;
  * 
  */
 public class TimerEditFragment extends AbstractHttpFragment {
-	public static final int ITEM_SAVE = 0;
-	public static final int ITEM_CANCEL = 1;
-	public static final int ITEM_PICK_SERVICE = 2;
-	public static final int ITEM_PICK_START = 3;
-	public static final int ITEM_PICK_END = 4;
-	public static final int ITEM_PICK_REPEATED = 5;
-	public static final int ITEM_PICK_TAGS = 6;
-
-	public static final int PICK_SERVICE_REQUEST = 0;
-
-//	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 1;
-//	public static final int DIALOG_TIMER_PICK_END_ID = 2;
-//	public static final int DIALOG_TIMER_PICK_REPEATED_ID = 3;
-//	public static final int DIALOG_TIMER_PICK_TAGS_ID = 4;
-//	public static final int DIALOG_TIMER_LOADING_ID = 5;
-
 	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
 
 	private boolean[] mCheckedDays = { false, false, false, false, false, false, false };
@@ -196,13 +180,13 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mCancel = (Button) view.findViewById(R.id.ButtonCancel);
 
 		// onClickListeners
-		registerOnClickListener(mSave, ITEM_SAVE);
-		registerOnClickListener(mCancel, ITEM_CANCEL);
-		registerOnClickListener(mService, ITEM_PICK_SERVICE);
-		registerOnClickListener(mStart, ITEM_PICK_START);
-		registerOnClickListener(mEnd, ITEM_PICK_END);
-		registerOnClickListener(mRepeatings, ITEM_PICK_REPEATED);
-		registerOnClickListener(mTags, ITEM_PICK_TAGS);
+		registerOnClickListener(mSave, Statics.ITEM_SAVE);
+		registerOnClickListener(mCancel, Statics.ITEM_CANCEL);
+		registerOnClickListener(mService, Statics.ITEM_PICK_SERVICE);
+		registerOnClickListener(mStart, Statics.ITEM_PICK_START);
+		registerOnClickListener(mEnd, Statics.ITEM_PICK_END);
+		registerOnClickListener(mRepeatings, Statics.ITEM_PICK_REPEATED);
+		registerOnClickListener(mTags, Statics.ITEM_PICK_TAGS);
 
 		mAfterevent.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
@@ -273,7 +257,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	@SuppressWarnings("unchecked")
 //	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == PICK_SERVICE_REQUEST) {
+		if (requestCode == Statics.REQUEST_PICK_SERVICE) {
 			if (resultCode == Activity.RESULT_OK) {
 				ExtendedHashMap map = new ExtendedHashMap();
 				map.putAll((HashMap<String, Object>) data.getSerializableExtra(sData));
@@ -334,7 +318,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 		switch (id) {
 
-		case (IdHelper.DIALOG_TIMER_PICK_BEGIN_ID):
+		case (Statics.DIALOG_TIMER_PICK_BEGIN_ID):
 			cal = getCalendarFromTimestamp(mTimer.getString("begin"));
 
 			dialog = new Dialog(getActivity());
@@ -355,7 +339,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			dialog.show();
 			break;
 
-		case (IdHelper.DIALOG_TIMER_PICK_END_ID):
+		case (Statics.DIALOG_TIMER_PICK_END_ID):
 			cal = getCalendarFromTimestamp(mTimer.getString("end"));
 
 			dialog = new Dialog(getActivity());
@@ -376,7 +360,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			dialog.show();
 			break;
 
-		case (IdHelper.DIALOG_TIMER_PICK_REPEATED_ID):
+		case (Statics.DIALOG_TIMER_PICK_REPEATED_ID):
 			CharSequence[] days = getResources().getTextArray(R.array.weekdays);
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(getText(R.string.choose_days));
@@ -396,7 +380,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 			break;
 
-		case (IdHelper.DIALOG_TIMER_PICK_TAGS_ID):
+		case (Statics.DIALOG_TIMER_PICK_TAGS_ID):
 			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
 			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
 
@@ -456,7 +440,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 						mTags.setText(tags);
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_TAGS_ID);
+					getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
 				}
 
 			});
@@ -467,7 +451,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 					mSelectedTags.clear();
 					mSelectedTags.addAll(mOldTags);
 					dialog.dismiss();
-					getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_TAGS_ID);
+					getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
 				}
 
 			});
@@ -499,32 +483,32 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 */
 	protected boolean onItemClicked(int id) {
 		switch (id) {
-		case ITEM_SAVE:
+		case Statics.ITEM_SAVE:
 			saveTimer();
 			return true;
 
-		case ITEM_CANCEL:
+		case Statics.ITEM_CANCEL:
 			finish();
 			return true;
 
-		case ITEM_PICK_SERVICE:
+		case Statics.ITEM_PICK_SERVICE:
 			pickService();
 			return true;
 
-		case ITEM_PICK_START:
-			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_BEGIN_ID);
+		case Statics.ITEM_PICK_START:
+			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
 			return true;
 
-		case ITEM_PICK_END:
-			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_END_ID);
+		case Statics.ITEM_PICK_END:
+			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 			return true;
 
-		case ITEM_PICK_REPEATED:
-			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_REPEATED_ID);
+		case Statics.ITEM_PICK_REPEATED:
+			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_REPEATED_ID);
 			return true;
 
-		case ITEM_PICK_TAGS:
-			getActivity().showDialog(IdHelper.DIALOG_TIMER_PICK_TAGS_ID);
+		case Statics.ITEM_PICK_TAGS:
+			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
 		default:
 			return super.onItemClicked(id);
 		}
@@ -543,7 +527,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		intent.putExtra(sData, map);
 		intent.setAction(Intent.ACTION_PICK);
 
-		startActivityForResult(intent, PICK_SERVICE_REQUEST);
+		startActivityForResult(intent, Statics.REQUEST_PICK_SERVICE);
 	}
 
 	/**
@@ -834,7 +818,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private void onTimerBeginSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_BEGIN, seconds);
-		getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_BEGIN_ID);
+		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
 		reload();
 	}
 
@@ -847,7 +831,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private void onTimerEndSet(Calendar cal) {
 		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_END, seconds);
-		getActivity().removeDialog(IdHelper.DIALOG_TIMER_PICK_END_ID);
+		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 		reload();
 	}
 	

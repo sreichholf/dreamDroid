@@ -10,7 +10,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.SearchEpgActivity;
 import net.reichholf.dreamdroid.activities.TimerEditActivity;
-import net.reichholf.dreamdroid.helpers.IdHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
@@ -52,7 +52,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		if(mCurrentItem != null){
 		
 			switch (id) {
-			case IdHelper.DIALOG_EPG_ITEM_ID:
+			case Statics.DIALOG_EPG_ITEM_ID:
 	
 				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);

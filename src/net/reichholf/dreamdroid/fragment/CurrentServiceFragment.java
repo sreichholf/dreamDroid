@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.helpers.IdHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -48,11 +48,6 @@ import android.widget.TextView;
  * 
  */
 public class CurrentServiceFragment extends AbstractHttpFragment {
-	public static final int MENU_RELOAD = 0;
-	public static final int ITEM_NOW = 0;
-	public static final int ITEM_NEXT = 1;
-	public static final int ITEM_STREAM = 2;	
-
 	private ExtendedHashMap mCurrent;
 	private GetCurrentServiceTask mCurrentServiceTask;
 
@@ -177,9 +172,9 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		mNowLayout = (LinearLayout) view.findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) view.findViewById(R.id.layout_next);
 		
-		registerOnClickListener(mNowLayout, ITEM_NOW);
-		registerOnClickListener(mNextLayout, ITEM_NEXT);
-		registerOnClickListener(mStream, ITEM_STREAM);
+		registerOnClickListener(mNowLayout, Statics.ITEM_NOW);
+		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
+		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
 		reload();
 		
@@ -194,7 +189,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 	}
 
 	/*
@@ -205,7 +200,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case (MENU_RELOAD):			
+		case (Statics.ITEM_RELOAD):			
 			reload();
 			return true;
 		default:
@@ -241,13 +236,13 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		
 		if(mCurrentServiceReady){
 			switch (id) {
-			case ITEM_NOW:
+			case Statics.ITEM_NOW:
 				showEpgDetail(mNow);
 				return true;
-			case ITEM_NEXT:
+			case Statics.ITEM_NEXT:
 				showEpgDetail(mNext);
 				return true;
-			case ITEM_STREAM:
+			case Statics.ITEM_STREAM:
 				ref = mService.getString(Service.KEY_REFERENCE);
 				if(!"".equals(ref) && ref != null){
 					streamService(ref);
@@ -267,8 +262,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	private void showEpgDetail(ExtendedHashMap event){
 		if(event != null){
 			mCurrentItem = event;
-			getActivity().removeDialog(IdHelper.DIALOG_EPG_ITEM_ID);
-			getActivity().showDialog(IdHelper.DIALOG_EPG_ITEM_ID);
+			getActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+			getActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 		}
 	}
 	
@@ -313,7 +308,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		final Dialog dialog;
 
 		switch (id) {
-		case IdHelper.DIALOG_EPG_ITEM_ID:
+		case Statics.DIALOG_EPG_ITEM_ID:
 			if(mCurrentItem != null){
 				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);

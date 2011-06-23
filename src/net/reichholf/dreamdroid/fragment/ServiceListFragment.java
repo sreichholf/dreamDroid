@@ -13,7 +13,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.activities.ServiceEpgListActivity;
-import net.reichholf.dreamdroid.helpers.IdHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -62,37 +62,30 @@ import android.widget.TextView;
  * 
  */
 public class ServiceListFragment extends AbstractHttpFragment {
-	/**
-	 * 
-	 */
+	
 	public static final String SERVICE_REF_ROOT = "root";
-	public ListView mNavList;
-	public ListView mDetailList;
-	public TextView mDetailHeader;
+	
+	private boolean mPickMode;
+	private boolean mReload;
+	
+	private ListView mNavList;
+	private ListView mDetailList;
+	private TextView mDetailHeader;
 
-	private String mBaseTitle;
-
+	private String mBaseTitle;	
 	private String mNavReference;
 	private String mNavName;
-	
 	private String mDetailReference;
 	private String mDetailName;
 	
-//	private boolean mIsBouquetList;
-
-	private ArrayList<ExtendedHashMap> mNavHistory;
-	private boolean mPickMode;
-
+	private ArrayList<ExtendedHashMap> mHistory;
 	private GetServiceListTask mListTask;
 	private ArrayList<GetServiceListTask> mListTasks;
+	private Bundle mExtras;
+	private ExtendedHashMap mData;
+	private ArrayList<ExtendedHashMap> mNavItems;
+	private ArrayList<ExtendedHashMap> mDetailItems;	
 	
-//	private ExtendedHashMap mCurrentItem;
-	
-	protected Bundle mExtras;
-	protected ExtendedHashMap mData;
-	protected ArrayList<ExtendedHashMap> mNavMapList;
-	protected ArrayList<ExtendedHashMap> mDetailMapList;
-
 	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		protected ArrayList<ExtendedHashMap> mTaskList;
 
@@ -262,9 +255,11 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mReload = true;
+		
 		Bundle args = getArguments();
 		String mode = null;
-
+		
 		if (args != null) {
 			mode = args.getString("action");
 		}
@@ -274,31 +269,43 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		} else {
 			mPickMode = false;
 		}
-		
-		mDetailReference = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, SERVICE_REF_ROOT);
-		mDetailName = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
-				(String) getText(R.string.bouquet_overview));
-
-//		mDetailReference = getDataForKey(Event.KEY_SERVICE_REFERENCE, null);
-//		mDetailName = getDataForKey(Event.KEY_SERVICE_NAME, null);
 
 		if (savedInstanceState != null) {
-			mNavHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");			
+			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
+			
+			mNavItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("navitems");
+			mNavName = savedInstanceState.getString("navname");
+			mNavReference = savedInstanceState.getString("navreference");
+						
+			mDetailItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("detailitems");
+			mDetailName = savedInstanceState.getString("detailname");
+			mDetailReference = savedInstanceState.getString("detailreference");
+			
+			mReload = false;
 		} else {
-			mNavHistory = new ArrayList<ExtendedHashMap>();
+			mHistory = new ArrayList<ExtendedHashMap>();
 			if(!SERVICE_REF_ROOT.equals(mNavReference)){
 				ExtendedHashMap map = new ExtendedHashMap();
 				map.put(Event.KEY_SERVICE_REFERENCE, mNavReference);
 				map.put(Event.KEY_SERVICE_NAME, mNavName);
 	
-				mNavHistory.add(map);
+				mHistory.add(map);
+				
+				mExtras = getActivity().getIntent().getExtras();
+				mNavItems = new ArrayList<ExtendedHashMap>();
+				mDetailItems = new ArrayList<ExtendedHashMap>();				
 			}
 		}
 		
-		mExtras = getActivity().getIntent().getExtras();
-		mNavMapList = new ArrayList<ExtendedHashMap>();
-		mDetailMapList = new ArrayList<ExtendedHashMap>();
 		mListTasks = new ArrayList<GetServiceListTask>();
+		
+		if(mDetailReference == null){
+			mDetailReference = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, SERVICE_REF_ROOT);
+			mDetailName = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
+				(String) getText(R.string.bouquet_overview));
+		}
+		
+		
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -326,7 +333,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		//So we just use the only one available and the rest runs as normal.
 		if(mDetailList == null){
 			mDetailList = mNavList;
-			mDetailMapList = mNavMapList;
+			mDetailItems = mNavItems;
 		}
 		mDetailHeader = (TextView) v.findViewById(R.id.listView2Header);
 		if(mDetailHeader == null){
@@ -414,9 +421,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				return onListItemLongClick((ListView) a, v, position, id);
 			}
 		});
-
-		loadNavRoot();
-		reloadDetail();
+		if(mReload){
+			loadNavRoot();
+			reloadDetail();
+		} else {
+			mDetailHeader.setText(mDetailName);
+		}
 	}
 
 	/*
@@ -426,9 +436,29 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 * onSaveInstanceState(android.os.Bundle)
 	 */
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(Bundle outState) {		
+		//Preserve Liststuff
+		outState.putSerializable("navitems", mNavItems);
+		outState.putSerializable("detailitems", mDetailItems);		
+		outState.putString("navname", mNavName);
+		outState.putString("navreference", mNavReference);
+		outState.putString("detailname", mDetailName);
+		outState.putString("detailreference", mDetailReference);
+		outState.putSerializable("history", mHistory);
+		
+		for(GetServiceListTask task : mListTasks){
+			if(task != null){
+				task.cancel(true);
+				task = null;
+			}
+		}
+		
 		super.onSaveInstanceState(outState);
-		outState.putSerializable("history", mNavHistory);
+	}
+	
+	@Override
+	public void onResume(){
+		super.onResume();
 	}
 
 	/*
@@ -462,12 +492,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private void setAdapter() {
 		SimpleAdapter adapter;
 		if(!mNavList.equals(mDetailList)){
-			adapter = new SimpleAdapter(getActivity(), mNavMapList, android.R.layout.simple_list_item_1,
+			adapter = new SimpleAdapter(getActivity(), mNavItems, android.R.layout.simple_list_item_1,
 					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
 			mNavList.setAdapter(adapter);
 		}
 		
-		adapter = new SimpleAdapter(getActivity(), mDetailMapList, R.layout.service_list_item, new String[] {
+		adapter = new SimpleAdapter(getActivity(), mDetailItems, R.layout.service_list_item, new String[] {
 				Event.KEY_SERVICE_NAME, Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_TIME_READABLE,
 				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.service_name, R.id.event_title, R.id.event_start,
 				R.id.event_duration });
@@ -501,12 +531,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		// level
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			if (!SERVICE_REF_ROOT.equals(mNavReference)) {
-				int idx = mNavHistory.size() - 1;
+				int idx = mHistory.size() - 1;
 				if (idx >= 0) {
 					ExtendedHashMap map = null;
 
 					try {
-						map = (mNavHistory.get(idx));
+						map = (mHistory.get(idx));
 					} catch (ClassCastException ex) {
 						return super.onKeyDown(keyCode, event);
 					}
@@ -521,7 +551,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 							if (!isListTaskRunning()) {
 								mNavReference = oldref;
 								mNavName = oldname;
-								mNavHistory.remove(idx);
+								mHistory.remove(idx);
 
 								reloadNav();
 
@@ -569,9 +599,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, IdHelper.MENU_SET_AS_DEFAULT, 0, getText(R.string.set_default)).setIcon(android.R.drawable.ic_menu_set_as);
-		menu.add(0, IdHelper.MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, IdHelper.MENU_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(R.drawable.ic_menu_list_overview);
+		menu.add(0, Statics.ITEM_SET_DEFAULT, 0, getText(R.string.set_default)).setIcon(android.R.drawable.ic_menu_set_as);
+		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, Statics.ITEM_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(R.drawable.ic_menu_list_overview);
 	}
 
 	/*
@@ -607,12 +637,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	@Override
 	protected boolean onItemClicked(int id) {
 		switch (id) {
-		case IdHelper.MENU_OVERVIEW:
+		case Statics.ITEM_OVERVIEW:
 			mNavReference = SERVICE_REF_ROOT;
 			mNavName = (String) getText(R.string.bouquet_overview);
 			reloadNav();
 			return true;
-		case IdHelper.MENU_SET_AS_DEFAULT:
+		case Statics.ITEM_SET_DEFAULT:
 			if(mDetailReference != null){
 				Editor editor = DreamDroid.SP.edit();			
 				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mDetailReference);
@@ -627,7 +657,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
 			return true;
-		case IdHelper.MENU_RELOAD:
+		case Statics.ITEM_RELOAD:
 			reloadNav();
 			reloadDetail();
 			return true;
@@ -682,7 +712,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 					map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
 					map.put(Event.KEY_SERVICE_NAME, String.valueOf(nam));				
 
-					mNavHistory.add(map);
+					mHistory.add(map);
 					mNavReference = ref;
 					mNavName = nam;	
 					reloadNav();
@@ -718,8 +748,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 						public void onClick(DialogInterface dialog, int which) {
 							switch (which) {
 							case 0:
-								getActivity().removeDialog(IdHelper.DIALOG_EPG_ITEM_ID);
-								getActivity().showDialog(IdHelper.DIALOG_EPG_ITEM_ID);
+								getActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+								getActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 								break;
 
 							case 1:
@@ -829,7 +859,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		String title = getText(R.string.app_name) + "::" + getText(R.string.services);
 		getActivity().setTitle(title);
 
-		mNavMapList.clear();
+		mNavItems.clear();
 
 		String[] servicelist = getResources().getStringArray(R.array.servicelist);
 		String[] servicerefs = getResources().getStringArray(R.array.servicerefs);
@@ -838,7 +868,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			ExtendedHashMap map = new ExtendedHashMap();
 			map.put(Event.KEY_SERVICE_NAME, servicelist[i]);
 			map.put(Event.KEY_SERVICE_REFERENCE, servicerefs[i]);
-			mNavMapList.add(map);
+			mNavItems.add(map);
 		}
 		
 		mNavReference = SERVICE_REF_ROOT;
@@ -855,13 +885,13 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		finishProgress(title);
 
 		if(isBouquetList){
-			mNavMapList.clear();
-			mNavMapList.addAll(list);
+			mNavItems.clear();
+			mNavItems.addAll(list);
 			((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();			
 		} else {
 			mDetailList.setVisibility(View.VISIBLE);
-			mDetailMapList.clear();
-			mDetailMapList.addAll(list);
+			mDetailItems.clear();
+			mDetailItems.addAll(list);
 			((SimpleAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
 		nextListTaskPlease();

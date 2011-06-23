@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -42,11 +43,6 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	private Cursor mCursor;
 	private Activity mActivity;
 	private MultiPaneHandler mMultiPaneHandler;
-
-	public static final int ITEM_ADD_PROFILE = 0;
-	public static final int DIALOG_PROFILE_ID = 0;
-	public static final int DIALOG_PROFILE_CONFIRM_DELETE_ID = 1;
-	public static final int EDIT_PROFILE_REQUEST = 1;
 
 	/*
 	 * (non-Javadoc)
@@ -94,7 +90,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile = new Profile(mCursor);
-		mActivity.showDialog(DIALOG_PROFILE_ID);
+		mActivity.showDialog(Statics.DIALOG_PROFILE_ID);
 		return true;
 	}
 
@@ -106,7 +102,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	public Dialog onCreateDialog(int id) {
 		Dialog dialog;
 		switch (id) {
-		case (DIALOG_PROFILE_ID):
+		case (Statics.DIALOG_PROFILE_ID):
 			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(mActivity);
@@ -120,7 +116,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 						break;
 
 					case 1:
-						mActivity.showDialog(DIALOG_PROFILE_CONFIRM_DELETE_ID);
+						mActivity.showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
 						break;
 
 					default:
@@ -132,7 +128,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 			dialog = adBuilder.create();
 			break;
 
-		case (DIALOG_PROFILE_CONFIRM_DELETE_ID):
+		case (Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID):
 			AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
 
 			builder.setTitle(mProfile.getProfile()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
@@ -170,7 +166,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == EDIT_PROFILE_REQUEST) {
+		if (requestCode == Statics.REQUEST_EDIT_PROFILE) {
 			mActivity.setResult(resultCode);
 			if (resultCode == Activity.RESULT_OK) {
 				mCursor.requery();
@@ -190,7 +186,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, Statics.ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
 	}
 
 	/*
@@ -210,7 +206,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	 */
 	protected boolean onItemClicked(int id) {
 		switch (id) {
-		case (ITEM_ADD_PROFILE):
+		case (Statics.ITEM_ADD_PROFILE):
 			createProfile();
 			return true;
 		default:

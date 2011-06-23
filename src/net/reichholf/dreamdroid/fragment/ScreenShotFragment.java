@@ -15,6 +15,7 @@ import java.util.GregorianCalendar;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 
 import org.apache.http.NameValuePair;
@@ -49,9 +50,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	public static final int TYPE_ALL = 2;
 	public static final int FORMAT_JPG = 0;
 	public static final int FORMAT_PNG = 1;
-
-	public static final int ITEM_RELOAD = 0;
-	public static final int ITEM_SAVE = 1;
 
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_FORMAT = "format";
@@ -171,8 +169,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		menu.add(0, ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, ITEM_SAVE, 0, getText(R.string.save)).setIcon(android.R.drawable.ic_menu_save);
+		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, Statics.ITEM_SAVE, 0, getText(R.string.save)).setIcon(android.R.drawable.ic_menu_save);
 	}
 
 	/*
@@ -183,10 +181,10 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
-		case ITEM_RELOAD:
+		case Statics.ITEM_RELOAD:
 			reload();
 			break;
-		case ITEM_SAVE:
+		case Statics.ITEM_SAVE:
 			saveToFile();
 		}
 		

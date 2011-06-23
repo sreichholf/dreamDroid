@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.activities.ServiceEpgListActivity;
-import net.reichholf.dreamdroid.helpers.IdHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -316,9 +316,9 @@ public class OldServiceListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, IdHelper.MENU_SET_AS_DEFAULT, 0, getText(R.string.set_default)).setIcon(android.R.drawable.ic_menu_set_as);
-		menu.add(0, IdHelper.MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, IdHelper.MENU_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(R.drawable.ic_menu_list_overview);
+		menu.add(0, Statics.ITEM_SET_DEFAULT, 0, getText(R.string.set_default)).setIcon(android.R.drawable.ic_menu_set_as);
+		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, Statics.ITEM_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(R.drawable.ic_menu_list_overview);
 	}
 
 	/*
@@ -350,12 +350,12 @@ public class OldServiceListFragment extends AbstractHttpEventListFragment {
 	@Override
 	protected boolean onItemClicked(int id) {
 		switch (id) {
-		case IdHelper.MENU_OVERVIEW:
+		case Statics.ITEM_OVERVIEW:
 			mReference = "default";
 			mName = (String) getText(R.string.bouquet_overview);
 			reload();
 			return true;
-		case IdHelper.MENU_SET_AS_DEFAULT:
+		case Statics.ITEM_SET_DEFAULT:
 			Editor editor = DreamDroid.SP.edit();
 			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mReference);
 			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mName);
@@ -367,7 +367,7 @@ public class OldServiceListFragment extends AbstractHttpEventListFragment {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
 			return true;
-		case IdHelper.MENU_RELOAD:
+		case Statics.ITEM_RELOAD:
 			reload();
 			return true;
 		default:
@@ -459,8 +459,8 @@ public class OldServiceListFragment extends AbstractHttpEventListFragment {
 						public void onClick(DialogInterface dialog, int which) {
 							switch (which) {
 							case 0:
-								getActivity().removeDialog(IdHelper.DIALOG_EPG_ITEM_ID);
-								getActivity().showDialog(IdHelper.DIALOG_EPG_ITEM_ID);
+								getActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+								getActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 								break;
 
 							case 1:

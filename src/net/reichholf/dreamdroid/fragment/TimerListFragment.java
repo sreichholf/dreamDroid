@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
@@ -43,11 +44,6 @@ import android.widget.ListView;
  * 
  */
 public class TimerListFragment extends AbstractHttpListFragment {
-	public static final int CHANGE_TIMER_REQUEST = 0;
-
-	public static final int MENU_RELOAD = 0;
-	public static final int MENU_NEW_TIMER = 1;
-	public static final int MENU_CLEANUP = 2;
 
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
@@ -136,7 +132,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == CHANGE_TIMER_REQUEST) {
+		if (requestCode == Statics.REQUEST_CHANGE_TIMER) {
 			if (resultCode == Activity.RESULT_OK) {
 				reload();
 			}
@@ -151,9 +147,9 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, MENU_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(android.R.drawable.ic_menu_add);
-		menu.add(0, MENU_CLEANUP, 0, getText(R.string.cleanup)).setIcon(android.R.drawable.ic_menu_manage);
+		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, Statics.ITEM_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, Statics.ITEM_CLEANUP, 0, getText(R.string.cleanup)).setIcon(android.R.drawable.ic_menu_manage);
 	}
 
 	/*
@@ -164,14 +160,14 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case (MENU_RELOAD):
+		case (Statics.ITEM_RELOAD):
 			reload();
 			return true;
-		case (MENU_NEW_TIMER):
+		case (Statics.ITEM_NEW_TIMER):
 			mTimer = Timer.getInitialTimer();
 			editTimer(mTimer, true);
 			return true;
-		case (MENU_CLEANUP):
+		case (Statics.ITEM_CLEANUP):
 			cleanupTimerList();
 			return true;
 		default:

@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
@@ -43,7 +44,6 @@ import android.widget.Button;
  * 
  */
 public class VirtualRemoteFragment extends AbstractHttpFragment {
-	public static final int MENU_LAYOUT = 0;
 
 	private Vibrator mVibrator;
 
@@ -136,13 +136,13 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, MENU_LAYOUT, 0, getText(R.string.quickzap)).setIcon(
+		menu.add(0, Statics.ITEM_LAYOUT, 0, getText(R.string.quickzap)).setIcon(
 				android.R.drawable.ic_menu_always_landscape_portrait);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(MENU_LAYOUT).setTitle(mQuickZap ? R.string.standard : R.string.quickzap);
+		menu.findItem(Statics.ITEM_LAYOUT).setTitle(mQuickZap ? R.string.standard : R.string.quickzap);
 	}
 
 	/*
@@ -153,7 +153,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case MENU_LAYOUT:
+		case Statics.ITEM_LAYOUT:
 			setLayout(!mQuickZap);
 			return true;
 		default:

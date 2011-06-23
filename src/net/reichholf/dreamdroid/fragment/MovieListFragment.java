@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.helpers.IdHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -58,10 +58,6 @@ import android.widget.AdapterView.OnItemLongClickListener;
  */
 @SuppressWarnings("unused")
 public class MovieListFragment extends AbstractHttpListFragment {
-	public static final int MENU_LOCATIONS = 0;
-	public static final int MENU_TAGS = 1;
-	public static final int MENU_RELOAD = 2;
-
 	private String mCurrentLocation;
 
 	private boolean mTagsChanged;
@@ -175,9 +171,9 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 
-		menu.add(0, MENU_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, MENU_LOCATIONS, 1, getText(R.string.locations)).setIcon(R.drawable.ic_menu_locations);
-		menu.add(0, MENU_TAGS, 1, getText(R.string.tags)).setIcon(R.drawable.ic_menu_tags);
+		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		menu.add(0, Statics.ITEM_LOCATIONS, 1, getText(R.string.locations)).setIcon(R.drawable.ic_menu_locations);
+		menu.add(0, Statics.ITEM_TAGS, 1, getText(R.string.tags)).setIcon(R.drawable.ic_menu_tags);
 	}
 
 	/**
@@ -187,14 +183,14 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 */
 	protected boolean onItemClicked(int id) {
 		switch (id) {
-		case MENU_RELOAD:
+		case Statics.ITEM_RELOAD:
 			reload();
 			return true;
-		case MENU_LOCATIONS:
-			getActivity().showDialog(IdHelper.DIALOG_PICK_LOCATION_ID);
+		case Statics.ITEM_LOCATIONS:
+			getActivity().showDialog(Statics.DIALOG_PICK_LOCATION_ID);
 			return true;
-		case MENU_TAGS:
-			getActivity().showDialog(IdHelper.DIALOG_PICK_TAGS_ID);
+		case Statics.ITEM_TAGS:
+			getActivity().showDialog(Statics.DIALOG_PICK_TAGS_ID);
 			return true;
 		default:
 			return super.onItemClicked(id);
@@ -212,7 +208,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		AlertDialog.Builder builder;
 
 		switch (id) {
-		case (IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID):
+		case (Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID):
 			builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(mMovie.getString(Movie.KEY_TITLE)).setMessage(getText(R.string.delete_confirm))
 					.setCancelable(false)
@@ -224,13 +220,13 @@ public class MovieListFragment extends AbstractHttpListFragment {
 					}).setNegativeButton(getText(android.R.string.no), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							dialog.dismiss();
-							getActivity().removeDialog(IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+							getActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						}
 					});
 			dialog = builder.create();
 			break;
 
-		case (IdHelper.DIALOG_PICK_LOCATION_ID):
+		case (Statics.DIALOG_PICK_LOCATION_ID):
 			CharSequence[] locations = new CharSequence[DreamDroid.LOCATIONS.size()];
 
 			int selectedIndex = 0;
@@ -255,14 +251,14 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						reload();
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(IdHelper.DIALOG_PICK_LOCATION_ID);
+					getActivity().removeDialog(Statics.DIALOG_PICK_LOCATION_ID);
 				}
 			});
 
 			dialog = builder.create();
 			break;
 
-		case (IdHelper.DIALOG_PICK_TAGS_ID):
+		case (Statics.DIALOG_PICK_TAGS_ID):
 			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
 			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
 
@@ -319,7 +315,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						reload();
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(IdHelper.DIALOG_PICK_TAGS_ID);
+					getActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
 				}
 
 			});
@@ -330,7 +326,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 					mSelectedTags.clear();
 					mSelectedTags.addAll(mOldTags);
 					dialog.dismiss();
-					getActivity().removeDialog(IdHelper.DIALOG_PICK_TAGS_ID);
+					getActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
 				}
 
 			});
@@ -382,7 +378,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 						break;
 					case 1:
-						getActivity().showDialog(IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+						getActivity().showDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						break;
 					case 2:
 						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -414,7 +410,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 * Delete the selected movie
 	 */
 	private void deleteMovie() {
-		getActivity().removeDialog(IdHelper.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+		getActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();

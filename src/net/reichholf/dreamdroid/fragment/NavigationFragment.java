@@ -15,7 +15,7 @@ import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.MediaplayerNavigationActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.helpers.IdHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
@@ -57,46 +57,23 @@ import android.widget.TextView;
  * 
  */
 public class NavigationFragment extends AbstractHttpListFragment implements ActivityCallbackHandler{
-	public static final int EDIT_PROFILES_REQUEST = 0;
-
-	public static final int ITEM_TIMER = 0;
-	public static final int ITEM_MOVIES = 1;
-	public static final int ITEM_SERVICES = 2;
-	public static final int ITEM_INFO = 3;
-	public static final int ITEM_MESSAGE = 4;
-	public static final int ITEM_REMOTE = 5;
-	public static final int ITEM_SETTINGS = 6;
-	public static final int ITEM_CURRENT = 8;
-	public static final int ITEM_EPG_SEARCH = 9;
-	public static final int ITEM_SCREENSHOT = 10;
-	public static final int ITEM_TOGGLE_STANDBY = 11;
-	public static final int ITEM_RESTART_GUI = 12;
-	public static final int ITEM_REBOOT = 13;
-	public static final int ITEM_SHUTDOWN = 14;
-	public static final int ITEM_POWERSTATE_DIALOG = 15;
-	public static final int ITEM_ABOUT = 16;
-	public static final int ITEM_CHECK_CONN = 17;
-	public static final int ITEM_SLEEPTIMER = 18;
-	public static final int ITEM_MEDIA_PLAYER = 19;
-	public static final int ITEM_PROFILES = 20;
-	
 	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog  (1=yes, 0=no) ] 
 	public static final int[][] MENU_ITEMS = {
-		{ ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
-		{ ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0},
-		{ ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0},
-		{ ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0},
-		{ ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0},
-		{ ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
-		{ ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music, 1, 0 },
-		{ ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1: 0 ,1 },
-		{ ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
-		{ ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
-		{ ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1 , 1 },
-		{ ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
-		{ ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 0 },
-//		{ ITEM_SETTINGS, R.string.settings, android.R.drawable.ic_menu_edit, 1, 0 },
-		{ ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
+		{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
+		{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0},
+		{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0},
+		{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0},
+		{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0},
+		{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
+		{ Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music, 1, 0 },
+		{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1: 0 ,1 },
+		{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
+		{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
+		{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1 , 1 },
+		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
+		{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 0 },
+//		{ IdHelper.ITEM_SETTINGS, R.string.settings, android.R.drawable.ic_menu_edit, 1, 0 },
+		{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
 	};
 	
 	private int[] mCurrent;
@@ -214,7 +191,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(IdHelper.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			mActivity.showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 		}
 
 		/*
@@ -223,7 +200,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			mActivity.removeDialog(IdHelper.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			mActivity.removeDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -335,7 +312,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		menu.add(0, ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
+		menu.add(0, Statics.ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
 //		menu.add(0, ITEM_PROFILES, 0, getText(R.string.profiles)).setIcon(R.drawable.ic_menu_list);
 	}
 
@@ -353,7 +330,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		final Dialog dialog;
 
 		switch (id) {
-		case IdHelper.DIALOG_SEND_MESSAGE_ID:
+		case Statics.DIALOG_SEND_MESSAGE_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.send_message_dialog);
 			dialog.setTitle(R.string.send_message);
@@ -385,7 +362,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 			break;
 
-		case IdHelper.DIALOG_SET_POWERSTATE_ID:
+		case Statics.DIALOG_SET_POWERSTATE_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.powercontrol);
 			dialog.setTitle(R.string.powercontrol);
@@ -395,14 +372,14 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			Button buttonReboot = (Button) dialog.findViewById(R.id.ButtonReboot);
 			Button buttonShutdown = (Button) dialog.findViewById(R.id.ButtonShutdown);
 
-			registerOnClickListener(buttonToggle, ITEM_TOGGLE_STANDBY);
-			registerOnClickListener(buttonGui, ITEM_RESTART_GUI);
-			registerOnClickListener(buttonReboot, ITEM_REBOOT);
-			registerOnClickListener(buttonShutdown, ITEM_SHUTDOWN);
+			registerOnClickListener(buttonToggle, Statics.ITEM_TOGGLE_STANDBY);
+			registerOnClickListener(buttonGui, Statics.ITEM_RESTART_GUI);
+			registerOnClickListener(buttonReboot, Statics.ITEM_REBOOT);
+			registerOnClickListener(buttonShutdown, Statics.ITEM_SHUTDOWN);
 
 			break;
 			
-		case IdHelper.DIALOG_ABOUT_ID:
+		case Statics.DIALOG_ABOUT_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.about);
 			dialog.setTitle(R.string.about);			
@@ -424,7 +401,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 						
 			break;
 		
-		case IdHelper.DIALOG_SLEEPTIMER_ID:
+		case Statics.DIALOG_SLEEPTIMER_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.sleeptimer);
 			dialog.setTitle(R.string.sleeptimer);
@@ -478,7 +455,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			});
 			
 			break;
-		case IdHelper.DIALOG_SLEEPTIMER_PROGRESS_ID:
+		case Statics.DIALOG_SLEEPTIMER_PROGRESS_ID:
 			dialog = ProgressDialog.show(mActivity, getText(R.string.sleeptimer), getText(R.string.loading));
 			break;
 		default:
@@ -499,15 +476,15 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		Intent intent;
 
 		switch (id) {
-		case ITEM_TIMER:
+		case Statics.ITEM_TIMER:
 			mActivity.showDetails(TimerListFragment.class);
 			return true;
 
-		case ITEM_MOVIES:
+		case Statics.ITEM_MOVIES:
 			mActivity.showDetails(MovieListFragment.class);			
 			return true;
 
-		case ITEM_SERVICES:
+		case Statics.ITEM_SERVICES:
 //			intent = new Intent(mActivity, ServiceListActivity.class);
 //			ExtendedHashMap map = new ExtendedHashMap();
 //			Bundle args = new Bundle();
@@ -517,76 +494,76 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			mActivity.showDetails(ServiceListFragment.class);
 			return true;
 
-		case ITEM_INFO:
+		case Statics.ITEM_INFO:
 			mActivity.showDetails(DeviceInfoFragment.class);
 			return true;
 
-		case ITEM_CURRENT:
+		case Statics.ITEM_CURRENT:
 			mActivity.showDetails(CurrentServiceFragment.class);
 			return true;
 
-		case ITEM_REMOTE:
+		case Statics.ITEM_REMOTE:
 			mActivity.showDetails(VirtualRemoteFragment.class);
 			return true;
 
-		case ITEM_SETTINGS:
+		case Statics.ITEM_SETTINGS:
 			intent = new Intent(mActivity, DreamDroidPreferenceActivity.class);
 			startActivity(intent);
 			return true;
 
-		case ITEM_MESSAGE:
+		case Statics.ITEM_MESSAGE:
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(IdHelper.DIALOG_SEND_MESSAGE_ID);
+			mActivity.showDialog(Statics.DIALOG_SEND_MESSAGE_ID);
 			return true;
 
-		case ITEM_EPG_SEARCH:
+		case Statics.ITEM_EPG_SEARCH:
 			mActivity.onSearchRequested();
 			return true;
 
-		case ITEM_SCREENSHOT:
+		case Statics.ITEM_SCREENSHOT:
 			mActivity.showDetails(ScreenShotFragment.class);
 //			intent = new Intent(mActivity, ScreenShotActivity.class);
 //			startActivity(intent);
 			return true;
 
-		case ITEM_TOGGLE_STANDBY:
+		case Statics.ITEM_TOGGLE_STANDBY:
 			setPowerState(PowerState.STATE_TOGGLE);
 			return true;
 
-		case ITEM_RESTART_GUI:
+		case Statics.ITEM_RESTART_GUI:
 			setPowerState(PowerState.STATE_GUI_RESTART);
 			return true;
 
-		case ITEM_REBOOT:
+		case Statics.ITEM_REBOOT:
 			setPowerState(PowerState.STATE_SYSTEM_REBOOT);
 			return true;
 
-		case ITEM_SHUTDOWN:
+		case Statics.ITEM_SHUTDOWN:
 			setPowerState(PowerState.STATE_SHUTDOWN);
 			return true;
 
-		case ITEM_POWERSTATE_DIALOG:
+		case Statics.ITEM_POWERSTATE_DIALOG:
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(IdHelper.DIALOG_SET_POWERSTATE_ID);
+			mActivity.showDialog(Statics.DIALOG_SET_POWERSTATE_ID);
 			return true;
 
-		case ITEM_ABOUT:
+		case Statics.ITEM_ABOUT:
 			mActivity.setIsNavgationDialog(true);
-			mActivity.showDialog(IdHelper.DIALOG_ABOUT_ID);
+			mActivity.showDialog(Statics.DIALOG_ABOUT_ID);
 			return true;
 
-		case ITEM_CHECK_CONN:
+		case Statics.ITEM_CHECK_CONN:
 //			mParent.checkActiveProfile();
 			return true;
 
-		case ITEM_SLEEPTIMER:
+		case Statics.ITEM_SLEEPTIMER:
 			getSleepTimer(true);
 			return true;
 		
-		case ITEM_MEDIA_PLAYER:
+		case Statics.ITEM_MEDIA_PLAYER:
 			startActivity( new Intent(mActivity, MediaplayerNavigationActivity.class) );
 		
-		case ITEM_PROFILES:
+		case Statics.ITEM_PROFILES:
 			mActivity.showDetails(ProfileListFragment.class);
 //			startActivity( new Intent(mActivity, ProfileListActivity.class));
 		default:
@@ -657,7 +634,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			mSleepTimer = sleepTimer;
 			if (openDialog) {
 				mActivity.setIsNavgationDialog(true);
-				mActivity.showDialog(IdHelper.DIALOG_SLEEPTIMER_ID);
+				mActivity.showDialog(Statics.DIALOG_SLEEPTIMER_ID);
 				return;
 			}
 			String text = sleepTimer.getString(SleepTimer.KEY_TEXT);
