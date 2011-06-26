@@ -158,7 +158,12 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		mScannerConn = new MediaScannerConnection(getActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
 		
-		reload();
+		if(savedInstanceState == null){
+			reload();
+		} else {
+			byte[] image = savedInstanceState.getByteArray("rawImage");
+			onScreenshotAvailable(image);
+		}
 		
 		return mImageView;
 	}
@@ -171,6 +176,11 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
 		menu.add(0, Statics.ITEM_SAVE, 0, getText(R.string.save)).setIcon(android.R.drawable.ic_menu_save);
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState){
+		outState.putByteArray("rawImage", mRawImage);
 	}
 
 	/*
