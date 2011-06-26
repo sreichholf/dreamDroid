@@ -329,9 +329,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mNavList = (ListView) v.findViewById(R.id.listView1);
 		mDetailList = (ListView) v.findViewById(R.id.listView2);
 
-		//Some may call this a Hack I call it a smart solution
-		//On devices with resolutions other than xlarge, there is no second ListView. 
-		//So we just use the only one available and the rest runs as normal.
+		//Some may call this a Hack, I call it a smart solution
+		//On devices with resolutions other than xlarge, there is no second ListView (@id/listView2). 
+		//So we just use the only one available and the rest will work as normal with almost no additional adjustments.
 		if(mDetailList == null){
 			mDetailList = mNavList;
 			mDetailItems = mNavItems;

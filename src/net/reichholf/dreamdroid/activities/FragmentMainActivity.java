@@ -105,8 +105,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	/**
 	 * Set mMultiPane to true if screen size is at least SCREENLAYOUT_SIZE_XLARGE, else false
 	 */
-	private void checkLayout(){
-		mMultiPane = false;
+	private void checkLayout(){		
 		final int SCREENLAYOUT_SIZE_XLARGE = 4; // Not available until API 9.
         mMultiPane = (getResources().getConfiguration().screenLayout & SCREENLAYOUT_SIZE_XLARGE) != 0;
 	}
