@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
@@ -45,8 +46,6 @@ import android.widget.Toast;
  * 
  */
 public abstract class AbstractHttpFragment extends Fragment implements ActivityCallbackHandler {
-	public static final int MENU_HOME = 89283794;
-
 	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
 	protected SimpleResultTask mSimpleResultTask;
@@ -234,7 +233,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	protected boolean onItemClicked(int id) {
 		Intent intent;
 		switch (id) {
-		case MENU_HOME:
+		case Statics.ITEM_HOME:
 			intent = new Intent(getActivity(), FragmentMainActivity.class);
 			startActivity(intent);
 			return true;

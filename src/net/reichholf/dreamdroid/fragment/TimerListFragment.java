@@ -44,7 +44,6 @@ import android.widget.ListView;
  * 
  */
 public class TimerListFragment extends AbstractHttpListFragment {
-
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
 	private GetTimerListTask mListTask;
@@ -72,10 +71,15 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();
+		
 		setHasOptionsMenu(true);
 		setAdapter();
-		reload();
+		
+		if(savedInstanceState == null){
+			reload();
+		}
 	}
 
 	/*

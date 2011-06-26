@@ -28,8 +28,8 @@ import android.widget.TextView;
  */
 public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler {	
 	private boolean mMultiPane;
-	private Fragment mCurrentDetailFragment;
 	
+	private Fragment mCurrentDetailFragment;	
 	private FragmentManager mFragmentManager;
 	private NavigationFragment mNavigationFragment;
 	private ActivityCallbackHandler mCallBackHandler;
@@ -45,7 +45,12 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		
 		mFragmentManager = getSupportFragmentManager();				
 		
-		mNavigationFragment = new NavigationFragment();
+		if(savedInstanceState != null){
+			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
+		}
+		if(mNavigationFragment == null){
+			mNavigationFragment = new NavigationFragment(); 
+		}
 		mNavigationFragment.setHighlightCurrent(mMultiPane);
 				
 		if(savedInstanceState != null){
@@ -62,6 +67,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		showFragment(ft, R.id.navigation_view, mNavigationFragment);
 		if(mCurrentDetailFragment != null){
 			showFragment(ft, R.id.detail_view, mCurrentDetailFragment);
+			mCallBackHandler = (ActivityCallbackHandler) mCurrentDetailFragment;
 		}
 		ft.commit();
 	}
@@ -83,9 +89,10 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
+		mFragmentManager.putFragment(outState, "navigation", mNavigationFragment);
 		if(mCurrentDetailFragment != null){
 			mFragmentManager.putFragment(outState, "current", mCurrentDetailFragment);
-		}
+		}		
 		super.onSaveInstanceState(outState);
 	}
 	

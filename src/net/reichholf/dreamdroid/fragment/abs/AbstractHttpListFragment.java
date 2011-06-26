@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
@@ -43,9 +44,8 @@ import android.widget.Toast;
  */
 
 public abstract class AbstractHttpListFragment extends ListFragment implements ActivityCallbackHandler{
-	public static final int DIALOG_EMPTY_LIST_ID = 1298032;
-	public static final int MENU_HOME = 89283794;
-
+	public static final String BUNDLE_KEY_LIST = "list";
+	
 	protected final String sData = "data";
 	protected String mBaseTitle;
 
@@ -296,7 +296,13 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		super.onCreate(savedInstanceState);
 
 		mExtras = getActivity().getIntent().getExtras();
-		mMapList = new ArrayList<ExtendedHashMap>();
+		mMapList = null;
+		
+		if(savedInstanceState != null){
+			mMapList = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable(BUNDLE_KEY_LIST);
+		} if (mMapList == null){
+			mMapList = new ArrayList<ExtendedHashMap>();
+		}
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -312,6 +318,9 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		setClient();		
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.ListFragment#onActivityCreated(android.os.Bundle)
+	 */
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState){
 		super.onActivityCreated(savedInstanceState);
@@ -319,41 +328,14 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		setEmptyText(getText(R.string.loading));
 	}
 	
-//	/*
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see android.app.Activity#onRetainNonConfigurationInstance()
-//	 */
-//	@Override
-//	public Object onRetainNonConfigurationInstance() {
-//		HashMap<String, Object> map = new HashMap<String, Object>();
-//		map.put("shc", mShc);
-//
-//		return map;
-//	}
-//
-//	/*
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
-//	 */
-//	@Override
-//	public void onSaveInstanceState(Bundle outState) {
-//		getIntent().putExtras(mExtras);
-//		super.onSaveInstanceState(outState);
-//	}
-
-//	/*
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-//	 */
-//	@Override
-//	public boolean onCreateOptionsMenu(Menu menu) {
-//		super.onCreateOptionsMenu(menu);
-//		menu.add(0, MENU_HOME, 99, getText(R.string.home)).setIcon(android.R.drawable.ic_menu_view);
-//		return true;
-//	}
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.Fragment#onSaveInstanceState(android.os.Bundle)
+	 */
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putSerializable(BUNDLE_KEY_LIST, mMapList);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -440,7 +422,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	protected boolean onItemClicked(int id) {
 		Intent intent;
 		switch (id) {
-		case MENU_HOME:
+		case Statics.ITEM_HOME:
 			intent = new Intent(getActivity(), TabbedNavigationActivity.class);
 			startActivity(intent);
 			return true;

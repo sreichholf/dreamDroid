@@ -165,9 +165,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		mNowDuration = (TextView) view.findViewById(R.id.event_now_duration);
 		mNextStart = (TextView) view.findViewById(R.id.event_next_start);
 		mNextTitle = (TextView) view.findViewById(R.id.event_next_title);
-		mNextDuration = (TextView) view.findViewById(R.id.event_next_duration);
-		mCurrent = new ExtendedHashMap();
-		
+		mNextDuration = (TextView) view.findViewById(R.id.event_next_duration);				
 		mStream = (Button) view.findViewById(R.id.ButtonStream);
 		mNowLayout = (LinearLayout) view.findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) view.findViewById(R.id.layout_next);
@@ -176,7 +174,14 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
 		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
-		reload();
+		if(savedInstanceState == null){
+			mCurrent = new ExtendedHashMap();
+			reload();
+		} else {
+			mCurrent = (ExtendedHashMap) savedInstanceState.getSerializable("current");
+			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
+			onCurrentServiceReady();
+		}
 		
 		return view;
 	}
@@ -184,6 +189,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putSerializable("currentItem", mCurrentItem);
+		outState.putSerializable("current", mCurrent);
 		super.onSaveInstanceState(outState);
 	}
 

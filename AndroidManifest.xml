@@ -78,7 +78,7 @@
 		<activity android:name=".activities.MediaplayerNavigationActivity"></activity>
 		<activity android:name=".activities.MediaplayerPlaylistActivity"></activity>
 		<activity android:name=".activities.SimpleFragmentActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.FragmentMainActivity" android:configChanges="orientation|keyboardHidden">
+		<activity android:name=".activities.FragmentMainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />	
 				<category android:name="android.intent.category.LAUNCHER" />

@@ -301,12 +301,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mListTasks = new ArrayList<GetServiceListTask>();
 		
 		if(mDetailReference == null){
-			mDetailReference = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, SERVICE_REF_ROOT);
-			mDetailName = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
-				(String) getText(R.string.bouquet_overview));
+			mDetailReference = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "");
+			mDetailName = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
 		}
-		
-		
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -801,6 +798,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	public void reload(String ref, boolean isBouquetList) {
+		mReload = false;
 		if (mListTask != null) {
 			mListTask.cancel(true);
 		}
@@ -809,8 +807,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		data.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
 		data.put(Event.KEY_SERVICE_NAME, String.valueOf(ref));
 		mExtras.putSerializable(sData, data);
-
-
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 

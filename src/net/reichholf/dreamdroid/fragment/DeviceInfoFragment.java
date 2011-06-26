@@ -148,9 +148,18 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 		mInterfaceVersion = (TextView) fields.findViewById(R.id.InterfaceVersion);
 		mFrontprocessorVersion = (TextView) fields.findViewById(R.id.FrontprocessorVersion);
 		mDeviceName = (TextView) fields.findViewById(R.id.DeviceName);
-
 		setClient();
-		reload();
+		
+		if(savedInstanceState == null){
+			reload();
+		} else {
+			mInfo = (ExtendedHashMap) savedInstanceState.getSerializable("info");
+			onInfoReady();
+		}
+	}
+	
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putSerializable("info", mInfo);
 	}
 
 	/**

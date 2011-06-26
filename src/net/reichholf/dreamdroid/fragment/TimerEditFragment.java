@@ -89,12 +89,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
 
 	private class GetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
-//		private TimerEditFragment mTea;
-
-		public GetLocationsAndTagsTask() {
-//			mTea = tea;
-		}
-
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -239,7 +233,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		} else {
 			mTimer = (ExtendedHashMap) savedInstanceState.getSerializable("timer");
 			mTimerOld = (ExtendedHashMap) savedInstanceState.getSerializable("timerOld");
-
+			mSelectedTags = (ArrayList<String>) savedInstanceState.getSerializable("selectedTags");
+			mOldTags = (ArrayList<String>) savedInstanceState.getSerializable("oldTags");
 			if (mTimer != null) {
 				reload();
 			}
@@ -289,9 +284,13 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	public void onSaveInstanceState(Bundle outState) {
 		final ExtendedHashMap timer = mTimer;
 		final ExtendedHashMap timerOld = mTimerOld;
+		final ArrayList<String> selectedTags = mSelectedTags;
+		final ArrayList<String> oldTags = mOldTags;
 
 		outState.putSerializable("timer", timer);
 		outState.putSerializable("timerOld", timerOld);
+		outState.putSerializable("selectedTags", selectedTags);
+		outState.putSerializable("oldTags", oldTags);
 
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {

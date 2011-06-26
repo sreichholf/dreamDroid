@@ -27,6 +27,7 @@ public class Statics {
 	public static final int DIALOG_TIMER_LOADING_ID = 0x8013;
 	public static final int DIALOG_PROFILE_ID = 0x8014;
 	public static final int DIALOG_PROFILE_CONFIRM_DELETE_ID = 0x8015;
+	public static final int DIALOG_EMPTY_LIST_ID = 0x8016;
 	
 	public static final int ITEM_NOW = 0x6000;
 	public static final int ITEM_NEXT = 0x6001;
@@ -67,6 +68,7 @@ public class Statics {
 	public static final int ITEM_NEW_TIMER = 0x6036;
 	public static final int ITEM_CLEANUP = 0x6037;
 	public static final int ITEM_LAYOUT = 0x6038;
+	public static final int ITEM_HOME = 0x6039;
 
 	public static final int REQUEST_CHANGE_TIMER = 0x5000;
 	public static final int REQUEST_PICK_SERVICE = 0x5001;	
