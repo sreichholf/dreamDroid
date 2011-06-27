@@ -68,7 +68,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
 	private GetMovieListTask mListTask;
-
+		
 	/**
 	 * <code>AsyncTask</code> to get the list of recorded movies
 	 * 
@@ -77,7 +77,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 */
 	private class GetMovieListTask extends AsyncListUpdateTask {
 		public GetMovieListTask() {
-			super(getString(R.string.movies), new MovieListRequestHandler(), true);
+			super(new MovieListRequestHandler(), true);
 		}
 	}
 
@@ -90,7 +90,8 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
+		super.onCreate(savedInstanceState);	
+		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.movies);
 		setHasOptionsMenu(true);
 	}
 	

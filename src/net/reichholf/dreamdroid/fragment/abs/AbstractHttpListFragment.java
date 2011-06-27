@@ -32,8 +32,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
@@ -48,6 +50,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	
 	protected final String sData = "data";
 	protected String mBaseTitle;
+	protected String mCurrentTitle;
 
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
@@ -57,7 +60,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 
 	protected SimpleResultTask mSimpleResultTask;
 	protected SetVolumeTask mVolumeTask;
-
+	
 	/**
 	 * @author sre
 	 * 
@@ -71,12 +74,10 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		protected ArrayList<String> mTags;
 
 		public AsyncListUpdateTask(String baseTitle) {
-			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
 			mListRequestHandler = null;
 		}
 
-		public AsyncListUpdateTask(String baseTitle, ListRequestInterface listRequestHandler, boolean requireLocsAndTags) {
-			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
+		public AsyncListUpdateTask(ListRequestInterface listRequestHandler, boolean requireLocsAndTags) {			
 			mListRequestHandler = listRequestHandler;
 			mRequireLocsAndTags = requireLocsAndTags;
 		}
@@ -295,8 +296,9 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mExtras = getActivity().getIntent().getExtras();
+		mExtras = getArguments();
 		mMapList = null;
+		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
 		
 		if(savedInstanceState != null){
 			mMapList = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable(BUNDLE_KEY_LIST);
@@ -312,15 +314,18 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 			}
 		} else {
 			mExtras = new Bundle();
-			getActivity().getIntent().putExtras(mExtras);
+//			setArguments(mExtras);
 		}
 
 		setClient();		
 	}
 	
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.ListFragment#onActivityCreated(android.os.Bundle)
-	 */
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+		getActivity().setTitle(mCurrentTitle);
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState){
 		super.onActivityCreated(savedInstanceState);
@@ -328,20 +333,12 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		setEmptyText(getText(R.string.loading));
 	}
 	
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onSaveInstanceState(android.os.Bundle)
-	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putSerializable(BUNDLE_KEY_LIST, mMapList);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
@@ -468,6 +465,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	 * @param title
 	 */
 	protected void finishProgress(String title) {
+		mCurrentTitle = title;
 		getActivity().setTitle(genWindowTitle(title));
 		getActivity().setProgressBarIndeterminateVisibility(false);
 	}

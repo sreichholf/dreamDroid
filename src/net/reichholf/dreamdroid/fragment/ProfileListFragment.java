@@ -240,7 +240,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		
 		Fragment f = new ProfileEditFragment();		
 		f.setArguments(args);
-		mMultiPaneHandler.showDetails(f);
+		mMultiPaneHandler.showDetails(f, true);
 		
 	}
 

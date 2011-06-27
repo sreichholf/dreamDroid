@@ -6,18 +6,19 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import android.app.Dialog;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.widget.TextView;
@@ -51,13 +52,13 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		if(mNavigationFragment == null){
 			mNavigationFragment = new NavigationFragment(); 
 		}
-		mNavigationFragment.setHighlightCurrent(mMultiPane);
 				
 		if(savedInstanceState != null){
 			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
 		}
 				
 		initViews();
+		mNavigationFragment.setHighlightCurrent(mMultiPane);
 	}
 	
 	private void initViews(){
@@ -73,12 +74,13 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	}
 	
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){
-		Fragment f = mFragmentManager.findFragmentById(fragment.getId());
-		//TODO remove this hack
-		if( f != null){
-			ft.remove(f);
-		}
-		ft.replace(viewId, fragment, fragment.getClass().getSimpleName());
+		if( fragment.isAdded() ){
+			Log.i(DreamDroid.LOG_TAG, "Fragment already added, showing");
+			ft.show(fragment);
+		} else {
+			Log.i(DreamDroid.LOG_TAG, "Fragment not added, adding");
+			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());	
+		}		
 	}
 	
 	/*
@@ -110,13 +112,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
         mMultiPane = (getResources().getConfiguration().screenLayout & SCREENLAYOUT_SIZE_XLARGE) != 0;
 	}
 	
-	@Override
-	public void onConfigurationChanged(Configuration newConfig){		
-		initViews();
-		super.onConfigurationChanged(newConfig);
-	}
-	
-	
 	/**
 	 * @param fragmentClass
 	 */
@@ -143,7 +138,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	@Override
 	public void showDetails(Fragment fragment){
-		showDetails(fragment, true);
+		showDetails(fragment, false);
 	}
 	
 	public void back(){
@@ -162,7 +157,11 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			mCurrentDetailFragment = fragment;
-			ft.replace(R.id.detail_view, fragment, mCurrentDetailFragment.getClass().getSimpleName());
+			showFragment(ft, R.id.detail_view, fragment);
+//			ft.replace(R.id.detail_view, fragment, mCurrentDetailFragment.getClass().getSimpleName());
+			if(addToBackStack){
+				ft.addToBackStack(null);
+			}
 			ft.commit();
 		} else { //TODO Error Handling
 			Intent intent = new Intent(this, SimpleFragmentActivity.class);
@@ -227,5 +226,14 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	public boolean isMultiPane(){
 		return mMultiPane;
+	}
+	
+	@Override
+	public void finish(){
+		if(mMultiPane){
+			mFragmentManager.popBackStackImmediate();
+		} else {
+			super.finish();
+		}
 	}
 }

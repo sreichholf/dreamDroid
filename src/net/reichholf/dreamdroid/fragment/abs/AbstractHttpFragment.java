@@ -34,10 +34,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
@@ -46,10 +48,14 @@ import android.widget.Toast;
  * 
  */
 public abstract class AbstractHttpFragment extends Fragment implements ActivityCallbackHandler {
-	protected SimpleHttpClient mShc;
 	protected final String sData = "data";
+	protected String mCurrentTitle;
+	
+	protected SimpleHttpClient mShc;	
 	protected SimpleResultTask mSimpleResultTask;
 	protected SetVolumeTask mVolumeTask;
+	
+	
 	
 	protected class SimpleResultTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mResult;
@@ -170,13 +176,19 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
+		super.onCreate(savedInstanceState);
+		mCurrentTitle = getString(R.string.app_name);
 		setHasOptionsMenu(true);
 		// CustomExceptionHandler.register(this);
 		mShc = null;
 		setClient();
 	}
 
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+		getActivity().setTitle(mCurrentTitle);
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -305,6 +317,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 * @param title
 	 */
 	protected void finishProgress(String title){
+		mCurrentTitle = title;
 		getActivity().setTitle(title);
 		getActivity().setProgressBarIndeterminateVisibility(false);
 	}

@@ -11,14 +11,14 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.activities.ServiceEpgListActivity;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
 import net.reichholf.dreamdroid.intents.IntentFactory;
@@ -73,7 +73,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private TextView mDetailHeader;
 	private View mEmpty;
 
-	private String mBaseTitle;	
+	private String mBaseTitle;
+	private String mCurrentTitle;
 	private String mNavReference;
 	private String mNavName;
 	private String mDetailReference;
@@ -87,6 +88,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private ArrayList<ExtendedHashMap> mNavItems;
 	private ArrayList<ExtendedHashMap> mDetailItems;	
 	
+	private MultiPaneHandler mMultiPaneHandler;
+	
 	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		protected ArrayList<ExtendedHashMap> mTaskList;
 
@@ -96,12 +99,10 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		protected ArrayList<String> mTags;
 
 		public AsyncListUpdateTask(String baseTitle) {
-			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
 			mListRequestHandler = null;
 		}
 
 		public AsyncListUpdateTask(String baseTitle, ListRequestInterface listRequestHandler, boolean requireLocsAndTags) {
-			mBaseTitle = getString(R.string.app_name) + "::" + baseTitle;
 			mListRequestHandler = listRequestHandler;
 			mRequireLocsAndTags = requireLocsAndTags;
 		}
@@ -256,7 +257,10 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.services);
+
 		mReload = true;
+		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 		
 		Bundle args = getArguments();
 		String mode = null;
@@ -292,7 +296,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	
 				mHistory.add(map);
 				
-				mExtras = getActivity().getIntent().getExtras();
+				mExtras = getArguments();
 				mNavItems = new ArrayList<ExtendedHashMap>();
 				mDetailItems = new ArrayList<ExtendedHashMap>();				
 			}
@@ -313,7 +317,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			}
 		} else {
 			mExtras = new Bundle();
-			getActivity().getIntent().putExtras(mExtras);
+//			setArguments(mExtras);
 		}
 	}
 	
@@ -345,7 +349,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mNavList.setFastScrollEnabled(true);
 		mDetailList.setFastScrollEnabled(true);
 		setAdapter();
-		
+		getActivity().setTitle(mCurrentTitle);
 		return v;
 	}
 	/**
@@ -685,14 +689,15 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 *            The name of the Service for the reference
 	 */
 	public void openEpg(String ref, String nam) {
-		Intent intent = new Intent(getActivity(), ServiceEpgListActivity.class);
+		ServiceEpgListFragment f = new ServiceEpgListFragment();
 		ExtendedHashMap map = new ExtendedHashMap();
 		map.put(Event.KEY_SERVICE_REFERENCE, ref);
 		map.put(Event.KEY_SERVICE_NAME, nam);
+		Bundle args = new Bundle();
+		args.putSerializable(sData, map);
+		f.setArguments(args);
 
-		intent.putExtra(sData, map);
-
-		startActivity(intent);
+		mMultiPaneHandler.showDetails(f, true);
 	}
 
 	/**

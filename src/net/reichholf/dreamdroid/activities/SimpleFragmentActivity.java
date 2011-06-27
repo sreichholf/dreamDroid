@@ -11,7 +11,6 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import android.app.Dialog;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -64,13 +63,7 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		ft.replace(R.id.content, mFragment);
 		ft.commit();
 	}
-	
-	@Override
-	public void onConfigurationChanged(Configuration newConfig){
-		initViews();
-		super.onConfigurationChanged(newConfig);		
-	}
-	
+		
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		getSupportFragmentManager().putFragment(outState, "fragment", mFragment);

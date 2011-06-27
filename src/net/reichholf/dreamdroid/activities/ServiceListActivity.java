@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -51,7 +51,7 @@ import android.widget.SimpleAdapter;
  * @author sreichholf
  * 
  */
-public class ServiceListActivity extends AbstractHttpEventListFragment {
+public class ServiceListActivity extends AbstractHttpEventListActivity {
 	public static final int MENU_OVERVIEW = 1;
 	public static final int MENU_SET_AS_DEFAULT = 2;
 	public static final int MENU_RELOAD = 3;

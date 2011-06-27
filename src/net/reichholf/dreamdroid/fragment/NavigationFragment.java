@@ -88,6 +88,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	
 	public NavigationFragment(){
 		super();
+		mCurrentTitle = mBaseTitle = "";	
 		setHighlightCurrent(true);
 	}
 	
@@ -262,12 +263,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
 		mActivity = (FragmentMainActivity) getActivity();
 		mSleepTimer = new ExtendedHashMap();
 		mCurrentListItem = -1;
 		
 		setHasOptionsMenu(true);
-		setAdapter();		
+		setAdapter();
 	}
 	
 	public void setHighlightCurrent(boolean highlight){
@@ -553,6 +555,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
+			//TODO reenable connection check
 //			mParent.checkActiveProfile();
 			return true;
 
@@ -562,10 +565,12 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		
 		case Statics.ITEM_MEDIA_PLAYER:
 			startActivity( new Intent(mActivity, MediaplayerNavigationActivity.class) );
+			return true;
 		
 		case Statics.ITEM_PROFILES:
 			mActivity.showDetails(ProfileListFragment.class);
-//			startActivity( new Intent(mActivity, ProfileListActivity.class));
+			return true;
+
 		default:
 			return super.onItemClicked(id);
 		}

@@ -57,7 +57,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 */
 	private class GetTimerListTask extends AsyncListUpdateTask {
 		public GetTimerListTask(){
-			super(getString(R.string.timer), new TimerListRequestHandler(), false);
+			super(new TimerListRequestHandler(), false);
 		}
 	}
 
@@ -71,7 +71,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.timer);
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 		
 		setHasOptionsMenu(true);
@@ -217,7 +217,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		}
 		
 		f.setArguments(args);
-		mMultiPaneHandler.showDetails(f);
+		mMultiPaneHandler.showDetails(f, true);
 	}
 
 	/**
