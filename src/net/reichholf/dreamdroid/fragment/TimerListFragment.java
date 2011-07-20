@@ -47,7 +47,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
 	private GetTimerListTask mListTask;
-	private MultiPaneHandler mMultiPaneHandler;
+	private MultiPaneHandler mMultiPaneHandler;	
 
 	/**
 	 * Get the list of all timers async.
@@ -136,7 +136,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == Statics.REQUEST_CHANGE_TIMER) {
+		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
 			if (resultCode == Activity.RESULT_OK) {
 				reload();
 			}
@@ -217,6 +217,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		}
 		
 		f.setArguments(args);
+		f.setTargetFragment(this, Statics.REQUEST_EDIT_TIMER);
 		mMultiPaneHandler.showDetails(f, true);
 	}
 

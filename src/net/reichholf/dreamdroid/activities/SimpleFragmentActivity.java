@@ -96,6 +96,23 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		intent.putExtras(fragment.getArguments());
 		startActivity(intent);
 	}
+	
+	/**
+	 * @param fragmentClass
+	 */
+	@SuppressWarnings("rawtypes")
+	public void showDetails(Class fragmentClass){
+		try {
+			Fragment fragment = (Fragment) fragmentClass.newInstance();
+			showDetails(fragment);
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}			
+	}
 		
 	@Override
 	protected Dialog onCreateDialog(int id){
@@ -126,5 +143,13 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 			}
 		}
 		return super.onKeyUp(keyCode, event);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#finish(boolean)
+	 */
+	@Override
+	public void finish(boolean Fragment) {
+		finish();		
 	}
 }

@@ -204,4 +204,6 @@
 	<string name="missing_stream_player">No Player for Videostreams installed on this device!</string>
 	<string name="mediaplayer">Mediaplayer</string>
 	<string name="edit_profile">Edit Profile</string>
+	<string name="force_tablet_layout_long">Force Tablet-Optimized Layout</string>
+	<string name="force_tablet_layout">Force Tablet Layout</string>
 </resources>

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.SearchEpgActivity;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
@@ -399,5 +400,36 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 			}
 		}
 		showToast(text);
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 */
+	protected void finish(){
+		finish(Statics.RESULT_NONE, null);
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 * @param resultCode
+	 */
+	protected void finish(int resultCode){
+		finish(resultCode, null);
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 * @param resultCode
+	 * @param data
+	 */
+	protected void finish(int resultCode, Intent data){
+		Fragment f = getTargetFragment();
+		if(f != null){
+			MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+			mph.showDetails(f);
+			if(resultCode != Statics.RESULT_NONE || data != null){
+				f.onActivityResult(getTargetRequestCode(), resultCode, data);
+			}
+		}
 	}
 }

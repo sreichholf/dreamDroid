@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -114,10 +115,6 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 		onIsLoginChanged(mLogin.isChecked());
 		
 		return view;
-	}
-	
-	private void finish(){
-		getFragmentManager().popBackStackImmediate();
 	}
 	
 	/**
@@ -231,5 +228,17 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 */
+	protected void finish(){
+		Fragment f = getTargetFragment();		
+		if(f != null){			
+			MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+			mph.showDetails(f);
+			f.onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
+		}
 	}
 }

@@ -14,12 +14,11 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.ServiceListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
@@ -243,14 +242,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		return view;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onActivityResult(int, int,
-	 * android.content.Intent)
-	 */
 	@SuppressWarnings("unchecked")
-//	@Override
+	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_PICK_SERVICE) {
 			if (resultCode == Activity.RESULT_OK) {
@@ -729,7 +722,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		super.onSimpleResult(success, result);
 
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
-			finish(true);
+			finish(Activity.RESULT_OK);
 		}
 	}
 
@@ -832,21 +825,5 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mTimer.put(Timer.KEY_END, seconds);
 		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 		reload();
-	}
-	
-	private void finish(){
-		finish(false);
-	}
-	
-	private void finish(boolean reloadList){
-		//TODO move this to the Activity and handle single/dualpane correctly		
-		if(reloadList){
-			TimerListFragment f = (TimerListFragment) getFragmentManager().findFragmentByTag(TimerListFragment.class.getSimpleName());
-			if(f != null){
-				f.reload();
-			}
-		}
-		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
-		mph.finish();
 	}
 }

@@ -158,12 +158,6 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		return dialog;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onActivityResult(int, int,
-	 * android.content.Intent)
-	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_PROFILE) {
@@ -230,32 +224,26 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	 * Opens a <code>ProfileEditActivity</code> for the selected profile
 	 */
 	private void editProfile() {
-//		Intent intent = new Intent(mActivity, ProfileEditActivity.class);
-//		intent.putExtra("profile", mProfile);
-//		intent.setAction(Intent.ACTION_EDIT);
-//		startActivityForResult(intent, EDIT_PROFILE_REQUEST);
 		Bundle args = new Bundle();
 		args.putString("action", Intent.ACTION_EDIT);
 		args.putSerializable("profile", mProfile);
 		
 		Fragment f = new ProfileEditFragment();		
 		f.setArguments(args);
-		mMultiPaneHandler.showDetails(f, true);
-		
+		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
+		mMultiPaneHandler.showDetails(f, true);		
 	}
 
 	/**
 	 * Opens a <code>ProfileEditActivity</code> for creating a new profile
 	 */
 	private void createProfile() {
-//		Intent intent = new Intent(mActivity, ProfileEditActivity.class);
-//		mActivity.getIntent().setAction(Intent.ACTION_EDIT);
-//		startActivityForResult(intent, EDIT_PROFILE_REQUEST);
 		Bundle args = new Bundle();
 		args.putString("action", Intent.ACTION_EDIT);
 		
 		Fragment f = new ProfileEditFragment();		
-		f.setArguments(args);		
+		f.setArguments(args);
+		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
 		mMultiPaneHandler.showDetails(f);
 	}
 

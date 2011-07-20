@@ -42,7 +42,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	public void onCreate(Bundle savedInstanceState){		
 		super.onCreate(savedInstanceState);	
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		checkLayout();
+//		checkLayout();
 		
 		mFragmentManager = getSupportFragmentManager();				
 		
@@ -63,24 +63,44 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	private void initViews(){
 		setContentView(R.layout.dualpane);
+
+		if(findViewById(R.id.detail_view) != null){
+			mMultiPane = true;
+		} else {
+			mMultiPane = false;
+		}
 		
+		//Force Multipane Layout if User selected the option for it
+		if(!mMultiPane && DreamDroid.SP.getBoolean("force_multipane", false)){
+			setContentView(R.layout.forced_dualpane);
+			mMultiPane = true;
+		}
+				
 		FragmentTransaction ft = mFragmentManager.beginTransaction();
 		showFragment(ft, R.id.navigation_view, mNavigationFragment);
 		if(mCurrentDetailFragment != null){
+			
 			showFragment(ft, R.id.detail_view, mCurrentDetailFragment);
 			mCallBackHandler = (ActivityCallbackHandler) mCurrentDetailFragment;
+		} else {
+			
 		}
 		ft.commit();
 	}
 	
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){
+//		Fragment f = mFragmentManager.findFragmentByTag(fragment.getClass().getSimpleName());
+//		if(f != null){
+//			ft.remove(f);
+//		}
+		
 		if( fragment.isAdded() ){
 			Log.i(DreamDroid.LOG_TAG, "Fragment already added, showing");
 			ft.show(fragment);
 		} else {
-			Log.i(DreamDroid.LOG_TAG, "Fragment not added, adding");
+			Log.i(DreamDroid.LOG_TAG, "Fragment not added, adding");			
 			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());	
-		}		
+		}
 	}
 	
 	/*
@@ -101,15 +121,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	@Override
 	public void onResume(){
 		super.onResume();
-	}
-	
-	
-	/**
-	 * Set mMultiPane to true if screen size is at least SCREENLAYOUT_SIZE_XLARGE, else false
-	 */
-	private void checkLayout(){		
-		final int SCREENLAYOUT_SIZE_XLARGE = 4; // Not available until API 9.
-        mMultiPane = (getResources().getConfiguration().screenLayout & SCREENLAYOUT_SIZE_XLARGE) != 0;
 	}
 	
 	/**
@@ -153,12 +164,19 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack){	
 		mCallBackHandler = (ActivityCallbackHandler) fragment;
-		if(mMultiPane){			
+		if(mMultiPane){						
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+			
+			if(mCurrentDetailFragment != null){
+				if(mCurrentDetailFragment.isVisible()){
+					//TODO fix this hack (remove current fragment just to readd it in showFragment, do we really have to do that?)
+					ft.remove(mCurrentDetailFragment);
+				}
+			}
+			
 			mCurrentDetailFragment = fragment;
 			showFragment(ft, R.id.detail_view, fragment);
-//			ft.replace(R.id.detail_view, fragment, mCurrentDetailFragment.getClass().getSimpleName());
 			if(addToBackStack){
 				ft.addToBackStack(null);
 			}
@@ -228,10 +246,10 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		return mMultiPane;
 	}
 	
-	@Override
-	public void finish(){
-		if(mMultiPane){
-			mFragmentManager.popBackStackImmediate();
+	public void finish(boolean finishFragment){		
+		if(mMultiPane && finishFragment){
+			//TODO finish() for Fragment
+//			mFragmentManager.popBackStackImmediate();
 		} else {
 			super.finish();
 		}

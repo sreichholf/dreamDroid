@@ -13,4 +13,8 @@
 		android:summary="@string/enable_instant_zap_long"
 		android:title="@string/enable_instant_zap" />
 
+	<CheckBoxPreference 
+		android:key="force_multipane"
+		android:summary="@string/force_tablet_layout_long"
+		android:title="@string/force_tablet_layout" />
 </PreferenceScreen>

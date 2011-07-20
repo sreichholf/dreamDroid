@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -30,6 +31,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -582,5 +584,36 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 			}
 		}
 		showToast(text);
-	}	
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 */
+	protected void finish(){
+		finish(Statics.RESULT_NONE, null);
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 * @param resultCode
+	 */
+	protected void finish(int resultCode){
+		finish(resultCode, null);
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 * @param resultCode
+	 * @param data
+	 */
+	protected void finish(int resultCode, Intent data){
+		Fragment f = getTargetFragment();
+		if(f != null){
+			MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+			mph.showDetails(f);
+			if(resultCode != Statics.RESULT_NONE || data != null){
+				f.onActivityResult(getTargetRequestCode(), resultCode, data);
+			}
+		}
+	}
 }

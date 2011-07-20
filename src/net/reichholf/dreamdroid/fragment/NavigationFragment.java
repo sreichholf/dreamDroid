@@ -12,12 +12,11 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
-import net.reichholf.dreamdroid.activities.MediaplayerNavigationActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Message;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
@@ -32,7 +31,6 @@ import org.apache.http.message.BasicNameValuePair;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -56,7 +54,7 @@ import android.widget.TextView;
  * @author sreichholf
  * 
  */
-public class NavigationFragment extends AbstractHttpListFragment implements ActivityCallbackHandler{
+public class NavigationFragment extends AbstractHttpListFragment{
 	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog  (1=yes, 0=no) ] 
 	public static final int[][] MENU_ITEMS = {
 		{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
@@ -65,13 +63,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0},
 		{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0},
 		{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
-		{ Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music, 1, 0 },
+//		{ Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music, 1, 0 },
 		{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1: 0 ,1 },
 		{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
 		{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 		{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1 , 1 },
 		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
-		{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 0 },
+//		{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 0 },
 //		{ IdHelper.ITEM_SETTINGS, R.string.settings, android.R.drawable.ic_menu_edit, 1, 0 },
 		{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
 	};
@@ -292,18 +290,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		mCurrent = (int[]) l.getItemAtPosition(position);
 
 		//only mark the entry if it isn't a "dialog-only-item"
+		//TODO find a reliable way to mark the current item...
 		if(mHighlightCurrent){
 			if(mCurrent[4] == 0){			 
-				if(mCurrentListItem > -1){
-					View prevItem = l.getChildAt(mCurrentListItem);
-					prevItem.setBackgroundColor(Color.TRANSPARENT);
-				}
-				
-				mCurrentListItem = position;
-				l.setItemChecked(position, true);		
-				v.setBackgroundColor(0xbb0000aa);
+				l.setItemChecked(position, true);
 			}
-		}		
+		}
+		
 		onItemClicked(mCurrent[0]);
 	}
 	
@@ -486,13 +479,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			mActivity.showDetails(MovieListFragment.class);			
 			return true;
 
-		case Statics.ITEM_SERVICES:
-//			intent = new Intent(mActivity, ServiceListActivity.class);
-//			ExtendedHashMap map = new ExtendedHashMap();
-//			Bundle args = new Bundle();
-//			args.putSerializable(sData, map);
-//			args.putString("action", Intent.ACTION_VIEW);
-			
+		case Statics.ITEM_SERVICES:			
 			mActivity.showDetails(ServiceListFragment.class);
 			return true;
 
@@ -524,8 +511,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		case Statics.ITEM_SCREENSHOT:
 			mActivity.showDetails(ScreenShotFragment.class);
-//			intent = new Intent(mActivity, ScreenShotActivity.class);
-//			startActivity(intent);
 			return true;
 
 		case Statics.ITEM_TOGGLE_STANDBY:
@@ -555,8 +540,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
-			//TODO reenable connection check
-//			mParent.checkActiveProfile();
+			showToast(getString(R.string.not_implemented));
+//			TODO mParent.checkActiveProfile();
 			return true;
 
 		case Statics.ITEM_SLEEPTIMER:
@@ -564,7 +549,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			return true;
 		
 		case Statics.ITEM_MEDIA_PLAYER:
-			startActivity( new Intent(mActivity, MediaplayerNavigationActivity.class) );
+			showToast(getString(R.string.not_implemented));
+//			TODO startActivity( new Intent(mActivity, MediaplayerNavigationActivity.class) );
 			return true;
 		
 		case Statics.ITEM_PROFILES:

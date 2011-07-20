@@ -188,4 +188,9 @@ public class DualPaneActivity extends FragmentActivity implements MultiPaneHandl
 		}
 		return super.onKeyUp(keyCode, event);
 	}
+	
+	public void finish(boolean finishFragment){
+		//TODO maybe implement some better finish-handling?
+		finish();
+	}
 }

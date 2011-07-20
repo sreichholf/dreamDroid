@@ -618,7 +618,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	public void onPrepareOptionsMenu(Menu menu) {
 		MenuItem overview = menu.getItem(2);
 
-		if (!mNavReference.equals(SERVICE_REF_ROOT) || mNavList.equals(mDetailList)) {
+		if (!SERVICE_REF_ROOT.equals(mNavReference) || mNavList.equals(mDetailList)) {
 			overview.setEnabled(true);
 		} else {
 			overview.setEnabled(false);
