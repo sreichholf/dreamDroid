@@ -541,7 +541,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 
 		case Statics.ITEM_CHECK_CONN:
 			showToast(getString(R.string.not_implemented));
-//			TODO mParent.checkActiveProfile();
+			mActivity.checkActiveProfile();
 			return true;
 
 		case Statics.ITEM_SLEEPTIMER:

@@ -19,13 +19,15 @@
    		android:layout_marginTop="0dp"
    		android:layout_below="@id/detail_title" />
 	
-	<FrameLayout
+	<LinearLayout
+		android:id="@+id/container_view"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
 		android:layout_marginLeft="0dp"
 		android:layout_marginTop="0dp"
 		android:layout_marginRight="25dp"
-		android:layout_marginBottom="25dp"		
+		android:layout_marginBottom="0dp"
+		android:orientation="vertical"
 		android:background="#212121"
 		android:layout_toRightOf="@id/navigation_view"
 		android:layout_below="@id/detail_title">
@@ -33,8 +35,59 @@
 		<FrameLayout 
 	   		android:id="@+id/detail_view" 
 	   		android:layout_width="fill_parent" 
-	   		android:layout_height="fill_parent"
-	   		android:layout_margin="10dp"
+	   		android:layout_height="fill_parent"	   		
+	   		android:layout_marginTop="10dp"
+	   		android:layout_marginBottom="50dp"
+	   		android:layout_marginLeft="10dp"
+	   		android:layout_marginRight="10dp"
 	   		android:background="#212121" />
-	</FrameLayout>
+	   		
+   		<TableLayout 
+			android:layout_height="fill_parent"
+			android:layout_width="fill_parent"
+			android:orientation="horizontal"
+			android:layout_marginTop="-45dp"
+			android:layout_marginBottom="0dp"
+			android:layout_gravity="top"
+			android:background="#000000" >
+			<TableRow android:layout_marginTop="3dp">
+				<TextView 
+					android:text="@string/active_profile" 
+					android:textColor="#FFF"
+					android:textStyle="bold"
+					android:id="@+id/TextViewProfileTitle" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"
+					android:layout_weight="1" />
+				<TextView 
+					android:text="@string/connection_state"
+					android:textColor="#FFF"
+					android:textStyle="bold" 
+					android:id="@+id/TextViewConnectionStateTitle" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					android:layout_weight="1" />
+			</TableRow>
+			<TableRow android:layout_marginTop="3dp">
+				<TextView 
+					android:text="..." 
+					android:textColor="#FFF"
+					android:textStyle="bold"
+					android:id="@+id/TextViewProfile" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"
+					android:layout_weight="1" />
+				<TextView 
+					android:text="..."
+					android:textColor="#FFF"
+					android:textStyle="bold" 
+					android:id="@+id/TextViewConnectionState" 
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					android:layout_weight="1" />		
+			</TableRow>
+		</TableLayout> 	 	
+	</LinearLayout>
 </RelativeLayout>

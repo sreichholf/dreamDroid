@@ -11,8 +11,11 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import android.app.Dialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -35,14 +38,56 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	private NavigationFragment mNavigationFragment;
 	private ActivityCallbackHandler mCallBackHandler;
 	
+	private TextView mActiveProfile;
+	private TextView mConnectionState;
+	
+	private CheckProfileTask mCheckProfileTask;
 	
 	private boolean isNavigationDialog = false;
+	
+	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected ExtendedHashMap doInBackground(Void... params) {
+			publishProgress(getText(R.string.checking).toString());
+			return CheckProfile.checkProfile(DreamDroid.PROFILE);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(String... progress) {
+			setConnectionState(progress[0]);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(ExtendedHashMap result) {
+			Log.i(DreamDroid.LOG_TAG, result.toString());
+			if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
+				String error = getText((Integer) result.get(CheckProfile.KEY_ERROR_TEXT)).toString();
+				setConnectionState(error);
+			} else {
+				setConnectionState(getText(R.string.ok).toString());
+			}
+		}
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState){		
 		super.onCreate(savedInstanceState);	
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-//		checkLayout();
 		
 		mFragmentManager = getSupportFragmentManager();				
 		
@@ -58,7 +103,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 				
 		initViews();
-		mNavigationFragment.setHighlightCurrent(mMultiPane);
+		mNavigationFragment.setHighlightCurrent(mMultiPane);		
 	}
 	
 	private void initViews(){
@@ -86,14 +131,14 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			
 		}
 		ft.commit();
+		
+		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
+		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
+		
+		checkActiveProfile();
 	}
 	
-	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){
-//		Fragment f = mFragmentManager.findFragmentByTag(fragment.getClass().getSimpleName());
-//		if(f != null){
-//			ft.remove(f);
-//		}
-		
+	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){	
 		if( fragment.isAdded() ){
 			Log.i(DreamDroid.LOG_TAG, "Fragment already added, showing");
 			ft.show(fragment);
@@ -121,6 +166,35 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	@Override
 	public void onResume(){
 		super.onResume();
+	}
+	
+	/**
+	 * 
+	 */
+	public void checkActiveProfile() {
+		setProfileName();
+		if (mCheckProfileTask != null) {
+			mCheckProfileTask.cancel(true);
+		}
+
+		mCheckProfileTask = new CheckProfileTask();
+		mCheckProfileTask.execute();
+	}
+	
+	
+	/**
+	 * 
+	 */
+	public void setProfileName() {
+		mActiveProfile.setText(DreamDroid.PROFILE.getProfile());
+	}
+
+	/**
+	 * @param state
+	 */
+	private void setConnectionState(String state) {
+		mConnectionState.setText(state);
+//		TODO setAvailableFeatures();
 	}
 	
 	/**
