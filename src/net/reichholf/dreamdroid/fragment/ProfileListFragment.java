@@ -168,7 +168,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 				// Reload the current profile as it may have been
 				// changed/altered
 				DreamDroid.reloadActiveProfile();
-//				mParent.onProfileChanged(); //TODO onProfileChanged
+				mMultiPaneHandler.onProfileChanged();
 			}
 		}
 	}
@@ -214,7 +214,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getProfile() + "'");
-//			mParent.onProfileChanged();
+			mMultiPaneHandler.onProfileChanged();
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getProfile() + "'");
 		}

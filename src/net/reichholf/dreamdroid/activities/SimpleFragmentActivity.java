@@ -144,6 +144,10 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		}
 		return super.onKeyUp(keyCode, event);
 	}
+	
+	public void onProfileChanged(){
+		//TODO implement onProfileChanged
+	}
 
 	/* (non-Javadoc)
 	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#finish(boolean)
