@@ -368,7 +368,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							startActivity( IntentFactory.getIMDbQueryIntent(mCurrentItem) );
+							IntentFactory.queryIMDb(getBaseContext(), mCurrentItem);
 							dialog.dismiss();
 						}
 					});

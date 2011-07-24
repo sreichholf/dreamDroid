@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
@@ -29,16 +30,20 @@ public class IntentFactory {
 	/**
 	 * @param event
 	 */
-	public static Intent getIMDbQueryIntent(ExtendedHashMap event){
+	public static void queryIMDb(Context ctx, ExtendedHashMap event){
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "imdb:///find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 		intent.setData(Uri.parse(uriString));
 		try{			
-			return intent;
+			ctx.startActivity(intent);
 		} catch(ActivityNotFoundException anfex) {
-			uriString = "http://m.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
+			if(DreamDroid.SP.getBoolean("mobile_imdb", false)){
+				uriString = "http://m.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
+			} else {
+				uriString = "http://www.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
+			}
 			intent.setData(Uri.parse(uriString));
-			return intent;
+			ctx.startActivity(intent);
 		}
 	}
 	

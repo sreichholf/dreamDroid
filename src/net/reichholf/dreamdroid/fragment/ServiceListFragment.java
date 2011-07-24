@@ -12,14 +12,17 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 
@@ -28,6 +31,8 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -40,10 +45,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -72,6 +79,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private ListView mDetailList;	
 	private TextView mDetailHeader;
 	private View mEmpty;
+	private ProgressDialog mProgress;
 
 	private String mBaseTitle;
 	private String mCurrentTitle;
@@ -86,7 +94,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private Bundle mExtras;
 	private ExtendedHashMap mData;
 	private ArrayList<ExtendedHashMap> mNavItems;
-	private ArrayList<ExtendedHashMap> mDetailItems;	
+	private ArrayList<ExtendedHashMap> mDetailItems;
+	private ExtendedHashMap mCurrentService;
 	
 	private MultiPaneHandler mMultiPaneHandler;
 	
@@ -616,7 +625,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		MenuItem overview = menu.getItem(2);
+		MenuItem overview = menu.findItem(Statics.ITEM_OVERVIEW);
 
 		if (!SERVICE_REF_ROOT.equals(mNavReference) || mNavList.equals(mDetailList)) {
 			overview.setEnabled(true);
@@ -624,7 +633,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			overview.setEnabled(false);
 		}
 
-		MenuItem reload = menu.getItem(1);
+		MenuItem reload = menu.findItem(Statics.ITEM_RELOAD);
 		if (!mPickMode) {
 			reload.setEnabled(true);
 		} else {
@@ -710,7 +719,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private void onListItemClick(ListView l, View v, int position, long id, boolean isLong) {		
 		ExtendedHashMap item = (ExtendedHashMap) l.getItemAtPosition(position);
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
-		final String nam = item.getString(Event.KEY_SERVICE_NAME);
+		final String nam = item.getString(Event.KEY_SERVICE_NAME);		
 		if (isBouquetList(ref)) {
 			if (l.equals(mNavList)) {		
 				if(SERVICE_REF_ROOT.equals(mNavReference)){
@@ -744,6 +753,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
 				} else {
+					mCurrentService = item;
+					
 					CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
 							getText(R.string.zap), getText(R.string.stream) };
 
@@ -782,6 +793,127 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				}
 			}
 		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
+	@Override
+	public Dialog onCreateDialog(int id) {
+		final Dialog dialog;
+		
+		if(mCurrentService != null){
+		
+			switch (id) {
+			case Statics.DIALOG_EPG_ITEM_ID:
+	
+				String servicename = mCurrentService.getString(Event.KEY_SERVICE_NAME);
+				String title = mCurrentService.getString(Event.KEY_EVENT_TITLE);
+				String date = mCurrentService.getString(Event.KEY_EVENT_START_READABLE);
+				if (!"N/A".equals(title) && date != null) {
+					date = date.concat(" (" + (String) mCurrentService.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
+							+ getText(R.string.minutes_short) + ")");
+					String descEx = mCurrentService.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
+	
+					dialog = new Dialog(getActivity());
+					dialog.setContentView(R.layout.epg_item_dialog);
+					dialog.setTitle(title);
+	
+					TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
+					textServiceName.setText(servicename);
+	
+					TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
+					textTime.setText(date);
+	
+					TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
+					textDescEx.setText(descEx);
+	
+					Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
+					buttonSetTimer.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							setTimerById(mCurrentService);
+							dialog.dismiss();
+						}
+					});
+	
+					Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
+					buttonEditTimer.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							setTimerByEventData(mCurrentService);
+							dialog.dismiss();
+						}
+					});
+					
+					Button buttonIMDb = (Button) dialog.findViewById(R.id.ButtonImdb);
+					buttonIMDb.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							IntentFactory.queryIMDb(getActivity(), mCurrentService);
+							dialog.dismiss();
+						}
+					});
+					
+					Button buttonSimilar = (Button) dialog.findViewById(R.id.ButtonSimilar);
+					buttonSimilar.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							findSimilarEvents(mCurrentService);
+							dialog.dismiss();
+						}
+					});
+				} else {
+					// No EPG Information is available!
+					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					builder.setMessage(R.string.no_epg_available).setCancelable(true)
+							.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									dialog.cancel();
+								}
+							});
+					dialog = builder.create();
+				}
+				break;
+			default:
+				dialog = null;
+			}
+		} else {
+			dialog = null;
+			showToast(getString(R.string.error));
+		}
+		return dialog;
+	}
+	
+	/**
+	 * @param event
+	 */
+	private void setTimerById(ExtendedHashMap event) {
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
+			}
+		}
+
+		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.saving), true);
+		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
+	}
+	
+	/**
+	 * @param event
+	 */
+	private void setTimerByEventData(ExtendedHashMap event) {
+		ExtendedHashMap timer = Timer.createByEvent(event);
+		ExtendedHashMap data = new ExtendedHashMap();
+		data.put("timer", timer);
+
+		Intent intent = new Intent(getActivity(), TimerEditActivity.class);
+		intent.putExtra(sData, data);
+		intent.setAction(DreamDroid.ACTION_NEW);
+
+		this.startActivity(intent);
 	}
 	
 	public void reloadNav(){
@@ -881,6 +1013,18 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mNavName = "";
 
 		((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment#onSimpleResult(boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
+	 */
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		if (mProgress != null) {
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
+			}
+		}
+		super.onSimpleResult(success, result);
 	}
 	
 	/**

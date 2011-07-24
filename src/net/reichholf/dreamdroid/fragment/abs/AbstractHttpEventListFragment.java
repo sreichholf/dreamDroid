@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
@@ -27,7 +26,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * @author sreichholf
@@ -97,7 +95,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							startActivity( IntentFactory.getIMDbQueryIntent(mCurrentItem) );
+							IntentFactory.queryIMDb(getActivity(), mCurrentItem);
 							dialog.dismiss();
 						}
 					});
@@ -187,22 +185,4 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 
 		this.startActivity(intent);
 	}
-
-	/**
-	 * @param result
-	 */
-	protected void onTimerSet(ExtendedHashMap result) {
-		mProgress.dismiss();
-
-		String toastText = (String) getText(R.string.get_content_error);
-
-		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
-
-		if (stateText != null && !"".equals(stateText)) {
-			toastText = stateText;
-		}
-
-		Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG).show();
-	}
-
 }

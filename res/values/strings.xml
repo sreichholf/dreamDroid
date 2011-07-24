@@ -206,4 +206,6 @@
 	<string name="edit_profile">Edit Profile</string>
 	<string name="force_tablet_layout_long">Force Tablet-Optimized Layout</string>
 	<string name="force_tablet_layout">Force Tablet Layout</string>
+	<string name="mobile_imdb">Use mobile version of imdb.com</string>
+	<string name="mobile_imdb_long">Use m.imdb.com instead of www.imdb.com</string>
 </resources>

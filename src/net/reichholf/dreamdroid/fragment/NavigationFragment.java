@@ -68,21 +68,19 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
 		{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 		{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1 , 1 },
-		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
-//		{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 0 },
-//		{ IdHelper.ITEM_SETTINGS, R.string.settings, android.R.drawable.ic_menu_edit, 1, 0 },
+		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },		
 		{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
 	};
 	
 	private int[] mCurrent;
-
-	private SetPowerStateTask mSetPowerStateTask;
-	private SleepTimerTask mSleepTimerTask;
+	private int mCurrentListItem;
+	private boolean mHighlightCurrent;
 
 	private ExtendedHashMap mSleepTimer;
 	private FragmentMainActivity mActivity;
-	private int mCurrentListItem;
-	private boolean mHighlightCurrent;
+	
+	private SetPowerStateTask mSetPowerStateTask;
+	private SleepTimerTask mSleepTimerTask;
 	
 	public NavigationFragment(){
 		super();
@@ -281,12 +279,12 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	}
 	
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id){		
+	public void onListItemClick(ListView l, View v, int position, long id){
 		if(mCurrentListItem == position && mActivity.isMultiPane()){
 			//Don't reload what we already see
 			return;
 		}
-		
+
 		mCurrent = (int[]) l.getItemAtPosition(position);
 
 		//only mark the entry if it isn't a "dialog-only-item"
@@ -294,7 +292,14 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		if(mHighlightCurrent){
 			if(mCurrent[4] == 0){			 
 				l.setItemChecked(position, true);
+				mCurrentListItem = position;
+			} else {	
+				if(mCurrentListItem > 0){					
+					l.setItemChecked(mCurrentListItem, true);
+				}
 			}
+		} else {
+			l.setItemChecked(position, false);
 		}
 		
 		onItemClicked(mCurrent[0]);
@@ -308,7 +313,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		menu.add(0, Statics.ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
-//		menu.add(0, ITEM_PROFILES, 0, getText(R.string.profiles)).setIcon(R.drawable.ic_menu_list);
 	}
 
 	/*

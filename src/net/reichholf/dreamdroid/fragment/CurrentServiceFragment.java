@@ -359,7 +359,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							startActivity( IntentFactory.getIMDbQueryIntent(mCurrentItem) );
+							IntentFactory.queryIMDb(getActivity(), mCurrentItem);
 							dialog.dismiss();
 						}
 					});
