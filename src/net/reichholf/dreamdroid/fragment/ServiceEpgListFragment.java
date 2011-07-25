@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -57,13 +58,13 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.epg);
 		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
 		mName = getDataForKey(Event.KEY_SERVICE_NAME);
+		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 
 		if (mReference != null) {
 			setAdapter();
 			reload();
 		} else {
-			//TODO finish();
-//			finish();
+			finish();
 		}
 
 	}

@@ -11,19 +11,28 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.TimerEditFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 /**
  * @author sreichholf
  * 
  */
 public class Timer {
+	public static final String DATA = "data";
+	
 	public static final String KEY_REFERENCE = "reference";
 	public static final String KEY_SERVICE_NAME = "servicename";
 	public static final String KEY_EIT = "eit";
@@ -185,5 +194,40 @@ public class Timer {
 		
 		return params;
 	}
-
+	
+	
+	
+	/**
+	 * @param mph - A MultiPaneHandler instance
+	 * @param timer - A timer (ExtendedHashMap)
+	 * @param target - The target fragment (after saving/cancellation)
+	 */
+	public static void editUsingEvent(MultiPaneHandler mph, ExtendedHashMap event, Fragment target){
+		Timer.edit(mph, Timer.createByEvent(event), target, true);
+	}
+	
+	/**
+	 * @param mph - A MultiPaneHandler instance
+	 * @param timer - A timer (ExtendedHashMap)
+	 * @param target - The target fragment (after saving/cancellation)
+	 * @param create - set to true if a new timer should be created instead of editing an existing one
+	 */
+	public static void edit(MultiPaneHandler mph, ExtendedHashMap timer, Fragment target, boolean create){
+		ExtendedHashMap data = new ExtendedHashMap();
+		
+		TimerEditFragment f = new TimerEditFragment();
+		Bundle args = new Bundle();
+	
+		data.put("timer", timer);
+	
+		args.putSerializable(DATA, data);
+		String action = create ? DreamDroid.ACTION_NEW : Intent.ACTION_EDIT;
+		args.putString("action", action);
+		
+		f.setArguments(args);
+		if(target != null){
+			f.setTargetFragment(target, Statics.REQUEST_EDIT_TIMER);
+		}
+		mph.showDetails(f, true);
+	}
 }

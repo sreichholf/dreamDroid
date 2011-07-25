@@ -12,7 +12,6 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
-import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -905,15 +904,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 * @param event
 	 */
 	private void setTimerByEventData(ExtendedHashMap event) {
-		ExtendedHashMap timer = Timer.createByEvent(event);
-		ExtendedHashMap data = new ExtendedHashMap();
-		data.put("timer", timer);
-
-		Intent intent = new Intent(getActivity(), TimerEditActivity.class);
-		intent.putExtra(sData, data);
-		intent.setAction(DreamDroid.ACTION_NEW);
-
-		this.startActivity(intent);
+		Timer.editUsingEvent(mMultiPaneHandler, event,  this);
 	}
 	
 	public void reloadNav(){

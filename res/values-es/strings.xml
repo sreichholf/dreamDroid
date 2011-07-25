@@ -198,4 +198,5 @@
 <string name="wrong_activity">Llamada erronea! Rehacer los acceso directos creados para dreamDroid</string>
 <string name="simple_remote">Vista simple control remoto</string>
 <string name="screenshot_saved">Captura pantalla guardada en \'%s\'</string>
+<string name="missing_stream_player">No hay reproductor multimedia instalado en el dispositivo</string>
 </resources>

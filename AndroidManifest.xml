@@ -3,7 +3,7 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="net.reichholf.dreamdroid" 
 	android:installLocation="auto" 
-	android:versionName="0.9.8a4" android:versionCode="113">
+	android:versionName="0.9.8a5" android:versionCode="114">
 	
 	<uses-sdk 
 		android:minSdkVersion="4" android:maxSdkVersion="12" android:targetSdkVersion="11"></uses-sdk>
@@ -13,7 +13,7 @@
 		android:normalScreens="true"
 		android:smallScreens="true"
 		android:anyDensity="true"		 
-		android:resizeable="true"></supports-screens>
+		android:resizeable="true" android:xlargeScreens="true"></supports-screens>
 	
 	<uses-permission android:name="android.permission.INTERNET" ></uses-permission>	
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" ></uses-permission>

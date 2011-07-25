@@ -6,12 +6,11 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
-import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.SearchEpgActivity;
-import net.reichholf.dreamdroid.activities.TimerEditActivity;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
@@ -37,6 +36,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 
 	protected ProgressDialog mProgress;
 	protected ExtendedHashMap mCurrentItem;
+	protected MultiPaneHandler mMultiPaneHandler;
 
 	/*
 	 * (non-Javadoc)
@@ -175,14 +175,6 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	 * @param event
 	 */
 	protected void setTimerByEventData(ExtendedHashMap event) {
-		ExtendedHashMap timer = Timer.createByEvent(event);
-		ExtendedHashMap data = new ExtendedHashMap();
-		data.put("timer", timer);
-
-		Intent intent = new Intent(getActivity(), TimerEditActivity.class);
-		intent.putExtra(sData, data);
-		intent.setAction(DreamDroid.ACTION_NEW);
-
-		this.startActivity(intent);
+		Timer.editUsingEvent(mMultiPaneHandler, event, this);
 	}
 }
