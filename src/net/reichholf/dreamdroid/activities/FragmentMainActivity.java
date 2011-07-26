@@ -186,7 +186,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	 * 
 	 */
 	public void setProfileName() {
-		mActiveProfile.setText(DreamDroid.PROFILE.getProfile());
+		mActiveProfile.setText(DreamDroid.PROFILE.getName());
 	}
 
 	/**
@@ -194,6 +194,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	 */
 	private void setConnectionState(String state) {
 		mConnectionState.setText(state);
+		setProgressBarIndeterminateVisibility(false);
 //		TODO setAvailableFeatures();
 	}
 	

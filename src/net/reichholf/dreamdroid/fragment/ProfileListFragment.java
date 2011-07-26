@@ -6,17 +6,23 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import java.util.ArrayList;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -38,12 +44,133 @@ import android.widget.Toast;
  * 
  */
 public class ProfileListFragment extends ListFragment implements ActivityCallbackHandler{
-	private SimpleCursorAdapter mAdapter;
 	private Profile mProfile;
+	private ArrayList<Profile> mDetectedProfiles;
+	
+	private SimpleCursorAdapter mAdapter;
 	private Cursor mCursor;
 	private Activity mActivity;
+	private DetectDevicesTask mDetectDevicesTask;
+	
+	private ProgressDialog mProgress;
 	private MultiPaneHandler mMultiPaneHandler;
 
+	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>>{
+
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected ArrayList<Profile> doInBackground(Void... params) {
+			ArrayList<Profile> profiles = DeviceDetector.getAvailableHosts();
+			return profiles;
+		}
+		
+		@Override
+		protected void onPostExecute( ArrayList<Profile> profiles) {
+			onDevicesDetected(profiles);
+		}
+		
+	}
+	
+	
+	/**
+	 * 
+	 */
+	private void detectDevices(){
+		if(mDetectedProfiles == null){
+			if(mDetectDevicesTask != null){
+				mDetectDevicesTask.cancel(true);
+				mDetectDevicesTask = null;
+			}
+			
+			if(mProgress != null){			
+				mProgress.dismiss();
+			}
+			mProgress = ProgressDialog.show(getActivity(), getText(R.string.searching), getText(R.string.searching_known_devices));
+			mProgress.setCancelable(false);
+			mDetectDevicesTask = new DetectDevicesTask();
+			mDetectDevicesTask.execute();
+		} else {	
+			if(mDetectedProfiles.size() == 0){
+				mDetectedProfiles = null;
+				detectDevices();
+			} else {
+				onDevicesDetected(mDetectedProfiles);
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	private void addAllDetectedDevices(){
+		for(Profile p : mDetectedProfiles){		
+			if (DreamDroid.addProfile(p)) {
+				showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
+			} else {
+				showToast(getText(R.string.profile_not_added) + " '" + p.getName() + "'");
+			}
+		}
+		mCursor.requery();
+	}
+	
+	/**
+	 * @param hosts
+	 *            A list of profiles for auto-discovered dreamboxes
+	 */
+	private void onDevicesDetected(ArrayList<Profile> profiles){
+		mProgress.dismiss();
+		mDetectedProfiles = profiles;
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(R.string.autodiscover_dreamboxes);
+		
+		if(mDetectedProfiles.size() > 0){			
+			CharSequence[] items = new CharSequence[profiles.size()];
+			
+			for(int i = 0; i < profiles.size(); i++){			
+				items[i] = profiles.get(i).getName();
+			}
+			
+			builder.setItems(items, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					mProfile = mDetectedProfiles.get(which);
+					editProfile();
+					dialog.dismiss();
+				}
+			
+			});
+			
+			builder.setPositiveButton(R.string.reload, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int id) {
+					mDetectedProfiles = null;					
+					dialog.dismiss();
+					detectDevices();					
+				}
+			});
+			
+			builder.setNegativeButton(R.string.add_all, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int id) {				
+					dialog.dismiss();
+					addAllDetectedDevices();					
+				}
+			});
+		} else {
+			builder.setMessage(R.string.autodiscovery_failed);
+			builder.setNeutralButton(android.R.string.ok, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int id) {
+					dialog.cancel();					
+				}
+			});			
+		}
+		builder.show();
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -106,7 +233,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(mActivity);
-			adBuilder.setTitle(mProfile.getProfile());
+			adBuilder.setTitle(mProfile.getName());
 			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
@@ -131,14 +258,14 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		case (Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID):
 			AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
 
-			builder.setTitle(mProfile.getProfile()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
+			builder.setTitle(mProfile.getName()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 
 							if (DreamDroid.deleteProfile(mProfile)) {
-								showToast(getText(R.string.profile_deleted) + " '" + mProfile.getProfile() + "'");
+								showToast(getText(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
 							} else {
-								showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getProfile() + "'");
+								showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
 							}
 							// TODO Add error handling
 							mProfile = null;
@@ -181,6 +308,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		menu.add(0, Statics.ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
+		menu.add(0, Statics.ITEM_DETECT_DEVICES, 2, getText(R.string.autodiscover_dreamboxes)).setIcon(android.R.drawable.ic_menu_search);
 	}
 
 	/*
@@ -202,10 +330,15 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		switch (id) {
 		case (Statics.ITEM_ADD_PROFILE):
 			createProfile();
-			return true;
+			break;
+		case Statics.ITEM_DETECT_DEVICES:
+			detectDevices();
+			break;
 		default:
 			return false;
 		}
+		
+		return true;
 	}
 
 	/**
@@ -213,10 +346,10 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	 */
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
-			showToast(getText(R.string.profile_activated) + " '" + mProfile.getProfile() + "'");
+			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
 			mMultiPaneHandler.onProfileChanged();
 		} else {
-			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getProfile() + "'");
+			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
 		}
 	}
 

@@ -21,7 +21,7 @@ public class Profile implements Serializable{
 	 */
 	private static final long serialVersionUID = 8176949133234868302L;
 	
-	private String mProfile;
+	private String mName;
 	private String mHost;
 	private String mStreamHost;
 	private String mUser;
@@ -86,7 +86,7 @@ public class Profile implements Serializable{
 	 */
 	public void set(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
 		setId(-1);
-		setProfile(profile);
+		setName(profile);
 		setHost(host);
 		setStreamHost(streamHost);
 		setPort(port);
@@ -100,7 +100,7 @@ public class Profile implements Serializable{
 
 	/**
 	 * @param id
-	 * @param profile
+	 * @param name
 	 * @param host
 	 * @param streamHost
 	 * @param port
@@ -110,9 +110,9 @@ public class Profile implements Serializable{
 	 * @param ssl
 	 * @param simpleRemote
 	 */
-	public void set(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
+	public void set(int id, String name, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
 		setId(id);
-		setProfile(profile);
+		setName(name);
 		setHost(host);
 		setStreamHost(streamHost);
 		setPort(port);
@@ -124,7 +124,7 @@ public class Profile implements Serializable{
 	}
 	
 	public void set(Cursor c){
-		setProfile( c.getString(c.getColumnIndex(DreamDroid.KEY_PROFILE)) );
+		setName( c.getString(c.getColumnIndex(DreamDroid.KEY_PROFILE)) );
 		setHost( c.getString(c.getColumnIndex(DreamDroid.KEY_HOST)) );
 		setStreamHost( c.getString(c.getColumnIndex(DreamDroid.KEY_STREAM_HOST)));
 		setUser ( c.getString(c.getColumnIndex(DreamDroid.KEY_USER)) );
@@ -156,10 +156,10 @@ public class Profile implements Serializable{
 	}
 	
 	/**
-	 * @param mProfile the Profile to set
+	 * @param mName the Profile to set
 	 */
-	public void setProfile(String profile) {
-		this.mProfile = profile;
+	public void setName(String name) {
+		this.mName = name;
 	}
 
 	/**
@@ -256,8 +256,8 @@ public class Profile implements Serializable{
 	/**
 	 * @return the Profile
 	 */
-	public String getProfile() {
-		return mProfile;
+	public String getName() {
+		return mName;
 	}
 
 	/**

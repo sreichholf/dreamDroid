@@ -69,6 +69,7 @@ public class Statics {
 	public static final int ITEM_CLEANUP = 0x6037;
 	public static final int ITEM_LAYOUT = 0x6038;
 	public static final int ITEM_HOME = 0x6039;
+	public static final int ITEM_DETECT_DEVICES = 0x6040;
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
 	public static final int REQUEST_PICK_SERVICE = 0x5001;	
@@ -77,5 +78,6 @@ public class Statics {
 	public static final int RESULT_NONE = -9999;
 	
 	public static final String KEY_RELOAD = "reload";
+	
 	
 }

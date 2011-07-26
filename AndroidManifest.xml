@@ -6,7 +6,7 @@
 	android:versionName="0.9.8a5" android:versionCode="114">
 	
 	<uses-sdk 
-		android:minSdkVersion="4" android:maxSdkVersion="12" android:targetSdkVersion="11"></uses-sdk>
+		android:minSdkVersion="4" android:targetSdkVersion="11" android:maxSdkVersion="13"></uses-sdk>
 	
 	<supports-screens
 		android:largeScreens="true"

@@ -151,12 +151,11 @@ public class DreamDroid extends Application {
 
 			boolean login = DreamDroid.SP.getBoolean("login", false);
 			boolean ssl = DreamDroid.SP.getBoolean("ssl", false);
-
-			String profile = "Default";
-			Profile p = new Profile(profile, host, streamHost, port, login, user, pass, ssl, false);
+			
+			Profile p = new Profile("Default", host, streamHost, port, login, user, pass, ssl, false);
 			DreamDroid.addProfile(p);
-
 			SharedPreferences.Editor editor = SP.edit();
+			c.requery();
 			editor.remove("currentProfile");
 			editor.commit();
 		}
@@ -164,7 +163,7 @@ public class DreamDroid extends Application {
 
 		int profileId = SP.getInt("currentProfile", 1);
 		if (setActiveProfile(profileId)) {
-			showToast(getText(R.string.profile_activated) + " '" + PROFILE.getProfile() + "'");
+			showToast(getText(R.string.profile_activated) + " '" + PROFILE.getName() + "'");
 		} else {
 			showToast(getText(R.string.profile_not_activated));
 			// However we got here... we're creating an
@@ -195,7 +194,7 @@ public class DreamDroid extends Application {
 	 */
 	public static boolean addProfile(Profile p) {
 		ContentValues values = new ContentValues();
-		values.put(KEY_PROFILE, p.getProfile());
+		values.put(KEY_PROFILE, p.getName());
 		values.put(KEY_HOST, p.getHost());
 		values.put(KEY_STREAM_HOST, p.getStreamHostValue());
 		values.put(KEY_PORT, p.getPort());
@@ -244,7 +243,7 @@ public class DreamDroid extends Application {
 	 */
 	public static boolean updateProfile(Profile p) {
 		ContentValues values = new ContentValues();
-		values.put(KEY_PROFILE, p.getProfile());
+		values.put(KEY_PROFILE, p.getName());
 		values.put(KEY_HOST, p.getHost());
 		values.put(KEY_STREAM_HOST, p.getStreamHostValue());
 		values.put(KEY_PORT, p.getPort());

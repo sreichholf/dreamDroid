@@ -17,6 +17,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.Window;
 
 /**
  * @author sre
@@ -31,6 +32,8 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		
 		if(savedInstanceState != null){
 			mFragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
 		}

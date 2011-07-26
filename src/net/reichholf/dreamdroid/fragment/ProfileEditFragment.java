@@ -134,7 +134,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	 * Assign all values of <code>mProfile</code> to the GUI-Components
 	 */
 	private void assignProfile() {
-		mProfile.setText(mCurrentProfile.getProfile());
+		mProfile.setText(mCurrentProfile.getName());
 		mHost.setText(mCurrentProfile.getHost());
 		mStreamHost.setText(mCurrentProfile.getStreamHostValue());
 		mPort.setText(mCurrentProfile.getPortString());
@@ -149,7 +149,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	 * Save the profile permanently
 	 */
 	private void save() {
-		mCurrentProfile.setProfile(mProfile.getText().toString());
+		mCurrentProfile.setName(mProfile.getText().toString());
 		mCurrentProfile.setHost(mHost.getText().toString().trim());
 		mCurrentProfile.setStreamHost(mStreamHost.getText().toString().trim());
 		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());
@@ -167,19 +167,19 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 				mCurrentProfile.setStreamHost("");
 			}
 			if (DreamDroid.updateProfile(mCurrentProfile)) {
-				showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getProfile() + "'");
+				showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getName() + "'");
 				//TODO reexec connection-check
 				finish();
 			} else {
-				showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getProfile() + "'");
+				showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getName() + "'");
 			}
 		} else {
 			if (DreamDroid.addProfile(mCurrentProfile)) {
-				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getProfile() + "'");
+				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");
 				//TODO reexec connection-check				
 				finish();
 			} else {
-				showToast(getText(R.string.profile_not_added) + " '" + mCurrentProfile.getProfile() + "'");
+				showToast(getText(R.string.profile_not_added) + " '" + mCurrentProfile.getName() + "'");
 			}
 		}
 	}

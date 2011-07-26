@@ -40,7 +40,7 @@
 <string name="edit">Bearbeiten</string>
 <string name="delete">Löschen</string>
 <string name="epg">EPG</string>
-<string name="ssl_enabled">SSL aktivieren</string>
+<string name="ssl_enabled">https</string>
 <string name="host">Hostname/IP</string>
 <string name="port">Port</string>
 <string name="settings">Einstellungen</string>
@@ -203,4 +203,8 @@
 <string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
 <string name="mobile_imdb">Mobile Version von imdb.com nutzen</string>
 <string name="mobile_imdb_long">Nutze m.imdb.com statt www.imdb.com</string>
+<string name="searching">Suche...</string>
+	<string name="searching_known_devices">Suche nach Dreamboxen im lokalen Netzwerk. Dieser Vorgang kann mehrere Minuten dauern!</string>
+	<string name="autodiscover_dreamboxes">Dreamboxen automatisch finden</string>
+	<string name="autodiscovery_failed">Es konnten keine Dreamboxen im lokalen Netzwerk automatisch gefunden werden!</string>
 </resources>

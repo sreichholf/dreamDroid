@@ -100,7 +100,7 @@ public class ProfileListActivity extends ListActivity {
 			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
-			adBuilder.setTitle(mProfile.getProfile());
+			adBuilder.setTitle(mProfile.getName());
 			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
 
 				public void onClick(DialogInterface dialog, int which) {
@@ -125,14 +125,14 @@ public class ProfileListActivity extends ListActivity {
 		case (DIALOG_PROFILE_CONFIRM_DELETE_ID):
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-			builder.setTitle(mProfile.getProfile()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
+			builder.setTitle(mProfile.getName()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 
 							if (DreamDroid.deleteProfile(mProfile)) {
-								showToast(getText(R.string.profile_deleted) + " '" + mProfile.getProfile() + "'");
+								showToast(getText(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
 							} else {
-								showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getProfile() + "'");
+								showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
 							}
 							// TODO Add error handling
 							mProfile = null;
@@ -217,10 +217,10 @@ public class ProfileListActivity extends ListActivity {
 	 */
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
-			showToast(getText(R.string.profile_activated) + " '" + mProfile.getProfile() + "'");
+			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
 //			mParent.onProfileChanged();
 		} else {
-			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getProfile() + "'");
+			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
 		}
 	}
 

@@ -40,7 +40,7 @@
 	<string name="edit">Edit</string>
 	<string name="delete">Delete</string>
 	<string name="epg">EPG</string>
-	<string name="ssl_enabled">Enable SSL</string>
+	<string name="ssl_enabled">https</string>
 	<string name="host">Hostname/IP</string>
 	<string name="port">Port</string>
 	<string name="settings">Settings</string>
@@ -208,4 +208,9 @@
 	<string name="force_tablet_layout">Force Tablet Layout</string>
 	<string name="mobile_imdb">Use mobile version of imdb.com</string>
 	<string name="mobile_imdb_long">Use m.imdb.com instead of www.imdb.com</string>
+	<string name="searching">Searching...</string>
+	<string name="searching_known_devices">Searching for dreamboxes in your local network. This may take a few minutes!</string>
+	<string name="autodiscover_dreamboxes">Dreambox Autodisocvery</string>
+	<string name="autodiscovery_failed">Could not autodiscover any dreambox on your local network!</string>
+	<string name="add_all">Add All</string>
 </resources>

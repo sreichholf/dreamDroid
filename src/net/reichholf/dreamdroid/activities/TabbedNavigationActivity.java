@@ -106,7 +106,7 @@ public class TabbedNavigationActivity extends TabActivity {
 	 * 
 	 */
 	public void setProfileName() {
-		mActiveProfile.setText(DreamDroid.PROFILE.getProfile());
+		mActiveProfile.setText(DreamDroid.PROFILE.getName());
 	}
 
 	/**
