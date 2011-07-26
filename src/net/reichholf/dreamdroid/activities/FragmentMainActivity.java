@@ -133,7 +133,13 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		ft.commit();
 		
 		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
+		if(mActiveProfile == null){
+			mActiveProfile = new TextView(this);
+		}
 		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
+		if(mConnectionState == null){
+			mConnectionState = new TextView(this);
+		}
 		
 		checkActiveProfile();
 	}
