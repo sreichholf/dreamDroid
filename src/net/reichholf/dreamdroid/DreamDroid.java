@@ -155,7 +155,6 @@ public class DreamDroid extends Application {
 			Profile p = new Profile("Default", host, streamHost, port, login, user, pass, ssl, false);
 			DreamDroid.addProfile(p);
 			SharedPreferences.Editor editor = SP.edit();
-			c.requery();
 			editor.remove("currentProfile");
 			editor.commit();
 		}

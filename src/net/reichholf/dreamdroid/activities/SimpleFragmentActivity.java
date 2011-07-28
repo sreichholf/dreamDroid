@@ -159,4 +159,12 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	public void finish(boolean Fragment) {
 		finish();		
 	}
+
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#setActivityCallbackHandler(net.reichholf.dreamdroid.fragment.ActivityCallbackHandler)
+	 */
+	@Override
+	public void setActivityCallbackHandler(ActivityCallbackHandler handler) {
+		mCallBackHandler = handler;
+	}
 }

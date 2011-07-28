@@ -356,6 +356,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		
 		mNavList.setFastScrollEnabled(true);
 		mDetailList.setFastScrollEnabled(true);
+		//We need to ensure this is our callbackHandler (BackStack stuff when EPG has been opened)
+		mMultiPaneHandler.setActivityCallbackHandler(this);
+		
 		setAdapter();
 		getActivity().setTitle(mCurrentTitle);
 		return v;
