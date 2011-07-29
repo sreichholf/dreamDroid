@@ -344,7 +344,8 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#setActivityCallbackHandler(net.reichholf.dreamdroid.fragment.ActivityCallbackHandler)
 	 */
 	@Override
-	public void setActivityCallbackHandler(ActivityCallbackHandler handler) {
-		mCallBackHandler = handler;		
+	public void setDetailFragment(Fragment f) {
+		mCurrentDetailFragment = f;
+		mCallBackHandler = (ActivityCallbackHandler) f;		
 	}
 }

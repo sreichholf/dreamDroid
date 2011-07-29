@@ -17,7 +17,7 @@ public interface MultiPaneHandler {
 	public void showDetails(Fragment fragment);
 	public void showDetails(Fragment fragment, boolean addToBackStack);
 	public void showDetails(Class<?> fragmentClass);
-	public void setActivityCallbackHandler(ActivityCallbackHandler handler);
+	public void setDetailFragment(Fragment f);
 	public void finish();
 	public void finish(boolean Fragment);
 	public void onProfileChanged();
