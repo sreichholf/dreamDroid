@@ -914,13 +914,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		reload(mNavReference, true);
 	}
 	
-	public void reloadDetail(){
-		//Hide ListView show empty/progress
-		mEmpty.setVisibility(View.VISIBLE);
-		mDetailList.setVisibility(View.GONE);		
-		mDetailHeader.setText(mDetailName);
-		
-		if(mDetailReference != null){
+	public void reloadDetail(){	
+		if(mDetailReference != null && ! "".equals(mDetailReference)){
+			//Hide ListView show empty/progress
+			mEmpty.setVisibility(View.VISIBLE);
+			mDetailList.setVisibility(View.GONE);		
+			mDetailHeader.setText(mDetailName);
 			reload(mDetailReference, false);
 		}
 	}
