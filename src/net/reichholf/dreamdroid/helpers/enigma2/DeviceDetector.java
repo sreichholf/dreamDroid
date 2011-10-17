@@ -73,8 +73,6 @@ public class DeviceDetector {
 			Log.e(LOG_TAG, e.getMessage());
 		}
 		
-		
-		
 		return profiles;
 	}
 }

@@ -332,7 +332,9 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	public void onActivityCreated(Bundle savedInstanceState){
 		super.onActivityCreated(savedInstanceState);
 		getListView().setFastScrollEnabled(true);
-		setEmptyText(getText(R.string.loading));
+		try{
+			setEmptyText(getText(R.string.loading));
+		} catch (IllegalStateException e){}
 	}
 	
 	@Override

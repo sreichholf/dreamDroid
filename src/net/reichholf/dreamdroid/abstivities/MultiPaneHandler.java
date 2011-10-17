@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.abstivities;
 
-import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import android.support.v4.app.Fragment;
 
 /**

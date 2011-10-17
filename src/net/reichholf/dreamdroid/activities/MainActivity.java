@@ -299,7 +299,7 @@ public class MainActivity extends AbstractHttpActivity {
 			mButtonTimer = (Button) findViewById(R.id.ButtonTimer);
 			mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
 			mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
-			mButtonMediaplayer = (Button) findViewById(R.id.ButtonMediaplayer);
+//			mButtonMediaplayer = (Button) findViewById(R.id.ButtonMediaplayer);
 
 			registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
 			registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
@@ -308,7 +308,7 @@ public class MainActivity extends AbstractHttpActivity {
 			registerOnClickListener(mButtonTimer, ITEM_TIMER);
 			registerOnClickListener(mButtonRemote, ITEM_REMOTE);
 			registerOnClickListener(mButtonEpgSearch, ITEM_EPG_SEARCH);
-			registerOnClickListener(mButtonMediaplayer, ITEM_MEDIA_PLAYER);
+//			registerOnClickListener(mButtonMediaplayer, ITEM_MEDIA_PLAYER);
 		}
 
 		mSleepTimer = new ExtendedHashMap();

@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
+import net.reichholf.dreamdroid.fragment.ViewPagerNavigationFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import android.app.Dialog;
@@ -43,7 +44,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	private CheckProfileTask mCheckProfileTask;
 	
-	private boolean isNavigationDialog = false;
+	private boolean mIsNavigationDialog = false;
 	
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		/*
@@ -94,9 +95,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		if(savedInstanceState != null){
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
 		}
-		if(mNavigationFragment == null){
-			mNavigationFragment = new NavigationFragment(); 
-		}
 				
 		if(savedInstanceState != null){
 			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
@@ -115,6 +113,14 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			mMultiPane = false;
 		}
 		
+		if(mNavigationFragment == null){
+			if(mMultiPane){
+				mNavigationFragment = new NavigationFragment();
+			} else {
+				mNavigationFragment = new ViewPagerNavigationFragment();
+			}
+		}
+		
 		//Force Multipane Layout if User selected the option for it
 		if(!mMultiPane && DreamDroid.SP.getBoolean("force_multipane", false)){
 			setContentView(R.layout.forced_dualpane);
@@ -124,7 +130,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		FragmentTransaction ft = mFragmentManager.beginTransaction();
 		showFragment(ft, R.id.navigation_view, mNavigationFragment);
 		if(mCurrentDetailFragment != null){
-			
 			showFragment(ft, R.id.detail_view, mCurrentDetailFragment);
 			mCallBackHandler = (ActivityCallbackHandler) mCurrentDetailFragment;
 		} else {
@@ -283,15 +288,15 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	}
 	
 	public void setIsNavgationDialog(boolean is){
-		isNavigationDialog = is;
+		mIsNavigationDialog = is;
 	}
 	
 	@Override
 	protected Dialog onCreateDialog(int id){
 		Dialog dialog = null;
-		if(isNavigationDialog){
+		if(mIsNavigationDialog || mCallBackHandler == null){
 			dialog = mNavigationFragment.onCreateDialog(id);
-			isNavigationDialog = false;
+			mIsNavigationDialog = false;
 		} else {
 			dialog = mCallBackHandler.onCreateDialog(id);
 		}
