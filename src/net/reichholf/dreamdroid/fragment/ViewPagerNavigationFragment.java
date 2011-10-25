@@ -85,5 +85,13 @@ public class ViewPagerNavigationFragment extends NavigationFragment{
 		registerOnClickListener(mButtonEpgSearch, Statics.ITEM_EPG_SEARCH);
 		return v;
 	}
+	
+	@Override
+	public void setAvailableFeatures(){
+		if (DreamDroid.featureSleepTimer()) {
+			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
+		}
+	}
+	
 }
 

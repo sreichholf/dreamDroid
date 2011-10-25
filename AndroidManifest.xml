@@ -3,10 +3,10 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="net.reichholf.dreamdroid" 
 	android:installLocation="auto" 
-	android:versionCode="118" android:versionName="0.9.8a9">
+	android:versionName="0.9.8a11" android:versionCode="122">
 	
 	<uses-sdk 
-		android:minSdkVersion="4" android:targetSdkVersion="11" android:maxSdkVersion="13"></uses-sdk>
+		android:minSdkVersion="4" android:targetSdkVersion="11" android:maxSdkVersion="14"></uses-sdk>
 	
 	<supports-screens
 		android:largeScreens="true"

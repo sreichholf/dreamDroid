@@ -77,10 +77,11 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(DreamDroid.LOG_TAG, result.toString());
 			if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
-				String error = getText((Integer) result.get(CheckProfile.KEY_ERROR_TEXT)).toString();
+				String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 				setConnectionState(error);
 			} else {
-				setConnectionState(getText(R.string.ok).toString());
+				setConnectionState(getString(R.string.ok));
+				mNavigationFragment.setAvailableFeatures();
 			}
 		}
 	}

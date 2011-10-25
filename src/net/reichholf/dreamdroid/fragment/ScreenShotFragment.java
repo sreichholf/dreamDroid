@@ -167,6 +167,12 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		
 		return mImageView;
 	}
+	
+	@Override
+	public void onDestroy(){
+		mScannerConn.disconnect();
+		super.onDestroy();
+	}
 	/*
 	 * (non-Javadoc)
 	 * 

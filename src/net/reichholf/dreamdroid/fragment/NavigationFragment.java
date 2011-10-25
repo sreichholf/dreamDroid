@@ -544,7 +544,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
-			showToast(getString(R.string.not_implemented));
 			mActivity.checkActiveProfile();
 			return true;
 
@@ -614,10 +613,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	}
 
 	public void setAvailableFeatures() {
-		//TODO Feature Handling
-//		if (mExtras) {
-//			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
-//		}
+		//TODO implement feature-handling for list-navigation
 	}
 
 	/**
@@ -637,5 +633,13 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		} else {
 			showToast(getString(R.string.error));
 		}
+	}
+
+	/**
+	 * @param textviewprofile
+	 * @return
+	 */
+	public View findViewById(int id) {
+		return getActivity().findViewById(id);
 	}
 }

@@ -1,13 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
-  android:orientation="horizontal"
+  android:orientation="vertical"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
 
 	<FrameLayout 
    		android:id="@+id/navigation_view" 
    		android:layout_width="fill_parent" 
-   		android:layout_height="fill_parent" />
+   		android:layout_height="fill_parent"
+   		android:layout_marginBottom="50dp" />
 
+	<TableLayout 
+		android:layout_height="45dp"
+		android:layout_width="fill_parent"
+		android:orientation="horizontal"
+		android:layout_marginTop="-45dp"
+		android:layout_marginBottom="0dp"
+		android:layout_gravity="top"
+		android:background="#000000" >
+		<TableRow android:layout_marginTop="3dp">
+			<TextView 
+				android:text="@string/active_profile" 
+				android:textColor="#FFF"
+				android:textStyle="bold"
+				android:id="@+id/TextViewProfileTitle" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:layout_weight="1" />
+			<TextView 
+				android:text="@string/connection_state"
+				android:textColor="#FFF"
+				android:textStyle="bold" 
+				android:id="@+id/TextViewConnectionStateTitle" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:gravity="right"
+				android:layout_weight="1" />
+		</TableRow>
+		<TableRow android:layout_marginTop="3dp">
+			<TextView 
+				android:text="..." 
+				android:textColor="#FFF"
+				android:textStyle="bold"
+				android:id="@+id/TextViewProfile" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:layout_weight="1" />
+			<TextView 
+				android:text="..."
+				android:textColor="#FFF"
+				android:textStyle="bold" 
+				android:id="@+id/TextViewConnectionState" 
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:gravity="right"
+				android:layout_weight="1" />		
+		</TableRow>
+	</TableLayout> 	 	
 </LinearLayout>
