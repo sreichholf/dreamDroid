@@ -17,7 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.jakewharton.android.viewpagerindicator.TitlePageIndicator;
+import com.viewpagerindicator.TitlePageIndicator;
 
 /**
  * @author sre

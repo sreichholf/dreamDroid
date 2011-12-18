@@ -7,7 +7,7 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.TextView;
 
-import com.jakewharton.android.viewpagerindicator.TitleProvider;
+import com.viewpagerindicator.TitleProvider;
 
 public class ViewPagerAdapter extends PagerAdapter implements TitleProvider {
 	private static String[] mTitles;
