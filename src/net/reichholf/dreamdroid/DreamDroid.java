@@ -41,14 +41,7 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_DEFAULT_BOUQUET_NAME = "default_bouquet_name";
 	public static final String PREFS_KEY_DEFAULT_BOUQUET_IS_LIST = "default_bouquet_is_bouquet_list";
 
-	public static SQLiteDatabase DB;
-	public static SharedPreferences SP;
-	public static Profile PROFILE;
-	public static ArrayList<String> LOCATIONS;
-	public static ArrayList<String> TAGS;
-
 	public static boolean DATE_LOCALE_WO;
-	private static boolean sFeatureSleeptimer = false;
 
 	public static final String KEY_ID = "_id";
 	public static final String KEY_PROFILE = "profile";
@@ -75,6 +68,16 @@ public class DreamDroid extends Application {
 
 	private static final String PROFILES_TABLE_UPGRADE_3_4 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_SIMPLE_REMOTE + " BOOLEAN;";
+
+	public static OnActiveProfileChangedListener onActiveProfileChangedListener = null;
+	
+	private static boolean sFeatureSleeptimer = false;
+	private static Profile sProfile;
+	private static SharedPreferences sSp;
+	private static SQLiteDatabase sDb;
+	private static ArrayList<String> sLocations;
+	private static ArrayList<String> sTags;
+	
 
 	/**
 	 * @param context
@@ -112,63 +115,67 @@ public class DreamDroid extends Application {
 			DATE_LOCALE_WO = false;
 		}
 
-		SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-		LOCATIONS = new ArrayList<String>();
-		TAGS = new ArrayList<String>();
+		sSp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+		sLocations = new ArrayList<String>();
+		sTags = new ArrayList<String>();
 
-		DB = openOrCreateDatabase(DATABASE_NAME, MODE_PRIVATE, null);
+		sDb = openOrCreateDatabase(DATABASE_NAME, MODE_PRIVATE, null);
 
-		if (DB.needUpgrade(DATABASE_VERSION)) {
-			if (DB.getVersion() == 2) {
-				DB.execSQL(PROFILES_TABLE_UPGRADE_2_3);
-				DB.execSQL(PROFILES_TABLE_UPGRADE_3_4);
-				DB.setVersion(DATABASE_VERSION);
-			} else if (DB.getVersion() == 3) {
-				DB.execSQL(PROFILES_TABLE_UPGRADE_3_4);
-				DB.setVersion(DATABASE_VERSION);
+		if (sDb.needUpgrade(DATABASE_VERSION)) {
+			if (sDb.getVersion() == 2) {
+				sDb.execSQL(PROFILES_TABLE_UPGRADE_2_3);
+				sDb.execSQL(PROFILES_TABLE_UPGRADE_3_4);
+				sDb.setVersion(DATABASE_VERSION);
+			} else if (sDb.getVersion() == 3) {
+				sDb.execSQL(PROFILES_TABLE_UPGRADE_3_4);
+				sDb.setVersion(DATABASE_VERSION);
 			} else {
-				DB.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME);
-				DB.setVersion(0);
+				sDb.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME);
+				sDb.setVersion(0);
 			}
 		}
 
-		if (DB.getVersion() != DATABASE_VERSION) {
+		if (sDb.getVersion() != DATABASE_VERSION) {
 			// Create the Profiles-Tables if it doesn't exist
-			DB.execSQL(PROFILES_TABLE_CREATE);
-			DB.setVersion(DATABASE_VERSION);
+			sDb.execSQL(PROFILES_TABLE_CREATE);
+			sDb.setVersion(DATABASE_VERSION);
 		}
 
 		// the profile-table is initial - let's migrate the current config as
 		// default Profile
 		Cursor c = getProfiles();
 		if (c.getCount() == 0) {
-			String host = DreamDroid.SP.getString("host", "dm8000");
-			String streamHost = DreamDroid.SP.getString("host", "");
+			String host =sSp.getString("host", "dm8000");
+			String streamHost = sSp.getString("host", "");
 
-			int port = new Integer(DreamDroid.SP.getString("port", "80"));
-			String user = DreamDroid.SP.getString("user", "root");
-			String pass = DreamDroid.SP.getString("pass", "dreambox");
+			int port = new Integer(sSp.getString("port", "80"));
+			String user = sSp.getString("user", "root");
+			String pass = sSp.getString("pass", "dreambox");
 
-			boolean login = DreamDroid.SP.getBoolean("login", false);
-			boolean ssl = DreamDroid.SP.getBoolean("ssl", false);
+			boolean login = sSp.getBoolean("login", false);
+			boolean ssl = sSp.getBoolean("ssl", false);
 			
 			Profile p = new Profile("Default", host, streamHost, port, login, user, pass, ssl, false);
 			DreamDroid.addProfile(p);
-			SharedPreferences.Editor editor = SP.edit();
+			SharedPreferences.Editor editor = sSp.edit();
 			editor.remove("currentProfile");
 			editor.commit();
 		}
 		c.close();
 
-		int profileId = SP.getInt("currentProfile", 1);
+		int profileId = sSp.getInt("currentProfile", 1);
 		if (setActiveProfile(profileId)) {
-			showToast(getText(R.string.profile_activated) + " '" + PROFILE.getName() + "'");
+			showToast(getText(R.string.profile_activated) + " '" + sProfile.getName() + "'");
 		} else {
 			showToast(getText(R.string.profile_not_activated));
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
-			PROFILE = new Profile("Default", "dm8000", "", 80, false, "", "", false, false);
+			sProfile = new Profile("Default", "dm8000", "", 80, false, "", "", false, false);
 		}
+	}
+	
+	public static SharedPreferences getSharedPreferences(){
+		return sSp;
 	}
 
 	/**
@@ -203,7 +210,7 @@ public class DreamDroid extends Application {
 		values.put(KEY_SSL, p.isSsl());
 		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
 
-		if (DB.insert(PROFILES_TABLE_NAME, null, values) > -1) {
+		if (sDb.insert(PROFILES_TABLE_NAME, null, values) > -1) {
 			return true;
 		}
 
@@ -228,13 +235,13 @@ public class DreamDroid extends Application {
 	public static Cursor getProfiles() {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
 				KEY_SSL, KEY_SIMPLE_REMOTE };
-		return DB.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE);
+		return sDb.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE);
 	}
 
 	public static Cursor getProfile(int id) {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
 				KEY_SSL, KEY_SIMPLE_REMOTE };
-		return DB.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null, null, null, KEY_PROFILE);
+		return sDb.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null, null, null, KEY_PROFILE);
 	}
 
 	/**
@@ -252,7 +259,7 @@ public class DreamDroid extends Application {
 		values.put(KEY_SSL, p.isSsl());
 		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
 
-		int numRows = DB.update(PROFILES_TABLE_NAME, values, KEY_ID + "=" + p.getId(), null);
+		int numRows = sDb.update(PROFILES_TABLE_NAME, values, KEY_ID + "=" + p.getId(), null);
 
 		if (numRows == 1) {
 			return true;
@@ -260,20 +267,28 @@ public class DreamDroid extends Application {
 
 		return false;
 
+	}
+	
+	public void onActiveProfileChanged(Profile p){
+		
 	}
 
 	/**
 	 * @param p
 	 */
 	public static boolean deleteProfile(Profile p) {
-		int numRows = DB.delete(PROFILES_TABLE_NAME, KEY_ID + "=" + p.getId(), null);
+		int numRows = sDb.delete(PROFILES_TABLE_NAME, KEY_ID + "=" + p.getId(), null);
 		if (numRows == 1) {
 			return true;
 		}
 
 		return false;
 	}
-
+	
+	public static Profile getActiveProfile(){
+		return sProfile;
+	}
+	
 	/**
 	 * @param id
 	 * @return
@@ -282,23 +297,30 @@ public class DreamDroid extends Application {
 		Cursor c = getProfile(id);
 		if (c.getCount() == 1) {
 			c.moveToFirst();
-			PROFILE = new Profile(c);
-			SharedPreferences.Editor editor = SP.edit();
+			sProfile = new Profile(c);
+			SharedPreferences.Editor editor = sSp.edit();
 			editor.putInt("currentProfile", id);
 			editor.commit();
 			c.close();
-
+			if(onActiveProfileChangedListener != null){
+				onActiveProfileChangedListener.onActiveProfileChanged(sProfile);
+			}
+			
 			return true;
 		}
 		c.close();
 		return false;
+	}
+	
+	public static void setActiveProfileChangedListener(OnActiveProfileChangedListener listener){
+		onActiveProfileChangedListener = listener;
 	}
 
 	/**
 	 * @return
 	 */
 	public static boolean reloadActiveProfile() {
-		return setActiveProfile(PROFILE.getId());
+		return setActiveProfile(sProfile.getId());
 	}
 
 	/**
@@ -312,33 +334,36 @@ public class DreamDroid extends Application {
 	 * @param shc
 	 */
 	public static boolean loadLocations(SimpleHttpClient shc) {
-		LOCATIONS.clear();
+		sLocations.clear();
 
 		boolean gotLoc = false;
 		LocationListRequestHandler handler = new LocationListRequestHandler();
 		String xml = handler.getList(shc);
 
 		if (xml != null) {
-			if (handler.parseList(xml, LOCATIONS)) {
+			if (handler.parseList(xml, sLocations)) {
 				gotLoc = true;
 			}
 		}
 
 		if (!gotLoc) {
 			Log.e(LOG_TAG, "Error parsing locations, falling back to /hdd/movie");
-			LOCATIONS = new ArrayList<String>();
-			LOCATIONS.add("/hdd/movie");
+			sLocations = new ArrayList<String>();
+			sLocations.add("/hdd/movie");
 		}
 
 		return gotLoc;
-
+	}
+	
+	public static ArrayList<String> getLocations(){
+		return sLocations;
 	}
 
 	/**
 	 * @param shc
 	 */
 	public static boolean loadTags(SimpleHttpClient shc) {
-		TAGS.clear();
+		sTags.clear();
 		boolean gotTags = false;
 
 		TagListRequestHandler handler = new TagListRequestHandler();
@@ -346,17 +371,20 @@ public class DreamDroid extends Application {
 		String xmlLoc = handler.getList(shc);
 
 		if (xmlLoc != null) {
-			if (handler.parseList(xmlLoc, TAGS)) {
+			if (handler.parseList(xmlLoc, sTags)) {
 				gotTags = true;
 			}
 		}
 
 		if (!gotTags) {
 			Log.e(LOG_TAG, "Error parsing Tags, no more Tags will be available");
-			TAGS = new ArrayList<String>();
+			sTags = new ArrayList<String>();
 		}
 
 		return gotTags;
-
+	}
+	
+	public static ArrayList<String> getTags(){
+		return sTags;
 	}
 }

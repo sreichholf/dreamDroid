@@ -37,7 +37,7 @@ public class IntentFactory {
 		try{			
 			ctx.startActivity(intent);
 		} catch(ActivityNotFoundException anfex) {
-			if(DreamDroid.SP.getBoolean("mobile_imdb", false)){
+			if(DreamDroid.getSharedPreferences().getBoolean("mobile_imdb", false)){
 				uriString = "http://m.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 			} else {
 				uriString = "http://www.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
@@ -53,7 +53,7 @@ public class IntentFactory {
 	 */
 	public static Intent getStreamServiceIntent(String ref) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "http://" + DreamDroid.PROFILE.getStreamHost().trim() + ":8001/" + ref;
+		String uriString = "http://" + DreamDroid.getActiveProfile().getStreamHost().trim() + ":8001/" + ref;
 		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
 
 		intent.setDataAndType(Uri.parse(uriString), "video/*");

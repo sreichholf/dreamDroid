@@ -112,13 +112,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		 */
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			if (DreamDroid.LOCATIONS.size() == 0) {
+			if (DreamDroid.getLocations().size() == 0) {
 				publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
 
 				DreamDroid.loadLocations(mShc);
 			}
 
-			if (DreamDroid.TAGS.size() == 0) {
+			if (DreamDroid.getTags().size() == 0) {
 				publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
 
 				DreamDroid.loadTags(mShc);
@@ -210,7 +210,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 		mLocation.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-				mTimer.put(Timer.KEY_LOCATION, DreamDroid.LOCATIONS.get(position));
+				mTimer.put(Timer.KEY_LOCATION, DreamDroid.getLocations().get(position));
 			}
 
 			@Override
@@ -239,7 +239,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 			mSelectedTags = new ArrayList<String>();
 
-			if (DreamDroid.LOCATIONS.size() == 0 || DreamDroid.TAGS.size() == 0) {
+			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
 				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
 				mGetLocationsAndTagsTask.execute();
 			} else {
@@ -399,11 +399,11 @@ public class TimerEditActivity extends AbstractHttpActivity {
 			break;
 
 		case (DIALOG_PICK_TAGS_ID):
-			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
-			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
+			CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
+			boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
 
 			int tc = 0;
-			for (String tag : DreamDroid.TAGS) {
+			for (String tag : DreamDroid.getTags()) {
 				tags[tc] = tag;
 
 				if (mSelectedTags.contains(tag)) {
@@ -432,7 +432,7 @@ public class TimerEditActivity extends AbstractHttpActivity {
 				 */
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					String tag = DreamDroid.TAGS.get(which);
+					String tag = DreamDroid.getTags().get(which);
 					mTagsChanged = true;
 					if (isChecked) {
 						if (!mSelectedTags.contains(tag)) {
@@ -581,13 +581,13 @@ public class TimerEditActivity extends AbstractHttpActivity {
 
 		// Locations
 		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
-				DreamDroid.LOCATIONS);
+				DreamDroid.getLocations());
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
 
 		String timerLoc = mTimer.getString(Timer.KEY_LOCATION);
-		for (int i = 0; i < DreamDroid.LOCATIONS.size(); i++) {
-			String loc = DreamDroid.LOCATIONS.get(i);
+		for (int i = 0; i < DreamDroid.getLocations().size(); i++) {
+			String loc = DreamDroid.getLocations().get(i);
 
 			if (timerLoc != null) {
 				if (timerLoc.equals(loc)) {

@@ -138,7 +138,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
 					if (mRequireLocsAndTags) {
-						if (DreamDroid.LOCATIONS.size() == 0) {
+						if (DreamDroid.getLocations().size() == 0) {
 							publishProgress(mBaseTitle + " - " + getText(R.string.locations) + " - "
 									+ getText(R.string.fetching_data));
 
@@ -147,7 +147,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 							}
 						}
 
-						if (DreamDroid.TAGS.size() == 0) {
+						if (DreamDroid.getTags().size() == 0) {
 							publishProgress(mBaseTitle + " - " + getText(R.string.tags) + " - "
 									+ getText(R.string.fetching_data));
 
@@ -313,8 +313,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mListTasks = new ArrayList<GetServiceListTask>();
 		
 		if(mDetailReference == null){
-			mDetailReference = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "");
-			mDetailName = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
+			mDetailReference = DreamDroid.getSharedPreferences().getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "");
+			mDetailName = DreamDroid.getSharedPreferences().getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
 		}
 
 		if (mExtras != null) {
@@ -660,7 +660,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			return true;
 		case Statics.ITEM_SET_DEFAULT:
 			if(mDetailReference != null){
-				Editor editor = DreamDroid.SP.edit();			
+				Editor editor = DreamDroid.getSharedPreferences().edit();			
 				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mDetailReference);
 				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mDetailName);
 
@@ -751,7 +751,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				getActivity().setResult(Activity.RESULT_OK, intent);
 				getActivity().finish();
 			} else {
-				boolean instantZap = DreamDroid.SP.getBoolean("instant_zap", false);
+				boolean instantZap = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
 				} else {

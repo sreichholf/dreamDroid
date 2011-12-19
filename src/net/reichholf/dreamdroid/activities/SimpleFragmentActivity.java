@@ -73,12 +73,12 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		super.onSaveInstanceState(outState);
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public void showDetails(Class fragmentClass, boolean addToBackStack){		
-		Intent intent = new Intent(this, SimpleFragmentActivity.class);
-		intent.putExtra("fragmentClass", fragmentClass);
-		startActivity(intent);
-	}
+//	@SuppressWarnings("rawtypes")
+//	public void showDetails(Class fragmentClass, boolean addToBackStack){		
+//		Intent intent = new Intent(this, SimpleFragmentActivity.class);
+//		intent.putExtra("fragmentClass", fragmentClass);
+//		startActivity(intent);
+//	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
@@ -91,13 +91,19 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	public void showDetails(Fragment fragment){
 		showDetails(fragment, true);
 	}
-
+	
+	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack){	
 		mCallBackHandler = (ActivityCallbackHandler) fragment;		
 		Intent intent = new Intent(this, SimpleFragmentActivity.class);
 		intent.putExtra("fragmentClass", fragment.getClass());
 		intent.putExtras(fragment.getArguments());
-		startActivity(intent);
+		
+		if(fragment.getTargetRequestCode() > 0){
+			startActivityForResult(intent, fragment.getTargetRequestCode());
+		} else {
+			startActivity(intent);
+		}
 	}
 	
 	/**
@@ -148,10 +154,6 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		return super.onKeyUp(keyCode, event);
 	}
 	
-	public void onProfileChanged(){
-		//TODO implement onProfileChanged
-	}
-
 	/* (non-Javadoc)
 	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#finish(boolean)
 	 */
@@ -166,5 +168,15 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	@Override
 	public void setDetailFragment(Fragment f) {
 		mCallBackHandler = (ActivityCallbackHandler) f;		
+	}
+	
+	@Override
+	public boolean isMultiPane(){
+		return false;
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		mFragment.onActivityResult(requestCode, resultCode, data);
 	}
 }

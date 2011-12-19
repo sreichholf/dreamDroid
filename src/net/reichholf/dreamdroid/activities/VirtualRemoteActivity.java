@@ -125,7 +125,7 @@ public class VirtualRemoteActivity extends AbstractHttpActivity {
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
 		
-		mSimpleRemote = DreamDroid.PROFILE.isSimpleRemote();
+		mSimpleRemote = DreamDroid.getActiveProfile().isSimpleRemote();
 		
 		mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		reinit();

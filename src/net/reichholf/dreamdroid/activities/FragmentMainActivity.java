@@ -7,6 +7,8 @@
 package net.reichholf.dreamdroid.activities;
 
 import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.OnActiveProfileChangedListener;
+import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
@@ -31,7 +33,7 @@ import android.widget.TextView;
  * @author sre
  *
  */
-public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler {	
+public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {	
 	private boolean mMultiPane;
 	
 	private Fragment mCurrentDetailFragment;	
@@ -47,6 +49,12 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	private boolean mIsNavigationDialog = false;
 	
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
+		private Profile mProfile;
+		
+		public CheckProfileTask(Profile p){
+			mProfile = p;
+		}
+		
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -55,7 +63,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		@Override
 		protected ExtendedHashMap doInBackground(Void... params) {
 			publishProgress(getText(R.string.checking).toString());
-			return CheckProfile.checkProfile(DreamDroid.PROFILE);
+			return CheckProfile.checkProfile(mProfile);
 		}
 
 		/*
@@ -95,12 +103,11 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		
 		if(savedInstanceState != null){
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
-		}
-				
-		if(savedInstanceState != null){
 			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
 		}
-				
+		
+		DreamDroid.setActiveProfileChangedListener(this);
+		
 		initViews();
 		mNavigationFragment.setHighlightCurrent(mMultiPane);		
 	}
@@ -123,7 +130,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 		
 		//Force Multipane Layout if User selected the option for it
-		if(!mMultiPane && DreamDroid.SP.getBoolean("force_multipane", false)){
+		if(!mMultiPane && DreamDroid.getSharedPreferences().getBoolean("force_multipane", false)){
 			setContentView(R.layout.forced_dualpane);
 			mMultiPane = true;
 		}
@@ -147,7 +154,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			mConnectionState = new TextView(this);
 		}
 		
-		checkActiveProfile();
+		onActiveProfileChanged(DreamDroid.getActiveProfile());
 	}
 	
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){	
@@ -180,25 +187,25 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		super.onResume();
 	}
 	
-	/**
-	 * 
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.OnActiveProfileChangedListener#onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
 	 */
-	public void checkActiveProfile() {
+	@Override
+	public void onActiveProfileChanged(Profile p) {
 		setProfileName();
 		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
 		}
 
-		mCheckProfileTask = new CheckProfileTask();
+		mCheckProfileTask = new CheckProfileTask(p);
 		mCheckProfileTask.execute();
-	}
-	
+	}	
 	
 	/**
 	 * 
 	 */
 	public void setProfileName() {
-		mActiveProfile.setText(DreamDroid.PROFILE.getName());
+		mActiveProfile.setText(DreamDroid.getActiveProfile().getName());
 	}
 
 	/**
@@ -327,10 +334,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			}
 		}
 		return super.onKeyUp(keyCode, event);
-	}
-	
-	public void onProfileChanged(){
-		checkActiveProfile();
 	}
 	
 	public boolean isMultiPane(){

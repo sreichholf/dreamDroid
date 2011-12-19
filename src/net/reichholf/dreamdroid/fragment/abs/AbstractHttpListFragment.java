@@ -107,7 +107,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
 					if (mRequireLocsAndTags) {
-						if (DreamDroid.LOCATIONS.size() == 0) {
+						if (DreamDroid.getLocations().size() == 0) {
 							publishProgress(mBaseTitle + " - " + getText(R.string.locations) + " - "
 									+ getText(R.string.fetching_data));
 
@@ -116,7 +116,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 							}
 						}
 
-						if (DreamDroid.TAGS.size() == 0) {
+						if (DreamDroid.getTags().size() == 0) {
 							publishProgress(mBaseTitle + " - " + getText(R.string.tags) + " - "
 									+ getText(R.string.fetching_data));
 
@@ -529,7 +529,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if( DreamDroid.SP.getBoolean("volume_control", false) ) {
+		if( DreamDroid.getSharedPreferences().getBoolean("volume_control", false) ) {
 			switch (keyCode) {
 				case KeyEvent.KEYCODE_VOLUME_UP:
 					onVolumeButtonClicked(Volume.CMD_UP);

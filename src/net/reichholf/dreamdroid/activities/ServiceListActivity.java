@@ -123,8 +123,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			mPickMode = false;
 		}
 
-		String ref = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "default");
-		String name = DreamDroid.SP.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
+		String ref = DreamDroid.getSharedPreferences().getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "default");
+		String name = DreamDroid.getSharedPreferences().getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME,
 				(String) getText(R.string.bouquet_overview));
 
 		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE, ref);
@@ -135,7 +135,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
 
 		} else {
-			mIsBouquetList = DreamDroid.SP.getBoolean(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_IS_LIST, true);
+			mIsBouquetList = DreamDroid.getSharedPreferences().getBoolean(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_IS_LIST, true);
 			mHistory = new ArrayList<ExtendedHashMap>();
 
 			ExtendedHashMap map = new ExtendedHashMap();
@@ -352,7 +352,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 			reload();
 			return true;
 		case MENU_SET_AS_DEFAULT:
-			Editor editor = DreamDroid.SP.edit();
+			Editor editor = DreamDroid.getSharedPreferences().edit();
 			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mReference);
 			editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mName);
 			editor.putBoolean(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_IS_LIST, mIsBouquetList);
@@ -437,7 +437,7 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 				setResult(RESULT_OK, intent);
 				finish();
 			} else {
-				boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
+				boolean isInsta = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);
 				if ((isInsta && !isLong) || (!isInsta && isLong)) {
 					zapTo(ref);
 				} else {

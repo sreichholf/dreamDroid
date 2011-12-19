@@ -234,11 +234,11 @@ public class SimpleHttpClient {
 	 * 
 	 */
 	public void applyConfig() {
-		mHostname = DreamDroid.PROFILE.getHost().trim();
-		mStreamHostname = DreamDroid.PROFILE.getStreamHost().trim();
-		mPort = new Integer(DreamDroid.PROFILE.getPort()).toString();
-		mLogin = DreamDroid.PROFILE.isLogin();
-		mSsl = DreamDroid.PROFILE.isSsl();
+		mHostname = DreamDroid.getActiveProfile().getHost().trim();
+		mStreamHostname = DreamDroid.getActiveProfile().getStreamHost().trim();
+		mPort = new Integer(DreamDroid.getActiveProfile().getPort()).toString();
+		mLogin = DreamDroid.getActiveProfile().isLogin();
+		mSsl = DreamDroid.getActiveProfile().isSsl();
 
 		if (mSsl) {
 			mPrefix = "https://";
@@ -247,8 +247,8 @@ public class SimpleHttpClient {
 		}
 
 		if (mLogin) {
-			mUser = DreamDroid.PROFILE.getUser();
-			mPass = DreamDroid.PROFILE.getPass();
+			mUser = DreamDroid.getActiveProfile().getUser();
+			mPass = DreamDroid.getActiveProfile().getPass();
 			setCredentials(mUser, mPass);
 		}
 	}

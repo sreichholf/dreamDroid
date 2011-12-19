@@ -19,9 +19,6 @@ public class Profile implements Serializable{
 	/**
 	 * 
 	 */
-	public class onProfileChangedListener{
-		
-	}
 	
 	private static final long serialVersionUID = 8176949133234868302L;
 	

@@ -340,7 +340,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if( DreamDroid.SP.getBoolean("volume_control", false) ) {
+		if( DreamDroid.getSharedPreferences().getBoolean("volume_control", false) ) {
 			switch (keyCode) {
 				case KeyEvent.KEYCODE_VOLUME_UP:
 					onVolumeButtonClicked(Volume.CMD_UP);

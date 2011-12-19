@@ -544,7 +544,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
-			mActivity.checkActiveProfile();
+			mActivity.onActiveProfileChanged(DreamDroid.getActiveProfile());
 			return true;
 
 		case Statics.ITEM_SLEEPTIMER:

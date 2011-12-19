@@ -288,14 +288,13 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_PROFILE) {
-			mActivity.setResult(resultCode);
+			mActivity.setResult(resultCode, null);
 			if (resultCode == Activity.RESULT_OK) {
 				mCursor.requery();
 				mAdapter.notifyDataSetChanged();
 				// Reload the current profile as it may have been
 				// changed/altered
 				DreamDroid.reloadActiveProfile();
-				mMultiPaneHandler.onProfileChanged();
 			}
 		}
 	}
@@ -347,7 +346,6 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
-			mMultiPaneHandler.onProfileChanged();
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
 		}

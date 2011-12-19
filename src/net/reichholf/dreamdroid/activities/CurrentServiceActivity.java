@@ -454,7 +454,7 @@ public class CurrentServiceActivity extends AbstractHttpActivity {
 	 */
 	private void streamService(String ref){
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "http://" + DreamDroid.PROFILE.getStreamHost().trim() + ":8001/" + ref;
+		String uriString = "http://" + DreamDroid.getActiveProfile().getStreamHost().trim() + ":8001/" + ref;
 		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
 		
 		intent.setDataAndType(Uri.parse(uriString) , "video/*");

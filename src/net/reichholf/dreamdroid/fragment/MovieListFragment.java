@@ -125,8 +125,8 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 */
 	@Override
 	protected void setDefaultLocation() {
-		if (mCurrentLocation == null && DreamDroid.LOCATIONS.size() > 0) {
-			mCurrentLocation = DreamDroid.LOCATIONS.get(0);
+		if (mCurrentLocation == null && DreamDroid.getLocations().size() > 0) {
+			mCurrentLocation = DreamDroid.getLocations().get(0);
 		}
 	}
 
@@ -230,11 +230,11 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			break;
 
 		case (Statics.DIALOG_PICK_LOCATION_ID):
-			CharSequence[] locations = new CharSequence[DreamDroid.LOCATIONS.size()];
+			CharSequence[] locations = new CharSequence[DreamDroid.getLocations().size()];
 
 			int selectedIndex = 0;
 			int lc = 0;
-			for (String location : DreamDroid.LOCATIONS) {
+			for (String location : DreamDroid.getLocations()) {
 				locations[lc] = location;
 				if (location.equals(mCurrentLocation)) {
 					selectedIndex = lc;
@@ -248,7 +248,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			builder.setSingleChoiceItems(locations, selectedIndex, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					String selectedLoc = DreamDroid.LOCATIONS.get(which);
+					String selectedLoc = DreamDroid.getLocations().get(which);
 					if (!selectedLoc.equals(mCurrentLocation)) {
 						mCurrentLocation = selectedLoc;
 						reload();
@@ -262,11 +262,11 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			break;
 
 		case (Statics.DIALOG_PICK_TAGS_ID):
-			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
-			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
+			CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
+			boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
 
 			int tc = 0;
-			for (String tag : DreamDroid.TAGS) {
+			for (String tag : DreamDroid.getTags()) {
 				tags[tc] = tag;
 
 				if (mSelectedTags.contains(tag)) {
@@ -295,7 +295,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 				 */
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					String tag = DreamDroid.TAGS.get(which);
+					String tag = DreamDroid.getTags().get(which);
 					mTagsChanged = true;
 					if (isChecked) {
 						if (!mSelectedTags.contains(tag)) {
@@ -363,7 +363,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 */
 	private void onListItemClick(View v, int position, long id, boolean isLong){
 		mMovie = mMapList.get(position);
-		boolean isInsta = DreamDroid.SP.getBoolean("instant_zap", false);
+		boolean isInsta = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);
 		if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {

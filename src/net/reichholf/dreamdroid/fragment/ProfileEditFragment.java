@@ -97,8 +97,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 		mCancel.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-//				TODO Cancel-Handling
-				finish();
+				finish(Activity.RESULT_CANCELED);
 			}
 
 		});		
@@ -168,16 +167,14 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 			}
 			if (DreamDroid.updateProfile(mCurrentProfile)) {
 				showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getName() + "'");
-				//TODO reexec connection-check
-				finish();
+				finish(Activity.RESULT_OK);
 			} else {
 				showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getName() + "'");
 			}
 		} else {
 			if (DreamDroid.addProfile(mCurrentProfile)) {
-				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");
-				//TODO reexec connection-check				
-				finish();
+				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");				
+				finish(Activity.RESULT_OK);
 			} else {
 				showToast(getText(R.string.profile_not_added) + " '" + mCurrentProfile.getName() + "'");
 			}
@@ -233,12 +230,18 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
 	 */
-	protected void finish(){
-		Fragment f = getTargetFragment();		
-		if(f != null){			
-			MultiPaneHandler mph = (MultiPaneHandler) getActivity();
-			mph.showDetails(f);
-			f.onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
+	protected void finish(int resultCode){
+		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+		if(mph.isMultiPane()){
+			Fragment f = getTargetFragment();
+			if(f != null){
+				mph.showDetails(f);
+				f.onActivityResult(getTargetRequestCode(), resultCode, null);
+			}
+		} else {
+			Activity a = getActivity();
+			a.setResult(resultCode);
+			a.finish();
 		}
 	}
 }

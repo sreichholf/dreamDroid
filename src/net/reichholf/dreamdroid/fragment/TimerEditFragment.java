@@ -14,6 +14,7 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.ServiceListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -36,6 +37,7 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -95,13 +97,13 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		 */
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			if (DreamDroid.LOCATIONS.size() == 0) {
+			if (DreamDroid.getLocations().size() == 0) {
 				publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
 
 				DreamDroid.loadLocations(mShc);
 			}
 
-			if (DreamDroid.TAGS.size() == 0) {
+			if (DreamDroid.getTags().size() == 0) {
 				publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
 
 				DreamDroid.loadTags(mShc);
@@ -197,7 +199,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mLocation.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-				mTimer.put(Timer.KEY_LOCATION, DreamDroid.LOCATIONS.get(position));
+				mTimer.put(Timer.KEY_LOCATION, DreamDroid.getLocations().get(position));
 			}
 
 			@Override
@@ -223,7 +225,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 			mSelectedTags = new ArrayList<String>();
 
-			if (DreamDroid.LOCATIONS.size() == 0 || DreamDroid.TAGS.size() == 0) {
+			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
 				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask();
 				mGetLocationsAndTagsTask.execute();
 			} else {
@@ -373,11 +375,11 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			break;
 
 		case (Statics.DIALOG_TIMER_PICK_TAGS_ID):
-			CharSequence[] tags = new CharSequence[DreamDroid.TAGS.size()];
-			boolean[] selectedTags = new boolean[DreamDroid.TAGS.size()];
+			CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
+			boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
 
 			int tc = 0;
-			for (String tag : DreamDroid.TAGS) {
+			for (String tag : DreamDroid.getTags()) {
 				tags[tc] = tag;
 
 				if (mSelectedTags.contains(tag)) {
@@ -406,7 +408,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				 */
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					String tag = DreamDroid.TAGS.get(which);
+					String tag = DreamDroid.getTags().get(which);
 					mTagsChanged = true;
 					if (isChecked) {
 						if (!mSelectedTags.contains(tag)) {
@@ -480,7 +482,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			return true;
 
 		case Statics.ITEM_CANCEL:
-			finish();
+			finish(Activity.RESULT_CANCELED);
 			return true;
 
 		case Statics.ITEM_PICK_SERVICE:
@@ -555,13 +557,13 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 		// Locations
 		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item,
-				DreamDroid.LOCATIONS);
+				DreamDroid.getLocations());
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
 
 		String timerLoc = mTimer.getString(Timer.KEY_LOCATION);
-		for (int i = 0; i < DreamDroid.LOCATIONS.size(); i++) {
-			String loc = DreamDroid.LOCATIONS.get(i);
+		for (int i = 0; i < DreamDroid.getLocations().size(); i++) {
+			String loc = DreamDroid.getLocations().get(i);
 
 			if (timerLoc != null) {
 				if (timerLoc.equals(loc)) {
@@ -697,8 +699,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				mProgress.dismiss();
 			}
 		}
-		
-		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.saving), true);
+		Activity activtiy = getActivity();
+		mProgress = ProgressDialog.show(activtiy, "", getText(R.string.saving), true);
 		
 		applyViewValues();
 		ArrayList<NameValuePair> params = Timer.getSaveParams(mTimer, mTimerOld);
@@ -825,5 +827,23 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mTimer.put(Timer.KEY_END, seconds);
 		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 		reload();
+	}
+	
+	/**
+	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 */
+	protected void finish(int resultCode){
+		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+		if(mph.isMultiPane()){
+			Fragment f = getTargetFragment();
+			if(f != null){
+				mph.showDetails(f);
+				f.onActivityResult(getTargetRequestCode(), resultCode, null);
+			}
+		} else {
+			Activity a = getActivity();
+			a.setResult(resultCode);
+			a.finish();
+		}
 	}
 }

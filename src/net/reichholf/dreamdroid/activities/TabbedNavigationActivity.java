@@ -34,7 +34,7 @@ public class TabbedNavigationActivity extends TabActivity {
 		@Override
 		protected ExtendedHashMap doInBackground(Void... params) {
 			publishProgress(getText(R.string.checking).toString());
-			return CheckProfile.checkProfile(DreamDroid.PROFILE);
+			return CheckProfile.checkProfile(DreamDroid.getActiveProfile());
 		}
 
 		/*
@@ -106,7 +106,7 @@ public class TabbedNavigationActivity extends TabActivity {
 	 * 
 	 */
 	public void setProfileName() {
-		mActiveProfile.setText(DreamDroid.PROFILE.getName());
+		mActiveProfile.setText(DreamDroid.getActiveProfile().getName());
 	}
 
 	/**
