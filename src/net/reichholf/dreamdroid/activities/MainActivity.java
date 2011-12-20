@@ -300,7 +300,7 @@ public class MainActivity extends AbstractHttpActivity {
 			mButtonRemote = (Button) findViewById(R.id.ButtonVirtualRemote);
 			mButtonEpgSearch = (Button) findViewById(R.id.ButtonEpgSearch);
 			mButtonMediaplayer = (Button) findViewById(R.id.ButtonMediaplayer);
-
+			mButtonMediaplayer.setVisibility(View.GONE);
 			registerOnClickListener(mButtonPower, ITEM_POWERSTATE_DIALOG);
 			registerOnClickListener(mButtonCurrent, ITEM_CURRENT);
 			registerOnClickListener(mButtonMovies, ITEM_MOVIES);
@@ -320,7 +320,7 @@ public class MainActivity extends AbstractHttpActivity {
 			Intent intent = new Intent(this, TabbedNavigationActivity.class);
 			startActivity(intent);
 			finish();
-		}
+		}		
 	}
 
 	/*

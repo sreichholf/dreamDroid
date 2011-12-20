@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout 
+	android:id="@+id/LinearLayoutMain" 
+	android:layout_width="fill_parent" 
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:id="@android:id/tabhost"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:layout_marginBottom="20dp">
+	    <LinearLayout
+	        android:orientation="vertical"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:padding="0dp">
+	        <TabWidget
+	            android:id="@android:id/tabs"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content" />
+	        <FrameLayout
+	            android:id="@android:id/tabcontent"
+	            android:layout_width="fill_parent"
+	            android:layout_height="fill_parent"
+	            android:padding="0dp" />
+	    </LinearLayout>
+	</TabHost>
+
+	<TableLayout
+	    android:id="@+id/LinearLayout2"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_marginTop="-20dp"
+	    android:orientation="horizontal" >
+
+	    <TableRow>
+
+	        <TextView
+	            android:id="@+id/TextViewProfileTitle"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="1"
+	            android:text="@string/active_profile"
+	            android:textColor="#FFF"
+	            android:textStyle="bold" />
+
+	        <TextView
+	            android:id="@+id/TextViewProfile"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="1"
+	            android:text="..."
+	            android:textColor="#FFF"
+	            android:textStyle="bold" />
+
+	        <TextView
+	            android:id="@+id/TextViewConnectionStateTitle"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="1"
+	            android:gravity="right"
+	            android:text="@string/connection_state"
+	            android:textColor="#FFF"
+	            android:textStyle="bold" />
+
+	        <TextView
+	            android:id="@+id/TextViewConnectionState"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="1"
+	            android:gravity="right"
+	            android:text="..."
+	            android:textColor="#FFF"
+	            android:textStyle="bold" />
+	    </TableRow>
+	</TableLayout>
+
+</LinearLayout>

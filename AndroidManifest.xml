@@ -3,10 +3,10 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="net.reichholf.dreamdroid" 
 	android:installLocation="auto" 
-	android:versionName="0.9.7b2" android:versionCode="102">
+	android:versionCode="106" android:versionName="0.9.7.1">
 	
 	<uses-sdk 
-		android:minSdkVersion="4" android:maxSdkVersion="12" android:targetSdkVersion="4"></uses-sdk>
+		android:minSdkVersion="4" android:maxSdkVersion="15" android:targetSdkVersion="15"></uses-sdk>
 	
 	<supports-screens
 		android:largeScreens="true"
@@ -76,10 +76,16 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>		
 		</activity>
+		
+		<activity android:name=".activities.ExtrasActivity"></activity>
+		<activity android:name=".activities.DreamDroidPreferenceActivity"></activity>
+		<activity android:name=".activities.MediaplayerActivity"></activity>
+		<activity android:name=".activities.MediaplayerFilebrowserActivity"></activity>
+		<activity android:name=".activities.MediaplayerNavigationActivity"></activity>
+		<activity android:name=".activities.MediaplayerPlaylistActivity"></activity>
+		
 		<meta-data 
 			android:name="android.app.default_searchable"
 			android:value=".activities.SearchEpgActivity" ></meta-data>
-		<activity android:name=".activities.ExtrasActivity"></activity>
-		<activity android:name="activities.DreamDroidPreferenceActivity"></activity>
 	</application>
 </manifest> 

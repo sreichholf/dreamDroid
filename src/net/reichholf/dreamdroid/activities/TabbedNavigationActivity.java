@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -15,9 +18,13 @@ import android.app.TabActivity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TabHost;
+import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TextView;
 
 public class TabbedNavigationActivity extends TabActivity {
@@ -93,15 +100,66 @@ public class TabbedNavigationActivity extends TabActivity {
 				.setIndicator(getText(R.string.profiles), res.getDrawable(R.drawable.ic_tab_link))
 				.setContent(intent);
 		tabHost.addTab(spec);
-
+		
+		if (Build.VERSION.SDK_INT >= 11) {
+			final Activity activity = this;
+			tabHost.setOnTabChangedListener(new OnTabChangeListener() {
+				@Override
+				public void onTabChanged(String tabId) {
+					try {
+						Method invalidateOptionsMenu = activity.getClass().getMethod("invalidateOptionsMenu");
+						invalidateOptionsMenu.invoke(activity);
+					} catch (NoSuchMethodException e) {
+						Log.e(DreamDroid.LOG_TAG, e.toString());
+					} catch (IllegalArgumentException e) {
+						Log.e(DreamDroid.LOG_TAG, e.toString());
+					} catch (IllegalAccessException e) {
+						Log.e(DreamDroid.LOG_TAG, e.toString());
+					} catch (InvocationTargetException e) {
+						Log.e(DreamDroid.LOG_TAG, e.toString());
+					}
+				}
+			});
+		}
 		tabHost.setCurrentTab(0);
-
+		
 		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
 		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
 
 		onProfileChanged();
 	}
-
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		if(Build.VERSION.SDK_INT >= 11){
+			if(getTabHost().getCurrentTab() == 2){
+				menu.add(0, ProfileListActivity.ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
+			} else {
+				menu.add(0, MainActivity.ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
+			}
+		}
+		return true;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if(Build.VERSION.SDK_INT >= 11){
+			return getCurrentActivity().onOptionsItemSelected(item);
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
 	/**
 	 * 
 	 */
