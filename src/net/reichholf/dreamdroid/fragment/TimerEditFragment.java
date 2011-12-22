@@ -151,8 +151,9 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
+		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
+		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
 	@SuppressWarnings("unchecked")

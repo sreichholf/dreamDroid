@@ -21,5 +21,6 @@
 	<CheckBoxPreference 
 		android:key="force_multipane"
 		android:summary="@string/force_tablet_layout_long"
-		android:title="@string/force_tablet_layout" />
+		android:title="@string/force_tablet_layout"
+		android:enabled="false" />
 </PreferenceScreen>

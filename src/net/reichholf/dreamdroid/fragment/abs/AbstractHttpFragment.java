@@ -12,13 +12,11 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
-import net.reichholf.dreamdroid.activities.SearchEpgActivity;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
@@ -29,7 +27,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Dialog;
-import android.app.SearchManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -40,8 +37,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 /**
@@ -199,7 +196,6 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-//		menu.add(0, MENU_HOME, 99, getText(R.string.home)).setIcon(android.R.drawable.ic_menu_view);
 	}
 
 	/*
@@ -267,10 +263,11 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 * @param event
 	 */
 	protected void findSimilarEvents(ExtendedHashMap event){
-		Intent intent = new Intent(getActivity(), SearchEpgActivity.class);
-		intent.setAction(Intent.ACTION_SEARCH);
-		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
-		startActivity(intent);
+		//TODO fix findSimilarEvents
+//		Intent intent = new Intent(getActivity(), SearchEpgActivity.class);
+//		intent.setAction(Intent.ACTION_SEARCH);
+//		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
+//		startActivity(intent);
 	}
 	
 	/**

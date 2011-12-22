@@ -259,6 +259,8 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getActivity().setProgressBarIndeterminateVisibility(false);
+		
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
 		mActivity = (FragmentMainActivity) getActivity();
 		mSleepTimer = new ExtendedHashMap();

@@ -153,6 +153,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
 		}
 		mCurrentServiceReady = false;
+		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){

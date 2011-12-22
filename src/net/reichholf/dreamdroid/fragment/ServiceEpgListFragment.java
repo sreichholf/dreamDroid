@@ -55,6 +55,8 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getActivity().setProgressBarIndeterminateVisibility(false);
+		
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.epg);
 		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
 		mName = getDataForKey(Event.KEY_SERVICE_NAME);

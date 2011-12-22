@@ -297,7 +297,8 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		getActivity().setProgressBarIndeterminateVisibility(false);
+		
 		mExtras = getArguments();
 		mMapList = null;
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);

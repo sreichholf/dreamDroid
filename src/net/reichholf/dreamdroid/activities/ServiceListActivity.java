@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.AbstractHttpEventListActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
@@ -389,14 +390,14 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 	 *            The name of the Service for the reference
 	 */
 	public void openEpg(String ref, String nam) {
-		Intent intent = new Intent(this, ServiceEpgListActivity.class);
-		ExtendedHashMap map = new ExtendedHashMap();
-		map.put(Event.KEY_SERVICE_REFERENCE, ref);
-		map.put(Event.KEY_SERVICE_NAME, nam);
-
-		intent.putExtra(sData, map);
-
-		startActivity(intent);
+//		Intent intent = new Intent(this, ServiceEpgListActivity.class);
+//		ExtendedHashMap map = new ExtendedHashMap();
+//		map.put(Event.KEY_SERVICE_REFERENCE, ref);
+//		map.put(Event.KEY_SERVICE_NAME, nam);
+//
+//		intent.putExtra(sData, map);
+//
+//		startActivity(intent);
 	}
 
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
@@ -455,8 +456,8 @@ public class ServiceListActivity extends AbstractHttpEventListActivity {
 						public void onClick(DialogInterface dialog, int which) {
 							switch (which) {
 							case 0:
-								removeDialog(DIALOG_EPG_ITEM_ID);
-								showDialog(DIALOG_EPG_ITEM_ID);
+								removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+								showDialog(Statics.DIALOG_EPG_ITEM_ID);
 								break;
 
 							case 1:

@@ -98,6 +98,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	public void onCreate(Bundle savedInstanceState){		
 		super.onCreate(savedInstanceState);	
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		setProgressBarIndeterminateVisibility(false);
 		
 		mFragmentManager = getSupportFragmentManager();				
 		
@@ -121,18 +122,24 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			mMultiPane = false;
 		}
 		
+		//Force Multipane Layout if User selected the option for it
+		if(!mMultiPane && DreamDroid.getSharedPreferences().getBoolean("force_multipane", false)){
+			setContentView(R.layout.forced_dualpane);
+			mMultiPane = true;
+		}
+		
 		if(mNavigationFragment == null){
 			if(mMultiPane){
 				mNavigationFragment = new NavigationFragment();
 			} else {
 				mNavigationFragment = new ViewPagerNavigationFragment();
 			}
-		}
-		
-		//Force Multipane Layout if User selected the option for it
-		if(!mMultiPane && DreamDroid.getSharedPreferences().getBoolean("force_multipane", false)){
-			setContentView(R.layout.forced_dualpane);
-			mMultiPane = true;
+		} else {
+			if(mMultiPane && !mNavigationFragment.getClass().equals(NavigationFragment.class)){
+				mNavigationFragment = new NavigationFragment();
+			} else if(!mMultiPane && mNavigationFragment.getClass().equals(NavigationFragment.class)){
+				mNavigationFragment = new ViewPagerNavigationFragment();
+			}
 		}
 				
 		FragmentTransaction ft = mFragmentManager.beginTransaction();

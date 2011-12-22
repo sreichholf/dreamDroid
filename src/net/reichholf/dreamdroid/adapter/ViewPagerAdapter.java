@@ -12,6 +12,7 @@ import com.viewpagerindicator.TitleProvider;
 public class ViewPagerAdapter extends PagerAdapter implements TitleProvider {
 	private static String[] mTitles;
 	private static View[] mViews;
+	@SuppressWarnings("unused")
 	private final Context mContext;
 
 	public ViewPagerAdapter(Context context, String[] titles, View[] views) {

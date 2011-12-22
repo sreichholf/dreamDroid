@@ -182,8 +182,9 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		
 		mActivity = getActivity();
 		mActivity.setTitle( getString(R.string.app_name) + "::" + getString(R.string.profiles) );
-		mMultiPaneHandler = (MultiPaneHandler) getActivity();
+		mActivity.setProgressBarIndeterminateVisibility(false);
 		
+		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 		mCursor = DreamDroid.getProfiles();		
 	}
 	

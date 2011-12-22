@@ -6,22 +6,16 @@
 
 package net.reichholf.dreamdroid.abstivities;
 
-import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.SearchEpgActivity;
-import net.reichholf.dreamdroid.activities.TimerEditActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
-import net.reichholf.dreamdroid.intents.IntentFactory;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.app.SearchManager;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -98,7 +92,7 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							IntentFactory.queryIMDb(getBaseContext(), mCurrentItem);
+//							startActivity( IntentFactory.getIMDbQueryIntent(mCurrentItem) );
 							dialog.dismiss();
 						}
 					});
@@ -151,10 +145,10 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 	 * @param event
 	 */
 	protected void findSimilarEvents(ExtendedHashMap event){
-		Intent intent = new Intent(this, SearchEpgActivity.class);
-		intent.setAction(Intent.ACTION_SEARCH);
-		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
-		startActivity(intent);
+//		Intent intent = new Intent(this, SearchEpgActivity.class);
+//		intent.setAction(Intent.ACTION_SEARCH);
+//		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
+//		startActivity(intent);
 	}
 	
 	/*
@@ -181,11 +175,11 @@ public abstract class AbstractHttpEventListActivity extends AbstractHttpListActi
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put("timer", timer);
 
-		Intent intent = new Intent(this, TimerEditActivity.class);
-		intent.putExtra(sData, data);
-		intent.setAction(DreamDroid.ACTION_NEW);
-
-		this.startActivity(intent);
+//		Intent intent = new Intent(this, TimerEditActivity.class);
+//		intent.putExtra(sData, data);
+//		intent.setAction(DreamDroid.ACTION_NEW);
+//
+//		this.startActivity(intent);
 	}
 
 	/**

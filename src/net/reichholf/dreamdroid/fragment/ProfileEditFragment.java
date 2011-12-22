@@ -56,6 +56,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 		super.onCreate(savedInstanceState);
 		mActivity = getActivity();
 		mActivity.setTitle( getString(R.string.app_name) + "::" + getString(R.string.edit_profile) );
+		mActivity.setProgressBarIndeterminateVisibility(false);
 	}
 	
 	@Override

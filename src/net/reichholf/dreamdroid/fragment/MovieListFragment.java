@@ -93,6 +93,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		super.onCreate(savedInstanceState);	
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.movies);
 		setHasOptionsMenu(true);
+		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
 	@Override 

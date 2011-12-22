@@ -33,6 +33,7 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		setProgressBarIndeterminateVisibility(false);
 		
 		if(savedInstanceState != null){
 			mFragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
@@ -83,7 +84,6 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
 		super.onCreateOptionsMenu(menu);
-		menu.add(0, MENU_HOME, 99, getText(R.string.home)).setIcon(android.R.drawable.ic_menu_view);
 		return true;
 	}
 	

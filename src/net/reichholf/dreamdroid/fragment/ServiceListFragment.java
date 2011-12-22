@@ -265,6 +265,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getActivity().setProgressBarIndeterminateVisibility(false);
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.services);
 
 		mReload = true;

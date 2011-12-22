@@ -131,7 +131,8 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mActivity = getActivity();
-
+		mActivity.setProgressBarIndeterminateVisibility(false);
+		
 		mMerge = new MergeAdapter();
 		mInfo = new ExtendedHashMap();
 		mFrontends = new ArrayList<ExtendedHashMap>();

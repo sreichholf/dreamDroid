@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.fragment.abs;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
-import net.reichholf.dreamdroid.activities.SearchEpgActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -18,9 +17,7 @@ import net.reichholf.dreamdroid.intents.IntentFactory;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.app.SearchManager;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -149,10 +146,11 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	 * @param event
 	 */
 	protected void findSimilarEvents(ExtendedHashMap event){
-		Intent intent = new Intent(getActivity(), SearchEpgActivity.class);
-		intent.setAction(Intent.ACTION_SEARCH);
-		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
-		startActivity(intent);
+		//TODO fix findSimilarEvents
+//		Intent intent = new Intent(getActivity(), SearchEpgActivity.class);
+//		intent.setAction(Intent.ACTION_SEARCH);
+//		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
+//		startActivity(intent);
 	}
 	
 	/*

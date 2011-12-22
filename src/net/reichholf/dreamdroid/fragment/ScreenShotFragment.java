@@ -139,6 +139,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		getActivity().setTitle(getText(R.string.app_name) + "::" + getText(R.string.screenshot));
+		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
