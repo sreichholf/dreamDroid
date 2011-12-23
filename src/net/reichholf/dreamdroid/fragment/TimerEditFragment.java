@@ -15,7 +15,6 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
-import net.reichholf.dreamdroid.activities.ServiceListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -514,15 +513,18 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	private void pickService() {
-		Intent intent = new Intent(getActivity(), ServiceListActivity.class);
-
-		ExtendedHashMap map = new ExtendedHashMap();
-		map.put(Service.KEY_REFERENCE, "default");
-
-		intent.putExtra(sData, map);
-		intent.setAction(Intent.ACTION_PICK);
-
-		startActivityForResult(intent, Statics.REQUEST_PICK_SERVICE);
+		ServiceListFragment f = new ServiceListFragment();
+		Bundle args = new Bundle();
+		
+		ExtendedHashMap data = new ExtendedHashMap();
+		data.put(Service.KEY_REFERENCE, "default");
+	
+		args.putSerializable(sData, data);
+		args.putString("action", Intent.ACTION_PICK);
+		
+		f.setArguments(args);
+		f.setTargetFragment(this, Statics.REQUEST_PICK_SERVICE);
+		((MultiPaneHandler) getActivity()).showDetails(f, true);
 	}
 
 	/**

@@ -38,6 +38,7 @@ import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -284,7 +285,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mPickMode = false;
 		}
 
-		if (savedInstanceState != null) {
+		if (savedInstanceState != null && !mPickMode) {
 			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
 			
 			mNavItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("navitems");
@@ -535,19 +536,16 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.activities.AbstractHttpListActivity#onKeyDown
-	 * (int, android.view.KeyEvent)
+
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment#onKeyDown(int, android.view.KeyEvent)
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// back to standard back-button-behaviour when we're already at root
 		// level
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			if (!SERVICE_REF_ROOT.equals(mNavReference)) {
+			if (!SERVICE_REF_ROOT.equals(mNavReference) && mHistory != null) {
 				int idx = mHistory.size() - 1;
 				if (idx >= 0) {
 					ExtendedHashMap map = null;
@@ -748,9 +746,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 				Intent intent = new Intent();
 				intent.putExtra(sData, map);
-				// TODO Activity.setResult Handling
-				getActivity().setResult(Activity.RESULT_OK, intent);
-				getActivity().finish();
+				finish(Activity.RESULT_OK, intent);
 			} else {
 				boolean instantZap = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
@@ -941,7 +937,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
-		if (isBouquetList && !mPickMode) {
+		if (isBouquetList || mPickMode) {
 			if (ref.equals(SERVICE_REF_ROOT)) {
 				loadNavRoot();
 				return;
@@ -1040,5 +1036,20 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			((SimpleAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
 		nextListTaskPlease();
+	}
+	
+	protected void finish(int resultCode, Intent data){
+		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+		if(mph.isMultiPane()){
+			Fragment f = getTargetFragment();
+			if(f != null){
+				mph.showDetails(f);
+				f.onActivityResult(getTargetRequestCode(), resultCode, data);
+			}
+		} else {
+			Activity a = getActivity();
+			a.setResult(resultCode, data);
+			a.finish();
+		}
 	}
 }
