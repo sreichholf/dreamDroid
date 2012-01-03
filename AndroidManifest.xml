@@ -70,7 +70,12 @@
 	        <meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
 		</activity>
 						
-		<activity android:name=".activities.TabbedNavigationActivity"></activity>		
+		<activity android:name=".activities.TabbedNavigationActivity">
+		    <intent-filter>
+				<action android:name="android.intent.action.MAIN" />	
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>		
+		</activity>		
 		<activity android:name=".activities.ExtrasActivity"></activity>
 		<activity android:name=".activities.DreamDroidPreferenceActivity"></activity>
 		<activity android:name=".activities.MediaplayerActivity"></activity>
@@ -78,12 +83,7 @@
 		<activity android:name=".activities.MediaplayerNavigationActivity"></activity>
 		<activity android:name=".activities.MediaplayerPlaylistActivity"></activity>
 		<activity android:name=".activities.SimpleFragmentActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.FragmentMainActivity">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />	
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>		
-		</activity>
+		<activity android:name=".activities.FragmentMainActivity"></activity>
 		<meta-data 
 			android:name="android.app.default_searchable"
 			android:value=".activities.SearchEpgActivity" ></meta-data>
