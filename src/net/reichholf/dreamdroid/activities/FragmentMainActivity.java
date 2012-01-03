@@ -253,10 +253,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		showDetails(fragment, false);
 	}
 	
-	public void back(){
-		mFragmentManager.popBackStackImmediate();
-	}
-	
 	/**
 	 * @param fragment
 	 * @throws IllegalAccessException 
