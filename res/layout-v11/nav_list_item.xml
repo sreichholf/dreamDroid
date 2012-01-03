@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2010 The Android Open Source Project
+<!--
+     Copyright (C) 2010 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -18,10 +19,9 @@
     android:id="@android:id/text1"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:textAppearance="?android:attr/textAppearanceLarge"
-    android:gravity="center_vertical"
     android:background="?android:attr/activatedBackgroundIndicator"
+    android:gravity="center_vertical"
     android:minHeight="20dp"
-    android:textStyle="bold"
+    android:textAppearance="?android:attr/textAppearanceLarge"
     android:textSize="14dp"
-/>
+    android:textStyle="bold" />

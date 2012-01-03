@@ -1,104 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent" 
-	android:layout_height="wrap_content"
-	android:orientation="vertical">
-	
-	<View android:id="@+id/divider"
-	    android:background="@android:drawable/divider_horizontal_bright"
-	    android:layout_width="fill_parent"
-	    android:layout_height="1dp"
-	    android:layout_marginBottom="3dp"/>
-	    
-	<TableLayout 
-		android:id="@+id/TableLayout01" 
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:layout_marginRight="3dp">
-		
-		<TableRow 
-			android:id="@+id/TableRowMessage" 
-			android:layout_width="fill_parent" 			
-			android:layout_height="wrap_content">
-			
-			<TextView
-				android:id="@+id/TextViewMessage" 
-				android:text="@string/message"				
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:layout_weight="0" />
-			
-			<EditText
-				android:id="@+id/EditTextMessage"
-				android:hint="@string/message_text_hint" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:layout_weight="1" 
-				android:maxLines="2"/>
-		</TableRow>
-		<TableRow 
-			android:id="@+id/TableRowType" 
-			android:layout_width="fill_parent" 
-			android:layout_height="wrap_content">
-			
-			<TextView
-				android:id="@+id/TextViewType" 
-				android:text="@string/type"				
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:layout_weight="0" />
-			
-			<Spinner 
-				android:id="@+id/SpinnerMessageType" 
-				android:entries="@array/message_types"
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:layout_weight="1" />
-				
-		</TableRow>
-		<TableRow 
-			android:id="@+id/TableRowTimeout" 
-			android:layout_width="fill_parent" 
-			android:layout_height="wrap_content">
-			
-			<TextView 
-				android:id="@+id/TextViewTimeout" 
-				android:text="@string/timeout"
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:layout_gravity="center_vertical"
-				android:layout_weight="0"/>
-				
-			<EditText 
-				android:id="@+id/EditTextTimeout" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:maxLength="2"
-				android:text="20" 
-				android:inputType="number"
-				android:layout_weight="1"/>
-		</TableRow>
-	</TableLayout>
-	
-	<LinearLayout
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:orientation="horizontal">
-		
-		<Button  
-			android:id="@+id/ButtonSend"
-			android:text="@string/send"
-			android:drawableLeft="@drawable/ic_btn_mail"				 
-			android:layout_width="fill_parent" 
-			android:layout_height="wrap_content"
-			android:layout_weight="1" />
-		
-		<Button 
-			android:id="@+id/ButtonCancel"
-			android:text="@string/cancel"
-			android:drawableLeft="@drawable/ic_btn_close"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"			
-			android:layout_weight="1" />			
-	</LinearLayout>
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="3dp"
+        android:background="@android:drawable/divider_horizontal_bright" />
+
+    <TableLayout
+        android:id="@+id/TableLayout01"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="3dp" >
+
+        <TableRow
+            android:id="@+id/TableRowMessage"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/TextViewMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="@string/message" />
+
+            <EditText
+                android:id="@+id/EditTextMessage"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/message_text_hint"
+                android:maxLines="2" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/TableRowType"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/TextViewType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="@string/type" />
+
+            <Spinner
+                android:id="@+id/SpinnerMessageType"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:entries="@array/message_types" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/TableRowTimeout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/TextViewTimeout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="0"
+                android:text="@string/timeout" />
+
+            <EditText
+                android:id="@+id/EditTextTimeout"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:maxLength="2"
+                android:text="20" />
+        </TableRow>
+    </TableLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/ButtonSend"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_btn_mail"
+            android:text="@string/send" />
+
+        <Button
+            android:id="@+id/ButtonCancel"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_btn_close"
+            android:text="@string/cancel" />
+    </LinearLayout>
+
 </LinearLayout>

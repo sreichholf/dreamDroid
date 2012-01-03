@@ -1,61 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"	
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:orientation="vertical"
-	android:minWidth="150dip">
-	
-	<View android:id="@+id/divider"
-	    android:background="@android:drawable/divider_horizontal_bright"
-	    android:layout_width="fill_parent"
-	    android:layout_height="1dp"
-	    android:layout_marginBottom="3dp"/>
-	    
-	<ScrollView
-  		android:id="@+id/ScrollView"
-  		android:layout_width="fill_parent"
-  		android:layout_height="fill_parent">
-  		
-		<LinearLayout		
-			android:orientation="vertical"
-			android:layout_width="fill_parent"
-			android:layout_height="fill_parent" >
-		
-			<LinearLayout		
-				android:orientation="horizontal"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent" >				
-				<Button 
-					android:text="@string/standby" 
-					android:id="@+id/ButtonToggle" 
-					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content"
-					android:layout_weight="1" />
-				<Button 
-					android:text="@string/restart_gui" 
-					android:id="@+id/ButtonGui" 
-					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content"
-					android:layout_weight="1" />
-			</LinearLayout>
-			<LinearLayout		
-				android:orientation="horizontal"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent" >	
-				<Button 
-					android:text="@string/reboot" 
-					android:id="@+id/ButtonReboot" 
-					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content"
-					android:layout_weight="1" />
-				<Button 
-					android:text="@string/shutdown" 
-					android:id="@+id/ButtonShutdown" 
-					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content"
-					android:layout_weight="1" />
-			</LinearLayout>			
-		</LinearLayout>
-	</ScrollView>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minWidth="150dip"
+    android:orientation="vertical" >
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="3dp"
+        android:background="@android:drawable/divider_horizontal_bright" />
+
+    <ScrollView
+        android:id="@+id/ScrollView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal" >
+
+                <Button
+                    android:id="@+id/ButtonToggle"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/standby" />
+
+                <Button
+                    android:id="@+id/ButtonGui"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/restart_gui" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal" >
+
+                <Button
+                    android:id="@+id/ButtonReboot"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/reboot" />
+
+                <Button
+                    android:id="@+id/ButtonShutdown"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/shutdown" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
 </LinearLayout>

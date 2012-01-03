@@ -1,210 +1,219 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-<string name="description">Beschreibung</string>
-<string name="title">Titel</string>
-<string name="mo">Mo</string>
-<string name="app_name">DreamDroid</string>
-<string-array name="servicelist">
-<item>Bouquets (TV)</item>
-<item>Provider (TV)</item>
-<item>Alle Kanäle (TV)</item>
-<item>Bouquets (Radio)</item>
-<item>Provider (Radio)</item>
-<item>Alle Kanäle (Radio)</item>
-</string-array>
-<string name="timer">Timer</string>
-<string name="service">Kanal</string>
-<string name="afterevent">Anschlussereignis</string>
-<string name="location">Ort</string>
-<string-array name="afterevents">
-<item>Keines</item>
-<item>Standby</item>
-<item>Herunterfahren</item>
-<item>Automatisch</item>
-</string-array>
-<string name="begin_time">Startzeit</string>
-<string name="repeatings">Wiederholungen</string>
-<string name="end_time">Endzeit</string>
-<string name="services">Kanäle</string>
-<string name="movies">Filme</string>
-<string name="device_info">Geräte-Info</string>
-<string name="send_message">Nachricht senden</string>
 
-<string name="save">Speichern</string>
-<string name="cancel">Abbrechen</string>
-<string name="fetching_data">Hole Daten...</string>
-<string name="parsing">Lese Daten...</string>
-<string name="get_content_error">Fehler beim Holen der Daten!</string>
-<string name="zap">Umschalten</string>
-<string name="browse_epg">EPG ansehen</string>
-<string name="edit">Bearbeiten</string>
-<string name="delete">Löschen</string>
-<string name="epg">EPG</string>
-<string name="ssl_enabled">https</string>
-<string name="host">Hostname/IP</string>
-<string name="port">Port</string>
-<string name="settings">Einstellungen</string>
-<string name="host_long">Hostname oder IP</string>
-<string name="port_long">Listening Port
-</string>
-<string name="close">Schließen</string>
-<string name="minutes_short">min.</string>
-<string name="user">Benutzer</string>
-<string name="user_long">Benutzername für die Anmeldung</string>
-<string name="pass">Passwort</string>
-<string name="pass_long">Passwort für die Anmeldung</string>
-<string name="saving">Speichern. Bitte warten...</string>
-<string name="deleting">Lösche. Bitte warten...</string>
-<string name="delete_confirm">Wirklich löschen?</string>
-<string name="set_timer">Timer setzen</string>
-<string name="home">Startseite</string>
-<string name="pick_action">Aktion wählen</string>
-<string name="set_time_begin">Startdatum und -zeit</string>
-<string name="set_time_end">Enddatum und -zeit</string>
-<string name="apply">Übernehmen</string>
-<string name="reload">Neu laden</string>
-<string-array name="weekdays_short">
-<item>Mo</item>
-<item>Di</item>
-<item>Mi</item>
-<item>Do</item>
-<item>Fr</item>
-<item>Sa</item>
-<item>So</item>
-</string-array>
-<string-array name="weekdays">
-<item>Montag</item>
-<item>Dienstag</item>
-<item>Mittwoch</item>
-<item>Donnerstag</item>
-<item>Freitag</item>
-<item>Samstag</item>
-<item>Sonntag</item>
-</string-array>
-<string name="none">Keine</string>
-<string name="choose_days">Tage wählen</string>
-<string name="mo_to_fr">Werktags</string>
-<string name="daily">Täglich</string>
-<string name="new_timer">Neuer Timer</string>
-<string name="locations">Orte</string>
-<string name="gui_version">GUI Version</string>
-<string name="image_version">Image Version</string>
-<string name="interface_version">Interface Version</string>
-<string name="front_processor_version">Frontprozessor Version</string>
-<string name="device_name">Gerätename</string>
-<string name="frontends">Tuner</string>
-<string name="nics">Netzwerkschnittstellen</string>
-<string name="hdds">Festplatten</string>
-<string name="not_implemented">Funktion ist noch nicht implementiert!</string>
-<string name="current_event">Aktuelle Sendung</string>
-<string name="timeout">Anzeigedauer</string>
-<string name="message">Nachricht</string>
-<string name="message_text_hint">Nachricht eingeben</string>
-<string name="send">Senden</string>
-<string name="type">Typ</string>
-<string-array name="message_types">
-<item>JaNein</item>
-<item>Warnung</item>
-<item>Info</item>
-<item>Fehler</item>
-</string-array>
-<string name="virtual_remote">Virt. Fern-\nbedienung</string>
-<string name="login_enabled">Login aktivieren</string>
-<string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
-<string name="current_service">Es läuft</string>
-<string name="provider">Provider</string>
-<string name="now">Jetzt</string>
-<string name="next">Nachher</string>
-<string name="epg_search">EPG-Suche</string>
-<string name="epg_search_hint">In EPG suchen</string>
-<string name="standard">Standard-Layout</string>
-<string name="quickzap">QuickZap-Layout</string>
-<string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur Verfügung!</string>
-<string name="ok">OK</string>
-<string name="activate">Aktivieren</string>
-<string name="confirm_delete_profile">Wollen Sie dieses Profil wirklich löschen?</string>
-<string name="profile_activated">Profil aktiviert</string>
-<string name="profile_not_activated">Fehler beim Aktivieren des Profils</string>
-<string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
-<string name="profile_deleted">Profil gelöscht</string>
-<string name="profile">Profil</string>
-<string name="profile_updated">Profil aktualisiert</string>
-<string name="profile_added">Profil hinzugefügt</string>
-<string name="profile_add">Profil hinzufügen</string>
-<string name="profile_not_added">Profil konnte nicht hinzugefügt werden</string>
-<string name="profile_not_updated">Profil konnte nicht aktualisiert werden</string>
-<string name="no_list_item">Es wurden keine Listeneinträge gefunden...</string>
-<string name="locations_default_fallback">Fehler beim Laden von Orten, benutzt wird stattdessen der Standardwert :</string>
-<string name="tags">Tags</string>
-<string name="screenshot">Screenshot</string>
-<string name="host_empty">Der Hostname darf nicht leer sein!</string>
-<string name="standby">Standby</string>
-<string name="powerup">Einschalten</string>
-<string name="restart_gui">GUI-Neustart</string>
-<string name="reboot">Neustarten</string>
-<string name="shutdown">Herunterfahren</string>
-<string name="powercontrol">Power Control</string>
-<string name="choose_tags">Tags wählen</string>
-<string name="choose_location">Ort wählen</string>
-<string name="bouquet_overview">Bouquet-Übersicht</string>
-<string name="set_default">Als Standard nehmen</string>
-<string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>
-<string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
-<string name="loading">Lade...</string>
-<string name="about">Über</string>
-<string name="license">Lizenz:\nLizensiert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-<string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
-<string name="active_profile">Aktives Profil</string>
-<string name="connection_state">Verbindungsstatus</string>
-<string name="not_available">Nicht verfügbar</string>
-<string name="checking">prüfe...</string>
-<string name="error">FEHLER!</string>
-<string name="check_connectivity">Verbindung prüfen</string>
-<string name="version_too_low">Version &lt; 1.6</string>
-<string name="connection_error">Verbindungsfehler</string>
-<string name="port_out_of_range">Port nicht zwischen 1 und 65535</string>
-<string name="illegal_host">Fehlerhafter Host</string>
-<string name="edit_timer">Timer bearbeiten</string>
-<string name="cleaning_timerlist">Räume Timerliste auf</string>
-<string name="cleanup">Aufräumen</string>
-<string name="in_standby">Gerät ist nun im Standby-Modus</string>
-<string name="is_running">Gerät läuft nun</string>
-<string name="stream">Streamen</string>
+    <string name="description">Beschreibung</string>
+    <string name="title">Titel</string>
+    <string name="mo">Mo</string>
+    <string name="app_name">DreamDroid</string>
 
-<string name="stream_host">Streaming Hostname/IP</string>
-<string name="stream_host_long">Host/IP für Streaming (optional)</string>
-<string name="stream_current">Streame laufendes Programm</string>
-<string name="similar">Ähnliche Sendungen</string>
-<string-array name="timer_state">
-<item>wartet...</item>
-<item>vorbereiten...</item>
-<item>läuft...</item>
-<item>beendet</item>
-<item>deaktviert</item>
-</string-array>
-<string-array name="timer_action">
-<item>aufnehmen</item>
-<item>umschalten</item>
-</string-array>
-<string name="sleeptimer">Abschalttimer</string>
-<string name="current_volume">Lautstärke ist nun bei %s</string>
-<string name="muted">Stumm</string>
-<string name="enable_volume_control">Lautstärkeregulierung aktivieren</string>
-<string name="enable_volume_control_long">Direkte Regulierung der Lautstärke über Hardware-Buttons</string>
-<string name="download">Downloads</string>
-<string name="extras">Extras</string>
-<string name="main_menu">Main</string>
-<string name="profiles">Profile</string>
-<string name="enable_instant_zap">Direkt umschalten</string>
-<string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
-<string name="wrong_activity">Falsche Activity aufgerufen. Bitte erstellen Sie alle Shortcuts zu dreamDroid neu!</string>
-<string name="simple_remote">Einfache Fernbedienung</string>
-<string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
-<string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
-<string name="mobile_imdb">Mobile Version von imdb.com nutzen</string>
-<string name="mobile_imdb_long">Nutze m.imdb.com statt www.imdb.com</string>
-<string name="searching">Suche...</string>
-	<string name="searching_known_devices">Suche nach Dreamboxen im lokalen Netzwerk. Dieser Vorgang kann mehrere Minuten dauern!</string>
-	<string name="autodiscover_dreamboxes">Dreamboxen automatisch finden</string>
-	<string name="autodiscovery_failed">Es konnten keine Dreamboxen im lokalen Netzwerk automatisch gefunden werden!</string>
+    <string-array name="servicelist">
+        <item>Bouquets (TV)</item>
+        <item>Provider (TV)</item>
+        <item>Alle Kanäle (TV)</item>
+        <item>Bouquets (Radio)</item>
+        <item>Provider (Radio)</item>
+        <item>Alle Kanäle (Radio)</item>
+    </string-array>
+
+    <string name="timer">Timer</string>
+    <string name="service">Kanal</string>
+    <string name="afterevent">Anschlussereignis</string>
+    <string name="location">Ort</string>
+
+    <string-array name="afterevents">
+        <item>Keines</item>
+        <item>Standby</item>
+        <item>Herunterfahren</item>
+        <item>Automatisch</item>
+    </string-array>
+
+    <string name="begin_time">Startzeit</string>
+    <string name="repeatings">Wiederholungen</string>
+    <string name="end_time">Endzeit</string>
+    <string name="services">Kanäle</string>
+    <string name="movies">Filme</string>
+    <string name="device_info">Geräte-Info</string>
+    <string name="send_message">Nachricht senden</string>
+    <string name="save">Speichern</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="fetching_data">Hole Daten...</string>
+    <string name="parsing">Lese Daten...</string>
+    <string name="get_content_error">Fehler beim Holen der Daten!</string>
+    <string name="zap">Umschalten</string>
+    <string name="browse_epg">EPG ansehen</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="delete">Löschen</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">https</string>
+    <string name="host">Hostname/IP</string>
+    <string name="port">Port</string>
+    <string name="settings">Einstellungen</string>
+    <string name="host_long">Hostname oder IP</string>
+    <string name="port_long">istening Port</string>
+    <string name="close">Schließen</string>
+    <string name="minutes_short">min.</string>
+    <string name="user">Benutzer</string>
+    <string name="user_long">Benutzername für die Anmeldung</string>
+    <string name="pass">Passwort</string>
+    <string name="pass_long">Passwort für die Anmeldung</string>
+    <string name="saving">Speichern. Bitte warten...</string>
+    <string name="deleting">Lösche. Bitte warten...</string>
+    <string name="delete_confirm">Wirklich löschen?</string>
+    <string name="set_timer">Timer setzen</string>
+    <string name="home">Startseite</string>
+    <string name="pick_action">Aktion wählen</string>
+    <string name="set_time_begin">Startdatum und -zeit</string>
+    <string name="set_time_end">Enddatum und -zeit</string>
+    <string name="apply">Übernehmen</string>
+    <string name="reload">Neu laden</string>
+
+    <string-array name="weekdays_short">
+        <item>Mo</item>
+        <item>Di</item>
+        <item>Mi</item>
+        <item>Do</item>
+        <item>Fr</item>
+        <item>Sa</item>
+        <item>So</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Montag</item>
+        <item>Dienstag</item>
+        <item>Mittwoch</item>
+        <item>Donnerstag</item>
+        <item>Freitag</item>
+        <item>Samstag</item>
+        <item>Sonntag</item>
+    </string-array>
+
+    <string name="none">Keine</string>
+    <string name="choose_days">Tage wählen</string>
+    <string name="mo_to_fr">Werktags</string>
+    <string name="daily">Täglich</string>
+    <string name="new_timer">Neuer Timer</string>
+    <string name="locations">Orte</string>
+    <string name="gui_version">GUI Version</string>
+    <string name="image_version">Image Version</string>
+    <string name="interface_version">Interface Version</string>
+    <string name="front_processor_version">Frontprozessor Version</string>
+    <string name="device_name">Gerätename</string>
+    <string name="frontends">Tuner</string>
+    <string name="nics">Netzwerkschnittstellen</string>
+    <string name="hdds">Festplatten</string>
+    <string name="not_implemented">Funktion ist noch nicht implementiert!</string>
+    <string name="current_event">Aktuelle Sendung</string>
+    <string name="timeout">Anzeigedauer</string>
+    <string name="message">Nachricht</string>
+    <string name="message_text_hint">Nachricht eingeben</string>
+    <string name="send">Senden</string>
+    <string name="type">Typ</string>
+
+    <string-array name="message_types">
+        <item>JaNein</item>
+        <item>Warnung</item>
+        <item>Info</item>
+        <item>Fehler</item>
+    </string-array>
+
+    <string name="virtual_remote">Virt. Fern-\nbedienung</string>
+    <string name="login_enabled">Login aktivieren</string>
+    <string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
+    <string name="current_service">Es läuft</string>
+    <string name="provider">Provider</string>
+    <string name="now">Jetzt</string>
+    <string name="next">Nachher</string>
+    <string name="epg_search">EPG-Suche</string>
+    <string name="epg_search_hint">In EPG suchen</string>
+    <string name="standard">Standard-Layout</string>
+    <string name="quickzap">QuickZap-Layout</string>
+    <string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur Verfügung!</string>
+    <string name="ok">OK</string>
+    <string name="activate">Aktivieren</string>
+    <string name="confirm_delete_profile">Wollen Sie dieses Profil wirklich löschen?</string>
+    <string name="profile_activated">Profil aktiviert</string>
+    <string name="profile_not_activated">Fehler beim Aktivieren des Profils</string>
+    <string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
+    <string name="profile_deleted">Profil gelöscht</string>
+    <string name="profile">Profil</string>
+    <string name="profile_updated">Profil aktualisiert</string>
+    <string name="profile_added">Profil hinzugefügt</string>
+    <string name="profile_add">Profil hinzufügen</string>
+    <string name="profile_not_added">Profil konnte nicht hinzugefügt werden</string>
+    <string name="profile_not_updated">Profil konnte nicht aktualisiert werden</string>
+    <string name="no_list_item">Es wurden keine Listeneinträge gefunden...</string>
+    <string name="locations_default_fallback">Fehler beim Laden von Orten, benutzt wird stattdessen der Standardwert :</string>
+    <string name="tags">Tags</string>
+    <string name="screenshot">Screenshot</string>
+    <string name="host_empty">Der Hostname darf nicht leer sein!</string>
+    <string name="standby">Standby</string>
+    <string name="powerup">Einschalten</string>
+    <string name="restart_gui">GUI-Neustart</string>
+    <string name="reboot">Neustarten</string>
+    <string name="shutdown">Herunterfahren</string>
+    <string name="powercontrol">Power Control</string>
+    <string name="choose_tags">Tags wählen</string>
+    <string name="choose_location">Ort wählen</string>
+    <string name="bouquet_overview">Bouquet-Übersicht</string>
+    <string name="set_default">Als Standard nehmen</string>
+    <string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>
+    <string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
+    <string name="loading">Lade...</string>
+    <string name="about">Über</string>
+    <string name="license">Lizenz:\nLizensiert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Aktives Profil</string>
+    <string name="connection_state">Verbindungsstatus</string>
+    <string name="not_available">Nicht verfügbar</string>
+    <string name="checking">prüfe...</string>
+    <string name="error">FEHLER!</string>
+    <string name="check_connectivity">Verbindung prüfen</string>
+    <string name="version_too_low">Version &lt; 1.6</string>
+    <string name="connection_error">Verbindungsfehler</string>
+    <string name="port_out_of_range">Port nicht zwischen 1 und 65535</string>
+    <string name="illegal_host">Fehlerhafter Host</string>
+    <string name="edit_timer">Timer bearbeiten</string>
+    <string name="cleaning_timerlist">Räume Timerliste auf</string>
+    <string name="cleanup">Aufräumen</string>
+    <string name="in_standby">Gerät ist nun im Standby-Modus</string>
+    <string name="is_running">Gerät läuft nun</string>
+    <string name="stream">Streamen</string>
+    <string name="stream_host">Streaming Hostname/IP</string>
+    <string name="stream_host_long">Host/IP für Streaming (optional)</string>
+    <string name="stream_current">Streame laufendes Programm</string>
+    <string name="similar">Ähnliche Sendungen</string>
+
+    <string-array name="timer_state">
+        <item>wartet...</item>
+        <item>vorbereiten...</item>
+        <item>läuft...</item>
+        <item>beendet</item>
+        <item>deaktviert</item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>aufnehmen</item>
+        <item>umschalten</item>
+    </string-array>
+
+    <string name="sleeptimer">Abschalttimer</string>
+    <string name="current_volume">Lautstärke ist nun bei %s</string>
+    <string name="muted">Stumm</string>
+    <string name="enable_volume_control">Lautstärkeregulierung aktivieren</string>
+    <string name="enable_volume_control_long">Direkte Regulierung der Lautstärke über Hardware-Buttons</string>
+    <string name="download">Downloads</string>
+    <string name="extras">Extras</string>
+    <string name="main_menu">Main</string>
+    <string name="profiles">Profile</string>
+    <string name="enable_instant_zap">Direkt umschalten</string>
+    <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
+    <string name="wrong_activity">Falsche Activity aufgerufen. Bitte erstellen Sie alle Shortcuts zu dreamDroid neu!</string>
+    <string name="simple_remote">Einfache Fernbedienung</string>
+    <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
+    <string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
+    <string name="mobile_imdb">Mobile Version von imdb.com nutzen</string>
+    <string name="mobile_imdb_long">Nutze m.imdb.com statt www.imdb.com</string>
+    <string name="searching">Suche...</string>
+    <string name="searching_known_devices">Suche nach Dreamboxen im lokalen Netzwerk. Dieser Vorgang kann mehrere Minuten dauern!</string>
+    <string name="autodiscover_dreamboxes">Dreamboxen automatisch finden</string>
+    <string name="autodiscovery_failed">Es konnten keine Dreamboxen im lokalen Netzwerk automatisch gefunden werden!</string>
+
 </resources>

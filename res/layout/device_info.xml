@@ -1,131 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"		
-	android:orientation="vertical"
-	android:layout_width="fill_parent"
-	android:layout_height="fill_parent" >
-	  	 
-  	<TextView 
-  		android:id="@+id/GuiVersionTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/gui_version" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />
-  		
-  	<TextView 
-  		android:id="@+id/GuiVersion" 
-  		android:textSize="16sp"
-  		android:layout_width="fill_parent" 
-  		android:layout_height="40dp"
-  		android:gravity="center_vertical" 
-  		android:paddingLeft="3dip" />
-  		
-  	<TextView 
-  		android:id="@+id/ImageVersionTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/image_version" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />
-  		
-  	<TextView 
-  		android:id="@+id/ImageVersion" 
-  		android:textSize="16sp"
-  		android:layout_width="fill_parent" 
-  		android:layout_height="40dp"
-  		android:gravity="center_vertical" 
-  		android:paddingLeft="3dip" />
-  	
-  	<TextView 
-  		android:id="@+id/InterfaceVersionTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/interface_version" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />
-  		
-  	<TextView 
-  		android:id="@+id/InterfaceVersion" 
-  		android:textSize="16sp"
-  		android:layout_width="fill_parent" 
-  		android:layout_height="40dp"
-  		android:gravity="center_vertical" 
-  		android:paddingLeft="3dip" />
-  		
-  	<TextView 
-  		android:id="@+id/FrontprocessorVersionTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/front_processor_version" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />
-  		
-  	<TextView 
-  		android:id="@+id/FrontprocessorVersion" 
-  		android:textSize="16sp"
-  		android:layout_width="fill_parent" 
-  		android:layout_height="40dp"
-  		android:gravity="center_vertical" 
-  		android:paddingLeft="3dip" />	
-  		
-  	<TextView 
-  		android:id="@+id/DeviceNameTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/device_name" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />
-  		
-  	<TextView 
-  		android:id="@+id/DeviceName" 
-  		android:textSize="16sp"
-  		android:layout_width="fill_parent" 
-  		android:layout_height="40dp"
-  		android:gravity="center_vertical" 
-  		android:paddingLeft="3dip" />
-<!--   		
-  	<TextView 
-  		android:id="@+id/FrontendsTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/frontends" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />		  		
-  					  			  		
-	<ListView 
-		android:id="@+id/ListViewFrontends" 
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:scrollbars="none"  />
-		
-  	<TextView 
-  		android:id="@+id/NicsTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/nics" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />		  		
-  					  			  		
-	<ListView 
-		android:id="@+id/ListViewNics" 
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content" />				
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
 
-  	<TextView 
-  		android:id="@+id/HddsTitle" 
-  		android:layout_width="fill_parent" 
-  		android:layout_height="wrap_content" 
-  		android:text="@string/hdds" 
-  		android:paddingLeft="3dip"
-  		android:background="#333" />		  		
-  					  			  		
-	<ListView 
-		android:id="@+id/ListViewHdds" 
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:scrollbars="none" />		
--->
+    <TextView
+        android:id="@+id/GuiVersionTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#333"
+        android:paddingLeft="3dip"
+        android:text="@string/gui_version" />
 
+    <TextView
+        android:id="@+id/GuiVersion"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="3dip"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/ImageVersionTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#333"
+        android:paddingLeft="3dip"
+        android:text="@string/image_version" />
+
+    <TextView
+        android:id="@+id/ImageVersion"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="3dip"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/InterfaceVersionTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#333"
+        android:paddingLeft="3dip"
+        android:text="@string/interface_version" />
+
+    <TextView
+        android:id="@+id/InterfaceVersion"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="3dip"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/FrontprocessorVersionTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#333"
+        android:paddingLeft="3dip"
+        android:text="@string/front_processor_version" />
+
+    <TextView
+        android:id="@+id/FrontprocessorVersion"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="3dip"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/DeviceNameTitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#333"
+        android:paddingLeft="3dip"
+        android:text="@string/device_name" />
+
+    <TextView
+        android:id="@+id/DeviceName"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="3dip"
+        android:textSize="16sp" />
 </LinearLayout>
-

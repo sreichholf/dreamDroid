@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android" >
-	<string-array name="servicerefs">
-		<item>1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet</item>
-		<item>1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM PROVIDERS ORDER BY name</item>
-		<item>1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) ORDER BY name</item>
-		<item>1:7:2:0:0:0:0:0:0:0:(type == 2) FROM BOUQUET \"bouquets.radio\" ORDER BY bouquet</item>
-		<item>1:7:2:0:0:0:0:0:0:0:(type == 2) FROM PROVIDERS ORDER BY name</item>
-		<item>1:7:2:0:0:0:0:0:0:0:(type == 2) ORDER BY name</item>
-	</string-array>
-</resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <string-array name="servicerefs">
+        <item>1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet</item>
+        <item>1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM PROVIDERS ORDER BY name</item>
+        <item>1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) ORDER BY name</item>
+        <item>1:7:2:0:0:0:0:0:0:0:(type == 2) FROM BOUQUET \"bouquets.radio\" ORDER BY bouquet</item>
+        <item>1:7:2:0:0:0:0:0:0:0:(type == 2) FROM PROVIDERS ORDER BY name</item>
+        <item>1:7:2:0:0:0:0:0:0:0:(type == 2) ORDER BY name</item>
+    </string-array>
+
+</resources>

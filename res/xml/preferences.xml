@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen
-	xmlns:android="http://schemas.android.com/apk/res/android" 
-	android:orderingFromXml="true">
- 
-	<CheckBoxPreference 
-		android:key="volume_control"
-		android:summary="@string/enable_volume_control_long"
-		android:title="@string/enable_volume_control" />
-	
-	<CheckBoxPreference 
-		android:key="instant_zap"
-		android:summary="@string/enable_instant_zap_long"
-		android:title="@string/enable_instant_zap" />
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orderingFromXml="true" >
 
-	<CheckBoxPreference 
-		android:key="mobile_imdb"
-		android:summary="@string/mobile_imdb_long"
-		android:title="@string/mobile_imdb" />
+    <CheckBoxPreference
+        android:key="volume_control"
+        android:summary="@string/enable_volume_control_long"
+        android:title="@string/enable_volume_control" />
+    <CheckBoxPreference
+        android:key="instant_zap"
+        android:summary="@string/enable_instant_zap_long"
+        android:title="@string/enable_instant_zap" />
+    <CheckBoxPreference
+        android:key="mobile_imdb"
+        android:summary="@string/mobile_imdb_long"
+        android:title="@string/mobile_imdb" />
+    <CheckBoxPreference
+        android:enabled="false"
+        android:key="force_multipane"
+        android:summary="@string/force_tablet_layout_long"
+        android:title="@string/force_tablet_layout" />
 
-	<CheckBoxPreference 
-		android:key="force_multipane"
-		android:summary="@string/force_tablet_layout_long"
-		android:title="@string/force_tablet_layout"
-		android:enabled="false" />
 </PreferenceScreen>

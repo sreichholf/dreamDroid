@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView 
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/GuiVersionTitle" 
-	android:layout_width="fill_parent" 
-	android:layout_height="wrap_content"
-	android:paddingLeft="3dip"
-	android:background="#333" />
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/GuiVersionTitle"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="3dip" 
+    android:background="#333" />

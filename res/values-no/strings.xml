@@ -1,196 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-<string name="description">Beskrivelse</string>
-<string name="title">Tittel</string>
-<string name="mo">Man</string>
-<string name="app_name">DreamDroid</string>
-<string-array name="servicelist">
-<item>Grupper (TV)</item>
-<item>Tilbyder (TV)</item>
-<item>Alle Kanaler (TV)</item>
-<item>Grupper (Radio)</item>
-<item>Tilbyder (Radio)</item>
-<item>Alle (Radio)</item>
-</string-array>
-<string name="timer">Hendelse / Timer</string>
-<string name="service">Kanal</string>
-<string name="afterevent">Etter Hendelse</string>
-<string name="location">Plassering</string>
-<string-array name="afterevents">
-<item>Ingenting</item>
-<item>Dvale</item>
-<item>Dyp Dvale</item>
-<item>Automatisk</item>
-</string-array>
-<string name="begin_time">Start tid</string>
-<string name="repeatings">Gjentagelser</string>
-<string name="end_time">Slutt tid</string>
-<string name="services">Kanaler</string>
-<string name="movies">Filmer</string>
-<string name="device_info">Enhets Informasjon</string>
-<string name="send_message">Send Melding</string>
 
-<string name="save">Lagre</string>
-<string name="cancel">Avbryt</string>
-<string name="fetching_data">Henter data...</string>
-<string name="parsing">Behandler...</string>
-<string name="get_content_error">Feil ved henting av innhold!</string>
-<string name="zap">Velge / bytte kanal</string>
-<string name="browse_epg">Bla i EPG</string>
-<string name="edit">Rediger</string>
-<string name="delete">Slett</string>
-<string name="epg">EPG</string>
-<string name="ssl_enabled">Aktiver SSL</string>
-<string name="host">Vertsnavn/IP</string>
-<string name="port">Port</string>
-<string name="settings">Innstillinger</string>
-<string name="host_long">Vertsnavn eller IP</string>
-<string name="port_long">Listening Port
-</string>
-<string name="close">Lukk</string>
-<string name="minutes_short">min.</string>
-<string name="user">Bruker</string>
-<string name="user_long">Brukernavn for innlogging</string>
-<string name="pass">Passord</string>
-<string name="pass_long">Passord for innlogging</string>
-<string name="saving">Lagrer. Venligst vent...</string>
-<string name="deleting">Sletter. Venligst vent...</string>
-<string name="delete_confirm">Virkelig slette?</string>
-<string name="set_timer">Legg til Hendelse</string>
-<string name="home">Hjem</string>
-<string name="pick_action">Velg en handling</string>
-<string name="set_time_begin">Start dato og tid</string>
-<string name="set_time_end">Slutt dato og tid</string>
-<string name="apply">Bruk</string>
-<string name="reload">Oppdater</string>
-<string-array name="weekdays_short">
-<item>Man</item>
-<item>Tirs</item>
-<item>Ons</item>
-<item>Tors</item>
-<item>Fre</item>
-<item>Lør</item>
-<item>Søn</item>
-</string-array>
-<string-array name="weekdays">
-<item>Mandag</item>
-<item>Tirsdag</item>
-<item>Onsdag</item>
-<item>Torsdag</item>
-<item>Fredag</item>
-<item>Lørdag</item>
-<item>Søndag</item>
-</string-array>
-<string name="none">Ingen</string>
-<string name="choose_days">Velg dager</string>
-<string name="mo_to_fr">Mandag til Fredag</string>
-<string name="daily">Daglig</string>
-<string name="new_timer">Ny Hendelse / Timer</string>
-<string name="locations">Plasseringer</string>
-<string name="gui_version">GUI versjon</string>
-<string name="image_version">Image versjon</string>
-<string name="interface_version">Grensesnitt versjon</string>
-<string name="front_processor_version">Frontprosessor versjon</string>
-<string name="device_name">Enhetsnavn</string>
-<string name="frontends">Frontends</string>
-<string name="nics">Nettverkskort</string>
-<string name="hdds">Harddisker</string>
-<string name="not_implemented">Denne funksjonen er ikke implentert, ennå!</string>
-<string name="current_event">Viser nå</string>
-<string name="timeout">Tid utløpt</string>
-<string name="message">Melding</string>
-<string name="message_text_hint">Skriv melding</string>
-<string name="send">Send</string>
-<string name="type">Skriv</string>
-<string-array name="message_types">
-<item>Ja/Nei</item>
-<item>Advarsel</item>
-<item>Info</item>
-<item>Feil</item>
-</string-array>
-<string name="virtual_remote">Virtuell Fjernkontroll</string>
-<string name="login_enabled">Aktiver Innlogging</string>
-<string name="wait_request_finished">Vennligst vent til den kjørende forespørselen er ferdig!</string>
-<string name="current_service">Aktuell</string>
-<string name="provider">Tilbyder</string>
-<string name="now">Nå</string>
-<string name="next">Neste</string>
-<string name="epg_search">EPG-søk</string>
-<string name="epg_search_hint">Søk i EPG</string>
-<string name="standard">Standard Oppsett</string>
-<string name="quickzap">Hurtigskift Oppsett</string>
-<string name="no_epg_available">Det er for tiden ingen EPG informasjon tilgjengelig for denne kanalen!</string>
-<string name="ok">OK</string>
-<string name="activate">Aktiver</string>
-<string name="confirm_delete_profile">Vil du virkelig slette denne profilen?</string>
-<string name="profile_activated">Aktivert profil</string>
-<string name="profile_not_activated">Feil ved aktivering av profil</string>
-<string name="profile_not_deleted">Feil ved sletting av profil</string>
-<string name="profile_deleted">Profil slettet</string>
-<string name="profile">Profil</string>
-<string name="profile_updated">Profil oppdatert</string>
-<string name="profile_added">Profil lagt til</string>
-<string name="profile_add">Legg til profil</string>
-<string name="profile_not_added">Kunne ikke legge til profil</string>
-<string name="profile_not_updated">Kunne ikke oppdatere profil</string>
-<string name="no_list_item">Ingenting å vise...</string>
-<string name="locations_default_fallback">Feil ved lesing av plasseringer, benytter standard:</string>
-<string name="tags">Tags</string>
-<string name="screenshot">Skjermbilde</string>
-<string name="host_empty">Vertsnavn kan ikke være tomt!</string>
-<string name="standby">Dvale</string>
-<string name="powerup">Slå på</string>
-<string name="restart_gui">Restart GUI</string>
-<string name="reboot">Start på nytt</string>
-<string name="shutdown">Slå av</string>
-<string name="powercontrol">Strømstyring</string>
-<string name="choose_tags">Velg tags</string>
-<string name="choose_location">Velg plassering</string>
-<string name="bouquet_overview">Gruppeoversikt</string>
-<string name="set_default">Sett som standard</string>
-<string name="default_bouquet_set_to">Standard gruppe er valgt til:</string>
-<string name="default_bouquet_not_set">Standard gruppe kunne ikke velges!</string>
-<string name="loading">Laster...</string>
-<string name="about">Om</string>
-<string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-<string name="source_code_link">Kildekode tilgjengelig på: http://github.com/sreichholf/dreamDroid</string>
-<string name="active_profile">Aktiv profil</string>
-<string name="connection_state">Tilkoblingsstatus</string>
-<string name="not_available">Ikke tilgjengelig</string>
-<string name="checking">sjekker...</string>
-<string name="error">FEIL!</string>
-<string name="check_connectivity">Sjekk tilkobling</string>
-<string name="version_too_low">Versjon &lt; 1.6</string>
-<string name="connection_error">Tilkoblingsfeil</string>
-<string name="port_out_of_range">Port ikke mellom 1 og 65535</string>
-<string name="illegal_host">Ugyldig vert</string>
-<string name="edit_timer">Rediger Hendelse</string>
-<string name="cleaning_timerlist">Rydder Hendelser</string>
-<string name="cleanup">Opprydding</string>
-<string name="in_standby">Enheten er nå i Dvale</string>
-<string name="is_running">Enheten er nå i drift</string>
-<string name="stream">Stream</string>
+    <string name="description">Beskrivelse</string>
+    <string name="title">Tittel</string>
+    <string name="mo">Man</string>
+    <string name="app_name">DreamDroid</string>
 
-<string name="stream_host">Streaming Vertsnavn/IP</string>
-<string name="stream_host_long">Vert/IP for streaming (valgfritt)</string>
-<string name="stream_current">Stream Aktuell</string>
-<string name="similar">Lignende hendelser</string>
-<string-array name="timer_state">
-<item>venter...</item>
-<item>forberedt...</item>
-<item>kjører...</item>
-<item>avsluttet</item>
-<item>deaktivert</item>
-</string-array>
-<string-array name="timer_action">
-<item>spill inn</item>
-<item>bytt til</item>
-</string-array>
-<string name="sleeptimer">Innsovning</string>
-<string name="current_volume">Volumet er nå på </string>
-<string name="muted">Mute</string>
-<string name="download">Last ned</string>
-<string name="extras">Ekstra</string>
-<string name="main_menu">Hoved</string>
-<string name="profiles">Profiler</string>
+    <string-array name="servicelist">
+        <item>Grupper (TV)</item>
+        <item>Tilbyder (TV)</item>
+        <item>Alle Kanaler (TV)</item>
+        <item>Grupper (Radio)</item>
+        <item>Tilbyder (Radio)</item>
+        <item>Alle (Radio)</item>
+    </string-array>
+
+    <string name="timer">Hendelse / Timer</string>
+    <string name="service">Kanal</string>
+    <string name="afterevent">Etter Hendelse</string>
+    <string name="location">Plassering</string>
+
+    <string-array name="afterevents">
+        <item>Ingenting</item>
+        <item>Dvale</item>
+        <item>Dyp Dvale</item>
+        <item>Automatisk</item>
+    </string-array>
+
+    <string name="begin_time">Start tid</string>
+    <string name="repeatings">Gjentagelser</string>
+    <string name="end_time">Slutt tid</string>
+    <string name="services">Kanaler</string>
+    <string name="movies">Filmer</string>
+    <string name="device_info">Enhets Informasjon</string>
+    <string name="send_message">Send Melding</string>
+    <string name="save">Lagre</string>
+    <string name="cancel">Avbryt</string>
+    <string name="fetching_data">Henter data...</string>
+    <string name="parsing">Behandler...</string>
+    <string name="get_content_error">Feil ved henting av innhold!</string>
+    <string name="zap">Velge / bytte kanal</string>
+    <string name="browse_epg">Bla i EPG</string>
+    <string name="edit">Rediger</string>
+    <string name="delete">Slett</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">Aktiver SSL</string>
+    <string name="host">Vertsnavn/IP</string>
+    <string name="port">Port</string>
+    <string name="settings">Innstillinger</string>
+    <string name="host_long">Vertsnavn eller IP</string>
+    <string name="port_long">istening Port</string>
+    <string name="close">Lukk</string>
+    <string name="minutes_short">min.</string>
+    <string name="user">Bruker</string>
+    <string name="user_long">Brukernavn for innlogging</string>
+    <string name="pass">Passord</string>
+    <string name="pass_long">Passord for innlogging</string>
+    <string name="saving">Lagrer. Venligst vent...</string>
+    <string name="deleting">Sletter. Venligst vent...</string>
+    <string name="delete_confirm">Virkelig slette?</string>
+    <string name="set_timer">Legg til Hendelse</string>
+    <string name="home">Hjem</string>
+    <string name="pick_action">Velg en handling</string>
+    <string name="set_time_begin">Start dato og tid</string>
+    <string name="set_time_end">Slutt dato og tid</string>
+    <string name="apply">Bruk</string>
+    <string name="reload">Oppdater</string>
+
+    <string-array name="weekdays_short">
+        <item>Man</item>
+        <item>Tirs</item>
+        <item>Ons</item>
+        <item>Tors</item>
+        <item>Fre</item>
+        <item>Lør</item>
+        <item>Søn</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Mandag</item>
+        <item>Tirsdag</item>
+        <item>Onsdag</item>
+        <item>Torsdag</item>
+        <item>Fredag</item>
+        <item>Lørdag</item>
+        <item>Søndag</item>
+    </string-array>
+
+    <string name="none">Ingen</string>
+    <string name="choose_days">Velg dager</string>
+    <string name="mo_to_fr">Mandag til Fredag</string>
+    <string name="daily">Daglig</string>
+    <string name="new_timer">Ny Hendelse / Timer</string>
+    <string name="locations">Plasseringer</string>
+    <string name="gui_version">GUI versjon</string>
+    <string name="image_version">Image versjon</string>
+    <string name="interface_version">Grensesnitt versjon</string>
+    <string name="front_processor_version">Frontprosessor versjon</string>
+    <string name="device_name">Enhetsnavn</string>
+    <string name="frontends">Frontends</string>
+    <string name="nics">Nettverkskort</string>
+    <string name="hdds">Harddisker</string>
+    <string name="not_implemented">Denne funksjonen er ikke implentert, ennå!</string>
+    <string name="current_event">Viser nå</string>
+    <string name="timeout">Tid utløpt</string>
+    <string name="message">Melding</string>
+    <string name="message_text_hint">Skriv melding</string>
+    <string name="send">Send</string>
+    <string name="type">Skriv</string>
+
+    <string-array name="message_types">
+        <item>Ja/Nei</item>
+        <item>Advarsel</item>
+        <item>Info</item>
+        <item>Feil</item>
+    </string-array>
+
+    <string name="virtual_remote">Virtuell Fjernkontroll</string>
+    <string name="login_enabled">Aktiver Innlogging</string>
+    <string name="wait_request_finished">Vennligst vent til den kjørende forespørselen er ferdig!</string>
+    <string name="current_service">Aktuell</string>
+    <string name="provider">Tilbyder</string>
+    <string name="now">Nå</string>
+    <string name="next">Neste</string>
+    <string name="epg_search">EPG-søk</string>
+    <string name="epg_search_hint">Søk i EPG</string>
+    <string name="standard">Standard Oppsett</string>
+    <string name="quickzap">Hurtigskift Oppsett</string>
+    <string name="no_epg_available">Det er for tiden ingen EPG informasjon tilgjengelig for denne kanalen!</string>
+    <string name="ok">OK</string>
+    <string name="activate">Aktiver</string>
+    <string name="confirm_delete_profile">Vil du virkelig slette denne profilen?</string>
+    <string name="profile_activated">Aktivert profil</string>
+    <string name="profile_not_activated">Feil ved aktivering av profil</string>
+    <string name="profile_not_deleted">Feil ved sletting av profil</string>
+    <string name="profile_deleted">Profil slettet</string>
+    <string name="profile">Profil</string>
+    <string name="profile_updated">Profil oppdatert</string>
+    <string name="profile_added">Profil lagt til</string>
+    <string name="profile_add">Legg til profil</string>
+    <string name="profile_not_added">Kunne ikke legge til profil</string>
+    <string name="profile_not_updated">Kunne ikke oppdatere profil</string>
+    <string name="no_list_item">Ingenting å vise...</string>
+    <string name="locations_default_fallback">Feil ved lesing av plasseringer, benytter standard:</string>
+    <string name="tags">Tags</string>
+    <string name="screenshot">Skjermbilde</string>
+    <string name="host_empty">Vertsnavn kan ikke være tomt!</string>
+    <string name="standby">Dvale</string>
+    <string name="powerup">Slå på</string>
+    <string name="restart_gui">Restart GUI</string>
+    <string name="reboot">Start på nytt</string>
+    <string name="shutdown">Slå av</string>
+    <string name="powercontrol">Strømstyring</string>
+    <string name="choose_tags">Velg tags</string>
+    <string name="choose_location">Velg plassering</string>
+    <string name="bouquet_overview">Gruppeoversikt</string>
+    <string name="set_default">Sett som standard</string>
+    <string name="default_bouquet_set_to">Standard gruppe er valgt til:</string>
+    <string name="default_bouquet_not_set">Standard gruppe kunne ikke velges!</string>
+    <string name="loading">Laster...</string>
+    <string name="about">Om</string>
+    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="source_code_link">Kildekode tilgjengelig på: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Aktiv profil</string>
+    <string name="connection_state">Tilkoblingsstatus</string>
+    <string name="not_available">Ikke tilgjengelig</string>
+    <string name="checking">sjekker...</string>
+    <string name="error">FEIL!</string>
+    <string name="check_connectivity">Sjekk tilkobling</string>
+    <string name="version_too_low">Versjon &lt; 1.6</string>
+    <string name="connection_error">Tilkoblingsfeil</string>
+    <string name="port_out_of_range">Port ikke mellom 1 og 65535</string>
+    <string name="illegal_host">Ugyldig vert</string>
+    <string name="edit_timer">Rediger Hendelse</string>
+    <string name="cleaning_timerlist">Rydder Hendelser</string>
+    <string name="cleanup">Opprydding</string>
+    <string name="in_standby">Enheten er nå i Dvale</string>
+    <string name="is_running">Enheten er nå i drift</string>
+    <string name="stream">Stream</string>
+    <string name="stream_host">Streaming Vertsnavn/IP</string>
+    <string name="stream_host_long">Vert/IP for streaming (valgfritt)</string>
+    <string name="stream_current">Stream Aktuell</string>
+    <string name="similar">Lignende hendelser</string>
+
+    <string-array name="timer_state">
+        <item>venter...</item>
+        <item>forberedt...</item>
+        <item>kjører...</item>
+        <item>avsluttet</item>
+        <item>deaktivert</item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>spill inn</item>
+        <item>bytt til</item>
+    </string-array>
+
+    <string name="sleeptimer">Innsovning</string>
+    <string name="current_volume">Volumet er nå på </string>
+    <string name="muted">Mute</string>
+    <string name="download">Last ned</string>
+    <string name="extras">Ekstra</string>
+    <string name="main_menu">Hoved</string>
+    <string name="profiles">Profiler</string>
+
 </resources>

@@ -1,55 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:flattr_sdk="http://schemas.flattr4android.com/sdk"
-	android:layout_height="wrap_content"
-	android:orientation="vertical" android:layout_width="480dp">
-		
-	<View android:id="@+id/divider"
-	    android:background="@android:drawable/divider_horizontal_bright"
-	    android:layout_width="fill_parent"
-	    android:layout_height="1dp"
-	    android:layout_marginBottom="3dp"/>
-	
-	<ScrollView
-  		android:id="@+id/ScrollView"
-  		android:layout_height="fill_parent"
-  		android:padding="10dip" android:layout_width="fill_parent">
-  	
-	  	<LinearLayout
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:orientation="vertical">
-	  	
-			<TextView 
-				android:id="@+id/TextViewAbout" 
-				android:layout_width="wrap_content" 
-				android:layout_height="wrap_content"
-				android:autoLink="all" />
-		
-			<LinearLayout
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:orientation="vertical">
-		
-			 	<Button
-			 		android:id="@+id/ButtonDonate"
-			 		android:layout_width="wrap_content" 
-				    android:layout_height="wrap_content"
-				    android:layout_gravity="center_horizontal"
-					android:layout_marginTop="5dp"
-				    android:background="@drawable/button_paypal_donate" /> 
-			 
-				<com.flattr4android.sdk.FlattrButton
-				    android:layout_width="wrap_content" 
-				    android:layout_height="wrap_content" 
-				    flattr_sdk:token="578d7bffb6aadc2bdeeedfc956507db0"
-				    flattr_sdk:token_secret="62ff25450f5010c32e58703811714e65"
-				    flattr_sdk:thing_id="6420aa9c7b7b41b49777aa0cec33e50f"
-				    android:layout_gravity="center_horizontal"
-					android:layout_marginTop="5dp"
-				    flattr_sdk:button_style="horizontal"/>
-			</LinearLayout>
-		</LinearLayout>
-	</ScrollView>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:flattr_sdk="http://schemas.flattr4android.com/sdk"
+    android:layout_width="480dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="3dp"
+        android:background="@android:drawable/divider_horizontal_bright" />
+
+    <ScrollView
+        android:id="@+id/ScrollView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:padding="10dip" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/TextViewAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:autoLink="all" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <Button
+                    android:id="@+id/ButtonDonate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/button_paypal_donate" />
+
+                <com.flattr4android.sdk.FlattrButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="5dp"
+                    flattr_sdk:button_style="horizontal"
+                    flattr_sdk:thing_id="6420aa9c7b7b41b49777aa0cec33e50f"
+                    flattr_sdk:token="578d7bffb6aadc2bdeeedfc956507db0"
+                    flattr_sdk:token_secret="62ff25450f5010c32e58703811714e65" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
 </LinearLayout>

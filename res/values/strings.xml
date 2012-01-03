@@ -1,216 +1,225 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-	<string name="description">Description</string>
-	<string name="title">Title</string>
-	<string name="mo">Mo</string>
-	<string name="app_name">DreamDroid</string>
-	<string-array name="servicelist">
-		<item>Bouquets (TV)</item>
-		<item>Provider (TV)</item>
-		<item>All Services (TV)</item>
-		<item>Bouquets (Radio)</item>
-		<item>Provider (Radio)</item>
-		<item>All (Radio)</item>
-	</string-array>
-	<string name="timer">Timer</string>
-	<string name="service">Service</string>
-	<string name="afterevent">Afterevent</string>
-	<string name="location">Location</string>
-	<string-array name="afterevents">
-		<item>Nothing</item>
-		<item>Standby</item>
-		<item>Deep Standby</item>
-		<item>Automatic</item>
-	</string-array>
-	<string name="begin_time">Begin time</string>
-	<string name="repeatings">Repeatings</string>
-	<string name="end_time">End time</string>
-	<string name="services">Services</string>
-	<string name="movies">Movies</string>
-	<string name="device_info">Device Information</string>
-	<string name="send_message">Send Message</string>
-	
-	<string name="save">Save</string>
-	<string name="cancel">Cancel</string>
-	<string name="fetching_data">Fetching data...</string>
-	<string name="parsing">Parsing...</string>
-	<string name="get_content_error">Error getting content!</string>
-	<string name="zap">Zap</string>
-	<string name="browse_epg">Browse EPG</string>
-	<string name="edit">Edit</string>
-	<string name="delete">Delete</string>
-	<string name="epg">EPG</string>
-	<string name="ssl_enabled">https</string>
-	<string name="host">Hostname/IP</string>
-	<string name="port">Port</string>
-	<string name="settings">Settings</string>
-	<string name="host_long">Hostname or IP</string>
-	<string name="port_long">Listening Port
-	</string>
-	<string name="close">Close</string>
-	<string name="minutes_short">min.</string>
-	<string name="user">User</string>
-	<string name="user_long">Username for login</string>
-	<string name="pass">Password</string>
-	<string name="pass_long">Password for the login</string>
-	<string name="saving">Saving. Please wait...</string>
-	<string name="deleting">Deleting. Please wait...</string>
-	<string name="delete_confirm">Really delete?</string>
-	<string name="set_timer">Set Timer</string>
-	<string name="home">Home</string>
-	<string name="pick_action">Pick an action</string>
-	<string name="set_time_begin">Start date and time</string>
-	<string name="set_time_end">End date and time</string>
-	<string name="apply">Apply</string>
-	<string name="reload">Reload</string>
-	<string-array name="weekdays_short">
-		<item>Mo</item>
-		<item>Tu</item>
-		<item>We</item>
-		<item>Th</item>
-		<item>Fr</item>
-		<item>Sa</item>
-		<item>Su</item>
-	</string-array>
-	<string-array name="weekdays">
-		<item>Monday</item>
-		<item>Tuesday</item>
-		<item>Wednesday</item>
-		<item>Thursday</item>
-		<item>Friday</item>
-		<item>Saturday</item>
-		<item>Sunday</item>
-	</string-array>
-	<string name="none">None</string>
-	<string name="choose_days">Choose days</string>
-	<string name="mo_to_fr">Monday to Friday</string>
-	<string name="daily">Daily</string>
-	<string name="new_timer">New Timer</string>
-	<string name="locations">Locations</string>
-	<string name="gui_version">GUI version</string>
-	<string name="image_version">Image version</string>
-	<string name="interface_version">Interface version</string>
-	<string name="front_processor_version">Frontprocessor version</string>
-	<string name="device_name">Devicename</string>
-	<string name="frontends">Frontends</string>
-	<string name="nics">Network Interfaces</string>
-	<string name="hdds">Harddisks</string>
-	<string name="not_implemented">This function is not implemented, yet!</string>
-	<string name="current_event">Current event</string>
-	<string name="timeout">Timeout</string>
-	<string name="message">Message</string>
-	<string name="message_text_hint">Enter your message text</string>
-	<string name="send">Send</string>
-	<string name="type">Type</string>
-	<string-array name="message_types">
-		<item>YesNo</item>
-		<item>Warning</item>
-		<item>Info</item>
-		<item>Error</item>
-	</string-array>
-	<string name="virtual_remote">Virtual Remote</string>
-	<string name="login_enabled">Enable Login</string>
-	<string name="wait_request_finished">Please wait until the running request has finished!</string>
-	<string name="current_service">Current</string>
-	<string name="provider">Provider</string>
-	<string name="now">Now</string>
-	<string name="next">Next</string>
-	<string name="epg_search">EPG-Search</string>
-	<string name="epg_search_hint">Search EPG</string>
-	<string name="standard">Standard Layout</string>
-	<string name="quickzap">QuickZap Layout</string>
-	<string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
-	<string name="ok">OK</string>
-	<string name="activate">Activate</string>
-	<string name="confirm_delete_profile">Do you really want to delete this profile?</string>
-	<string name="profile_activated">Activated profile</string>
-	<string name="profile_not_activated">Error activating profile</string>
-	<string name="profile_not_deleted">Error deleting profile</string>
-	<string name="profile_deleted">Deleted profile</string>
-	<string name="profile">Profile</string>
-	<string name="profile_updated">Updated profile</string>
-	<string name="profile_added">Added profile</string>
-	<string name="profile_add">Add Profile</string>
-	<string name="profile_not_added">Could not add profile</string>
-	<string name="profile_not_updated">Could not update profile</string>
-	<string name="no_list_item">No items to display...</string>
-	<string name="locations_default_fallback">Error loading locations, falling back to default:</string>
-	<string name="tags">Tags</string>
-	<string name="screenshot">Screenshot</string>
-	<string name="host_empty">The host name cannot be empty!</string>
-	<string name="standby">Standby</string>
-	<string name="powerup">Power Up</string>
-	<string name="restart_gui">Restart GUI</string>
-	<string name="reboot">Reboot</string>
-	<string name="shutdown">Shutdown</string>
-	<string name="powercontrol">Power Control</string>
-	<string name="choose_tags">Choose tags</string>
-	<string name="choose_location">Choose location</string>
-	<string name="bouquet_overview">Bouquet overview</string>
-	<string name="set_default">Set as default</string>
-	<string name="default_bouquet_set_to">Default bouquet has been set to: </string>	
-	<string name="default_bouquet_not_set">Default bouquet could not be set!</string>
-	<string name="loading">Loading...</string>
-	<string name="about">About</string>
-	<string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-	<string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
-	<string name="active_profile">Active profile</string>
-	<string name="connection_state">Connection state</string>
-	<string name="not_available">Not available</string>
-	<string name="checking">checking...</string>
-	<string name="error">ERROR!</string>
-	<string name="check_connectivity">Check connectivity</string>
-	<string name="version_too_low">Version &lt; 1.6.5</string>
-	<string name="connection_error">Connection error</string>
-	<string name="port_out_of_range">Port not between 1 and 65535</string>
-	<string name="illegal_host">Illegal host</string>
-	<string name="edit_timer">Edit Timer</string>
-	<string name="cleaning_timerlist">Cleaning up timerlist</string>
-	<string name="cleanup">Cleanup</string>
-	<string name="in_standby">Device is now in Standby-Mode</string>
-	<string name="is_running">Device is now running</string>
-	<string name="stream">Stream</string>
-	
-	<string name="stream_host">Streaming Hostname/IP</string>
-	<string name="stream_host_long">Host/IP for streaming (optional)</string>
-	<string name="stream_current">Stream current</string>
-	<string name="similar">Similar events</string>
-	<string-array name="timer_state">
-		<item>waiting...</item>
-		<item>prepared...</item>
-		<item>running...</item>
-		<item>ended</item>
-		<item>disabled</item>
-	</string-array>
-	<string-array name="timer_action">
-		<item>record</item>
-		<item>zap</item>
-	</string-array>
-	<string name="sleeptimer">Sleep Timer</string>
-	<string name="current_volume">Volume is now %s</string>
-	<string name="muted">Muted</string>
-	<string name="enable_volume_control">Enable Volume Control</string>
-	<string name="enable_volume_control_long">Enable direct Volume Control using H/W-Buttons</string>
-	<string name="download">Download</string>
-	<string name="extras">Extras</string>
-	<string name="main_menu">Main</string>
-	<string name="profiles">Profiles</string>
-	<string name="enable_instant_zap">Instant zap</string>
-	<string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
-	<string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
-	<string name="simple_remote">Simple remote layout</string>
-	<string name="screenshot_saved">Screenshot saved to \'%s\'</string>
-	<string name="imdb">IMDb</string>
-	<string name="missing_stream_player">No Player for Videostreams installed on this device!</string>
-	<string name="mediaplayer">Mediaplayer</string>
-	<string name="edit_profile">Edit Profile</string>
-	<string name="force_tablet_layout_long">Force Tablet-Optimized Layout</string>
-	<string name="force_tablet_layout">Force Tablet Layout</string>
-	<string name="mobile_imdb">Use mobile version of imdb.com</string>
-	<string name="mobile_imdb_long">Use m.imdb.com instead of www.imdb.com</string>
-	<string name="searching">Searching...</string>
-	<string name="searching_known_devices">Searching for dreamboxes in your local network. This may take a few minutes!</string>
-	<string name="autodiscover_dreamboxes">Dreambox Autodisocvery</string>
-	<string name="autodiscovery_failed">Could not autodiscover any dreambox on your local network!</string>
-	<string name="add_all">Add All</string>
+
+    <string name="description">Description</string>
+    <string name="title">Title</string>
+    <string name="mo">Mo</string>
+    <string name="app_name">DreamDroid</string>
+
+    <string-array name="servicelist">
+        <item>Bouquets (TV)</item>
+        <item>Provider (TV)</item>
+        <item>All Services (TV)</item>
+        <item>Bouquets (Radio)</item>
+        <item>Provider (Radio)</item>
+        <item>All (Radio)</item>
+    </string-array>
+
+    <string name="timer">Timer</string>
+    <string name="service">Service</string>
+    <string name="afterevent">Afterevent</string>
+    <string name="location">Location</string>
+
+    <string-array name="afterevents">
+        <item>Nothing</item>
+        <item>Standby</item>
+        <item>Deep Standby</item>
+        <item>Automatic</item>
+    </string-array>
+
+    <string name="begin_time">Begin time</string>
+    <string name="repeatings">Repeatings</string>
+    <string name="end_time">End time</string>
+    <string name="services">Services</string>
+    <string name="movies">Movies</string>
+    <string name="device_info">Device Information</string>
+    <string name="send_message">Send Message</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="fetching_data">Fetching data...</string>
+    <string name="parsing">Parsing...</string>
+    <string name="get_content_error">Error getting content!</string>
+    <string name="zap">Zap</string>
+    <string name="browse_epg">Browse EPG</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">https</string>
+    <string name="host">Hostname/IP</string>
+    <string name="port">Port</string>
+    <string name="settings">Settings</string>
+    <string name="host_long">Hostname or IP</string>
+    <string name="port_long">istening Port</string>
+    <string name="close">Close</string>
+    <string name="minutes_short">min.</string>
+    <string name="user">User</string>
+    <string name="user_long">Username for login</string>
+    <string name="pass">Password</string>
+    <string name="pass_long">Password for the login</string>
+    <string name="saving">Saving. Please wait...</string>
+    <string name="deleting">Deleting. Please wait...</string>
+    <string name="delete_confirm">Really delete?</string>
+    <string name="set_timer">Set Timer</string>
+    <string name="home">Home</string>
+    <string name="pick_action">Pick an action</string>
+    <string name="set_time_begin">Start date and time</string>
+    <string name="set_time_end">End date and time</string>
+    <string name="apply">Apply</string>
+    <string name="reload">Reload</string>
+
+    <string-array name="weekdays_short">
+        <item>Mo</item>
+        <item>Tu</item>
+        <item>We</item>
+        <item>Th</item>
+        <item>Fr</item>
+        <item>Sa</item>
+        <item>Su</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
+
+    <string name="none">None</string>
+    <string name="choose_days">Choose days</string>
+    <string name="mo_to_fr">Monday to Friday</string>
+    <string name="daily">Daily</string>
+    <string name="new_timer">New Timer</string>
+    <string name="locations">Locations</string>
+    <string name="gui_version">GUI version</string>
+    <string name="image_version">Image version</string>
+    <string name="interface_version">Interface version</string>
+    <string name="front_processor_version">Frontprocessor version</string>
+    <string name="device_name">Devicename</string>
+    <string name="frontends">Frontends</string>
+    <string name="nics">Network Interfaces</string>
+    <string name="hdds">Harddisks</string>
+    <string name="not_implemented">This function is not implemented, yet!</string>
+    <string name="current_event">Current event</string>
+    <string name="timeout">Timeout</string>
+    <string name="message">Message</string>
+    <string name="message_text_hint">Enter your message text</string>
+    <string name="send">Send</string>
+    <string name="type">Type</string>
+
+    <string-array name="message_types">
+        <item>YesNo</item>
+        <item>Warning</item>
+        <item>Info</item>
+        <item>Error</item>
+    </string-array>
+
+    <string name="virtual_remote">Virtual Remote</string>
+    <string name="login_enabled">Enable Login</string>
+    <string name="wait_request_finished">Please wait until the running request has finished!</string>
+    <string name="current_service">Current</string>
+    <string name="provider">Provider</string>
+    <string name="now">Now</string>
+    <string name="next">Next</string>
+    <string name="epg_search">EPG-Search</string>
+    <string name="epg_search_hint">Search EPG</string>
+    <string name="standard">Standard Layout</string>
+    <string name="quickzap">QuickZap Layout</string>
+    <string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
+    <string name="ok">OK</string>
+    <string name="activate">Activate</string>
+    <string name="confirm_delete_profile">Do you really want to delete this profile?</string>
+    <string name="profile_activated">Activated profile</string>
+    <string name="profile_not_activated">Error activating profile</string>
+    <string name="profile_not_deleted">Error deleting profile</string>
+    <string name="profile_deleted">Deleted profile</string>
+    <string name="profile">Profile</string>
+    <string name="profile_updated">Updated profile</string>
+    <string name="profile_added">Added profile</string>
+    <string name="profile_add">Add Profile</string>
+    <string name="profile_not_added">Could not add profile</string>
+    <string name="profile_not_updated">Could not update profile</string>
+    <string name="no_list_item">No items to display...</string>
+    <string name="locations_default_fallback">Error loading locations, falling back to default:</string>
+    <string name="tags">Tags</string>
+    <string name="screenshot">Screenshot</string>
+    <string name="host_empty">The host name cannot be empty!</string>
+    <string name="standby">Standby</string>
+    <string name="powerup">Power Up</string>
+    <string name="restart_gui">Restart GUI</string>
+    <string name="reboot">Reboot</string>
+    <string name="shutdown">Shutdown</string>
+    <string name="powercontrol">Power Control</string>
+    <string name="choose_tags">Choose tags</string>
+    <string name="choose_location">Choose location</string>
+    <string name="bouquet_overview">Bouquet overview</string>
+    <string name="set_default">Set as default</string>
+    <string name="default_bouquet_set_to">Default bouquet has been set to: </string>
+    <string name="default_bouquet_not_set">Default bouquet could not be set!</string>
+    <string name="loading">Loading...</string>
+    <string name="about">About</string>
+    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Active profile</string>
+    <string name="connection_state">Connection state</string>
+    <string name="not_available">Not available</string>
+    <string name="checking">checking...</string>
+    <string name="error">ERROR!</string>
+    <string name="check_connectivity">Check connectivity</string>
+    <string name="version_too_low">Version &lt; 1.6.5</string>
+    <string name="connection_error">Connection error</string>
+    <string name="port_out_of_range">Port not between 1 and 65535</string>
+    <string name="illegal_host">Illegal host</string>
+    <string name="edit_timer">Edit Timer</string>
+    <string name="cleaning_timerlist">Cleaning up timerlist</string>
+    <string name="cleanup">Cleanup</string>
+    <string name="in_standby">Device is now in Standby-Mode</string>
+    <string name="is_running">Device is now running</string>
+    <string name="stream">Stream</string>
+    <string name="stream_host">Streaming Hostname/IP</string>
+    <string name="stream_host_long">Host/IP for streaming (optional)</string>
+    <string name="stream_current">Stream current</string>
+    <string name="similar">Similar events</string>
+
+    <string-array name="timer_state">
+        <item>waiting...</item>
+        <item>prepared...</item>
+        <item>running...</item>
+        <item>ended</item>
+        <item>disabled</item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>record</item>
+        <item>zap</item>
+    </string-array>
+
+    <string name="sleeptimer">Sleep Timer</string>
+    <string name="current_volume">Volume is now %s</string>
+    <string name="muted">Muted</string>
+    <string name="enable_volume_control">Enable Volume Control</string>
+    <string name="enable_volume_control_long">Enable direct Volume Control using H/W-Buttons</string>
+    <string name="download">Download</string>
+    <string name="extras">Extras</string>
+    <string name="main_menu">Main</string>
+    <string name="profiles">Profiles</string>
+    <string name="enable_instant_zap">Instant zap</string>
+    <string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
+    <string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
+    <string name="simple_remote">Simple remote layout</string>
+    <string name="screenshot_saved">Screenshot saved to \'%s\'</string>
+    <string name="imdb">IMDb</string>
+    <string name="missing_stream_player">No Player for Videostreams installed on this device!</string>
+    <string name="mediaplayer">Mediaplayer</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="force_tablet_layout_long">Force Tablet-Optimized Layout</string>
+    <string name="force_tablet_layout">Force Tablet Layout</string>
+    <string name="mobile_imdb">Use mobile version of imdb.com</string>
+    <string name="mobile_imdb_long">Use m.imdb.com instead of www.imdb.com</string>
+    <string name="searching">Searching...</string>
+    <string name="searching_known_devices">Searching for dreamboxes in your local network. This may take a few minutes!</string>
+    <string name="autodiscover_dreamboxes">Dreambox Autodisocvery</string>
+    <string name="autodiscovery_failed">Could not autodiscover any dreambox on your local network!</string>
+    <string name="add_all">Add All</string>
+
 </resources>

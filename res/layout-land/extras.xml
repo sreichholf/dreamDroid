@@ -1,95 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout 
-	android:id="@+id/LinearLayoutMain" 
-	android:layout_width="fill_parent" 
-	android:layout_height="fill_parent"
-	android:orientation="vertical"
-	xmlns:android="http://schemas.android.com/apk/res/android">
-	
-	<ScrollView
-		android:id="@+id/ScrollViewMain"
-		android:layout_width="fill_parent" 
-		android:layout_height="fill_parent">
-	
-		<LinearLayout 
-			android:layout_width="fill_parent" 
-			android:layout_height="fill_parent"
-			android:orientation="vertical"		
-			android:id="@+id/LinearLayoutTop" >
-				
-			<LinearLayout 
-				android:id="@+id/LinearLayout1" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:orientation="horizontal"
-				android:paddingTop="5dip">
-								
-				<Button 
-					android:id="@+id/ButtonSleeptimer" 
-					android:text="@string/sleeptimer" 
-					android:layout_width="fill_parent" 
-					android:layout_height="65dp"
-					android:layout_gravity="center_vertical"
-					android:drawableLeft="@drawable/ic_menu_clock" 
-					android:layout_weight="1" />
-				<Button
-					android:id="@+id/ButtonScreenshot"
-					android:text="@string/screenshot"		
-					android:layout_width="fill_parent"
-					android:layout_height="65dp"
-					android:layout_gravity="center_vertical"
-					android:drawableLeft="@drawable/ic_menu_picture"
-					android:layout_weight="1"/>	
-				<Button 
-					android:id="@+id/ButtonDeviceInfo" 
-					android:text="@string/device_info" 
-					android:layout_width="fill_parent" 
-					android:layout_height="65dp" 
-					android:layout_gravity="center_vertical"
-					android:drawableLeft="@drawable/ic_menu_info" 
-					android:layout_weight="1" />	
-			</LinearLayout>
-			
-			<LinearLayout 
-				android:id="@+id/LinearLayout2" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:orientation="horizontal">
-					
-				<Button 
-					android:id="@+id/ButtonMessage" 
-					android:text="@string/send_message" 
-					android:layout_width="fill_parent" 
-					android:layout_height="65dp"
-					android:layout_gravity="center_vertical" 
-					android:drawableLeft="@drawable/ic_menu_mail" 
-					android:layout_weight="1" />
-				<Button
-					android:id="@+id/ButtonAbout"
-					android:text="@string/about"		
-					android:layout_width="fill_parent"
-					android:layout_height="65dp"
-					android:layout_gravity="center_vertical"
-					android:drawableLeft="@drawable/ic_menu_help" 
-					android:layout_weight="1"/>
-				<Button 
-					android:id="@+id/ButtonCheckConnection" 
-					android:text="@string/check_connectivity" 
-					android:layout_width="fill_parent" 
-					android:layout_height="65dp"
-					android:layout_gravity="center_vertical" 
-					android:drawableLeft="@drawable/ic_menu_link" 
-					android:layout_weight="1" />
-			</LinearLayout>
-			
-			<LinearLayout 
-				android:id="@+id/LinearLayout4" 
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:orientation="horizontal">
-				
-				
-			</LinearLayout>
-		</LinearLayout>	
-	</ScrollView>
-</LinearLayout>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ScrollViewMain"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:id="@+id/LinearLayoutTop"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/LinearLayout1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dip" >
+
+            <Button
+                android:id="@+id/ButtonSleeptimer"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_clock"
+                android:text="@string/sleeptimer" />
+
+            <Button
+                android:id="@+id/ButtonScreenshot"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_picture"
+                android:text="@string/screenshot" />
+
+            <Button
+                android:id="@+id/ButtonDeviceInfo"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_info"
+                android:text="@string/device_info" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LinearLayout2"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/ButtonMessage"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_mail"
+                android:text="@string/send_message" />
+
+            <Button
+                android:id="@+id/ButtonAbout"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_help"
+                android:text="@string/about" />
+
+            <Button
+                android:id="@+id/ButtonCheckConnection"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_link"
+                android:text="@string/check_connectivity" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LinearLayout4"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
