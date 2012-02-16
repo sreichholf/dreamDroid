@@ -48,58 +48,62 @@ public class CheckProfile {
 
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		String host = profile.getHost();
-
-		if (host != null) {
-			if (!host.contains(" ")) {
-				addEntry(resultList, R.string.host, false, host);
-
-				int port = profile.getPort();
-
-				if (port > 0 && port <= 65535) {
-					addEntry(resultList, R.string.port, false, Integer.toString(port));
-					DeviceInfoRequestHandler dirh = new DeviceInfoRequestHandler();
-					String xml = dirh.get(shc);
-
-					if (xml != null && !shc.hasError()) {
-						ExtendedHashMap deviceInfo = new ExtendedHashMap();
-
-						if (dirh.parse(xml, deviceInfo)) {
-							addEntry(resultList, R.string.device_name, false,
-									deviceInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
-
-							String version = deviceInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION, "0");
-							
-							int vc = checkVersion(version);
-							if (vc >= 0 ) {
-								int[] requiredForSleeptimer = {1, 6, 5};
-								if(checkVersion(version, requiredForSleeptimer) >= 0){
-									DreamDroid.enableSleepTimer();
-								}
+		try{
+			if (host != null) {
+				if (!host.contains(" ")) {
+					addEntry(resultList, R.string.host, false, host);
+	
+					int port = profile.getPort();
+	
+					if (port > 0 && port <= 65535) {
+						addEntry(resultList, R.string.port, false, Integer.toString(port));
+						DeviceInfoRequestHandler dirh = new DeviceInfoRequestHandler();
+						String xml = dirh.get(shc);
+	
+						if (xml != null && !shc.hasError()) {
+							ExtendedHashMap deviceInfo = new ExtendedHashMap();
+	
+							if (dirh.parse(xml, deviceInfo)) {
+								addEntry(resultList, R.string.device_name, false,
+										deviceInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
+	
+								String version = deviceInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION, "0");
 								
-								addEntry(resultList, R.string.interface_version, false, version);
+								int vc = checkVersion(version);
+								if (vc >= 0 ) {
+									int[] requiredForSleeptimer = {1, 6, 5};
+									if(checkVersion(version, requiredForSleeptimer) >= 0){
+										DreamDroid.enableSleepTimer();
+									}
+									
+									addEntry(resultList, R.string.interface_version, false, version);
+								} else {
+									addEntry(resultList, R.string.interface_version, true, version,
+											R.string.version_too_low);
+									setError(checkResult, true, R.string.version_too_low);
+								}
 							} else {
-								addEntry(resultList, R.string.interface_version, true, version,
-										R.string.version_too_low);
-								setError(checkResult, true, R.string.version_too_low);
+								// TODO Parser-Error
 							}
-						} else {
-							// TODO Parser-Error
+	
+						} else if (shc.hasError()) {
+							addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.connection_error);
+							setError(checkResult, true, R.string.connection_error);
+						} else if (xml == null) {
+							// TODO Unexpected Error
 						}
-
-					} else if (shc.hasError()) {
-						addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.connection_error);
-						setError(checkResult, true, R.string.connection_error);
-					} else if (xml == null) {
-						// TODO Unexpected Error
+					} else {
+						addEntry(resultList, R.string.port, true, String.valueOf(port), R.string.port_out_of_range);
+						setError(checkResult, true, R.string.port_out_of_range);
 					}
 				} else {
-					addEntry(resultList, R.string.port, true, String.valueOf(port), R.string.port_out_of_range);
-					setError(checkResult, true, R.string.port_out_of_range);
+					addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.illegal_host);
+					setError(checkResult, true, R.string.illegal_host);
 				}
-			} else {
-				addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.illegal_host);
-				setError(checkResult, true, R.string.illegal_host);
 			}
+		} catch (Exception e){
+			addEntry(resultList, R.string.error, true, e.getLocalizedMessage(), R.string.connection_error);
+			setError(checkResult, true, R.string.connection_error);
 		}
 
 		return checkResult;
