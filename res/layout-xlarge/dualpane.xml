@@ -35,16 +35,16 @@
             android:layout_marginBottom="50dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_marginTop="10dp"
-            android:background="#212121" />
+            android:layout_marginTop="10dp" />
 
         <TableLayout
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="fill_parent"
             android:layout_gravity="top"
             android:layout_marginBottom="0dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:layout_marginTop="-45dp"
-            android:background="#000000"
             android:orientation="horizontal" >
 
             <TableRow android:layout_marginTop="3dp" >
@@ -55,7 +55,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/active_profile"
-                    android:textColor="#FFF"
                     android:textStyle="bold" />
 
                 <TextView
@@ -65,7 +64,6 @@
                     android:layout_weight="1"
                     android:gravity="right"
                     android:text="@string/connection_state"
-                    android:textColor="#FFF"
                     android:textStyle="bold" />
             </TableRow>
 

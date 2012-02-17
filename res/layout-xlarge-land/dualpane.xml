@@ -26,7 +26,7 @@
         android:layout_below="@id/detail_title"
         android:layout_marginBottom="0dp"
         android:layout_marginLeft="0dp"
-        android:layout_marginRight="25dp"
+        android:layout_marginRight="0dp"
         android:layout_marginTop="0dp"
         android:layout_toRightOf="@id/navigation_view"
         android:background="#212121"
@@ -39,16 +39,16 @@
             android:layout_marginBottom="50dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_marginTop="10dp"
-            android:background="#212121" />
+            android:layout_marginTop="10dp" />
 
         <TableLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_gravity="top"
             android:layout_marginBottom="0dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:layout_marginTop="-45dp"
-            android:background="#000000"
             android:orientation="horizontal" >
 
             <TableRow android:layout_marginTop="3dp" >

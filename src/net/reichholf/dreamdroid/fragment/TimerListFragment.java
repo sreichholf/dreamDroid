@@ -78,9 +78,19 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		setHasOptionsMenu(true);
 		setAdapter();
 		
-		if(savedInstanceState == null){
+		if(savedInstanceState != null){
+			mTimer = (ExtendedHashMap) savedInstanceState.getSerializable("timer");
+		} else {
 			reload();
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
+	 */
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putSerializable("timer", mTimer);
+		super.onSaveInstanceState(outState);
 	}
 
 	/*
@@ -106,27 +116,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mTimer = mMapList.get((int) id);
-
-		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-
-		AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
-		adBuilder.setTitle(R.string.pick_action);
-		adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-			public void onClick(DialogInterface dialog, int which) {
-				switch (which) {
-				case 0:
-					editTimer(mTimer, false);
-					break;
-				case 1:
-					deleteTimerConfirm();
-					break;
-				}
-			}
-		});
-
-		AlertDialog alert = adBuilder.create();
-		alert.show();
+		getActivity().showDialog(Statics.DIALOG_TIMER_SELECTED_ID);
 	}
 
 	/*
@@ -217,21 +207,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 * Confirmation dialog before timer deletion
 	 */
 	private void deleteTimerConfirm() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-		builder.setTitle(mTimer.getString(Timer.KEY_NAME)).setMessage(getText(R.string.delete_confirm))
-				.setCancelable(false).setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						deleteTimer(mTimer);
-						dialog.dismiss();
-					}
-				}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.dismiss();
-					}
-				});
-		AlertDialog alert = builder.create();
-		alert.show();
+		getActivity().showDialog(Statics.DIALOG_TIMER_DELETE_CONFIRM_ID);
 	}
 
 	/**
@@ -286,7 +262,43 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 */
 	@Override
 	public Dialog onCreateDialog(int id) {
-		// TODO Auto-generated method stub
-		return null;
+		Dialog dialog = null;
+		switch(id){
+		case(Statics.DIALOG_TIMER_SELECTED_ID):
+			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
+			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
+			adBuilder.setTitle(R.string.pick_action);
+			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
+	
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						editTimer(mTimer, false);
+						break;
+					case 1:
+						deleteTimerConfirm();
+						break;
+					}
+				}
+			});
+			dialog = adBuilder.create();
+			break;
+		case(Statics.DIALOG_TIMER_DELETE_CONFIRM_ID):
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle(mTimer.getString(Timer.KEY_NAME)).setMessage(getText(R.string.delete_confirm))
+					.setCancelable(false).setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							deleteTimer(mTimer);
+							dialog.dismiss();
+						}
+					}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.dismiss();
+						}
+					});
+			dialog = builder.create();
+			break;
+		}
+		return dialog;
 	}
 }

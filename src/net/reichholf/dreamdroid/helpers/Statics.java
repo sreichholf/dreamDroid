@@ -28,6 +28,10 @@ public class Statics {
 	public static final int DIALOG_PROFILE_ID = 0x8014;
 	public static final int DIALOG_PROFILE_CONFIRM_DELETE_ID = 0x8015;
 	public static final int DIALOG_EMPTY_LIST_ID = 0x8016;
+	public static final int DIALOG_TIMER_SELECTED_ID = 0x8017;
+	public static final int DIALOG_TIMER_DELETE_CONFIRM_ID = 0x8018;
+	public static final int DIALOG_SERVICE_SELECTED_ID = 0x8019;
+	public static final int DIALOG_MOVIE_SELECTED_ID = 0x8020;
 	
 	public static final int ITEM_NOW = 0x6000;
 	public static final int ITEM_NEXT = 0x6001;

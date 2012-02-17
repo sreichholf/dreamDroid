@@ -18,6 +18,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -34,7 +35,30 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	protected ProgressDialog mProgress;
 	protected ExtendedHashMap mCurrentItem;
 	protected MultiPaneHandler mMultiPaneHandler;
-
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onCreate(android.os.Bundle)
+	 */
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		if(savedInstanceState != null){
+			mReference = savedInstanceState.getString("reference");
+			mName = savedInstanceState.getString("name");
+			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
+	 */
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putString("reference", mReference);
+		outState.putString("name", mName);
+		outState.putSerializable("currentItem", mCurrentItem);
+		
+		super.onSaveInstanceState(outState);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

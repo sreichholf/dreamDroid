@@ -6,7 +6,9 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
@@ -104,7 +106,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
 
 		setListAdapter(mAdapter);
-		mSelectedTags = new ArrayList<String>();
 		
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
@@ -114,7 +115,13 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		});
 		
 		if(savedInstanceState == null){
+			mSelectedTags = new ArrayList<String>();
+			mOldTags = new ArrayList<String>();
 			reload();
+		} else {
+			mMovie = (ExtendedHashMap) savedInstanceState.getSerializable("movie");
+			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
+			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 		}
 	}
 
@@ -141,7 +148,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		if (mListTask != null) {
 			mListTask.cancel(true);
 		}
-
 		super.onPause();
 	}
 
@@ -180,6 +186,22 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		menu.add(0, Statics.ITEM_TAGS, 1, getText(R.string.tags)).setIcon(R.drawable.ic_menu_tags);
 	}
 	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
+	 */
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putSerializable("movie", mMovie);
+		
+		String[] selectedTags = new String[mSelectedTags.size()];
+		mSelectedTags.toArray(selectedTags);
+		outState.putStringArray("selectedTags", selectedTags);
+		
+		String[] oldTags = new String[mOldTags.size()];
+		mOldTags.toArray(oldTags);
+		outState.putStringArray("oldTags", oldTags);
+		super.onSaveInstanceState(outState);
+	}
+	
 	/**
 	 * @param id
 	 *            The id of the selected menu item (<code>MENU_*</code> statics)
@@ -212,6 +234,43 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		AlertDialog.Builder builder;
 
 		switch (id) {
+		case (Statics.DIALOG_MOVIE_SELECTED_ID):
+			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
+				getText(R.string.stream) };
+			
+			builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle(getText(R.string.pick_action));
+			builder.setItems(actions, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						zapTo(mMovie.getString(Movie.KEY_REFERENCE));
+						break;
+					case 1:
+						getActivity().showDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+						break;
+					case 2:
+						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+						params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
+						String url = mShc.buildUrl(URIStore.FILE, params);
+	
+						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+						startActivity(intent);
+						break;
+					case 3:
+						try{
+							startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)) );
+						} catch(ActivityNotFoundException e){
+							showToast(getText(R.string.missing_stream_player));
+						}
+						break;
+					default:
+						return;
+					}
+				}
+			});
+			dialog = builder.create();
+			break;
 		case (Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID):
 			builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(mMovie.getString(Movie.KEY_TITLE)).setMessage(getText(R.string.delete_confirm))
@@ -368,44 +427,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
-		
-			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
-					getText(R.string.stream) };
-	
-			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
-			adBuilder.setTitle(getText(R.string.pick_action));
-			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-	
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						zapTo(mMovie.getString(Movie.KEY_REFERENCE));
-						break;
-					case 1:
-						getActivity().showDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
-						break;
-					case 2:
-						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-						params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
-						String url = mShc.buildUrl(URIStore.FILE, params);
-	
-						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-						startActivity(intent);
-						break;
-					case 3:
-						try{
-							startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)) );
-						} catch(ActivityNotFoundException e){
-							showToast(getText(R.string.missing_stream_player));
-						}
-						break;
-					default:
-						return;
-					}
-				}
-			});
-	
-			adBuilder.show();
+			getActivity().showDialog(Statics.DIALOG_MOVIE_SELECTED_ID);
 		}
 	}
 	

@@ -97,7 +97,6 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 		// if the dialog has been opened before, remove that instance
 		getActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
 		getActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
-
 	}
 
 	/**

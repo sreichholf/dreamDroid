@@ -19,5 +19,4 @@ public interface MultiPaneHandler {
 	public void setDetailFragment(Fragment f);
 	public boolean isMultiPane();
 	public void finish();
-	public void finish(boolean Fragment);
 }

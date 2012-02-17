@@ -185,7 +185,14 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		mActivity.setProgressBarIndeterminateVisibility(false);
 		
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();
-		mCursor = DreamDroid.getProfiles();		
+		mCursor = DreamDroid.getProfiles();
+		
+		mProfile = new Profile();
+		if(savedInstanceState != null){
+			int pos = savedInstanceState.getInt("cursorPosition");
+			mCursor.moveToPosition(pos);
+			mProfile.set(mCursor);			
+		}
 	}
 	
 	public void onActivityCreated(Bundle savedInstanceState){
@@ -204,84 +211,84 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		});
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView,
-	 * android.view.View, int, long)
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.ListFragment#onListItemClick(android.widget.ListView, android.view.View, int, long)
 	 */
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		mProfile = new Profile(mCursor);
+		mProfile.set(mCursor);
 		activateProfile();
 	}
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
-		mProfile = new Profile(mCursor);
+		mProfile.set(mCursor);
 		mActivity.showDialog(Statics.DIALOG_PROFILE_ID);
 		return true;
 	}
+	
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putInt("cursorPosition", mCursor.getPosition());
+		super.onSaveInstanceState(outState);
+	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateDialog(int)
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onCreateDialog(int)
 	 */
 	public Dialog onCreateDialog(int id) {
-		Dialog dialog;
-		switch (id) {
-		case (Statics.DIALOG_PROFILE_ID):
-			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-
-			AlertDialog.Builder adBuilder = new AlertDialog.Builder(mActivity);
-			adBuilder.setTitle(mProfile.getName());
-			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						editProfile();
-						break;
-
-					case 1:
-						mActivity.showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
-						break;
-
-					default:
-						break;
+		Dialog dialog = null;
+		if(mProfile != null){
+			switch (id) {
+			case (Statics.DIALOG_PROFILE_ID):
+				CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
+	
+				AlertDialog.Builder adBuilder = new AlertDialog.Builder(mActivity);
+				adBuilder.setTitle(mProfile.getName());
+				adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
+	
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which) {
+						case 0:
+							editProfile();
+							break;
+	
+						case 1:
+							mActivity.showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
+							break;
+	
+						default:
+							break;
+						}
 					}
-				}
-			});
-
-			dialog = adBuilder.create();
-			break;
-
-		case (Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID):
-			AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-
-			builder.setTitle(mProfile.getName()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
-					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-
-							if (DreamDroid.deleteProfile(mProfile)) {
-								showToast(getText(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
-							} else {
-								showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
+				});
+	
+				dialog = adBuilder.create();
+				break;
+	
+			case (Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID):
+				AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+	
+				builder.setTitle(mProfile.getName()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
+						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+	
+								if (DreamDroid.deleteProfile(mProfile)) {
+									showToast(getText(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
+								} else {
+									showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
+								}
+								// TODO Add error handling
+								mProfile = null;
+								mCursor.requery();
+								mAdapter.notifyDataSetChanged();
 							}
-							// TODO Add error handling
-							mProfile = null;
-							mCursor.requery();
-							mAdapter.notifyDataSetChanged();
-						}
-					}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							dialog.cancel();
-						}
-					});
-			dialog = builder.create();
-			break;
-		default:
-			dialog = null;
+						}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
+				dialog = builder.create();
+				break;
+			}
 		}
 		return dialog;
 	}

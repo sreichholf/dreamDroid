@@ -67,7 +67,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1: 0 ,1 },
 		{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
 		{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
-		{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1 , 1 },
+		{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
 		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },		
 		{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
 	};
@@ -187,7 +187,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			mActivity.setIsNavgationDialog(true);
 			mActivity.showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 		}
 
@@ -295,7 +294,8 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			if(mCurrent[4] == 0){			 
 				l.setItemChecked(position, true);
 				mCurrentListItem = position;
-			} else {	
+			} else {
+				l.setItemChecked(position, false);
 				if(mCurrentListItem > 0){					
 					l.setItemChecked(mCurrentListItem, true);
 				}
@@ -507,7 +507,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_MESSAGE:
-			mActivity.setIsNavgationDialog(true);
 			mActivity.showDialog(Statics.DIALOG_SEND_MESSAGE_ID);
 			return true;
 
@@ -536,12 +535,10 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_POWERSTATE_DIALOG:
-			mActivity.setIsNavgationDialog(true);
 			mActivity.showDialog(Statics.DIALOG_SET_POWERSTATE_ID);
 			return true;
 
 		case Statics.ITEM_ABOUT:
-			mActivity.setIsNavgationDialog(true);
 			mActivity.showDialog(Statics.DIALOG_ABOUT_ID);
 			return true;
 
@@ -626,7 +623,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		if (success) {
 			mSleepTimer = sleepTimer;
 			if (openDialog) {
-				mActivity.setIsNavgationDialog(true);
 				mActivity.showDialog(Statics.DIALOG_SLEEPTIMER_ID);
 				return;
 			}

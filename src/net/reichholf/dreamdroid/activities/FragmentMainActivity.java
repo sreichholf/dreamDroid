@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import java.util.Arrays;
+import java.util.List;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.OnActiveProfileChangedListener;
 import net.reichholf.dreamdroid.Profile;
@@ -15,6 +18,7 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import net.reichholf.dreamdroid.fragment.ViewPagerNavigationFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import android.app.Dialog;
 import android.content.Intent;
@@ -23,6 +27,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -34,6 +39,14 @@ import android.widget.TextView;
  *
  */
 public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {	
+	private static List<Integer> sNavigationDialogIds = 
+			Arrays.asList(new Integer[]{ 
+					Statics.DIALOG_ABOUT_ID, 
+					Statics.DIALOG_SEND_MESSAGE_ID, 
+					Statics.DIALOG_SET_POWERSTATE_ID,
+					Statics.DIALOG_SLEEPTIMER_ID, 
+					Statics.DIALOG_SLEEPTIMER_PROGRESS_ID });
+	
 	private boolean mMultiPane;
 	
 	private Fragment mCurrentDetailFragment;	
@@ -46,7 +59,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	private CheckProfileTask mCheckProfileTask;
 	
-	private boolean mIsNavigationDialog = false;
+//	private boolean mIsNavigationDialog = false;
 	
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
@@ -100,17 +113,24 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setProgressBarIndeterminateVisibility(false);
 		
-		mFragmentManager = getSupportFragmentManager();				
+		mFragmentManager = getSupportFragmentManager();
+		mFragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener(){
+			@Override
+			public void onBackStackChanged() {
+				mCurrentDetailFragment = mFragmentManager.findFragmentById(R.id.detail_view);
+			}
+		});
 		
 		if(savedInstanceState != null){
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
 			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
+//			mIsNavigationDialog = savedInstanceState.getBoolean("isNavigationDialog", false);
 		}
 		
 		DreamDroid.setActiveProfileChangedListener(this);
 		
 		initViews();
-		mNavigationFragment.setHighlightCurrent(mMultiPane);		
+		mNavigationFragment.setHighlightCurrent(mMultiPane);
 	}
 	
 	private void initViews(){
@@ -174,6 +194,10 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 	}
 	
+	private boolean isNavigationDialog(int id){
+		return sNavigationDialogIds.contains(id);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -185,7 +209,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		mFragmentManager.putFragment(outState, "navigation", mNavigationFragment);
 		if(mCurrentDetailFragment != null){
 			mFragmentManager.putFragment(outState, "current", mCurrentDetailFragment);
-		}		
+		}
 		super.onSaveInstanceState(outState);
 	}
 	
@@ -298,16 +322,11 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		super.setTitle(title);
 	}
 	
-	public void setIsNavgationDialog(boolean is){
-		mIsNavigationDialog = is;
-	}
-	
 	@Override
 	protected Dialog onCreateDialog(int id){
 		Dialog dialog = null;
-		if(mIsNavigationDialog || mCallBackHandler == null){
+		if(isNavigationDialog(id) || mCallBackHandler == null){
 			dialog = mNavigationFragment.onCreateDialog(id);
-			mIsNavigationDialog = false;
 		} else {
 			dialog = mCallBackHandler.onCreateDialog(id);
 		}
