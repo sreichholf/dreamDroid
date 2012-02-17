@@ -57,8 +57,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	private CheckProfileTask mCheckProfileTask;
 	
-//	private boolean mIsNavigationDialog = false;
-	
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
 		
@@ -112,16 +110,9 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		setProgressBarIndeterminateVisibility(false);
 		
 		mFragmentManager = getSupportFragmentManager();
-		mFragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener(){
-			@Override
-			public void onBackStackChanged() {
-//				mCurrentDetailFragment = mFragmentManager.findFragmentById(R.id.detail_view);
-			}
-		});
 		
 		if(savedInstanceState != null){
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
-//			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
 		}
 		
 		DreamDroid.setActiveProfileChangedListener(this);
