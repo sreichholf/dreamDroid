@@ -22,10 +22,9 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_below="@id/detail_title"
-        android:layout_margin="0dp"
-        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="-3dp"
         android:layout_toRightOf="@id/navigation_view"
-        android:background="#212121"
+        android:background="?android:attr/detailsElementBackground"
         android:orientation="vertical" >
 
         <FrameLayout
@@ -55,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/active_profile"
-                    android:textStyle="bold" />
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
                 <TextView
                     android:id="@+id/TextViewConnectionStateTitle"
@@ -64,7 +63,7 @@
                     android:layout_weight="1"
                     android:gravity="right"
                     android:text="@string/connection_state"
-                    android:textStyle="bold" />
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </TableRow>
 
             <TableRow android:layout_marginTop="3dp" >
@@ -75,8 +74,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="..."
-                    android:textColor="#FFF"
-                    android:textStyle="bold" />
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
                 <TextView
                     android:id="@+id/TextViewConnectionState"
@@ -85,8 +83,7 @@
                     android:layout_weight="1"
                     android:gravity="right"
                     android:text="..."
-                    android:textColor="#FFF"
-                    android:textStyle="bold" />
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </TableRow>
         </TableLayout>
     </LinearLayout>

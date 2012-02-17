@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -38,35 +37,35 @@ import android.widget.TextView;
  * @author sre
  *
  */
-public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {	
-	private static List<Integer> sNavigationDialogIds = 
-			Arrays.asList(new Integer[]{ 
-					Statics.DIALOG_ABOUT_ID, 
-					Statics.DIALOG_SEND_MESSAGE_ID, 
+public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {
+	private static List<Integer> sNavigationDialogIds =
+			Arrays.asList(new Integer[]{
+					Statics.DIALOG_ABOUT_ID,
+					Statics.DIALOG_SEND_MESSAGE_ID,
 					Statics.DIALOG_SET_POWERSTATE_ID,
-					Statics.DIALOG_SLEEPTIMER_ID, 
+					Statics.DIALOG_SLEEPTIMER_ID,
 					Statics.DIALOG_SLEEPTIMER_PROGRESS_ID });
-	
+
 	private boolean mMultiPane;
-	
+
 	private FragmentManager mFragmentManager;
 	private NavigationFragment mNavigationFragment;
-	
+
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
-	
+
 	private CheckProfileTask mCheckProfileTask;
-	
+
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
-		
+
 		public CheckProfileTask(Profile p){
 			mProfile = p;
 		}
-		
+
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
@@ -77,7 +76,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
 		 */
 		@Override
@@ -87,7 +86,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		@Override
@@ -102,29 +101,29 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			}
 		}
 	}
-	
+
 	@Override
-	public void onCreate(Bundle savedInstanceState){		
-		super.onCreate(savedInstanceState);	
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setProgressBarIndeterminateVisibility(false);
-		
+
 		mFragmentManager = getSupportFragmentManager();
-		
+
 		if(savedInstanceState != null){
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
 		}
-		
+
 		DreamDroid.setActiveProfileChangedListener(this);
-		
+
 		initViews();
 		mNavigationFragment.setHighlightCurrent(mMultiPane);
 	}
-	
+
 	private Fragment getCurrentDetailFragment(){
 		return mFragmentManager.findFragmentById(R.id.detail_view);
 	}
-	
+
 	private void initViews(){
 		setContentView(R.layout.dualpane);
 
@@ -133,13 +132,13 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		} else {
 			mMultiPane = false;
 		}
-		
+
 		//Force Multipane Layout if User selected the option for it
 		if(!mMultiPane && DreamDroid.getSharedPreferences().getBoolean("force_multipane", false)){
 			setContentView(R.layout.forced_dualpane);
 			mMultiPane = true;
 		}
-		
+
 		if(mNavigationFragment == null){
 			if(mMultiPane){
 				mNavigationFragment = new NavigationFragment();
@@ -153,7 +152,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 				mNavigationFragment = new ViewPagerNavigationFragment();
 			}
 		}
-				
+
 		FragmentTransaction ft = mFragmentManager.beginTransaction();
 		showFragment(ft, R.id.navigation_view, mNavigationFragment);
 		Fragment detailFragment = getCurrentDetailFragment();
@@ -161,7 +160,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			showFragment(ft, R.id.detail_view, detailFragment);
 		}
 		ft.commit();
-		
+
 		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
 		if(mActiveProfile == null){
 			mActiveProfile = new TextView(this);
@@ -170,27 +169,27 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		if(mConnectionState == null){
 			mConnectionState = new TextView(this);
 		}
-		
+
 		onActiveProfileChanged(DreamDroid.getActiveProfile());
 	}
-	
-	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){	
+
+	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){
 		if( fragment.isAdded() ){
 			Log.i(DreamDroid.LOG_TAG, "Fragment already added, showing");
 			ft.show(fragment);
 		} else {
-			Log.i(DreamDroid.LOG_TAG, "Fragment not added, adding");			
-			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());	
+			Log.i(DreamDroid.LOG_TAG, "Fragment not added, adding");
+			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());
 		}
 	}
-	
+
 	private boolean isNavigationDialog(int id){
 		return sNavigationDialogIds.contains(id);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
 	 * onSaveInstanceState(android.os.Bundle)
 	 */
@@ -203,12 +202,12 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 		super.onSaveInstanceState(outState);
 	}
-	
+
 	@Override
 	public void onResume(){
 		super.onResume();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see net.reichholf.dreamdroid.OnActiveProfileChangedListener#onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
 	 */
@@ -221,10 +220,10 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 
 		mCheckProfileTask = new CheckProfileTask(p);
 		mCheckProfileTask.execute();
-	}	
-	
+	}
+
 	/**
-	 * 
+	 *
 	 */
 	public void setProfileName() {
 		mActiveProfile.setText(DreamDroid.getActiveProfile().getName());
@@ -237,7 +236,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		mConnectionState.setText(state);
 		setProgressBarIndeterminateVisibility(false);
 	}
-	
+
 	/**
 	 * @param fragmentClass
 	 */
@@ -260,20 +259,20 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			startActivity(intent);
 		}
 	}
-	
+
 	@Override
 	public void showDetails(Fragment fragment){
 		showDetails(fragment, false);
 	}
-	
+
 	/**
 	 * @param fragment
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
 	@Override
-	public void showDetails(Fragment fragment, boolean addToBackStack){	
-		if(mMultiPane){						
+	public void showDetails(Fragment fragment, boolean addToBackStack){
+		if(mMultiPane){
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			Fragment currentDetailFragment = getCurrentDetailFragment();
@@ -296,7 +295,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			startActivity(intent);
 		}
 	}
-	
+
 	@Override
 	public void setTitle(CharSequence title){
 		if(mMultiPane){
@@ -308,7 +307,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 		super.setTitle(title);
 	}
-	
+
 	@Override
 	protected Dialog onCreateDialog(int id){
 		Dialog dialog = null;
@@ -318,14 +317,14 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		} else {
 			dialog = callbackHandler.onCreateDialog(id);
 		}
-		
+
 		if(dialog == null){
 			dialog = super.onCreateDialog(id);
 		}
-		
+
 		return dialog;
 	}
-	
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event){
 		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
@@ -336,7 +335,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 		return super.onKeyDown(keyCode, event);
 	}
-	
+
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event){
 		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
@@ -347,12 +346,12 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		}
 		return super.onKeyUp(keyCode, event);
 	}
-	
+
 	public boolean isMultiPane(){
 		return mMultiPane;
 	}
-	
-	public void finish(boolean finishFragment){		
+
+	public void finish(boolean finishFragment){
 		if(mMultiPane && finishFragment){
 			//TODO finish() for Fragment
 //			mFragmentManager.popBackStackImmediate();
