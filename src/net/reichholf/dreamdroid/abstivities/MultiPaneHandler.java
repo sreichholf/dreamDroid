@@ -16,7 +16,7 @@ public interface MultiPaneHandler {
 	public void showDetails(Fragment fragment);
 	public void showDetails(Fragment fragment, boolean addToBackStack);
 	public void showDetails(Class<?> fragmentClass);
-	public void setDetailFragment(Fragment f);
+//	public void setDetailFragment(Fragment f);
 	public boolean isMultiPane();
 	public void finish();
 }

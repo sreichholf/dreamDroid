@@ -49,10 +49,8 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	private boolean mMultiPane;
 	
-	private Fragment mCurrentDetailFragment;	
 	private FragmentManager mFragmentManager;
 	private NavigationFragment mNavigationFragment;
-	private ActivityCallbackHandler mCallBackHandler;
 	
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
@@ -117,20 +115,23 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		mFragmentManager.addOnBackStackChangedListener(new OnBackStackChangedListener(){
 			@Override
 			public void onBackStackChanged() {
-				mCurrentDetailFragment = mFragmentManager.findFragmentById(R.id.detail_view);
+//				mCurrentDetailFragment = mFragmentManager.findFragmentById(R.id.detail_view);
 			}
 		});
 		
 		if(savedInstanceState != null){
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
-			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
-//			mIsNavigationDialog = savedInstanceState.getBoolean("isNavigationDialog", false);
+//			mCurrentDetailFragment = mFragmentManager.getFragment(savedInstanceState, "current");
 		}
 		
 		DreamDroid.setActiveProfileChangedListener(this);
 		
 		initViews();
 		mNavigationFragment.setHighlightCurrent(mMultiPane);
+	}
+	
+	private Fragment getCurrentDetailFragment(){
+		return mFragmentManager.findFragmentById(R.id.detail_view);
 	}
 	
 	private void initViews(){
@@ -164,11 +165,9 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 				
 		FragmentTransaction ft = mFragmentManager.beginTransaction();
 		showFragment(ft, R.id.navigation_view, mNavigationFragment);
-		if(mCurrentDetailFragment != null){
-			showFragment(ft, R.id.detail_view, mCurrentDetailFragment);
-			mCallBackHandler = (ActivityCallbackHandler) mCurrentDetailFragment;
-		} else {
-			
+		Fragment detailFragment = getCurrentDetailFragment();
+		if(detailFragment != null){
+			showFragment(ft, R.id.detail_view, detailFragment);
 		}
 		ft.commit();
 		
@@ -207,8 +206,9 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		mFragmentManager.putFragment(outState, "navigation", mNavigationFragment);
-		if(mCurrentDetailFragment != null){
-			mFragmentManager.putFragment(outState, "current", mCurrentDetailFragment);
+		Fragment currentDetailFragment = getCurrentDetailFragment();
+		if(currentDetailFragment != null){
+			mFragmentManager.putFragment(outState, "current", currentDetailFragment);
 		}
 		super.onSaveInstanceState(outState);
 	}
@@ -245,7 +245,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	private void setConnectionState(String state) {
 		mConnectionState.setText(state);
 		setProgressBarIndeterminateVisibility(false);
-//		TODO setAvailableFeatures();
 	}
 	
 	/**
@@ -269,7 +268,6 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 			intent.putExtra("fragmentClass", fragmentClass);
 			startActivity(intent);
 		}
-			
 	}
 	
 	@Override
@@ -284,19 +282,17 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack){	
-		mCallBackHandler = (ActivityCallbackHandler) fragment;
 		if(mMultiPane){						
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-			
-			if(mCurrentDetailFragment != null){
-				if(mCurrentDetailFragment.isVisible()){
+			Fragment currentDetailFragment = getCurrentDetailFragment();
+			if(currentDetailFragment != null){
+				if(currentDetailFragment.isVisible()){
 					//TODO fix this hack (remove current fragment just to readd it in showFragment, do we really have to do that?)
-					ft.remove(mCurrentDetailFragment);
+					ft.remove(currentDetailFragment);
 				}
 			}
-			
-			mCurrentDetailFragment = fragment;
+
 			showFragment(ft, R.id.detail_view, fragment);
 			if(addToBackStack){
 				ft.addToBackStack(null);
@@ -325,10 +321,11 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	@Override
 	protected Dialog onCreateDialog(int id){
 		Dialog dialog = null;
-		if(isNavigationDialog(id) || mCallBackHandler == null){
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+		if(isNavigationDialog(id) || callbackHandler == null){
 			dialog = mNavigationFragment.onCreateDialog(id);
 		} else {
-			dialog = mCallBackHandler.onCreateDialog(id);
+			dialog = callbackHandler.onCreateDialog(id);
 		}
 		
 		if(dialog == null){
@@ -340,8 +337,9 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event){
-		if(mCallBackHandler != null){
-			if(mCallBackHandler.onKeyDown(keyCode, event)){
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+		if(callbackHandler != null){
+			if(callbackHandler.onKeyDown(keyCode, event)){
 				return true;
 			}
 		}
@@ -350,8 +348,9 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event){
-		if(mCallBackHandler != null){
-			if(mCallBackHandler.onKeyUp(keyCode, event)){
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+		if(callbackHandler != null){
+			if(callbackHandler.onKeyUp(keyCode, event)){
 				return true;
 			}
 		}
@@ -369,14 +368,5 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		} else {
 			super.finish();
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#setActivityCallbackHandler(net.reichholf.dreamdroid.fragment.ActivityCallbackHandler)
-	 */
-	@Override
-	public void setDetailFragment(Fragment f) {
-		mCurrentDetailFragment = f;
-		mCallBackHandler = (ActivityCallbackHandler) f;		
 	}
 }
