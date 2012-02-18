@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -224,6 +225,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			}
 
 			mSelectedTags = new ArrayList<String>();
+			mOldTags = new ArrayList<String>();
 
 			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
 				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask();
@@ -232,10 +234,11 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				reload();
 			}
 		} else {
-			mTimer = (ExtendedHashMap) savedInstanceState.getSerializable("timer");
-			mTimerOld = (ExtendedHashMap) savedInstanceState.getSerializable("timerOld");
-			mSelectedTags = (ArrayList<String>) savedInstanceState.getSerializable("selectedTags");
-			mOldTags = (ArrayList<String>) savedInstanceState.getSerializable("oldTags");
+			
+			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
+			mTimerOld = (ExtendedHashMap) savedInstanceState.getParcelable("timerOld");
+			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
+			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 			if (mTimer != null) {
 				reload();
 			}
@@ -277,15 +280,27 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		final ExtendedHashMap timer = mTimer;
-		final ExtendedHashMap timerOld = mTimerOld;
-		final ArrayList<String> selectedTags = mSelectedTags;
-		final ArrayList<String> oldTags = mOldTags;
+		outState.putParcelable("timer", mTimer);
+		outState.putParcelable("timerOld", mTimerOld);
+								
+		String[] selectedTags;
+		if(mSelectedTags != null){
+			selectedTags = new String[mSelectedTags.size()];
+			mSelectedTags.toArray(selectedTags);
+		} else {
+			selectedTags = new String[0];
+		}
+		outState.putStringArray("selectedTags", selectedTags);
 
-		outState.putSerializable("timer", timer);
-		outState.putSerializable("timerOld", timerOld);
-		outState.putSerializable("selectedTags", selectedTags);
-		outState.putSerializable("oldTags", oldTags);
+		
+		String[] oldTags;
+		if(mOldTags != null){
+			oldTags = new String[mOldTags.size()];
+			mOldTags.toArray(oldTags);
+		} else {
+			oldTags = new String[0];
+		}
+		outState.putStringArray("oldTags", oldTags);
 
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {

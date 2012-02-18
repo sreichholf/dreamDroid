@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -40,11 +41,11 @@ import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.Menu;
+import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -288,17 +289,16 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		}
 
 		if (savedInstanceState != null && !mPickMode) {
-			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
-
-			mNavItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("navitems");
 			mNavName = savedInstanceState.getString("navname");
 			mNavReference = savedInstanceState.getString("navreference");
-
-			mDetailItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("detailitems");
 			mDetailName = savedInstanceState.getString("detailname");
 			mDetailReference = savedInstanceState.getString("detailreference");
-
-			mCurrentService = (ExtendedHashMap) savedInstanceState.getSerializable("currentService");
+			
+			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
+			mNavItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("navitems");
+			mDetailItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("detailitems");
+			
+			mCurrentService = (ExtendedHashMap) savedInstanceState.getParcelable("currentService");
 
 			mReload = false;
 		} else {
@@ -464,15 +464,14 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		// Preserve Liststuff
-		outState.putSerializable("navitems", mNavItems);
-		outState.putSerializable("detailitems", mDetailItems);
 		outState.putString("navname", mNavName);
 		outState.putString("navreference", mNavReference);
 		outState.putString("detailname", mDetailName);
 		outState.putString("detailreference", mDetailReference);
 		outState.putSerializable("history", mHistory);
-		outState.putSerializable("currentService", mCurrentService);
+		outState.putSerializable("navitems", mNavItems);
+		outState.putSerializable("detailitems", mDetailItems);
+		outState.putParcelable("currentService", mCurrentService);
 
 		for (GetServiceListTask task : mListTasks) {
 			if (task != null) {
@@ -760,7 +759,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				map.put(Event.KEY_SERVICE_NAME, nam);
 
 				Intent intent = new Intent();
-				intent.putExtra(sData, map);
+				intent.putExtra(sData, (Serializable) map);
 				finish(Activity.RESULT_OK, intent);
 			} else {
 				boolean instantZap = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);

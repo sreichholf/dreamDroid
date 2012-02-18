@@ -12,8 +12,8 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
@@ -29,11 +29,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.view.Menu;
+import android.support.v4.view.MenuItem;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -149,9 +149,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(savedInstanceState != null){
-			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
-		}
 		mCurrentServiceReady = false;
 		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
@@ -179,8 +176,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			mCurrent = new ExtendedHashMap();
 			reload();
 		} else {
-			mCurrent = (ExtendedHashMap) savedInstanceState.getSerializable("current");
-			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
+			mCurrent = (ExtendedHashMap) savedInstanceState.getParcelable("current");
+			mCurrentItem = (ExtendedHashMap) savedInstanceState.getParcelable("currentItem");
 			onCurrentServiceReady();
 		}
 		
@@ -189,8 +186,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("currentItem", mCurrentItem);
-		outState.putSerializable("current", mCurrent);
+		outState.putParcelable("currentItem", mCurrentItem);
+		outState.putParcelable("current", mCurrent);
 		super.onSaveInstanceState(outState);
 	}
 

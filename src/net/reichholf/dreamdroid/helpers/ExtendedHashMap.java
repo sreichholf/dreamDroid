@@ -6,22 +6,30 @@
 
 package net.reichholf.dreamdroid.helpers;
 
-import java.io.Serializable;
 import java.util.HashMap;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * @author sreichholf
  * 
  */
-public class ExtendedHashMap extends HashMap<String, Object> implements Serializable {
+//public class ExtendedHashMap extends HashMap<String, Object> implements Serializable {
+public class ExtendedHashMap extends HashMap<String, Object> implements Parcelable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1391952383782876012L;
 
 	public ExtendedHashMap() {
 		super();
+	}
+	
+	public ExtendedHashMap(Parcel in){
+		super();
+		
+		@SuppressWarnings("unchecked")
+		HashMap<String, Object> map = (HashMap<String,Object>) in.readSerializable();
+		putAll(map);
 	}
 
 	@Override
@@ -77,5 +85,33 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Serializ
 			retVal = defaultString;
 		}
 		return retVal;
+	}
+
+    public static final Parcelable.Creator<ExtendedHashMap> CREATOR
+    = new Parcelable.Creator<ExtendedHashMap>() {
+		public ExtendedHashMap createFromParcel(Parcel in) {
+		    return new ExtendedHashMap(in);
+		}
+		
+		public ExtendedHashMap[] newArray(int size) {
+		    return new ExtendedHashMap[size];
+		}
+		};
+	
+	/* (non-Javadoc)
+	 * @see android.os.Parcelable#describeContents()
+	 */
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
+	 */
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeSerializable((HashMap<String,Object>) this);
 	}
 }

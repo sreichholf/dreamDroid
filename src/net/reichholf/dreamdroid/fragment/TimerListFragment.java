@@ -13,8 +13,8 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
@@ -30,9 +30,9 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
+import android.support.v4.view.Menu;
+import android.support.v4.view.MenuItem;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
@@ -79,7 +79,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		setAdapter();
 		
 		if(savedInstanceState != null){
-			mTimer = (ExtendedHashMap) savedInstanceState.getSerializable("timer");
+			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
 		} else {
 			reload();
 		}
@@ -89,7 +89,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
 	 */
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("timer", mTimer);
+		outState.putParcelable("timer", mTimer);
 		super.onSaveInstanceState(outState);
 	}
 

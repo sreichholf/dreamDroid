@@ -6,11 +6,11 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import android.app.TabActivity;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-public class TabbedNavigationActivity extends TabActivity {
+public class TabbedNavigationActivity extends Activity {
 	/* (non-Javadoc)
 	 * @see android.app.ActivityGroup#onCreate(android.os.Bundle)
 	 */

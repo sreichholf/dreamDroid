@@ -6,21 +6,18 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity;
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
-import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
@@ -29,28 +26,22 @@ import net.reichholf.dreamdroid.intents.IntentFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
+import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
+import android.support.v4.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemLongClickListener;
 
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations
@@ -58,7 +49,6 @@ import android.widget.AdapterView.OnItemLongClickListener;
  * @author sreichholf
  * 
  */
-@SuppressWarnings("unused")
 public class MovieListFragment extends AbstractHttpListFragment {
 	private String mCurrentLocation;
 
@@ -119,7 +109,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			mOldTags = new ArrayList<String>();
 			reload();
 		} else {
-			mMovie = (ExtendedHashMap) savedInstanceState.getSerializable("movie");
+			mMovie = (ExtendedHashMap) savedInstanceState.getParcelable("movie");
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
 			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 		}
@@ -190,15 +180,27 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
 	 */
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("movie", mMovie);
+		outState.putParcelable("movie", mMovie);
 		
-		String[] selectedTags = new String[mSelectedTags.size()];
-		mSelectedTags.toArray(selectedTags);
+		String[] selectedTags;
+		if(mSelectedTags != null){
+			selectedTags = new String[mSelectedTags.size()];
+			mSelectedTags.toArray(selectedTags);
+		} else {
+			selectedTags = new String[0];
+		}
 		outState.putStringArray("selectedTags", selectedTags);
+
 		
-		String[] oldTags = new String[mOldTags.size()];
-		mOldTags.toArray(oldTags);
+		String[] oldTags;
+		if(mOldTags != null){
+			oldTags = new String[mOldTags.size()];
+			mOldTags.toArray(oldTags);
+		} else {
+			oldTags = new String[0];
+		}
 		outState.putStringArray("oldTags", oldTags);
+
 		super.onSaveInstanceState(outState);
 	}
 	

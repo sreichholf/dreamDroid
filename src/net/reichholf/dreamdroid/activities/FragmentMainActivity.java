@@ -104,8 +104,8 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
-		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		super.onCreate(savedInstanceState);
 		setProgressBarIndeterminateVisibility(false);
 
 		mFragmentManager = getSupportFragmentManager();

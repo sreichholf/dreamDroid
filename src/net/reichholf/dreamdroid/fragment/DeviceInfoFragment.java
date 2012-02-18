@@ -154,13 +154,16 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 		if(savedInstanceState == null){
 			reload();
 		} else {
-			mInfo = (ExtendedHashMap) savedInstanceState.getSerializable("info");
+			mInfo = (ExtendedHashMap) savedInstanceState.getParcelable("info");
 			onInfoReady();
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.Fragment#onSaveInstanceState(android.os.Bundle)
+	 */
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putSerializable("info", mInfo);
+		outState.putParcelable("info", mInfo);
 	}
 
 	/**

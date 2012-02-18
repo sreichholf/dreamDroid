@@ -31,11 +31,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.Menu;
+import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -198,12 +198,9 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.Fragment#onOptionsItemSelected(android.support.v4.view.MenuItem)
 	 */
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
 	}
