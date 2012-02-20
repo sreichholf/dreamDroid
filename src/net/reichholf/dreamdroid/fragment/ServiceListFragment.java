@@ -293,11 +293,11 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mNavReference = savedInstanceState.getString("navreference");
 			mDetailName = savedInstanceState.getString("detailname");
 			mDetailReference = savedInstanceState.getString("detailreference");
-			
+
 			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
 			mNavItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("navitems");
 			mDetailItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("detailitems");
-			
+
 			mCurrentService = (ExtendedHashMap) savedInstanceState.getParcelable("currentService");
 
 			mReload = false;
@@ -333,6 +333,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		} else {
 			mExtras = new Bundle();
 		}
+		getSupportActivity().invalidateOptionsMenu();
 	}
 
 	/*
@@ -371,7 +372,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 		setAdapter();
 		getActivity().setTitle(mCurrentTitle);
-		getSupportActivity().invalidateOptionsMenu();
 		return v;
 	}
 
@@ -643,6 +643,16 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		} else {
 			overview.setEnabled(false);
 		}
+		
+		MenuItem setDefault = menu.findItem(R.id.menu_default);
+		String defaultReference = DreamDroid.getSharedPreferences()
+				.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, null);
+		setDefault.setEnabled(true);
+		if(defaultReference != null){
+			if(defaultReference.equals(mDetailReference)){
+				setDefault.setEnabled(false);
+			}
+		}
 
 		MenuItem reload = menu.findItem(R.id.menu_reload);
 		if (!mPickMode) {
@@ -666,7 +676,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mNavReference = SERVICE_REF_ROOT;
 			mNavName = (String) getText(R.string.bouquet_overview);
 			reloadNav();
-			getSupportActivity().invalidateOptionsMenu();
 			return true;
 		case Statics.ITEM_SET_DEFAULT:
 			if (mDetailReference != null) {
@@ -769,7 +778,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				}
 			}
 		}
-		getSupportActivity().invalidateOptionsMenu();
 	}
 
 	/*
@@ -1014,7 +1022,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 		mNavReference = SERVICE_REF_ROOT;
 		mNavName = "";
-
+		getSupportActivity().invalidateOptionsMenu();
 		((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
@@ -1040,7 +1048,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 */
 	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list, boolean isBouquetList) {
 		finishProgress(title);
-
 		if (isBouquetList) {
 			mNavItems.clear();
 			mNavItems.addAll(list);
@@ -1052,6 +1059,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mDetailItems.addAll(list);
 			((SimpleAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
+		getSupportActivity().invalidateOptionsMenu();
 		nextListTaskPlease();
 	}
 
