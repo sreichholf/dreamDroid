@@ -193,7 +193,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
+		inflater.inflate(R.menu.reload, menu);
 	}
 
 	/*

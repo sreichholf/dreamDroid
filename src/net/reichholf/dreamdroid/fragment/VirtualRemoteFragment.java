@@ -116,7 +116,6 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getActivity().setProgressBarIndeterminateVisibility(false);
-		
 		mPrefs = PreferenceManager.getDefaultSharedPreferences( getActivity().getBaseContext());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
@@ -137,8 +136,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, Statics.ITEM_LAYOUT, 0, getText(R.string.quickzap)).setIcon(
-				android.R.drawable.ic_menu_always_landscape_portrait);
+		inflater.inflate(R.menu.remote, menu);
 	}
 
 	@Override

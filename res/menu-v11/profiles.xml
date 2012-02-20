@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item android:id="@+id/menu_add_profile"
+          android:icon="@android:drawable/ic_menu_add"
+          android:title="@string/profile_add"
+          android:showAsAction="ifRoom|withText" />
+	<item android:id="@+id/menu_detect_devices"
+          android:icon="@android:drawable/ic_menu_search"
+          android:title="@string/autodiscover_dreamboxes"
+          android:showAsAction="ifRoom|withText" />
+</menu>

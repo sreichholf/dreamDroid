@@ -1,94 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest 
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	package="net.reichholf.dreamdroid" 
-	android:installLocation="auto" 
-	android:versionName="0.9.8b3" android:versionCode="127">
-	
-	<uses-sdk 
-		android:minSdkVersion="4" android:targetSdkVersion="11" android:maxSdkVersion="15"></uses-sdk>
-	
-	<supports-screens
-		android:largeScreens="true"
-		android:normalScreens="true"
-		android:smallScreens="true"
-		android:anyDensity="true"		 
-		android:resizeable="true" android:xlargeScreens="true"></supports-screens>
-	
-	<uses-permission android:name="android.permission.INTERNET" ></uses-permission>	
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" ></uses-permission>
-	<uses-permission android:name="android.permission.VIBRATE"></uses-permission>
-	<uses-permission android:name="com.flattr4android.permission.READ_THING"/>
-	
-	
-	<application 
-		android:icon="@drawable/ic_launcher_dreamdroid" 
-		android:label="@string/app_name"
-		android:name=".DreamDroid" 
-		android:allowBackup="true"
-		android:allowClearUserData="true" 
-		android:killAfterRestore="true" 
-		android:debuggable="true">
-		
-		<activity android:label="@string/app_name" android:name=".activities.MainActivity">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />				
-			</intent-filter>
-		</activity>		
-		<activity android:name=".activities.MovieListActivity" android:configChanges="orientation|keyboardHidden">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-			</intent-filter>
-		</activity>		
-		<activity android:name=".activities.ServiceListActivity" android:configChanges="orientation|keyboardHidden">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-			</intent-filter>
-		</activity>
-		<activity android:name=".activities.ServiceEpgListActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.TimerListActivity" android:configChanges="orientation|keyboardHidden">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-			</intent-filter>
-		</activity>
-		<activity android:name=".activities.TimerEditActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.DeviceInfoActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.CurrentServiceActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.VirtualRemoteActivity" android:configChanges="orientation|keyboardHidden">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-			</intent-filter>
-		</activity>		
-		<activity android:name=".activities.ProfileListActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.ProfileEditActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.ScreenShotActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<!-- <activity android:name=".activities.DreamDroidPreferenceActivity" /> -->
-		<activity android:name=".activities.SearchEpgActivity">
-			<intent-filter>
-				<action android:name="android.intent.action.SEARCH" />
-	        </intent-filter>
-	        <meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
-		</activity>
-						
-		<activity android:name=".activities.TabbedNavigationActivity">
-		    <intent-filter>
-				<action android:name="android.intent.action.MAIN" />	
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>		
-		</activity>		
-		<activity android:name=".activities.ExtrasActivity"></activity>
-		<activity android:name=".activities.DreamDroidPreferenceActivity"></activity>
-		<activity android:name=".activities.MediaplayerActivity"></activity>
-		<activity android:name=".activities.MediaplayerFilebrowserActivity"></activity>
-		<activity android:name=".activities.MediaplayerNavigationActivity"></activity>
-		<activity android:name=".activities.MediaplayerPlaylistActivity"></activity>
-		<activity android:name=".activities.SimpleFragmentActivity" android:configChanges="orientation|keyboardHidden"></activity>
-		<activity android:name=".activities.FragmentMainActivity"></activity>
-		<meta-data 
-			android:name="android.app.default_searchable"
-			android:value=".activities.SearchEpgActivity" ></meta-data>
-		
-		
-		
-	</application><uses-library></uses-library>
-</manifest> 
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:installLocation="auto"
+    package="net.reichholf.dreamdroid"
+    android:versionCode="128"
+    android:versionName="0.9.8b3" >
+
+    <uses-sdk
+        android:maxSdkVersion="15"
+        android:minSdkVersion="4"
+        android:targetSdkVersion="11" >
+    </uses-sdk>
+
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" >
+    </supports-screens>
+
+    <uses-permission android:name="android.permission.INTERNET" >
+    </uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" >
+    </uses-permission>
+    <uses-permission android:name="android.permission.VIBRATE" >
+    </uses-permission>
+    <uses-permission android:name="com.flattr4android.permission.READ_THING" />
+
+    <application
+        android:name=".DreamDroid"
+        android:allowBackup="true"
+        android:allowClearUserData="true"
+        android:debuggable="true"
+        android:icon="@drawable/ic_launcher_dreamdroid"
+        android:killAfterRestore="true"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Sherlock" >
+        <activity android:name=".activities.TabbedNavigationActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".activities.DreamDroidPreferenceActivity" >
+        </activity>
+        <activity
+            android:name=".activities.SimpleFragmentActivity"
+            android:configChanges="orientation|keyboardHidden" >
+        </activity>
+        <activity
+            android:name=".activities.SimpleNoTitleFragmentActivity"
+            android:configChanges="orientation|keyboardHidden" 
+            android:theme="@android:style/Theme.NoTitleBar">
+        </activity>
+        <activity android:name=".activities.FragmentMainActivity" >
+        </activity>
+
+        <meta-data
+            android:name="android.app.default_searchable"
+            android:value=".activities.SearchEpgActivity" >
+        </meta-data>
+    </application>
+
+    <uses-library>
+    </uses-library>
+
+</manifest>

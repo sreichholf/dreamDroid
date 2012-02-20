@@ -371,6 +371,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 		setAdapter();
 		getActivity().setTitle(mCurrentTitle);
+		getSupportActivity().invalidateOptionsMenu();
 		return v;
 	}
 
@@ -625,12 +626,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, Statics.ITEM_SET_DEFAULT, 0, getText(R.string.set_default)).setIcon(
-				android.R.drawable.ic_menu_set_as);
-		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, Statics.ITEM_OVERVIEW, 0, getText(R.string.bouquet_overview)).setIcon(
-				R.drawable.ic_menu_list_overview);
+		inflater.inflate(R.menu.reload, menu);
+		inflater.inflate(R.menu.servicelist, menu);
 	}
 
 	/*
@@ -640,15 +637,14 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		MenuItem overview = menu.findItem(Statics.ITEM_OVERVIEW);
-
+		MenuItem overview = menu.findItem(R.id.menu_overview);
 		if (!SERVICE_REF_ROOT.equals(mNavReference) || mNavList.equals(mDetailList)) {
 			overview.setEnabled(true);
 		} else {
 			overview.setEnabled(false);
 		}
 
-		MenuItem reload = menu.findItem(Statics.ITEM_RELOAD);
+		MenuItem reload = menu.findItem(R.id.menu_reload);
 		if (!mPickMode) {
 			reload.setEnabled(true);
 		} else {
@@ -670,6 +666,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mNavReference = SERVICE_REF_ROOT;
 			mNavName = (String) getText(R.string.bouquet_overview);
 			reloadNav();
+			getSupportActivity().invalidateOptionsMenu();
 			return true;
 		case Statics.ITEM_SET_DEFAULT:
 			if (mDetailReference != null) {
@@ -685,6 +682,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			} else {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
+			getSupportActivity().invalidateOptionsMenu();
 			return true;
 		case Statics.ITEM_RELOAD:
 			reloadNav();
@@ -771,6 +769,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				}
 			}
 		}
+		getSupportActivity().invalidateOptionsMenu();
 	}
 
 	/*

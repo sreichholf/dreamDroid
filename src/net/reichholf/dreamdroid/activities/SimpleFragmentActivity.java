@@ -74,13 +74,6 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		super.onSaveInstanceState(outState);
 	}
 	
-//	@SuppressWarnings("rawtypes")
-//	public void showDetails(Class fragmentClass, boolean addToBackStack){		
-//		Intent intent = new Intent(this, SimpleFragmentActivity.class);
-//		intent.putExtra("fragmentClass", fragmentClass);
-//		startActivity(intent);
-//	}
-	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
 		super.onCreateOptionsMenu(menu);
@@ -92,10 +85,55 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		showDetails(fragment, true);
 	}
 	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java.lang.Class)
+	 */
+	@Override
+	public void showDetails(Class<? extends Fragment> fragmentClass){
+		showDetails(fragmentClass, SimpleFragmentActivity.class);
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java.lang.Class, java.lang.Class)
+	 */
+	@Override
+	public void showDetails(Class<? extends Fragment> fragmentClass, Class<? extends MultiPaneHandler> handlerClass){
+		try {
+			Fragment fragment = (Fragment) fragmentClass.newInstance();
+			showDetails(fragment, handlerClass);
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, boolean)
+	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack){	
+		showDetails(fragment, SimpleFragmentActivity.class, addToBackStack);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, java.lang.Class)
+	 */
+	@Override
+	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> handlerClass) {
+		showDetails(fragment, handlerClass, true);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, java.lang.Class, boolean)
+	 */
+	@Override
+	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack) {
+		// TODO Auto-generated method stub
 		mCallBackHandler = (ActivityCallbackHandler) fragment;		
-		Intent intent = new Intent(this, SimpleFragmentActivity.class);
+		Intent intent = new Intent(this, cls);
 		intent.putExtra("fragmentClass", fragment.getClass());
 		intent.putExtras(fragment.getArguments());
 		
@@ -104,23 +142,6 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		} else {
 			startActivity(intent);
 		}
-	}
-	
-	/**
-	 * @param fragmentClass
-	 */
-	@SuppressWarnings("rawtypes")
-	public void showDetails(Class fragmentClass){
-		try {
-			Fragment fragment = (Fragment) fragmentClass.newInstance();
-			showDetails(fragment);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}			
 	}
 		
 	@Override

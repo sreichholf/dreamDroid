@@ -76,7 +76,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LinearLayoutLogin);
 		mSave = (Button) view.findViewById(R.id.ButtonSave);
 		mCancel = (Button) view.findViewById(R.id.ButtonCancel);
-
+		
 		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
 			@Override

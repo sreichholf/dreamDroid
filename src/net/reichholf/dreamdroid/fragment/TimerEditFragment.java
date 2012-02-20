@@ -38,7 +38,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.Menu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -82,8 +84,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private TextView mService;
 	private TextView mRepeatings;
 	private TextView mTags;
-	private Button mSave;
-	private Button mCancel;
 	private ProgressDialog mLoadProgress;
 	private ProgressDialog mProgress;
 
@@ -172,12 +172,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mService = (TextView) view.findViewById(R.id.TextViewService);
 		mTags = (TextView) view.findViewById(R.id.TextViewTags);
 
-		mSave = (Button) view.findViewById(R.id.ButtonSave);
-		mCancel = (Button) view.findViewById(R.id.ButtonCancel);
-
 		// onClickListeners
-		registerOnClickListener(mSave, Statics.ITEM_SAVE);
-		registerOnClickListener(mCancel, Statics.ITEM_CANCEL);
 		registerOnClickListener(mService, Statics.ITEM_PICK_SERVICE);
 		registerOnClickListener(mStart, Statics.ITEM_PICK_START);
 		registerOnClickListener(mEnd, Statics.ITEM_PICK_END);
@@ -245,6 +240,11 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		}
 		
 		return view;
+	}
+	
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.save, menu);
+		inflater.inflate(R.menu.cancel, menu);
 	}
 	
 	@SuppressWarnings("unchecked")

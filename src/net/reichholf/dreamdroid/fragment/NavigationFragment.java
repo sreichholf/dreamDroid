@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
+import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -35,7 +36,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -314,17 +314,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		menu.add(0, Statics.ITEM_SETTINGS, 0, getText(R.string.settings)).setIcon(android.R.drawable.ic_menu_edit);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		return onItemClicked(item.getItemId());
+	    inflater.inflate(R.menu.preferences, menu);
 	}
 
 	public Dialog onCreateDialog(int id) {
@@ -498,10 +488,10 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_REMOTE:
-			mActivity.showDetails(VirtualRemoteFragment.class);
+			mActivity.showDetails(VirtualRemoteFragment.class, SimpleNoTitleFragmentActivity.class);
 			return true;
 
-		case Statics.ITEM_SETTINGS:
+		case Statics.ITEM_PREFERENCES:
 			intent = new Intent(mActivity, DreamDroidPreferenceActivity.class);
 			startActivity(intent);
 			return true;

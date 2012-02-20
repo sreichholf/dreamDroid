@@ -237,41 +237,60 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		setProgressBarIndeterminateVisibility(false);
 	}
 
-	/**
-	 * @param fragmentClass
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java.lang.Class)
 	 */
-	@SuppressWarnings("rawtypes")
-	public void showDetails(Class fragmentClass){
-		if(mMultiPane){
-			try {
-				Fragment fragment = (Fragment) fragmentClass.newInstance();
-				showDetails(fragment);
-			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			Intent intent = new Intent(this, SimpleFragmentActivity.class);
-			intent.putExtra("fragmentClass", fragmentClass);
-			startActivity(intent);
-		}
+	@Override
+	public void showDetails(Class<? extends Fragment> fragmentClass){
+		showDetails(fragmentClass, SimpleFragmentActivity.class);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java.lang.Class, java.lang.Class)
+	 */
+	@Override
+	public void showDetails(Class<? extends Fragment> fragmentClass, Class<?extends MultiPaneHandler> handlerClass){
+		try {
+			Fragment fragment = (Fragment) fragmentClass.newInstance();
+			showDetails(fragment, handlerClass);
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment)
+	 */
 	@Override
 	public void showDetails(Fragment fragment){
 		showDetails(fragment, false);
 	}
 
-	/**
-	 * @param fragment
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, java.lang.Class)
+	 */
+	@Override
+	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls){
+		showDetails(fragment, cls, false);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, boolean)
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack){
+		showDetails(fragment, SimpleFragmentActivity.class, addToBackStack);
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, java.lang.Class, boolean)
+	 */
+	@Override
+	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack){
 		if(mMultiPane){
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -288,10 +307,13 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 				ft.addToBackStack(null);
 			}
 			ft.commit();
-		} else { //TODO Error Handling
-			Intent intent = new Intent(this, SimpleFragmentActivity.class);
+		} else {
+			Intent intent = new Intent(this, cls);
 			intent.putExtra("fragmentClass", fragment.getClass());
-			intent.putExtras(fragment.getArguments());
+			Bundle args = fragment.getArguments();
+			if(args != null){
+				intent.putExtras(fragment.getArguments());
+			}
 			startActivity(intent);
 		}
 	}

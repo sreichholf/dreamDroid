@@ -181,8 +181,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, Statics.ITEM_SAVE, 0, getText(R.string.save)).setIcon(android.R.drawable.ic_menu_save);
+		inflater.inflate(R.menu.reload, menu);
+		inflater.inflate(R.menu.save, menu);
 	}
 	
 	@Override

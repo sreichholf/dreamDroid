@@ -142,9 +142,8 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, Statics.ITEM_NEW_TIMER, 0, getText(R.string.new_timer)).setIcon(android.R.drawable.ic_menu_add);
-		menu.add(0, Statics.ITEM_CLEANUP, 0, getText(R.string.cleanup)).setIcon(android.R.drawable.ic_menu_manage);
+		inflater.inflate(R.menu.reload, menu);
+		inflater.inflate(R.menu.timerlist, menu);
 	}
 
 	/*

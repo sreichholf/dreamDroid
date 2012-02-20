@@ -314,8 +314,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		menu.add(0, Statics.ITEM_ADD_PROFILE, 1, getText(R.string.profile_add)).setIcon(android.R.drawable.ic_menu_add);
-		menu.add(0, Statics.ITEM_DETECT_DEVICES, 2, getText(R.string.autodiscover_dreamboxes)).setIcon(android.R.drawable.ic_menu_search);
+		inflater.inflate(R.menu.profiles, menu);
 	}
 
 	/*

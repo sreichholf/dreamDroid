@@ -170,10 +170,8 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-
-		menu.add(0, Statics.ITEM_RELOAD, 0, getText(R.string.reload)).setIcon(android.R.drawable.ic_menu_rotate);
-		menu.add(0, Statics.ITEM_LOCATIONS, 1, getText(R.string.locations)).setIcon(R.drawable.ic_menu_locations);
-		menu.add(0, Statics.ITEM_TAGS, 1, getText(R.string.tags)).setIcon(R.drawable.ic_menu_tags);
+		inflater.inflate(R.menu.reload, menu);
+		inflater.inflate(R.menu.locactions_and_tags, menu);
 	}
 	
 	/* (non-Javadoc)

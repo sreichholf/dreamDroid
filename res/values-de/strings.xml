@@ -65,7 +65,7 @@
     <string name="set_time_begin">Startdatum und -zeit</string>
     <string name="set_time_end">Enddatum und -zeit</string>
     <string name="apply">Übernehmen</string>
-    <string name="reload">Neu laden</string>
+    <string name="reload">Aktualisieren</string>
 
     <string-array name="weekdays_short">
         <item>Mo</item>

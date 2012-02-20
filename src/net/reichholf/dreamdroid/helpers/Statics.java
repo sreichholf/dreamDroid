@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import net.reichholf.dreamdroid.R;
+
 /**
  * @author sre
  *
@@ -42,7 +44,7 @@ public class Statics {
 	public static final int ITEM_INFO = 0x6006;
 	public static final int ITEM_MESSAGE = 0x6007;
 	public static final int ITEM_REMOTE = 0x6008;
-	public static final int ITEM_SETTINGS = 0x6009;
+	public static final int ITEM_PREFERENCES = R.id.menu_preferences;
 	public static final int ITEM_CURRENT = 0x6010;
 	public static final int ITEM_EPG_SEARCH = 0x6011;
 	public static final int ITEM_SCREENSHOT = 0x6012;
@@ -56,24 +58,24 @@ public class Statics {
 	public static final int ITEM_SLEEPTIMER = 0x6020;
 	public static final int ITEM_MEDIA_PLAYER = 0x6021;
 	public static final int ITEM_PROFILES = 0x6022;
-	public static final int ITEM_ADD_PROFILE = 0x6023;
-	public static final int ITEM_RELOAD = 0x6024;
-	public static final int ITEM_SAVE = 0x6025;
-	public static final int ITEM_CANCEL = 0x6026;
+	public static final int ITEM_ADD_PROFILE = R.id.menu_add_profile;
+	public static final int ITEM_RELOAD =R.id.menu_reload;
+	public static final int ITEM_SAVE = R.id.menu_save;
+	public static final int ITEM_CANCEL = R.id.menu_cancel;
 	public static final int ITEM_PICK_SERVICE = 0x6027;
 	public static final int ITEM_PICK_START = 0x6028;
 	public static final int ITEM_PICK_END = 0x6029;
 	public static final int ITEM_PICK_REPEATED = 0x6030;
 	public static final int ITEM_PICK_TAGS = 0x6031;
-	public static final int ITEM_OVERVIEW = 0x6032;
-	public static final int ITEM_SET_DEFAULT = 0x6033;
-	public static final int ITEM_LOCATIONS = 0x6034;
-	public static final int ITEM_TAGS = 0x6035;
-	public static final int ITEM_NEW_TIMER = 0x6036;
-	public static final int ITEM_CLEANUP = 0x6037;
-	public static final int ITEM_LAYOUT = 0x6038;
+	public static final int ITEM_OVERVIEW = R.id.menu_overview;
+	public static final int ITEM_SET_DEFAULT = R.id.menu_default;
+	public static final int ITEM_LOCATIONS =R.id.menu_locations;
+	public static final int ITEM_TAGS = R.id.menu_tags;
+	public static final int ITEM_NEW_TIMER = R.id.menu_create_timer;
+	public static final int ITEM_CLEANUP = R.id.menu_cleanup;
+	public static final int ITEM_LAYOUT = R.id.menu_remote_toggle;
 	public static final int ITEM_HOME = 0x6039;
-	public static final int ITEM_DETECT_DEVICES = 0x6040;
+	public static final int ITEM_DETECT_DEVICES = R.id.menu_detect_devices;
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
 	public static final int REQUEST_PICK_SERVICE = 0x5001;	
