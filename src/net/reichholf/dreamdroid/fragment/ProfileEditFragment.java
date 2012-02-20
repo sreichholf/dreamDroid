@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -10,13 +10,17 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.Menu;
+import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -30,9 +34,9 @@ import android.widget.Toast;
 
 /**
  * Used to edit connection profiles
- * 
+ *
  * @author sre
- * 
+ *
  */
 public class ProfileEditFragment extends Fragment implements ActivityCallbackHandler{
 	private Profile mCurrentProfile;
@@ -42,14 +46,12 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	private EditText mStreamHost;
 	private EditText mPort;
 	private CheckBox mSsl;
-	private CheckBox mLogin;	
+	private CheckBox mLogin;
 	private EditText mUser;
 	private EditText mPass;
 	private CheckBox mSimpleRemote;
-	private Button mSave;
-	private Button mCancel;
 	private LinearLayout mLayoutLogin;
-	
+
 	private Activity mActivity;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -57,8 +59,9 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 		mActivity = getActivity();
 		mActivity.setTitle( getString(R.string.app_name) + "::" + getString(R.string.edit_profile) );
 		mActivity.setProgressBarIndeterminateVisibility(false);
+		setHasOptionsMenu(true);
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 		View view = inflater.inflate(R.layout.profile_edit, container, false);
@@ -68,55 +71,59 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 		mStreamHost = (EditText) view.findViewById(R.id.EditTextStreamHost);
 		mPort = (EditText) view.findViewById(R.id.EditTextPort);
 		mSsl = (CheckBox) view.findViewById(R.id.CheckBoxSsl);
-		mLogin = (CheckBox) view.findViewById(R.id.CheckBoxLogin);		
+		mLogin = (CheckBox) view.findViewById(R.id.CheckBoxLogin);
 		mUser = (EditText) view.findViewById(R.id.EditTextUser);
 		mPass = (EditText) view.findViewById(R.id.EditTextPass);
 		mSimpleRemote = (CheckBox) view.findViewById(R.id.CheckBoxSimpleRemote);
 
 		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LinearLayoutLogin);
-		mSave = (Button) view.findViewById(R.id.ButtonSave);
-		mCancel = (Button) view.findViewById(R.id.ButtonCancel);
-		
-		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
+		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
 				onIsLoginChanged(checked);
 			}
-
 		});
 
-		mSave.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				save();
-			}
-
-		});
-
-		mCancel.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				finish(Activity.RESULT_CANCELED);
-			}
-
-		});		
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
 			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
-
 			if (mCurrentProfile == null) {
 				mCurrentProfile = new Profile();
 			} else {
 				assignProfile();
 			}
 		}
-		
 		onIsLoginChanged(mLogin.isChecked());
-		
 		return view;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.Fragment#onCreateOptionsMenu(android.view.Menu, android.view.MenuInflater)
+	 */
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.save, menu);
+		inflater.inflate(R.menu.cancel, menu);
+		super.onCreateOptionsMenu(menu, inflater);
+	}
+
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.Fragment#onOptionsItemSelected(android.support.v4.view.MenuItem)
+	 */
+	public boolean onOptionsItemSelected(MenuItem item){
+		switch(item.getItemId()){
+		case Statics.ITEM_SAVE:
+			save();
+			break;
+		case Statics.ITEM_CANCEL:
+			finish(Activity.RESULT_CANCELED);
+			break;
+		default:
+			return false;
+		}
+		return true;
+	}
+
 	/**
 	 * @param checked
 	 *            Enables or disables the user/password input-boxes depending on
@@ -174,7 +181,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 			}
 		} else {
 			if (DreamDroid.addProfile(mCurrentProfile)) {
-				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");				
+				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");
 				finish(Activity.RESULT_OK);
 			} else {
 				showToast(getText(R.string.profile_not_added) + " '" + mCurrentProfile.getName() + "'");
@@ -184,7 +191,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 
 	/**
 	 * Show a toast
-	 * 
+	 *
 	 * @param toastText
 	 *            The text to show
 	 */
@@ -195,7 +202,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 
 	/**
 	 * Show a toast
-	 * 
+	 *
 	 * @param toastText
 	 *            The text to show
 	 */
@@ -227,7 +234,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
 	}
-	
+
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
 	 */

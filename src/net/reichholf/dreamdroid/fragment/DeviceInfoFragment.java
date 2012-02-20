@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -20,7 +20,7 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,9 +29,9 @@ import com.commonsware.cwac.merge.MergeAdapter;
 
 /**
  * Shows device-specific information for the active profile.
- * 
+ *
  * @author sreichholf
- * 
+ *
  */
 public class DeviceInfoFragment extends ListFragment implements ActivityCallbackHandler {
 	private ExtendedHashMap mInfo;
@@ -50,19 +50,19 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 	private ArrayList<ExtendedHashMap> mHdds;
 	private SimpleHttpClient mShc;
 	private LayoutInflater mInflater;
-	
+
 	private Activity mActivity;
-	
+
 	/**
 	 * <code>AsyncTask</code> to Fetch the device information async.
-	 * 
+	 *
 	 * @author sre
-	 * 
+	 *
 	 */
 	private class GetDeviceInfoTask extends AsyncTask<Void, String, Boolean> {
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
@@ -86,7 +86,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
 		 */
 		@Override
@@ -96,7 +96,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
@@ -122,7 +122,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.reichholf.dreamdroid.activities.AbstractHttpActivity#onCreate(android
 	 * .os.Bundle)
@@ -132,15 +132,15 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 		super.onCreate(savedInstanceState);
 		mActivity = getActivity();
 		mActivity.setProgressBarIndeterminateVisibility(false);
-		
+
 		mMerge = new MergeAdapter();
 		mInfo = new ExtendedHashMap();
 		mFrontends = new ArrayList<ExtendedHashMap>();
 		mNics = new ArrayList<ExtendedHashMap>();
 		mHdds = new ArrayList<ExtendedHashMap>();
-		
+
 		mInflater = getLayoutInflater(savedInstanceState);
-		LinearLayout fields = (LinearLayout) mInflater.inflate(R.layout.device_info, null);
+		ScrollView fields = (ScrollView) mInflater.inflate(R.layout.device_info, null);
 
 		mMerge.addView(fields);
 
@@ -150,7 +150,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 		mFrontprocessorVersion = (TextView) fields.findViewById(R.id.FrontprocessorVersion);
 		mDeviceName = (TextView) fields.findViewById(R.id.DeviceName);
 		setClient();
-		
+
 		if(savedInstanceState == null){
 			reload();
 		} else {
@@ -158,7 +158,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 			onInfoReady();
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see android.support.v4.app.Fragment#onSaveInstanceState(android.os.Bundle)
 	 */
@@ -248,7 +248,7 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 
 	/**
 	 * Shows a toast message
-	 * 
+	 *
 	 * @param toastText
 	 *            The text to set for the toast
 	 */

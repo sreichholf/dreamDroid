@@ -1,86 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
-
-    <TextView
-        android:id="@+id/GuiVersionTitle"
+    android:layout_height="fill_parent" >
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="#333"
-        android:paddingLeft="3dip"
-        android:text="@string/gui_version" />
+        android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/GuiVersion"
-        android:layout_width="fill_parent"
-        android:layout_height="40dp"
-        android:gravity="center_vertical"
-        android:paddingLeft="3dip"
-        android:textSize="16sp" />
+        <TextView
+            android:id="@+id/GuiVersionTitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#333"
+            android:paddingLeft="3dip"
+            android:text="@string/gui_version" />
 
-    <TextView
-        android:id="@+id/ImageVersionTitle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#333"
-        android:paddingLeft="3dip"
-        android:text="@string/image_version" />
+        <TextView
+            android:id="@+id/GuiVersion"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="3dip"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/ImageVersion"
-        android:layout_width="fill_parent"
-        android:layout_height="40dp"
-        android:gravity="center_vertical"
-        android:paddingLeft="3dip"
-        android:textSize="16sp" />
+        <TextView
+            android:id="@+id/ImageVersionTitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#333"
+            android:paddingLeft="3dip"
+            android:text="@string/image_version" />
 
-    <TextView
-        android:id="@+id/InterfaceVersionTitle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#333"
-        android:paddingLeft="3dip"
-        android:text="@string/interface_version" />
+        <TextView
+            android:id="@+id/ImageVersion"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="3dip"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/InterfaceVersion"
-        android:layout_width="fill_parent"
-        android:layout_height="40dp"
-        android:gravity="center_vertical"
-        android:paddingLeft="3dip"
-        android:textSize="16sp" />
+        <TextView
+            android:id="@+id/InterfaceVersionTitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#333"
+            android:paddingLeft="3dip"
+            android:text="@string/interface_version" />
 
-    <TextView
-        android:id="@+id/FrontprocessorVersionTitle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#333"
-        android:paddingLeft="3dip"
-        android:text="@string/front_processor_version" />
+        <TextView
+            android:id="@+id/InterfaceVersion"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="3dip"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/FrontprocessorVersion"
-        android:layout_width="fill_parent"
-        android:layout_height="40dp"
-        android:gravity="center_vertical"
-        android:paddingLeft="3dip"
-        android:textSize="16sp" />
+        <TextView
+            android:id="@+id/FrontprocessorVersionTitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#333"
+            android:paddingLeft="3dip"
+            android:text="@string/front_processor_version" />
 
-    <TextView
-        android:id="@+id/DeviceNameTitle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#333"
-        android:paddingLeft="3dip"
-        android:text="@string/device_name" />
+        <TextView
+            android:id="@+id/FrontprocessorVersion"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="3dip"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/DeviceName"
-        android:layout_width="fill_parent"
-        android:layout_height="40dp"
-        android:gravity="center_vertical"
-        android:paddingLeft="3dip"
-        android:textSize="16sp" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/DeviceNameTitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#333"
+            android:paddingLeft="3dip"
+            android:text="@string/device_name" />
+
+        <TextView
+            android:id="@+id/DeviceName"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="3dip"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</ScrollView>

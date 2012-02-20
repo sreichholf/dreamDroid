@@ -1,6 +1,2 @@
-bin/bin
-/bin
-/bin
-/bin
-/bin
-/bin
+bin/
+gen/
