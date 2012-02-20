@@ -8,6 +8,5 @@
 	<classpathentry kind="lib" path="libs/java-flattr-rest-0.0.1.4.jar"/>
 	<classpathentry kind="lib" path="libs/jmdns-3.4.1.jar"/>
 	<classpathentry kind="lib" path="libs/signpost-core-1.2.1.1.jar"/>
-	<classpathentry kind="lib" path="libs/android-support-v4.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
