@@ -12,8 +12,7 @@
 
 # Building dreamDroid
 
-To build the fragment branch of dreamDroid you have to add the following libraries:
+To build dreamDroid you have to add the following libraries as Android Library Project:
 
 * Jake Wharton's ViewPagerIndicator (2.2.2): http://viewpagerindicator.com/
 * Jake Wharton's ActionBarSherlock (3.5.1): http://actionbarsherlock.com/
-* JmDNS (only tested with 3.4.0): http://jmdns.sourceforge.net (add it to he java build-path of dreamDroid).
