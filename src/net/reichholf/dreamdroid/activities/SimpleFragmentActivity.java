@@ -131,8 +131,6 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	 */
 	@Override
 	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack) {
-		// TODO Auto-generated method stub
-		mCallBackHandler = (ActivityCallbackHandler) fragment;		
 		Intent intent = new Intent(this, cls);
 		intent.putExtra("fragmentClass", fragment.getClass());
 		intent.putExtras(fragment.getArguments());
@@ -143,15 +141,18 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 			startActivity(intent);
 		}
 	}
-		
+	@SuppressWarnings("deprecation")
 	@Override
 	protected Dialog onCreateDialog(int id){
-		Dialog dialog = mCallBackHandler.onCreateDialog(id);
+		Dialog dialog = null;
+		if(mCallBackHandler != null){
+			dialog = mCallBackHandler.onCreateDialog(id);
+		}
 		
 		if(dialog == null){
 			dialog = super.onCreateDialog(id);
 		}
-		
+
 		return dialog;
 	}
 	

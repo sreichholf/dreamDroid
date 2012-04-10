@@ -187,7 +187,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			mActivity.showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			getSupportActivity().showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 		}
 
 		/*
@@ -196,7 +196,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			mActivity.removeDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			getSupportActivity().removeDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -258,10 +258,10 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSupportActivity().setProgressBarIndeterminateVisibility(false);
 		
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
-		mActivity = (FragmentMainActivity) getActivity();
+		mActivity = (FragmentMainActivity) getSupportActivity();
 		mSleepTimer = new ExtendedHashMap();
 		mCurrentListItem = -1;
 		
@@ -497,7 +497,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_MESSAGE:
-			mActivity.showDialog(Statics.DIALOG_SEND_MESSAGE_ID);
+			getSupportActivity().showDialog(Statics.DIALOG_SEND_MESSAGE_ID);
 			return true;
 
 		case Statics.ITEM_EPG_SEARCH:
@@ -525,11 +525,11 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_POWERSTATE_DIALOG:
-			mActivity.showDialog(Statics.DIALOG_SET_POWERSTATE_ID);
+			getSupportActivity().showDialog(Statics.DIALOG_SET_POWERSTATE_ID);
 			return true;
 
 		case Statics.ITEM_ABOUT:
-			mActivity.showDialog(Statics.DIALOG_ABOUT_ID);
+			getSupportActivity().showDialog(Statics.DIALOG_ABOUT_ID);
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
@@ -613,7 +613,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		if (success) {
 			mSleepTimer = sleepTimer;
 			if (openDialog) {
-				mActivity.showDialog(Statics.DIALOG_SLEEPTIMER_ID);
+				getSupportActivity().showDialog(Statics.DIALOG_SLEEPTIMER_ID);
 				return;
 			}
 			String text = sleepTimer.getString(SleepTimer.KEY_TEXT);

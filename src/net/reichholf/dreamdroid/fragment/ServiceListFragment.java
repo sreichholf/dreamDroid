@@ -774,7 +774,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
-					getActivity().showDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
+					getSupportActivity().showDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
 				}
 			}
 		}
@@ -805,8 +805,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 						String name = mCurrentService.getString(Service.KEY_NAME);
 						switch (which) {
 						case 0:
-							getActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
-							getActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
+							getSupportActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+							getSupportActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 							break;
 						case 1:
 							openEpg(ref, name);

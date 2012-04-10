@@ -222,7 +222,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile.set(mCursor);
-		mActivity.showDialog(Statics.DIALOG_PROFILE_ID);
+		getSupportActivity().showDialog(Statics.DIALOG_PROFILE_ID);
 		return true;
 	}
 	
@@ -252,7 +252,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 							break;
 	
 						case 1:
-							mActivity.showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
+							getSupportActivity().showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
 							break;
 	
 						default:
@@ -353,6 +353,9 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
+			if(!mMultiPaneHandler.isMultiPane()){
+				getSupportActivity().finish();
+			}
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
 		}

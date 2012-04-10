@@ -38,7 +38,7 @@ import android.widget.TextView;
  *
  */
 public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {
-	private static List<Integer> sNavigationDialogIds =
+	public static List<Integer> NAVIGATION_DIALOG_IDS =
 			Arrays.asList(new Integer[]{
 					Statics.DIALOG_ABOUT_ID,
 					Statics.DIALOG_SEND_MESSAGE_ID,
@@ -184,7 +184,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	}
 
 	private boolean isNavigationDialog(int id){
-		return sNavigationDialogIds.contains(id);
+		return NAVIGATION_DIALOG_IDS.contains(id);
 	}
 
 	/*
