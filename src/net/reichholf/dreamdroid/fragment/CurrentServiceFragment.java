@@ -61,15 +61,14 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	private TextView mNextDuration;
 	private Button mStream;
 	private LinearLayout mNowLayout;
-	private LinearLayout mNextLayout;	
+	private LinearLayout mNextLayout;
 	protected ProgressDialog mProgress;
-	
+
 	private ExtendedHashMap mService;
 	private ExtendedHashMap mNow;
 	private ExtendedHashMap mNext;
 	private ExtendedHashMap mCurrentItem;
 	private boolean mCurrentServiceReady;
-	
 
 	/**
 	 * <code>AsyncTask</code> to fetch the current service information async.
@@ -85,15 +84,13 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		 */
 		@Override
 		protected Boolean doInBackground(Void... unused) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.current_service) + " - "
-					+ getText(R.string.fetching_data));
+			publishProgress(getString(R.string.fetching_data));
 
 			mCurrent.clear();
 			CurrentServiceRequestHandler handler = new CurrentServiceRequestHandler();
 			String xml = handler.get(mShc);
 			if (xml != null) {
-				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.current_service) + " - "
-						+ getText(R.string.parsing));
+				publishProgress(getString(R.string.parsing));
 
 				if (handler.parse(xml, mCurrent)) {
 					return true;
@@ -120,15 +117,12 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		protected void onPostExecute(Boolean result) {
 			String title = null;
 			getActivity().setProgressBarIndeterminateVisibility(false);
-			
-			if (result) {
-				title = getText(R.string.app_name) + "::" + getText(R.string.current_service);
 
+			if (result) {
+				title = getString(R.string.current_service);
 				onCurrentServiceReady();
 			} else {
-				title = getText(R.string.app_name) + "::" + getText(R.string.current_service) + " - "
-						+ getText(R.string.get_content_error);
-
+				title = getString(R.string.get_content_error);
 				if (mShc.hasError()) {
 					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
@@ -150,10 +144,11 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mCurrentServiceReady = false;
+		mCurrentTitle = getString(R.string.current_service);
 		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
-	
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.current_service, container, false);
 
 		mServiceName = (TextView) view.findViewById(R.id.service_name);
@@ -163,16 +158,16 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		mNowDuration = (TextView) view.findViewById(R.id.event_now_duration);
 		mNextStart = (TextView) view.findViewById(R.id.event_next_start);
 		mNextTitle = (TextView) view.findViewById(R.id.event_next_title);
-		mNextDuration = (TextView) view.findViewById(R.id.event_next_duration);				
+		mNextDuration = (TextView) view.findViewById(R.id.event_next_duration);
 		mStream = (Button) view.findViewById(R.id.ButtonStream);
 		mNowLayout = (LinearLayout) view.findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) view.findViewById(R.id.layout_next);
-		
+
 		registerOnClickListener(mNowLayout, Statics.ITEM_NOW);
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
 		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
-		if(savedInstanceState == null){
+		if (savedInstanceState == null) {
 			mCurrent = new ExtendedHashMap();
 			reload();
 		} else {
@@ -180,10 +175,10 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			mCurrentItem = (ExtendedHashMap) savedInstanceState.getParcelable("currentItem");
 			onCurrentServiceReady();
 		}
-		
+
 		return view;
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("currentItem", mCurrentItem);
@@ -204,7 +199,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case (Statics.ITEM_RELOAD):			
+		case (Statics.ITEM_RELOAD):
 			reload();
 			return true;
 		default:
@@ -237,8 +232,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	@Override
 	protected boolean onItemClicked(int id) {
 		String ref;
-		
-		if(mCurrentServiceReady){
+
+		if (mCurrentServiceReady) {
 			switch (id) {
 			case Statics.ITEM_NOW:
 				showEpgDetail(mNow);
@@ -248,29 +243,29 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 				return true;
 			case Statics.ITEM_STREAM:
 				ref = mService.getString(Service.KEY_REFERENCE);
-				if(!"".equals(ref) && ref != null){
+				if (!"".equals(ref) && ref != null) {
 					streamService(ref);
 				} else {
-					showToast( getText(R.string.not_available) );
+					showToast(getText(R.string.not_available));
 				}
 				return true;
 			default:
 				return false;
 			}
 		} else {
-			showToast( getText(R.string.not_available) );
+			showToast(getText(R.string.not_available));
 			return true;
 		}
 	}
-	
-	private void showEpgDetail(ExtendedHashMap event){
-		if(event != null){
+
+	private void showEpgDetail(ExtendedHashMap event) {
+		if (event != null) {
 			mCurrentItem = event;
 			getActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
 			getActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 		}
 	}
-	
+
 	/**
 	 * Reloads all current service information
 	 */
@@ -307,13 +302,13 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		mNextTitle.setText(mNext.getString(Event.KEY_EVENT_TITLE));
 		mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 	}
-	
+
 	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
 
 		switch (id) {
 		case Statics.DIALOG_EPG_ITEM_ID:
-			if(mCurrentItem != null){
+			if (mCurrentItem != null) {
 				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);
 				String date = mCurrentItem.getString(Event.KEY_EVENT_START_READABLE);
@@ -321,20 +316,20 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 					date = date.concat(" (" + (String) mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
 							+ getText(R.string.minutes_short) + ")");
 					String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
-	
+
 					dialog = new Dialog(getActivity());
 					dialog.setContentView(R.layout.epg_item_dialog);
 					dialog.setTitle(title);
-	
+
 					TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
 					textServiceName.setText(servicename);
-	
+
 					TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
 					textTime.setText(date);
-	
+
 					TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
 					textDescEx.setText(descEx);
-	
+
 					Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
 					buttonSetTimer.setOnClickListener(new OnClickListener() {
 						@Override
@@ -343,7 +338,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 							dialog.dismiss();
 						}
 					});
-	
+
 					Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
 					buttonEditTimer.setOnClickListener(new OnClickListener() {
 						@Override
@@ -352,7 +347,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 							dialog.dismiss();
 						}
 					});
-					
+
 					Button buttonIMDb = (Button) dialog.findViewById(R.id.ButtonImdb);
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
@@ -361,7 +356,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 							dialog.dismiss();
 						}
 					});
-					
+
 					Button buttonSimilar = (Button) dialog.findViewById(R.id.ButtonSimilar);
 					buttonSimilar.setOnClickListener(new OnClickListener() {
 						@Override
@@ -387,19 +382,20 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			}
 			break;
 		default:
-//			dialog = super.onCreateDialog(id);
+			// dialog = super.onCreateDialog(id);
 			dialog = null;
 		}
 
 		return dialog;
 	}
-	
+
 	/**
 	 * @param event
 	 */
 	protected void setTimerByEventData(ExtendedHashMap event) {
 		Timer.editUsingEvent((MultiPaneHandler) getActivity(), event, this);
 	}
+
 	/**
 	 * @param event
 	 */
@@ -429,18 +425,18 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		}
 		super.onSimpleResult(success, result);
 	}
-	
+
 	/**
 	 * @param ref
-	 * 			A ServiceReference
+	 *            A ServiceReference
 	 */
-	private void streamService(String ref){
+	private void streamService(String ref) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "http://" + DreamDroid.getActiveProfile().getStreamHost().trim() + ":8001/" + ref;
 		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
-		
-		intent.setDataAndType(Uri.parse(uriString) , "video/*");
-		
-		startActivity(intent);		
+
+		intent.setDataAndType(Uri.parse(uriString), "video/*");
+
+		startActivity(intent);
 	}
 }

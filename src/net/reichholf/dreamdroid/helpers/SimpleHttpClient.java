@@ -236,7 +236,7 @@ public class SimpleHttpClient {
 	public void applyConfig() {
 		mHostname = DreamDroid.getActiveProfile().getHost().trim();
 		mStreamHostname = DreamDroid.getActiveProfile().getStreamHost().trim();
-		mPort = new Integer(DreamDroid.getActiveProfile().getPort()).toString();
+		mPort = String.valueOf(DreamDroid.getActiveProfile().getPort());
 		mLogin = DreamDroid.getActiveProfile().isLogin();
 		mSsl = DreamDroid.getActiveProfile().isSsl();
 

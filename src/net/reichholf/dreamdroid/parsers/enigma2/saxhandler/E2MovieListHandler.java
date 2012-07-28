@@ -146,7 +146,7 @@ public class E2MovieListHandler extends E2ListHandler {
 				mMovie.putOrConcat(Movie.KEY_FILE_NAME, value);
 			} else if (inFilesize) {
 				mMovie.putOrConcat(Movie.KEY_FILE_SIZE, value);
-				Long size = new Long(value);
+				Long size = Long.valueOf(value);
 				size /= (1024 * 1024);
 				String size_readable = size + " MB";
 				mMovie.putOrConcat(Movie.KEY_FILE_SIZE_READABLE, size_readable);

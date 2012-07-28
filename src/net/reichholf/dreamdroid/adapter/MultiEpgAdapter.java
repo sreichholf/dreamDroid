@@ -65,7 +65,7 @@ public class MultiEpgAdapter extends ArrayAdapter<ExtendedHashMap> {
 			int remaining = mWidth;
 			for(ExtendedHashMap item : items){
 				String duration = item.getString(Event.KEY_EVENT_DURATION);
-				long d = new Long(duration);
+				long d = Long.valueOf(duration);
 
 				d /= 60;
 				int width = d <= remaining ? (int) d : remaining;

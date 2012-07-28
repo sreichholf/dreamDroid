@@ -138,7 +138,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		getActivity().setTitle(getText(R.string.app_name) + "::" + getText(R.string.screenshot));
+		getActivity().setTitle(getText(R.string.screenshot));
 		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
@@ -252,7 +252,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 			break;
 		}
 
-		params.add(new BasicNameValuePair("r", new Integer(mSize).toString()));
+		params.add(new BasicNameValuePair("r", String.valueOf(mSize)));
 
 		if (mFilename == null) {
 			long ts = (new GregorianCalendar().getTimeInMillis()) / 1000;

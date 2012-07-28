@@ -22,9 +22,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -57,7 +55,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mActivity = getActivity();
-		mActivity.setTitle( getString(R.string.app_name) + "::" + getString(R.string.edit_profile) );
+		mActivity.setTitle(getString(R.string.edit_profile));
 		mActivity.setProgressBarIndeterminateVisibility(false);
 		setHasOptionsMenu(true);
 	}

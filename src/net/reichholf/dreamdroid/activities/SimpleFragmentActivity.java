@@ -9,13 +9,16 @@ package net.reichholf.dreamdroid.activities;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
+import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.Menu;
+import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.Window;
 
@@ -34,9 +37,19 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setProgressBarIndeterminateVisibility(false);
+		if(getSupportActionBar() != null)
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		
 		if(savedInstanceState != null){
 			mFragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
+		}
+		
+		Intent intent = getIntent();
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			mFragment = new EpgSearchFragment();
+			Bundle args = new Bundle();
+			args.putString(SearchManager.QUERY, intent.getStringExtra(SearchManager.QUERY));
+			mFragment.setArguments(args);
 		}
 		initViews();
 	}
@@ -78,6 +91,15 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	public boolean onCreateOptionsMenu(Menu menu){
 		super.onCreateOptionsMenu(menu);
 		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+		if(item.getItemId() == android.R.id.home){
+			finish();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 	
 	@Override

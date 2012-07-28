@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 /**
@@ -46,6 +47,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 			mName = savedInstanceState.getString("name");
 			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
 		}
+		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 	}
 	
 	/* (non-Javadoc)
@@ -57,6 +59,14 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		outState.putSerializable("currentItem", mCurrentItem);
 		
 		super.onSaveInstanceState(outState);
+	}
+	
+	@Override
+	public void onListItemClick(ListView l, View v, int position, long id) {
+		mCurrentItem = mMapList.get((int) id);
+		// if the dialog has been opened before, remove that instance
+		getSupportActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+		getSupportActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 	}
 	
 	/*

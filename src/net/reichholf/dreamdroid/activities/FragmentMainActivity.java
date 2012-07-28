@@ -53,7 +53,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
-
+	
 	private CheckProfileTask mCheckProfileTask;
 
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
@@ -113,7 +113,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 		if(savedInstanceState != null){
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
 		}
-
+		
 		DreamDroid.setActiveProfileChangedListener(this);
 
 		initViews();

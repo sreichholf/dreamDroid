@@ -161,8 +161,8 @@
     <string name="about">About</string>
     <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Active profile</string>
-    <string name="connection_state">Connection state</string>
+    <string name="active_profile">Profile</string>
+    <string name="connection_state">State</string>
     <string name="not_available">Not available</string>
     <string name="checking">checking...</string>
     <string name="error">ERROR!</string>
@@ -180,7 +180,7 @@
     <string name="stream_host">Streaming Hostname/IP</string>
     <string name="stream_host_long">Host/IP for streaming (optional)</string>
     <string name="stream_current">Stream current</string>
-    <string name="similar">Similar events</string>
+    <string name="similar">Similar</string>
 
     <string-array name="timer_state">
         <item>waiting...</item>

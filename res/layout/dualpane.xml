@@ -8,14 +8,14 @@
         android:id="@+id/navigation_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginBottom="50dp" />
+        android:layout_marginBottom="25dp" />
 
     <TableLayout
         android:layout_width="fill_parent"
         android:layout_height="45dp"
         android:layout_gravity="top"
         android:layout_marginBottom="0dp"
-        android:layout_marginTop="-45dp"
+        android:layout_marginTop="-25dp"
         android:orientation="horizontal" >
 
         <TableRow android:layout_marginTop="3dp" >
@@ -30,24 +30,21 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/TextViewProfile"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="..."
+                android:textColor="#FFF"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/TextViewConnectionStateTitle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="right"
                 android:text="@string/connection_state"
-                android:textColor="#FFF"
-                android:textStyle="bold" />
-        </TableRow>
-
-        <TableRow android:layout_marginTop="3dp" >
-
-            <TextView
-                android:id="@+id/TextViewProfile"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="..."
                 android:textColor="#FFF"
                 android:textStyle="bold" />
 

@@ -11,33 +11,33 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import android.app.SearchManager;
 import android.os.Bundle;
 import android.widget.SimpleAdapter;
 
 /**
- * Shows the EPG of a service. Timers can be set via integrated detail dialog
- * 
- * @author sreichholf
+ * @author sre
  * 
  */
-public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
-
-	private GetEpgListTask mEpgListTask;
+public class EpgSearchFragment extends AbstractHttpEventListFragment {
+	private SearchEpgListTask mSearchEpgListTask;
 
 	/**
-	 * Fetch the list of EPG-Events async
+	 * <code>AsyncTask</code> to get the EPG information for the given search
+	 * term
 	 * 
 	 * @author sreichholf
 	 * 
 	 */
-	private class GetEpgListTask extends AsyncListUpdateTask{
-		public GetEpgListTask() {
-			super(new EventListRequestHandler(), false);
+	private class SearchEpgListTask extends AsyncListUpdateTask {
+		public SearchEpgListTask() {
+			super(new EventListRequestHandler(URIStore.EPG_SEARCH), false);
 		}
 	}
 
@@ -51,19 +51,11 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActivity().setProgressBarIndeterminateVisibility(false);
-		
-		mCurrentTitle = mBaseTitle = getString(R.string.epg);
-		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
-		mName = getDataForKey(Event.KEY_SERVICE_NAME);
-
-		if (mReference != null) {
-			setAdapter();
-			reload();
-		} else {
-			finish();
-		}
-
+		mCurrentTitle = getString(R.string.epg_search);
+		setAdapter();
+		String needle = getArguments().getString(SearchManager.QUERY);
+		if(needle != null)
+			search(needle);
 	}
 
 	/*
@@ -73,8 +65,8 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	 */
 	@Override
 	public void onPause() {
-		if (mEpgListTask != null) {
-			mEpgListTask.cancel(true);
+		if (mSearchEpgListTask != null) {
+			mSearchEpgListTask.cancel(true);
 		}
 
 		super.onPause();
@@ -84,25 +76,26 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(getActivity(), mMapList, R.layout.epg_list_item, new String[] { Event.KEY_EVENT_TITLE,
-				Event.KEY_EVENT_START_READABLE, Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.event_title,
-				R.id.event_start, R.id.event_duration });
+		mAdapter = new SimpleAdapter(getActivity(), mMapList, R.layout.epg_multi_service_list_item, new String[] {
+				Event.KEY_SERVICE_NAME, Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_READABLE,
+				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.service_name, R.id.event_title, R.id.event_start,
+				R.id.event_duration });
 		setListAdapter(mAdapter);
 	}
 
 	/**
-	 * Reloads the EPG information by calling a <code>GetEpgListTask</code>.
+	 * Issues the search by executing a new <code>GetSearchEpgListTask</code>
 	 */
 	@SuppressWarnings("unchecked")
-	private void reload() {
+	private void search(String needle) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("sRef", mReference));
+		params.add(new BasicNameValuePair("search", needle));
 
-		if (mEpgListTask != null) {
-			mEpgListTask.cancel(true);
+		if (mSearchEpgListTask != null) {
+			mSearchEpgListTask.cancel(true);
 		}
 
-		mEpgListTask = new GetEpgListTask();
-		mEpgListTask.execute(params);
+		mSearchEpgListTask = new SearchEpgListTask();
+		mSearchEpgListTask.execute(params);
 	}
 }

@@ -46,7 +46,7 @@ public class Statics {
 	public static final int ITEM_REMOTE = 0x6008;
 	public static final int ITEM_PREFERENCES = R.id.menu_preferences;
 	public static final int ITEM_CURRENT = 0x6010;
-	public static final int ITEM_EPG_SEARCH = 0x6011;
+	public static final int ITEM_EPG_SEARCH = R.id.menu_search;
 	public static final int ITEM_SCREENSHOT = 0x6012;
 	public static final int ITEM_TOGGLE_STANDBY = 0x6013;
 	public static final int ITEM_RESTART_GUI = 0x6014;

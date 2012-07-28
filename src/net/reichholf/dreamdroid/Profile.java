@@ -234,7 +234,7 @@ public class Profile implements Serializable{
 	 */
 	public void setPort(String port){	
 		try{
-			mPort = new Integer(port);
+			mPort = Integer.valueOf(port);
 		} catch(NumberFormatException e ){
 			Log.w(DreamDroid.LOG_TAG, e.toString());
 			if(mSsl){
@@ -333,6 +333,6 @@ public class Profile implements Serializable{
 	}
 	
 	public String getPortString(){
-		return (new Integer(mPort).toString());
+		return (String.valueOf(mPort));
 	}
 }

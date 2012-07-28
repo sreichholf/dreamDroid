@@ -116,6 +116,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getActivity().setProgressBarIndeterminateVisibility(false);
+		mCurrentTitle = getString(R.string.virtual_remote);
 		mPrefs = PreferenceManager.getDefaultSharedPreferences( getActivity().getBaseContext());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
@@ -266,7 +267,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		mVibrator.vibrate(msec);
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("command", new Integer(id).toString()));
+		params.add(new BasicNameValuePair("command", String.valueOf(id)));
 		if(mSimpleRemote){
 			params.add(new BasicNameValuePair("rcu", "standard"));
 		} else {

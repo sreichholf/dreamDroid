@@ -78,11 +78,11 @@ public class Timer {
 
 		@Override
 		public String toString() {
-			return new Integer(value).toString();
+			return String.valueOf(value);
 		}
 
 		public int intValue() {
-			return new Integer(value).intValue();
+			return Integer.valueOf(value);
 		}
 
 		public String getText(Activity ac) {
@@ -126,8 +126,8 @@ public class Timer {
 		ExtendedHashMap timer = getInitialTimer();
 
 		String start = event.getString(Event.KEY_EVENT_START);
-		int duration = new Integer(event.getString(Event.KEY_EVENT_DURATION));
-		int end = duration + new Integer(start);
+		int duration = Integer.valueOf(event.getString(Event.KEY_EVENT_DURATION));
+		int end = duration + Integer.valueOf(start);
 
 		timer.put(Timer.KEY_BEGIN, start);
 		timer.put(Timer.KEY_END, String.valueOf(end));

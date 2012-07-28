@@ -153,6 +153,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
+		mCurrentTitle = getString(R.string.timer);
 		getActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
@@ -182,7 +183,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mAfterevent.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-				mTimer.put(Timer.KEY_AFTER_EVENT, new Integer(position).toString());
+				mTimer.put(Timer.KEY_AFTER_EVENT, Integer.valueOf(position).toString());
 			}
 
 			@Override
@@ -555,7 +556,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mDescription.setHint(R.string.description);
 
 		// Enabled
-		int disabled = new Integer(mTimer.getString(Timer.KEY_DISABLED));
+		int disabled = Integer.valueOf(mTimer.getString(Timer.KEY_DISABLED));
 		if (disabled == 0) {
 			mEnabled.setChecked(true);
 		} else {
@@ -570,7 +571,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
 
-		int aeValue = new Integer(mTimer.getString(Timer.KEY_AFTER_EVENT)).intValue();
+		int aeValue = Integer.valueOf(mTimer.getString(Timer.KEY_AFTER_EVENT)).intValue();
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
@@ -591,8 +592,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		}
 
 		// Start and Endtime
-		int begin = new Integer(mTimer.getString(Timer.KEY_BEGIN));
-		int end = new Integer(mTimer.getString(Timer.KEY_END));
+		int begin = Integer.valueOf(mTimer.getString(Timer.KEY_BEGIN));
+		int end = Integer.valueOf(mTimer.getString(Timer.KEY_END));
 		long b = ((long) begin) * 1000;
 		long e = ((long) end) * 1000;
 		Date dateBegin = new Date(b);
@@ -602,7 +603,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mEnd.setText(dateEnd.toLocaleString());
 
 		// Repeatings
-		int repeatedValue = new Integer(mTimer.getString(Timer.KEY_REPEATED));
+		int repeatedValue = Integer.valueOf(mTimer.getString(Timer.KEY_REPEATED));
 		String repeatedText = getRepeated(repeatedValue);
 		mRepeatings.setText(repeatedText);
 
@@ -674,7 +675,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			}
 		}
 
-		String repeated = new Integer(value).toString();
+		String repeated = Integer.valueOf(value).toString();
 		timer.put(Timer.KEY_REPEATED, repeated);
 
 		if (value == 31) {
@@ -704,7 +705,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			mTimer.put(Timer.KEY_DISABLED, "1");
 		}
 
-		String ae = new Integer(mAfterevent.getSelectedItemPosition()).toString();
+		String ae = Integer.valueOf(mAfterevent.getSelectedItemPosition()).toString();
 		mTimer.put(Timer.KEY_AFTER_EVENT, ae);
 	}
 
@@ -793,7 +794,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 * @return
 	 */
 	private Calendar getCalendarFromTimestamp(String timestamp) {
-		long ts = (new Long(timestamp)) * 1000;
+		long ts = (Long.valueOf(timestamp)) * 1000;
 		Date date = new Date(ts);
 
 		Calendar cal = GregorianCalendar.getInstance();
@@ -828,7 +829,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 *            Calndear Object
 	 */
 	private void onTimerBeginSet(Calendar cal) {
-		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
+		String seconds = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_BEGIN, seconds);
 		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
 		reload();
@@ -841,7 +842,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 * @param cal
 	 */
 	private void onTimerEndSet(Calendar cal) {
-		String seconds = new Long((cal.getTimeInMillis() / 1000)).toString();
+		String seconds = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_END, seconds);
 		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 		reload();

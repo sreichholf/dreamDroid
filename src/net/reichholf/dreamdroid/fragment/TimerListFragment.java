@@ -72,7 +72,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		super.onCreate(savedInstanceState);
 		getActivity().setProgressBarIndeterminateVisibility(false);
 		
-		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.timer);
+		mCurrentTitle = mBaseTitle = getString(R.string.timer);
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 		
 		setHasOptionsMenu(true);

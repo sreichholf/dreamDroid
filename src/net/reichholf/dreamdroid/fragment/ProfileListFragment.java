@@ -181,7 +181,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		setHasOptionsMenu(true);
 		
 		mActivity = getActivity();
-		mActivity.setTitle( getString(R.string.app_name) + "::" + getString(R.string.profiles) );
+		mActivity.setTitle(getString(R.string.profiles));
 		mActivity.setProgressBarIndeterminateVisibility(false);
 		
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();

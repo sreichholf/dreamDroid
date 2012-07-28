@@ -67,15 +67,13 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 		 */
 		@Override
 		protected Boolean doInBackground(Void... unused) {
-			publishProgress(getText(R.string.app_name) + "::" + getText(R.string.device_info) + " - "
-					+ getText(R.string.fetching_data));
+			publishProgress(getString(R.string.fetching_data));
 
 			mInfo.clear();
 			DeviceInfoRequestHandler handler = new DeviceInfoRequestHandler();
 			String xml = handler.get(mShc);
 			if (xml != null) {
-				publishProgress(getText(R.string.app_name) + "::" + getText(R.string.device_info) + " - "
-						+ getText(R.string.parsing));
+				publishProgress(getString(R.string.parsing));
 
 				if (handler.parse(xml, mInfo)) {
 					return true;
@@ -103,13 +101,10 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 			String title = null;
 
 			if (result) {
-				title = getText(R.string.app_name) + "::" + getText(R.string.device_info);
-
+				title = getString(R.string.device_info);
 				onInfoReady();
 			} else {
-				title = getText(R.string.app_name) + "::" + getText(R.string.device_info) + " - "
-						+ getText(R.string.get_content_error);
-
+				title = getString(R.string.get_content_error);
 				if (mShc.hasError()) {
 					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
 				}
@@ -132,7 +127,8 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 		super.onCreate(savedInstanceState);
 		mActivity = getActivity();
 		mActivity.setProgressBarIndeterminateVisibility(false);
-
+		getSupportActivity().setTitle(getText(R.string.device_info));
+		
 		mMerge = new MergeAdapter();
 		mInfo = new ExtendedHashMap();
 		mFrontends = new ArrayList<ExtendedHashMap>();

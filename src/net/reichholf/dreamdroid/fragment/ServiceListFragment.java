@@ -131,19 +131,18 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			}
 
 			mTaskList = new ArrayList<ExtendedHashMap>();
-			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
+			publishProgress(getString(R.string.fetching_data));
 
 			String xml = mListRequestHandler.getList(mShc, params[0]);
 			if (xml != null) {
-				publishProgress(mBaseTitle + " - " + getText(R.string.parsing));
+				publishProgress(getString(R.string.parsing));
 
 				mTaskList.clear();
 
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
 					if (mRequireLocsAndTags) {
 						if (DreamDroid.getLocations().size() == 0) {
-							publishProgress(mBaseTitle + " - " + getText(R.string.locations) + " - "
-									+ getText(R.string.fetching_data));
+							publishProgress(getString(R.string.fetching_data));
 
 							if (!DreamDroid.loadLocations(mShc)) {
 								// TODO Add Error-Msg when loadLocations fails
@@ -151,8 +150,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 						}
 
 						if (DreamDroid.getTags().size() == 0) {
-							publishProgress(mBaseTitle + " - " + getText(R.string.tags) + " - "
-									+ getText(R.string.fetching_data));
+							publishProgress(getString(R.string.fetching_data));
 
 							if (!DreamDroid.loadTags(mShc)) {
 								// TODO Add Error-Msg when loadTags fails
@@ -200,7 +198,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			mTaskList = new ArrayList<ExtendedHashMap>();
-			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
+			publishProgress(getString(R.string.fetching_data));
 
 			String xml;
 			AbstractListRequestHandler handler;
@@ -212,7 +210,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			xml = handler.getList(mShc, params[0]);
 
 			if (xml != null) {
-				publishProgress(mBaseTitle + " - " + getText(R.string.parsing));
+				publishProgress(getString(R.string.parsing));
 				boolean result = false;
 				result = handler.parseList(xml, mTaskList);
 				return result;
@@ -243,7 +241,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			if (result) {
 				title = mBaseTitle;
 			} else {
-				title = mBaseTitle + " - " + getString(R.string.get_content_error);
+				title = getString(R.string.get_content_error);
 
 				if (mShc.hasError()) {
 					showToast(getString(R.string.get_content_error) + "\n" + mShc.getErrorText());
@@ -270,7 +268,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getActivity().setProgressBarIndeterminateVisibility(false);
-		mCurrentTitle = mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.services);
+		mCurrentTitle = mBaseTitle = getString(R.string.services);
 
 		mReload = true;
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();
@@ -1005,7 +1003,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	public void loadNavRoot() {
-		String title = getText(R.string.app_name) + "::" + getText(R.string.services);
+		String title = getString(R.string.services);
 		getActivity().setTitle(title);
 
 		mNavItems.clear();

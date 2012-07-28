@@ -148,7 +148,7 @@ public class DreamDroid extends Application {
 			String host =sSp.getString("host", "dm8000");
 			String streamHost = sSp.getString("host", "");
 
-			int port = new Integer(sSp.getString("port", "80"));
+			int port = Integer.valueOf(sSp.getString("port", "80"));
 			String user = sSp.getString("user", "root");
 			String pass = sSp.getString("pass", "dreambox");
 
