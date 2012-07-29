@@ -62,6 +62,6 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 	}
 	
 	public ExtendedHashMap getDefault(){
-		return null;
+		return new ExtendedHashMap();
 	}
 }
