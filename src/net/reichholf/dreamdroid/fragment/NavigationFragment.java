@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.SimpleFragmentActivity;
+import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -491,7 +492,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_REMOTE:
-			mActivity.showDetails(VirtualRemoteFragment.class, SimpleFragmentActivity.class);
+			mActivity.showDetails(VirtualRemoteFragment.class, SimpleNoTitleFragmentActivity.class);
 			return true;
 
 		case Statics.ITEM_PREFERENCES:
