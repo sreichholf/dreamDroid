@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Beskrivelse</string>
+<string name="title">Tittel</string>
+<string name="mo">Ma</string>
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>Utvalg (TV)</item>
+<item>Tilbyder (TV)</item>
+<item>Alle sendinger (TV)</item>
+<item>Utvalg (Radio)</item>
+<item>Tilbyder (Radio)</item>
+<item>Alle (Radio)</item>
+</string-array>
+<string name="timer">Timer</string>
+<string name="service">Service</string>
+<string name="afterevent">Etterpå</string>
+<string name="location">Lokasjon</string>
+<string-array name="afterevents">
+<item>Ingen ting</item>
+<item>Hvilemodus</item>
+<item>Dvale</item>
+<item>Automatisk</item>
+</string-array>
+<string name="begin_time">Start tid</string>
+<string name="repeatings">Repetisjon</string>
+<string name="end_time">Slutt tid</string>
+<string name="services">Tjenester</string>
+<string name="movies">Filmer</string>
+<string name="device_info">Informasjon</string>
+<string name="send_message">Send melding</string>
+
+<string name="save">Lagre</string>
+<string name="cancel">Avbryt</string>
+<string name="fetching_data">Henter data...</string>
+<string name="parsing">Analyserer...</string>
+<string name="get_content_error">Feil ved henting av innhold!</string>
+<string name="zap">Bytt</string>
+<string name="browse_epg">Vis EPG</string>
+<string name="edit">Endre</string>
+<string name="delete">Slett</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">Aktiver SSL</string>
+<string name="host">Vertsnavn/IP</string>
+<string name="port">Port</string>
+<string name="settings">Innstillinger</string>
+<string name="host_long">Vertsnavn eller IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">Lukk</string>
+<string name="minutes_short">min.</string>
+<string name="user">Bruker</string>
+<string name="user_long">Brukernavn for pålogging</string>
+<string name="pass">Passord</string>
+<string name="pass_long">Passord for pålogging</string>
+<string name="saving">Lagrer. Vennligst vent</string>
+<string name="deleting">Sletter. Vennligst vent</string>
+<string name="delete_confirm">Vil du virkelig slette?</string>
+<string name="set_timer">Sett timer</string>
+<string name="home">Hjem</string>
+<string name="pick_action">Velg</string>
+<string name="set_time_begin">Startdato og tid</string>
+<string name="set_time_end">Sluttdato og tid</string>
+<string name="apply">Lagre</string>
+<string name="reload">Last på nytt</string>
+<string-array name="weekdays_short">
+<item>Ma</item>
+<item>Ti</item>
+<item>On</item>
+<item>To</item>
+<item>Fr</item>
+<item>Lø</item>
+<item>Sø</item>
+</string-array>
+<string-array name="weekdays">
+<item>Mandag</item>
+<item>Tirsdag</item>
+<item>Onsdag</item>
+<item>Torsdag</item>
+<item>Fredag</item>
+<item>Lørdag</item>
+<item>Søndag</item>
+</string-array>
+<string name="none">Ingen</string>
+<string name="choose_days">Velg dager</string>
+<string name="mo_to_fr">Mandag til fredag</string>
+<string name="daily">Daglig</string>
+<string name="new_timer">Ny timer</string>
+<string name="locations">Lokalisering</string>
+<string name="gui_version">Grafisk versjon</string>
+<string name="image_version">Bilde versjon</string>
+<string name="interface_version">Grensesnitt versjon</string>
+<string name="front_processor_version">Frontprosessor versjon</string>
+<string name="device_name">Enhetsnavn</string>
+<string name="frontends">Brukerflate</string>
+<string name="nics">Nettverksflate</string>
+<string name="hdds">Harddisker</string>
+<string name="not_implemented">Denne funksjonen er ikke implementert enda!</string>
+<string name="current_event">Aktiv hendelse</string>
+<string name="timeout">Tidsavbrudd</string>
+<string name="message">Melding</string>
+<string name="message_text_hint">Skriv inn meldingsteksten</string>
+<string name="send">Send</string>
+<string name="type">Type</string>
+<string-array name="message_types">
+<item>JaNei</item>
+<item>Advarsel</item>
+<item>Informasjon</item>
+<item>Feil</item>
+</string-array>
+<string name="virtual_remote">Virtuell fjernkontroll</string>
+<string name="login_enabled">Aktiver pålogging</string>
+<string name="wait_request_finished">Vent til gjeldende forespørsel er fullført!</string>
+<string name="current_service">Denne</string>
+<string name="provider">Tilbyder</string>
+<string name="now">Nå</string>
+<string name="next">Neste</string>
+<string name="epg_search">EPG-søk</string>
+<string name="epg_search_hint">Søk EPG</string>
+<string name="standard">Standard utseende</string>
+<string name="quickzap">Hurtigvalg utseende</string>
+<string name="no_epg_available">Det er ingen EPG-informasjon tilgjengelig for denne kanalen!</string>
+<string name="ok">OK</string>
+<string name="activate">Aktiver</string>
+<string name="confirm_delete_profile">Vil du virkelig slette denne profilen</string>
+<string name="profile_activated">Aktivert profil</string>
+<string name="profile_not_activated">Feil ved aktivering av profil</string>
+<string name="profile_not_deleted">Feil ved sletting av profil</string>
+<string name="profile_deleted">Slettet profilen</string>
+<string name="profile">Profil</string>
+<string name="profile_updated">Oppdaterte profilen</string>
+<string name="profile_added">Tilføyde profilen</string>
+<string name="profile_add">Legg til profil</string>
+<string name="profile_not_added">Kunne ikke legge til profil</string>
+<string name="profile_not_updated">Kunne ikke oppdatere profilen</string>
+<string name="no_list_item">Ikke noe å vise...</string>
+<string name="locations_default_fallback">Feil ved lasting av lokasjon, tilbakestiller til default.</string>
+<string name="tags">Kategori</string>
+<string name="screenshot">Skjermdump</string>
+<string name="host_empty">Vertsnavnet kan ikke være tomt</string>
+<string name="standby">Hvilemodus</string>
+<string name="powerup">Slå på</string>
+<string name="restart_gui">Restart grafikk</string>
+<string name="reboot">Start på nytt</string>
+<string name="shutdown">Slå av</string>
+<string name="powercontrol">Strømkontroll</string>
+<string name="choose_tags">Velg kategori</string>
+<string name="choose_location">Velg plassering</string>
+<string name="bouquet_overview">Se utvalg</string>
+<string name="set_default">Sett som standard</string>
+<string name="default_bouquet_set_to">Standard utvalg er satt til:</string>
+<string name="default_bouquet_not_set">Standard utvalg kunne ikke settes!</string>
+<string name="loading">Henter...</string>
+<string name="about">Om</string>
+<string name="source_code_link">Kildekoden er tilgjengelig hos: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Aktiv profil</string>
+<string name="connection_state">Tilkoblings status</string>
+<string name="not_available">Ikke tilgjengelig</string>
+<string name="checking">kontrollerer...</string>
+<string name="error">FEIL!</string>
+<string name="check_connectivity">Kontroler tilkobling</string>
+<string name="connection_error">Tilkoblingsfeil</string>
+<string name="port_out_of_range">Port er ikke mellom 1 og 65535</string>
+<string name="illegal_host">Ugyldig vert</string>
+<string name="edit_timer">Rediger timer</string>
+<string name="in_standby">Enheten er nå i hvilemodus</string>
+<string name="is_running">Enheten er på</string>
+
+<string name="similar">Lignende hendelser</string>
+<string-array name="timer_state">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string-array name="timer_action">
+<item></item>
+<item></item>
+</string-array>
+<string name="current_volume">Volum er nå %s</string>
+<string name="muted">Dempet</string>
+<string name="download">Last ned</string>
+<string name="extras">Ekstra</string>
+<string name="main_menu">Hjem</string>
+<string name="profiles">Profiler</string>
+<string name="screenshot_saved">Skjermdump lagret til \'%s\'</string>
+<string name="imdb">IMDb</string>
+<string name="missing_stream_player">Ingen mediaspiller for videostrøm er installert!</string>
+</resources>

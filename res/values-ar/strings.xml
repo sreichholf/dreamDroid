@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">الوصف</string>
+<string name="title">العنوان</string>
+<string name="app_name">دريم درويد</string>
+<string-array name="servicelist">
+<item>قائمة الخدمات</item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string name="timer">المؤقت</string>
+<string name="service">الخدمة</string>
+<string name="afterevent">بعد الحدث</string>
+<string name="location">الموقع</string>
+<string-array name="afterevents">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string name="begin_time">وقت البدء</string>
+<string name="repeatings">التكرار</string>
+<string name="end_time">وقت النهاية</string>
+<string name="services">الخدمات</string>
+<string name="movies">الأفلام</string>
+<string name="device_info">عن الجهاز</string>
+<string name="send_message">ارسال رسالة</string>
+
+<string name="save">حفظ</string>
+<string name="cancel">الغاء</string>
+<string name="fetching_data">جاري قراءة البيانات</string>
+<string name="parsing">جاري القراءة</string>
+<string name="get_content_error">خطأ في قراءة البيانات</string>
+<string name="zap">تغيير</string>
+<string name="browse_epg">تصفح البرامج</string>
+<string name="edit">تعديل</string>
+<string name="delete">مسح</string>
+<string name="epg">قائمة البرامج الالكترونية</string>
+<string name="ssl_enabled">تفعيل SSL</string>
+<string name="host">عنوان الجهاز او IP</string>
+<string name="port">المنفذ</string>
+<string name="settings">اعدادات</string>
+<string name="host_long">عنوان الجهاز او IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">اغلاق</string>
+<string name="minutes_short">دقيقة</string>
+<string name="user">المستخدم</string>
+<string name="user_long">اسم المستخدم للدخول</string>
+<string name="pass">كلمة السر</string>
+<string name="pass_long">كلمة السر للدخول </string>
+<string name="saving">يتم الحفظ..</string>
+<string name="deleting">يتم المسح..</string>
+<string name="delete_confirm">تاكيد المسح؟</string>
+<string name="set_timer">تحديد المؤقت</string>
+<string name="home">البداية</string>
+<string name="pick_action">اختر العملية</string>
+<string name="set_time_begin">تاريخ ووقت البدء</string>
+<string name="set_time_end">تاريخ ووقت النهاية</string>
+<string name="apply">تنفيذ</string>
+<string name="reload">اعادة تحميل</string>
+<string-array name="weekdays_short">
+<item>ايام الاسبوع _مختصر </item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string-array name="weekdays">
+<item>ايام الاسبوع</item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string name="none">لا شيء</string>
+<string name="choose_days">اختر الايام</string>
+<string name="mo_to_fr">الاثنين الى الجمعة</string>
+<string name="daily">يوميا</string>
+<string name="new_timer">مؤقت جديد</string>
+<string name="locations">المواقع</string>
+<string name="front_processor_version">اصدار المعالج الامامي</string>
+<string name="device_name">اسم الجهاز</string>
+<string name="frontends">النهايات الامامية</string>
+<string name="nics">التشبيك</string>
+<string name="hdds">الاقراص الصلبة</string>
+<string name="not_implemented">هذه العملية غير متوفرة حاليا!</string>
+<string name="current_event">الحدث الحالي</string>
+<string name="timeout">انتهى الوقت</string>
+<string name="message">رسالة</string>
+<string name="message_text_hint">أدخل الرسالة</string>
+<string name="send">ارسال</string>
+<string name="type">نوع</string>
+<string-array name="message_types">
+<item>انواع الرسائل</item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string name="virtual_remote">الريموت الوهمي</string>
+<string name="login_enabled">مكن من الدخول بكلمة السر</string>
+<string name="wait_request_finished">انتظر حتى تنتهي العملية الحالية</string>
+<string name="current_service">الحالي</string>
+<string name="provider">المزود</string>
+<string name="now">الآن</string>
+<string name="next">التالي</string>
+<string name="epg_search">بحث البرامج</string>
+<string name="epg_search_hint">بحث البرامج</string>
+<string name="no_epg_available">لا توجد معلومات البرامج لهذه المحطة!</string>
+<string name="ok">موافق</string>
+<string name="activate">تفعيل</string>
+<string name="confirm_delete_profile">هل تريد فعلا مسح العنوان</string>
+<string name="profile_activated">فعل العنوان</string>
+<string name="profile_not_activated">خطأ في تفعيل العنوان</string>
+<string name="profile_not_deleted">خطأ في مسح العنوان</string>
+<string name="profile_deleted">مسح العنوان</string>
+<string name="profile">العنوان</string>
+<string name="profile_updated">تحديث العنوان</string>
+<string name="profile_added">اضافة عنوان</string>
+<string name="profile_add">اضافة عنوان</string>
+<string name="profile_not_added">ربما لاتستطيع اضافة العنوان</string>
+<string name="profile_not_updated">ربما لا تستطيع تحديث العنوان</string>
+<string name="no_list_item">لا يوجد شيء</string>
+<string name="locations_default_fallback">خطأ في تحميل المواقع</string>
+<string name="screenshot">صورة الشاشة</string>
+<string name="host_empty">اسم الجهاز لا يمكن ان يكون فارغا!</string>
+<string name="standby">مطفي</string>
+<string name="powerup">تشغيل</string>
+<string name="restart_gui">اعادة تشغيل الواجهة</string>
+<string name="reboot">اعادة تشغيل</string>
+<string name="shutdown">اطفاء</string>
+<string name="powercontrol">زر التشغيل</string>
+<string name="choose_tags">tagsاختر </string>
+<string name="choose_location">اختر الموقع</string>
+<string name="bouquet_overview">معلومات الباقة</string>
+<string name="set_default">اختر كوضع افتراضي</string>
+<string name="default_bouquet_set_to">باقة الوضع الافتراضي هي:</string>
+<string name="default_bouquet_not_set">لا يمكن اختيار باقة الوضع الافتراضي!</string>
+<string name="loading">جاري التحميل..</string>
+<string name="about">عن البرنامج</string>
+<string name="license">رخصة</string>
+<string name="active_profile">العنوان الفعال</string>
+<string name="connection_state">وضع الاتصال</string>
+<string name="not_available">غير متوفر</string>
+<string name="checking">جاري التاكد</string>
+<string name="error">خطأ!</string>
+<string name="check_connectivity">تأكد من الاتصال</string>
+<string name="version_too_low">نسخة قديمة</string>
+<string name="connection_error">خطا بالاتصال</string>
+<string name="port_out_of_range">المنفذ ليس ضمن 1 - 65535</string>
+<string name="illegal_host">عنوان خاطيء</string>
+<string name="edit_timer">تعديل العداد</string>
+<string name="cleaning_timerlist">تنظيف فائمة العدادات</string>
+<string name="cleanup">تنظيف </string>
+<string name="in_standby">الجهاز مطفأ</string>
+<string name="is_running">الجهاز شغال</string>
+
+<string-array name="timer_state">
+<item>حالة المؤقت</item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string-array name="timer_action">
+<item></item>
+<item></item>
+</string-array>
+<string name="sleeptimer">مؤقت النوم</string>
+<string name="current_volume">درجة الصوت %s</string>
+<string name="muted">كتم الصوت</string>
+<string name="enable_volume_control">تفعيل التحكم بالصوت</string>
+<string name="enable_volume_control_long">التحكم بالصوت عن طريق الأزرار الجانبية</string>
+<string name="download">تحميل</string>
+<string name="extras">أخرى</string>
+<string name="main_menu">الرئيسي</string>
+<string name="enable_instant_zap">التغيير مباشرة</string>
+<string name="enable_instant_zap_long">التغيير مباشرة بعض الضغط على الخدمة</string>
+<string name="wrong_activity">خطأ في التشغيل! أعد تكوين الأيقونة للبرنامج</string>
+<string name="simple_remote">ريموت مبسط</string>
+<string name="screenshot_saved">تم حفظ صورة الشاشة الى \'%s\'</string>
+<string name="imdb">موقع IMDb</string>
+<string name="missing_stream_player">لا يوجد مشغل فيديو مناسب</string>
+</resources>

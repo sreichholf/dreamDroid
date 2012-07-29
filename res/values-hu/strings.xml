@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Leírás</string>
+<string name="title">Cím</string>
+<string name="mo">Mo</string>
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>Bouquets (TV)</item>
+<item>Provider (TV)</item>
+<item>All Services (TV)</item>
+<item>Bouquets (Radio)</item>
+<item>Provider (Radio)</item>
+<item>All (Radio)</item>
+</string-array>
+<string name="timer">Időzítő</string>
+<string name="service">Szolgáltatás</string>
+<string name="afterevent">Esemény vége után</string>
+<string name="location">Hely</string>
+<string-array name="afterevents">
+<item>Semmi</item>
+<item>Készenlét</item>
+<item>Mély Alvó</item>
+<item>Autómata</item>
+</string-array>
+<string name="begin_time">Idő kezdése</string>
+<string name="repeatings">Ismétlés</string>
+<string name="end_time">Idő vége</string>
+<string name="services">Szolgáltató</string>
+<string name="movies">Filmek</string>
+<string name="device_info">Készülék információ</string>
+<string name="send_message">Üzenet küldése</string>
+
+<string name="save">Mentés</string>
+<string name="cancel">Mégse</string>
+<string name="fetching_data">Adat töltés</string>
+<string name="parsing">Elemzés</string>
+<string name="get_content_error">Hiba a tartalom betöltése alatt!</string>
+<string name="zap">Aktiválás</string>
+<string name="browse_epg">EPG böngészése</string>
+<string name="edit">Szerkesztés</string>
+<string name="delete">Törlés</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">SSL Engedélyezése</string>
+<string name="host">Hostname/IP</string>
+<string name="port">Port</string>
+<string name="settings">Beállítások</string>
+<string name="host_long">Hostname or IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">Bezár</string>
+<string name="minutes_short">perc</string>
+<string name="user">Felhasználó</string>
+<string name="user_long">Felhasználónév bejelentkezésre</string>
+<string name="pass">Jelszó</string>
+<string name="pass_long">Felhasználónév bejelentkezésre</string>
+<string name="saving">Mentés. Kérem várjon...</string>
+<string name="deleting">Törlés. Kérem várjon...</string>
+<string name="delete_confirm">Biztos törli?</string>
+<string name="set_timer">Idő beállítása</string>
+<string name="home">Kezdő</string>
+<string name="pick_action">Képesség felvétele</string>
+<string name="set_time_begin">Kezdés dátuma és ideje</string>
+<string name="set_time_end">Befejezés dátuma és ideje</string>
+<string name="apply">Elfogad</string>
+<string name="reload">Újratölt</string>
+<string-array name="weekdays_short">
+<item>Hé</item>
+<item>Ke</item>
+<item>Sze</item>
+<item>Csü</item>
+<item>Pé</item>
+<item>Szo</item>
+<item>Va</item>
+</string-array>
+<string-array name="weekdays">
+<item>Hétfő</item>
+<item>Kedd</item>
+<item>Szerda</item>
+<item>Csütörtök</item>
+<item>Péntek</item>
+<item>Szombat</item>
+<item>Vasárnap</item>
+</string-array>
+<string name="none">Semmi</string>
+<string name="choose_days">Válasszon napokat</string>
+<string name="mo_to_fr">Hétfőtől Péntekig</string>
+<string name="daily">Naponta</string>
+<string name="new_timer">Új időzítő</string>
+<string name="locations">Helyek</string>
+<string name="gui_version">GUI verzió</string>
+<string name="image_version">Kép verzió</string>
+<string name="interface_version">Interfész verzió</string>
+<string name="front_processor_version">Első processzor verzió</string>
+<string name="device_name">Készüléknév</string>
+<string name="frontends">Frontends</string>
+<string name="nics">Hálózati Interfészek</string>
+<string name="hdds">Merevlemez</string>
+<string name="not_implemented">Ez a funkció egyenlőre nem valósítható meg!</string>
+<string name="current_event">Aktuális esemény</string>
+<string name="timeout">Idő túllépés</string>
+<string name="message">Üzenet</string>
+<string name="message_text_hint">Adja meg az üzenetet</string>
+<string name="send">Küld</string>
+<string name="type">Típus</string>
+<string-array name="message_types">
+<item>IgenNem</item>
+<item>Figyelmeztetés</item>
+<item>Infó</item>
+<item>Hiba</item>
+</string-array>
+<string name="virtual_remote">Távirányító</string>
+<string name="login_enabled">Bejelentkezés engedélyezése</string>
+<string name="wait_request_finished">Kérem várjon amíg a folyamatban lévő feladat befejeződik!</string>
+<string name="current_service">Aktuális</string>
+<string name="provider">Szolgáltató</string>
+<string name="now">Most</string>
+<string name="next">Következő</string>
+<string name="epg_search">EPG keresés</string>
+<string name="epg_search_hint">EPG keresése</string>
+<string name="standard">Standard Layout</string>
+<string name="quickzap">QuickZap Layout</string>
+<string name="no_epg_available">Jelenleg nincs elérhető EPG-Információ erről a csatornáról!</string>
+<string name="ok">OK</string>
+<string name="activate">Aktivál</string>
+<string name="confirm_delete_profile">Biztos törölni akarja ezt a profilt?</string>
+<string name="profile_activated">Profil aktiválva</string>
+<string name="profile_not_activated">Hiba a profil aktiválása közben</string>
+<string name="profile_not_deleted">Hiba a profil törlése közben</string>
+<string name="profile_deleted">Profil törlése</string>
+<string name="profile">Profil</string>
+<string name="profile_updated">Profil frissítve</string>
+<string name="profile_added">Profil hozzáadva</string>
+<string name="profile_add">Profil hozzáadása</string>
+<string name="profile_not_added">Nem lehet hozzáadni a profilt</string>
+<string name="profile_not_updated">Nem lehet frissíteni a profilt</string>
+<string name="no_list_item">Nincs mit megjeleníteni...</string>
+<string name="locations_default_fallback">Hiba a hely betöltése során, alapértelmezés visszaállítása:</string>
+<string name="tags">Címke</string>
+<string name="screenshot">Pillanatkép</string>
+<string name="host_empty">A host name nem lehet üres!</string>
+<string name="standby">Készenlét</string>
+<string name="powerup">Bekapcsol</string>
+<string name="restart_gui">GUI újraindítása</string>
+<string name="reboot">Újraindítás</string>
+<string name="shutdown">Kikapcsol</string>
+<string name="powercontrol">Állapot</string>
+<string name="choose_tags">Válasszon címkéket</string>
+<string name="choose_location">Válasszon helyet</string>
+<string name="bouquet_overview">Mappa nézet</string>
+<string name="set_default">Beállítás alapértelmezettként</string>
+<string name="default_bouquet_set_to">Alapértelmezett mappa beállítva:</string>
+<string name="default_bouquet_not_set">Alapértelmezett mappát nem lehet beállítani</string>
+<string name="loading">Töltés...</string>
+<string name="about">Alkalmazásról</string>
+<string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Aktív profil</string>
+<string name="connection_state">Kapcsolat állapota</string>
+<string name="not_available">Nem elérhető</string>
+<string name="checking">ellenőrzés</string>
+<string name="error">HIBA!</string>
+<string name="check_connectivity">Kapcsolat ellenőrzése</string>
+<string name="version_too_low">Verzió &lt; 1.6.5</string>
+<string name="connection_error">Kapcsolati hiba</string>
+<string name="port_out_of_range">Port not between 1 and 65535</string>
+<string name="illegal_host">Illegális host</string>
+<string name="edit_timer">Időzítő szerkesztése</string>
+<string name="cleaning_timerlist">Időzítések törlése</string>
+<string name="cleanup">Törölve</string>
+<string name="in_standby">A készülék most készenlétben van</string>
+<string name="is_running">A készülék most megy</string>
+<string name="stream">Streamelés</string>
+
+<string name="stream_host">Streaming Hostname/IP</string>
+<string name="stream_host_long">Host/IP for streaming (optional)</string>
+<string name="stream_current">Aktuális streamelése</string>
+<string name="similar">Hasonló események</string>
+<string-array name="timer_state">
+<item>waiting...</item>
+<item>prepared...</item>
+<item>running...</item>
+<item>ended</item>
+<item>disabled</item>
+</string-array>
+<string-array name="timer_action">
+<item>zap</item>
+<item>felvétele</item>
+</string-array>
+<string name="sleeptimer">Kikapcsolási iső</string>
+<string name="current_volume">A hangerő most %-on</string>
+<string name="muted">Némítva</string>
+<string name="enable_volume_control">Hangerőszabályzás engedélyezése</string>
+<string name="enable_volume_control_long">Közvetlen hangerőszabályzás engedélyezése H/W betűk segítségével</string>
+<string name="download">Letöltés</string>
+<string name="extras">Extrák</string>
+<string name="main_menu">Főmenü</string>
+<string name="profiles">Profilok</string>
+<string name="enable_instant_zap">Azonnali zap</string>
+<string name="enable_instant_zap_long">Azonnali zap egy szolgáltató rövid megnyomásakor</string>
+<string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
+<string name="simple_remote">Egyszerű távirányító rajz</string>
+<string name="screenshot_saved">Pillanatkép mentve \'%-on\'</string>
+<string name="imdb">IMDb</string>
+<string name="missing_stream_player">Nincs streamelésre alkalmas lejátszó telepítve a telefonon!</string>
+</resources>

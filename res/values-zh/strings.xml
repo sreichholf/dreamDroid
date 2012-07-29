@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">描述</string>
+<string name="title">标题</string>
+<string name="mo">周一</string>
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>喜爱频道(TV)</item>
+<item>服务商(TV)</item>
+<item>所有(TV)</item>
+<item>喜爱频道(广播)</item>
+<item>服务商(广播)</item>
+<item>所有(广播)</item>
+</string-array>
+<string name="timer">定时</string>
+<string name="service">频道</string>
+<string name="afterevent">事件之后</string>
+<string name="location">位置</string>
+<string-array name="afterevents">
+<item>什么都不做</item>
+<item>待机</item>
+<item>深度休眠</item>
+<item>自动</item>
+</string-array>
+<string name="begin_time">开始时间</string>
+<string name="repeatings">重复</string>
+<string name="end_time">结束时间</string>
+<string name="services">服务</string>
+<string name="movies">影片</string>
+<string name="device_info">设备信息</string>
+<string name="send_message">发送信息</string>
+
+<string name="save">保存</string>
+<string name="cancel">取消</string>
+<string name="fetching_data">获取数据</string>
+<string name="parsing">分析中...</string>
+<string name="get_content_error">获取内容错误</string>
+<string name="browse_epg">查看EPG</string>
+<string name="edit">编辑</string>
+<string name="delete">删除</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">允许SSL</string>
+<string name="host">主机/IP</string>
+<string name="port">端口</string>
+<string name="settings">设置</string>
+<string name="host_long">主机或IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">关闭</string>
+<string name="minutes_short">分钟</string>
+<string name="user">用户</string>
+<string name="user_long">登录用户名</string>
+<string name="pass">密码</string>
+<string name="pass_long">登录密码</string>
+<string name="saving">正在保存，请稍候</string>
+<string name="deleting">正在删除，请稍候</string>
+<string name="delete_confirm">确认删除？</string>
+<string name="set_timer">设置定时器</string>
+<string name="home">主页</string>
+<string name="pick_action">选取一个操作</string>
+<string name="set_time_begin">开始日期和时间</string>
+<string name="set_time_end">结束日期和时间</string>
+<string name="apply">应用</string>
+<string name="reload">重新加载</string>
+<string-array name="weekdays_short">
+<item>一</item>
+<item>二</item>
+<item>三</item>
+<item>四</item>
+<item>五</item>
+<item>六</item>
+<item>七</item>
+</string-array>
+<string-array name="weekdays">
+<item>周一</item>
+<item>周二</item>
+<item>周三</item>
+<item>周四</item>
+<item>周五</item>
+<item>周六</item>
+<item>周日</item>
+</string-array>
+<string name="none">无</string>
+<string name="choose_days">现在日期</string>
+<string name="mo_to_fr">周一至周五</string>
+<string name="daily">每天</string>
+<string name="new_timer">新定时器</string>
+<string name="locations">位置</string>
+<string name="gui_version">GUI版本</string>
+<string name="image_version">固件版本</string>
+<string name="interface_version">界面版本</string>
+<string name="device_name">设备名称</string>
+<string name="frontends">前端</string>
+<string name="nics">网络界面</string>
+<string name="hdds">硬盘</string>
+<string name="not_implemented">该功能尚未提供</string>
+<string name="current_event">当前事件</string>
+<string name="timeout">超时</string>
+<string name="message">信息</string>
+<string name="message_text_hint">输入你的信息文本</string>
+<string name="send">发送</string>
+<string name="type">类型</string>
+<string-array name="message_types">
+<item>是否</item>
+<item>警告</item>
+<item>信息</item>
+<item>错误</item>
+</string-array>
+<string name="virtual_remote">虚拟远程</string>
+<string name="login_enabled">允许登录</string>
+<string name="wait_request_finished">请等待任务完成</string>
+<string name="current_service">当前频道</string>
+<string name="provider">服务商</string>
+<string name="now">当前</string>
+<string name="next">下一个</string>
+<string name="epg_search">EPG搜索</string>
+<string name="epg_search_hint">搜索EPG</string>
+<string name="standard">标准输出</string>
+<string name="no_epg_available">目前还没有这个频道的EPG信息</string>
+<string name="ok">确定</string>
+<string name="activate">激活</string>
+<string name="confirm_delete_profile">你确定要删除这个档吗？</string>
+<string name="profile_activated">激活的档</string>
+<string name="profile_not_activated">激活档失败</string>
+<string name="profile_not_deleted">删除档失败</string>
+<string name="profile_deleted">删除了的档</string>
+<string name="profile">档</string>
+<string name="profile_updated">更新了的档</string>
+<string name="profile_added">添加了的档</string>
+<string name="profile_add">添加档</string>
+<string name="profile_not_added">不能添加档</string>
+<string name="profile_not_updated">不能更新档</string>
+<string name="no_list_item">没有显示的项</string>
+<string name="locations_default_fallback">加载位置失败，使用默认值</string>
+<string name="tags">标签</string>
+<string name="screenshot">截屏</string>
+<string name="host_empty">主机名不能为空！</string>
+<string name="standby">待机</string>
+<string name="powerup">开机</string>
+<string name="restart_gui">重启界面</string>
+<string name="reboot">重新启动</string>
+<string name="shutdown">关机</string>
+<string name="powercontrol">电源控制</string>
+<string name="choose_tags">选择标签</string>
+<string name="choose_location">选择位置</string>
+<string name="bouquet_overview">介绍</string>
+<string name="set_default">设置为默认</string>
+<string name="loading">加载</string>
+<string name="about">关于</string>
+<string name="source_code_link">源代码请访问http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">激活档</string>
+<string name="connection_state">连接状态</string>
+<string name="not_available">不可用</string>
+<string name="checking">检查中...</string>
+<string name="error">错误！</string>
+<string name="check_connectivity">检查可连接</string>
+<string name="version_too_low">版本 &lt; 1.6.5</string>
+<string name="connection_error">连接失败</string>
+<string name="port_out_of_range">端口号不知1和65535之间</string>
+<string name="illegal_host">不合法的主机名</string>
+<string name="edit_timer">编辑定时器</string>
+<string name="cleaning_timerlist">清除定时器列表</string>
+<string name="cleanup">清除</string>
+<string name="in_standby">设备现在处于待机状态</string>
+<string name="is_running">设备正在运行中</string>
+<string name="stream">流</string>
+
+<string name="stream_host">流主机名/IP</string>
+<string name="stream_host_long">流的主机名/IP(可选)</string>
+<string name="stream_current">当前流</string>
+<string name="similar">相似的事件</string>
+<string-array name="timer_state">
+<item>等待...</item>
+<item>准备中...</item>
+<item>运行中...</item>
+<item>结束</item>
+<item>禁用</item>
+</string-array>
+<string-array name="timer_action">
+<item>录制</item>
+<item>打包</item>
+</string-array>
+<string name="sleeptimer">睡眠定时器</string>
+<string name="current_volume">音量现在是%s</string>
+<string name="muted">静音</string>
+<string name="enable_volume_control">使用音量控制</string>
+<string name="enable_volume_control_long">使用硬件按钮直接音量控制</string>
+<string name="download">下载</string>
+<string name="extras">附加</string>
+<string name="main_menu">主要</string>
+<string name="profiles">档</string>
+<string name="wrong_activity">错误的激活调用！请重新创建任意的快捷方式！</string>
+<string name="simple_remote">简单远程布局</string>
+<string name="screenshot_saved">截屏已经保存到\'%s\'</string>
+<string name="missing_stream_player">没有安装能够播放视频流的播放器，建议使用Daroon Player</string>
+</resources>

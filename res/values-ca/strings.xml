@@ -1,200 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Descripció</string>
+<string name="title">Títol</string>
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>Bouquets(TV)</item>
+<item>Proveedor(TV)</item>
+<item>Todos los servicios(TV)</item>
+<item>Bouquets(Radio)</item>
+<item>Proveedor(Radio)</item>
+<item>Todos los servicios(Radio)</item>
+</string-array>
+<string name="timer">Temporitzador</string>
+<string name="service">Serveis</string>
+<string name="location">Localització</string>
+<string-array name="afterevents">
+<item>Res</item>
+<item>En repos</item>
+<item>En repos profund</item>
+<item>Automatric</item>
+</string-array>
+<string name="begin_time">Hora inici</string>
+<string name="repeatings">Repeticions</string>
+<string name="end_time">Hora final</string>
+<string name="services">Serveis</string>
+<string name="movies">Pel·lícules</string>
+<string name="device_info">Informació de l\'equip</string>
+<string name="send_message">Enviar missatge</string>
 
-    <string name="description">Descripció</string>
-    <string name="title">Títol</string>
-    <string name="app_name">DreamDroid</string>
+<string name="save">Guardar</string>
+<string name="cancel">Cancel·lar</string>
+<string name="fetching_data">Recepcionant dades...</string>
+<string name="parsing">Analitzant...</string>
+<string name="get_content_error">Error recepcionant contingut !</string>
+<string name="browse_epg">Buscar EPG</string>
+<string name="edit">Editar</string>
+<string name="delete">Esborrar</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">Habilitar SSL</string>
+<string name="host">Nom del host/IP</string>
+<string name="port">Port</string>
+<string name="settings">Ajustos</string>
+<string name="host_long">Nom del host o IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">Tancar</string>
+<string name="minutes_short">min.</string>
+<string name="user">Usuari</string>
+<string name="user_long">Nom d\'usuario per l\'accés</string>
+<string name="pass">Contrasenya</string>
+<string name="pass_long">Contrasenya per l\'accés</string>
+<string name="saving">Guardant. Per favor espera...</string>
+<string name="deleting">Esborrant. Per favor espera...</string>
+<string name="delete_confirm">Segur que vols esborrar ?</string>
+<string name="set_timer">Ajustar temporitzador</string>
+<string name="home">Inici</string>
+<string name="pick_action">Seleccionar una acció</string>
+<string name="set_time_begin">Data y hora inici</string>
+<string name="set_time_end">Data y hora final</string>
+<string name="apply">Aplicar</string>
+<string name="reload">Recarregar</string>
+<string-array name="weekdays_short">
+<item>DL</item>
+<item>DM</item>
+<item>DX</item>
+<item>DJ</item>
+<item>DV</item>
+<item>DS</item>
+<item>DG</item>
+</string-array>
+<string-array name="weekdays">
+<item>Dilluns</item>
+<item>Dimarts</item>
+<item>Dimecres</item>
+<item>Dijous</item>
+<item>Divendres</item>
+<item>Dissabte</item>
+<item>Diumenge</item>
+</string-array>
+<string name="none">Cap</string>
+<string name="choose_days">Selecciona els dies</string>
+<string name="mo_to_fr">Dilluns a Divendres</string>
+<string name="daily">Cada dia</string>
+<string name="new_timer">Nou temporitzador</string>
+<string name="locations">Llocs</string>
+<string name="gui_version">Versió GUI</string>
+<string name="image_version">Versió de l\'imatge</string>
+<string name="interface_version">Versió de l\'interficie</string>
+<string name="front_processor_version">Versió processador</string>
+<string name="device_name">Nombre del dispositiu</string>
+<string name="nics">Adaptador de xarxa</string>
+<string name="hdds">Discs durs</string>
+<string name="not_implemented">Aquesta funció encara no esta implementada</string>
+<string name="current_event">Versió actual</string>
+<string name="timeout">Excés de temps</string>
+<string name="message">Missatge</string>
+<string name="message_text_hint">Introdueix el teu missatge de text</string>
+<string name="send">Enviar</string>
+<string name="type">Tipus</string>
+<string-array name="message_types">
+<item>SiNo</item>
+<item>Atenció</item>
+<item>Info</item>
+<item>Error</item>
+</string-array>
+<string name="virtual_remote">Control remot virtual</string>
+<string name="login_enabled">Habilitar inici sessió</string>
+<string name="wait_request_finished">Espera a finalitzar la petició en curs !</string>
+<string name="current_service">Actual</string>
+<string name="provider">Proveïdor</string>
+<string name="now">Ara</string>
+<string name="next">Següent</string>
+<string name="epg_search">Buscant EPG</string>
+<string name="epg_search_hint">Buscar EPG</string>
+<string name="standard">Configuració estàndard</string>
+<string name="quickzap">Confguració Zap rápid</string>
+<string name="no_epg_available">Actualment no hi ha informació EPG d´equest canal !</string>
+<string name="ok">OK</string>
+<string name="activate">Activar</string>
+<string name="confirm_delete_profile">Seguro que vols esborrar aquest perfil ?</string>
+<string name="profile_activated">Perfil activat</string>
+<string name="profile_not_activated">Error activant perfil</string>
+<string name="profile_not_deleted">Error esborrant perfil</string>
+<string name="profile_deleted">Perfil esborrat</string>
+<string name="profile">Perfil</string>
+<string name="profile_updated">Perfil actualizat</string>
+<string name="profile_added">Perfil afegit</string>
+<string name="profile_add">Afegir perfil</string>
+<string name="profile_not_added">No s\'ha pogut afegir perfil</string>
+<string name="profile_not_updated">No s\'ha pogut actualizar perfil</string>
+<string name="no_list_item">No hi ha elemets per mostrar...</string>
+<string name="locations_default_fallback">Error carregant localizacions, tornant a inici:</string>
+<string name="tags">Etiquetes</string>
+<string name="screenshot">Captura de pantalla</string>
+<string name="host_empty">El nom del host no pot estar vuit !</string>
+<string name="standby">En espera</string>
+<string name="powerup">Encendre</string>
+<string name="restart_gui">Reiniciar GUI</string>
+<string name="reboot">Reiniciar</string>
+<string name="shutdown">Apagar</string>
+<string name="powercontrol">Panell de control</string>
+<string name="choose_tags">Escollir etiquetes</string>
+<string name="choose_location">Escollir localització</string>
+<string name="bouquet_overview">Visió de bouquets</string>
+<string name="set_default">Marcar per defecte</string>
+<string name="default_bouquet_set_to">Bouquet per defecte:</string>
+<string name="default_bouquet_not_set">No s\'ha pogut carregar el bouquet per defecte!</string>
+<string name="loading">Carregant...</string>
+<string name="about">En quant a</string>
+<string name="source_code_link">Codi font disponible a: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Perfil actiu</string>
+<string name="connection_state">Estat de la conexió</string>
+<string name="not_available">No disponible</string>
+<string name="checking">Comprovant...</string>
+<string name="error">ERROR!</string>
+<string name="check_connectivity">Comprovant conectivitat</string>
+<string name="version_too_low">Versió &lt; 1.6.5</string>
+<string name="connection_error">Error de conexió</string>
+<string name="port_out_of_range">Port no es entre 1 y 65535</string>
+<string name="illegal_host">Host il·legal</string>
+<string name="edit_timer">Editar temporitzador</string>
+<string name="cleaning_timerlist">Esborrant llista temporitzadors</string>
+<string name="cleanup">Esborrat</string>
+<string name="in_standby">Equip en mode Espera</string>
+<string name="is_running">Equip en funcionament</string>
 
-    <string-array name="servicelist">
-        <item>Bouquets(TV)</item>
-        <item>Proveedor(TV)</item>
-        <item>Todos los servicios(TV)</item>
-        <item>Bouquets(Radio)</item>
-        <item>Proveedor(Radio)</item>
-        <item>Todos los servicios(Radio)</item>
-    </string-array>
-
-    <string name="timer">Temporitzador</string>
-    <string name="service">Serveis</string>
-    <string name="location">Localització</string>
-
-    <string-array name="afterevents">
-        <item>Res</item>
-        <item>En repos</item>
-        <item>En repos profund</item>
-        <item>Automatric</item>
-    </string-array>
-
-    <string name="begin_time">Hora inici</string>
-    <string name="repeatings">Repeticions</string>
-    <string name="end_time">Hora final</string>
-    <string name="services">Serveis</string>
-    <string name="movies">Pel·lícules</string>
-    <string name="device_info">Informació de l\'equip</string>
-    <string name="send_message">Enviar missatge</string>
-    <string name="save">Guardar</string>
-    <string name="cancel">Cancel·lar</string>
-    <string name="fetching_data">Recepcionant dades...</string>
-    <string name="parsing">Analitzant...</string>
-    <string name="get_content_error">Error recepcionant contingut !</string>
-    <string name="browse_epg">Buscar EPG</string>
-    <string name="edit">Editar</string>
-    <string name="delete">Esborrar</string>
-    <string name="epg">EPG</string>
-    <string name="ssl_enabled">Habilitar SSL</string>
-    <string name="host">Nom del host/IP</string>
-    <string name="port">Port</string>
-    <string name="settings">Ajustos</string>
-    <string name="host_long">Nom del host o IP</string>
-    <string name="port_long">istening Port</string>
-    <string name="close">Tancar</string>
-    <string name="minutes_short">min.</string>
-    <string name="user">Usuari</string>
-    <string name="user_long">Nom d\'usuario per l\'accés</string>
-    <string name="pass">Contrasenya</string>
-    <string name="pass_long">Contrasenya per l\'accés</string>
-    <string name="saving">Guardant. Per favor espera...</string>
-    <string name="deleting">Esborrant. Per favor espera...</string>
-    <string name="delete_confirm">Segur que vols esborrar ?</string>
-    <string name="set_timer">Ajustar temporitzador</string>
-    <string name="home">Inici</string>
-    <string name="pick_action">Seleccionar una acció</string>
-    <string name="set_time_begin">Data y hora inici</string>
-    <string name="set_time_end">Data y hora final</string>
-    <string name="apply">Aplicar</string>
-    <string name="reload">Recarregar</string>
-
-    <string-array name="weekdays_short">
-        <item>DL</item>
-        <item>DM</item>
-        <item>DX</item>
-        <item>DJ</item>
-        <item>DV</item>
-        <item>DS</item>
-        <item>DG</item>
-    </string-array>
-    <string-array name="weekdays">
-        <item>Dilluns</item>
-        <item>Dimarts</item>
-        <item>Dimecres</item>
-        <item>Dijous</item>
-        <item>Divendres</item>
-        <item>Dissabte</item>
-        <item>Diumenge</item>
-    </string-array>
-
-    <string name="none">Cap</string>
-    <string name="choose_days">Selecciona els dies</string>
-    <string name="mo_to_fr">Dilluns a Divendres</string>
-    <string name="daily">Cada dia</string>
-    <string name="new_timer">Nou temporitzador</string>
-    <string name="locations">Llocs</string>
-    <string name="gui_version">Versió GUI</string>
-    <string name="image_version">Versió de l\'imatge</string>
-    <string name="interface_version">Versió de l\'interficie</string>
-    <string name="front_processor_version">Versió processador</string>
-    <string name="device_name">Nombre del dispositiu</string>
-    <string name="nics">Adaptador de xarxa</string>
-    <string name="hdds">Discs durs</string>
-    <string name="not_implemented">Aquesta funció encara no esta implementada</string>
-    <string name="current_event">Versió actual</string>
-    <string name="timeout">Excés de temps</string>
-    <string name="message">Missatge</string>
-    <string name="message_text_hint">Introdueix el teu missatge de text</string>
-    <string name="send">Enviar</string>
-    <string name="type">Tipus</string>
-
-    <string-array name="message_types">
-        <item>SiNo</item>
-        <item>Atenció</item>
-        <item>Info</item>
-        <item>Error</item>
-    </string-array>
-
-    <string name="virtual_remote">Control remot virtual</string>
-    <string name="login_enabled">Habilitar inici sessió</string>
-    <string name="wait_request_finished">Espera a finalitzar la petició en curs !</string>
-    <string name="current_service">Actual</string>
-    <string name="provider">Proveïdor</string>
-    <string name="now">Ara</string>
-    <string name="next">Següent</string>
-    <string name="epg_search">Buscant EPG</string>
-    <string name="epg_search_hint">Buscar EPG</string>
-    <string name="standard">Configuració estàndard</string>
-    <string name="quickzap">Confguració Zap rápid</string>
-    <string name="no_epg_available">Actualment no hi ha informació EPG d´equest canal !</string>
-    <string name="ok">OK</string>
-    <string name="activate">Activar</string>
-    <string name="confirm_delete_profile">Seguro que vols esborrar aquest perfil ?</string>
-    <string name="profile_activated">Perfil activat</string>
-    <string name="profile_not_activated">Error activant perfil</string>
-    <string name="profile_not_deleted">Error esborrant perfil</string>
-    <string name="profile_deleted">Perfil esborrat</string>
-    <string name="profile">Perfil</string>
-    <string name="profile_updated">Perfil actualizat</string>
-    <string name="profile_added">Perfil afegit</string>
-    <string name="profile_add">Afegir perfil</string>
-    <string name="profile_not_added">No s\'ha pogut afegir perfil</string>
-    <string name="profile_not_updated">No s\'ha pogut actualizar perfil</string>
-    <string name="no_list_item">No hi ha elemets per mostrar...</string>
-    <string name="locations_default_fallback">Error carregant localizacions, tornant a inici:</string>
-    <string name="tags">Etiquetes</string>
-    <string name="screenshot">Captura de pantalla</string>
-    <string name="host_empty">El nom del host no pot estar vuit !</string>
-    <string name="standby">En espera</string>
-    <string name="powerup">Encendre</string>
-    <string name="restart_gui">Reiniciar GUI</string>
-    <string name="reboot">Reiniciar</string>
-    <string name="shutdown">Apagar</string>
-    <string name="powercontrol">Panell de control</string>
-    <string name="choose_tags">Escollir etiquetes</string>
-    <string name="choose_location">Escollir localització</string>
-    <string name="bouquet_overview">Visió de bouquets</string>
-    <string name="set_default">Marcar per defecte</string>
-    <string name="default_bouquet_set_to">Bouquet per defecte:</string>
-    <string name="default_bouquet_not_set">No s\'ha pogut carregar el bouquet per defecte!</string>
-    <string name="loading">Carregant...</string>
-    <string name="about">En quant a</string>
-    <string name="source_code_link">Codi font disponible a: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Perfil actiu</string>
-    <string name="connection_state">Estat de la conexió</string>
-    <string name="not_available">No disponible</string>
-    <string name="checking">Comprovant...</string>
-    <string name="error">ERROR!</string>
-    <string name="check_connectivity">Comprovant conectivitat</string>
-    <string name="version_too_low">Versió &lt; 1.6.5</string>
-    <string name="connection_error">Error de conexió</string>
-    <string name="port_out_of_range">Port no es entre 1 y 65535</string>
-    <string name="illegal_host">Host il·legal</string>
-    <string name="edit_timer">Editar temporitzador</string>
-    <string name="cleaning_timerlist">Esborrant llista temporitzadors</string>
-    <string name="cleanup">Esborrat</string>
-    <string name="in_standby">Equip en mode Espera</string>
-    <string name="is_running">Equip en funcionament</string>
-
-    <string-array name="timer_state">
-        <item>esperant...</item>
-        <item>preparat...</item>
-        <item>funcionant</item>
-        <item>finalitzat</item>
-        <item>deshabilitat</item>
-    </string-array>
-    <string-array name="timer_action">
-        <item>grabar</item>
-        <item>zap</item>
-    </string-array>
-
-    <string name="sleeptimer">Temporitzador desconexió</string>
-    <string name="current_volume">Volum al %s</string>
-    <string name="muted">Silenciat</string>
-    <string name="enable_volume_control">Habilitar control de volum</string>
-    <string name="enable_volume_control_long">Habilitar control directe de volum usant botons H/W</string>
-    <string name="download">Descarregar</string>
-    <string name="extras">Extres</string>
-    <string name="main_menu">Principal</string>
-    <string name="profiles">Perfils</string>
-    <string name="wrong_activity">Crida errònia ! Refer el accessos directes creats per dreamDroid</string>
-    <string name="simple_remote">Vista simple control remot</string>
-    <string name="screenshot_saved">Captura pantalla guardada a \'%s\'</string>
-
+<string-array name="timer_state">
+<item>esperant...</item>
+<item>preparat...</item>
+<item>funcionant</item>
+<item>finalitzat</item>
+<item>deshabilitat</item>
+</string-array>
+<string-array name="timer_action">
+<item>grabar</item>
+<item>zap</item>
+</string-array>
+<string name="sleeptimer">Temporitzador desconexió</string>
+<string name="current_volume">Volum al %s</string>
+<string name="muted">Silenciat</string>
+<string name="enable_volume_control">Habilitar control de volum</string>
+<string name="enable_volume_control_long">Habilitar control directe de volum usant botons H/W</string>
+<string name="download">Descarregar</string>
+<string name="extras">Extres</string>
+<string name="main_menu">Principal</string>
+<string name="profiles">Perfils</string>
+<string name="wrong_activity">Crida errònia ! Refer el accessos directes creats per dreamDroid</string>
+<string name="simple_remote">Vista simple control remot</string>
+<string name="screenshot_saved">Captura pantalla guardada a \'%s\'</string>
 </resources>

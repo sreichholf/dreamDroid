@@ -1,207 +1,197 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <string name="description">Popis</string>
-    <string name="title">Název</string>
-    <string name="we">We</string>
-    <string name="tue">Tue</string>
-    <string name="mo">Mo</string>
-    <string name="app_name">DreamDroid</string>
-    <string name="menu_timer">Časovač</string>
-    <string name="menu_timer_desc">Zobrazit, přidat nebo upravit časovač</string>
-    <string name="menu_movies">Filmy</string>
-    <string name="menu_movies_desc">Seznam dostupných nahrávek</string>
-
-    <string-array name="servicelist">
-        <item>Bouquets (TV)</item>
-        <item>Poskytovatelé (TV)</item>
-        <item>Všechny služby (TV)</item>
-        <item>Bouquets (Radio)</item>
-        <item>Poskytovatelé (Radio)</item>
-        <item>Všechny služby (Radio)</item>
-    </string-array>
-
-    <string name="timer">Časovač</string>
-    <string name="service">Služba</string>
-    <string name="afterevent">Po události</string>
-    <string name="location">Umístění</string>
-
-    <string-array name="afterevents">
-        <item>Nic</item>
-        <item>Pohotovostní režim</item>
-        <item>Hluboký spánek</item>
-        <item>Automaticky</item>
-    </string-array>
-
-    <string name="begin_time">Čas zahájení</string>
-    <string name="repeatings">Opakování</string>
-    <string name="end_time">Čas ukončení</string>
-    <string name="services">Služby</string>
-    <string name="movies">Filmy</string>
-    <string name="device_info">Informace o zařízení</string>
-    <string name="exit">Konec</string>
-    <string name="send_message">Poslat zprávu</string>
-    <string name="save">Uložit</string>
-    <string name="cancel">Zrušit</string>
-    <string name="fetching_data">Stahování dat...</string>
-    <string name="parsing">Analyzování...</string>
-    <string name="get_content_error">Chyba při načítání obsahu!</string>
-    <string name="zap">Přepnout</string>
-    <string name="browse_epg">Procházet EPG</string>
-    <string name="edit">Upravit</string>
-    <string name="delete">Vymazat</string>
-    <string name="epg">EPG</string>
-    <string name="ssl_enabled">Povolit SSL</string>
-    <string name="host">Jméno hostitele/IP</string>
-    <string name="port">Port</string>
-    <string name="settings">Nastavení</string>
-    <string name="host_long">Jméno hostitele nebo IP</string>
-    <string name="port_long">istening Port</string>
-    <string name="ssl_enabled_long">Povolit zabezpečené připojení SSL (https)</string>
-    <string name="close">Zavřít</string>
-    <string name="minutes_short">min.</string>
-    <string name="user">Uživatel</string>
-    <string name="user_long">Uživatelské jméno pro připojení</string>
-    <string name="pass">Heslo</string>
-    <string name="pass_long">Heslo pro připojení</string>
-    <string name="saving">Ukládání. Čekejte prosím...</string>
-    <string name="deleting">Mazání. Čekejte prosím...</string>
-    <string name="delete_confirm">Opravdu vymazat?</string>
-    <string name="set_timer">Nastavit časovač</string>
-    <string name="home">Domů</string>
-    <string name="pick_action">Vyberte činnost</string>
-    <string name="set_time_begin">Počáteční datum a čas</string>
-    <string name="set_time_end">Koncové datum a čas</string>
-    <string name="apply">Použít</string>
-    <string name="reload">Obnovit</string>
-
-    <string-array name="weekdays_short">
-        <item>Po</item>
-        <item>Út</item>
-        <item>St</item>
-        <item>Čt</item>
-        <item>Pá</item>
-        <item>So</item>
-        <item>Ne</item>
-    </string-array>
-    <string-array name="weekdays">
-        <item>Pondělí</item>
-        <item>Úterý</item>
-        <item>Středa</item>
-        <item>Čtvrtek</item>
-        <item>Pátek</item>
-        <item>Sobota</item>
-        <item>Neděle</item>
-    </string-array>
-
-    <string name="none">Žádné</string>
-    <string name="choose_days">Vyberte dny</string>
-    <string name="mo_to_fr">Pondělí až pátek</string>
-    <string name="daily">Denně</string>
-    <string name="new_timer">Nový časovač</string>
-    <string name="locations">Umístění</string>
-    <string name="gui_version">Verze GUI</string>
-    <string name="image_version">Verze Image</string>
-    <string name="interface_version">Verze Interface</string>
-    <string name="front_processor_version">Verze Frontprocessoru</string>
-    <string name="device_name">Jméno zařízení</string>
-    <string name="frontends">Tunery</string>
-    <string name="nics">Rozhraní sítě</string>
-    <string name="hdds">Harddisky</string>
-    <string name="not_implemented">Tato funkce zatím není implementována!</string>
-    <string name="current_event">Aktuální událost</string>
-    <string name="timeout">Časový limit</string>
-    <string name="message">Zpráva</string>
-    <string name="message_text_hint">Vložte text zprávy</string>
-    <string name="send">Poslat</string>
-    <string name="type">Typ</string>
-
-    <string-array name="message_types">
-        <item>AnoNe</item>
-        <item>Varování</item>
-        <item>Info</item>
-        <item>Chyba</item>
-    </string-array>
-
-    <string name="virtual_remote">Virtuální ovladač</string>
-    <string name="login_enabled">Povolit přihlášení</string>
-    <string name="login_enabled_long">Povolit přihlášení pro vzdálený přístup</string>
-    <string name="wait_request_finished">Počkejte prosím dokud neskončí aktuální požadavek</string>
-    <string name="current_service">Aktuální</string>
-    <string name="provider">Poskytovatel</string>
-    <string name="now">Nyní</string>
-    <string name="next">Další</string>
-    <string name="epg_search">Vyhledávání v EPG</string>
-    <string name="epg_search_hint">Vyhledat v EPG</string>
-    <string name="standard">Standardní rozvržení</string>
-    <string name="quickzap">Rozvržení rychlého přepnutí</string>
-    <string name="no_epg_available">V současné době nejsou k dispozici EPG informace pro tento kanál</string>
-    <string name="ok">OK</string>
-    <string name="connection_profiles">Profily připojení</string>
-    <string name="activate">Aktivovat</string>
-    <string name="confirm_delete_profile">Opravdu chcete vymazat tento profil?</string>
-    <string name="profile_activated">Aktivován profil</string>
-    <string name="profile_not_activated">Chyba při aktivování profilu</string>
-    <string name="profile_not_deleted">Chyba při mazání profilu</string>
-    <string name="profile_deleted">Vymazán profil</string>
-    <string name="profile">Profil</string>
-    <string name="profile_updated">Aktualizován profil</string>
-    <string name="profile_added">Přidán profil</string>
-    <string name="profile_add">Přidat profil</string>
-    <string name="profile_not_added">Nelze přidat profil</string>
-    <string name="profile_not_updated">Nelze aktualizovat profil</string>
-    <string name="no_list_item">Žádné položky k zobrazení...</string>
-    <string name="locations_default_fallback">Chyba při nahrávání umístění, obnovuji výchozí:</string>
-    <string name="tags">Tagy</string>
-    <string name="screenshot">Snímek obrazovky</string>
-    <string name="host_empty">Jméno hostitele nemůže být prázdné!</string>
-    <string name="standby">Pohotovostní režim</string>
-    <string name="powerup">Zapnout</string>
-    <string name="restart_gui">Restartovat GUI</string>
-    <string name="reboot">Restartovat</string>
-    <string name="shutdown">Vypnout</string>
-    <string name="powercontrol">Vypnout...</string>
-    <string name="choose_tags">Zvolte tagy</string>
-    <string name="choose_location">Zvolte umístění</string>
-    <string name="bouquet_overview">Přehled Bouquetů</string>
-    <string name="set_default">Nastavit jako výchozí</string>
-    <string name="default_bouquet_set_to">Výchozí Bouquet byl nastaven:</string>
-    <string name="default_bouquet_not_set">Výchozí Bouquet nelze nastavit!</string>
-    <string name="loading">Načítání...</string>
-    <string name="about">O dreamdroid</string>
-    <string name="license">LICENCE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-    <string name="source_code_link">Zdrojový kó dostupný: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Aktivní profil</string>
-    <string name="connection_state">Stav připojení</string>
-    <string name="not_available">Není k dispozici</string>
-    <string name="checking">Ověřování</string>
-    <string name="error">Chyba!</string>
-    <string name="check_connectivity">Kontrola připojení</string>
-    <string name="version_too_low">Verze &lt; 1.6</string>
-    <string name="connection_error">Chyba připojení</string>
-    <string name="port_out_of_range">Port není mezi 1 a 65535</string>
-    <string name="illegal_host">Neplatný hostitel</string>
-    <string name="edit_timer">Upravit časovač</string>
-    <string name="cleaning_timerlist">Vyčištění seznamu časovače</string>
-    <string name="cleanup">Vyčištění</string>
-    <string name="in_standby">Zařízení je nyní v pohotovostním režimu</string>
-    <string name="is_running">Zařízení nyní běží</string>
-    <string name="stream">Sdílet</string>
-    <string name="install_vplayer">Pro sdílení je nutné nainstalovat: vPlayer</string>
-    <string name="stream_host">Jméno/IP hostitele pro sdílení</string>
-    <string name="stream_host_long">Hostitel/IP pro sdílení (nepovinné)</string>
-    <string name="stream_current">Sdílet aktuální</string>
-
-    <string-array name="timer_state">
-        <item>čekání...</item>
-        <item>připraven...</item>
-        <item>běží...</item>
-        <item>ukončeno</item>
-        <item>vypnuté</item>
-    </string-array>
-    <string-array name="timer_action">
-        <item>nahrát</item>
-        <item>přepnout</item>
-    </string-array>
-
+<string name="description">Popis</string>
+<string name="title">Název</string>
+<string name="we">We</string>
+<string name="tue">Tue</string>
+<string name="mo">Mo</string>
+<string name="app_name">DreamDroid</string>
+<string name="menu_timer">Časovač</string>
+<string name="menu_timer_desc">Zobrazit, přidat nebo upravit časovač</string>
+<string name="menu_movies">Filmy</string>
+<string name="menu_movies_desc">Seznam dostupných nahrávek</string>
+<string-array name="servicelist">
+<item>Bouquets (TV)</item>
+<item>Poskytovatelé (TV)</item>
+<item>Všechny služby (TV)</item>
+<item>Bouquets (Radio)</item>
+<item>Poskytovatelé (Radio)</item>
+<item>Všechny služby (Radio)</item>
+</string-array>
+<string name="timer">Časovač</string>
+<string name="service">Služba</string>
+<string name="afterevent">Po události</string>
+<string name="location">Umístění</string>
+<string-array name="afterevents">
+<item>Nic</item>
+<item>Pohotovostní režim</item>
+<item>Hluboký spánek</item>
+<item>Automaticky</item>
+</string-array>
+<string name="begin_time">Čas zahájení</string>
+<string name="repeatings">Opakování</string>
+<string name="end_time">Čas ukončení</string>
+<string name="services">Služby</string>
+<string name="movies">Filmy</string>
+<string name="device_info">Informace o zařízení</string>
+<string name="exit">Konec</string>
+<string name="send_message">Poslat zprávu</string>
+<string name="save">Uložit</string>
+<string name="cancel">Zrušit</string>
+<string name="fetching_data">Stahování dat...</string>
+<string name="parsing">Analyzování...</string>
+<string name="get_content_error">Chyba při načítání obsahu!</string>
+<string name="zap">Přepnout</string>
+<string name="browse_epg">Procházet EPG</string>
+<string name="edit">Upravit</string>
+<string name="delete">Vymazat</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">Povolit SSL</string>
+<string name="host">Jméno hostitele/IP</string>
+<string name="port">Port</string>
+<string name="settings">Nastavení</string>
+<string name="host_long">Jméno hostitele nebo IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="ssl_enabled_long">Povolit zabezpečené připojení SSL (https)</string>
+<string name="close">Zavřít</string>
+<string name="minutes_short">min.</string>
+<string name="user">Uživatel</string>
+<string name="user_long">Uživatelské jméno pro připojení</string>
+<string name="pass">Heslo</string>
+<string name="pass_long">Heslo pro připojení</string>
+<string name="saving">Ukládání. Čekejte prosím...</string>
+<string name="deleting">Mazání. Čekejte prosím...</string>
+<string name="delete_confirm">Opravdu vymazat?</string>
+<string name="set_timer">Nastavit časovač</string>
+<string name="home">Domů</string>
+<string name="pick_action">Vyberte činnost</string>
+<string name="set_time_begin">Počáteční datum a čas</string>
+<string name="set_time_end">Koncové datum a čas</string>
+<string name="apply">Použít</string>
+<string name="reload">Obnovit</string>
+<string-array name="weekdays_short">
+<item>Po</item>
+<item>Út</item>
+<item>St</item>
+<item>Čt</item>
+<item>Pá</item>
+<item>So</item>
+<item>Ne</item>
+</string-array>
+<string-array name="weekdays">
+<item>Pondělí</item>
+<item>Úterý</item>
+<item>Středa</item>
+<item>Čtvrtek</item>
+<item>Pátek</item>
+<item>Sobota</item>
+<item>Neděle</item>
+</string-array>
+<string name="none">Žádné</string>
+<string name="choose_days">Vyberte dny</string>
+<string name="mo_to_fr">Pondělí až pátek</string>
+<string name="daily">Denně</string>
+<string name="new_timer">Nový časovač</string>
+<string name="locations">Umístění</string>
+<string name="gui_version">Verze GUI</string>
+<string name="image_version">Verze Image</string>
+<string name="interface_version">Verze Interface</string>
+<string name="front_processor_version">Verze Frontprocessoru</string>
+<string name="device_name">Jméno zařízení</string>
+<string name="frontends">Tunery</string>
+<string name="nics">Rozhraní sítě</string>
+<string name="hdds">Harddisky</string>
+<string name="not_implemented">Tato funkce zatím není implementována!</string>
+<string name="current_event">Aktuální událost</string>
+<string name="timeout">Časový limit</string>
+<string name="message">Zpráva</string>
+<string name="message_text_hint">Vložte text zprávy</string>
+<string name="send">Poslat</string>
+<string name="type">Typ</string>
+<string-array name="message_types">
+<item>AnoNe</item>
+<item>Varování</item>
+<item>Info</item>
+<item>Chyba</item>
+</string-array>
+<string name="virtual_remote">Virtuální ovladač</string>
+<string name="login_enabled">Povolit přihlášení</string>
+<string name="login_enabled_long">Povolit přihlášení pro vzdálený přístup</string>
+<string name="wait_request_finished">Počkejte prosím dokud neskončí aktuální požadavek</string>
+<string name="current_service">Aktuální</string>
+<string name="provider">Poskytovatel</string>
+<string name="now">Nyní</string>
+<string name="next">Další</string>
+<string name="epg_search">Vyhledávání v EPG</string>
+<string name="epg_search_hint">Vyhledat v EPG</string>
+<string name="standard">Standardní rozvržení</string>
+<string name="quickzap">Rozvržení rychlého přepnutí</string>
+<string name="no_epg_available">V současné době nejsou k dispozici EPG informace pro tento kanál</string>
+<string name="ok">OK</string>
+<string name="connection_profiles">Profily připojení</string>
+<string name="activate">Aktivovat</string>
+<string name="confirm_delete_profile">Opravdu chcete vymazat tento profil?</string>
+<string name="profile_activated">Aktivován profil</string>
+<string name="profile_not_activated">Chyba při aktivování profilu</string>
+<string name="profile_not_deleted">Chyba při mazání profilu</string>
+<string name="profile_deleted">Vymazán profil</string>
+<string name="profile">Profil</string>
+<string name="profile_updated">Aktualizován profil</string>
+<string name="profile_added">Přidán profil</string>
+<string name="profile_add">Přidat profil</string>
+<string name="profile_not_added">Nelze přidat profil</string>
+<string name="profile_not_updated">Nelze aktualizovat profil</string>
+<string name="no_list_item">Žádné položky k zobrazení...</string>
+<string name="locations_default_fallback">Chyba při nahrávání umístění, obnovuji výchozí:</string>
+<string name="tags">Tagy</string>
+<string name="screenshot">Snímek obrazovky</string>
+<string name="host_empty">Jméno hostitele nemůže být prázdné!</string>
+<string name="standby">Pohotovostní režim</string>
+<string name="powerup">Zapnout</string>
+<string name="restart_gui">Restartovat GUI</string>
+<string name="reboot">Restartovat</string>
+<string name="shutdown">Vypnout</string>
+<string name="powercontrol">Vypnout...</string>
+<string name="choose_tags">Zvolte tagy</string>
+<string name="choose_location">Zvolte umístění</string>
+<string name="bouquet_overview">Přehled Bouquetů</string>
+<string name="set_default">Nastavit jako výchozí</string>
+<string name="default_bouquet_set_to">Výchozí Bouquet byl nastaven:</string>
+<string name="default_bouquet_not_set">Výchozí Bouquet nelze nastavit!</string>
+<string name="loading">Načítání...</string>
+<string name="about">O dreamdroid</string>
+<string name="license">LICENCE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">Zdrojový kó dostupný: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Aktivní profil</string>
+<string name="connection_state">Stav připojení</string>
+<string name="not_available">Není k dispozici</string>
+<string name="checking">Ověřování</string>
+<string name="error">Chyba!</string>
+<string name="check_connectivity">Kontrola připojení</string>
+<string name="version_too_low">Verze &lt; 1.6</string>
+<string name="connection_error">Chyba připojení</string>
+<string name="port_out_of_range">Port není mezi 1 a 65535</string>
+<string name="illegal_host">Neplatný hostitel</string>
+<string name="edit_timer">Upravit časovač</string>
+<string name="cleaning_timerlist">Vyčištění seznamu časovače</string>
+<string name="cleanup">Vyčištění</string>
+<string name="in_standby">Zařízení je nyní v pohotovostním režimu</string>
+<string name="is_running">Zařízení nyní běží</string>
+<string name="stream">Sdílet</string>
+<string name="install_vplayer">Pro sdílení je nutné nainstalovat: vPlayer</string>
+<string name="stream_host">Jméno/IP hostitele pro sdílení</string>
+<string name="stream_host_long">Hostitel/IP pro sdílení (nepovinné)</string>
+<string name="stream_current">Sdílet aktuální</string>
+<string-array name="timer_state">
+<item>čekání...</item>
+<item>připraven...</item>
+<item>běží...</item>
+<item>ukončeno</item>
+<item>vypnuté</item>
+</string-array>
+<string-array name="timer_action">
+<item>nahrát</item>
+<item>přepnout</item>
+</string-array>
 </resources>

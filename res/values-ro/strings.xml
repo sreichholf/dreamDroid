@@ -1,212 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Descriere</string>
+<string name="title">Titlu</string>
+<string name="mo">Mo</string>
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>Bouquets (TV)</item>
+<item>Provider (TV)</item>
+<item>All Services (TV)</item>
+<item>Bouquets (Radio)</item>
+<item>Provider (Radio)</item>
+<item>All (Radio)</item>
+</string-array>
+<string name="timer">Timer</string>
+<string name="service">Service</string>
+<string name="afterevent">Dupa eveniment</string>
+<string name="location">Locatie</string>
+<string-array name="afterevents">
+<item>Nothing</item>
+<item>Standby</item>
+<item>Deep Standby</item>
+<item>Automatic</item>
+</string-array>
+<string name="begin_time">Timp inceput</string>
+<string name="repeatings">Repeatings</string>
+<string name="end_time">Timp sfarsit</string>
+<string name="services">Services</string>
+<string name="movies">Filme</string>
+<string name="device_info">Device Information</string>
+<string name="send_message">Trimite mesaj</string>
 
-    <string name="description">Descriere</string>
-    <string name="title">Titlu</string>
-    <string name="mo">Mo</string>
-    <string name="app_name">DreamDroid</string>
+<string name="save">Salveaza</string>
+<string name="cancel">Anuleaza</string>
+<string name="fetching_data">Primeste date...</string>
+<string name="parsing">Analizeaza date...</string>
+<string name="get_content_error">Error getting content!</string>
+<string name="zap">Zap</string>
+<string name="browse_epg">Browse EPG</string>
+<string name="edit">Edit</string>
+<string name="delete">Sterge</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">Activeaza SSL</string>
+<string name="host">Hostname/IP</string>
+<string name="port">Port</string>
+<string name="settings">Setari</string>
+<string name="host_long">Hostname sau IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">Inchide</string>
+<string name="minutes_short">min.</string>
+<string name="user">User</string>
+<string name="user_long">Username de login</string>
+<string name="pass">Parola</string>
+<string name="pass_long">Parola de login</string>
+<string name="saving">Salvez. Asteapta...</string>
+<string name="deleting">Sterg. Asteapta...</string>
+<string name="delete_confirm">Chiar stergi?</string>
+<string name="set_timer">Seteaza timer</string>
+<string name="home">Home</string>
+<string name="pick_action">Alege</string>
+<string name="set_time_begin">Data si ora pornire</string>
+<string name="set_time_end">Data si ora sfarsit</string>
+<string name="apply">Aplica</string>
+<string name="reload">Reincarca</string>
+<string-array name="weekdays_short">
+<item>L</item>
+<item>M</item>
+<item>M</item>
+<item>J</item>
+<item>V</item>
+<item>S</item>
+<item>D</item>
+</string-array>
+<string-array name="weekdays">
+<item>Luni</item>
+<item>Marti</item>
+<item>Miercuri</item>
+<item>Joi</item>
+<item>Vineri</item>
+<item>Sambata</item>
+<item>Duminica</item>
+</string-array>
+<string name="none">None</string>
+<string name="choose_days">Alege zilele</string>
+<string name="mo_to_fr">De Luni pana Vineri</string>
+<string name="daily">Zilnic</string>
+<string name="new_timer">Timer nou</string>
+<string name="locations">Locatii</string>
+<string name="gui_version">GUI version</string>
+<string name="image_version">Image version</string>
+<string name="interface_version">Interface version</string>
+<string name="front_processor_version">Frontprocessor version</string>
+<string name="device_name">Devicename</string>
+<string name="frontends">Frontends</string>
+<string name="nics">Interfete retea</string>
+<string name="hdds">Harddisks</string>
+<string name="not_implemented">Aceasta functie nu este inca implementata!</string>
+<string name="current_event">Eveniment curent</string>
+<string name="timeout">Timeout</string>
+<string name="message">Message</string>
+<string name="message_text_hint">Introdu mesajul text propriu</string>
+<string name="send">Trimite</string>
+<string name="type">Scrie</string>
+<string-array name="message_types">
+<item>DaNu</item>
+<item>Avertizare</item>
+<item>Info</item>
+<item>Eroare</item>
+</string-array>
+<string name="virtual_remote">Virtual Remote</string>
+<string name="login_enabled">Activeaza Login</string>
+<string name="wait_request_finished">Asteapta pana cererea care ruleaza se finalizeaza!</string>
+<string name="current_service">Curent</string>
+<string name="provider">Provider</string>
+<string name="now">Acum</string>
+<string name="next">Urmatorul</string>
+<string name="epg_search">EPG-Search</string>
+<string name="epg_search_hint">Search EPG</string>
+<string name="standard">Standard Layout</string>
+<string name="quickzap">QuickZap Layout</string>
+<string name="no_epg_available">Nu exista EPG-Info pentru acest canal!</string>
+<string name="ok">OK</string>
+<string name="activate">Activat</string>
+<string name="confirm_delete_profile">Vrei sa stergi acest profil?</string>
+<string name="profile_activated">Profil activat</string>
+<string name="profile_not_activated">Eroare activare profil</string>
+<string name="profile_not_deleted">Eroare stergere profil</string>
+<string name="profile_deleted">Profil sters</string>
+<string name="profile">Profil</string>
+<string name="profile_updated">Updated profile</string>
+<string name="profile_added">Profil adaugat</string>
+<string name="profile_add">Adauga profil</string>
+<string name="profile_not_added">Nu se poate adauga profil</string>
+<string name="profile_not_updated">Nu se poate update profil</string>
+<string name="no_list_item">Nimic de afisat...</string>
+<string name="locations_default_fallback">Eroare incarcare locatie, revenire la default:</string>
+<string name="tags">Tags</string>
+<string name="screenshot">Screenshot</string>
+<string name="host_empty">Hostul nu poate fi gol!</string>
+<string name="standby">Standby</string>
+<string name="powerup">Power Up</string>
+<string name="restart_gui">Restart GUI</string>
+<string name="reboot">Reboot</string>
+<string name="shutdown">Shutdown</string>
+<string name="powercontrol">Power Control</string>
+<string name="choose_tags">Alege tags</string>
+<string name="choose_location">Alege locatia</string>
+<string name="bouquet_overview">Bouquet overview</string>
+<string name="set_default">Set as default</string>
+<string name="default_bouquet_set_to">Default bouquet a fost setat la:</string>
+<string name="default_bouquet_not_set">Default bouquet nu poate fi setat!</string>
+<string name="loading">Incarca...</string>
+<string name="about">Despre</string>
+<string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Profil activ</string>
+<string name="connection_state">Stare conexiune</string>
+<string name="not_available">Nedisponibil</string>
+<string name="checking">verific...</string>
+<string name="error">EROARE!</string>
+<string name="check_connectivity">Verifica conexiunea</string>
+<string name="version_too_low">Version &lt; 1.6.5</string>
+<string name="connection_error">Eroare conexiune</string>
+<string name="port_out_of_range">Portul nu este intre 1 si 65535</string>
+<string name="illegal_host">Illegal host</string>
+<string name="edit_timer">Editeaza timer</string>
+<string name="cleaning_timerlist">Curata lista timer</string>
+<string name="cleanup">Curata</string>
+<string name="in_standby">Device este in Standby-Mode</string>
+<string name="is_running">Device ruleaza</string>
+<string name="stream">Stream</string>
 
-    <string-array name="servicelist">
-        <item>Bouquets (TV)</item>
-        <item>Provider (TV)</item>
-        <item>All Services (TV)</item>
-        <item>Bouquets (Radio)</item>
-        <item>Provider (Radio)</item>
-        <item>All (Radio)</item>
-    </string-array>
-
-    <string name="timer">Timer</string>
-    <string name="service">Service</string>
-    <string name="afterevent">Dupa eveniment</string>
-    <string name="location">Locatie</string>
-
-    <string-array name="afterevents">
-        <item>Nothing</item>
-        <item>Standby</item>
-        <item>Deep Standby</item>
-        <item>Automatic</item>
-    </string-array>
-
-    <string name="begin_time">Timp inceput</string>
-    <string name="repeatings">Repeatings</string>
-    <string name="end_time">Timp sfarsit</string>
-    <string name="services">Services</string>
-    <string name="movies">Filme</string>
-    <string name="device_info">Device Information</string>
-    <string name="send_message">Trimite mesaj</string>
-    <string name="save">Salveaza</string>
-    <string name="cancel">Anuleaza</string>
-    <string name="fetching_data">Primeste date...</string>
-    <string name="parsing">Analizeaza date...</string>
-    <string name="get_content_error">Error getting content!</string>
-    <string name="zap">Zap</string>
-    <string name="browse_epg">Browse EPG</string>
-    <string name="edit">Edit</string>
-    <string name="delete">Sterge</string>
-    <string name="epg">EPG</string>
-    <string name="ssl_enabled">Activeaza SSL</string>
-    <string name="host">Hostname/IP</string>
-    <string name="port">Port</string>
-    <string name="settings">Setari</string>
-    <string name="host_long">Hostname sau IP</string>
-    <string name="port_long">istening Port</string>
-    <string name="close">Inchide</string>
-    <string name="minutes_short">min.</string>
-    <string name="user">User</string>
-    <string name="user_long">Username de login</string>
-    <string name="pass">Parola</string>
-    <string name="pass_long">Parola de login</string>
-    <string name="saving">Salvez. Asteapta...</string>
-    <string name="deleting">Sterg. Asteapta...</string>
-    <string name="delete_confirm">Chiar stergi?</string>
-    <string name="set_timer">Seteaza timer</string>
-    <string name="home">Home</string>
-    <string name="pick_action">Alege</string>
-    <string name="set_time_begin">Data si ora pornire</string>
-    <string name="set_time_end">Data si ora sfarsit</string>
-    <string name="apply">Aplica</string>
-    <string name="reload">Reincarca</string>
-
-    <string-array name="weekdays_short">
-        <item>L</item>
-        <item>M</item>
-        <item>M</item>
-        <item>J</item>
-        <item>V</item>
-        <item>S</item>
-        <item>D</item>
-    </string-array>
-    <string-array name="weekdays">
-        <item>Luni</item>
-        <item>Marti</item>
-        <item>Miercuri</item>
-        <item>Joi</item>
-        <item>Vineri</item>
-        <item>Sambata</item>
-        <item>Duminica</item>
-    </string-array>
-
-    <string name="none">None</string>
-    <string name="choose_days">Alege zilele</string>
-    <string name="mo_to_fr">De Luni pana Vineri</string>
-    <string name="daily">Zilnic</string>
-    <string name="new_timer">Timer nou</string>
-    <string name="locations">Locatii</string>
-    <string name="gui_version">GUI version</string>
-    <string name="image_version">Image version</string>
-    <string name="interface_version">Interface version</string>
-    <string name="front_processor_version">Frontprocessor version</string>
-    <string name="device_name">Devicename</string>
-    <string name="frontends">Frontends</string>
-    <string name="nics">Interfete retea</string>
-    <string name="hdds">Harddisks</string>
-    <string name="not_implemented">Aceasta functie nu este inca implementata!</string>
-    <string name="current_event">Eveniment curent</string>
-    <string name="timeout">Timeout</string>
-    <string name="message">Message</string>
-    <string name="message_text_hint">Introdu mesajul text propriu</string>
-    <string name="send">Trimite</string>
-    <string name="type">Scrie</string>
-
-    <string-array name="message_types">
-        <item>DaNu</item>
-        <item>Avertizare</item>
-        <item>Info</item>
-        <item>Eroare</item>
-    </string-array>
-
-    <string name="virtual_remote">Virtual Remote</string>
-    <string name="login_enabled">Activeaza Login</string>
-    <string name="wait_request_finished">Asteapta pana cererea care ruleaza se finalizeaza!</string>
-    <string name="current_service">Curent</string>
-    <string name="provider">Provider</string>
-    <string name="now">Acum</string>
-    <string name="next">Urmatorul</string>
-    <string name="epg_search">EPG-Search</string>
-    <string name="epg_search_hint">Search EPG</string>
-    <string name="standard">Standard Layout</string>
-    <string name="quickzap">QuickZap Layout</string>
-    <string name="no_epg_available">Nu exista EPG-Info pentru acest canal!</string>
-    <string name="ok">OK</string>
-    <string name="activate">Activat</string>
-    <string name="confirm_delete_profile">Vrei sa stergi acest profil?</string>
-    <string name="profile_activated">Profil activat</string>
-    <string name="profile_not_activated">Eroare activare profil</string>
-    <string name="profile_not_deleted">Eroare stergere profil</string>
-    <string name="profile_deleted">Profil sters</string>
-    <string name="profile">Profil</string>
-    <string name="profile_updated">Updated profile</string>
-    <string name="profile_added">Profil adaugat</string>
-    <string name="profile_add">Adauga profil</string>
-    <string name="profile_not_added">Nu se poate adauga profil</string>
-    <string name="profile_not_updated">Nu se poate update profil</string>
-    <string name="no_list_item">Nimic de afisat...</string>
-    <string name="locations_default_fallback">Eroare incarcare locatie, revenire la default:</string>
-    <string name="tags">Tags</string>
-    <string name="screenshot">Screenshot</string>
-    <string name="host_empty">Hostul nu poate fi gol!</string>
-    <string name="standby">Standby</string>
-    <string name="powerup">Power Up</string>
-    <string name="restart_gui">Restart GUI</string>
-    <string name="reboot">Reboot</string>
-    <string name="shutdown">Shutdown</string>
-    <string name="powercontrol">Power Control</string>
-    <string name="choose_tags">Alege tags</string>
-    <string name="choose_location">Alege locatia</string>
-    <string name="bouquet_overview">Bouquet overview</string>
-    <string name="set_default">Set as default</string>
-    <string name="default_bouquet_set_to">Default bouquet a fost setat la:</string>
-    <string name="default_bouquet_not_set">Default bouquet nu poate fi setat!</string>
-    <string name="loading">Incarca...</string>
-    <string name="about">Despre</string>
-    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-    <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Profil activ</string>
-    <string name="connection_state">Stare conexiune</string>
-    <string name="not_available">Nedisponibil</string>
-    <string name="checking">verific...</string>
-    <string name="error">EROARE!</string>
-    <string name="check_connectivity">Verifica conexiunea</string>
-    <string name="version_too_low">Version &lt; 1.6.5</string>
-    <string name="connection_error">Eroare conexiune</string>
-    <string name="port_out_of_range">Portul nu este intre 1 si 65535</string>
-    <string name="illegal_host">Illegal host</string>
-    <string name="edit_timer">Editeaza timer</string>
-    <string name="cleaning_timerlist">Curata lista timer</string>
-    <string name="cleanup">Curata</string>
-    <string name="in_standby">Device este in Standby-Mode</string>
-    <string name="is_running">Device ruleaza</string>
-    <string name="stream">Stream</string>
-    <string name="stream_host">Streaming Hostname/IP</string>
-    <string name="stream_host_long">Host/IP for streaming (optional)</string>
-    <string name="stream_current">Stream current</string>
-    <string name="similar">Similar events</string>
-
-    <string-array name="timer_state">
-        <item>asteapta...</item>
-        <item>pregateste...</item>
-        <item>ruleaza...</item>
-        <item>terminat</item>
-        <item>disabled</item>
-    </string-array>
-    <string-array name="timer_action">
-        <item>record</item>
-        <item>zap</item>
-    </string-array>
-
-    <string name="sleeptimer">Sleep Timer</string>
-    <string name="current_volume">Volumul este %s</string>
-    <string name="muted">Muted</string>
-    <string name="enable_volume_control">Activeaza Volume Control</string>
-    <string name="enable_volume_control_long">Activeaza Volume Control direct folosind H/W-Buttons</string>
-    <string name="download">Descarca</string>
-    <string name="extras">Extras</string>
-    <string name="main_menu">Main</string>
-    <string name="profiles">Profile</string>
-    <string name="enable_instant_zap">Instant zap</string>
-    <string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
-    <string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
-    <string name="simple_remote">Simple remote layout</string>
-    <string name="screenshot_saved">Screenshot saved to \'%s\'</string>
-
+<string name="stream_host">Streaming Hostname/IP</string>
+<string name="stream_host_long">Host/IP for streaming (optional)</string>
+<string name="stream_current">Stream current</string>
+<string name="similar">Similar events</string>
+<string-array name="timer_state">
+<item>asteapta...</item>
+<item>pregateste...</item>
+<item>ruleaza...</item>
+<item>terminat</item>
+<item>disabled</item>
+</string-array>
+<string-array name="timer_action">
+<item>record</item>
+<item>zap</item>
+</string-array>
+<string name="sleeptimer">Sleep Timer</string>
+<string name="current_volume">Volumul este %s</string>
+<string name="muted">Muted</string>
+<string name="enable_volume_control">Activeaza Volume Control</string>
+<string name="enable_volume_control_long">Activeaza Volume Control direct folosind H/W-Buttons</string>
+<string name="download">Descarca</string>
+<string name="extras">Extras</string>
+<string name="main_menu">Main</string>
+<string name="profiles">Profile</string>
+<string name="enable_instant_zap">Instant zap</string>
+<string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
+<string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
+<string name="simple_remote">Simple remote layout</string>
+<string name="screenshot_saved">Screenshot saved to \'%s\'</string>
 </resources>

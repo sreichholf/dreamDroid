@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Përshkrimi</string>
+<string name="title">Titull</string>
+<string name="mo">DreamDroid</string>
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>Buketat (TV)</item>
+<item>Provider (TV)</item>
+<item>Gjitha shërbimet (TV)</item>
+<item>Bouquets (Radio)</item>
+<item>Provider (Radio)</item>
+<item>All (Radio)</item>
+</string-array>
+<string name="timer">kohëmatës</string>
+<string name="service">Sherbimet</string>
+<string name="afterevent">PasNgajrjes</string>
+<string name="location">Vendndodhja</string>
+<string-array name="afterevents">
+<item>Nothing</item>
+<item>Standby</item>
+<item>Deep Standby</item>
+<item>Automatic</item>
+</string-array>
+<string name="begin_time">Fillo Koha</string>
+<string name="repeatings">Përsëritje</string>
+<string name="end_time">Fund Koha</string>
+<string name="services">Sherbimet</string>
+<string name="movies">Filmat</string>
+<string name="device_info">Informacion per aparat</string>
+<string name="send_message">Dërgo Mesazh</string>
+
+<string name="save">Ruaj</string>
+<string name="cancel">Anulo</string>
+<string name="fetching_data">Miren te dhënat</string>
+<string name="parsing">analizon</string>
+<string name="get_content_error">Error ne marjen e dhenave</string>
+<string name="edit">Përpuno</string>
+<string name="epg">EPG</string>
+<string name="host">Hostname/IP</string>
+<string name="port">Port</string>
+<string name="host_long">Hostname ose IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">Mbyll</string>
+<string name="minutes_short">min.</string>
+<string name="user">Perdorues</string>
+<string name="user_long">Emer perdoruesi per logim</string>
+<string name="pass">Fjalekalim</string>
+<string name="pass_long">Fjalekalimi per logim</string>
+<string name="delete_confirm">Konfirmo fshirjen?</string>
+<string name="pick_action">Zgjidh nje veprim</string>
+<string-array name="weekdays_short">
+<item>Hë</item>
+<item>Ma</item>
+<item>Më</item>
+<item>Ej</item>
+<item>Pr</item>
+<item>Sht</item>
+<item>Di</item>
+</string-array>
+<string-array name="weekdays">
+<item>e Hëne</item>
+<item>e Martë</item>
+<item>e Mërkur</item>
+<item> e Enjëte</item>
+<item>e Premte</item>
+<item>e Shtunë</item>
+<item>e Diel</item>
+</string-array>
+<string name="none">zbrazët</string>
+<string name="choose_days">Zgjidhë ditët</string>
+<string name="mo_to_fr">e Hëne deri të Premtën</string>
+<string name="daily">çdo ditë</string>
+<string name="new_timer">V</string>
+<string name="gui_version">Versioni i GUI</string>
+<string name="image_version">Versioni i Image</string>
+<string name="interface_version">Versioni i Interface </string>
+<string name="front_processor_version">Versioni i Frontprocessor </string>
+<string name="device_name">Emri i aparatit</string>
+<string name="hdds">Hard Disku</string>
+<string name="timeout">Mbaroi Koha</string>
+<string name="message">Mesazhë</string>
+<string name="message_text_hint">Shkruaj mesazhin</string>
+<string name="send">Dërgo</string>
+<string name="type">Tipi</string>
+<string-array name="message_types">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+
+<string-array name="timer_state">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string-array name="timer_action">
+<item></item>
+<item></item>
+</string-array>
+<string name="imdb">IMDB</string>
+</resources>

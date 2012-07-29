@@ -1,213 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">Описание</string>
+<string name="title">Заголовок</string>
+<string name="mo">Mo</string>
+<string name="app_name">DreamDroid</string>
+<string-array name="servicelist">
+<item>Фавориты (TV)</item>
+<item>Провайдер (TV)</item>
+<item>Все Сервисы (TV)</item>
+<item>Фавориты (Radio)</item>
+<item>Провайдер (Radio)</item>
+<item>Все (Radio)</item>
+</string-array>
+<string name="timer">Таймер</string>
+<string name="service">Сервис</string>
+<string name="afterevent">Следующее событие</string>
+<string name="location">Позиция</string>
+<string-array name="afterevents">
+<item>Ничего</item>
+<item>Ожидание</item>
+<item>Полное Выключение</item>
+<item>Автовыбор</item>
+</string-array>
+<string name="begin_time">Время начала</string>
+<string name="repeatings">Повторы</string>
+<string name="end_time">Время окончания</string>
+<string name="services">Сервисы</string>
+<string name="movies">Фильмы</string>
+<string name="device_info">Информация об устройстве</string>
+<string name="send_message">Отправить сообщение</string>
 
-    <string name="description">Описание</string>
-    <string name="title">Заголовок</string>
-    <string name="app_name">DreamDroid</string>
+<string name="save">Сохранить</string>
+<string name="cancel">Отмена</string>
+<string name="fetching_data">Запрос данных....</string>
+<string name="parsing">Чтение...</string>
+<string name="get_content_error">Ошибка приема данных!</string>
+<string name="zap">Переход</string>
+<string name="browse_epg">Просмотр Телегида</string>
+<string name="edit">Изменить</string>
+<string name="delete">Удалить</string>
+<string name="epg">Телегид</string>
+<string name="ssl_enabled">Использовать шифрование SSL</string>
+<string name="host">Хост/IP</string>
+<string name="port">Порт</string>
+<string name="settings">Настройки</string>
+<string name="host_long">Хост или IP</string>
+<string name="port_long">Listening Port
+</string>
+<string name="close">Закрыть</string>
+<string name="minutes_short">мин.</string>
+<string name="user">Пользователь</string>
+<string name="user_long">Имя пользователя</string>
+<string name="pass">Пароль</string>
+<string name="pass_long">Пароль для авторизации</string>
+<string name="saving">Сохранение. Подождите...</string>
+<string name="deleting">Удаление. Подождите..</string>
+<string name="delete_confirm">Подтвердить удаление</string>
+<string name="set_timer">Установить таймер</string>
+<string name="home">Домой</string>
+<string name="pick_action">Выберите действие</string>
+<string name="set_time_begin">Дата/время начала</string>
+<string name="set_time_end">Дата/время окончания</string>
+<string name="apply">Применить</string>
+<string name="reload">Перезагрузить</string>
+<string-array name="weekdays_short">
+<item>Пн</item>
+<item>Вт</item>
+<item>Ср</item>
+<item>Чт</item>
+<item>Пт</item>
+<item>Сб</item>
+<item>Вс</item>
+</string-array>
+<string-array name="weekdays">
+<item>Понедельник</item>
+<item>Вторник</item>
+<item>Среда</item>
+<item>Четверг</item>
+<item>Пятница</item>
+<item>Суббота</item>
+<item>Воскресенье</item>
+</string-array>
+<string name="none">Пусто</string>
+<string name="choose_days">Выбрать дни</string>
+<string name="mo_to_fr">Рабочие дни</string>
+<string name="daily">Ежедневно</string>
+<string name="new_timer">Новый таймер</string>
+<string name="locations">Положение</string>
+<string name="gui_version">Версия оболочки</string>
+<string name="image_version">Версия имиджа</string>
+<string name="interface_version">Версия интерфейса</string>
+<string name="front_processor_version">Версия процессора</string>
+<string name="device_name">Имя устройства</string>
+<string name="frontends">Сервера</string>
+<string name="nics">Сетевые адаптеры</string>
+<string name="hdds">Встроенные накопители</string>
+<string name="not_implemented">Функция не реализована</string>
+<string name="current_event">Текущее событие</string>
+<string name="timeout">Время ожидания</string>
+<string name="message">Сообщение</string>
+<string name="message_text_hint">Введите текст</string>
+<string name="send">Отправить</string>
+<string name="type">Тип</string>
+<string-array name="message_types">
+<item>Да/Нет</item>
+<item>Предупреждение</item>
+<item>Информация</item>
+<item>Ошибка</item>
+</string-array>
+<string name="virtual_remote">Виртуальный пульт</string>
+<string name="login_enabled">Вход допустим</string>
+<string name="wait_request_finished">Пожалуйста подождите обработки запроса!</string>
+<string name="current_service">Текущий сервис</string>
+<string name="provider">Провайдер</string>
+<string name="now">Сейчас</string>
+<string name="next">Следующее событие</string>
+<string name="epg_search">Телегид - Поиск</string>
+<string name="epg_search_hint">Поиск по телегиду</string>
+<string name="standard">Стандартная раскладка кнопок</string>
+<string name="quickzap">Раскладка для быстрого перехода</string>
+<string name="no_epg_available">Информация телегида для канала недоступна!</string>
+<string name="ok">OK</string>
+<string name="activate">Включить</string>
+<string name="confirm_delete_profile">Хотите удалить этот профиль?</string>
+<string name="profile_activated">Активировать профиль</string>
+<string name="profile_not_activated">Ошибка активации профиля</string>
+<string name="profile_not_deleted">Ошибка удаления профиля</string>
+<string name="profile_deleted">Профиль удален</string>
+<string name="profile">Профиль</string>
+<string name="profile_updated">Обновить профиль</string>
+<string name="profile_added">Профиль добавлен</string>
+<string name="profile_add">Добавить профиль</string>
+<string name="profile_not_added">Не могу добавить профиль</string>
+<string name="profile_not_updated">Не могу обновить профиль</string>
+<string name="no_list_item">Список пуст....</string>
+<string name="locations_default_fallback">Ошибка загрузки позиции, перехожу к по умолчанию:</string>
+<string name="tags">Отметки</string>
+<string name="screenshot">Скриншот</string>
+<string name="host_empty">Имя хоста не может быть пустым!</string>
+<string name="standby">Режим ожидания</string>
+<string name="powerup">Включение</string>
+<string name="restart_gui">Перезагрузить оболочку</string>
+<string name="reboot">Полная перезагрузка</string>
+<string name="shutdown">Выключить</string>
+<string name="powercontrol">Управление питанием</string>
+<string name="choose_tags">Выберите отметки</string>
+<string name="choose_location">Выберите позицию</string>
+<string name="bouquet_overview">Обзор фаворитов</string>
+<string name="set_default">Установить по умолчанию</string>
+<string name="default_bouquet_set_to">Фаворит по умолчанию установлен в:</string>
+<string name="default_bouquet_not_set">Фаворит по умолчанию не может быть установлен!</string>
+<string name="loading">Загружаю....</string>
+<string name="about">О...</string>
+<string name="license">Лицензия:\nnLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="source_code_link">исходный код доступен на: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Активный профиль</string>
+<string name="connection_state">Состояние соединения</string>
+<string name="not_available">Недоступно</string>
+<string name="checking">проверяю...</string>
+<string name="error">Ошибка</string>
+<string name="check_connectivity">Проверка соединения</string>
+<string name="version_too_low">Версия &lt; 1.6.5</string>
+<string name="connection_error">Ошибка соединения</string>
+<string name="port_out_of_range">порт вне диапазона</string>
+<string name="illegal_host">Недопустимый хост</string>
+<string name="edit_timer">Редактор таймера</string>
+<string name="cleaning_timerlist">Очистить задачи таймера</string>
+<string name="cleanup">Очистить</string>
+<string name="in_standby">Устройство в режиме ожидания</string>
+<string name="is_running">Устройство работает</string>
+<string name="stream">Потоковое вещание</string>
 
-    <string-array name="servicelist">
-        <item>Фавориты (TV)</item>
-        <item>Провайдер (TV)</item>
-        <item>Все Сервисы (TV)</item>
-        <item>Фавориты (Radio)</item>
-        <item>Провайдер (Radio)</item>
-        <item>Все (Radio)</item>
-    </string-array>
-
-    <string name="timer">Таймер</string>
-    <string name="service">Сервис</string>
-    <string name="afterevent">Следующее событие</string>
-    <string name="location">Позиция</string>
-
-    <string-array name="afterevents">
-        <item>Ничего</item>
-        <item>Ожидание</item>
-        <item>Полное Выключение</item>
-        <item>Автовыбор</item>
-    </string-array>
-
-    <string name="begin_time">Время начала</string>
-    <string name="repeatings">Повторы</string>
-    <string name="end_time">Время окончания</string>
-    <string name="services">Сервисы</string>
-    <string name="movies">Фильмы</string>
-    <string name="device_info">Информация об устройстве</string>
-    <string name="send_message">Отправить сообщение</string>
-    <string name="save">Сохранить</string>
-    <string name="cancel">Отмена</string>
-    <string name="fetching_data">Запрос данных....</string>
-    <string name="parsing">Чтение...</string>
-    <string name="get_content_error">Ошибка приема данных!</string>
-    <string name="zap">Переход</string>
-    <string name="browse_epg">Просмотр Телегида</string>
-    <string name="edit">Изменить</string>
-    <string name="delete">Удалить</string>
-    <string name="epg">Телегид</string>
-    <string name="ssl_enabled">Использовать шифрование SSL</string>
-    <string name="host">Хост/IP</string>
-    <string name="port">Порт</string>
-    <string name="settings">Настройки</string>
-    <string name="host_long">Хост или IP</string>
-    <string name="port_long">istening Port</string>
-    <string name="close">Закрыть</string>
-    <string name="minutes_short">мин.</string>
-    <string name="user">Пользователь</string>
-    <string name="user_long">Имя пользователя</string>
-    <string name="pass">Пароль</string>
-    <string name="pass_long">Пароль для авторизации</string>
-    <string name="saving">Сохранение. Подождите...</string>
-    <string name="deleting">Удаление. Подождите..</string>
-    <string name="delete_confirm">Подтвердить удаление</string>
-    <string name="set_timer">Установить таймер</string>
-    <string name="home">Домой</string>
-    <string name="pick_action">Выберите действие</string>
-    <string name="set_time_begin">Дата/время начала</string>
-    <string name="set_time_end">Дата/время окончания</string>
-    <string name="apply">Применить</string>
-    <string name="reload">Перезагрузить</string>
-
-    <string-array name="weekdays_short">
-        <item>Пн</item>
-        <item>Вт</item>
-        <item>Ср</item>
-        <item>Чт</item>
-        <item>Пт</item>
-        <item>Сб</item>
-        <item>Вс</item>
-    </string-array>
-    <string-array name="weekdays">
-        <item>Понедельник</item>
-        <item>Вторник</item>
-        <item>Среда</item>
-        <item>Четверг</item>
-        <item>Пятница</item>
-        <item>Суббота</item>
-        <item>Воскресенье</item>
-    </string-array>
-
-    <string name="none">Пусто</string>
-    <string name="choose_days">Выбрать дни</string>
-    <string name="mo_to_fr">Рабочие дни</string>
-    <string name="daily">Ежедневно</string>
-    <string name="new_timer">Новый таймер</string>
-    <string name="locations">Положение</string>
-    <string name="gui_version">Версия оболочки</string>
-    <string name="image_version">Версия имиджа</string>
-    <string name="interface_version">Версия интерфейса</string>
-    <string name="front_processor_version">Версия процессора</string>
-    <string name="device_name">Имя устройства</string>
-    <string name="frontends">Сервера</string>
-    <string name="nics">Сетевые адаптеры</string>
-    <string name="hdds">Встроенные накопители</string>
-    <string name="not_implemented">Функция не реализована</string>
-    <string name="current_event">Текущее событие</string>
-    <string name="timeout">Время ожидания</string>
-    <string name="message">Сообщение</string>
-    <string name="message_text_hint">Введите текст</string>
-    <string name="send">Отправить</string>
-    <string name="type">Тип</string>
-
-    <string-array name="message_types">
-        <item>Да/Нет</item>
-        <item>Предупреждение</item>
-        <item>Информация</item>
-        <item>Ошибка</item>
-    </string-array>
-
-    <string name="virtual_remote">Виртуальный пульт</string>
-    <string name="login_enabled">Вход допустим</string>
-    <string name="wait_request_finished">Пожалуйста подождите обработки запроса!</string>
-    <string name="current_service">Текущий сервис</string>
-    <string name="provider">Провайдер</string>
-    <string name="now">Сейчас</string>
-    <string name="next">Следующее событие</string>
-    <string name="epg_search">Телегид - Поиск</string>
-    <string name="epg_search_hint">Поиск по телегиду</string>
-    <string name="standard">Стандартная раскладка кнопок</string>
-    <string name="quickzap">Раскладка для быстрого перехода</string>
-    <string name="no_epg_available">Информация телегида для канала недоступна!</string>
-    <string name="ok">OK</string>
-    <string name="activate">Включить</string>
-    <string name="confirm_delete_profile">Хотите удалить этот профиль?</string>
-    <string name="profile_activated">Активировать профиль</string>
-    <string name="profile_not_activated">Ошибка активации профиля</string>
-    <string name="profile_not_deleted">Ошибка удаления профиля</string>
-    <string name="profile_deleted">Профиль удален</string>
-    <string name="profile">Профиль</string>
-    <string name="profile_updated">Обновить профиль</string>
-    <string name="profile_added">Профиль добавлен</string>
-    <string name="profile_add">Добавить профиль</string>
-    <string name="profile_not_added">Не могу добавить профиль</string>
-    <string name="profile_not_updated">Не могу обновить профиль</string>
-    <string name="no_list_item">Список пуст....</string>
-    <string name="locations_default_fallback">Ошибка загрузки позиции, перехожу к по умолчанию:</string>
-    <string name="tags">Отметки</string>
-    <string name="screenshot">Скриншот</string>
-    <string name="host_empty">Имя хоста не может быть пустым!</string>
-    <string name="standby">Режим ожидания</string>
-    <string name="powerup">Включение</string>
-    <string name="restart_gui">Перезагрузить оболочку</string>
-    <string name="reboot">Полная перезагрузка</string>
-    <string name="shutdown">Выключить</string>
-    <string name="powercontrol">Управление питанием</string>
-    <string name="choose_tags">Выберите отметки</string>
-    <string name="choose_location">Выберите позицию</string>
-    <string name="bouquet_overview">Обзор фаворитов</string>
-    <string name="set_default">Установить по умолчанию</string>
-    <string name="default_bouquet_set_to">Фаворит по умолчанию установлен в:</string>
-    <string name="default_bouquet_not_set">Фаворит по умолчанию не может быть установлен!</string>
-    <string name="loading">Загружаю....</string>
-    <string name="about">О...</string>
-    <string name="license">Лицензия:\nnLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-    <string name="source_code_link">исходный код доступен на: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Активный профиль</string>
-    <string name="connection_state">Состояние соединения</string>
-    <string name="not_available">Недоступно</string>
-    <string name="checking">проверяю...</string>
-    <string name="error">Ошибка</string>
-    <string name="check_connectivity">Проверка соединения</string>
-    <string name="version_too_low">Версия &lt; 1.6.5</string>
-    <string name="connection_error">Ошибка соединения</string>
-    <string name="port_out_of_range">порт вне диапазона</string>
-    <string name="illegal_host">Недопустимый хост</string>
-    <string name="edit_timer">Редактор таймера</string>
-    <string name="cleaning_timerlist">Очистить задачи таймера</string>
-    <string name="cleanup">Очистить</string>
-    <string name="in_standby">Устройство в режиме ожидания</string>
-    <string name="is_running">Устройство работает</string>
-    <string name="stream">Потоковое вещание</string>
-    <string name="stream_host">Имя/адрес потокового хоста</string>
-    <string name="stream_host_long">Хост/IP для потокового вещания (дополнительно)</string>
-    <string name="stream_current">Потоковое вещание</string>
-    <string name="similar">Подобные события</string>
-
-    <string-array name="timer_state">
-        <item>ожидаю...</item>
-        <item>подготовка...</item>
-        <item>выполнение...</item>
-        <item>закончено</item>
-        <item>отключено</item>
-    </string-array>
-    <string-array name="timer_action">
-        <item>запись</item>
-        <item>переход</item>
-    </string-array>
-
-    <string name="sleeptimer">Таймер сна</string>
-    <string name="current_volume">Уровень звука</string>
-    <string name="muted">Без звука</string>
-    <string name="enable_volume_control">Включить регулировку громкости</string>
-    <string name="enable_volume_control_long">Включить прямую регулировку громкости используя кнопки</string>
-    <string name="download">Скачать</string>
-    <string name="extras">Дополнения</string>
-    <string name="main_menu">Главное меню</string>
-    <string name="profiles">Профили</string>
-    <string name="enable_instant_zap">Быстрый переход</string>
-    <string name="enable_instant_zap_long">Быстрый переход при коротком нажатии</string>
-    <string name="wrong_activity">Неверное действие! Пересоздайте ярлыки для dreamDroid!</string>
-    <string name="simple_remote">Упрощенная раскладка кнопок</string>
-    <string name="screenshot_saved">Скриншот сохранен в  \'%s\'</string>
-    <string name="imdb">IMDb</string>
-    <string name="missing_stream_player">Проигрыватель потокового видео не установлен на устройство!</string>
-
+<string name="stream_host">Имя/адрес потокового хоста</string>
+<string name="stream_host_long">Хост/IP для потокового вещания (дополнительно)</string>
+<string name="stream_current">Потоковое вещание</string>
+<string name="similar">Подобные события</string>
+<string-array name="timer_state">
+<item>ожидаю...</item>
+<item>подготовка...</item>
+<item>выполнение...</item>
+<item>закончено</item>
+<item>отключено</item>
+</string-array>
+<string-array name="timer_action">
+<item>запись</item>
+<item>переход</item>
+</string-array>
+<string name="sleeptimer">Таймер сна</string>
+<string name="current_volume">Уровень звука</string>
+<string name="muted">Без звука</string>
+<string name="enable_volume_control">Включит регулировку громкости</string>
+<string name="enable_volume_control_long">Включить прямую регулировку громкости используя кнопки</string>
+<string name="download">Скачать</string>
+<string name="extras">Дополнения</string>
+<string name="main_menu">Главное меню</string>
+<string name="profiles">Профили</string>
+<string name="enable_instant_zap">Быстрый переход</string>
+<string name="enable_instant_zap_long">Быстрый переход при коротком нажатии</string>
+<string name="wrong_activity">Неверное действие! Пересоздайте ярлыки для dreamDroid!</string>
+<string name="simple_remote">Упрощенная раскладка кнопок</string>
+<string name="screenshot_saved">Скриншот сохранен в  \'%s\'</string>
+<string name="imdb">IMDb</string>
+<string name="missing_stream_player">Проигрыватель потокового видео не установлен на устройство!</string>
 </resources>
