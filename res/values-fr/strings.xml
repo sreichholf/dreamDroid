@@ -199,7 +199,7 @@
 <string name="enable_instant_zap_long">Zapper instantanément quand appuis court sur service</string>
 <string name="wrong_activity">Mauvaise activité lancée! Refaire les raccourcis dreamDroid</string>
 <string name="simple_remote">Affichage télécomande simple</string>
-<string name="screenshot_saved">Capture d'écran sauvé sous \'%s\'</string>
+<string name="screenshot_saved">Capture d\'écran sauvé sous \'%s\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Pas de programme installé sur cet appareil pour jouer les flux vidéos</string>
 </resources>

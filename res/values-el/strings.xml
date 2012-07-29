@@ -91,7 +91,7 @@
 <string name="image_version">Image Έκδοση</string>
 <string name="interface_version">Interface Έκδοση</string>
 <string name="front_processor_version">Έκδοση Επεξεργαστή</string>
-<string name="device_name">'Ονομα Συσκευής</string>
+<string name="device_name">\'Ονομα Συσκευής</string>
 <string name="frontends">Διεπαφές</string>
 <string name="nics">Διασυνδέσεις Δικτύου</string>
 <string name="hdds">Σκληροί Δίσκοι</string>
