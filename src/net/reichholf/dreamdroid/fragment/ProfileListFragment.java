@@ -25,11 +25,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -37,13 +33,18 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+
 /**
  * Shows a list of all connection profiles
  * 
  * @author sre
  * 
  */
-public class ProfileListFragment extends ListFragment implements ActivityCallbackHandler{
+public class ProfileListFragment extends SherlockListFragment implements ActivityCallbackHandler{
 	private Profile mProfile;
 	private ArrayList<Profile> mDetectedProfiles;
 	
@@ -222,7 +223,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile.set(mCursor);
-		getSupportActivity().showDialog(Statics.DIALOG_PROFILE_ID);
+		getActivity().showDialog(Statics.DIALOG_PROFILE_ID);
 		return true;
 	}
 	
@@ -252,7 +253,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 							break;
 	
 						case 1:
-							getSupportActivity().showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
+							getActivity().showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
 							break;
 	
 						default:
@@ -354,7 +355,7 @@ public class ProfileListFragment extends ListFragment implements ActivityCallbac
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
 			if(!mMultiPaneHandler.isMultiPane()){
-				getSupportActivity().finish();
+				getActivity().finish();
 			}
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");

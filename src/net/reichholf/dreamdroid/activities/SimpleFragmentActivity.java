@@ -15,18 +15,19 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.Window;
+
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * @author sre
  *
  */
-public class SimpleFragmentActivity extends FragmentActivity implements MultiPaneHandler{
+public class SimpleFragmentActivity extends SherlockFragmentActivity implements MultiPaneHandler{
 	public static final int MENU_HOME = 89283794;
 	
 	private Fragment mFragment;
@@ -64,7 +65,7 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 			Class<Fragment> c = (Class<Fragment>) getIntent().getExtras().get("fragmentClass");
 			Bundle args = new Bundle();
 			try {
-				f = (Fragment) c.newInstance();
+				f = c.newInstance();
 				args.putAll(getIntent().getExtras());
 				f.setArguments(args);
 			} catch (InstantiationException e) {
@@ -121,7 +122,7 @@ public class SimpleFragmentActivity extends FragmentActivity implements MultiPan
 	@Override
 	public void showDetails(Class<? extends Fragment> fragmentClass, Class<? extends MultiPaneHandler> handlerClass){
 		try {
-			Fragment fragment = (Fragment) fragmentClass.newInstance();
+			Fragment fragment = fragmentClass.newInstance();
 			showDetails(fragment, handlerClass);
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block

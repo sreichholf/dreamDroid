@@ -41,11 +41,8 @@ import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -56,6 +53,10 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * Handles ServiceLists of (based on service references).
@@ -267,11 +268,11 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		mCurrentTitle = mBaseTitle = getString(R.string.services);
 
 		mReload = true;
-		mMultiPaneHandler = (MultiPaneHandler) getActivity();
+		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 
 		Bundle args = getArguments();
 		String mode = null;
@@ -331,7 +332,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		} else {
 			mExtras = new Bundle();
 		}
-		getSupportActivity().invalidateOptionsMenu();
+		getSherlockActivity().invalidateOptionsMenu();
 	}
 
 	/*
@@ -362,14 +363,14 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mDetailHeader = (TextView) v.findViewById(R.id.listView2Header);
 		if (mDetailHeader == null) {
 			// Dummy TextView for Header. Applies for non-xlarge devices
-			mDetailHeader = new TextView(getActivity());
+			mDetailHeader = new TextView(getSherlockActivity());
 		}
 
 		mNavList.setFastScrollEnabled(true);
 		mDetailList.setFastScrollEnabled(true);
 
 		setAdapter();
-		getActivity().setTitle(mCurrentTitle);
+		getSherlockActivity().setTitle(mCurrentTitle);
 		return v;
 	}
 
@@ -518,12 +519,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	private void setAdapter() {
 		SimpleAdapter adapter;
 		if (!mNavList.equals(mDetailList)) {
-			adapter = new SimpleAdapter(getActivity(), mNavItems, android.R.layout.simple_list_item_1,
+			adapter = new SimpleAdapter(getSherlockActivity(), mNavItems, android.R.layout.simple_list_item_1,
 					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
 			mNavList.setAdapter(adapter);
 		}
 
-		adapter = new SimpleAdapter(getActivity(), mDetailItems, R.layout.service_list_item, new String[] {
+		adapter = new SimpleAdapter(getSherlockActivity(), mDetailItems, R.layout.service_list_item, new String[] {
 				Event.KEY_SERVICE_NAME, Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_TIME_READABLE,
 				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.service_name, R.id.event_title, R.id.event_start,
 				R.id.event_duration });
@@ -689,7 +690,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			} else {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
-			getSupportActivity().invalidateOptionsMenu();
+			getSherlockActivity().invalidateOptionsMenu();
 			return true;
 		case Statics.ITEM_RELOAD:
 			reloadNav();
@@ -757,6 +758,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 					reloadDetail();
 				}
 			}
+			mBaseTitle = nam;
 		} else { // It's a listitem in the servicelist
 			if (mPickMode) {
 				ExtendedHashMap map = new ExtendedHashMap();
@@ -772,7 +774,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
-					getSupportActivity().showDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
+					getSherlockActivity().showDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
 				}
 			}
 		}
@@ -794,7 +796,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
 						getText(R.string.zap), getText(R.string.stream) };
 
-				AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
+				AlertDialog.Builder adBuilder = new AlertDialog.Builder(getSherlockActivity());
 				adBuilder.setTitle(getText(R.string.pick_action));
 				adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
 
@@ -803,8 +805,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 						String name = mCurrentService.getString(Service.KEY_NAME);
 						switch (which) {
 						case 0:
-							getSupportActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
-							getSupportActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
+							getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+							getSherlockActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 							break;
 						case 1:
 							openEpg(ref, name);
@@ -835,7 +837,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 							+ " " + getText(R.string.minutes_short) + ")");
 					String descEx = mCurrentService.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 
-					dialog = new Dialog(getActivity());
+					dialog = new Dialog(getSherlockActivity());
 					dialog.setContentView(R.layout.epg_item_dialog);
 					dialog.setTitle(title);
 
@@ -870,7 +872,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							IntentFactory.queryIMDb(getActivity(), mCurrentService);
+							IntentFactory.queryIMDb(getSherlockActivity(), mCurrentService);
 							dialog.dismiss();
 						}
 					});
@@ -885,7 +887,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 					});
 				} else {
 					// No EPG Information is available!
-					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
 					builder.setMessage(R.string.no_epg_available).setCancelable(true)
 							.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog, int id) {
@@ -915,7 +917,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			}
 		}
 
-		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 
@@ -999,12 +1001,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/**
-	 * 
-	 */
 	public void loadNavRoot() {
 		String title = getString(R.string.services);
-		getActivity().setTitle(title);
+		getSherlockActivity().setTitle(title);
 
 		mNavItems.clear();
 
@@ -1020,7 +1019,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 		mNavReference = SERVICE_REF_ROOT;
 		mNavName = "";
-		getSupportActivity().invalidateOptionsMenu();
+		getSherlockActivity().invalidateOptionsMenu();
 		((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
@@ -1057,12 +1056,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mDetailItems.addAll(list);
 			((SimpleAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
-		getSupportActivity().invalidateOptionsMenu();
+		getSherlockActivity().invalidateOptionsMenu();
 		nextListTaskPlease();
 	}
 
 	protected void finish(int resultCode, Intent data) {
-		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
 		if (mph.isMultiPane()) {
 			Fragment f = getTargetFragment();
 			if (f != null) {
@@ -1070,7 +1069,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				f.onActivityResult(getTargetRequestCode(), resultCode, data);
 			}
 		} else {
-			Activity a = getActivity();
+			Activity a = getSherlockActivity();
 			a.setResult(resultCode, data);
 			a.finish();
 		}

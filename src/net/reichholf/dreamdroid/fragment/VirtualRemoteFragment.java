@@ -12,8 +12,8 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
@@ -27,15 +27,16 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * A Virtual dreambox remote control using http-requests to send key-strokes
@@ -115,13 +116,13 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		mCurrentTitle = getString(R.string.virtual_remote);
-		mPrefs = PreferenceManager.getDefaultSharedPreferences( getActivity().getBaseContext());
+		mPrefs = PreferenceManager.getDefaultSharedPreferences( getSherlockActivity().getBaseContext());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
 		mSimpleRemote = DreamDroid.getActiveProfile().isSimpleRemote();
-		mVibrator = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+		mVibrator = (Vibrator) getSherlockActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		mEditor.commit();
 	}
 	
@@ -200,7 +201,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	 * of the active layout (Standard or QuickZap)
 	 */
 	private View getRemoteView() {
-		LayoutInflater inflater = getActivity().getLayoutInflater();
+		LayoutInflater inflater = getSherlockActivity().getLayoutInflater();
 		View view = null;
 		if (mQuickZap) {			
 			view = inflater.inflate(R.layout.virtual_remote_quick_zap, null, false);
@@ -217,7 +218,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.virtual_remote);
 		}
 		registerButtons(view, mButtonsCommon);
-		getActivity().setTitle(mBaseTitle);
+		getSherlockActivity().setTitle(mBaseTitle);
 		
 		return view;
 	}

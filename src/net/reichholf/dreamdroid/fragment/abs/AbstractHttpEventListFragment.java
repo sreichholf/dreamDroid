@@ -47,7 +47,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 			mName = savedInstanceState.getString("name");
 			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
 		}
-		mMultiPaneHandler = (MultiPaneHandler) getActivity();
+		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 	}
 	
 	/* (non-Javadoc)
@@ -65,8 +65,8 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mCurrentItem = mMapList.get((int) id);
 		// if the dialog has been opened before, remove that instance
-		getSupportActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
-		getSupportActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
+		getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+		getSherlockActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 	}
 	
 	/*
@@ -91,7 +91,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 							+ getText(R.string.minutes_short) + ")");
 					String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 	
-					dialog = new Dialog(getActivity());
+					dialog = new Dialog(getSherlockActivity());
 					dialog.setContentView(R.layout.epg_item_dialog);
 					dialog.setTitle(title);
 	
@@ -126,7 +126,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							IntentFactory.queryIMDb(getActivity(), mCurrentItem);
+							IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);
 							dialog.dismiss();
 						}
 					});
@@ -141,7 +141,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 					});
 				} else {
 					// No EPG Information is available!
-					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
 					builder.setMessage(R.string.no_epg_available).setCancelable(true)
 							.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog, int id) {
@@ -172,7 +172,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 			}
 		}
 
-		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 	
@@ -181,7 +181,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	 */
 	protected void findSimilarEvents(ExtendedHashMap event){
 		//TODO fix findSimilarEvents
-//		Intent intent = new Intent(getActivity(), SearchEpgActivity.class);
+//		Intent intent = new Intent(getSherlockActivity(), SearchEpgActivity.class);
 //		intent.setAction(Intent.ACTION_SEARCH);
 //		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
 //		startActivity(intent);

@@ -35,13 +35,14 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations
@@ -85,13 +86,13 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		super.onCreate(savedInstanceState);	
 		mCurrentTitle = mBaseTitle = getString(R.string.movies);
 		setHasOptionsMenu(true);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
 	@Override 
 	public void onActivityCreated(Bundle savedInstanceState){
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleAdapter(getActivity(), mMapList, R.layout.movie_list_item, new String[] { Movie.KEY_TITLE,
+		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.movie_list_item, new String[] { Movie.KEY_TITLE,
 			Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE, Movie.KEY_LENGTH }, new int[] {
 			R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
 
@@ -213,10 +214,10 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			reload();
 			return true;
 		case Statics.ITEM_LOCATIONS:
-			getActivity().showDialog(Statics.DIALOG_PICK_LOCATION_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_PICK_LOCATION_ID);
 			return true;
 		case Statics.ITEM_TAGS:
-			getActivity().showDialog(Statics.DIALOG_PICK_TAGS_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_PICK_TAGS_ID);
 			return true;
 		default:
 			return super.onItemClicked(id);
@@ -238,7 +239,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
 				getText(R.string.stream) };
 			
-			builder = new AlertDialog.Builder(getActivity());
+			builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(getText(R.string.pick_action));
 			builder.setItems(actions, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
@@ -247,7 +248,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 						break;
 					case 1:
-						getActivity().showDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+						getSherlockActivity().showDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						break;
 					case 2:
 						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -272,7 +273,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			dialog = builder.create();
 			break;
 		case (Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID):
-			builder = new AlertDialog.Builder(getActivity());
+			builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(mMovie.getString(Movie.KEY_TITLE)).setMessage(getText(R.string.delete_confirm))
 					.setCancelable(false)
 					.setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
@@ -283,7 +284,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 					}).setNegativeButton(getText(android.R.string.no), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							dialog.dismiss();
-							getActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+							getSherlockActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						}
 					});
 			dialog = builder.create();
@@ -302,7 +303,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 				lc++;
 			}
 
-			builder = new AlertDialog.Builder(getActivity());
+			builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(getText(R.string.choose_location));
 
 			builder.setSingleChoiceItems(locations, selectedIndex, new DialogInterface.OnClickListener() {
@@ -314,7 +315,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						reload();
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(Statics.DIALOG_PICK_LOCATION_ID);
+					getSherlockActivity().removeDialog(Statics.DIALOG_PICK_LOCATION_ID);
 				}
 			});
 
@@ -342,7 +343,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			mOldTags = new ArrayList<String>();
 			mOldTags.addAll(mSelectedTags);
 
-			builder = new AlertDialog.Builder(getActivity());
+			builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(getText(R.string.choose_tags));
 
 			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
@@ -378,7 +379,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						reload();
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
+					getSherlockActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
 				}
 
 			});
@@ -389,7 +390,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 					mSelectedTags.clear();
 					mSelectedTags.addAll(mOldTags);
 					dialog.dismiss();
-					getActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
+					getSherlockActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
 				}
 
 			});
@@ -427,7 +428,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
-			getActivity().showDialog(Statics.DIALOG_MOVIE_SELECTED_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_MOVIE_SELECTED_ID);
 		}
 	}
 	
@@ -436,14 +437,14 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 * Delete the selected movie
 	 */
 	private void deleteMovie() {
-		getActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
+		getSherlockActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
 			}
 		}
 
-		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.deleting), true);
+		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.deleting), true);
 		mReloadOnSimpleResult = true;
 		execSimpleResultTask(new MovieDeleteRequestHandler(), Movie.getDeleteParams(mMovie));
 	}

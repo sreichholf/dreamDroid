@@ -24,8 +24,9 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -37,7 +38,7 @@ import android.widget.TextView;
  * @author sre
  *
  */
-public class FragmentMainActivity extends FragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {
+public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {
 	public static List<Integer> NAVIGATION_DIALOG_IDS =
 			Arrays.asList(new Integer[]{
 					Statics.DIALOG_ABOUT_ID,
@@ -251,7 +252,7 @@ public class FragmentMainActivity extends FragmentActivity implements MultiPaneH
 	@Override
 	public void showDetails(Class<? extends Fragment> fragmentClass, Class<?extends MultiPaneHandler> handlerClass){
 		try {
-			Fragment fragment = (Fragment) fragmentClass.newInstance();
+			Fragment fragment = fragmentClass.newInstance();
 			showDetails(fragment, handlerClass);
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block

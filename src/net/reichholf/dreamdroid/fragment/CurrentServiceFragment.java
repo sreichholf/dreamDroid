@@ -29,17 +29,18 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * Shows some information about the service currently running on TV
@@ -106,7 +107,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			getActivity().setTitle(progress[0]);
+			getSherlockActivity().setTitle(progress[0]);
 		}
 
 		/*
@@ -116,7 +117,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		 */
 		protected void onPostExecute(Boolean result) {
 			String title = null;
-			getActivity().setProgressBarIndeterminateVisibility(false);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 			if (result) {
 				title = getString(R.string.current_service);
@@ -128,7 +129,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 				}
 			}
 
-			getActivity().setTitle(title);
+			getSherlockActivity().setTitle(title);
 
 		}
 	}
@@ -145,7 +146,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		super.onCreate(savedInstanceState);
 		mCurrentServiceReady = false;
 		mCurrentTitle = getString(R.string.current_service);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -261,8 +262,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	private void showEpgDetail(ExtendedHashMap event) {
 		if (event != null) {
 			mCurrentItem = event;
-			getActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
-			getActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
+			getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 		}
 	}
 
@@ -274,7 +275,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			mCurrentServiceTask.cancel(true);
 		}
 		mCurrentServiceReady = false;
-		getActivity().setProgressBarIndeterminateVisibility(true);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		mCurrentServiceTask = new GetCurrentServiceTask();
 		mCurrentServiceTask.execute();
 	}
@@ -317,7 +318,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 							+ getText(R.string.minutes_short) + ")");
 					String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 
-					dialog = new Dialog(getActivity());
+					dialog = new Dialog(getSherlockActivity());
 					dialog.setContentView(R.layout.epg_item_dialog);
 					dialog.setTitle(title);
 
@@ -352,7 +353,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							IntentFactory.queryIMDb(getActivity(), mCurrentItem);
+							IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);
 							dialog.dismiss();
 						}
 					});
@@ -367,7 +368,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 					});
 				} else {
 					// No EPG Information is available!
-					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+					AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
 					builder.setMessage(R.string.no_epg_available).setCancelable(true)
 							.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog, int id) {
@@ -393,7 +394,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	 * @param event
 	 */
 	protected void setTimerByEventData(ExtendedHashMap event) {
-		Timer.editUsingEvent((MultiPaneHandler) getActivity(), event, this);
+		Timer.editUsingEvent((MultiPaneHandler) getSherlockActivity(), event, this);
 	}
 
 	/**
@@ -406,7 +407,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			}
 		}
 
-		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 

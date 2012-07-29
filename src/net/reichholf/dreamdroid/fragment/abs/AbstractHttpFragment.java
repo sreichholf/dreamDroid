@@ -26,16 +26,18 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.MenuInflater;
+
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
+
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -45,7 +47,7 @@ import android.widget.Toast;
  * @author sreichholf
  * 
  */
-public abstract class AbstractHttpFragment extends Fragment implements ActivityCallbackHandler {
+public abstract class AbstractHttpFragment extends SherlockFragment implements ActivityCallbackHandler {
 	protected final String sData = "data";
 	protected String mCurrentTitle;
 	
@@ -95,7 +97,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getActivity().setProgressBarIndeterminateVisibility(true);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		/*
@@ -104,7 +106,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			getActivity().setProgressBarIndeterminateVisibility(false);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -150,7 +152,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getActivity().setProgressBarIndeterminateVisibility(true);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		/*
@@ -159,7 +161,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			getActivity().setProgressBarIndeterminateVisibility(false);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
 			if (!result || mVolume == null) {
 				mVolume = new ExtendedHashMap();
@@ -184,7 +186,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		getActivity().setTitle(mCurrentTitle);
+		getSherlockActivity().setTitle(mCurrentTitle);
 		return super.onCreateView(inflater, container, savedInstanceState);
 	}
 
@@ -240,7 +242,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 		Intent intent;
 		switch (id) {
 		case Statics.ITEM_HOME:
-			intent = new Intent(getActivity(), FragmentMainActivity.class);
+			intent = new Intent(getSherlockActivity(), FragmentMainActivity.class);
 			startActivity(intent);
 			return true;
 		default:
@@ -252,8 +254,8 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 * @param progress
 	 */
 	protected void updateProgress(String progress){
-		getActivity().setTitle(progress);
-		getActivity().setProgressBarIndeterminateVisibility(true);
+		getSherlockActivity().setTitle(progress);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 	}
 	
 	/**
@@ -261,7 +263,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 */
 	protected void findSimilarEvents(ExtendedHashMap event){
 		//TODO fix findSimilarEvents
-//		Intent intent = new Intent(getActivity(), SearchEpgActivity.class);
+//		Intent intent = new Intent(getSherlockActivity(), SearchEpgActivity.class);
 //		intent.setAction(Intent.ACTION_SEARCH);
 //		intent.putExtra(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
 //		startActivity(intent);
@@ -313,15 +315,15 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 */
 	protected void finishProgress(String title){
 		mCurrentTitle = title;
-		getActivity().setTitle(title);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setTitle(title);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 		
 	/**
 	 * @param toastText
 	 */
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -329,7 +331,7 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 * @param toastText
 	 */
 	protected void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -417,9 +419,9 @@ public abstract class AbstractHttpFragment extends Fragment implements ActivityC
 	 * @param data
 	 */
 	protected void finish(int resultCode, Intent data){
-		Fragment f = getTargetFragment();
+		SherlockFragment f = (SherlockFragment) getTargetFragment();
 		if(f != null){
-			MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+			MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
 			mph.showDetails(f);
 			if(resultCode != Statics.RESULT_NONE || data != null){
 				f.onActivityResult(getTargetRequestCode(), resultCode, data);

@@ -16,11 +16,8 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -30,13 +27,17 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 /**
  * Used to edit connection profiles
  *
  * @author sre
  *
  */
-public class ProfileEditFragment extends Fragment implements ActivityCallbackHandler{
+public class ProfileEditFragment extends SherlockFragment implements ActivityCallbackHandler{
 	private Profile mCurrentProfile;
 
 	private EditText mProfile;
@@ -54,7 +55,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mActivity = getActivity();
+		mActivity = getSherlockActivity();
 		mActivity.setTitle(getString(R.string.edit_profile));
 		mActivity.setProgressBarIndeterminateVisibility(false);
 		setHasOptionsMenu(true);
@@ -237,7 +238,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 	 * If a targetFragment has been set using setTargetFragement() return to it.
 	 */
 	protected void finish(int resultCode){
-		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
 		if(mph.isMultiPane()){
 			Fragment f = getTargetFragment();
 			if(f != null){
@@ -245,7 +246,7 @@ public class ProfileEditFragment extends Fragment implements ActivityCallbackHan
 				f.onActivityResult(getTargetRequestCode(), resultCode, null);
 			}
 		} else {
-			Activity a = getActivity();
+			Activity a = getSherlockActivity();
 			a.setResult(resultCode);
 			a.finish();
 		}

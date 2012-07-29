@@ -30,11 +30,12 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ListView;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * Activity to show a List of all existing timers of the target device
@@ -70,10 +71,10 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		
 		mCurrentTitle = mBaseTitle = getString(R.string.timer);
-		mMultiPaneHandler = (MultiPaneHandler) getActivity();
+		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 		
 		setHasOptionsMenu(true);
 		setAdapter();
@@ -116,7 +117,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mTimer = mMapList.get((int) id);
-		getActivity().showDialog(Statics.DIALOG_TIMER_SELECTED_ID);
+		getSherlockActivity().showDialog(Statics.DIALOG_TIMER_SELECTED_ID);
 	}
 
 	/*
@@ -198,7 +199,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {		
-		mAdapter = new TimerListAdapter(getActivity(), R.layout.timer_list_item, mMapList);
+		mAdapter = new TimerListAdapter(getSherlockActivity(), R.layout.timer_list_item, mMapList);
 		setListAdapter(mAdapter);
 	}
 
@@ -206,7 +207,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 * Confirmation dialog before timer deletion
 	 */
 	private void deleteTimerConfirm() {
-		getActivity().showDialog(Statics.DIALOG_TIMER_DELETE_CONFIRM_ID);
+		getSherlockActivity().showDialog(Statics.DIALOG_TIMER_DELETE_CONFIRM_ID);
 	}
 
 	/**
@@ -222,7 +223,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 			}
 		}
 		ArrayList<NameValuePair> params = Timer.getDeleteParams(timer);
-		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.cleaning_timerlist), true);
+		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.cleaning_timerlist), true);
 		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
 
@@ -236,7 +237,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 			}
 		}
 		
-		mProgress = ProgressDialog.show(getActivity(), "", getText(R.string.cleaning_timerlist), true);
+		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.cleaning_timerlist), true);
 		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<NameValuePair>());
 	}
 	
@@ -265,7 +266,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		switch(id){
 		case(Statics.DIALOG_TIMER_SELECTED_ID):
 			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
+			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getSherlockActivity());
 			adBuilder.setTitle(R.string.pick_action);
 			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
 	
@@ -283,7 +284,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 			dialog = adBuilder.create();
 			break;
 		case(Statics.DIALOG_TIMER_DELETE_CONFIRM_ID):
-			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(mTimer.getString(Timer.KEY_NAME)).setMessage(getText(R.string.delete_confirm))
 					.setCancelable(false).setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {

@@ -45,7 +45,7 @@ public class ViewPagerNavigationFragment extends NavigationFragment{
 
 		View v = inflater.inflate(R.layout.indicated_viewpager, null);
 		View[] pageViews = {inflater.inflate(R.layout.main, null), inflater.inflate(R.layout.extras, null)};
-		ViewPagerAdapter adapter = new ViewPagerAdapter( this.getActivity(), new String[]{"Main", "Extras"}, pageViews );
+		ViewPagerAdapter adapter = new ViewPagerAdapter(getSherlockActivity(), new String[]{"Main", "Extras"}, pageViews );
 	    mPager =
 	        (ViewPager)v.findViewById( R.id.viewpager );
 	    TitlePageIndicator indicator =

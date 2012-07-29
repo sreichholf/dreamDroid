@@ -29,14 +29,15 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.view.Menu;
-import android.support.v4.view.MenuItem;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * Allows fetching and showing the actual TV-Screen content
@@ -138,12 +139,12 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		getActivity().setTitle(getText(R.string.screenshot));
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setTitle(getText(R.string.screenshot));
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		mImageView = new ImageView(getActivity());
+		mImageView = new ImageView(getSherlockActivity());
 		mImageView.setBackgroundColor(Color.BLACK);
 
 		Bundle extras = getArguments();
@@ -156,7 +157,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
 		mSize = extras.getInt(KEY_SIZE, 720);
 		mFilename = extras.getString(KEY_FILENAME);
-		mScannerConn = new MediaScannerConnection(getActivity(), new DummyMediaScannerConnectionClient());
+		mScannerConn = new MediaScannerConnection(getSherlockActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
 		
 		if(savedInstanceState == null){
@@ -212,7 +213,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	private void updateProgress(){
-		getActivity().setProgressBarIndeterminateVisibility(true);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 	}
 	
 	/**
@@ -221,7 +222,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	private void onScreenshotAvailable(byte[] bytes){
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
 	/**

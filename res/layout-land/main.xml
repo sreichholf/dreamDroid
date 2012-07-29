@@ -21,7 +21,8 @@
             <Button
                 android:id="@+id/ButtonServices"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_list"
                 android:text="@string/services" />
@@ -29,7 +30,8 @@
             <Button
                 android:id="@+id/ButtonMovies"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_movie"
                 android:text="@string/movies" />
@@ -37,7 +39,8 @@
             <Button
                 android:id="@+id/ButtonTimer"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_clock"
                 android:text="@string/timer" />
@@ -53,7 +56,8 @@
             <Button
                 android:id="@+id/ButtonVirtualRemote"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_small_tiles"
                 android:text="@string/virtual_remote" />
@@ -61,7 +65,8 @@
             <Button
                 android:id="@+id/ButtonCurrent"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_help"
                 android:text="@string/current_service" />
@@ -69,7 +74,8 @@
             <Button
                 android:id="@+id/ButtonEpgSearch"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_search"
                 android:text="@string/epg_search" />
@@ -84,7 +90,8 @@
             <Button
                 android:id="@+id/ButtonPower"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_power_off"
                 android:text="@string/powercontrol" />

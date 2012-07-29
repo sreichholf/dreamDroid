@@ -38,9 +38,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.Menu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -54,6 +52,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 
 //TODO Add Tag Support
 /**
@@ -121,12 +122,12 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		protected void onProgressUpdate(String... progress) {
 			if (mLoadProgress != null) {
 				if (!mLoadProgress.isShowing()) {
-					mLoadProgress = ProgressDialog.show(getActivity(), getText(R.string.loading).toString(), progress[0]);
+					mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(), progress[0]);
 				} else {
 					mLoadProgress.setMessage(progress[0]);
 				}
 			} else {
-				mLoadProgress = ProgressDialog.show(getActivity(), getText(R.string.loading).toString(), progress[0]);
+				mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(), progress[0]);
 			}
 		}
 
@@ -154,7 +155,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		mCurrentTitle = getString(R.string.timer);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -331,7 +332,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		case (Statics.DIALOG_TIMER_PICK_BEGIN_ID):
 			cal = getCalendarFromTimestamp(mTimer.getString("begin"));
 
-			dialog = new Dialog(getActivity());
+			dialog = new Dialog(getSherlockActivity());
 			dialog.setContentView(R.layout.date_time_picker);
 			dialog.setTitle(R.string.set_time_begin);
 
@@ -352,7 +353,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		case (Statics.DIALOG_TIMER_PICK_END_ID):
 			cal = getCalendarFromTimestamp(mTimer.getString("end"));
 
-			dialog = new Dialog(getActivity());
+			dialog = new Dialog(getSherlockActivity());
 			dialog.setContentView(R.layout.date_time_picker);
 			dialog.setTitle(R.string.set_time_end);
 
@@ -372,7 +373,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 		case (Statics.DIALOG_TIMER_PICK_REPEATED_ID):
 			CharSequence[] days = getResources().getTextArray(R.array.weekdays);
-			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(getText(R.string.choose_days));
 			builder.setMultiChoiceItems(days, mCheckedDays, new OnMultiChoiceClickListener() {
 
@@ -411,7 +412,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			mOldTags = new ArrayList<String>();
 			mOldTags.addAll(mSelectedTags);
 
-			builder = new AlertDialog.Builder(getActivity());
+			builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(getText(R.string.choose_tags));
 
 			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
@@ -450,7 +451,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 						mTags.setText(tags);
 					}
 					dialog.dismiss();
-					getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
+					getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
 				}
 
 			});
@@ -461,7 +462,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 					mSelectedTags.clear();
 					mSelectedTags.addAll(mOldTags);
 					dialog.dismiss();
-					getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
+					getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
 				}
 
 			});
@@ -506,19 +507,19 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			return true;
 
 		case Statics.ITEM_PICK_START:
-			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
 			return true;
 
 		case Statics.ITEM_PICK_END:
-			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_END_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 			return true;
 
 		case Statics.ITEM_PICK_REPEATED:
-			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_REPEATED_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_REPEATED_ID);
 			return true;
 
 		case Statics.ITEM_PICK_TAGS:
-			getActivity().showDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
 		default:
 			return super.onItemClicked(id);
 		}
@@ -540,7 +541,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_PICK_SERVICE);
-		((MultiPaneHandler) getActivity()).showDetails(f, true);
+		((MultiPaneHandler) getSherlockActivity()).showDetails(f, true);
 	}
 
 	/**
@@ -566,7 +567,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 
 		// Afterevents
-		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getActivity(), R.array.afterevents,
+		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getSherlockActivity(), R.array.afterevents,
 				android.R.layout.simple_spinner_item);
 		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
@@ -575,7 +576,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
-		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item,
+		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getSherlockActivity(), android.R.layout.simple_spinner_item,
 				DreamDroid.getLocations());
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
@@ -718,7 +719,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				mProgress.dismiss();
 			}
 		}
-		Activity activtiy = getActivity();
+		Activity activtiy = getSherlockActivity();
 		mProgress = ProgressDialog.show(activtiy, "", getText(R.string.saving), true);
 		
 		applyViewValues();
@@ -831,7 +832,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private void onTimerBeginSet(Calendar cal) {
 		String seconds = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_BEGIN, seconds);
-		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
+		getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
 		reload();
 	}
 
@@ -844,7 +845,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private void onTimerEndSet(Calendar cal) {
 		String seconds = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
 		mTimer.put(Timer.KEY_END, seconds);
-		getActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
+		getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 		reload();
 	}
 	
@@ -852,7 +853,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 * If a targetFragment has been set using setTargetFragement() return to it.
 	 */
 	protected void finish(int resultCode){
-		MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
 		if(mph.isMultiPane()){
 			Fragment f = getTargetFragment();
 			if(f != null){
@@ -860,7 +861,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				f.onActivityResult(getTargetRequestCode(), resultCode, null);
 			}
 		} else {
-			Activity a = getActivity();
+			Activity a = getSherlockActivity();
 			a.setResult(resultCode);
 			a.finish();
 		}

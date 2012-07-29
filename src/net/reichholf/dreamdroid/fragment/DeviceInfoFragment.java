@@ -17,7 +17,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.widget.ScrollView;
@@ -25,6 +24,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.commonsware.cwac.merge.MergeAdapter;
 
 /**
@@ -33,7 +33,7 @@ import com.commonsware.cwac.merge.MergeAdapter;
  * @author sreichholf
  *
  */
-public class DeviceInfoFragment extends ListFragment implements ActivityCallbackHandler {
+public class DeviceInfoFragment extends SherlockListFragment implements ActivityCallbackHandler {
 	private ExtendedHashMap mInfo;
 	private GetDeviceInfoTask mGetInfoTask;
 	private MergeAdapter mMerge;
@@ -125,9 +125,9 @@ public class DeviceInfoFragment extends ListFragment implements ActivityCallback
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mActivity = getActivity();
+		mActivity = getSherlockActivity();
 		mActivity.setProgressBarIndeterminateVisibility(false);
-		getSupportActivity().setTitle(getText(R.string.device_info));
+		getSherlockActivity().setTitle(getText(R.string.device_info));
 		
 		mMerge = new MergeAdapter();
 		mInfo = new ExtendedHashMap();

@@ -31,23 +31,24 @@ import org.apache.http.message.BasicNameValuePair;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
-import android.support.v4.view.MenuItem;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
+
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * @author sreichholf
  * 
  */
 
-public abstract class AbstractHttpListFragment extends ListFragment implements ActivityCallbackHandler{
+public abstract class AbstractHttpListFragment extends SherlockListFragment implements ActivityCallbackHandler{
 	public static final String BUNDLE_KEY_LIST = "list";
 	
 	protected final String sData = "data";
@@ -210,7 +211,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getActivity().setProgressBarIndeterminateVisibility(true);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		/*
@@ -219,7 +220,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			getActivity().setProgressBarIndeterminateVisibility(false);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -265,7 +266,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getActivity().setProgressBarIndeterminateVisibility(true);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		/*
@@ -274,7 +275,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			getActivity().setProgressBarIndeterminateVisibility(false);
+			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
 			if (!result || mVolume == null) {
 				mVolume = new ExtendedHashMap();
@@ -297,7 +298,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		
 		mExtras = getArguments();
 		mMapList = null;
@@ -325,7 +326,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		getActivity().setTitle(mCurrentTitle);
+		getSherlockActivity().setTitle(mCurrentTitle);
 		return super.onCreateView(inflater, container, savedInstanceState);
 	}
 	
@@ -425,7 +426,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 		Intent intent;
 		switch (id) {
 		case Statics.ITEM_HOME:
-			intent = new Intent(getActivity(), TabbedNavigationActivity.class);
+			intent = new Intent(getSherlockActivity(), TabbedNavigationActivity.class);
 			startActivity(intent);
 			return true;
 		default:
@@ -462,8 +463,8 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	 * @param progress
 	 */
 	protected void updateProgress(String progress) {
-		getActivity().setTitle(progress);
-		getActivity().setProgressBarIndeterminateVisibility(true);
+		getSherlockActivity().setTitle(progress);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 	}
 
 	/**
@@ -471,8 +472,8 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	 */
 	protected void finishProgress(String title) {
 		mCurrentTitle = title;
-		getActivity().setTitle(genWindowTitle(title));
-		getActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setTitle(genWindowTitle(title));
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
 	/**
@@ -516,7 +517,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	 * @param toastText
 	 */
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -524,7 +525,7 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	 * @param toastText
 	 */
 	protected void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 	
@@ -610,9 +611,9 @@ public abstract class AbstractHttpListFragment extends ListFragment implements A
 	 * @param data
 	 */
 	protected void finish(int resultCode, Intent data){
-		Fragment f = getTargetFragment();
+		SherlockFragment f = (SherlockFragment) getTargetFragment();
 		if(f != null){
-			MultiPaneHandler mph = (MultiPaneHandler) getActivity();
+			MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
 			mph.showDetails(f);
 			if(resultCode != Statics.RESULT_NONE || data != null){
 				f.onActivityResult(getTargetRequestCode(), resultCode, data);

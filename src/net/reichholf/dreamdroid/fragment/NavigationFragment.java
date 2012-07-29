@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
-import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
+import net.reichholf.dreamdroid.activities.SimpleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -35,8 +35,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -46,6 +44,9 @@ import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 
 /**
  * This is where all begins. It's the "main menu activity" which acts as central
@@ -188,7 +189,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getSupportActivity().showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 		}
 
 		/*
@@ -197,7 +198,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		protected void onPostExecute(Boolean result) {
-			getSupportActivity().removeDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			getSherlockActivity().removeDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -259,10 +260,10 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getSupportActivity().setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
-		mActivity = (FragmentMainActivity) getSupportActivity();
+		mActivity = (FragmentMainActivity) getSherlockActivity();
 		mSleepTimer = new ExtendedHashMap();
 		mCurrentListItem = -1;
 		
@@ -490,7 +491,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_REMOTE:
-			mActivity.showDetails(VirtualRemoteFragment.class, SimpleNoTitleFragmentActivity.class);
+			mActivity.showDetails(VirtualRemoteFragment.class, SimpleFragmentActivity.class);
 			return true;
 
 		case Statics.ITEM_PREFERENCES:
@@ -499,7 +500,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_MESSAGE:
-			getSupportActivity().showDialog(Statics.DIALOG_SEND_MESSAGE_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_SEND_MESSAGE_ID);
 			return true;
 
 		case Statics.ITEM_EPG_SEARCH:
@@ -527,11 +528,11 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_POWERSTATE_DIALOG:
-			getSupportActivity().showDialog(Statics.DIALOG_SET_POWERSTATE_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_SET_POWERSTATE_ID);
 			return true;
 
 		case Statics.ITEM_ABOUT:
-			getSupportActivity().showDialog(Statics.DIALOG_ABOUT_ID);
+			getSherlockActivity().showDialog(Statics.DIALOG_ABOUT_ID);
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
@@ -615,7 +616,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		if (success) {
 			mSleepTimer = sleepTimer;
 			if (openDialog) {
-				getSupportActivity().showDialog(Statics.DIALOG_SLEEPTIMER_ID);
+				getSherlockActivity().showDialog(Statics.DIALOG_SLEEPTIMER_ID);
 				return;
 			}
 			String text = sleepTimer.getString(SleepTimer.KEY_TEXT);
@@ -630,6 +631,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	 * @return
 	 */
 	public View findViewById(int id) {
-		return getActivity().findViewById(id);
+		return getSherlockActivity().findViewById(id);
 	}
 }
