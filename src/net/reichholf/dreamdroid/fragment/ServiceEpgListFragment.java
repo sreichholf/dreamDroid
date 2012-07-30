@@ -41,13 +41,6 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.activities.AbstractHttpListActivity#onCreate
-	 * (android.os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -66,11 +59,13 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onPause()
-	 */
+	@Override
+	public void onDestroy(){
+		if(mEpgListTask != null)
+			mEpgListTask.cancel(true);
+		super.onDestroy();
+	}
+	
 	@Override
 	public void onPause() {
 		if (mEpgListTask != null) {

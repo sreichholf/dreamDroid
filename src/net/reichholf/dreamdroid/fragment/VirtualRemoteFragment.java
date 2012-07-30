@@ -106,13 +106,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	private String mBaseTitle;
 	private SharedPreferences mPrefs;
 	private SharedPreferences.Editor mEditor;
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpActivity#onCreate(android
-	 * .os.Bundle)
-	 */
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -130,11 +124,6 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		return getRemoteView();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
@@ -146,11 +135,6 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		menu.findItem(Statics.ITEM_LAYOUT).setTitle(mQuickZap ? R.string.standard : R.string.quickzap);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -280,9 +264,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		execSimpleResultTask(new RemoteCommandRequestHandler(), params);
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpActivity#onSimpleResult(boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
-	 */
+	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		boolean hasError = false;
 		String toastText = getString(R.string.get_content_error);					

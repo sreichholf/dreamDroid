@@ -119,11 +119,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mRequireLocsAndTags = requireLocsAndTags;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			if (mListRequestHandler == null) {
@@ -191,11 +186,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			mTaskList = new ArrayList<ExtendedHashMap>();
@@ -220,21 +210,11 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
 			updateProgress(progress[0]);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
 		@Override
 		protected void onPostExecute(Boolean result) {
 			String title = null;
@@ -257,13 +237,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.activities.AbstractHttpListActivity#onCreate
-	 * (android.os.Bundle)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -335,13 +308,13 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		getSherlockActivity().invalidateOptionsMenu();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * android.support.v4.app.Fragment#onCreateView(android.view.LayoutInflater,
-	 * android.view.ViewGroup, android.os.Bundle)
-	 */
+	@Override
+	public void onDestroy(){
+		if(mListTask != null)
+			mListTask.cancel(true);
+		super.onDestroy();
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_view, null, false);
@@ -456,12 +429,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
-	 * onSaveInstanceState(android.os.Bundle)
-	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("navname", mNavName);
@@ -488,11 +455,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		super.onResume();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onPause()
-	 */
 	@Override
 	public void onPause() {
 		if (mListTask != null) {
@@ -502,13 +464,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		super.onPause();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#generateTitle
-	 * ()
-	 */
 	public String genWindowTitle(String title) {
 		return title + " - " + mNavName;
 	}
@@ -545,13 +500,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment#onKeyDown(int,
-	 * android.view.KeyEvent)
-	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// back to standard back-button-behaviour when we're already at root
@@ -594,13 +542,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		return super.onKeyDown(keyCode, event);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView,
-	 * android.view.View, int, long)
-	 */
-	// @Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		onListItemClick(l, v, position, id, false);
 	}
@@ -618,22 +559,12 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.reload, menu);
 		inflater.inflate(R.menu.servicelist, menu);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onPrepareOptionsMenu(android.view.Menu)
-	 */
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
 		MenuItem overview = menu.findItem(R.id.menu_overview);
@@ -661,13 +592,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onItemClicked
-	 * (int)
-	 */
 	@Override
 	protected boolean onItemClicked(int id) {
 		switch (id) {
@@ -738,7 +662,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 * @param isLong
 	 */
 	private void onListItemClick(ListView l, View v, int position, long id, boolean isLong) {
-		ExtendedHashMap item = (ExtendedHashMap) l.getItemAtPosition(position);
+		@SuppressWarnings("unchecked")
+		ExtendedHashMap item = new ExtendedHashMap( (HashMap<String,Object>) l.getItemAtPosition(position) );
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
 		if (isBouquetList(ref)) {
@@ -780,11 +705,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateDialog(int)
-	 */
 	@Override
 	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
@@ -1023,13 +943,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment#onSimpleResult
-	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
-	 */
+	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {

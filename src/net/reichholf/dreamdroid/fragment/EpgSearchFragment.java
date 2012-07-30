@@ -41,13 +41,6 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.activities.AbstractHttpListActivity#onCreate
-	 * (android.os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -57,18 +50,18 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 		if(needle != null)
 			search(needle);
 	}
+	
+	@Override
+	public void onDestroy(){
+		if(mSearchEpgListTask != null)
+			mSearchEpgListTask.cancel(true);
+		super.onDestroy();
+	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onPause()
-	 */
 	@Override
 	public void onPause() {
-		if (mSearchEpgListTask != null) {
+		if (mSearchEpgListTask != null)
 			mSearchEpgListTask.cancel(true);
-		}
-
 		super.onPause();
 	}
 

@@ -78,11 +78,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	private class GetCurrentServiceTask extends AsyncTask<Void, String, Boolean> {
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
+
 		@Override
 		protected Boolean doInBackground(Void... unused) {
 			publishProgress(getString(R.string.fetching_data));
@@ -100,21 +96,11 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
 			getSherlockActivity().setTitle(progress[0]);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
 		protected void onPostExecute(Boolean result) {
 			String title = null;
 			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
@@ -134,13 +120,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpActivity#onCreate(android
-	 * .os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -179,6 +158,13 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 
 		return view;
 	}
+	
+	@Override
+	public void onDestroy(){
+		if(mCurrentServiceTask != null)
+			mCurrentServiceTask.cancel(true);
+		super.onDestroy();
+	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
@@ -192,11 +178,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		inflater.inflate(R.menu.reload, menu);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

@@ -28,12 +28,12 @@ public class DateTime {
 	 * @return
 	 */
 	public static String getDurationString(String duration, String eventstart) {
-		long d = Long.valueOf(duration);
+		long d = Double.valueOf(duration).longValue();
 		String durationPrefix = "";
 
 		if (eventstart != null) {
 			try {
-				long s = Long.valueOf(eventstart) * 1000;
+				long s = Double.valueOf(eventstart).longValue() * 1000;
 				Date now = new Date();
 
 				if (now.getTime() >= s) {
@@ -106,9 +106,9 @@ public class DateTime {
 	 */
 	public static Date getDate(String timestamp) {
 		try {
-			long s = Long.valueOf(timestamp);
+			long s = Double.valueOf(timestamp).longValue();
 			s = s * 1000;
-			Date date = new Date(s);
+			Date date = new Date( (long) s);
 
 			return date;
 		} catch (NumberFormatException e) {

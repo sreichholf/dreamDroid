@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment.abs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -85,11 +86,6 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			mRequireLocsAndTags = requireLocsAndTags;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			if (mListRequestHandler == null) {
@@ -98,28 +94,25 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			}
 
 			mTaskList = new ArrayList<ExtendedHashMap>();
-			publishProgress(mBaseTitle + " - " + getText(R.string.fetching_data));
+			publishProgress(getString(R.string.fetching_data));
 
 			String xml = mListRequestHandler.getList(mShc, params[0]);
 			if (xml != null) {
-				publishProgress(mBaseTitle + " - " + getText(R.string.parsing));
+				publishProgress(getString(R.string.parsing));
 
 				mTaskList.clear();
 
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
 					if (mRequireLocsAndTags) {
 						if (DreamDroid.getLocations().size() == 0) {
-							publishProgress(mBaseTitle + " - " + getText(R.string.locations) + " - "
-									+ getText(R.string.fetching_data));
-
+							publishProgress(getString(R.string.locations) + " - " + getString(R.string.fetching_data));
 							if (!DreamDroid.loadLocations(mShc)) {
 								// TODO Add Error-Msg when loadLocations fails
 							}
 						}
 
 						if (DreamDroid.getTags().size() == 0) {
-							publishProgress(mBaseTitle + " - " + getText(R.string.tags) + " - "
-									+ getText(R.string.fetching_data));
+							publishProgress(getString(R.string.tags) + " - " + getString(R.string.fetching_data));
 
 							if (!DreamDroid.loadTags(mShc)) {
 								// TODO Add Error-Msg when loadTags fails
@@ -132,21 +125,11 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
 			updateProgress(progress[0]);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
 		@Override
 		protected void onPostExecute(Boolean result) {
 			String title = null;
@@ -154,7 +137,7 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			if (result) {
 				title = mBaseTitle;
 			} else {
-				title = mBaseTitle + " - " + getString(R.string.get_content_error);
+				title = getString(R.string.get_content_error);
 
 				if (mShc.hasError()) {
 					showToast(getString(R.string.get_content_error) + "\n" + mShc.getErrorText());
@@ -180,11 +163,6 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			mHandler = handler;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			publishProgress();
@@ -204,21 +182,12 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
+		@Override
 		protected void onPostExecute(Boolean result) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
@@ -234,11 +203,6 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		private ExtendedHashMap mVolume;
 		private VolumeRequestHandler mHandler;
 		
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			publishProgress();
@@ -259,21 +223,12 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
+		@Override
 		protected void onPostExecute(Boolean result) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
@@ -289,11 +244,6 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		throw new UnsupportedOperationException("Required Method setDefaultLocation() not re-implemented");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreate(android.os.Bundle)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -304,21 +254,22 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		mMapList = null;
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
 		
+		mMapList = new ArrayList<ExtendedHashMap>();
 		if(savedInstanceState != null){
-			mMapList = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable(BUNDLE_KEY_LIST);
-		} if (mMapList == null){
-			mMapList = new ArrayList<ExtendedHashMap>();
+			ArrayList< HashMap<String,Object> > list = (ArrayList< HashMap<String,Object> >) savedInstanceState.getSerializable(BUNDLE_KEY_LIST);
+			Iterator<HashMap<String, Object>> iter = list.iterator();
+			while(iter.hasNext()){
+				mMapList.add(new ExtendedHashMap(iter.next()));
+			}
 		}
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
 			if (map != null) {
-				mData = new ExtendedHashMap();
-				mData.putAll(map);
+				mData = new ExtendedHashMap(map);
 			}
 		} else {
 			mExtras = new Bundle();
-//			setArguments(mExtras);
 		}
 
 		setClient();		
@@ -371,25 +322,25 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 	/**
 	 * @param key
-	 * @param dfault
+	 * @param defaultValue
 	 * @return
 	 */
-	public String getDataForKey(String key, String dfault) {
+	public String getDataForKey(String key, String defaultValue) {
 		if (mData != null) {
 			String str = (String) mData.get(key);
 			if (str != null) {
 				return str;
 			}
 		}
-		return dfault;
+		return defaultValue;
 	}
 
 	/**
 	 * @param key
-	 * @param dfault
+	 * @param defaultValue
 	 * @return
 	 */
-	public boolean getDataForKey(String key, boolean dfault) {
+	public boolean getDataForKey(String key, boolean defaultValue) {
 		if (mData != null) {
 			Boolean b = (Boolean) mData.get(key);
 			if (b != null) {
@@ -397,7 +348,7 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			}
 		}
 
-		return dfault;
+		return defaultValue;
 	}
 
 	/**

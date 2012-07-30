@@ -60,11 +60,7 @@ public class DeviceInfoFragment extends SherlockListFragment implements Activity
 	 *
 	 */
 	private class GetDeviceInfoTask extends AsyncTask<Void, String, Boolean> {
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
+
 		@Override
 		protected Boolean doInBackground(Void... unused) {
 			publishProgress(getString(R.string.fetching_data));
@@ -82,21 +78,12 @@ public class DeviceInfoFragment extends SherlockListFragment implements Activity
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
 			mActivity.setTitle(progress[0]);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
+		@Override
 		protected void onPostExecute(Boolean result) {
 			String title = null;
 
@@ -115,13 +102,6 @@ public class DeviceInfoFragment extends SherlockListFragment implements Activity
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * net.reichholf.dreamdroid.activities.AbstractHttpActivity#onCreate(android
-	 * .os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -155,9 +135,14 @@ public class DeviceInfoFragment extends SherlockListFragment implements Activity
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onSaveInstanceState(android.os.Bundle)
-	 */
+	@Override
+	public void onDestroy(){
+		if(mGetInfoTask != null)
+			mGetInfoTask.cancel(true);
+		super.onDestroy();
+	}
+	
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("info", mInfo);
 	}
@@ -253,25 +238,16 @@ public class DeviceInfoFragment extends SherlockListFragment implements Activity
 		toast.show();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onCreateDialog(int)
-	 */
 	@Override
 	public Dialog onCreateDialog(int id) {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onKeyDown(int, android.view.KeyEvent)
-	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onKeyUp(int, android.view.KeyEvent)
-	 */
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;

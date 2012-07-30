@@ -100,11 +100,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	private class SetPowerStateTask extends AsyncTask<String, String, Boolean> {
 		private ExtendedHashMap mResult;
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(String... params) {
 			PowerStateRequestHandler handler = new PowerStateRequestHandler();
@@ -122,11 +117,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (!result || mResult == null) {
@@ -158,11 +148,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			mDialogOnFinish = dialogOnFinish;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			publishProgress();
@@ -183,21 +168,12 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			getSherlockActivity().showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
+		@Override
 		protected void onPostExecute(Boolean result) {
 			getSherlockActivity().removeDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
 
@@ -251,13 +227,6 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		mSleepTimerTask.execute(params);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpActivity#onCreate(android
-	 * .os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -270,6 +239,15 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		
 		setHasOptionsMenu(true);
 		setAdapter();
+	}
+	
+	@Override
+	public void onDestroy(){
+		if(mSleepTimerTask != null)
+			mSleepTimerTask.cancel(true);
+		if(mSetPowerStateTask != null)
+			mSetPowerStateTask.cancel(true);
+		super.onDestroy();
 	}
 	
 	public void setHighlightCurrent(boolean highlight){

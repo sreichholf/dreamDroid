@@ -31,6 +31,11 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Parcelab
 		HashMap<String, Object> map = (HashMap<String,Object>) in.readSerializable();
 		putAll(map);
 	}
+	
+	public ExtendedHashMap(HashMap<String,Object> map){
+		super();
+		putAll(map);
+	}
 
 	@Override
 	public ExtendedHashMap clone() {

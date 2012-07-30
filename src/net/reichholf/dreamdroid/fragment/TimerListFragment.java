@@ -61,13 +61,6 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.activities.AbstractHttpListActivity#onCreate
-	 * (android.os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -86,19 +79,19 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
-	 */
+	@Override
+	public void onDestroy(){
+		if(mListTask != null)
+			mListTask.cancel(true);
+		super.onDestroy();
+	}
+	
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("timer", mTimer);
 		super.onSaveInstanceState(outState);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onPause()
-	 */
 	@Override
 	public void onPause() {
 		if (mListTask != null) {
@@ -108,24 +101,12 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		super.onPause();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView,
-	 * android.view.View, int, long)
-	 */
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mTimer = mMapList.get((int) id);
 		getSherlockActivity().showDialog(Statics.DIALOG_TIMER_SELECTED_ID);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onActivityResult(int, int,
-	 * android.content.Intent)
-	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
@@ -135,11 +116,6 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
@@ -147,11 +123,6 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		inflater.inflate(R.menu.timerlist, menu);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -241,9 +212,6 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<NameValuePair>());
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult(boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
-	 */
 	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result){		
 		if(mProgress != null){		
@@ -257,9 +225,6 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onCreateDialog(int)
-	 */
 	@Override
 	public Dialog onCreateDialog(int id) {
 		Dialog dialog = null;

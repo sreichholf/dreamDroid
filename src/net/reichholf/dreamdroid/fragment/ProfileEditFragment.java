@@ -96,9 +96,6 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		return view;
 	}
 
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onCreateOptionsMenu(android.view.Menu, android.view.MenuInflater)
-	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.save, menu);
@@ -106,9 +103,6 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onOptionsItemSelected(android.support.v4.view.MenuItem)
-	 */
 	public boolean onOptionsItemSelected(MenuItem item){
 		switch(item.getItemId()){
 		case Statics.ITEM_SAVE:
@@ -210,25 +204,16 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		toast.show();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onCreateDialog(int)
-	 */
 	@Override
 	public Dialog onCreateDialog(int id) {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onKeyDown(int, android.view.KeyEvent)
-	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onKeyUp(int, android.view.KeyEvent)
-	 */
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;

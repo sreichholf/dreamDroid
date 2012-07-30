@@ -74,19 +74,19 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.activities.AbstractHttpListActivity#onCreate
-	 * (android.os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		mCurrentTitle = mBaseTitle = getString(R.string.movies);
 		setHasOptionsMenu(true);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+	}
+	
+	@Override
+	public void onDestroy(){
+		if(mListTask != null)
+			mListTask.cancel(true);
+		super.onDestroy();
 	}
 	
 	@Override 
@@ -116,12 +116,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
-	 * setDefaultLocation()
-	 */
 	@Override
 	protected void setDefaultLocation() {
 		if (mCurrentLocation == null && DreamDroid.getLocations().size() > 0) {
@@ -129,11 +123,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onPause()
-	 */
 	@Override
 	public void onPause() {
 		if (mListTask != null) {
@@ -142,12 +131,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		super.onPause();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView,
-	 * android.view.View, int, long)
-	 */
+	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		onListItemClick(v, position, id, false);
 	}
@@ -163,11 +147,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		onListItemClick(v, position, id, true);
 		return true;
 	}
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-	 */
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
@@ -175,9 +155,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		inflater.inflate(R.menu.locactions_and_tags, menu);
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
-	 */
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("movie", mMovie);
 		
@@ -224,11 +202,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateDialog(int)
-	 */
+
 	@Override
 	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
@@ -347,13 +321,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			builder.setTitle(getText(R.string.choose_tags));
 
 			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
-				/*
-				 * (non-Javadoc)
-				 * 
-				 * @see android.content.DialogInterface.
-				 * OnMultiChoiceClickListener
-				 * #onClick(android.content.DialogInterface, int, boolean)
-				 */
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 					String tag = DreamDroid.getTags().get(which);
@@ -404,9 +371,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		return dialog;
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#finishListProgress(java.lang.String, java.util.ArrayList)
-	 */
 	@Override
 	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
 		super.finishListProgress(title, list);
@@ -449,13 +413,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		execSimpleResultTask(new MovieDeleteRequestHandler(), Movie.getDeleteParams(mMovie));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
-	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
-	 */
 	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {

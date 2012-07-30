@@ -91,11 +91,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
 
 	private class GetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
+
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			if (DreamDroid.getLocations().size() == 0) {
@@ -113,11 +109,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			return true;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
 			if (mLoadProgress != null) {
@@ -131,11 +122,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (mLoadProgress.isShowing()) {
@@ -145,17 +131,19 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreate(android.os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		mCurrentTitle = getString(R.string.timer);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+	}
+	
+	@Override
+	public void onDestroy(){
+		if(mGetLocationsAndTagsTask != null)
+			mGetLocationsAndTagsTask.cancel(true);
+		super.onDestroy();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -264,22 +252,11 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onPause()
-	 */
 	@Override
 	public void onPause() {
 		super.onPause();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seenet.reichholf.dreamdroid.activities.AbstractHttpListActivity#
-	 * onSaveInstanceState(android.os.Bundle)
-	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("timer", mTimer);
@@ -313,11 +290,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		super.onSaveInstanceState(outState);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateDialog(int)
-	 */
 	@Override
 	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
@@ -416,13 +388,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			builder.setTitle(getText(R.string.choose_tags));
 
 			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
-				/*
-				 * (non-Javadoc)
-				 * 
-				 * @see android.content.DialogInterface.
-				 * OnMultiChoiceClickListener
-				 * #onClick(android.content.DialogInterface, int, boolean)
-				 */
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 					String tag = DreamDroid.getTags().get(which);
@@ -728,13 +693,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		execSimpleResultTask(new TimerChangeRequestHandler(), params);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
-	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
-	 */
 	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if(mProgress != null){

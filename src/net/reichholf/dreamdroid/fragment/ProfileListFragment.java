@@ -58,9 +58,6 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 
 	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>>{
 
-		/* (non-Javadoc)
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected ArrayList<Profile> doInBackground(Void... params) {
 			ArrayList<Profile> profiles = DeviceDetector.getAvailableHosts();
@@ -172,11 +169,6 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		builder.show();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreate(android.os.Bundle)
-	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
@@ -212,9 +204,6 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.ListFragment#onListItemClick(android.widget.ListView, android.view.View, int, long)
-	 */
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mProfile.set(mCursor);
@@ -232,9 +221,6 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		super.onSaveInstanceState(outState);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onCreateDialog(int)
-	 */
 	public Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		if(mProfile != null){
@@ -309,20 +295,12 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 	}
 
 
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onCreateOptionsMenu(android.view.Menu, android.view.MenuInflater)
-	 */
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.profiles, menu);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
@@ -400,17 +378,11 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		toast.show();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onKeyDown(int, android.view.KeyEvent)
-	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.ActivityCallbackHandler#onKeyUp(int, android.view.KeyEvent)
-	 */
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;

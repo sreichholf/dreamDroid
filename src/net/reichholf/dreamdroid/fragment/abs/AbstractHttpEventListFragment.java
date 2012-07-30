@@ -39,9 +39,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	protected ExtendedHashMap mCurrentItem;
 	protected MultiPaneHandler mMultiPaneHandler;
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onCreate(android.os.Bundle)
-	 */
+	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		if(savedInstanceState != null){
@@ -52,9 +50,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 	}
 	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment#onSaveInstanceState(android.os.Bundle)
-	 */
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("reference", mReference);
 		outState.putString("name", mName);
@@ -71,11 +67,6 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		getSherlockActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateDialog(int)
-	 */
 	@Override
 	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
@@ -190,14 +181,8 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		f.setArguments(args);
 		mMultiPaneHandler.showDetails(f);
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
-	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
-	 */
+
+	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {

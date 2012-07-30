@@ -69,11 +69,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	private class GetScreenshotTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private byte[] mBytes;
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			publishProgress();
@@ -92,11 +87,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 			updateProgress();
 		}
 		
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
+		@Override
 		protected void onPostExecute(Boolean result) {
 			if (result) {
 				onScreenshotAvailable(mBytes);
@@ -111,18 +102,11 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	}
 	
 	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {
-
-		/* (non-Javadoc)
-		 * @see android.media.MediaScannerConnection.MediaScannerConnectionClient#onMediaScannerConnected()
-		 */
 		@Override
 		public void onMediaScannerConnected() {
 			return;			
 		}
 
-		/* (non-Javadoc)
-		 * @see android.media.MediaScannerConnection.MediaScannerConnectionClient#onScanCompleted(java.lang.String, android.net.Uri)
-		 */
 		@Override
 		public void onScanCompleted(String arg0, Uri arg1) {
 			return;
@@ -130,11 +114,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreate(android.os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -169,17 +148,14 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		
 		return mImageView;
 	}
-	
+
 	@Override
 	public void onDestroy(){
+		cancelTaskIfRunning();
 		mScannerConn.disconnect();
 		super.onDestroy();
 	}
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-	 */
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.reload, menu);
@@ -191,11 +167,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		outState.putByteArray("rawImage", mRawImage);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
-	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
@@ -220,6 +191,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	 * @param bytes
 	 */
 	private void onScreenshotAvailable(byte[] bytes){
+		if(this.isDetached())
+			return;
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
@@ -261,13 +234,17 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		}
 		params.add(new BasicNameValuePair("filename", mFilename));
 		
+		cancelTaskIfRunning();
+		mGetScreenshotTask = new GetScreenshotTask();
+		mGetScreenshotTask.execute(params);
+	}
+	
+	private void cancelTaskIfRunning(){
 		if(mGetScreenshotTask != null){
 			if(mGetScreenshotTask.getStatus().equals(AsyncTask.Status.RUNNING)){
 				mGetScreenshotTask.cancel(true);
 			}
 		}
-		mGetScreenshotTask = new GetScreenshotTask();
-		mGetScreenshotTask.execute(params);
 	}
 	
 	/**

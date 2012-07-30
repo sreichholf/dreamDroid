@@ -57,9 +57,7 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 	protected SimpleHttpClient mShc;	
 	protected SimpleResultTask mSimpleResultTask;
 	protected SetVolumeTask mVolumeTask;
-	
-	
-	
+
 	protected class SimpleResultTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mResult;
 		private SimpleResultRequestHandler mHandler;
@@ -68,12 +66,6 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 			mHandler = handler;
 		}
 		
-		
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			publishProgress();
@@ -93,21 +85,11 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
 		protected void onPostExecute(Boolean result) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
@@ -123,11 +105,6 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 		private ExtendedHashMap mVolume;
 		private VolumeRequestHandler mHandler;
 		
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			publishProgress();
@@ -148,21 +125,11 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 			return false;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
 		protected void onPostExecute(Boolean result) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 			
@@ -174,9 +141,6 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onCreate(android.os.Bundle)
-	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -192,20 +156,23 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 		getSherlockActivity().setTitle(mCurrentTitle);
 		return super.onCreateView(inflater, container, savedInstanceState);
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
-	 */
+	
+	@Override
+	public void onDestroy(){
+		if (mSimpleResultTask != null)
+			mSimpleResultTask.cancel(true);
+		if (mVolumeTask != null)
+			mVolumeTask.cancel(true);
+		
+		super.onDestroy();
+	}
+	
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onOptionsItemSelected(android.support.v4.view.MenuItem)
-	 */
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
 	}
