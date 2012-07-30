@@ -174,7 +174,7 @@
 <string name="stream_host">Streaming Hostname/IP</string>
 <string name="stream_host_long">Host/IP für Streaming (optional)</string>
 <string name="stream_current">Streame laufendes Programm</string>
-<string name="similar">Ähnliche Sendungen</string>
+<string name="similar">Ähnliche</string>
 <string-array name="timer_state">
 <item>wartet...</item>
 <item>vorbereiten...</item>
@@ -197,7 +197,7 @@
 <string name="profiles">Profile</string>
 <string name="enable_instant_zap">Direkt umschalten</string>
 <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
-<string name="wrong_activity">Falsche Aktion aufgerufen. Bitte erstellen Sie alle Verknüpfungen zu dreamDroid neu!</string>
+<string name="wrong_activity">Falsche Aktion aufgerufen. Bitte erstellen Sie die Verknüpfungen zu dreamDroid neu!</string>
 <string name="simple_remote">Einfache Fernbedienung</string>
 <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
 <string name="imdb">IMDb</string>
