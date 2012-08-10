@@ -16,13 +16,12 @@
 
 package net.reichholf.dreamdroid.widget;
 
+import net.reichholf.dreamdroid.R;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.ImageButton;
-
-import net.reichholf.dreamdroid.R;
 
 /**
  * This class exists purely to cancel long click events.

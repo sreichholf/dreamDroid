@@ -8,10 +8,10 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 /**
  * @author sreichholf

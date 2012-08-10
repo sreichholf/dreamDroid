@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;

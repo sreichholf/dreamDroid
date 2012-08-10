@@ -10,9 +10,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import android.util.Log;
-
 import net.reichholf.dreamdroid.DreamDroid;
+import android.util.Log;
 
 /**
  * Provides static methods for Date and Time parsing

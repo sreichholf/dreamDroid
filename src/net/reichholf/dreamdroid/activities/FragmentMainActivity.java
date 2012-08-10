@@ -24,8 +24,6 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -33,6 +31,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.widget.TextView;
+
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 /**
  * @author sre

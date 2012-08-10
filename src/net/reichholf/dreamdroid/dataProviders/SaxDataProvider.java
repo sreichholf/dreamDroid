@@ -6,9 +6,9 @@
 
 package net.reichholf.dreamdroid.dataProviders;
 
-import org.xml.sax.helpers.DefaultHandler;
-
 import net.reichholf.dreamdroid.parsers.GenericSaxParser;
+
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author sreichholf
