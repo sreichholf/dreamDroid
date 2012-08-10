@@ -71,6 +71,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			if(isCancelled())
+				return false;
 			publishProgress();
 			mShc.fetchPageContent(URIStore.SCREENSHOT, params[0]);
 			mBytes = mShc.getBytes();
@@ -84,7 +86,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			updateProgress();
+			if(!isCancelled())
+				updateProgress();
 		}
 		
 		@Override

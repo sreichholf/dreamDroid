@@ -94,10 +94,14 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			}
 
 			mTaskList = new ArrayList<ExtendedHashMap>();
+			if(isCancelled())
+				return false;
 			publishProgress(getString(R.string.fetching_data));
 
 			String xml = mListRequestHandler.getList(mShc, params[0]);
 			if (xml != null) {
+				if(isCancelled())
+					return false;
 				publishProgress(getString(R.string.parsing));
 
 				mTaskList.clear();
@@ -105,6 +109,8 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
 					if (mRequireLocsAndTags) {
 						if (DreamDroid.getLocations().size() == 0) {
+							if(isCancelled())
+								return false;
 							publishProgress(getString(R.string.locations) + " - " + getString(R.string.fetching_data));
 							if (!DreamDroid.loadLocations(mShc)) {
 								// TODO Add Error-Msg when loadLocations fails
@@ -112,6 +118,8 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 						}
 
 						if (DreamDroid.getTags().size() == 0) {
+							if(isCancelled())
+								return false;
 							publishProgress(getString(R.string.tags) + " - " + getString(R.string.fetching_data));
 
 							if (!DreamDroid.loadTags(mShc)) {
@@ -127,7 +135,8 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			updateProgress(progress[0]);
+			if(!isCancelled())
+				updateProgress(progress[0]);
 		}
 
 		@Override
@@ -165,6 +174,8 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			if(isCancelled())
+				return false;
 			publishProgress();
 			String xml = mHandler.get(mShc, params[0]);
 
@@ -184,7 +195,8 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+			if(!isCancelled())
+				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		@Override
@@ -205,6 +217,8 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			if(isCancelled())
+				return false;
 			publishProgress();
 			mHandler = new VolumeRequestHandler();
 			String xml = mHandler.get(mShc, params[0]);
@@ -225,7 +239,8 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+			if(!isCancelled())
+				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		@Override

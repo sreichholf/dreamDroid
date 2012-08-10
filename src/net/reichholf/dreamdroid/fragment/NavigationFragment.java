@@ -105,7 +105,8 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			String xml = handler.get(mShc, PowerState.getStateParams(params[0]));
 
 			if (xml != null) {
-				
+				if(isCancelled())
+					return false;
 				ExtendedHashMap result = new ExtendedHashMap();
 				handler.parse(xml, result);
 				

@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -81,12 +82,16 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 
 		@Override
 		protected Boolean doInBackground(Void... unused) {
+			if(isCancelled())
+				return false;
 			publishProgress(getString(R.string.fetching_data));
 
 			mCurrent.clear();
 			CurrentServiceRequestHandler handler = new CurrentServiceRequestHandler();
 			String xml = handler.get(mShc);
 			if (xml != null) {
+				if(isCancelled())
+					return false;
 				publishProgress(getString(R.string.parsing));
 
 				if (handler.parse(xml, mCurrent)) {
@@ -98,7 +103,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			getSherlockActivity().setTitle(progress[0]);
+			if(!isCancelled())
+				getSherlockActivity().setTitle(progress[0]);
 		}
 
 		protected void onPostExecute(Boolean result) {
@@ -147,12 +153,17 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
 		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
-		if (savedInstanceState == null) {
+		if (savedInstanceState != null) {
+			mCurrent = (ExtendedHashMap) savedInstanceState.getParcelable("current");
+			@SuppressWarnings("unchecked")
+			HashMap<String,Object> currentItem = (HashMap<String,Object>) savedInstanceState.getParcelable("currentItem");
+			mCurrentItem = new ExtendedHashMap(currentItem);
+		}
+		
+		if(mCurrent == null){
 			mCurrent = new ExtendedHashMap();
 			reload();
 		} else {
-			mCurrent = (ExtendedHashMap) savedInstanceState.getParcelable("current");
-			mCurrentItem = (ExtendedHashMap) savedInstanceState.getParcelable("currentItem");
 			onCurrentServiceReady();
 		}
 

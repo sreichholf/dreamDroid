@@ -63,12 +63,16 @@ public class DeviceInfoFragment extends SherlockListFragment implements Activity
 
 		@Override
 		protected Boolean doInBackground(Void... unused) {
+			if(isCancelled())
+				return false;
 			publishProgress(getString(R.string.fetching_data));
 
 			mInfo.clear();
 			DeviceInfoRequestHandler handler = new DeviceInfoRequestHandler();
 			String xml = handler.get(mShc);
 			if (xml != null) {
+				if(isCancelled())
+					return false;
 				publishProgress(getString(R.string.parsing));
 
 				if (handler.parse(xml, mInfo)) {
@@ -80,7 +84,8 @@ public class DeviceInfoFragment extends SherlockListFragment implements Activity
 
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			mActivity.setTitle(progress[0]);
+			if(!isCancelled())
+				mActivity.setTitle(progress[0]);
 		}
 
 		@Override

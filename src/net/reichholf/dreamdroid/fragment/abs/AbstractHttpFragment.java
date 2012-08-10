@@ -67,6 +67,8 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 		
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			if(isCancelled())
+				return false;
 			publishProgress();
 			String xml = mHandler.get(mShc, params[0]);
 
@@ -86,7 +88,8 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+			if(!isCancelled())
+				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		protected void onPostExecute(Boolean result) {
@@ -106,6 +109,8 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 		
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+			if(isCancelled())
+				return false;
 			publishProgress();
 			mHandler = new VolumeRequestHandler();
 			String xml = mHandler.get(mShc, params[0]);
@@ -126,7 +131,8 @@ public abstract class AbstractHttpFragment extends SherlockFragment implements A
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+			if(!isCancelled())
+				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		protected void onPostExecute(Boolean result) {

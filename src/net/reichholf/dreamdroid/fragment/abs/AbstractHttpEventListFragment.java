@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
+import java.util.HashMap;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
@@ -45,7 +47,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		if(savedInstanceState != null){
 			mReference = savedInstanceState.getString("reference");
 			mName = savedInstanceState.getString("name");
-			mCurrentItem = (ExtendedHashMap) savedInstanceState.getSerializable("currentItem");
+			mCurrentItem = (ExtendedHashMap) savedInstanceState.getParcelable("currentItem");
 		}
 		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 	}
@@ -54,7 +56,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("reference", mReference);
 		outState.putString("name", mName);
-		outState.putSerializable("currentItem", mCurrentItem);
+		outState.putParcelable("currentItem", mCurrentItem);
 		
 		super.onSaveInstanceState(outState);
 	}

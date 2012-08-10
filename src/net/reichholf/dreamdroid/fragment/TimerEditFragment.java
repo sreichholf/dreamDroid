@@ -95,14 +95,16 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			if (DreamDroid.getLocations().size() == 0) {
+				if(isCancelled())
+					return false;
 				publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
-
 				DreamDroid.loadLocations(mShc);
 			}
 
 			if (DreamDroid.getTags().size() == 0) {
+				if(isCancelled())
+					return false;
 				publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
-
 				DreamDroid.loadTags(mShc);
 			}
 
@@ -111,6 +113,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 		@Override
 		protected void onProgressUpdate(String... progress) {
+			if(isCancelled())
+				return;
 			if (mLoadProgress != null) {
 				if (!mLoadProgress.isShowing()) {
 					mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(), progress[0]);

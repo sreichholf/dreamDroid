@@ -127,10 +127,14 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			}
 
 			mTaskList = new ArrayList<ExtendedHashMap>();
+			if(isCancelled())
+				return false;
 			publishProgress(getString(R.string.fetching_data));
 
 			String xml = mListRequestHandler.getList(mShc, params[0]);
 			if (xml != null) {
+				if(isCancelled())
+					return false;
 				publishProgress(getString(R.string.parsing));
 
 				mTaskList.clear();
@@ -138,6 +142,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
 					if (mRequireLocsAndTags) {
 						if (DreamDroid.getLocations().size() == 0) {
+							if(isCancelled())
+								return false;
 							publishProgress(getString(R.string.fetching_data));
 
 							if (!DreamDroid.loadLocations(mShc)) {
@@ -146,6 +152,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 						}
 
 						if (DreamDroid.getTags().size() == 0) {
+							if(isCancelled())
+								return false;
 							publishProgress(getString(R.string.fetching_data));
 
 							if (!DreamDroid.loadTags(mShc)) {
@@ -189,6 +197,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			mTaskList = new ArrayList<ExtendedHashMap>();
+			if(isCancelled())
+				return false;
 			publishProgress(getString(R.string.fetching_data));
 
 			String xml;
@@ -200,7 +210,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			}
 			xml = handler.getList(mShc, params[0]);
 
-			if (xml != null) {
+			if (xml != null && !isCancelled()) {
 				publishProgress(getString(R.string.parsing));
 				boolean result = false;
 				result = handler.parseList(xml, mTaskList);
@@ -212,7 +222,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			updateProgress(progress[0]);
+			if(!isCancelled())
+				updateProgress(progress[0]);
 		}
 
 		@Override
@@ -312,6 +323,8 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	public void onDestroy(){
 		if(mListTask != null)
 			mListTask.cancel(true);
+		getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
+		getSherlockActivity().removeDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
 		super.onDestroy();
 	}
 	
