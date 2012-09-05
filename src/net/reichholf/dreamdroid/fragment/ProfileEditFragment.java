@@ -95,11 +95,9 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
 			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
-			if (mCurrentProfile == null) {
+			if (mCurrentProfile == null)
 				mCurrentProfile = new Profile();
-			} else {
-				assignProfile();
-			}
+			assignProfile();
 		}
 		onIsLoginChanged(mLogin.isChecked());
 		return view;

@@ -44,6 +44,7 @@ public class Profile implements Serializable{
 		setStreamPort(8001);
 		setLogin(false);
 		setSimpleRemote(false);
+		setUser("root");
 	}
 	
 	/**
