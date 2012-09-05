@@ -71,7 +71,7 @@ public class IntentFactory {
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("file", fileName));
-		String uriString = shc.buildStreamUrl(URIStore.FILE, params);
+		String uriString = shc.buildFileStreamUrl(URIStore.FILE, params);
 		
 		intent.setDataAndType(Uri.parse(uriString), "video/*");
 		return intent;

@@ -122,9 +122,9 @@ public class SimpleHttpClient {
 	 * @param parameters
 	 * @return
 	 */
-	public String buildStreamUrl(String uri, List<NameValuePair> parameters) {
+	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
-		return "http://" + mStreamHostname + ":" + mPort + uri + parms;
+		return "http://" + mStreamHostname + ":80" + uri + parms; //TODO think about to NOT hardcode port 80 here
 	}
 	
 	public boolean fetchPageContent(String uri){
