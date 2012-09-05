@@ -369,7 +369,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();			
 		if(callbackHandler != null)
 			if(callbackHandler.onKeyUp(keyCode, event))
-				return true+;
+				return true;
 		
 		//if the detail fragment didn't handle it, check if the navigation fragment wants it		
 		callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
