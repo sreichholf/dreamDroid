@@ -32,8 +32,8 @@ public class Profile implements Serializable{
 	private boolean mSimpleRemote;
 	private int mId;
 	private int mPort;
-	
-	
+	private String mInterfaceVersion;
+
 	public Profile(Cursor c){
 		set(c);
 	}
@@ -334,5 +334,13 @@ public class Profile implements Serializable{
 	
 	public String getPortString(){
 		return (String.valueOf(mPort));
+	}
+
+	public String getInterfaceVersion() {
+		return mInterfaceVersion;
+	}
+
+	public void setInterfaceVersion(String interfaceVersion) {
+		mInterfaceVersion = interfaceVersion;
 	}
 }

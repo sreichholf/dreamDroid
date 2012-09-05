@@ -41,7 +41,12 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Parcelab
 	public ExtendedHashMap clone() {
 		return (ExtendedHashMap) super.clone();
 	}
-
+	
+	public void putOrConcat(String prefix, String key, Object value){
+		key = prefix.concat(key);
+		putOrConcat(key, value);
+	}
+	
 	/**
 	 * Like standard put but concatenates the value if value is a
 	 * "java.lang.String" and there already was a String value for the key

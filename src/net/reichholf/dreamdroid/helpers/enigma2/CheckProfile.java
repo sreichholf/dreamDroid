@@ -23,13 +23,15 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequest
  * 
  */
 public class CheckProfile {
+	public static final int[] FEATURE_EPGNOWNEXT_VERSION = {1,6,8};
+	
 	public static final String KEY_HAS_ERROR = "error";
 	public static final String KEY_VALUE = "value";
 	public static final String KEY_ERROR_TEXT = "text";
 	public static final String KEY_WHAT = "what";
 	public static final String KEY_RESULT_LIST = "list";
 	public static final int[] REQUIRED_VERSION = {1, 6, 5};
-	public static int[] CURRENT_VERSION = {0, 0, 0};	
+	public static int[] CURRENT_VERSION = {0, 0, 0};
 
 	/**
 	 * @param profile
@@ -39,6 +41,7 @@ public class CheckProfile {
 		int[] versionZero =  {0, 0, 0};
 		CURRENT_VERSION = versionZero;
 		DreamDroid.disableSleepTimer();
+		DreamDroid.disableNowNext();
 		
 		ArrayList<ExtendedHashMap> resultList = new ArrayList<ExtendedHashMap>();
 		ExtendedHashMap checkResult = new ExtendedHashMap();
@@ -72,9 +75,11 @@ public class CheckProfile {
 							int vc = checkVersion(version);
 							if (vc >= 0 ) {
 								int[] requiredForSleeptimer = {1, 6, 5};
-								if(checkVersion(version, requiredForSleeptimer) >= 0){
+								int[] requiredForNowNext = {1, 6, 8};
+								if(checkVersion(version, requiredForSleeptimer) >= 0)
 									DreamDroid.enableSleepTimer();
-								}
+								if(checkVersion(version, requiredForNowNext) >= 0)
+									DreamDroid.enableNowNext();
 								
 								addEntry(resultList, R.string.interface_version, false, version);
 							} else {

@@ -71,6 +71,7 @@ public class DreamDroid extends Application {
 	public static OnActiveProfileChangedListener onActiveProfileChangedListener = null;
 	
 	private static boolean sFeatureSleeptimer = false;
+	private static boolean sFeatureNowNext = false;
 	private static Profile sProfile;
 	private static SharedPreferences sSp;
 	private static SQLiteDatabase sDb;
@@ -215,7 +216,19 @@ public class DreamDroid extends Application {
 
 		return false;
 	}
-
+	
+	public static void disableNowNext(){
+		sFeatureNowNext = false;
+	}
+	
+	public static void enableNowNext(){
+		sFeatureNowNext = true;
+	}
+	
+	public static boolean featureNowNext(){
+		return sFeatureNowNext;
+	}
+		
 	public static void disableSleepTimer() {
 		sFeatureSleeptimer = false;
 	}

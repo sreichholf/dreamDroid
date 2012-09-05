@@ -14,6 +14,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 public class URIStore {
 	public static final String EPG_NOW 					= "/web/epgnow?";
 	public static final String EPG_NEXT 				= "/web/epgnext?";
+	public static final String EPG_NOWNEXT				= "/web/epgnownext?";
 	public static final String EPG_SERVICE 				= "/web/epgservice?";
 	public static final String EPG_SERVICE_NOW			= "/web/epgservicenow?";
 	public static final String EPG_SERVICE_NEXT			= "/web/epgservicenext?";

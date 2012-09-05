@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
@@ -206,7 +207,10 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			if (mIsBouquetList || mPickMode) {
 				handler = new ServiceListRequestHandler();
 			} else {
-				handler = new EventListRequestHandler(URIStore.EPG_NOW);
+				if(DreamDroid.featureNowNext())
+					handler = new EpgNowNextListRequestHandler();
+				else
+					handler = new EventListRequestHandler(URIStore.EPG_NOW);
 			}
 			xml = handler.getList(mShc, params[0]);
 
@@ -492,7 +496,27 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mNavList.setAdapter(adapter);
 		}
 
-		adapter = new SimpleAdapter(getSherlockActivity(), mDetailItems, R.layout.service_list_item, new String[] {
+		if(DreamDroid.featureNowNext())
+			adapter = new SimpleAdapter(getSherlockActivity(), mDetailItems, R.layout.service_list_item_nn, 
+					new String[] {
+						Event.KEY_SERVICE_NAME, 
+						Event.KEY_EVENT_TITLE, 
+						Event.KEY_EVENT_START_TIME_READABLE,
+						Event.KEY_EVENT_DURATION_READABLE,
+						Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE), 
+						Event.PREFIX_NEXT.concat(Event.KEY_EVENT_START_TIME_READABLE),
+						Event.PREFIX_NEXT.concat(Event.KEY_EVENT_DURATION_READABLE)}, 
+					new int[] { 
+						R.id.service_name, 
+						R.id.event_now_title, 
+						R.id.event_now_start,
+						R.id.event_now_duration,
+						R.id.event_next_title, 
+						R.id.event_next_start,
+						R.id.event_next_duration}
+			);
+		else
+			adapter = new SimpleAdapter(getSherlockActivity(), mDetailItems, R.layout.service_list_item, new String[] {
 				Event.KEY_SERVICE_NAME, Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_TIME_READABLE,
 				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.service_name, R.id.event_title, R.id.event_start,
 				R.id.event_duration });
