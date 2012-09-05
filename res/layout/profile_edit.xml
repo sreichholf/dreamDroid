@@ -23,63 +23,105 @@
             android:hint="@string/profile"
             android:singleLine="true" />
 
-        <TextView
-            android:id="@+id/TextViewHost"
+        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
-            android:text="@string/host" />
+            android:layout_height="wrap_content" >
 
-        <EditText
-            android:id="@+id/EditTextHost"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/host_long"
-            android:singleLine="true" />
+            <TextView
+                android:id="@+id/TextViewHost"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="80dp"
+                android:background="#333"
+                android:paddingLeft="3dip"
+                android:text="@string/host" />
 
-        <TextView
-            android:id="@+id/TextViewStreamHost"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
-            android:text="@string/stream_host" />
-
-        <EditText
-            android:id="@+id/EditTextStreamHost"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/stream_host_long"
-            android:singleLine="true" />
-
-        <TextView
-            android:id="@+id/TextViewPort"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
-            android:text="@string/port" />
+            <TextView
+                android:id="@+id/TextViewPort"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-80dp"
+                android:background="#333"
+                android:paddingLeft="3dip"
+                android:text="@string/port" />
+        </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/LinearLayoutSsl"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" >
 
             <EditText
-                android:id="@+id/EditTextPort"
-                android:layout_width="140dp"
+                android:id="@+id/EditTextHost"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/port_long"
+                android:layout_marginRight="80dp"
+                android:hint="@string/host_long"
+                android:singleLine="true" />
+
+            <EditText
+                android:id="@+id/EditTextPort"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-80dp"
+                android:hint="@string/port"
                 android:inputType="number"
                 android:maxLength="5"
                 android:singleLine="true" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/TextViewStreamHost"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="80dp"
+                android:background="#333"
+                android:paddingLeft="3dip"
+                android:text="@string/stream_host" />
+
+            <TextView
+                android:id="@+id/TextViewStreamPort"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-80dp"
+                android:background="#333"
+                android:paddingLeft="3dip"
+                android:text="@string/port" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <EditText
+                android:id="@+id/EditTextStreamHost"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="80dp"
+                android:hint="@string/stream_host_long"
+                android:singleLine="true" />
+
+            <EditText
+                android:id="@+id/EditTextStreamPort"
+                android:layout_width="75dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-80dp"
+                android:hint="@string/port"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
 
             <TextView
                 android:id="@+id/TextViewSsl"
-                android:layout_width="126dp"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
+                android:layout_marginRight="50dip"
                 android:paddingLeft="3dip"
                 android:text="@string/ssl_enabled"
                 android:textColor="#FFF"
@@ -88,7 +130,8 @@
             <CheckBox
                 android:id="@+id/CheckBoxSsl"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-45dip" />
         </LinearLayout>
 
         <LinearLayout

@@ -70,8 +70,8 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
 		{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 		{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
-		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },		
 		{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
+		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
 	};
 	
 	private int[] mCurrent;

@@ -49,6 +49,7 @@ public class SimpleHttpClient {
 	private String mHostname;
 	private String mStreamHostname;
 	private String mPort;
+	private String mStreamPort;
 	private String mUser;
 	private String mPass;
 	private byte[] mBytes;
@@ -122,8 +123,8 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String buildStreamUrl(String uri, List<NameValuePair> parameters) {
-		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
-		return "http://" + mStreamHostname + ":" + 80 + uri + parms;
+		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
+		return "http://" + mStreamHostname + ":" + mPort + uri + parms;
 	}
 	
 	public boolean fetchPageContent(String uri){
@@ -236,7 +237,8 @@ public class SimpleHttpClient {
 	public void applyConfig() {
 		mHostname = DreamDroid.getActiveProfile().getHost().trim();
 		mStreamHostname = DreamDroid.getActiveProfile().getStreamHost().trim();
-		mPort = String.valueOf(DreamDroid.getActiveProfile().getPort());
+		mPort = DreamDroid.getActiveProfile().getPortString();
+		mStreamPort = DreamDroid.getActiveProfile().getStreamPortString();
 		mLogin = DreamDroid.getActiveProfile().isLogin();
 		mSsl = DreamDroid.getActiveProfile().isSsl();
 

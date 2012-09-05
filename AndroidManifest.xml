@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="140"
-    android:versionName="1.0 beta 8" >
+    android:versionCode="141"
+    android:versionName="1.0 beta 9" >
 
     <uses-sdk
         android:maxSdkVersion="16"

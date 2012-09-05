@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
@@ -27,10 +26,8 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -424,12 +421,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 	 *            A ServiceReference
 	 */
 	private void streamService(String ref) {
-		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "http://" + DreamDroid.getActiveProfile().getStreamHost().trim() + ":8001/" + ref;
-		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
-
-		intent.setDataAndType(Uri.parse(uriString), "video/*");
-
+		Intent intent = IntentFactory.getStreamServiceIntent(ref);
 		startActivity(intent);
 	}
 }

@@ -32,7 +32,7 @@ public class Profile implements Serializable{
 	private boolean mSimpleRemote;
 	private int mId;
 	private int mPort;
-	private String mInterfaceVersion;
+	private int mStreamPort;
 
 	public Profile(Cursor c){
 		set(c);
@@ -40,6 +40,10 @@ public class Profile implements Serializable{
 	
 	public Profile(){
 		setId(-1);
+		setPort(80);
+		setStreamPort(8001);
+		setLogin(false);
+		setSimpleRemote(false);
 	}
 	
 	/**
@@ -53,8 +57,8 @@ public class Profile implements Serializable{
 	 * @param ssl
 	 * @param simpleRemote
 	 */
-	public Profile(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
-		set(profile, host, streamHost, port, login, user, pass, ssl, simpleRemote);
+	public Profile(String profile, String host, String streamHost, int port, int streamPort, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
+		set(profile, host, streamHost, port, streamPort, login, user, pass, ssl, simpleRemote);
 	}
 	
 
@@ -70,8 +74,8 @@ public class Profile implements Serializable{
 	 * @param ssl
 	 * @param simpleRemote
 	 */
-	public Profile(int id, String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
-		set(id, profile, host, streamHost, port, login, user, pass, ssl, simpleRemote);
+	public Profile(int id, String profile, String host, String streamHost, int port, int streamPort, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
+		set(id, profile, host, streamHost, port, streamPort, login, user, pass, ssl, simpleRemote);
 	}
 	
 	/**
@@ -85,12 +89,13 @@ public class Profile implements Serializable{
 	 * @param ssl
 	 * @param simpleRemote
 	 */
-	public void set(String profile, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
+	public void set(String profile, String host, String streamHost, int port, int streamPort, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
 		setId(-1);
 		setName(profile);
 		setHost(host);
 		setStreamHost(streamHost);
 		setPort(port);
+		setStreamPort(streamPort);
 		setLogin(login);
 		setUser(user);
 		setPass(pass);
@@ -111,12 +116,13 @@ public class Profile implements Serializable{
 	 * @param ssl
 	 * @param simpleRemote
 	 */
-	public void set(int id, String name, String host, String streamHost, int port, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
+	public void set(int id, String name, String host, String streamHost, int port, int streamPort, boolean login, String user, String pass, boolean ssl, boolean simpleRemote){
 		setId(id);
 		setName(name);
 		setHost(host);
 		setStreamHost(streamHost);
 		setPort(port);
+		setStreamPort(streamPort);
 		setLogin(login);
 		setUser(user);
 		setPass(pass);
@@ -132,7 +138,11 @@ public class Profile implements Serializable{
 		setPass ( c.getString(c.getColumnIndex(DreamDroid.KEY_PASS)) );
 		
 		setId( c.getInt(c.getColumnIndex(DreamDroid.KEY_ID)) );
-		setPort( c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT)) );		
+		setPort( c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT)) );
+		int streamPort = c.getInt(c.getColumnIndex(DreamDroid.KEY_STREAM_PORT));
+		if( streamPort <= 0 )
+				streamPort = 8001;
+		setStreamPort( streamPort);
 		
 		int login = c.getInt(c.getColumnIndex(DreamDroid.KEY_LOGIN));
 		if(login == 1){
@@ -160,14 +170,14 @@ public class Profile implements Serializable{
 	 * @param mName the Profile to set
 	 */
 	public void setName(String name) {
-		this.mName = name;
+		mName = name;
 	}
 
 	/**
 	 * @param mHost the Host to set
 	 */
 	public void setHost(String host) {
-		this.mHost = host.replace("http://", "").replace("https://", "");
+		mHost = host.replace("http://", "").replace("https://", "");
 	}
 	
 	/**
@@ -177,35 +187,36 @@ public class Profile implements Serializable{
 		if(streamHost == null){
 			streamHost = "";
 		}
-		this.mStreamHost = streamHost.replace("http://", "").replace("https://", "");
+		mStreamHost = streamHost.replace("http://", "").replace("https://", "");
 	}
+	
 
 	/**
 	 * @param mUser the User to set
 	 */
 	public void setUser(String user) {
-		this.mUser = user;
+		mUser = user;
 	}
 
 	/**
 	 * @param mPass the Pass to set
 	 */
 	public void setPass(String pass) {
-		this.mPass = pass;
+		mPass = pass;
 	}
 
 	/**
 	 * @param mLogin the Login to set
 	 */
 	public void setLogin(boolean login) {
-		this.mLogin = login;
+		mLogin = login;
 	}
 
 	/**
 	 * @param mSsl SSL yes/no
 	 */
 	public void setSsl(boolean ssl) {
-		this.mSsl = ssl;
+		mSsl = ssl;
 	}
 	
 	/**
@@ -219,14 +230,14 @@ public class Profile implements Serializable{
 	 * @param mId the Id to set
 	 */
 	public void setId(int id) {
-		this.mId = id;
+		mId = id;
 	}
 
 	/**
 	 * @param mPort the Port to set
 	 */
 	public void setPort(int port) {
-		this.mPort = port;
+		mPort = port;
 	}
 	
 	/**
@@ -252,6 +263,25 @@ public class Profile implements Serializable{
 	public void setPort(String port, boolean ssl){
 		mSsl = ssl;		
 		setPort(port);
+	}
+	
+	/**
+	 * @param streamPort
+	 */
+	public void setStreamPort(int streamPort){
+		mStreamPort = streamPort;
+	}
+	
+	/**
+	 * @param streamPort
+	 */
+	public void setStreamPort(String streamPort){	
+		try{
+			mStreamPort = Integer.valueOf(streamPort);
+		} catch(NumberFormatException e ){
+			Log.w(DreamDroid.LOG_TAG, e.toString());
+			mStreamPort = 8001;
+		}
 	}
 
 	/**
@@ -333,14 +363,14 @@ public class Profile implements Serializable{
 	}
 	
 	public String getPortString(){
-		return (String.valueOf(mPort));
+		return String.valueOf(mPort);
 	}
-
-	public String getInterfaceVersion() {
-		return mInterfaceVersion;
+	
+	public int getStreamPort() {
+		return mStreamPort;
 	}
-
-	public void setInterfaceVersion(String interfaceVersion) {
-		mInterfaceVersion = interfaceVersion;
+	
+	public String getStreamPortString(){
+		return String.valueOf(mStreamPort);
 	}
 }

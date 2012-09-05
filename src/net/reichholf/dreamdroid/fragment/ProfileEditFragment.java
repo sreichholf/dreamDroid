@@ -44,6 +44,7 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 	private EditText mHost;
 	private EditText mStreamHost;
 	private EditText mPort;
+	private EditText mStreamPort;
 	private CheckBox mSsl;
 	private CheckBox mLogin;
 	private EditText mUser;
@@ -69,6 +70,7 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		mHost = (EditText) view.findViewById(R.id.EditTextHost);
 		mStreamHost = (EditText) view.findViewById(R.id.EditTextStreamHost);
 		mPort = (EditText) view.findViewById(R.id.EditTextPort);
+		mStreamPort = (EditText) view.findViewById(R.id.EditTextStreamPort);
 		mSsl = (CheckBox) view.findViewById(R.id.CheckBoxSsl);
 		mLogin = (CheckBox) view.findViewById(R.id.CheckBoxLogin);
 		mUser = (EditText) view.findViewById(R.id.EditTextUser);
@@ -83,7 +85,14 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 				onIsLoginChanged(checked);
 			}
 		});
-
+		
+		mSsl.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
+				onSslChanged(checked);
+			}
+		});
+		
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
 			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
 			if (mCurrentProfile == null) {
@@ -116,7 +125,14 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		}
 		return true;
 	}
-
+	
+	private void onSslChanged(boolean checked){
+		if(checked)
+			mPort.setText("443");
+		else
+			mPort.setText("80");
+	}
+	
 	/**
 	 * @param checked
 	 *            Enables or disables the user/password input-boxes depending on
@@ -138,6 +154,7 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		mHost.setText(mCurrentProfile.getHost());
 		mStreamHost.setText(mCurrentProfile.getStreamHostValue());
 		mPort.setText(mCurrentProfile.getPortString());
+		mStreamPort.setText(mCurrentProfile.getStreamPortString());
 		mSsl.setChecked(mCurrentProfile.isSsl());
 		mLogin.setChecked(mCurrentProfile.isLogin());
 		mUser.setText(mCurrentProfile.getUser());
@@ -153,6 +170,7 @@ public class ProfileEditFragment extends SherlockFragment implements ActivityCal
 		mCurrentProfile.setHost(mHost.getText().toString().trim());
 		mCurrentProfile.setStreamHost(mStreamHost.getText().toString().trim());
 		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());
+		mCurrentProfile.setStreamPort(mStreamPort.getText().toString());
 		mCurrentProfile.setLogin(mLogin.isChecked());
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
