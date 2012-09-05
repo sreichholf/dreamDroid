@@ -350,29 +350,33 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event){
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-		if(callbackHandler == null)
-			callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
-		
-		if(callbackHandler != null){
-			if(callbackHandler.onKeyDown(keyCode, event)){
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();	
+		if(callbackHandler != null)
+			if(callbackHandler.onKeyDown(keyCode, event))
 				return true;
-			}
-		}
 		
+		//if the detail fragment didn't handle it, check if the navigation fragment wants it
+		callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
+		if(callbackHandler != null)
+			if(callbackHandler.onKeyDown(keyCode, event))
+				return true;
+
 		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event){
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-		if(callbackHandler == null)
-			callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
-		if(callbackHandler != null){
-			if(callbackHandler.onKeyUp(keyCode, event)){
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();			
+		if(callbackHandler != null)
+			if(callbackHandler.onKeyUp(keyCode, event))
+				return true+;
+		
+		//if the detail fragment didn't handle it, check if the navigation fragment wants it		
+		callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
+		if(callbackHandler != null)
+			if(callbackHandler.onKeyUp(keyCode, event))
 				return true;
-			}
-		}
+		
 		return super.onKeyUp(keyCode, event);
 	}
 
