@@ -52,6 +52,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -956,10 +957,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mNavReference = SERVICE_REF_ROOT;
 		mNavName = "";
 		getSherlockActivity().invalidateOptionsMenu();
-		if (mNavList != mDetailList)
-			((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
-		else
-			((ServiceListAdapter) mNavList.getAdapter()).notifyDataSetChanged();
+		((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
 	@Override
@@ -981,13 +979,13 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		if (isBouquetList) {
 			mNavItems.clear();
 			mNavItems.addAll(list);
-			((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
+			((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 		} else {
 			mEmpty.setVisibility(View.GONE);
 			mDetailList.setVisibility(View.VISIBLE);
 			mDetailItems.clear();
 			mDetailItems.addAll(list);
-			((ServiceListAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
+			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
 		getSherlockActivity().invalidateOptionsMenu();
 		nextListTaskPlease();
