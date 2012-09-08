@@ -10,13 +10,16 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
+import net.reichholf.dreamdroid.loader.AsyncListLoader;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.widget.SimpleAdapter;
 
 /**
@@ -26,29 +29,19 @@ import android.widget.SimpleAdapter;
  * 
  */
 public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
-
-	private GetEpgListTask mEpgListTask;
-
-	/**
-	 * Fetch the list of EPG-Events async
-	 * 
-	 * @author sreichholf
-	 * 
-	 */
-	private class GetEpgListTask extends AsyncListUpdateTask{
-		public GetEpgListTask() {
-			super(new EventListRequestHandler(), false);
-		}
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-		
+
 		mCurrentTitle = mBaseTitle = getString(R.string.epg);
 		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
 		mName = getDataForKey(Event.KEY_SERVICE_NAME);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 
 		if (mReference != null) {
 			setAdapter();
@@ -56,48 +49,28 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 		} else {
 			finish();
 		}
-
-	}
-
-	@Override
-	public void onDestroy(){
-		if(mEpgListTask != null)
-			mEpgListTask.cancel(true);
-		super.onDestroy();
-	}
-	
-	@Override
-	public void onPause() {
-		if (mEpgListTask != null) {
-			mEpgListTask.cancel(true);
-		}
-
-		super.onPause();
 	}
 
 	/**
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.epg_list_item, new String[] { Event.KEY_EVENT_TITLE,
-				Event.KEY_EVENT_START_READABLE, Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.event_title,
-				R.id.event_start, R.id.event_duration });
+		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.epg_list_item, new String[] {
+				Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_READABLE, Event.KEY_EVENT_DURATION_READABLE }, new int[] {
+				R.id.event_title, R.id.event_start, R.id.event_duration });
 		setListAdapter(mAdapter);
 	}
 
-	/**
-	 * Reloads the EPG information by calling a <code>GetEpgListTask</code>.
-	 */
-	@SuppressWarnings("unchecked")
-	private void reload() {
+	@Override
+	protected ArrayList<NameValuePair> getHttpParams() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("sRef", mReference));
+		return params;
+	}
 
-		if (mEpgListTask != null) {
-			mEpgListTask.cancel(true);
-		}
-
-		mEpgListTask = new GetEpgListTask();
-		mEpgListTask.execute(params);
+	@Override
+	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new EventListRequestHandler(), false, args);
+		return loader;
 	}
 }

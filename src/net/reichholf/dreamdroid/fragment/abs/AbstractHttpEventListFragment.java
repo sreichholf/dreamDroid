@@ -6,8 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
-import java.util.HashMap;
-
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
@@ -33,34 +31,35 @@ import android.widget.TextView;
  * @author sreichholf
  * 
  */
-public abstract class AbstractHttpEventListFragment extends AbstractHttpListFragment {	
+public abstract class AbstractHttpEventListFragment extends AbstractHttpListFragment {
+
 	protected String mReference;
 	protected String mName;
 
 	protected ProgressDialog mProgress;
 	protected ExtendedHashMap mCurrentItem;
 	protected MultiPaneHandler mMultiPaneHandler;
-	
+
 	@Override
-	public void onCreate(Bundle savedInstanceState){
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if(savedInstanceState != null){
+		if (savedInstanceState != null) {
 			mReference = savedInstanceState.getString("reference");
 			mName = savedInstanceState.getString("name");
 			mCurrentItem = (ExtendedHashMap) savedInstanceState.getParcelable("currentItem");
 		}
 		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("reference", mReference);
 		outState.putString("name", mName);
 		outState.putParcelable("currentItem", mCurrentItem);
-		
+
 		super.onSaveInstanceState(outState);
 	}
-	
+
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mCurrentItem = mMapList.get((int) id);
@@ -68,16 +67,16 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
 		getSherlockActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
 	}
-	
+
 	@Override
 	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
-		
-		if(mCurrentItem != null){
-		
+
+		if (mCurrentItem != null) {
+
 			switch (id) {
 			case Statics.DIALOG_EPG_ITEM_ID:
-	
+
 				String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 				String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);
 				String date = mCurrentItem.getString(Event.KEY_EVENT_START_READABLE);
@@ -85,20 +84,20 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 					date = date.concat(" (" + (String) mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
 							+ getText(R.string.minutes_short) + ")");
 					String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
-	
+
 					dialog = new Dialog(getSherlockActivity());
 					dialog.setContentView(R.layout.epg_item_dialog);
 					dialog.setTitle(title);
-	
+
 					TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
 					textServiceName.setText(servicename);
-	
+
 					TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
 					textTime.setText(date);
-	
+
 					TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
 					textDescEx.setText(descEx);
-	
+
 					Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
 					buttonSetTimer.setOnClickListener(new OnClickListener() {
 						@Override
@@ -107,7 +106,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 							dialog.dismiss();
 						}
 					});
-	
+
 					Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
 					buttonEditTimer.setOnClickListener(new OnClickListener() {
 						@Override
@@ -116,7 +115,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 							dialog.dismiss();
 						}
 					});
-					
+
 					Button buttonIMDb = (Button) dialog.findViewById(R.id.ButtonImdb);
 					buttonIMDb.setOnClickListener(new OnClickListener() {
 						@Override
@@ -125,7 +124,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 							dialog.dismiss();
 						}
 					});
-					
+
 					Button buttonSimilar = (Button) dialog.findViewById(R.id.ButtonSimilar);
 					buttonSimilar.setOnClickListener(new OnClickListener() {
 						@Override
@@ -148,7 +147,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 				break;
 			default:
 				dialog = null;
-//				dialog = super.onCreateDialog(id);
+				// dialog = super.onCreateDialog(id);
 			}
 		} else {
 			dialog = null;
@@ -156,7 +155,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		}
 		return dialog;
 	}
-	
+
 	/**
 	 * @param event
 	 */
@@ -170,16 +169,16 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
-	
+
 	/**
 	 * @param event
 	 */
-	protected void findSimilarEvents(ExtendedHashMap event){
-		//TODO fix findSimilarEvents
+	protected void findSimilarEvents(ExtendedHashMap event) {
+		// TODO fix findSimilarEvents
 		EpgSearchFragment f = new EpgSearchFragment();
 		Bundle args = new Bundle();
 		args.putString(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
-		
+
 		f.setArguments(args);
 		mMultiPaneHandler.showDetails(f);
 	}

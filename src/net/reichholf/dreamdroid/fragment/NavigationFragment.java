@@ -35,6 +35,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -55,41 +56,43 @@ import com.actionbarsherlock.view.MenuInflater;
  * @author sreichholf
  * 
  */
-public class NavigationFragment extends AbstractHttpListFragment{
-	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog  (1=yes, 0=no) ] 
+public class NavigationFragment extends AbstractHttpListFragment {
+	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (1=yes,
+	// 0=no) ]
 	public static final int[][] MENU_ITEMS = {
-		{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
-		{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0},
-		{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0},
-		{ Statics.ITEM_EPG_SEARCH, R.string.epg_search, R.drawable.ic_menu_search, 1, 0},
-		{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0},
-		{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0},
-		{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
-//		{ Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music, 1, 0 },
-		{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1: 0 ,1 },
-		{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
-		{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
-		{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
-		{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1 ,0 },
-		{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
-	};
-	
+			{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
+			{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0 },
+			{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0 },
+			{ Statics.ITEM_EPG_SEARCH, R.string.epg_search, R.drawable.ic_menu_search, 1, 0 },
+			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0 },
+			{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0 },
+			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
+			// { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer,
+			// R.drawable.ic_menu_music, 1, 0 },
+			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock,
+					DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
+			{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
+			{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
+			{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
+			{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1, 0 },
+			{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 }, };
+
 	private int[] mCurrent;
 	private int mCurrentListItem;
 	private boolean mHighlightCurrent;
 
 	private ExtendedHashMap mSleepTimer;
 	private FragmentMainActivity mActivity;
-	
+
 	private SetPowerStateTask mSetPowerStateTask;
 	private SleepTimerTask mSleepTimerTask;
-	
-	public NavigationFragment(){
+
+	public NavigationFragment() {
 		super();
-		mCurrentTitle = mBaseTitle = "";	
+		mCurrentTitle = mBaseTitle = "";
 		setHighlightCurrent(true);
 	}
-	
+
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
 	 * 
@@ -105,11 +108,11 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			String xml = handler.get(mShc, PowerState.getStateParams(params[0]));
 
 			if (xml != null) {
-				if(isCancelled())
+				if (isCancelled())
 					return false;
 				ExtendedHashMap result = new ExtendedHashMap();
 				handler.parse(xml, result);
-				
+
 				mResult = result;
 				return true;
 			}
@@ -184,7 +187,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			onSleepTimerResult(result, mResult, mDialogOnFinish);
 		}
 	}
-	
+
 	/**
 	 * @param time
 	 * @param action
@@ -231,68 +234,68 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-		
+
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
 		mActivity = (FragmentMainActivity) getSherlockActivity();
 		mSleepTimer = new ExtendedHashMap();
 		mCurrentListItem = -1;
-		
+
 		setHasOptionsMenu(true);
 		setAdapter();
 	}
-	
+
 	@Override
-	public void onDestroy(){
-		if(mSleepTimerTask != null)
+	public void onDestroy() {
+		if (mSleepTimerTask != null)
 			mSleepTimerTask.cancel(true);
-		if(mSetPowerStateTask != null)
+		if (mSetPowerStateTask != null)
 			mSetPowerStateTask.cancel(true);
 		super.onDestroy();
 	}
-	
-	public void setHighlightCurrent(boolean highlight){
+
+	public void setHighlightCurrent(boolean highlight) {
 		mHighlightCurrent = highlight;
 	}
-	
-	public void onActivityCreated(Bundle savedInstanceState){		
+
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		getListView().setTextFilterEnabled(true);
 	}
-	
+
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id){
-		if(mCurrentListItem == position && mActivity.isMultiPane()){
-			//Don't reload what we already see
+	public void onListItemClick(ListView l, View v, int position, long id) {
+		if (mCurrentListItem == position && mActivity.isMultiPane()) {
+			// Don't reload what we already see
 			return;
 		}
 
 		mCurrent = (int[]) l.getItemAtPosition(position);
 
-		//only mark the entry if it isn't a "dialog-only-item"
-		//TODO find a reliable way to mark the current item...
-		if(mHighlightCurrent){
-			if(mCurrent[4] == 0){			 
+		// only mark the entry if it isn't a "dialog-only-item"
+		// TODO find a reliable way to mark the current item...
+		if (mHighlightCurrent) {
+			if (mCurrent[4] == 0) {
 				l.setItemChecked(position, true);
 				mCurrentListItem = position;
 			} else {
 				l.setItemChecked(position, false);
-				if(mCurrentListItem > 0){					
+				if (mCurrentListItem > 0) {
 					l.setItemChecked(mCurrentListItem, true);
 				}
 			}
 		} else {
 			l.setItemChecked(position, false);
 		}
-		
+
 		onItemClicked(mCurrent[0]);
 	}
-	
+
 	private void setAdapter() {
 		mAdapter = new NavigationListAdapter(mActivity, MENU_ITEMS);
 		setListAdapter(mAdapter);
 	}
-	
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.search, menu);
@@ -351,29 +354,30 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			registerOnClickListener(buttonShutdown, Statics.ITEM_SHUTDOWN);
 
 			break;
-			
+
 		case Statics.DIALOG_ABOUT_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.about);
-			dialog.setTitle(R.string.about);			
-			
+			dialog.setTitle(R.string.about);
+
 			TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
 			CharSequence text = DreamDroid.VERSION_STRING + "\n\n" + getText(R.string.license) + "\n\n"
 					+ getText(R.string.source_code_link);
 			aboutText.setText(text);
-			
+
 			Button buttonDonate = (Button) dialog.findViewById(R.id.ButtonDonate);
-			buttonDonate.setOnClickListener(new OnClickListener(){
+			buttonDonate.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					Uri uriUrl = Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=stephan%40reichholf%2enet&item_name=dreamDroid&lc=EN&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted");
+					Uri uriUrl = Uri
+							.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=stephan%40reichholf%2enet&item_name=dreamDroid&lc=EN&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted");
 					Intent i = new Intent(Intent.ACTION_VIEW, uriUrl);
-					startActivity(i);					
-				}				
+					startActivity(i);
+				}
 			});
-						
+
 			break;
-		
+
 		case Statics.DIALOG_SLEEPTIMER_ID:
 			dialog = new Dialog(mActivity);
 			dialog.setContentView(R.layout.sleeptimer);
@@ -381,26 +385,27 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			final NumberPicker time = (NumberPicker) dialog.findViewById(R.id.NumberPicker);
 			final CheckBox enabled = (CheckBox) dialog.findViewById(R.id.CheckBoxEnabled);
 			final RadioGroup action = (RadioGroup) dialog.findViewById(R.id.RadioGroupAction);
-			
+
 			time.setRange(0, 999);
-			
+
 			int min = 90;
 			try {
 				min = Integer.parseInt(mSleepTimer.getString(SleepTimer.KEY_MINUTES));
-			} catch (NumberFormatException nfe){}
-			
+			} catch (NumberFormatException nfe) {
+			}
+
 			boolean enable = Python.TRUE.equals(mSleepTimer.getString(SleepTimer.KEY_ENABLED));
 			String act = mSleepTimer.getString(SleepTimer.KEY_ACTION);
-			
+
 			time.setCurrent(min);
-			enabled.setChecked( enable );
-			
-			if(SleepTimer.ACTION_SHUTDOWN.equals(act)){
+			enabled.setChecked(enable);
+
+			if (SleepTimer.ACTION_SHUTDOWN.equals(act)) {
 				action.check(R.id.RadioButtonShutdown);
-			} else{ 
+			} else {
 				action.check(R.id.RadioButtonStandby);
 			}
-			
+
 			Button buttonCloseSleepTimer = (Button) dialog.findViewById(R.id.ButtonClose);
 			buttonCloseSleepTimer.setOnClickListener(new OnClickListener() {
 				@Override
@@ -409,7 +414,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 				}
 
 			});
-			
+
 			Button buttonSaveSleepTimer = (Button) dialog.findViewById(R.id.ButtonSave);
 			buttonSaveSleepTimer.setOnClickListener(new OnClickListener() {
 				@Override
@@ -417,16 +422,16 @@ public class NavigationFragment extends AbstractHttpListFragment{
 					String t = Integer.valueOf(time.getCurrent()).toString();
 					int id = action.getCheckedRadioButtonId();
 					String a = SleepTimer.ACTION_STANDBY;
-					
-					if(id == R.id.RadioButtonShutdown){
+
+					if (id == R.id.RadioButtonShutdown) {
 						a = SleepTimer.ACTION_SHUTDOWN;
-					} 
-					
+					}
+
 					setSleepTimer(t, a, enabled.isChecked());
 					dialog.dismiss();
 				}
 			});
-			
+
 			break;
 		case Statics.DIALOG_SLEEPTIMER_PROGRESS_ID:
 			dialog = ProgressDialog.show(mActivity, getText(R.string.sleeptimer), getText(R.string.loading));
@@ -454,10 +459,10 @@ public class NavigationFragment extends AbstractHttpListFragment{
 			return true;
 
 		case Statics.ITEM_MOVIES:
-			mActivity.showDetails(MovieListFragment.class);			
+			mActivity.showDetails(MovieListFragment.class);
 			return true;
 
-		case Statics.ITEM_SERVICES:			
+		case Statics.ITEM_SERVICES:
 			mActivity.showDetails(ServiceListFragment.class);
 			return true;
 
@@ -521,12 +526,13 @@ public class NavigationFragment extends AbstractHttpListFragment{
 		case Statics.ITEM_SLEEPTIMER:
 			getSleepTimer(true);
 			return true;
-		
+
 		case Statics.ITEM_MEDIA_PLAYER:
 			showToast(getString(R.string.not_implemented));
-//			TODO startActivity( new Intent(mActivity, MediaplayerNavigationActivity.class) );
+			// TODO startActivity( new Intent(mActivity,
+			// MediaplayerNavigationActivity.class) );
 			return true;
-		
+
 		case Statics.ITEM_PROFILES:
 			mActivity.showDetails(ProfileListFragment.class);
 			return true;
@@ -584,7 +590,7 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	}
 
 	public void setAvailableFeatures() {
-		//TODO implement feature-handling for list-navigation
+		// TODO implement feature-handling for list-navigation
 	}
 
 	/**
@@ -611,5 +617,10 @@ public class NavigationFragment extends AbstractHttpListFragment{
 	 */
 	public View findViewById(int id) {
 		return getSherlockActivity().findViewById(id);
+	}
+
+	@Override
+	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int arg0, Bundle arg1) {
+		return null;
 	}
 }

@@ -21,9 +21,9 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 /**
  * @author sre
- *
+ * 
  */
-public class ViewPagerNavigationFragment extends NavigationFragment{
+public class ViewPagerNavigationFragment extends NavigationFragment {
 	private Button mButtonPower;
 	private Button mButtonCurrent;
 	private Button mButtonConnectivity;
@@ -39,21 +39,20 @@ public class ViewPagerNavigationFragment extends NavigationFragment{
 	private Button mButtonAbout;
 	private Button mButtonProfiles;
 	private ViewPager mPager;
-	 
+
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		View v = inflater.inflate(R.layout.indicated_viewpager, null);
-		View[] pageViews = {inflater.inflate(R.layout.main, null), inflater.inflate(R.layout.extras, null)};
-		ViewPagerAdapter adapter = new ViewPagerAdapter(getSherlockActivity(), new String[]{"Main", "Extras"}, pageViews );
-	    mPager =
-	        (ViewPager)v.findViewById( R.id.viewpager );
-	    TitlePageIndicator indicator =
-	        (TitlePageIndicator)v.findViewById( R.id.indicator );
-	    mPager.setAdapter( adapter );	    
-	    indicator.setViewPager( mPager );
-		
-	    mButtonPower = (Button) pageViews[0].findViewById(R.id.ButtonPower);
+		View[] pageViews = { inflater.inflate(R.layout.main, null), inflater.inflate(R.layout.extras, null) };
+		ViewPagerAdapter adapter = new ViewPagerAdapter(getSherlockActivity(), new String[] { "Main", "Extras" },
+				pageViews);
+		mPager = (ViewPager) v.findViewById(R.id.viewpager);
+		TitlePageIndicator indicator = (TitlePageIndicator) v.findViewById(R.id.indicator);
+		mPager.setAdapter(adapter);
+		indicator.setViewPager(mPager);
+
+		mButtonPower = (Button) pageViews[0].findViewById(R.id.ButtonPower);
 		mButtonCurrent = (Button) pageViews[0].findViewById(R.id.ButtonCurrent);
 		mButtonMovies = (Button) pageViews[0].findViewById(R.id.ButtonMovies);
 		mButtonServices = (Button) pageViews[0].findViewById(R.id.ButtonServices);
@@ -68,13 +67,13 @@ public class ViewPagerNavigationFragment extends NavigationFragment{
 		mButtonAbout = (Button) pageViews[1].findViewById(R.id.ButtonAbout);
 		mButtonMessage = (Button) pageViews[1].findViewById(R.id.ButtonMessage);
 		mButtonConnectivity = (Button) pageViews[1].findViewById(R.id.ButtonCheckConnection);
-		
-		registerOnClickListener(mButtonSleepTimer,  Statics.ITEM_SLEEPTIMER);
-		registerOnClickListener(mButtonScreenshot,  Statics.ITEM_SCREENSHOT);
-		registerOnClickListener(mButtonDeviceInfo,  Statics.ITEM_INFO);
-		registerOnClickListener(mButtonAbout,  Statics.ITEM_ABOUT);
-		registerOnClickListener(mButtonMessage,  Statics.ITEM_MESSAGE);
-		registerOnClickListener(mButtonConnectivity,  Statics.ITEM_CHECK_CONN);
+
+		registerOnClickListener(mButtonSleepTimer, Statics.ITEM_SLEEPTIMER);
+		registerOnClickListener(mButtonScreenshot, Statics.ITEM_SCREENSHOT);
+		registerOnClickListener(mButtonDeviceInfo, Statics.ITEM_INFO);
+		registerOnClickListener(mButtonAbout, Statics.ITEM_ABOUT);
+		registerOnClickListener(mButtonMessage, Statics.ITEM_MESSAGE);
+		registerOnClickListener(mButtonConnectivity, Statics.ITEM_CHECK_CONN);
 		registerOnClickListener(mButtonProfiles, Statics.ITEM_PROFILES);
 		registerOnClickListener(mButtonPower, Statics.ITEM_POWERSTATE_DIALOG);
 		registerOnClickListener(mButtonCurrent, Statics.ITEM_CURRENT);
@@ -85,13 +84,12 @@ public class ViewPagerNavigationFragment extends NavigationFragment{
 		registerOnClickListener(mButtonEpgSearch, Statics.ITEM_EPG_SEARCH);
 		return v;
 	}
-	
+
 	@Override
-	public void setAvailableFeatures(){
+	public void setAvailableFeatures() {
 		if (DreamDroid.featureSleepTimer()) {
 			mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
 		}
 	}
-	
-}
 
+}

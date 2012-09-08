@@ -65,58 +65,58 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	private byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
 	private GetScreenshotTask mGetScreenshotTask;
-	
+
 	private class GetScreenshotTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private byte[] mBytes;
 
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if(isCancelled())
+			if (isCancelled())
 				return false;
 			publishProgress();
 			mShc.fetchPageContent(URIStore.SCREENSHOT, params[0]);
 			mBytes = mShc.getBytes();
 
-			if(mBytes.length > 0){
+			if (mBytes.length > 0) {
 				return true;
-			}			
+			}
 
 			return false;
 		}
-		
+
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			if(!isCancelled())
+			if (!isCancelled())
 				updateProgress();
 		}
-		
+
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (result) {
 				onScreenshotAvailable(mBytes);
 			} else {
 				String error = getString(R.string.get_content_error);
-				if(mShc.hasError()){
+				if (mShc.hasError()) {
 					error = error.concat("\n").concat(mShc.getErrorText());
 				}
 				showToast(error);
 			}
 		}
 	}
-	
+
 	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {
 		@Override
 		public void onMediaScannerConnected() {
-			return;			
+			return;
 		}
 
 		@Override
 		public void onScanCompleted(String arg0, Uri arg1) {
 			return;
 		}
-		
+
 	}
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -125,7 +125,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mImageView = new ImageView(getSherlockActivity());
 		mImageView.setBackgroundColor(Color.BLACK);
 
@@ -141,19 +141,19 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		mFilename = extras.getString(KEY_FILENAME);
 		mScannerConn = new MediaScannerConnection(getSherlockActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
-		
-		if(savedInstanceState == null){
+
+		if (savedInstanceState == null) {
 			reload();
 		} else {
 			byte[] image = savedInstanceState.getByteArray("rawImage");
 			onScreenshotAvailable(image);
 		}
-		
+
 		return mImageView;
 	}
 
 	@Override
-	public void onDestroy(){
+	public void onDestroy() {
 		cancelTaskIfRunning();
 		mScannerConn.disconnect();
 		super.onDestroy();
@@ -164,43 +164,43 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		inflater.inflate(R.menu.reload, menu);
 		inflater.inflate(R.menu.save, menu);
 	}
-	
+
 	@Override
-	public void onSaveInstanceState(Bundle outState){
+	public void onSaveInstanceState(Bundle outState) {
 		outState.putByteArray("rawImage", mRawImage);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()){
+		switch (item.getItemId()) {
 		case Statics.ITEM_RELOAD:
 			reload();
 			break;
 		case Statics.ITEM_SAVE:
 			saveToFile();
 		}
-		
+
 		return true;
 	}
 
 	/**
 	 * 
 	 */
-	private void updateProgress(){
+	private void updateProgress() {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 	}
-	
+
 	/**
 	 * @param bytes
 	 */
-	private void onScreenshotAvailable(byte[] bytes){
-		if(this.isDetached())
+	private void onScreenshotAvailable(byte[] bytes) {
+		if (this.isDetached())
 			return;
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -236,45 +236,45 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 			mFilename = "/tmp/dreamDroid-" + ts;
 		}
 		params.add(new BasicNameValuePair("filename", mFilename));
-		
+
 		cancelTaskIfRunning();
 		mGetScreenshotTask = new GetScreenshotTask();
 		mGetScreenshotTask.execute(params);
 	}
-	
-	private void cancelTaskIfRunning(){
-		if(mGetScreenshotTask != null){
-			if(mGetScreenshotTask.getStatus().equals(AsyncTask.Status.RUNNING)){
+
+	private void cancelTaskIfRunning() {
+		if (mGetScreenshotTask != null) {
+			if (mGetScreenshotTask.getStatus().equals(AsyncTask.Status.RUNNING)) {
 				mGetScreenshotTask.cancel(true);
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 */
-	private void saveToFile(){
-		if(mRawImage != null){
+	private void saveToFile() {
+		if (mRawImage != null) {
 			long timestamp = GregorianCalendar.getInstance().getTimeInMillis();
-			
-			File root = Environment.getExternalStorageDirectory();			
+
+			File root = Environment.getExternalStorageDirectory();
 			root = new File(String.format("%s%s%s", root.getAbsolutePath(), File.separator, "media/screenshots"));
-			
+
 			String extension = "";
-			
-			if(mFormat == FORMAT_JPG){
+
+			if (mFormat == FORMAT_JPG) {
 				extension = "jpg";
-			} else if (mFormat == FORMAT_PNG){
+			} else if (mFormat == FORMAT_PNG) {
 				extension = "png";
 			}
-				
+
 			String fileName = String.format("dreamDroid_%s.%s", timestamp, extension);
 			FileOutputStream out;
 			try {
-				if(!root.exists()){
+				if (!root.exists()) {
 					root.mkdirs();
 				}
-				
+
 				File file = new File(root, fileName);
 				file.createNewFile();
 				out = new FileOutputStream(file);
@@ -282,11 +282,11 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 				out.close();
 				mScannerConn.scanFile(file.getAbsolutePath(), "image/*");
 				showToast(getString(R.string.screenshot_saved, file.getAbsolutePath()));
-				
+
 			} catch (IOException e) {
 				Log.e(DreamDroid.LOG_TAG, e.getLocalizedMessage());
 				showToast(e.toString());
 			}
-		}		
+		}
 	}
 }

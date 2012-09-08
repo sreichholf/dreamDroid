@@ -56,7 +56,9 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	private TextView mConnectionState;
 	
 	private CheckProfileTask mCheckProfileTask;
-
+	
+	private Fragment mDetailFragment;
+	
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
 
@@ -122,7 +124,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	}
 
 	private Fragment getCurrentDetailFragment(){
-		return mFragmentManager.findFragmentById(R.id.detail_view);
+		return mDetailFragment;
 	}
 
 	private void initViews(){
@@ -391,5 +393,16 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		} else {
 			super.finish();
 		}
+	}
+
+	@Override
+	public void onDetailFragmentAttached(Fragment fragment) {
+		if(fragment != mNavigationFragment || !mMultiPane)
+			mDetailFragment = fragment;
+	}
+
+	@Override
+	public void onDetailFragmentPause(Fragment fragment) {
+		mDetailFragment = null;
 	}
 }

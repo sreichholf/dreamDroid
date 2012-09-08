@@ -77,7 +77,7 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 			}
 			mFragment = f;
 		}
-		mCallBackHandler = (ActivityCallbackHandler) mFragment;
+		mCallBackHandler = null;
 		ft.replace(R.id.content, mFragment);
 		ft.commit();
 	}
@@ -207,5 +207,15 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		mFragment.onActivityResult(requestCode, resultCode, data);
+	}
+	
+	@Override
+	public void onDetailFragmentAttached(Fragment fragment) {
+		mCallBackHandler = (ActivityCallbackHandler) fragment;
+	}
+
+	@Override
+	public void onDetailFragmentPause(Fragment fragment) {
+		mCallBackHandler = null;
 	}
 }

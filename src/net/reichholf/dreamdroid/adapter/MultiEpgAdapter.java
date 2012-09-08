@@ -22,7 +22,7 @@ import android.widget.TextView;
 
 /**
  * @author sre
- *
+ * 
  */
 public class MultiEpgAdapter extends ArrayAdapter<ExtendedHashMap> {
 	private ArrayList<ExtendedHashMap> mItems;
@@ -34,35 +34,40 @@ public class MultiEpgAdapter extends ArrayAdapter<ExtendedHashMap> {
 	 * @param textViewResourceId
 	 * @param objects
 	 */
-	public MultiEpgAdapter(Context context, int textViewResourceId, ArrayList<ExtendedHashMap> items, int minutes, int width) {
-		
+	public MultiEpgAdapter(Context context, int textViewResourceId, ArrayList<ExtendedHashMap> items, int minutes,
+			int width) {
+
 		super(context, textViewResourceId, items);
 		mItems = items;
-		mFactor =  width / minutes;
+		mFactor = width / minutes;
 	}
-	
-	/* (non-Javadoc)
-	 * @see android.widget.ArrayAdapter#getView(int, android.view.View, android.view.ViewGroup)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.widget.ArrayAdapter#getView(int, android.view.View,
+	 * android.view.ViewGroup)
 	 */
 	public View getView(int position, View convertView, ViewGroup parent) {
-//		View view = convertView;
-//		if(view == null){
-//			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//			view = li.inflate(R.layout.timer_list_item, null);
-//		}
-		
+		// View view = convertView;
+		// if(view == null){
+		// LayoutInflater li = (LayoutInflater)
+		// getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		// view = li.inflate(R.layout.timer_list_item, null);
+		// }
+
 		Context ctx = getContext();
 		TableLayout tab = new TableLayout(ctx);
 
 		ExtendedHashMap services = mItems.get(position);
-		
+
 		// this is where the almighty layout-voodoo happens....
-		if(services != null){
+		if (services != null) {
 			TableRow row = new TableRow(ctx);
 			@SuppressWarnings("unchecked")
 			ArrayList<ExtendedHashMap> items = (ArrayList<ExtendedHashMap>) services.get("items");
 			int remaining = mWidth;
-			for(ExtendedHashMap item : items){
+			for (ExtendedHashMap item : items) {
 				String duration = item.getString(Event.KEY_EVENT_DURATION);
 				long d = Long.valueOf(duration);
 
@@ -70,31 +75,31 @@ public class MultiEpgAdapter extends ArrayAdapter<ExtendedHashMap> {
 				int width = d <= remaining ? (int) d : remaining;
 				width *= mFactor;
 				remaining -= width;
-				
+
 				View v = getItemTextView(ctx, item, width);
 				row.addView(v);
-				
-				//Timeline filled?
-				if(remaining == 0){
+
+				// Timeline filled?
+				if (remaining == 0) {
 					break;
 				}
 			}
-			
+
 			tab.addView(row);
-		}		
-		
+		}
+
 		return tab;
 	}
-	
-	private View getItemTextView(Context ctx, ExtendedHashMap item, int width){
+
+	private View getItemTextView(Context ctx, ExtendedHashMap item, int width) {
 		LinearLayout ll = new LinearLayout(ctx);
-		ll.setLayoutParams( new LinearLayout.LayoutParams(width, LayoutParams.WRAP_CONTENT) );
-		
+		ll.setLayoutParams(new LinearLayout.LayoutParams(width, LayoutParams.WRAP_CONTENT));
+
 		TextView view = new TextView(ctx);
 		view.setText(item.getString(Event.KEY_EVENT_NAME));
-		ll.addView(view);		
-				
+		ll.addView(view);
+
 		return ll;
 	}
-	
+
 }

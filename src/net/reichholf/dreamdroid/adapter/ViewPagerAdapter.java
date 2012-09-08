@@ -32,7 +32,7 @@ public class ViewPagerAdapter extends PagerAdapter {
 	@Override
 	public Object instantiateItem(View pager, int position) {
 		View v = mViews[position];
-		((ViewPager)pager).addView( v, 0 );
+		((ViewPager) pager).addView(v, 0);
 		return v;
 	}
 

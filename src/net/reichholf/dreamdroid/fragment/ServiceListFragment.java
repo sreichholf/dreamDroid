@@ -13,8 +13,10 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
@@ -51,6 +53,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -128,13 +131,13 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			}
 
 			mTaskList = new ArrayList<ExtendedHashMap>();
-			if(isCancelled())
+			if (isCancelled())
 				return false;
 			publishProgress(getString(R.string.fetching_data));
 
 			String xml = mListRequestHandler.getList(mShc, params[0]);
 			if (xml != null) {
-				if(isCancelled())
+				if (isCancelled())
 					return false;
 				publishProgress(getString(R.string.parsing));
 
@@ -143,7 +146,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 				if (mListRequestHandler.parseList(xml, mTaskList)) {
 					if (mRequireLocsAndTags) {
 						if (DreamDroid.getLocations().size() == 0) {
-							if(isCancelled())
+							if (isCancelled())
 								return false;
 							publishProgress(getString(R.string.fetching_data));
 
@@ -153,7 +156,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 						}
 
 						if (DreamDroid.getTags().size() == 0) {
-							if(isCancelled())
+							if (isCancelled())
 								return false;
 							publishProgress(getString(R.string.fetching_data));
 
@@ -198,7 +201,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			mTaskList = new ArrayList<ExtendedHashMap>();
-			if(isCancelled())
+			if (isCancelled())
 				return false;
 			publishProgress(getString(R.string.fetching_data));
 
@@ -207,7 +210,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			if (mIsBouquetList || mPickMode) {
 				handler = new ServiceListRequestHandler();
 			} else {
-				if(DreamDroid.featureNowNext())
+				if (DreamDroid.featureNowNext())
 					handler = new EpgNowNextListRequestHandler();
 				else
 					handler = new EventListRequestHandler(URIStore.EPG_NOW);
@@ -226,7 +229,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			if(!isCancelled())
+			if (!isCancelled())
 				updateProgress(progress[0]);
 		}
 
@@ -281,9 +284,9 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mDetailName = savedInstanceState.getString("detailname");
 			mDetailReference = savedInstanceState.getString("detailreference");
 
-			mHistory = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("history");
-			mNavItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("navitems");
-			mDetailItems = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable("detailitems");
+			mHistory = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, "history");
+			mNavItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, "navitems");
+			mDetailItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, "detailitems");
 
 			mCurrentService = (ExtendedHashMap) savedInstanceState.getParcelable("currentService");
 
@@ -324,14 +327,14 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	}
 
 	@Override
-	public void onDestroy(){
-		if(mListTask != null)
+	public void onDestroy() {
+		if (mListTask != null)
 			mListTask.cancel(true);
 		getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
 		getSherlockActivity().removeDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
 		super.onDestroy();
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_view, null, false);
@@ -489,37 +492,13 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	private void setAdapter() {
-		SimpleAdapter adapter;
+		ListAdapter adapter;
 		if (!mNavList.equals(mDetailList)) {
 			adapter = new SimpleAdapter(getSherlockActivity(), mNavItems, android.R.layout.simple_list_item_1,
 					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
 			mNavList.setAdapter(adapter);
 		}
-
-		if(DreamDroid.featureNowNext())
-			adapter = new SimpleAdapter(getSherlockActivity(), mDetailItems, R.layout.service_list_item_nn, 
-					new String[] {
-						Event.KEY_SERVICE_NAME, 
-						Event.KEY_EVENT_TITLE, 
-						Event.KEY_EVENT_START_TIME_READABLE,
-						Event.KEY_EVENT_DURATION_READABLE,
-						Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE), 
-						Event.PREFIX_NEXT.concat(Event.KEY_EVENT_START_TIME_READABLE),
-						Event.PREFIX_NEXT.concat(Event.KEY_EVENT_DURATION_READABLE)}, 
-					new int[] { 
-						R.id.service_name, 
-						R.id.event_now_title, 
-						R.id.event_now_start,
-						R.id.event_now_duration,
-						R.id.event_next_title, 
-						R.id.event_next_start,
-						R.id.event_next_duration}
-			);
-		else
-			adapter = new SimpleAdapter(getSherlockActivity(), mDetailItems, R.layout.service_list_item, new String[] {
-				Event.KEY_SERVICE_NAME, Event.KEY_EVENT_TITLE, Event.KEY_EVENT_START_TIME_READABLE,
-				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.service_name, R.id.event_title, R.id.event_start,
-				R.id.event_duration });
+		adapter = new ServiceListAdapter(getSherlockActivity(), R.layout.service_list_item, mDetailItems);
 		mDetailList.setAdapter(adapter);
 	}
 
@@ -610,13 +589,13 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		} else {
 			overview.setEnabled(false);
 		}
-		
+
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
-		String defaultReference = DreamDroid.getSharedPreferences()
-				.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, null);
+		String defaultReference = DreamDroid.getSharedPreferences().getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF,
+				null);
 		setDefault.setEnabled(true);
-		if(defaultReference != null){
-			if(defaultReference.equals(mDetailReference)){
+		if (defaultReference != null) {
+			if (defaultReference.equals(mDetailReference)) {
 				setDefault.setEnabled(false);
 			}
 		}
@@ -700,7 +679,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	 */
 	private void onListItemClick(ListView l, View v, int position, long id, boolean isLong) {
 		@SuppressWarnings("unchecked")
-		ExtendedHashMap item = new ExtendedHashMap( (HashMap<String,Object>) l.getItemAtPosition(position) );
+		ExtendedHashMap item = new ExtendedHashMap((HashMap<String, Object>) l.getItemAtPosition(position));
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
 		if (isBouquetList(ref)) {
@@ -977,7 +956,10 @@ public class ServiceListFragment extends AbstractHttpFragment {
 		mNavReference = SERVICE_REF_ROOT;
 		mNavName = "";
 		getSherlockActivity().invalidateOptionsMenu();
-		((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
+		if (mNavList != mDetailList)
+			((SimpleAdapter) mNavList.getAdapter()).notifyDataSetChanged();
+		else
+			((ServiceListAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
 	@Override
@@ -1005,7 +987,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			mDetailList.setVisibility(View.VISIBLE);
 			mDetailItems.clear();
 			mDetailItems.addAll(list);
-			((SimpleAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
+			((ServiceListAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
 		getSherlockActivity().invalidateOptionsMenu();
 		nextListTaskPlease();

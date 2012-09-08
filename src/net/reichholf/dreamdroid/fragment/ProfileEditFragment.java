@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
 import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.app.Dialog;
@@ -27,7 +28,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -37,7 +37,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sre
  *
  */
-public class ProfileEditFragment extends SherlockFragment implements ActivityCallbackHandler{
+public class ProfileEditFragment extends DreamDroidFragment {
 	private Profile mCurrentProfile;
 
 	private EditText mProfile;

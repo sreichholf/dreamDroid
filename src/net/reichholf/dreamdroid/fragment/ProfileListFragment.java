@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
 import android.app.Activity;
@@ -33,7 +34,6 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -44,53 +44,53 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sre
  * 
  */
-public class ProfileListFragment extends SherlockListFragment implements ActivityCallbackHandler{
+public class ProfileListFragment extends DreamDroidListFragment {
 	private Profile mProfile;
 	private ArrayList<Profile> mDetectedProfiles;
-	
+
 	private SimpleCursorAdapter mAdapter;
 	private Cursor mCursor;
 	private Activity mActivity;
 	private DetectDevicesTask mDetectDevicesTask;
-	
+
 	private ProgressDialog mProgress;
 	private MultiPaneHandler mMultiPaneHandler;
 
-	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>>{
+	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>> {
 
 		@Override
 		protected ArrayList<Profile> doInBackground(Void... params) {
 			ArrayList<Profile> profiles = DeviceDetector.getAvailableHosts();
 			return profiles;
 		}
-		
+
 		@Override
-		protected void onPostExecute( ArrayList<Profile> profiles) {
+		protected void onPostExecute(ArrayList<Profile> profiles) {
 			onDevicesDetected(profiles);
 		}
-		
+
 	}
-	
-	
+
 	/**
 	 * 
 	 */
-	private void detectDevices(){
-		if(mDetectedProfiles == null){
-			if(mDetectDevicesTask != null){
+	private void detectDevices() {
+		if (mDetectedProfiles == null) {
+			if (mDetectDevicesTask != null) {
 				mDetectDevicesTask.cancel(true);
 				mDetectDevicesTask = null;
 			}
-			
-			if(mProgress != null){			
+
+			if (mProgress != null) {
 				mProgress.dismiss();
 			}
-			mProgress = ProgressDialog.show(getActivity(), getText(R.string.searching), getText(R.string.searching_known_devices));
+			mProgress = ProgressDialog.show(getActivity(), getText(R.string.searching),
+					getText(R.string.searching_known_devices));
 			mProgress.setCancelable(false);
 			mDetectDevicesTask = new DetectDevicesTask();
 			mDetectDevicesTask.execute();
-		} else {	
-			if(mDetectedProfiles.size() == 0){
+		} else {
+			if (mDetectedProfiles.size() == 0) {
 				mDetectedProfiles = null;
 				detectDevices();
 			} else {
@@ -98,12 +98,12 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 */
-	private void addAllDetectedDevices(){
-		for(Profile p : mDetectedProfiles){		
+	private void addAllDetectedDevices() {
+		for (Profile p : mDetectedProfiles) {
 			if (DreamDroid.addProfile(p)) {
 				showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
 			} else {
@@ -112,25 +112,25 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		}
 		mCursor.requery();
 	}
-	
+
 	/**
 	 * @param hosts
 	 *            A list of profiles for auto-discovered dreamboxes
 	 */
-	private void onDevicesDetected(ArrayList<Profile> profiles){
+	private void onDevicesDetected(ArrayList<Profile> profiles) {
 		mProgress.dismiss();
 		mDetectedProfiles = profiles;
-		
+
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.autodiscover_dreamboxes);
-		
-		if(mDetectedProfiles.size() > 0){			
+
+		if (mDetectedProfiles.size() > 0) {
 			CharSequence[] items = new CharSequence[profiles.size()];
-			
-			for(int i = 0; i < profiles.size(); i++){			
+
+			for (int i = 0; i < profiles.size(); i++) {
 				items[i] = profiles.get(i).getName();
 			}
-			
+
 			builder.setItems(items, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -138,23 +138,23 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 					editProfile();
 					dialog.dismiss();
 				}
-			
+
 			});
-			
+
 			builder.setPositiveButton(R.string.reload, new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int id) {
-					mDetectedProfiles = null;					
+					mDetectedProfiles = null;
 					dialog.dismiss();
-					detectDevices();					
+					detectDevices();
 				}
 			});
-			
+
 			builder.setNegativeButton(R.string.add_all, new OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int id) {				
+				public void onClick(DialogInterface dialog, int id) {
 					dialog.dismiss();
-					addAllDetectedDevices();					
+					addAllDetectedDevices();
 				}
 			});
 		} else {
@@ -162,40 +162,40 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 			builder.setNeutralButton(android.R.string.ok, new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int id) {
-					dialog.cancel();					
+					dialog.cancel();
 				}
-			});			
+			});
 		}
 		builder.show();
 	}
-	
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		
+
 		mActivity = getActivity();
 		mActivity.setTitle(getString(R.string.profiles));
 		mActivity.setProgressBarIndeterminateVisibility(false);
-		
+
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 		mCursor = DreamDroid.getProfiles();
-		
+
 		mProfile = new Profile();
-		if(savedInstanceState != null){
+		if (savedInstanceState != null) {
 			int pos = savedInstanceState.getInt("cursorPosition");
 			mCursor.moveToPosition(pos);
-			mProfile.set(mCursor);			
+			mProfile.set(mCursor);
 		}
 	}
-	
-	public void onActivityCreated(Bundle savedInstanceState){
+
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
+
 		mAdapter = new SimpleCursorAdapter(mActivity, android.R.layout.two_line_list_item, mCursor, new String[] {
 				DreamDroid.KEY_PROFILE, DreamDroid.KEY_HOST }, new int[] { android.R.id.text1, android.R.id.text2 });
 
 		setListAdapter(mAdapter);
-		
+
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
@@ -215,7 +215,7 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		getActivity().showDialog(Statics.DIALOG_PROFILE_ID);
 		return true;
 	}
-	
+
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putInt("cursorPosition", mCursor.getPosition());
 		super.onSaveInstanceState(outState);
@@ -223,41 +223,41 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 
 	public Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
-		if(mProfile != null){
+		if (mProfile != null) {
 			switch (id) {
 			case (Statics.DIALOG_PROFILE_ID):
 				CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-	
+
 				AlertDialog.Builder adBuilder = new AlertDialog.Builder(mActivity);
 				adBuilder.setTitle(mProfile.getName());
 				adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-	
+
 					public void onClick(DialogInterface dialog, int which) {
 						switch (which) {
 						case 0:
 							editProfile();
 							break;
-	
+
 						case 1:
 							getActivity().showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
 							break;
-	
+
 						default:
 							break;
 						}
 					}
 				});
-	
+
 				dialog = adBuilder.create();
 				break;
-	
+
 			case (Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID):
 				AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-	
+
 				builder.setTitle(mProfile.getName()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
 						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
-	
+
 								if (DreamDroid.deleteProfile(mProfile)) {
 									showToast(getText(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
 								} else {
@@ -294,7 +294,6 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		}
 	}
 
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
@@ -322,7 +321,7 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		default:
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -332,7 +331,7 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
-			if(!mMultiPaneHandler.isMultiPane()){
+			if (!mMultiPaneHandler.isMultiPane()) {
 				getActivity().finish();
 			}
 		} else {
@@ -347,11 +346,11 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 		Bundle args = new Bundle();
 		args.putString("action", Intent.ACTION_EDIT);
 		args.putSerializable("profile", mProfile);
-		
-		Fragment f = new ProfileEditFragment();		
+
+		Fragment f = new ProfileEditFragment();
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
-		mMultiPaneHandler.showDetails(f, true);		
+		mMultiPaneHandler.showDetails(f, true);
 	}
 
 	/**
@@ -360,8 +359,8 @@ public class ProfileListFragment extends SherlockListFragment implements Activit
 	private void createProfile() {
 		Bundle args = new Bundle();
 		args.putString("action", Intent.ACTION_EDIT);
-		
-		Fragment f = new ProfileEditFragment();		
+
+		Fragment f = new ProfileEditFragment();
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
 		mMultiPaneHandler.showDetails(f);

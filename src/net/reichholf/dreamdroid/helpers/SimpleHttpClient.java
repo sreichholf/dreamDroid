@@ -63,7 +63,7 @@ public class SimpleHttpClient {
 	 * @param sp
 	 *            SharedPreferences of the Base-Context
 	 */
-	private SimpleHttpClient() {
+	public SimpleHttpClient() {
 		BasicHttpParams params = new BasicHttpParams();
 		params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
 

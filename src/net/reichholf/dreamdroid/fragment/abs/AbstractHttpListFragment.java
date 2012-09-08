@@ -8,14 +8,13 @@ package net.reichholf.dreamdroid.fragment.abs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
-import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -24,7 +23,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -32,16 +30,15 @@ import org.apache.http.message.BasicNameValuePair;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.MenuItem;
 
 /**
@@ -49,13 +46,13 @@ import com.actionbarsherlock.view.MenuItem;
  * 
  */
 
-public abstract class AbstractHttpListFragment extends SherlockListFragment implements ActivityCallbackHandler{
+public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
+		LoaderManager.LoaderCallbacks<ArrayList<ExtendedHashMap>> {
 	public static final String BUNDLE_KEY_LIST = "list";
-	
+
 	protected final String sData = "data";
 	protected String mBaseTitle;
 	protected String mCurrentTitle;
-
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
@@ -64,101 +61,6 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 	protected SimpleResultTask mSimpleResultTask;
 	protected SetVolumeTask mVolumeTask;
-	
-	/**
-	 * @author sre
-	 * 
-	 */
-	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
-		protected ArrayList<ExtendedHashMap> mTaskList;
-
-		protected ListRequestInterface mListRequestHandler;
-		protected boolean mRequireLocsAndTags;
-		protected ArrayList<String> mLocations;
-		protected ArrayList<String> mTags;
-
-		public AsyncListUpdateTask(String baseTitle) {
-			mListRequestHandler = null;
-		}
-
-		public AsyncListUpdateTask(ListRequestInterface listRequestHandler, boolean requireLocsAndTags) {			
-			mListRequestHandler = listRequestHandler;
-			mRequireLocsAndTags = requireLocsAndTags;
-		}
-
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if (mListRequestHandler == null) {
-				throw new UnsupportedOperationException(
-						"Method doInBackground not re-implemented while no ListRequestHandler has been given");
-			}
-
-			mTaskList = new ArrayList<ExtendedHashMap>();
-			if(isCancelled())
-				return false;
-			publishProgress(getString(R.string.fetching_data));
-
-			String xml = mListRequestHandler.getList(mShc, params[0]);
-			if (xml != null) {
-				if(isCancelled())
-					return false;
-				publishProgress(getString(R.string.parsing));
-
-				mTaskList.clear();
-
-				if (mListRequestHandler.parseList(xml, mTaskList)) {
-					if (mRequireLocsAndTags) {
-						if (DreamDroid.getLocations().size() == 0) {
-							if(isCancelled())
-								return false;
-							publishProgress(getString(R.string.locations) + " - " + getString(R.string.fetching_data));
-							if (!DreamDroid.loadLocations(mShc)) {
-								// TODO Add Error-Msg when loadLocations fails
-							}
-						}
-
-						if (DreamDroid.getTags().size() == 0) {
-							if(isCancelled())
-								return false;
-							publishProgress(getString(R.string.tags) + " - " + getString(R.string.fetching_data));
-
-							if (!DreamDroid.loadTags(mShc)) {
-								// TODO Add Error-Msg when loadTags fails
-							}
-						}
-					}
-					return true;
-				}
-			}
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			if(!isCancelled())
-				updateProgress(progress[0]);
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			String title = null;
-
-			if (result) {
-				title = mBaseTitle;
-			} else {
-				title = getString(R.string.get_content_error);
-
-				if (mShc.hasError()) {
-					showToast(getString(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-
-			if (mRequireLocsAndTags) {
-				setDefaultLocation();
-			}
-			finishListProgress(title, mTaskList);
-		}
-	}
 
 	/**
 	 * @author sre
@@ -174,7 +76,7 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if(isCancelled())
+			if (isCancelled())
 				return false;
 			publishProgress();
 			String xml = mHandler.get(mShc, params[0]);
@@ -195,29 +97,29 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			if(!isCancelled())
+			if (!isCancelled())
 				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		@Override
 		protected void onPostExecute(Boolean result) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-			
+
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 			}
-			
+
 			onSimpleResult(result, mResult);
 		}
 	}
-	
+
 	protected class SetVolumeTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mVolume;
 		private VolumeRequestHandler mHandler;
-		
+
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if(isCancelled())
+			if (isCancelled())
 				return false;
 			publishProgress();
 			mHandler = new VolumeRequestHandler();
@@ -228,7 +130,7 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 				mHandler.parse(xml, volume);
 
 				String current = volume.getString(Volume.KEY_CURRENT);
-				if(current != null){
+				if (current != null) {
 					mVolume = volume;
 					return true;
 				}
@@ -239,22 +141,22 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			if(!isCancelled())
+			if (!isCancelled())
 				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		}
 
 		@Override
 		protected void onPostExecute(Boolean result) {
 			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-			
+
 			if (!result || mVolume == null) {
 				mVolume = new ExtendedHashMap();
 			}
-			
+
 			onVolumeSet(result, mVolume);
 		}
 	}
-	
+
 	protected void setDefaultLocation() {
 		throw new UnsupportedOperationException("Required Method setDefaultLocation() not re-implemented");
 	}
@@ -264,18 +166,15 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-		
+
 		mExtras = getArguments();
 		mMapList = null;
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
-		
-		mMapList = new ArrayList<ExtendedHashMap>();
-		if(savedInstanceState != null){
-			ArrayList< HashMap<String,Object> > list = (ArrayList< HashMap<String,Object> >) savedInstanceState.getSerializable(BUNDLE_KEY_LIST);
-			Iterator<HashMap<String, Object>> iter = list.iterator();
-			while(iter.hasNext()){
-				mMapList.add(new ExtendedHashMap(iter.next()));
-			}
+
+		if (savedInstanceState != null) {
+			mMapList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_LIST);
+		} else {
+			mMapList = new ArrayList<ExtendedHashMap>();
 		}
 
 		if (mExtras != null) {
@@ -287,24 +186,19 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 			mExtras = new Bundle();
 		}
 
-		setClient();		
+		setClient();
 	}
-	
+
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		getSherlockActivity().setTitle(mCurrentTitle);
-		return super.onCreateView(inflater, container, savedInstanceState);
-	}
-	
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState){
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		getListView().setFastScrollEnabled(true);
-		try{
+		try {
 			setEmptyText(getText(R.string.loading));
-		} catch (IllegalStateException e){}
+		} catch (IllegalStateException e) {
+		}
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
@@ -398,7 +292,6 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		default:
 			return false;
 		}
-
 	}
 
 	/**
@@ -494,18 +387,18 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
-	
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if( DreamDroid.getSharedPreferences().getBoolean("volume_control", false) ) {
+		if (DreamDroid.getSharedPreferences().getBoolean("volume_control", false)) {
 			switch (keyCode) {
-				case KeyEvent.KEYCODE_VOLUME_UP:
-					onVolumeButtonClicked(Volume.CMD_UP);
-					return true;
-	
-				case KeyEvent.KEYCODE_VOLUME_DOWN:
-					onVolumeButtonClicked(Volume.CMD_DOWN);
-					return true;
+			case KeyEvent.KEYCODE_VOLUME_UP:
+				onVolumeButtonClicked(Volume.CMD_UP);
+				return true;
+
+			case KeyEvent.KEYCODE_VOLUME_DOWN:
+				onVolumeButtonClicked(Volume.CMD_DOWN);
+				return true;
 			}
 		}
 		return false;
@@ -518,7 +411,7 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 
 	/**
 	 * Called after a Button has been clicked
-	 *
+	 * 
 	 * @param id
 	 *            The id of the item
 	 * @param longClick
@@ -527,7 +420,7 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 	@SuppressWarnings("unchecked")
 	private void onVolumeButtonClicked(String set) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add( new BasicNameValuePair("set", set) );
+		params.add(new BasicNameValuePair("set", set));
 		if (mVolumeTask != null) {
 			mVolumeTask.cancel(true);
 		}
@@ -535,19 +428,19 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		mVolumeTask = new SetVolumeTask();
 		mVolumeTask.execute(params);
 	}
-	
+
 	/**
 	 * @param success
 	 * @param volume
 	 */
-	private void onVolumeSet(boolean success, ExtendedHashMap volume){
+	private void onVolumeSet(boolean success, ExtendedHashMap volume) {
 		String text = getString(R.string.get_content_error);
-		if(success){
-			if(Python.TRUE.equals( volume.getString(Volume.KEY_RESULT)) ){
+		if (success) {
+			if (Python.TRUE.equals(volume.getString(Volume.KEY_RESULT))) {
 				String current = volume.getString(Volume.KEY_CURRENT);
-				boolean muted = Python.TRUE.equals( volume.getString(Volume.KEY_MUTED) );
-				if(muted){
-					text = getString(R.string.current_volume, getString(R.string.muted));					
+				boolean muted = Python.TRUE.equals(volume.getString(Volume.KEY_MUTED));
+				if (muted) {
+					text = getString(R.string.current_volume, getString(R.string.muted));
 				} else {
 					text = getString(R.string.current_volume, current);
 				}
@@ -555,35 +448,75 @@ public abstract class AbstractHttpListFragment extends SherlockListFragment impl
 		}
 		showToast(text);
 	}
-	
+
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
 	 */
-	protected void finish(){
+	protected void finish() {
 		finish(Statics.RESULT_NONE, null);
 	}
-	
+
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 * 
 	 * @param resultCode
 	 */
-	protected void finish(int resultCode){
+	protected void finish(int resultCode) {
 		finish(resultCode, null);
 	}
-	
+
+	protected ArrayList<NameValuePair> getHttpParams() {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		return params;
+	}
+
+	protected Bundle getLoaderBundle() {
+		Bundle args = new Bundle();
+		args.putSerializable("params", getHttpParams());
+		return args;
+	}
+
+	/**
+	 * Reloads the EPG information by calling a <code>GetEpgListTask</code>.
+	 */
+	protected void reload() {
+		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
+	}
+
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
+	 * 
 	 * @param resultCode
 	 * @param data
 	 */
-	protected void finish(int resultCode, Intent data){
+	protected void finish(int resultCode, Intent data) {
 		SherlockFragment f = (SherlockFragment) getTargetFragment();
-		if(f != null){
+		if (f != null) {
 			MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
 			mph.showDetails(f);
-			if(resultCode != Statics.RESULT_NONE || data != null){
+			if (resultCode != Statics.RESULT_NONE || data != null) {
 				f.onActivityResult(getTargetRequestCode(), resultCode, data);
 			}
 		}
+	}
+
+	@Override
+	public void onLoadFinished(Loader<ArrayList<ExtendedHashMap>> loader, ArrayList<ExtendedHashMap> list) {
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		mMapList.clear();
+		if (list != null) {
+			if(list.size() == 0)
+				setEmptyText(getText(R.string.no_list_item));
+			else
+				mMapList.addAll(list);
+		} else {
+			setEmptyText(getText(R.string.error));
+		}
+		mAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public void onLoaderReset(Loader<ArrayList<ExtendedHashMap>> loader) {
 	}
 }

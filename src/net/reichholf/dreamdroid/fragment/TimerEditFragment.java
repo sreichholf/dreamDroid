@@ -95,14 +95,14 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			if (DreamDroid.getLocations().size() == 0) {
-				if(isCancelled())
+				if (isCancelled())
 					return false;
 				publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
 				DreamDroid.loadLocations(mShc);
 			}
 
 			if (DreamDroid.getTags().size() == 0) {
-				if(isCancelled())
+				if (isCancelled())
 					return false;
 				publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
 				DreamDroid.loadTags(mShc);
@@ -113,16 +113,18 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			if(isCancelled())
+			if (isCancelled())
 				return;
 			if (mLoadProgress != null) {
 				if (!mLoadProgress.isShowing()) {
-					mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(), progress[0]);
+					mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(),
+							progress[0]);
 				} else {
 					mLoadProgress.setMessage(progress[0]);
 				}
 			} else {
-				mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(), progress[0]);
+				mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(),
+						progress[0]);
 			}
 		}
 
@@ -142,17 +144,17 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mCurrentTitle = getString(R.string.timer);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
-	
+
 	@Override
-	public void onDestroy(){
-		if(mGetLocationsAndTagsTask != null)
+	public void onDestroy() {
+		if (mGetLocationsAndTagsTask != null)
 			mGetLocationsAndTagsTask.cancel(true);
 		super.onDestroy();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.timer_edit, null);
 
 		mName = (EditText) view.findViewById(R.id.EditTextTitle);
@@ -207,7 +209,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			mTimer = new ExtendedHashMap();
 			mTimer.putAll((HashMap<String, Object>) data.get("timer"));
 
-			if (Intent.ACTION_EDIT.equals( getArguments().get("action")) ) {
+			if (Intent.ACTION_EDIT.equals(getArguments().get("action"))) {
 				mTimerOld = mTimer.clone();
 			} else {
 				mTimerOld = null;
@@ -223,7 +225,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				reload();
 			}
 		} else {
-			
+
 			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
 			mTimerOld = (ExtendedHashMap) savedInstanceState.getParcelable("timerOld");
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
@@ -232,15 +234,15 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				reload();
 			}
 		}
-		
+
 		return view;
 	}
-	
+
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.save, menu);
 		inflater.inflate(R.menu.cancel, menu);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -265,9 +267,9 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("timer", mTimer);
 		outState.putParcelable("timerOld", mTimerOld);
-								
+
 		String[] selectedTags;
-		if(mSelectedTags != null){
+		if (mSelectedTags != null) {
 			selectedTags = new String[mSelectedTags.size()];
 			mSelectedTags.toArray(selectedTags);
 		} else {
@@ -275,9 +277,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		}
 		outState.putStringArray("selectedTags", selectedTags);
 
-		
 		String[] oldTags;
-		if(mOldTags != null){
+		if (mOldTags != null) {
 			oldTags = new String[mOldTags.size()];
 			mOldTags.toArray(oldTags);
 		} else {
@@ -501,13 +502,13 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	private void pickService() {
 		ServiceListFragment f = new ServiceListFragment();
 		Bundle args = new Bundle();
-		
+
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put(Service.KEY_REFERENCE, "default");
-	
+
 		args.putSerializable(sData, data);
 		args.putString("action", Intent.ACTION_PICK);
-		
+
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_PICK_SERVICE);
 		((MultiPaneHandler) getSherlockActivity()).showDetails(f, true);
@@ -536,8 +537,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 
 		// Afterevents
-		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getSherlockActivity(), R.array.afterevents,
-				android.R.layout.simple_spinner_item);
+		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getSherlockActivity(),
+				R.array.afterevents, android.R.layout.simple_spinner_item);
 		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
 
@@ -545,8 +546,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
-		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getSherlockActivity(), android.R.layout.simple_spinner_item,
-				DreamDroid.getLocations());
+		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getSherlockActivity(),
+				android.R.layout.simple_spinner_item, DreamDroid.getLocations());
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
 
@@ -690,16 +691,16 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		}
 		Activity activtiy = getSherlockActivity();
 		mProgress = ProgressDialog.show(activtiy, "", getText(R.string.saving), true);
-		
+
 		applyViewValues();
 		ArrayList<NameValuePair> params = Timer.getSaveParams(mTimer, mTimerOld);
-		
+
 		execSimpleResultTask(new TimerChangeRequestHandler(), params);
 	}
 
 	@Override
 	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
-		if(mProgress != null){
+		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
 		}
@@ -810,15 +811,15 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
 		reload();
 	}
-	
+
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
 	 */
-	protected void finish(int resultCode){
+	protected void finish(int resultCode) {
 		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-		if(mph.isMultiPane()){
+		if (mph.isMultiPane()) {
 			Fragment f = getTargetFragment();
-			if(f != null){
+			if (f != null) {
 				mph.showDetails(f);
 				f.onActivityResult(getTargetRequestCode(), resultCode, null);
 			}

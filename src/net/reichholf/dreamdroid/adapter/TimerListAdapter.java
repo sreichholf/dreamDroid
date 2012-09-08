@@ -22,15 +22,14 @@ import android.widget.TextView;
 
 /**
  * @author sre
- *
+ * 
  */
 public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	
-	private ArrayList<ExtendedHashMap> mItems;
 	private CharSequence[] mState;
 	private CharSequence[] mAction;
 	private int[] mStateColor;
-	
+
 	/**
 	 * @param context
 	 * @param textViewResourceId
@@ -38,22 +37,22 @@ public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	 */
 	public TimerListAdapter(Context context, int textViewResourceId, ArrayList<ExtendedHashMap> items) {
 		super(context, textViewResourceId, items);
-		mItems = items;
+
 		mState = getContext().getResources().getTextArray(R.array.timer_state);
 		mAction = getContext().getResources().getTextArray(R.array.timer_action);
-		mStateColor = getContext().getResources().getIntArray(R.array.timer_state_color);		
+		mStateColor = getContext().getResources().getIntArray(R.array.timer_state_color);
 	}
-	
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View view = convertView;
-		if(view == null){
+		if (view == null) {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			view = li.inflate(R.layout.timer_list_item, null);
 		}
-		
-		ExtendedHashMap timer = mItems.get(position);
-		if(timer != null){			
+
+		ExtendedHashMap timer = getItem(position);
+		if (timer != null) {
 			TextView timerName = (TextView) view.findViewById(R.id.timer_name);
 			TextView serviceName = (TextView) view.findViewById(R.id.service_name);
 			TextView begin = (TextView) view.findViewById(R.id.timer_start);
@@ -61,35 +60,33 @@ public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			TextView action = (TextView) view.findViewById(R.id.timer_action);
 			TextView state = (TextView) view.findViewById(R.id.timer_state);
 			TextView stateIndicator = (TextView) view.findViewById(R.id.timer_state_indicator);
-			
+
 			timerName.setText(timer.getString(Timer.KEY_NAME));
 			serviceName.setText(timer.getString(Timer.KEY_SERVICE_NAME));
 			begin.setText(timer.getString(Timer.KEY_BEGIN_READEABLE));
 			end.setText(timer.getString(Timer.KEY_END_READABLE));
-			
+
 			int actionId = 0;
-			
-			try{			
+
+			try {
 				actionId = Integer.parseInt(timer.getString(Timer.KEY_JUST_PLAY));
-			} catch (Exception e){
+			} catch (Exception e) {
 				Log.e(DreamDroid.LOG_TAG, "[TimerListAdapter] Error getting timer action: " + e.getMessage());
 			}
-			
+
 			action.setText(mAction[actionId]);
-			
+
 			int stateId = Integer.parseInt(timer.getString(Timer.KEY_STATE));
 			int disabled = Integer.parseInt(timer.getString(Timer.KEY_DISABLED));
-			//The state for disabled timers is 3 
-			//If any timer is disabled we add 1 to the state get the disabled color/text
+			// The state for disabled timers is 3
+			// If any timer is disabled we add 1 to the state get the disabled
+			// color/text
 			stateId += disabled;
 			state.setText(mState[stateId]);
-			stateIndicator.setBackgroundColor(mStateColor[stateId]);			
+			stateIndicator.setBackgroundColor(mStateColor[stateId]);
 		}
-		
-		
+
 		return view;
 	}
-	
-	
 
 }

@@ -22,6 +22,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.loader.AsyncListLoader;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -35,6 +36,7 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -60,52 +62,33 @@ public class MovieListFragment extends AbstractHttpListFragment {
 
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
-	private GetMovieListTask mListTask;
-		
-	/**
-	 * <code>AsyncTask</code> to get the list of recorded movies
-	 * 
-	 * @author sreichholf
-	 * 
-	 */
-	private class GetMovieListTask extends AsyncListUpdateTask {
-		public GetMovieListTask() {
-			super(new MovieListRequestHandler(), true);
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);	
+		super.onCreate(savedInstanceState);
 		mCurrentTitle = mBaseTitle = getString(R.string.movies);
 		setHasOptionsMenu(true);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
-	
+
 	@Override
-	public void onDestroy(){
-		if(mListTask != null)
-			mListTask.cancel(true);
-		super.onDestroy();
-	}
-	
-	@Override 
-	public void onActivityCreated(Bundle savedInstanceState){
+	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.movie_list_item, new String[] { Movie.KEY_TITLE,
-			Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE, Movie.KEY_LENGTH }, new int[] {
-			R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start, R.id.event_duration });
+		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.movie_list_item, new String[] {
+				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
+				Movie.KEY_LENGTH }, new int[] { R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
+				R.id.event_duration });
 
 		setListAdapter(mAdapter);
-		
+
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
 				return onListItemLongClick(a, v, position, id);
 			}
 		});
-		
-		if(savedInstanceState == null){
+
+		if (savedInstanceState == null) {
 			mSelectedTags = new ArrayList<String>();
 			mOldTags = new ArrayList<String>();
 			reload();
@@ -124,18 +107,10 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	}
 
 	@Override
-	public void onPause() {
-		if (mListTask != null) {
-			mListTask.cancel(true);
-		}
-		super.onPause();
-	}
-
-	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		onListItemClick(v, position, id, false);
 	}
-	
+
 	/**
 	 * @param a
 	 * @param v
@@ -154,13 +129,13 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		inflater.inflate(R.menu.reload, menu);
 		inflater.inflate(R.menu.locactions_and_tags, menu);
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("movie", mMovie);
-		
+
 		String[] selectedTags;
-		if(mSelectedTags != null){
+		if (mSelectedTags != null) {
 			selectedTags = new String[mSelectedTags.size()];
 			mSelectedTags.toArray(selectedTags);
 		} else {
@@ -168,9 +143,8 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 		outState.putStringArray("selectedTags", selectedTags);
 
-		
 		String[] oldTags;
-		if(mOldTags != null){
+		if (mOldTags != null) {
 			oldTags = new String[mOldTags.size()];
 			mOldTags.toArray(oldTags);
 		} else {
@@ -180,7 +154,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 
 		super.onSaveInstanceState(outState);
 	}
-	
+
 	/**
 	 * @param id
 	 *            The id of the selected menu item (<code>MENU_*</code> statics)
@@ -202,7 +176,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-
 	@Override
 	public Dialog onCreateDialog(int id) {
 		final Dialog dialog;
@@ -211,8 +184,8 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		switch (id) {
 		case (Statics.DIALOG_MOVIE_SELECTED_ID):
 			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
-				getText(R.string.stream) };
-			
+					getText(R.string.stream) };
+
 			builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(getText(R.string.pick_action));
 			builder.setItems(actions, new DialogInterface.OnClickListener() {
@@ -228,14 +201,14 @@ public class MovieListFragment extends AbstractHttpListFragment {
 						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 						params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
 						String url = mShc.buildUrl(URIStore.FILE, params);
-	
+
 						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 						startActivity(intent);
 						break;
 					case 3:
-						try{
-							startActivity( IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)) );
-						} catch(ActivityNotFoundException e){
+						try {
+							startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)));
+						} catch (ActivityNotFoundException e) {
 							showToast(getText(R.string.missing_stream_player));
 						}
 						break;
@@ -370,33 +343,32 @@ public class MovieListFragment extends AbstractHttpListFragment {
 
 		return dialog;
 	}
-	
+
 	@Override
 	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
 		super.finishListProgress(title, list);
-		
-		if(mCurrentLocation == null){
+
+		if (mCurrentLocation == null) {
 			setDefaultLocation();
-		}		
+		}
 	}
-	
+
 	/**
 	 * @param v
 	 * @param position
 	 * @param id
 	 * @param isLong
 	 */
-	private void onListItemClick(View v, int position, long id, boolean isLong){
+	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mMovie = mMapList.get(position);
 		boolean isInsta = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);
-		if( ( isInsta && !isLong ) || (!isInsta && isLong ) ){
+		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
 			getSherlockActivity().showDialog(Statics.DIALOG_MOVIE_SELECTED_ID);
 		}
 	}
-	
-	
+
 	/**
 	 * Delete the selected movie
 	 */
@@ -429,13 +401,8 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 	}
 
-	/**
-	 * Reload the list of movies
-	 */
-	@SuppressWarnings("unchecked")
-	private void reload() {
-		mTagsChanged = false;
-
+	@Override
+	protected ArrayList<NameValuePair> getHttpParams() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		if (mCurrentLocation != null) {
 			params.add(new BasicNameValuePair("dirname", mCurrentLocation));
@@ -446,11 +413,12 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			params.add(new BasicNameValuePair("tag", tags));
 		}
 
-		if (mListTask != null) {
-			mListTask.cancel(true);
-		}
+		return params;
+	}
 
-		mListTask = new GetMovieListTask();
-		mListTask.execute(params);
+	@Override
+	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new MovieListRequestHandler(), true, args);
+		return loader;
 	}
 }

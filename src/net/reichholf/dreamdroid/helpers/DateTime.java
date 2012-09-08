@@ -22,6 +22,36 @@ import android.util.Log;
 public class DateTime {
 
 	/**
+	 * @param duration
+	 * @param eventstart
+	 * @return
+	 */
+	public static int getRemaining(String duration, String eventstart) {
+		long d = Double.valueOf(duration).longValue();
+		
+		if (eventstart != null) {
+			try {
+				long s = Double.valueOf(eventstart).longValue() * 1000;
+				Date now = new Date();
+
+				if (now.getTime() >= s) {
+					d = d - ((now.getTime() - s) / 1000);
+					if (d <= 60) {
+						d = 60;
+					}
+				}
+			} catch (NumberFormatException nfe) {
+				Log.e(DreamDroid.LOG_TAG, nfe.getMessage());
+				return 0;
+			}
+		}
+
+		d = (d / 60);
+		return (int) d;
+	}
+
+	
+	/**
 	 * @param eventstart
 	 * @param duration
 	 * @return

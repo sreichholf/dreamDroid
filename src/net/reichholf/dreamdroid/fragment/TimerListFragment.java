@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
+import net.reichholf.dreamdroid.loader.AsyncListLoader;
 
 import org.apache.http.NameValuePair;
 
@@ -30,6 +31,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.view.View;
 import android.widget.ListView;
 
@@ -46,20 +48,7 @@ import com.actionbarsherlock.view.MenuItem;
 public class TimerListFragment extends AbstractHttpListFragment {
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
-	private GetTimerListTask mListTask;
 	private MultiPaneHandler mMultiPaneHandler;	
-
-	/**
-	 * Get the list of all timers async.
-	 * 
-	 * @author sre
-	 * 
-	 */
-	private class GetTimerListTask extends AsyncListUpdateTask {
-		public GetTimerListTask(){
-			super(new TimerListRequestHandler(), false);
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,25 +69,9 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	}
 	
 	@Override
-	public void onDestroy(){
-		if(mListTask != null)
-			mListTask.cancel(true);
-		super.onDestroy();
-	}
-	
-	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("timer", mTimer);
 		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public void onPause() {
-		if (mListTask != null) {
-			mListTask.cancel(true);
-		}
-
-		super.onPause();
 	}
 
 	@Override
@@ -139,21 +112,6 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-	}
-
-	/**
-	 * Reload the list of timers by calling an <code>GetTimerListTask</code>
-	 */
-	@SuppressWarnings("unchecked")
-	public void reload() {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-
-		if (mListTask != null) {
-			mListTask.cancel(true);
-		}
-
-		mListTask = new GetTimerListTask();
-		mListTask.execute(params);
 	}
 
 	/**
@@ -265,5 +223,11 @@ public class TimerListFragment extends AbstractHttpListFragment {
 			break;
 		}
 		return dialog;
+	}
+	
+	@Override
+	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new TimerListRequestHandler(), false, args);
+		return loader;
 	}
 }

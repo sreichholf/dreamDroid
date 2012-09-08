@@ -19,10 +19,7 @@ import android.widget.TextView;
  *
  */
 public class NavigationListAdapter extends ArrayAdapter<int[]> {
-	
-	int[][] mItems;
-
-	
+		
 	/**
 	 * @param context
 	 * @param textViewResourceId
@@ -30,7 +27,6 @@ public class NavigationListAdapter extends ArrayAdapter<int[]> {
 	 */
 	public NavigationListAdapter(Context context, int[][] items) {
 		super(context, R.layout.nav_list_item, items);
-		mItems = items;	
 	}
 	
 	@Override
@@ -40,8 +36,8 @@ public class NavigationListAdapter extends ArrayAdapter<int[]> {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			view = li.inflate(R.layout.nav_list_item, null);
 		}
-		
-		int[] item = mItems[position];
+
+		int[] item = getItem(position);
 		TextView text = (TextView) view.findViewById(android.R.id.text1);
 		text.setText(item[1]);
 		text.setCompoundDrawablesWithIntrinsicBounds(item[2], 0, 0, 0);

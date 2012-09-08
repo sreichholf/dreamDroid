@@ -9,6 +9,8 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
@@ -24,7 +26,6 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListFragment;
 import com.commonsware.cwac.merge.MergeAdapter;
 
 /**
@@ -33,7 +34,7 @@ import com.commonsware.cwac.merge.MergeAdapter;
  * @author sreichholf
  *
  */
-public class DeviceInfoFragment extends SherlockListFragment implements ActivityCallbackHandler {
+public class DeviceInfoFragment extends DreamDroidListFragment {
 	private ExtendedHashMap mInfo;
 	private GetDeviceInfoTask mGetInfoTask;
 	private MergeAdapter mMerge;

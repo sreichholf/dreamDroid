@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
-import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -49,7 +48,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sreichholf
  * 
  */
-public abstract class AbstractHttpFragment extends SherlockFragment implements ActivityCallbackHandler {
+public abstract class AbstractHttpFragment extends DreamDroidFragment {
 	protected final String sData = "data";
 	protected String mCurrentTitle;
 	
