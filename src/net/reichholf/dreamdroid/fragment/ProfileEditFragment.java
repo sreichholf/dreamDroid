@@ -31,11 +31,12 @@ import android.widget.Toast;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+
 /**
  * Used to edit connection profiles
- *
+ * 
  * @author sre
- *
+ * 
  */
 public class ProfileEditFragment extends DreamDroidFragment {
 	private Profile mCurrentProfile;
@@ -63,7 +64,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.profile_edit, container, false);
 
 		mProfile = (EditText) view.findViewById(R.id.EditTextProfile);
@@ -79,27 +80,27 @@ public class ProfileEditFragment extends DreamDroidFragment {
 
 		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LinearLayoutLogin);
 
+		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
+			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
+			if (mCurrentProfile == null)
+				mCurrentProfile = new Profile();
+			assignProfile();
+		}		
+		onIsLoginChanged(mLogin.isChecked());
+		
 		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
 				onIsLoginChanged(checked);
 			}
 		});
-		
+
 		mSsl.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
 				onSslChanged(checked);
 			}
 		});
-		
-		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
-			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
-			if (mCurrentProfile == null)
-				mCurrentProfile = new Profile();
-			assignProfile();
-		}
-		onIsLoginChanged(mLogin.isChecked());
 		return view;
 	}
 
@@ -110,8 +111,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
-	public boolean onOptionsItemSelected(MenuItem item){
-		switch(item.getItemId()){
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 		case Statics.ITEM_SAVE:
 			save();
 			break;
@@ -123,14 +124,14 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		}
 		return true;
 	}
-	
-	private void onSslChanged(boolean checked){
-		if(checked)
+
+	private void onSslChanged(boolean checked) {
+		if (checked)
 			mPort.setText("443");
 		else
 			mPort.setText("80");
 	}
-	
+
 	/**
 	 * @param checked
 	 *            Enables or disables the user/password input-boxes depending on
@@ -200,7 +201,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 
 	/**
 	 * Show a toast
-	 *
+	 * 
 	 * @param toastText
 	 *            The text to show
 	 */
@@ -211,7 +212,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 
 	/**
 	 * Show a toast
-	 *
+	 * 
 	 * @param toastText
 	 *            The text to show
 	 */
@@ -238,11 +239,11 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
 	 */
-	protected void finish(int resultCode){
+	protected void finish(int resultCode) {
 		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-		if(mph.isMultiPane()){
+		if (mph.isMultiPane()) {
 			Fragment f = getTargetFragment();
-			if(f != null){
+			if (f != null) {
 				mph.showDetails(f);
 				f.onActivityResult(getTargetRequestCode(), resultCode, null);
 			}
