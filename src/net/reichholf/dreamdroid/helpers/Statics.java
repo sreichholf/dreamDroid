@@ -10,7 +10,7 @@ import net.reichholf.dreamdroid.R;
 
 /**
  * @author sre
- *
+ * 
  */
 public class Statics {
 	public static final int DIALOG_SEND_MESSAGE_ID = 0x8000;
@@ -34,7 +34,7 @@ public class Statics {
 	public static final int DIALOG_TIMER_DELETE_CONFIRM_ID = 0x8018;
 	public static final int DIALOG_SERVICE_SELECTED_ID = 0x8019;
 	public static final int DIALOG_MOVIE_SELECTED_ID = 0x8020;
-	
+
 	public static final int ITEM_NOW = 0x6000;
 	public static final int ITEM_NEXT = 0x6001;
 	public static final int ITEM_STREAM = 0x6002;
@@ -59,7 +59,7 @@ public class Statics {
 	public static final int ITEM_MEDIA_PLAYER = 0x6021;
 	public static final int ITEM_PROFILES = 0x6022;
 	public static final int ITEM_ADD_PROFILE = R.id.menu_add_profile;
-	public static final int ITEM_RELOAD =R.id.menu_reload;
+	public static final int ITEM_RELOAD = R.id.menu_reload;
 	public static final int ITEM_SAVE = R.id.menu_save;
 	public static final int ITEM_CANCEL = R.id.menu_cancel;
 	public static final int ITEM_PICK_SERVICE = 0x6027;
@@ -69,7 +69,7 @@ public class Statics {
 	public static final int ITEM_PICK_TAGS = 0x6031;
 	public static final int ITEM_OVERVIEW = R.id.menu_overview;
 	public static final int ITEM_SET_DEFAULT = R.id.menu_default;
-	public static final int ITEM_LOCATIONS =R.id.menu_locations;
+	// public static final int ITEM_LOCATIONS =R.id.menu_locations;
 	public static final int ITEM_TAGS = R.id.menu_tags;
 	public static final int ITEM_NEW_TIMER = R.id.menu_create_timer;
 	public static final int ITEM_CLEANUP = R.id.menu_cleanup;
@@ -78,12 +78,11 @@ public class Statics {
 	public static final int ITEM_DETECT_DEVICES = R.id.menu_detect_devices;
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
-	public static final int REQUEST_PICK_SERVICE = 0x5001;	
+	public static final int REQUEST_PICK_SERVICE = 0x5001;
 	public static final int REQUEST_EDIT_PROFILE = 0x5002;
-	
+
 	public static final int RESULT_NONE = -9999;
-	
+
 	public static final String KEY_RELOAD = "reload";
-	
-	
+
 }

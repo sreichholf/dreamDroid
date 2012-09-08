@@ -40,9 +40,12 @@ import android.support.v4.content.Loader;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 
@@ -62,12 +65,32 @@ public class MovieListFragment extends AbstractHttpListFragment {
 
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
+	private ArrayAdapter<String> mLocationAdapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mCurrentTitle = mBaseTitle = getString(R.string.movies);
+
+		mCurrentTitle = mBaseTitle = "";
+		mCurrentLocation = "/hdd/movie/";
 		setHasOptionsMenu(true);
+
+		ActionBar actionBar = getSherlockActivity().getSupportActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+		mLocationAdapter = new ArrayAdapter<String>(getSherlockActivity(), android.R.layout.simple_list_item_1);
+		actionBar.setListNavigationCallbacks(mLocationAdapter, new OnNavigationListener() {
+			@Override
+			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+				String selectedLoc = DreamDroid.getLocations().get(itemPosition);
+				if (!selectedLoc.equals(mCurrentLocation)) {
+					mCurrentLocation = selectedLoc;
+					reload();
+				}
+				return false;
+			}
+		});
+
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
@@ -165,9 +188,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		case Statics.ITEM_RELOAD:
 			reload();
 			return true;
-		case Statics.ITEM_LOCATIONS:
-			getSherlockActivity().showDialog(Statics.DIALOG_PICK_LOCATION_ID);
-			return true;
 		case Statics.ITEM_TAGS:
 			getSherlockActivity().showDialog(Statics.DIALOG_PICK_TAGS_ID);
 			return true;
@@ -234,38 +254,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 							getSherlockActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 						}
 					});
-			dialog = builder.create();
-			break;
-
-		case (Statics.DIALOG_PICK_LOCATION_ID):
-			CharSequence[] locations = new CharSequence[DreamDroid.getLocations().size()];
-
-			int selectedIndex = 0;
-			int lc = 0;
-			for (String location : DreamDroid.getLocations()) {
-				locations[lc] = location;
-				if (location.equals(mCurrentLocation)) {
-					selectedIndex = lc;
-				}
-				lc++;
-			}
-
-			builder = new AlertDialog.Builder(getSherlockActivity());
-			builder.setTitle(getText(R.string.choose_location));
-
-			builder.setSingleChoiceItems(locations, selectedIndex, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					String selectedLoc = DreamDroid.getLocations().get(which);
-					if (!selectedLoc.equals(mCurrentLocation)) {
-						mCurrentLocation = selectedLoc;
-						reload();
-					}
-					dialog.dismiss();
-					getSherlockActivity().removeDialog(Statics.DIALOG_PICK_LOCATION_ID);
-				}
-			});
-
 			dialog = builder.create();
 			break;
 
@@ -420,5 +408,19 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new MovieListRequestHandler(), true, args);
 		return loader;
+	}
+
+	@Override
+	public void onLoadFinished(Loader<ArrayList<ExtendedHashMap>> loader, ArrayList<ExtendedHashMap> list) {
+		super.onLoadFinished(loader, list);
+
+		mLocationAdapter.clear();
+
+		for (String location : DreamDroid.getLocations()) {
+			mLocationAdapter.add(location);
+		}
+
+		getSherlockActivity().getSupportActionBar().setSelectedNavigationItem(
+				mLocationAdapter.getPosition(mCurrentLocation));
 	}
 }

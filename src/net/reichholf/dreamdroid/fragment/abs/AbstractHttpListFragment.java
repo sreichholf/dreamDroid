@@ -478,9 +478,11 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 */
 	protected void reload() {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-		mCurrentTitle = mBaseTitle + " - " + getString(R.string.loading);
+		if (!"".equals(mBaseTitle.trim()))
+			mCurrentTitle = mBaseTitle + " - " + getString(R.string.loading);
+
 		getSherlockActivity().setTitle(mCurrentTitle);
-		
+
 		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
 	}
 
@@ -500,8 +502,8 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			}
 		}
 	}
-	
-	protected String getLoadFinishedTitle(){
+
+	protected String getLoadFinishedTitle() {
 		return mBaseTitle;
 	}
 
@@ -514,7 +516,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			mCurrentTitle = getLoadFinishedTitle();
 			getSherlockActivity().setTitle(mCurrentTitle);
 
-			if(list.size() == 0)
+			if (list.size() == 0)
 				setEmptyText(getText(R.string.no_list_item));
 			else
 				mMapList.addAll(list);

@@ -4,8 +4,4 @@
           android:icon="@drawable/ic_menu_tags"
           android:title="@string/tags"
           android:showAsAction="ifRoom|withText" />
-	<item android:id="@+id/menu_locations"
-          android:icon="@drawable/ic_menu_locations"
-          android:title="@string/locations"
-          android:showAsAction="ifRoom|withText" />
 </menu>

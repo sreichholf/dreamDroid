@@ -53,11 +53,12 @@ public class AsyncListLoader extends AsyncTaskLoader<ArrayList<ExtendedHashMap>>
 	protected void onStartLoading() {
 		forceLoad();
 	}
-	
-    @Override protected void onStopLoading() {
-        // Attempt to cancel the current load task if possible.
-        cancelLoad();
-    }
+
+	@Override
+	protected void onStopLoading() {
+		// Attempt to cancel the current load task if possible.
+		cancelLoad();
+	}
 
 	@Override
 	public ArrayList<ExtendedHashMap> loadInBackground() {
@@ -66,29 +67,27 @@ public class AsyncListLoader extends AsyncTaskLoader<ArrayList<ExtendedHashMap>>
 					"Method doInBackground not re-implemented while no ListRequestHandler has been given");
 		}
 
+		if (mRequireLocsAndTags) {
+			if (DreamDroid.getLocations().size() <= 1) {
+				if (!DreamDroid.loadLocations(mShc)) {
+					Log.e(DreamDroid.LOG_TAG, "ERROR loading locations");
+				}
+			}
+
+			if (DreamDroid.getTags().size() <= 1) {
+				if (!DreamDroid.loadTags(mShc)) {
+					Log.e(DreamDroid.LOG_TAG, "ERROR loading tags");
+				}
+			}
+		}
+
 		mList = new ArrayList<ExtendedHashMap>();
 
 		String xml = mListRequestHandler.getList(mShc, mParams);
 		if (xml != null) {
-
 			mList.clear();
-
-			if (mListRequestHandler.parseList(xml, mList)) {
-				if (mRequireLocsAndTags) {
-					if (DreamDroid.getLocations().size() == 0) {
-						if (!DreamDroid.loadLocations(mShc)) {
-							Log.e(DreamDroid.LOG_TAG, "ERROR loading locations");
-						}
-					}
-
-					if (DreamDroid.getTags().size() == 0) {
-						if (!DreamDroid.loadTags(mShc)) {
-							Log.e(DreamDroid.LOG_TAG, "ERROR loading tags");
-						}
-					}
-				}
+			if (mListRequestHandler.parseList(xml, mList))
 				return mList;
-			}
 		}
 		return null;
 	}
