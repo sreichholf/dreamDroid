@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
