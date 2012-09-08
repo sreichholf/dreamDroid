@@ -51,8 +51,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
-	protected String mBaseTitle;
-	protected String mCurrentTitle;
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
@@ -169,7 +167,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 		mExtras = getArguments();
 		mMapList = null;
-		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
 
 		if (savedInstanceState != null) {
 			mMapList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_LIST);
@@ -481,6 +478,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 */
 	protected void reload() {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+		mCurrentTitle = mBaseTitle + " - " + getString(R.string.loading);
+		getSherlockActivity().setTitle(mCurrentTitle);
+		
 		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
 	}
 
@@ -500,12 +500,20 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			}
 		}
 	}
+	
+	protected String getLoadFinishedTitle(){
+		return mBaseTitle;
+	}
 
 	@Override
 	public void onLoadFinished(Loader<ArrayList<ExtendedHashMap>> loader, ArrayList<ExtendedHashMap> list) {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+
 		mMapList.clear();
 		if (list != null) {
+			mCurrentTitle = getLoadFinishedTitle();
+			getSherlockActivity().setTitle(mCurrentTitle);
+
 			if(list.size() == 0)
 				setEmptyText(getText(R.string.no_list_item));
 			else

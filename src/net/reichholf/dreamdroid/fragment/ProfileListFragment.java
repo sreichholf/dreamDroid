@@ -174,7 +174,7 @@ public class ProfileListFragment extends DreamDroidListFragment {
 		setHasOptionsMenu(true);
 
 		mActivity = getActivity();
-		mActivity.setTitle(getString(R.string.profiles));
+		mBaseTitle = mCurrentTitle = getString(R.string.profiles);
 		mActivity.setProgressBarIndeterminateVisibility(false);
 
 		mMultiPaneHandler = (MultiPaneHandler) getActivity();

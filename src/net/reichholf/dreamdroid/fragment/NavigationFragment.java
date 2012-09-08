@@ -63,7 +63,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
 			{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0 },
 			{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0 },
-			{ Statics.ITEM_EPG_SEARCH, R.string.epg_search, R.drawable.ic_menu_search, 1, 0 },
+			{ Statics.ITEM_EPG_SEARCH, R.string.epg_search, R.drawable.ic_menu_search, 1, 1 },
 			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0 },
 			{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0 },
 			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },

@@ -69,6 +69,11 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	}
 
 	@Override
+	protected String getLoadFinishedTitle(){
+		return mBaseTitle + " - " + mName;
+	}
+	
+	@Override
 	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new EventListRequestHandler(), false, args);
 		return loader;

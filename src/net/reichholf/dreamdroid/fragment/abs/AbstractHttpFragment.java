@@ -50,7 +50,7 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public abstract class AbstractHttpFragment extends DreamDroidFragment {
 	protected final String sData = "data";
-	protected String mCurrentTitle;
+	
 	
 	protected SimpleHttpClient mShc;	
 	protected SimpleResultTask mSimpleResultTask;
@@ -148,17 +148,10 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mCurrentTitle = getString(R.string.app_name);
 		setHasOptionsMenu(true);
 		// CustomExceptionHandler.register(this);
 		mShc = null;
 		setClient();
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-		getSherlockActivity().setTitle(mCurrentTitle);
-		return super.onCreateView(inflater, container, savedInstanceState);
 	}
 	
 	@Override

@@ -123,6 +123,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		setHasOptionsMenu(true);
 		getSherlockActivity().setTitle(getText(R.string.screenshot));
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		mBaseTitle = mCurrentTitle = getString(R.string.screenshot);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

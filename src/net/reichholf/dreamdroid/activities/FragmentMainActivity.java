@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
+import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import net.reichholf.dreamdroid.fragment.ViewPagerNavigationFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -36,16 +37,13 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 /**
  * @author sre
- *
+ * 
  */
-public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler, OnActiveProfileChangedListener {
-	public static List<Integer> NAVIGATION_DIALOG_IDS =
-			Arrays.asList(new Integer[]{
-					Statics.DIALOG_ABOUT_ID,
-					Statics.DIALOG_SEND_MESSAGE_ID,
-					Statics.DIALOG_SET_POWERSTATE_ID,
-					Statics.DIALOG_SLEEPTIMER_ID,
-					Statics.DIALOG_SLEEPTIMER_PROGRESS_ID });
+public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler,
+		OnActiveProfileChangedListener, DreamDroid.EpgSearchListener {
+	public static List<Integer> NAVIGATION_DIALOG_IDS = Arrays.asList(new Integer[] { Statics.DIALOG_ABOUT_ID,
+			Statics.DIALOG_SEND_MESSAGE_ID, Statics.DIALOG_SET_POWERSTATE_ID, Statics.DIALOG_SLEEPTIMER_ID,
+			Statics.DIALOG_SLEEPTIMER_PROGRESS_ID });
 
 	private boolean mMultiPane;
 
@@ -54,21 +52,21 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
-	
+
 	private CheckProfileTask mCheckProfileTask;
-	
+
 	private Fragment mDetailFragment;
-	
+
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
 
-		public CheckProfileTask(Profile p){
+		public CheckProfileTask(Profile p) {
 			mProfile = p;
 		}
 
 		/*
 		 * (non-Javadoc)
-		 *
+		 * 
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
@@ -79,7 +77,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 
 		/*
 		 * (non-Javadoc)
-		 *
+		 * 
 		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
 		 */
 		@Override
@@ -89,7 +87,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 
 		/*
 		 * (non-Javadoc)
-		 *
+		 * 
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		@Override
@@ -106,52 +104,54 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	}
 
 	@Override
-	public void onCreate(Bundle savedInstanceState){
+	public void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
 		setProgressBarIndeterminateVisibility(false);
 
 		mFragmentManager = getSupportFragmentManager();
 
-		if(savedInstanceState != null){
+		if (savedInstanceState != null) {
 			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
 		}
-		
+
 		DreamDroid.setActiveProfileChangedListener(this);
 
 		initViews();
 		mNavigationFragment.setHighlightCurrent(mMultiPane);
+
+//		DreamDroid.registerEpgSearchListener(this);
 	}
 
-	private Fragment getCurrentDetailFragment(){
+	private Fragment getCurrentDetailFragment() {
 		return mDetailFragment;
 	}
 
-	private void initViews(){
+	private void initViews() {
 		setContentView(R.layout.dualpane);
 
-		if(findViewById(R.id.detail_view) != null){
+		if (findViewById(R.id.detail_view) != null) {
 			mMultiPane = true;
 		} else {
 			mMultiPane = false;
 		}
 
-		//Force Multipane Layout if User selected the option for it
-		if(!mMultiPane && DreamDroid.getSharedPreferences().getBoolean("force_multipane", false)){
+		// Force Multipane Layout if User selected the option for it
+		if (!mMultiPane && DreamDroid.getSharedPreferences().getBoolean("force_multipane", false)) {
 			setContentView(R.layout.forced_dualpane);
 			mMultiPane = true;
 		}
 
-		if(mNavigationFragment == null){
-			if(mMultiPane){
+		if (mNavigationFragment == null) {
+			if (mMultiPane) {
 				mNavigationFragment = new NavigationFragment();
 			} else {
 				mNavigationFragment = new ViewPagerNavigationFragment();
 			}
 		} else {
-			if(mMultiPane && !mNavigationFragment.getClass().equals(NavigationFragment.class)){
+			if (mMultiPane && !mNavigationFragment.getClass().equals(NavigationFragment.class)) {
 				mNavigationFragment = new NavigationFragment();
-			} else if(!mMultiPane && mNavigationFragment.getClass().equals(NavigationFragment.class)){
+			} else if (!mMultiPane && mNavigationFragment.getClass().equals(NavigationFragment.class)) {
 				mNavigationFragment = new ViewPagerNavigationFragment();
 			}
 		}
@@ -159,25 +159,25 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		FragmentTransaction ft = mFragmentManager.beginTransaction();
 		showFragment(ft, R.id.navigation_view, mNavigationFragment);
 		Fragment detailFragment = getCurrentDetailFragment();
-		if(detailFragment != null){
+		if (detailFragment != null) {
 			showFragment(ft, R.id.detail_view, detailFragment);
 		}
 		ft.commit();
 
 		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
-		if(mActiveProfile == null){
+		if (mActiveProfile == null) {
 			mActiveProfile = new TextView(this);
 		}
 		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
-		if(mConnectionState == null){
+		if (mConnectionState == null) {
 			mConnectionState = new TextView(this);
 		}
 
 		onActiveProfileChanged(DreamDroid.getActiveProfile());
 	}
 
-	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment){
-		if( fragment.isAdded() ){
+	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
+		if (fragment.isAdded()) {
 			Log.i(DreamDroid.LOG_TAG, "Fragment already added, showing");
 			ft.show(fragment);
 		} else {
@@ -186,13 +186,13 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		}
 	}
 
-	private boolean isNavigationDialog(int id){
+	private boolean isNavigationDialog(int id) {
 		return NAVIGATION_DIALOG_IDS.contains(id);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
 	 * onSaveInstanceState(android.os.Bundle)
 	 */
@@ -200,19 +200,22 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	public void onSaveInstanceState(Bundle outState) {
 		mFragmentManager.putFragment(outState, "navigation", mNavigationFragment);
 		Fragment currentDetailFragment = getCurrentDetailFragment();
-		if(currentDetailFragment != null){
+		if (currentDetailFragment != null) {
 			mFragmentManager.putFragment(outState, "current", currentDetailFragment);
 		}
 		super.onSaveInstanceState(outState);
 	}
 
-	@Override
-	public void onResume(){
-		super.onResume();
+	public void onDestroy() {
+		DreamDroid.unregisterEpgSearchListener(this);
+		super.onPause();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.OnActiveProfileChangedListener#onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.OnActiveProfileChangedListener#
+	 * onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
 	 */
 	@Override
 	public void onActiveProfileChanged(Profile p) {
@@ -240,19 +243,27 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		setProgressBarIndeterminateVisibility(false);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java
+	 * .lang.Class)
 	 */
 	@Override
-	public void showDetails(Class<? extends Fragment> fragmentClass){
+	public void showDetails(Class<? extends Fragment> fragmentClass) {
 		showDetails(fragmentClass, SimpleFragmentActivity.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java.lang.Class, java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java
+	 * .lang.Class, java.lang.Class)
 	 */
 	@Override
-	public void showDetails(Class<? extends Fragment> fragmentClass, Class<?extends MultiPaneHandler> handlerClass){
+	public void showDetails(Class<? extends Fragment> fragmentClass, Class<? extends MultiPaneHandler> handlerClass) {
 		try {
 			Fragment fragment = fragmentClass.newInstance();
 			showDetails(fragment, handlerClass);
@@ -264,49 +275,66 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 			e.printStackTrace();
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
+	 * .support.v4.app.Fragment)
 	 */
 	@Override
-	public void showDetails(Fragment fragment){
+	public void showDetails(Fragment fragment) {
 		showDetails(fragment, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, java.lang.Class)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
+	 * .support.v4.app.Fragment, java.lang.Class)
 	 */
 	@Override
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls){
+	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls) {
 		showDetails(fragment, cls, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
+	 * .support.v4.app.Fragment, boolean)
 	 */
 	@Override
-	public void showDetails(Fragment fragment, boolean addToBackStack){
+	public void showDetails(Fragment fragment, boolean addToBackStack) {
 		showDetails(fragment, SimpleFragmentActivity.class, addToBackStack);
 	}
-	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android.support.v4.app.Fragment, java.lang.Class, boolean)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
+	 * .support.v4.app.Fragment, java.lang.Class, boolean)
 	 */
 	@Override
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack){
-		if(mMultiPane){
+	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack) {
+		if (mMultiPane) {
 			FragmentTransaction ft = mFragmentManager.beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			Fragment currentDetailFragment = getCurrentDetailFragment();
-			if(currentDetailFragment != null){
-				if(currentDetailFragment.isVisible()){
-					//TODO fix this hack (remove current fragment just to readd it in showFragment, do we really have to do that?)
+			if (currentDetailFragment != null) {
+				if (currentDetailFragment.isVisible()) {
+					// TODO fix this hack (remove current fragment just to readd
+					// it in showFragment, do we really have to do that?)
 					ft.remove(currentDetailFragment);
 				}
 			}
 
 			showFragment(ft, R.id.detail_view, fragment);
-			if(addToBackStack){
+			if (addToBackStack) {
 				ft.addToBackStack(null);
 			}
 			ft.commit();
@@ -314,7 +342,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 			Intent intent = new Intent(this, cls);
 			intent.putExtra("fragmentClass", fragment.getClass());
 			Bundle args = fragment.getArguments();
-			if(args != null){
+			if (args != null) {
 				intent.putExtras(fragment.getArguments());
 			}
 			startActivity(intent);
@@ -322,28 +350,26 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	}
 
 	@Override
-	public void setTitle(CharSequence title){
-		if(mMultiPane){
+	public void setTitle(CharSequence title) {
+		if (mMultiPane) {
 			TextView t = (TextView) findViewById(R.id.detail_title);
-			t.bringToFront();
-			String replaceMe = getText(R.string.app_name) + "::";
-			t.setText(title.toString().replace(replaceMe, ""));
+			t.setText(title.toString());
 			return;
 		}
 		super.setTitle(title);
 	}
 
 	@Override
-	protected Dialog onCreateDialog(int id){
+	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-		if(isNavigationDialog(id) || callbackHandler == null){
+		if (isNavigationDialog(id) || callbackHandler == null) {
 			dialog = mNavigationFragment.onCreateDialog(id);
 		} else {
 			dialog = callbackHandler.onCreateDialog(id);
 		}
 
-		if(dialog == null){
+		if (dialog == null) {
 			dialog = super.onCreateDialog(id);
 		}
 
@@ -351,58 +377,68 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	}
 
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event){
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();	
-		if(callbackHandler != null)
-			if(callbackHandler.onKeyDown(keyCode, event))
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+		if (callbackHandler != null)
+			if (callbackHandler.onKeyDown(keyCode, event))
 				return true;
-		
-		//if the detail fragment didn't handle it, check if the navigation fragment wants it
+
+		// if the detail fragment didn't handle it, check if the navigation
+		// fragment wants it
 		callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
-		if(callbackHandler != null)
-			if(callbackHandler.onKeyDown(keyCode, event))
+		if (callbackHandler != null)
+			if (callbackHandler.onKeyDown(keyCode, event))
 				return true;
 
 		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event){
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();			
-		if(callbackHandler != null)
-			if(callbackHandler.onKeyUp(keyCode, event))
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+		if (callbackHandler != null)
+			if (callbackHandler.onKeyUp(keyCode, event))
 				return true;
-		
-		//if the detail fragment didn't handle it, check if the navigation fragment wants it		
+
+		// if the detail fragment didn't handle it, check if the navigation
+		// fragment wants it
 		callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
-		if(callbackHandler != null)
-			if(callbackHandler.onKeyUp(keyCode, event))
+		if (callbackHandler != null)
+			if (callbackHandler.onKeyUp(keyCode, event))
 				return true;
-		
+
 		return super.onKeyUp(keyCode, event);
 	}
 
-	public boolean isMultiPane(){
+	public boolean isMultiPane() {
 		return mMultiPane;
 	}
 
-	public void finish(boolean finishFragment){
-		if(mMultiPane && finishFragment){
-			//TODO finish() for Fragment
-//			mFragmentManager.popBackStackImmediate();
+	public void finish(boolean finishFragment) {
+		if (mMultiPane && finishFragment) {
+			// TODO finish() for Fragment
+			// mFragmentManager.popBackStackImmediate();
 		} else {
 			super.finish();
 		}
 	}
 
 	@Override
-	public void onDetailFragmentAttached(Fragment fragment) {
-		if(fragment != mNavigationFragment || !mMultiPane)
+	public void onDetailFragmentStart(Fragment fragment) {
+		if (fragment != mNavigationFragment || !mMultiPane)
 			mDetailFragment = fragment;
 	}
 
 	@Override
 	public void onDetailFragmentPause(Fragment fragment) {
-		mDetailFragment = null;
+		if (fragment != mNavigationFragment || !mMultiPane)
+			mDetailFragment = null;
+	}
+
+	@Override
+	public void onEpgSearch(Bundle args) {
+		Fragment f = new EpgSearchFragment();
+		f.setArguments(args);
+		showDetails(f);
 	}
 }

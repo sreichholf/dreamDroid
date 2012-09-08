@@ -6,9 +6,10 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import android.app.Activity;
+import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
@@ -17,16 +18,31 @@ import com.actionbarsherlock.app.SherlockFragment;
  * 
  */
 public abstract class DreamDroidFragment extends SherlockFragment implements ActivityCallbackHandler {
+	protected String mCurrentTitle;
+	protected String mBaseTitle;
+
 	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		((MultiPaneHandler) activity).onDetailFragmentAttached(this);
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mBaseTitle = mCurrentTitle = getString(R.string.app_name);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		getSherlockActivity().setTitle(mCurrentTitle);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		((MultiPaneHandler) getSherlockActivity()).onDetailFragmentStart(this);
 	}
 
 	@Override
 	public void onPause() {
 		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-		if(mph != null)
+		if (mph != null)
 			mph.onDetailFragmentPause(this);
 		super.onPause();
 	}

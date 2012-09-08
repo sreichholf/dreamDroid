@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import net.reichholf.dreamdroid.activities.SimpleFragmentActivity;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
@@ -18,10 +19,12 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -82,6 +85,7 @@ public class DreamDroid extends Application {
 	private static ArrayList<String> sLocations;
 	private static ArrayList<String> sTags;
 	
+	private static EpgSearchListener sSearchListener;
 
 	/**
 	 * @param context
@@ -409,5 +413,27 @@ public class DreamDroid extends Application {
 	
 	public static ArrayList<String> getTags(){
 		return sTags;
+	}
+	
+	public static boolean search(Context context, Bundle args){
+		if( sSearchListener != null){
+			sSearchListener.onEpgSearch(args);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public interface EpgSearchListener{
+		public void onEpgSearch(Bundle args);
+	}
+	
+	public static void registerEpgSearchListener(EpgSearchListener listener){
+		sSearchListener = listener;
+	}
+	
+	public static void unregisterEpgSearchListener(EpgSearchListener listener){
+		if(listener == sSearchListener)
+			sSearchListener = null;
 	}
 }

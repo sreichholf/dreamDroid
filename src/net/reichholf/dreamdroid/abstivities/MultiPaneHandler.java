@@ -19,7 +19,7 @@ public interface MultiPaneHandler {
 	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> handlerClass, boolean addToBackStack);
 	public void showDetails(Class<? extends Fragment> fragmentClass);
 	public void showDetails(Class<? extends Fragment> fragmentClass, Class<? extends MultiPaneHandler> handlerClass);
-	public void onDetailFragmentAttached(Fragment fragment);
+	public void onDetailFragmentStart(Fragment fragment);
 	public void onDetailFragmentPause(Fragment fragment);
 	public boolean isMultiPane();
 	public void finish();

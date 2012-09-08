@@ -34,7 +34,7 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mCurrentTitle = getString(R.string.epg_search);
+		mCurrentTitle = mBaseTitle = getString(R.string.epg_search);
 		setAdapter();
 		String needle = getArguments().getString(SearchManager.QUERY);
 		if(needle != null){
@@ -60,6 +60,11 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 		params.add(new BasicNameValuePair("search", mNeedle));
 		
 		return params;
+	}
+	
+	@Override
+	protected String getLoadFinishedTitle(){
+		return mBaseTitle + " - '" + mNeedle + "'";
 	}
 	
 	@Override

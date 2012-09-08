@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
@@ -47,10 +48,16 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 		
 		Intent intent = getIntent();
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-			mFragment = new EpgSearchFragment();
 			Bundle args = new Bundle();
 			args.putString(SearchManager.QUERY, intent.getStringExtra(SearchManager.QUERY));
-			mFragment.setArguments(args);
+			
+			if(DreamDroid.search(this, args)){
+					finish();
+					return;
+			} else {
+				mFragment = new EpgSearchFragment();
+				mFragment.setArguments(args);
+			}
 		}
 		initViews();
 	}
@@ -210,7 +217,7 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	}
 	
 	@Override
-	public void onDetailFragmentAttached(Fragment fragment) {
+	public void onDetailFragmentStart(Fragment fragment) {
 		mCallBackHandler = (ActivityCallbackHandler) fragment;
 	}
 

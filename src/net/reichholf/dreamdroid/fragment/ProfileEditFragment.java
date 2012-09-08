@@ -57,9 +57,9 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mActivity = getSherlockActivity();
-		mActivity.setTitle(getString(R.string.edit_profile));
 		mActivity.setProgressBarIndeterminateVisibility(false);
 		setHasOptionsMenu(true);
+		mBaseTitle = mCurrentTitle = getString(R.string.edit_profile);
 	}
 
 	@Override
