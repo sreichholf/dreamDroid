@@ -75,22 +75,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		mCurrentLocation = "/hdd/movie/";
 		setHasOptionsMenu(true);
 
-		ActionBar actionBar = getSherlockActivity().getSupportActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-
-		mLocationAdapter = new ArrayAdapter<String>(getSherlockActivity(), android.R.layout.simple_list_item_1);
-		actionBar.setListNavigationCallbacks(mLocationAdapter, new OnNavigationListener() {
-			@Override
-			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-				String selectedLoc = DreamDroid.getLocations().get(itemPosition);
-				if (!selectedLoc.equals(mCurrentLocation)) {
-					mCurrentLocation = selectedLoc;
-					reload();
-				}
-				return false;
-			}
-		});
-
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
@@ -120,6 +104,35 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
 			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 		}
+	}
+	
+	@Override
+	public void onResume(){
+		ActionBar actionBar = getSherlockActivity().getSupportActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+		mLocationAdapter = new ArrayAdapter<String>(getSherlockActivity(), android.R.layout.simple_list_item_1);
+		mLocationAdapter.add(mCurrentLocation);
+		actionBar.setListNavigationCallbacks(mLocationAdapter, new OnNavigationListener() {
+			@Override
+			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+				if(DreamDroid.getLocations().size() > itemPosition){
+					String selectedLoc = DreamDroid.getLocations().get(itemPosition);
+					if (!selectedLoc.equals(mCurrentLocation)) {
+						mCurrentLocation = selectedLoc;
+						reload();
+					}
+				}
+				return false;
+			}
+		});
+		super.onResume();
+	}
+	
+	@Override
+	public void onPause(){
+		getSherlockActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		super.onPause();
 	}
 
 	@Override
