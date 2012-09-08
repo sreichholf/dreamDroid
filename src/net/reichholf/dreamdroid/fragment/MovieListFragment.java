@@ -66,7 +66,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
 	private ArrayAdapter<String> mLocationAdapter;
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -115,15 +115,17 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		mLocationAdapter.add(mCurrentLocation);
 		actionBar.setListNavigationCallbacks(mLocationAdapter, new OnNavigationListener() {
 			@Override
-			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+			public boolean onNavigationItemSelected(int itemPosition, long itemId) {			
 				if(DreamDroid.getLocations().size() > itemPosition){
-					String selectedLoc = DreamDroid.getLocations().get(itemPosition);
+					ActionBar actionBar = getSherlockActivity().getSupportActionBar();
+					int position = actionBar.getSelectedNavigationIndex();
+					String selectedLoc = mLocationAdapter.getItem(position); 
 					if (!selectedLoc.equals(mCurrentLocation)) {
 						mCurrentLocation = selectedLoc;
 						reload();
 					}
 				}
-				return false;
+				return true;
 			}
 		});
 		super.onResume();
@@ -428,11 +430,10 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		super.onLoadFinished(loader, list);
 
 		mLocationAdapter.clear();
-
 		for (String location : DreamDroid.getLocations()) {
 			mLocationAdapter.add(location);
 		}
-
+		
 		getSherlockActivity().getSupportActionBar().setSelectedNavigationItem(
 				mLocationAdapter.getPosition(mCurrentLocation));
 	}
