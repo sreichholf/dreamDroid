@@ -24,7 +24,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
-import net.reichholf.dreamdroid.widget.NumberPicker;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -48,6 +47,7 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
+import com.michaelnovakjr.numberpicker.NumberPicker;
 
 /**
  * This is where all begins. It's the "main menu activity" which acts as central
@@ -63,7 +63,6 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
 			{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0 },
 			{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0 },
-			{ Statics.ITEM_EPG_SEARCH, R.string.epg_search, R.drawable.ic_menu_search, 1, 1 },
 			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0 },
 			{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0 },
 			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },

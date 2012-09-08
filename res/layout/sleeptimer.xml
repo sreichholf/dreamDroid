@@ -12,7 +12,7 @@
         android:layout_marginBottom="3dp"
         android:background="@android:drawable/divider_horizontal_bright" />
 
-    <net.reichholf.dreamdroid.widget.NumberPicker
+    <com.michaelnovakjr.numberpicker.NumberPicker
         android:id="@+id/NumberPicker"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />

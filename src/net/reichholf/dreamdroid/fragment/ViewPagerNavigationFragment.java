@@ -30,7 +30,6 @@ public class ViewPagerNavigationFragment extends NavigationFragment {
 	private Button mButtonMovies;
 	private Button mButtonServices;
 	private Button mButtonTimer;
-	private Button mButtonEpgSearch;
 	private Button mButtonRemote;
 	private Button mButtonSleepTimer;
 	private Button mButtonScreenshot;
@@ -58,9 +57,8 @@ public class ViewPagerNavigationFragment extends NavigationFragment {
 		mButtonServices = (Button) pageViews[0].findViewById(R.id.ButtonServices);
 		mButtonTimer = (Button) pageViews[0].findViewById(R.id.ButtonTimer);
 		mButtonRemote = (Button) pageViews[0].findViewById(R.id.ButtonVirtualRemote);
-		mButtonEpgSearch = (Button) pageViews[0].findViewById(R.id.ButtonEpgSearch);
 		mButtonProfiles = (Button) pageViews[0].findViewById(R.id.ButtonProfiles);
-		mButtonSleepTimer = (Button) pageViews[1].findViewById(R.id.ButtonSleeptimer);
+		mButtonSleepTimer = (Button) pageViews[0].findViewById(R.id.ButtonSleeptimer);
 		mButtonSleepTimer.setEnabled(DreamDroid.featureSleepTimer());
 		mButtonScreenshot = (Button) pageViews[1].findViewById(R.id.ButtonScreenshot);
 		mButtonDeviceInfo = (Button) pageViews[1].findViewById(R.id.ButtonDeviceInfo);
@@ -81,7 +79,6 @@ public class ViewPagerNavigationFragment extends NavigationFragment {
 		registerOnClickListener(mButtonServices, Statics.ITEM_SERVICES);
 		registerOnClickListener(mButtonTimer, Statics.ITEM_TIMER);
 		registerOnClickListener(mButtonRemote, Statics.ITEM_REMOTE);
-		registerOnClickListener(mButtonEpgSearch, Statics.ITEM_EPG_SEARCH);
 		return v;
 	}
 

@@ -14,5 +14,6 @@
 
 To build dreamDroid you have to add the following libraries as Android Library Project:
 
-* Jake Wharton's ViewPagerIndicator (2.2.2): http://viewpagerindicator.com/
-* Jake Wharton's ActionBarSherlock (3.5.1): http://actionbarsherlock.com/
+* Jake Wharton's ViewPagerIndicator (2.3.1): http://viewpagerindicator.com/
+* Jake Wharton's ActionBarSherlock (4.1.0): http://actionbarsherlock.com/
+* Michael Novakjr's Numberpicker (cloned on 2012-09-08): https://github.com/mrn/numberpicker 

@@ -77,13 +77,13 @@
                 android:text="@string/current_service" />
 
             <Button
-                android:id="@+id/ButtonEpgSearch"
+                android:id="@+id/ButtonSleeptimer"
                 android:layout_width="fill_parent"
                 android:layout_height="65dp"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_menu_search"
-                android:text="@string/epg_search" />
+                android:drawableLeft="@drawable/ic_menu_clock"
+                android:text="@string/sleeptimer" />
         </LinearLayout>
 
         <LinearLayout

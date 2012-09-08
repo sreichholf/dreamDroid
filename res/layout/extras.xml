@@ -18,15 +18,6 @@
             android:paddingTop="5dip" >
 
             <Button
-                android:id="@+id/ButtonSleeptimer"
-                android:layout_width="fill_parent"
-                android:layout_height="65dp"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_menu_clock"
-                android:text="@string/sleeptimer" />
-
-            <Button
                 android:id="@+id/ButtonScreenshot"
                 android:layout_width="fill_parent"
                 android:layout_height="65dp"
@@ -34,6 +25,15 @@
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_menu_picture"
                 android:text="@string/screenshot" />
+
+            <Button
+                android:id="@+id/ButtonMessage"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_mail"
+                android:text="@string/send_message" />
         </LinearLayout>
 
         <LinearLayout
@@ -52,31 +52,6 @@
                 android:text="@string/device_info" />
 
             <Button
-                android:id="@+id/ButtonMessage"
-                android:layout_width="fill_parent"
-                android:layout_height="65dp"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_menu_mail"
-                android:text="@string/send_message" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/LinearLayout4"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
-            <Button
-                android:id="@+id/ButtonAbout"
-                android:layout_width="fill_parent"
-                android:layout_height="65dp"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_menu_help"
-                android:text="@string/about" />
-
-            <Button
                 android:id="@+id/ButtonCheckConnection"
                 android:layout_width="fill_parent"
                 android:layout_height="65dp"
@@ -85,6 +60,15 @@
                 android:drawableLeft="@drawable/ic_menu_link"
                 android:text="@string/check_connectivity" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/ButtonAbout"
+            android:layout_width="fill_parent"
+            android:layout_height="65dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_menu_help"
+            android:text="@string/about" />
     </LinearLayout>
 
 </ScrollView>
