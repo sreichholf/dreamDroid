@@ -152,9 +152,9 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mProfile.setText(mCurrentProfile.getName());
 		mHost.setText(mCurrentProfile.getHost());
 		mStreamHost.setText(mCurrentProfile.getStreamHostValue());
+		mSsl.setChecked(mCurrentProfile.isSsl());
 		mPort.setText(mCurrentProfile.getPortString());
 		mStreamPort.setText(mCurrentProfile.getStreamPortString());
-		mSsl.setChecked(mCurrentProfile.isSsl());
 		mLogin.setChecked(mCurrentProfile.isLogin());
 		mUser.setText(mCurrentProfile.getUser());
 		mPass.setText(mCurrentProfile.getPass());
