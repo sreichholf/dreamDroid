@@ -12,36 +12,50 @@
         android:layout_marginBottom="3dp"
         android:background="@android:drawable/divider_horizontal_bright" />
 
-    <com.michaelnovakjr.numberpicker.NumberPicker
-        android:id="@+id/NumberPicker"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-
-    <CheckBox
-        android:id="@+id/CheckBoxEnabled"
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/activate" />
+        android:orientation="horizontal" >
 
-    <RadioGroup
-        android:id="@+id/RadioGroupAction"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        <com.michaelnovakjr.numberpicker.NumberPicker
+            android:id="@+id/NumberPicker"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="80dp" />
 
-        <RadioButton
-            android:id="@+id/RadioButtonStandby"
+        <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/standby" />
+            android:layout_marginLeft="-75dp"
+            android:orientation="vertical">
 
-        <RadioButton
-            android:id="@+id/RadioButtonShutdown"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/shutdown" />
-    </RadioGroup>
+            <CheckBox
+                android:id="@+id/CheckBoxEnabled"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/activate" />
+
+            <RadioGroup
+                android:id="@+id/RadioGroupAction"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <RadioButton
+                    android:id="@+id/RadioButtonStandby"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/standby" />
+
+                <RadioButton
+                    android:id="@+id/RadioButtonShutdown"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/shutdown" />
+            </RadioGroup>
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="fill_parent"

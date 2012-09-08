@@ -154,7 +154,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment {
 			mCurrent = (ExtendedHashMap) savedInstanceState.getParcelable("current");
 			@SuppressWarnings("unchecked")
 			HashMap<String,Object> currentItem = (HashMap<String,Object>) savedInstanceState.getParcelable("currentItem");
-			mCurrentItem = new ExtendedHashMap(currentItem);
+			if(currentItem != null)
+				mCurrentItem = new ExtendedHashMap(currentItem);
 		}
 		
 		if(mCurrent == null){
