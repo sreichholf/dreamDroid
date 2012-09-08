@@ -424,7 +424,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	}
 
 	@Override
-	public void onDetailFragmentStart(Fragment fragment) {
+	public void onDetailFragmentResume(Fragment fragment) {
 		if (fragment != mNavigationFragment || !mMultiPane)
 			mDetailFragment = fragment;
 	}

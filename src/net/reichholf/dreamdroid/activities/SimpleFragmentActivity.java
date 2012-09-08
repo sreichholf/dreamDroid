@@ -217,7 +217,7 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	}
 	
 	@Override
-	public void onDetailFragmentStart(Fragment fragment) {
+	public void onDetailFragmentResume(Fragment fragment) {
 		mCallBackHandler = (ActivityCallbackHandler) fragment;
 	}
 

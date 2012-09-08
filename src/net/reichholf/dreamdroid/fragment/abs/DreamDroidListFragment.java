@@ -36,7 +36,7 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	@Override
 	public void onResume() {
 		super.onResume();
-		((MultiPaneHandler) getSherlockActivity()).onDetailFragmentStart(this);
+		((MultiPaneHandler) getSherlockActivity()).onDetailFragmentResume(this);
 	}
 
 	@Override
