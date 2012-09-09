@@ -49,7 +49,7 @@ public class SimpleHttpClient {
 	private String mHostname;
 	private String mStreamHostname;
 	private String mPort;
-	private String mStreamPort;
+	private String mFilePort;
 	private String mUser;
 	private String mPass;
 	private byte[] mBytes;
@@ -116,7 +116,7 @@ public class SimpleHttpClient {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
 		return mPrefix + mHostname + ":" + mPort + uri + parms;
 	}
-	
+
 	/**
 	 * @param uri
 	 * @param parameters
@@ -124,13 +124,21 @@ public class SimpleHttpClient {
 	 */
 	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
-		return "http://" + mStreamHostname + ":80" + uri + parms; //TODO think about to NOT hardcode port 80 here
+		return "http://" + mStreamHostname + mFilePort + uri + parms; // TODO
+																		// think
+																		// about
+																		// to
+																		// NOT
+																		// hardcode
+																		// port
+																		// 80
+																		// here
 	}
-	
-	public boolean fetchPageContent(String uri){
+
+	public boolean fetchPageContent(String uri) {
 		return fetchPageContent(uri, new ArrayList<NameValuePair>());
 	}
-	
+
 	/**
 	 * @param uri
 	 * @param parameters
@@ -212,8 +220,8 @@ public class SimpleHttpClient {
 	public String getPageContentString() {
 		return new String(mBytes);
 	}
-	
-	public byte[] getBytes(){
+
+	public byte[] getBytes() {
 		return mBytes;
 	}
 
@@ -238,7 +246,7 @@ public class SimpleHttpClient {
 		mHostname = DreamDroid.getActiveProfile().getHost().trim();
 		mStreamHostname = DreamDroid.getActiveProfile().getStreamHost().trim();
 		mPort = DreamDroid.getActiveProfile().getPortString();
-		mStreamPort = DreamDroid.getActiveProfile().getStreamPortString();
+		mFilePort = DreamDroid.getActiveProfile().getFilePortString();
 		mLogin = DreamDroid.getActiveProfile().isLogin();
 		mSsl = DreamDroid.getActiveProfile().isSsl();
 

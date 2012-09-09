@@ -46,6 +46,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	private EditText mStreamHost;
 	private EditText mPort;
 	private EditText mStreamPort;
+	private EditText mFilePort;
 	private CheckBox mSsl;
 	private CheckBox mLogin;
 	private EditText mUser;
@@ -72,6 +73,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mStreamHost = (EditText) view.findViewById(R.id.EditTextStreamHost);
 		mPort = (EditText) view.findViewById(R.id.EditTextPort);
 		mStreamPort = (EditText) view.findViewById(R.id.EditTextStreamPort);
+		mFilePort = (EditText) view.findViewById(R.id.EditTextFilePort);
 		mSsl = (CheckBox) view.findViewById(R.id.CheckBoxSsl);
 		mLogin = (CheckBox) view.findViewById(R.id.CheckBoxLogin);
 		mUser = (EditText) view.findViewById(R.id.EditTextUser);
@@ -155,6 +157,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mSsl.setChecked(mCurrentProfile.isSsl());
 		mPort.setText(mCurrentProfile.getPortString());
 		mStreamPort.setText(mCurrentProfile.getStreamPortString());
+		mFilePort.setText(mCurrentProfile.getFilePortString());
 		mLogin.setChecked(mCurrentProfile.isLogin());
 		mUser.setText(mCurrentProfile.getUser());
 		mPass.setText(mCurrentProfile.getPass());
@@ -170,6 +173,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mCurrentProfile.setStreamHost(mStreamHost.getText().toString().trim());
 		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());
 		mCurrentProfile.setStreamPort(mStreamPort.getText().toString());
+		mCurrentProfile.setFilePort(mFilePort.getText().toString());
 		mCurrentProfile.setLogin(mLogin.isChecked());
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());

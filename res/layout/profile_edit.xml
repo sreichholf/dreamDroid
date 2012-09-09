@@ -9,7 +9,6 @@
         android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/TextViewProfile"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="#333"
@@ -28,7 +27,6 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/TextViewHost"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="80dp"
@@ -37,7 +35,6 @@
                 android:text="@string/host" />
 
             <TextView
-                android:id="@+id/TextViewPort"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="-80dp"
@@ -71,46 +68,76 @@
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:background="#333"
+            android:orientation="vertical"
+            android:paddingRight="5dp" >
 
             <TextView
-                android:id="@+id/TextViewStreamHost"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="80dp"
                 android:background="#333"
-                android:paddingLeft="3dip"
-                android:text="@string/stream_host" />
-
-            <TextView
-                android:id="@+id/TextViewStreamPort"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="-80dp"
-                android:background="#333"
-                android:paddingLeft="3dip"
-                android:text="@string/port" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+                android:paddingLeft="3dp"
+                android:text="@string/stream" />
 
             <EditText
                 android:id="@+id/EditTextStreamHost"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="80dp"
+                android:layout_marginLeft="5dp"
+                android:ems="10"
                 android:hint="@string/stream_host_long"
                 android:singleLine="true" />
 
-            <EditText
-                android:id="@+id/EditTextStreamPort"
-                android:layout_width="75dp"
+            <LinearLayout
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="-80dp"
-                android:hint="@string/port"
-                android:singleLine="true" />
+                android:layout_marginLeft="5dp" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="140dp"
+                    android:background="#333"
+                    android:paddingLeft="3dp"
+                    android:text="@string/port_stream_live" />
+
+                <EditText
+                    android:id="@+id/EditTextStreamPort"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="-140dp"
+                    android:gravity="right|center_vertical"
+                    android:hint="@string/port_stream_live"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="140dp"
+                    android:background="#333"
+                    android:paddingLeft="3dp"
+                    android:text="@string/port_stream_file" />
+
+                <EditText
+                    android:id="@+id/EditTextFilePort"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="-140dp"
+                    android:gravity="right|center_vertical"
+                    android:hint="@string/port_stream_file"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:singleLine="true" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -118,7 +145,6 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/TextViewSsl"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="50dip"
@@ -140,7 +166,6 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/TextViewLogin"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="50dip"
@@ -163,7 +188,6 @@
             android:orientation="vertical" >
 
             <TextView
-                android:id="@+id/TextViewUser"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:background="#333"
@@ -178,7 +202,6 @@
                 android:singleLine="true" />
 
             <TextView
-                android:id="@+id/TextViewPass"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:background="#333"
@@ -200,7 +223,6 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/TextViewSimpleRemote"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="50dip"
