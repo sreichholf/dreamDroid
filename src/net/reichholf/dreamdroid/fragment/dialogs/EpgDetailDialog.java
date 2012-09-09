@@ -96,13 +96,6 @@ public class EpgDetailDialog extends PrimitiveDialog {
 			TextView text = (TextView) view.findViewById(R.id.text);
 			getDialog().setTitle(R.string.not_available);
 			text.setText(R.string.no_epg_available);
-			Button buttonClose = (Button) view.findViewById(R.id.button_close);
-			buttonClose.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dismiss();
-				}
-			});
 		}
 		return view;
 	}

@@ -20,12 +20,4 @@
         android:layout_marginLeft="10dip"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/button_close"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginTop="5dp"
-        android:text="@string/ok" />
-
 </LinearLayout>
