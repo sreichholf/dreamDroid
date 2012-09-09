@@ -6,9 +6,6 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import java.util.Arrays;
-import java.util.List;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.OnActiveProfileChangedListener;
 import net.reichholf.dreamdroid.Profile;
@@ -18,13 +15,14 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import net.reichholf.dreamdroid.fragment.ViewPagerNavigationFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -40,10 +38,12 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
  * 
  */
 public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler,
-		OnActiveProfileChangedListener, DreamDroid.EpgSearchListener {
-	public static List<Integer> NAVIGATION_DIALOG_IDS = Arrays.asList(new Integer[] { Statics.DIALOG_ABOUT_ID,
-			Statics.DIALOG_SEND_MESSAGE_ID, Statics.DIALOG_SET_POWERSTATE_ID, Statics.DIALOG_SLEEPTIMER_ID,
-			Statics.DIALOG_SLEEPTIMER_PROGRESS_ID });
+		OnActiveProfileChangedListener, DreamDroid.EpgSearchListener, PrimitiveDialog.DialogActionListener {
+	// public static List<Integer> NAVIGATION_DIALOG_IDS = Arrays.asList(new
+	// Integer[] { Statics.DIALOG_ABOUT_ID,
+	// Statics.DIALOG_SEND_MESSAGE_ID, Statics.DIALOG_SET_POWERSTATE_ID,
+	// Statics.DIALOG_SLEEPTIMER_ID,
+	// Statics.DIALOG_SLEEPTIMER_PROGRESS_ID });
 
 	private boolean mMultiPane;
 
@@ -120,7 +120,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		initViews();
 		mNavigationFragment.setHighlightCurrent(mMultiPane);
 
-//		DreamDroid.registerEpgSearchListener(this);
+		// DreamDroid.registerEpgSearchListener(this);
 	}
 
 	private Fragment getCurrentDetailFragment() {
@@ -186,9 +186,9 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		}
 	}
 
-	private boolean isNavigationDialog(int id) {
-		return NAVIGATION_DIALOG_IDS.contains(id);
-	}
+	// private boolean isNavigationDialog(int id) {
+	// return NAVIGATION_DIALOG_IDS.contains(id);
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -362,16 +362,17 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-		if (isNavigationDialog(id) || callbackHandler == null) {
-			dialog = mNavigationFragment.onCreateDialog(id);
-		} else {
-			dialog = callbackHandler.onCreateDialog(id);
-		}
-
-		if (dialog == null) {
-			dialog = super.onCreateDialog(id);
-		}
+		// ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler)
+		// getCurrentDetailFragment();
+		// if (isNavigationDialog(id) || callbackHandler == null) {
+		// dialog = mNavigationFragment.onCreateDialog(id);
+		// } else {
+		// dialog = callbackHandler.onCreateDialog(id);
+		// }
+		//
+		// if (dialog == null) {
+		// dialog = super.onCreateDialog(id);
+		// }
 
 		return dialog;
 	}
@@ -440,5 +441,38 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		Fragment f = new EpgSearchFragment();
 		f.setArguments(args);
 		showDetails(f);
+	}
+
+	@Override
+	public void showDialog(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
+		DialogFragment f = null;
+		try {
+			f = fragmentClass.newInstance();
+			f.setArguments(args);
+			showDialog(f, tag);
+		} catch (InstantiationException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		} catch (IllegalAccessException e) {
+			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+		}
+	}
+
+	@Override
+	public void showDialog(DialogFragment fragment, String tag) {
+		FragmentManager fm = getSupportFragmentManager();
+		fragment.show(fm, tag);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog.
+	 * EpgDetailDialogListener#onFinishEpgDetailDialog(int)
+	 */
+	@Override
+	public void onDialogAction(int action) {
+		if (mDetailFragment != null)
+			((PrimitiveDialog.DialogActionListener) mDetailFragment).onDialogAction(action);
+
 	}
 }

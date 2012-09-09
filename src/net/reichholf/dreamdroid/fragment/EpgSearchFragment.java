@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
@@ -71,5 +72,9 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new EventListRequestHandler(URIStore.EPG_SEARCH), false, args);
 		return loader;
+	}
+	
+	public Dialog onCreateDialog(int id){
+		return null;
 	}
 }

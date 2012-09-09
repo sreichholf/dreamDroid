@@ -18,8 +18,8 @@ public class Statics {
 	public static final int DIALOG_ABOUT_ID = 0x8002;
 	public static final int DIALOG_SLEEPTIMER_ID = 0x8003;
 	public static final int DIALOG_SLEEPTIMER_PROGRESS_ID = 0x8004;
-	public static final int DIALOG_EPG_ITEM_ID = 0x8005;
-	public static final int DIALOG_PICK_LOCATION_ID = 0x8006;
+//	public static final int DIALOG_EPG_ITEM_ID = 0x8005;
+//	public static final int DIALOG_PICK_LOCATION_ID = 0x8006;
 	public static final int DIALOG_PICK_TAGS_ID = 0x8007;
 	public static final int DIALOG_DELETE_MOVIE_CONFIRM_ID = 0x8008;
 	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
@@ -32,7 +32,7 @@ public class Statics {
 	public static final int DIALOG_EMPTY_LIST_ID = 0x8016;
 	public static final int DIALOG_TIMER_SELECTED_ID = 0x8017;
 	public static final int DIALOG_TIMER_DELETE_CONFIRM_ID = 0x8018;
-	public static final int DIALOG_SERVICE_SELECTED_ID = 0x8019;
+//	public static final int DIALOG_SERVICE_SELECTED_ID = 0x8019;
 	public static final int DIALOG_MOVIE_SELECTED_ID = 0x8020;
 
 	public static final int ITEM_NOW = 0x6000;

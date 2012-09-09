@@ -34,7 +34,8 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Parcelab
 	
 	public ExtendedHashMap(HashMap<String,Object> map){
 		super();
-		putAll(map);
+		if(map != null)
+			putAll(map);
 	}
 
 	@Override

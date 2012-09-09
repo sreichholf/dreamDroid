@@ -15,6 +15,8 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -47,13 +49,11 @@ import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -76,7 +76,52 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sreichholf
  * 
  */
-public class ServiceListFragment extends AbstractHttpFragment {
+public class ServiceListFragment extends AbstractHttpFragment implements PrimitiveDialog.DialogActionListener {
+
+	public static class ServiceActionDialog extends PrimitiveDialog {
+		public static final int ACTION_CURRENT = 0xc010;
+		public static final int ACTION_EPG = 0xc011;
+		public static final int ACTION_ZAP = 0xc012;
+		public static final int ACTION_STREAM = 0xc013;
+
+		public static ServiceActionDialog newInstance(String serviceName) {
+			ServiceActionDialog fragment = new ServiceActionDialog();
+			Bundle args = new Bundle();
+			args.putString("title", serviceName);
+			fragment.setArguments(args);
+			return fragment;
+		}
+
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
+					getText(R.string.zap), getText(R.string.stream) };
+
+			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
+			adBuilder.setTitle(getText(R.string.pick_action));
+			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
+
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
+					case 0:
+						finishDialog(ServiceActionDialog.ACTION_CURRENT);
+						break;
+					case 1:
+						finishDialog(ServiceActionDialog.ACTION_EPG);
+						break;
+					case 2:
+						finishDialog(ServiceActionDialog.ACTION_ZAP);
+						break;
+					case 3:
+						finishDialog(ServiceActionDialog.ACTION_STREAM);
+						break;
+					}
+				}
+			});
+
+			return adBuilder.create();
+		}
+	}
 
 	public static final String SERVICE_REF_ROOT = "root";
 
@@ -331,8 +376,6 @@ public class ServiceListFragment extends AbstractHttpFragment {
 	public void onDestroy() {
 		if (mListTask != null)
 			mListTask.cancel(true);
-		getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
-		getSherlockActivity().removeDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
 		super.onDestroy();
 	}
 
@@ -716,7 +759,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
-					getSherlockActivity().showDialog(Statics.DIALOG_SERVICE_SELECTED_ID);
+					mMultiPaneHandler.showDialog( ServiceActionDialog.newInstance(mCurrentService.getString(Event.KEY_SERVICE_NAME)), "service_action_dialog");
 				}
 			}
 		}
@@ -724,124 +767,7 @@ public class ServiceListFragment extends AbstractHttpFragment {
 
 	@Override
 	public Dialog onCreateDialog(int id) {
-		final Dialog dialog;
-
-		if (mCurrentService != null) {
-
-			switch (id) {
-			case Statics.DIALOG_SERVICE_SELECTED_ID:
-				CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
-						getText(R.string.zap), getText(R.string.stream) };
-
-				AlertDialog.Builder adBuilder = new AlertDialog.Builder(getSherlockActivity());
-				adBuilder.setTitle(getText(R.string.pick_action));
-				adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						String ref = mCurrentService.getString(Service.KEY_REFERENCE);
-						String name = mCurrentService.getString(Service.KEY_NAME);
-						switch (which) {
-						case 0:
-							getSherlockActivity().removeDialog(Statics.DIALOG_EPG_ITEM_ID);
-							getSherlockActivity().showDialog(Statics.DIALOG_EPG_ITEM_ID);
-							break;
-						case 1:
-							openEpg(ref, name);
-							break;
-						case 2:
-							zapTo(ref);
-							break;
-						case 3:
-							try {
-								startActivity(IntentFactory.getStreamServiceIntent(ref));
-							} catch (ActivityNotFoundException e) {
-								showToast(getText(R.string.missing_stream_player));
-							}
-							break;
-						}
-					}
-				});
-
-				dialog = adBuilder.create();
-				break;
-			case Statics.DIALOG_EPG_ITEM_ID:
-
-				String servicename = mCurrentService.getString(Event.KEY_SERVICE_NAME);
-				String title = mCurrentService.getString(Event.KEY_EVENT_TITLE);
-				String date = mCurrentService.getString(Event.KEY_EVENT_START_READABLE);
-				if (!"N/A".equals(title) && date != null) {
-					date = date.concat(" (" + (String) mCurrentService.getString(Event.KEY_EVENT_DURATION_READABLE)
-							+ " " + getText(R.string.minutes_short) + ")");
-					String descEx = mCurrentService.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
-
-					dialog = new Dialog(getSherlockActivity());
-					dialog.setContentView(R.layout.epg_item_dialog);
-					dialog.setTitle(title);
-
-					TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
-					textServiceName.setText(servicename);
-
-					TextView textTime = (TextView) dialog.findViewById(R.id.epg_time);
-					textTime.setText(date);
-
-					TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
-					textDescEx.setText(descEx);
-
-					Button buttonSetTimer = (Button) dialog.findViewById(R.id.ButtonSetTimer);
-					buttonSetTimer.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							setTimerById(mCurrentService);
-							dialog.dismiss();
-						}
-					});
-
-					Button buttonEditTimer = (Button) dialog.findViewById(R.id.ButtonEditTimer);
-					buttonEditTimer.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							setTimerByEventData(mCurrentService);
-							dialog.dismiss();
-						}
-					});
-
-					Button buttonIMDb = (Button) dialog.findViewById(R.id.ButtonImdb);
-					buttonIMDb.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							IntentFactory.queryIMDb(getSherlockActivity(), mCurrentService);
-							dialog.dismiss();
-						}
-					});
-
-					Button buttonSimilar = (Button) dialog.findViewById(R.id.ButtonSimilar);
-					buttonSimilar.setOnClickListener(new OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							findSimilarEvents(mCurrentService);
-							dialog.dismiss();
-						}
-					});
-				} else {
-					// No EPG Information is available!
-					AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
-					builder.setMessage(R.string.no_epg_available).setCancelable(true)
-							.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int id) {
-									dialog.cancel();
-								}
-							});
-					dialog = builder.create();
-				}
-				break;
-			default:
-				dialog = null;
-			}
-		} else {
-			dialog = null;
-			showToast(getString(R.string.error));
-		}
-		return dialog;
+		return null;
 	}
 
 	/**
@@ -1003,6 +929,58 @@ public class ServiceListFragment extends AbstractHttpFragment {
 			Activity a = getSherlockActivity();
 			a.setResult(resultCode, data);
 			a.finish();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog.
+	 * DialogActionListener#onDialogAction(int)
+	 */
+	@Override
+	public void onDialogAction(int action) {
+		String ref = mCurrentService.getString(Service.KEY_REFERENCE);
+		String name = mCurrentService.getString(Service.KEY_NAME);
+
+		switch (action) {
+		case ServiceActionDialog.ACTION_CURRENT:
+			Bundle args = new Bundle();
+			args.putParcelable("currentItem", mCurrentService);
+			mMultiPaneHandler.showDialog(EpgDetailDialog.class, args, "epg_detail_dialog");
+			break;
+		
+		case ServiceActionDialog.ACTION_EPG:
+			openEpg(ref, name);
+			break;
+		
+		case ServiceActionDialog.ACTION_ZAP:
+			zapTo(ref);
+			break;
+		
+		case ServiceActionDialog.ACTION_STREAM:
+			try {
+				startActivity(IntentFactory.getStreamServiceIntent(ref));
+			} catch (ActivityNotFoundException e) {
+				showToast(getText(R.string.missing_stream_player));
+			}
+			break;
+		
+		case EpgDetailDialog.ACTION_SET_TIMER:
+			setTimerById(mCurrentService);
+			break;
+		
+		case EpgDetailDialog.ACTION_EDIT_TIMER:
+			setTimerByEventData(mCurrentService);
+			break;
+		
+		case EpgDetailDialog.ACTION_FIND_SIMILAR:
+			findSimilarEvents(mCurrentService);
+			break;
+		
+		case EpgDetailDialog.ACTION_IMDB:
+			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentService);
+			break;
 		}
 	}
 }
