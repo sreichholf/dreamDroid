@@ -69,7 +69,6 @@ public class Statics {
 	public static final int ITEM_PICK_TAGS = 0x6031;
 	public static final int ITEM_OVERVIEW = R.id.menu_overview;
 	public static final int ITEM_SET_DEFAULT = R.id.menu_default;
-	// public static final int ITEM_LOCATIONS =R.id.menu_locations;
 	public static final int ITEM_TAGS = R.id.menu_tags;
 	public static final int ITEM_NEW_TIMER = R.id.menu_create_timer;
 	public static final int ITEM_CLEANUP = R.id.menu_cleanup;
