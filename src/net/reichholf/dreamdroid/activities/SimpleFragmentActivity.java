@@ -258,12 +258,12 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	}
 
 	@Override
-	public void showDialog(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
+	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
 		DialogFragment f = null;
 		try {
 			f = fragmentClass.newInstance();
 			f.setArguments(args);
-			showDialog(f, tag);
+			showDialogFragment(f, tag);
 		} catch (InstantiationException e) {
 			Log.e(DreamDroid.LOG_TAG, e.getMessage());
 		} catch (IllegalAccessException e) {
@@ -272,7 +272,7 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	}
 
 	@Override
-	public void showDialog(DialogFragment fragment, String tag) {
+	public void showDialogFragment(DialogFragment fragment, String tag) {
 		FragmentManager fm = getSupportFragmentManager();
 		fragment.show(fm, tag);
 	}

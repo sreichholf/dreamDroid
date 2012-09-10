@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
 import android.app.Activity;
@@ -44,7 +46,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sre
  * 
  */
-public class ProfileListFragment extends DreamDroidListFragment {
+public class ProfileListFragment extends DreamDroidListFragment implements PrimitiveDialog.DialogActionListener {
 	private Profile mProfile;
 	private ArrayList<Profile> mDetectedProfiles;
 
@@ -210,7 +212,11 @@ public class ProfileListFragment extends DreamDroidListFragment {
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile.set(mCursor);
-		getActivity().showDialog(Statics.DIALOG_PROFILE_ID);
+		// getActivity().showDialog(Statics.DIALOG_PROFILE_ID);
+		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
+		int[] actionIds = { Statics.ACTION_EDIT, Statics.ACTION_DELETE };
+		mMultiPaneHandler.showDialogFragment(SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds),
+				"dialog_profile_selected");
 		return true;
 	}
 
@@ -221,60 +227,6 @@ public class ProfileListFragment extends DreamDroidListFragment {
 
 	public Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
-		if (mProfile != null) {
-			switch (id) {
-			case (Statics.DIALOG_PROFILE_ID):
-				CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-
-				AlertDialog.Builder adBuilder = new AlertDialog.Builder(mActivity);
-				adBuilder.setTitle(mProfile.getName());
-				adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						switch (which) {
-						case 0:
-							editProfile();
-							break;
-
-						case 1:
-							getActivity().showDialog(Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID);
-							break;
-
-						default:
-							break;
-						}
-					}
-				});
-
-				dialog = adBuilder.create();
-				break;
-
-			case (Statics.DIALOG_PROFILE_CONFIRM_DELETE_ID):
-				AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-
-				builder.setTitle(mProfile.getName()).setMessage(R.string.confirm_delete_profile).setCancelable(false)
-						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-
-								if (DreamDroid.deleteProfile(mProfile)) {
-									showToast(getText(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
-								} else {
-									showToast(getText(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
-								}
-								// TODO Add error handling
-								mProfile = null;
-								mCursor.requery();
-								mAdapter.notifyDataSetChanged();
-							}
-						}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.cancel();
-							}
-						});
-				dialog = builder.create();
-				break;
-			}
-		}
 		return dialog;
 	}
 
@@ -383,5 +335,30 @@ public class ProfileListFragment extends DreamDroidListFragment {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
+	}
+
+	@Override
+	public void onDialogAction(int action) {
+		switch (action) {
+		case Statics.ACTION_EDIT:
+			editProfile();
+			break;
+		case Statics.ACTION_DELETE:
+			mMultiPaneHandler.showDialogFragment(PositiveNegativeDialog.newInstance(mProfile.getName(),
+					R.string.confirm_delete_profile, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED,
+					android.R.string.no, Statics.ACTION_NONE), "dialog_delete_profile_confirm");
+			break;
+		case Statics.ACTION_DELETE_CONFIRMED:
+			if (DreamDroid.deleteProfile(mProfile)) {
+				showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
+			} else {
+				showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
+			}
+			// TODO Add error handling
+			mProfile = null;
+			mCursor.requery();
+			mAdapter.notifyDataSetChanged();
+			break;
+		}
 	}
 }

@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -36,11 +37,9 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
@@ -77,52 +76,6 @@ import com.actionbarsherlock.view.MenuItem;
  * 
  */
 public class ServiceListFragment extends AbstractHttpFragment implements PrimitiveDialog.DialogActionListener {
-
-	public static class ServiceActionDialog extends PrimitiveDialog {
-		public static final int ACTION_CURRENT = 0xc010;
-		public static final int ACTION_EPG = 0xc011;
-		public static final int ACTION_ZAP = 0xc012;
-		public static final int ACTION_STREAM = 0xc013;
-
-		public static ServiceActionDialog newInstance(String serviceName) {
-			ServiceActionDialog fragment = new ServiceActionDialog();
-			Bundle args = new Bundle();
-			args.putString("title", serviceName);
-			fragment.setArguments(args);
-			return fragment;
-		}
-
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
-					getText(R.string.zap), getText(R.string.stream) };
-
-			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
-			adBuilder.setTitle(getText(R.string.pick_action));
-			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						finishDialog(ServiceActionDialog.ACTION_CURRENT);
-						break;
-					case 1:
-						finishDialog(ServiceActionDialog.ACTION_EPG);
-						break;
-					case 2:
-						finishDialog(ServiceActionDialog.ACTION_ZAP);
-						break;
-					case 3:
-						finishDialog(ServiceActionDialog.ACTION_STREAM);
-						break;
-					}
-				}
-			});
-
-			return adBuilder.create();
-		}
-	}
-
 	public static final String SERVICE_REF_ROOT = "root";
 
 	private boolean mPickMode;
@@ -759,9 +712,13 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
-					// ((MultiPaneHandler) getSherlockActivity()).showDialog(
-					mMultiPaneHandler.showDialog(
-							ServiceActionDialog.newInstance(mCurrentService.getString(Event.KEY_SERVICE_NAME)),
+
+					CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
+							getText(R.string.zap), getText(R.string.stream) };
+					int[] actionIds = { Statics.ACTION_CURRENT, Statics.ACTION_EPG, Statics.ACTION_ZAP, Statics.ACTION_STREAM };
+
+					mMultiPaneHandler.showDialogFragment(SimpleChoiceDialog.newInstance(
+							mCurrentService.getString(Event.KEY_SERVICE_NAME), actions, actionIds),
 							"service_action_dialog");
 				}
 			}
@@ -947,21 +904,21 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 		String name = mCurrentService.getString(Service.KEY_NAME);
 
 		switch (action) {
-		case ServiceActionDialog.ACTION_CURRENT:
+		case Statics.ACTION_CURRENT:
 			Bundle args = new Bundle();
 			args.putParcelable("currentItem", mCurrentService);
-			mMultiPaneHandler.showDialog(EpgDetailDialog.class, args, "epg_detail_dialog");
+			mMultiPaneHandler.showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
 			break;
 
-		case ServiceActionDialog.ACTION_EPG:
+		case Statics.ACTION_EPG:
 			openEpg(ref, name);
 			break;
 
-		case ServiceActionDialog.ACTION_ZAP:
+		case Statics.ACTION_ZAP:
 			zapTo(ref);
 			break;
 
-		case ServiceActionDialog.ACTION_STREAM:
+		case Statics.ACTION_STREAM:
 			try {
 				startActivity(IntentFactory.getStreamServiceIntent(ref));
 			} catch (ActivityNotFoundException e) {
@@ -969,19 +926,19 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 			}
 			break;
 
-		case EpgDetailDialog.ACTION_SET_TIMER:
+		case Statics.ACTION_SET_TIMER:
 			setTimerById(mCurrentService);
 			break;
 
-		case EpgDetailDialog.ACTION_EDIT_TIMER:
+		case Statics.ACTION_EDIT_TIMER:
 			setTimerByEventData(mCurrentService);
 			break;
 
-		case EpgDetailDialog.ACTION_FIND_SIMILAR:
+		case Statics.ACTION_FIND_SIMILAR:
 			findSimilarEvents(mCurrentService);
 			break;
 
-		case EpgDetailDialog.ACTION_IMDB:
+		case Statics.ACTION_IMDB:
 			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentService);
 			break;
 		}

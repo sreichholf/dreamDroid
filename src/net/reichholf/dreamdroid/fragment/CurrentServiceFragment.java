@@ -193,7 +193,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 			mCurrentItem = event;
 			Bundle args = new Bundle();
 			args.putParcelable("currentItem", mCurrentItem);
-			((MultiPaneHandler) getSherlockActivity()).showDialog(EpgDetailDialog.class, args,
+			((MultiPaneHandler) getSherlockActivity()).showDialogFragment(EpgDetailDialog.class, args,
 					"current_epg_detail_dialog");
 		}
 	}
@@ -274,16 +274,16 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	@Override
 	public void onDialogAction(int action) {
 		switch (action) {
-		case EpgDetailDialog.ACTION_SET_TIMER:
+		case Statics.ACTION_SET_TIMER:
 			setTimerById(mCurrentItem);
 			break;
-		case EpgDetailDialog.ACTION_EDIT_TIMER:
+		case Statics.ACTION_EDIT_TIMER:
 			setTimerByEventData(mCurrentItem);
 			break;
-		case EpgDetailDialog.ACTION_FIND_SIMILAR:
+		case Statics.ACTION_FIND_SIMILAR:
 			findSimilarEvents(mCurrentItem);
 			break;
-		case EpgDetailDialog.ACTION_IMDB:
+		case Statics.ACTION_IMDB:
 			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);
 			break;
 		}

@@ -12,6 +12,9 @@ import java.util.Arrays;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -55,7 +58,7 @@ import com.actionbarsherlock.view.MenuInflater;
  * @author sreichholf
  * 
  */
-public class MovieListFragment extends AbstractHttpListFragment {
+public class MovieListFragment extends AbstractHttpListFragment implements PrimitiveDialog.DialogActionListener {
 	private String mCurrentLocation;
 
 	private boolean mTagsChanged;
@@ -66,7 +69,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
 	private ArrayAdapter<String> mLocationAdapter;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -76,7 +79,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		setHasOptionsMenu(true);
 
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-		
+
 		if (savedInstanceState == null) {
 			mSelectedTags = new ArrayList<String>();
 			mOldTags = new ArrayList<String>();
@@ -106,9 +109,9 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			}
 		});
 	}
-	
+
 	@Override
-	public void onResume(){
+	public void onResume() {
 		ActionBar actionBar = getSherlockActivity().getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
@@ -116,11 +119,11 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		mLocationAdapter.add(mCurrentLocation);
 		actionBar.setListNavigationCallbacks(mLocationAdapter, new OnNavigationListener() {
 			@Override
-			public boolean onNavigationItemSelected(int itemPosition, long itemId) {			
-				if(DreamDroid.getLocations().size() > itemPosition){
+			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+				if (DreamDroid.getLocations().size() > itemPosition) {
 					ActionBar actionBar = getSherlockActivity().getSupportActionBar();
 					int position = actionBar.getSelectedNavigationIndex();
-					String selectedLoc = mLocationAdapter.getItem(position); 
+					String selectedLoc = mLocationAdapter.getItem(position);
 					if (!selectedLoc.equals(mCurrentLocation)) {
 						mCurrentLocation = selectedLoc;
 						reload();
@@ -131,9 +134,9 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		});
 		super.onResume();
 	}
-	
+
 	@Override
-	public void onPause(){
+	public void onPause() {
 		getSherlockActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		super.onPause();
 	}
@@ -191,7 +194,7 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		}
 		outState.putStringArray("oldTags", oldTags);
 		outState.putString("currentLocation", mCurrentLocation);
-		
+
 		super.onSaveInstanceState(outState);
 	}
 
@@ -219,61 +222,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		AlertDialog.Builder builder;
 
 		switch (id) {
-		case (Statics.DIALOG_MOVIE_SELECTED_ID):
-			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
-					getText(R.string.stream) };
-
-			builder = new AlertDialog.Builder(getSherlockActivity());
-			builder.setTitle(getText(R.string.pick_action));
-			builder.setItems(actions, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						zapTo(mMovie.getString(Movie.KEY_REFERENCE));
-						break;
-					case 1:
-						getSherlockActivity().showDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
-						break;
-					case 2:
-						ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-						params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
-						String url = mShc.buildUrl(URIStore.FILE, params);
-
-						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-						startActivity(intent);
-						break;
-					case 3:
-						try {
-							startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)));
-						} catch (ActivityNotFoundException e) {
-							showToast(getText(R.string.missing_stream_player));
-						}
-						break;
-					default:
-						return;
-					}
-				}
-			});
-			dialog = builder.create();
-			break;
-		case (Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID):
-			builder = new AlertDialog.Builder(getSherlockActivity());
-			builder.setTitle(mMovie.getString(Movie.KEY_TITLE)).setMessage(getText(R.string.delete_confirm))
-					.setCancelable(false)
-					.setPositiveButton(getText(android.R.string.yes), new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							deleteMovie();
-							dialog.dismiss();
-						}
-					}).setNegativeButton(getText(android.R.string.no), new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							dialog.dismiss();
-							getSherlockActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
-						}
-					});
-			dialog = builder.create();
-			break;
-
 		case (Statics.DIALOG_PICK_TAGS_ID):
 			CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
 			boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
@@ -370,7 +318,15 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
-			getSherlockActivity().showDialog(Statics.DIALOG_MOVIE_SELECTED_ID);
+			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
+					getText(R.string.stream) };
+
+			int[] actionIds = { Statics.ACTION_ZAP, Statics.ACTION_DELETE, Statics.ACTION_DOWNLOAD,
+					Statics.ACTION_STREAM };
+
+			mMultiPaneHandler.showDialogFragment(
+					SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds),
+					"dialog_movie_selected");
 		}
 	}
 
@@ -378,7 +334,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 	 * Delete the selected movie
 	 */
 	private void deleteMovie() {
-		getSherlockActivity().removeDialog(Statics.DIALOG_DELETE_MOVIE_CONFIRM_ID);
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
@@ -435,8 +390,46 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		for (String location : DreamDroid.getLocations()) {
 			mLocationAdapter.add(location);
 		}
-		
+
 		getSherlockActivity().getSupportActionBar().setSelectedNavigationItem(
 				mLocationAdapter.getPosition(mCurrentLocation));
+	}
+
+	@Override
+	public void onDialogAction(int action) {
+		switch (action) {
+		case Statics.ACTION_ZAP:
+			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
+			break;
+
+		case Statics.ACTION_DELETE:
+			mMultiPaneHandler.showDialogFragment(PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE),
+					R.string.delete_confirm, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED,
+					android.R.string.no, Statics.ACTION_NONE), "dialog_delete_movie_confirm");
+			break;
+
+		case Statics.ACTION_DELETE_CONFIRMED:
+			deleteMovie();
+			break;
+
+		case Statics.ACTION_DOWNLOAD:
+			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
+			String url = mShc.buildUrl(URIStore.FILE, params);
+
+			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+			startActivity(intent);
+			break;
+
+		case Statics.ACTION_STREAM:
+			try {
+				startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)));
+			} catch (ActivityNotFoundException e) {
+				showToast(getText(R.string.missing_stream_player));
+			}
+			break;
+		default:
+			return;
+		}
 	}
 }

@@ -124,15 +124,7 @@ public class SimpleHttpClient {
 	 */
 	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
-		return "http://" + mStreamHostname + mFilePort + uri + parms; // TODO
-																		// think
-																		// about
-																		// to
-																		// NOT
-																		// hardcode
-																		// port
-																		// 80
-																		// here
+		return "http://" + mStreamHostname + ":" + mFilePort + uri + parms;
 	}
 
 	public boolean fetchPageContent(String uri) {

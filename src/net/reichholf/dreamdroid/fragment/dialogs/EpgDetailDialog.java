@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,11 +25,6 @@ import android.widget.TextView;
  * 
  */
 public class EpgDetailDialog extends PrimitiveDialog {
-	public static final int ACTION_SET_TIMER = 0xc001;
-	public static final int ACTION_EDIT_TIMER = 0xc002;
-	public static final int ACTION_IMDB = 0xc003;
-	public static final int ACTION_FIND_SIMILAR = 0xc004;
-
 	private ExtendedHashMap mCurrentItem;
 
 	public EpgDetailDialog() {
@@ -84,7 +80,7 @@ public class EpgDetailDialog extends PrimitiveDialog {
 			buttonSetTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(EpgDetailDialog.ACTION_SET_TIMER);
+					finishDialog(Statics.ACTION_SET_TIMER);
 				}
 			});
 
@@ -92,7 +88,7 @@ public class EpgDetailDialog extends PrimitiveDialog {
 			buttonEditTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(EpgDetailDialog.ACTION_EDIT_TIMER);
+					finishDialog(Statics.ACTION_EDIT_TIMER);
 				}
 			});
 
@@ -100,7 +96,7 @@ public class EpgDetailDialog extends PrimitiveDialog {
 			buttonIMDb.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(EpgDetailDialog.ACTION_IMDB);
+					finishDialog(Statics.ACTION_IMDB);
 				}
 			});
 
@@ -108,7 +104,7 @@ public class EpgDetailDialog extends PrimitiveDialog {
 			buttonSimilar.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(EpgDetailDialog.ACTION_FIND_SIMILAR);
+					finishDialog(Statics.ACTION_FIND_SIMILAR);
 				}
 			});
 		} else {

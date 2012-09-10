@@ -13,13 +13,28 @@ import net.reichholf.dreamdroid.R;
  * 
  */
 public class Statics {
+	public static final int ACTION_SET_TIMER = 0xc001;
+	public static final int ACTION_EDIT_TIMER = 0xc002;
+	public static final int ACTION_IMDB = 0xc003;
+	public static final int ACTION_FIND_SIMILAR = 0xc004;
+	public static final int ACTION_CURRENT = 0xc005;
+	public static final int ACTION_EPG = 0xc006;
+	public static final int ACTION_ZAP = 0xc007;
+	public static final int ACTION_STREAM = 0xc008;
+	public static final int ACTION_DELETE = 0xc009;
+	public static final int ACTION_DOWNLOAD = 0xc010;
+	public static final int ACTION_DELETE_CONFIRMED = 0xc011;
+	public static final int ACTION_EDIT = 0xc012;
+	public static final int ACTION_NONE = 0xcfff;
+	
+
 	public static final int DIALOG_SEND_MESSAGE_ID = 0x8000;
 	public static final int DIALOG_SET_POWERSTATE_ID = 0x8001;
 	public static final int DIALOG_ABOUT_ID = 0x8002;
 	public static final int DIALOG_SLEEPTIMER_ID = 0x8003;
 	public static final int DIALOG_SLEEPTIMER_PROGRESS_ID = 0x8004;
-//	public static final int DIALOG_EPG_ITEM_ID = 0x8005;
-//	public static final int DIALOG_PICK_LOCATION_ID = 0x8006;
+	// public static final int DIALOG_EPG_ITEM_ID = 0x8005;
+	// public static final int DIALOG_PICK_LOCATION_ID = 0x8006;
 	public static final int DIALOG_PICK_TAGS_ID = 0x8007;
 	public static final int DIALOG_DELETE_MOVIE_CONFIRM_ID = 0x8008;
 	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
@@ -32,7 +47,7 @@ public class Statics {
 	public static final int DIALOG_EMPTY_LIST_ID = 0x8016;
 	public static final int DIALOG_TIMER_SELECTED_ID = 0x8017;
 	public static final int DIALOG_TIMER_DELETE_CONFIRM_ID = 0x8018;
-//	public static final int DIALOG_SERVICE_SELECTED_ID = 0x8019;
+	// public static final int DIALOG_SERVICE_SELECTED_ID = 0x8019;
 	public static final int DIALOG_MOVIE_SELECTED_ID = 0x8020;
 
 	public static final int ITEM_NOW = 0x6000;

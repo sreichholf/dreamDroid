@@ -7,11 +7,11 @@
 package net.reichholf.dreamdroid.fragment.abs;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
@@ -59,7 +59,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		mCurrentItem = mMapList.get((int) id);
 		Bundle args = new Bundle();
 		args.putParcelable("currentItem", mCurrentItem);
-		mMultiPaneHandler.showDialog(EpgDetailDialog.class, args, "epg_detail_dialog");
+		mMultiPaneHandler.showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
 	}
 
 	/**
@@ -108,16 +108,16 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 
 	public void onDialogAction(int action) {
 		switch (action) {
-		case EpgDetailDialog.ACTION_SET_TIMER:
+		case Statics.ACTION_SET_TIMER:
 			setTimerById(mCurrentItem);
 			break;
-		case EpgDetailDialog.ACTION_EDIT_TIMER:
+		case Statics.ACTION_EDIT_TIMER:
 			setTimerByEventData(mCurrentItem);
 			break;
-		case EpgDetailDialog.ACTION_FIND_SIMILAR:
+		case Statics.ACTION_FIND_SIMILAR:
 			findSimilarEvents(mCurrentItem);
 			break;
-		case EpgDetailDialog.ACTION_IMDB:
+		case Statics.ACTION_IMDB:
 			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);
 			break;
 		}
