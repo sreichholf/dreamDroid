@@ -76,6 +76,17 @@ public class MovieListFragment extends AbstractHttpListFragment {
 		setHasOptionsMenu(true);
 
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		
+		if (savedInstanceState == null) {
+			mSelectedTags = new ArrayList<String>();
+			mOldTags = new ArrayList<String>();
+			reload();
+		} else {
+			mMovie = (ExtendedHashMap) savedInstanceState.getParcelable("movie");
+			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
+			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
+			mCurrentLocation = savedInstanceState.getString("currentLocation");
+		}
 	}
 
 	@Override
@@ -94,16 +105,6 @@ public class MovieListFragment extends AbstractHttpListFragment {
 				return onListItemLongClick(a, v, position, id);
 			}
 		});
-
-		if (savedInstanceState == null) {
-			mSelectedTags = new ArrayList<String>();
-			mOldTags = new ArrayList<String>();
-			reload();
-		} else {
-			mMovie = (ExtendedHashMap) savedInstanceState.getParcelable("movie");
-			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
-			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
-		}
 	}
 	
 	@Override
@@ -189,7 +190,8 @@ public class MovieListFragment extends AbstractHttpListFragment {
 			oldTags = new String[0];
 		}
 		outState.putStringArray("oldTags", oldTags);
-
+		outState.putString("currentLocation", mCurrentLocation);
+		
 		super.onSaveInstanceState(outState);
 	}
 

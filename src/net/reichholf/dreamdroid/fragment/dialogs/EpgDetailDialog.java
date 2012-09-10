@@ -34,7 +34,27 @@ public class EpgDetailDialog extends PrimitiveDialog {
 	public EpgDetailDialog() {
 	}
 
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setRetainInstance(true);
+	}
+
+	@Override
+	public void onDestroyView() {
+		if (getDialog() != null && getRetainInstance())
+			getDialog().setDismissMessage(null);
+		super.onDestroyView();
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
+		super.onSaveInstanceState(outState);
+	}
+
 	@SuppressWarnings("unchecked")
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mCurrentItem = new ExtendedHashMap((HashMap<String, Object>) getArguments().get("currentItem"));
 

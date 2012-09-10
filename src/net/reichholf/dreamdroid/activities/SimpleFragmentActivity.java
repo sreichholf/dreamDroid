@@ -47,12 +47,15 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 		if (getSupportActionBar() != null)
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+		mFragment = null;
+		boolean initFragment = true;
 		if (savedInstanceState != null) {
-			mFragment = getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
+			mFragment = getSupportFragmentManager().findFragmentById(R.id.content);
+			initFragment = false;
 		}
 
 		Intent intent = getIntent();
-		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+		if (Intent.ACTION_SEARCH.equals(intent.getAction()) && savedInstanceState == null) {
 			Bundle args = new Bundle();
 			args.putString(SearchManager.QUERY, intent.getStringExtra(SearchManager.QUERY));
 
@@ -64,39 +67,41 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 				mFragment.setArguments(args);
 			}
 		}
-		initViews();
+		initViews(initFragment);
 	}
 
-	private void initViews() {
+	private void initViews(boolean initFragment) {
 		setContentView(R.layout.simple_layout);
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		if (initFragment) {
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-		if (mFragment == null) {
-			Fragment f = null;
-			@SuppressWarnings("unchecked")
-			Class<Fragment> c = (Class<Fragment>) getIntent().getExtras().get("fragmentClass");
-			Bundle args = new Bundle();
-			try {
-				f = c.newInstance();
-				args.putAll(getIntent().getExtras());
-				f.setArguments(args);
-			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (mFragment == null) {
+				Fragment f = null;
+				@SuppressWarnings("unchecked")
+				Class<Fragment> c = (Class<Fragment>) getIntent().getExtras().get("fragmentClass");
+				Bundle args = new Bundle();
+				try {
+					f = c.newInstance();
+					args.putAll(getIntent().getExtras());
+					f.setArguments(args);
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				mFragment = f;
 			}
-			mFragment = f;
+			mCallBackHandler = null;
+			ft.replace(R.id.content, mFragment, "fragment");
+			ft.commit();
 		}
-		mCallBackHandler = null;
-		ft.replace(R.id.content, mFragment);
-		ft.commit();
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		getSupportFragmentManager().putFragment(outState, "fragment", mFragment);
+		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
 	}
 

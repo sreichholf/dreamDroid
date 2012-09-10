@@ -150,8 +150,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 	private ArrayList<ExtendedHashMap> mDetailItems;
 	private ExtendedHashMap mCurrentService;
 
-	private MultiPaneHandler mMultiPaneHandler;
-
 	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		protected ArrayList<ExtendedHashMap> mTaskList;
 
@@ -305,11 +303,11 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		mCurrentTitle = mBaseTitle = getString(R.string.services);
 
 		mReload = true;
-		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 
 		Bundle args = getArguments();
 		String mode = null;
@@ -388,7 +386,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 		mNavList = (ListView) v.findViewById(R.id.listView1);
 		mDetailList = (ListView) v.findViewById(R.id.listView2);
 
-		// Some may call this a Hack, I call it a smart solution
+		// Some may call this a Hack, but I think it a proper solution
 		// On devices with resolutions other than xlarge, there is no second
 		// ListView (@id/listView2).
 		// So we just use the only one available and the rest will work as
@@ -507,7 +505,9 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 		for (GetServiceListTask task : mListTasks) {
 			if (task != null) {
 				task.cancel(true);
+				mListTasks.remove(task);
 				task = null;
+
 			}
 		}
 
@@ -759,7 +759,10 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
-					mMultiPaneHandler.showDialog( ServiceActionDialog.newInstance(mCurrentService.getString(Event.KEY_SERVICE_NAME)), "service_action_dialog");
+					// ((MultiPaneHandler) getSherlockActivity()).showDialog(
+					mMultiPaneHandler.showDialog(
+							ServiceActionDialog.newInstance(mCurrentService.getString(Event.KEY_SERVICE_NAME)),
+							"service_action_dialog");
 				}
 			}
 		}
@@ -949,15 +952,15 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 			args.putParcelable("currentItem", mCurrentService);
 			mMultiPaneHandler.showDialog(EpgDetailDialog.class, args, "epg_detail_dialog");
 			break;
-		
+
 		case ServiceActionDialog.ACTION_EPG:
 			openEpg(ref, name);
 			break;
-		
+
 		case ServiceActionDialog.ACTION_ZAP:
 			zapTo(ref);
 			break;
-		
+
 		case ServiceActionDialog.ACTION_STREAM:
 			try {
 				startActivity(IntentFactory.getStreamServiceIntent(ref));
@@ -965,19 +968,19 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 				showToast(getText(R.string.missing_stream_player));
 			}
 			break;
-		
+
 		case EpgDetailDialog.ACTION_SET_TIMER:
 			setTimerById(mCurrentService);
 			break;
-		
+
 		case EpgDetailDialog.ACTION_EDIT_TIMER:
 			setTimerByEventData(mCurrentService);
 			break;
-		
+
 		case EpgDetailDialog.ACTION_FIND_SIMILAR:
 			findSimilarEvents(mCurrentService);
 			break;
-		
+
 		case EpgDetailDialog.ACTION_IMDB:
 			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentService);
 			break;

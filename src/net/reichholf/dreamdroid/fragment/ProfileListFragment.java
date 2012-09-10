@@ -54,7 +54,6 @@ public class ProfileListFragment extends DreamDroidListFragment {
 	private DetectDevicesTask mDetectDevicesTask;
 
 	private ProgressDialog mProgress;
-	private MultiPaneHandler mMultiPaneHandler;
 
 	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>> {
 
@@ -177,7 +176,6 @@ public class ProfileListFragment extends DreamDroidListFragment {
 		mBaseTitle = mCurrentTitle = getString(R.string.profiles);
 		mActivity.setProgressBarIndeterminateVisibility(false);
 
-		mMultiPaneHandler = (MultiPaneHandler) getActivity();
 		mCursor = DreamDroid.getProfiles();
 
 		mProfile = new Profile();

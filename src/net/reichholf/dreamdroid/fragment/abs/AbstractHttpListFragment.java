@@ -59,6 +59,8 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	protected SimpleResultTask mSimpleResultTask;
 	protected SetVolumeTask mVolumeTask;
+	
+	protected MultiPaneHandler mMultiPaneHandler;
 
 	/**
 	 * @author sre
@@ -189,6 +191,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
+		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
+		
 		getListView().setFastScrollEnabled(true);
 		try {
 			setEmptyText(getText(R.string.loading));
@@ -473,16 +478,12 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return args;
 	}
 
-	/**
-	 * Reloads the EPG information by calling a <code>GetEpgListTask</code>.
-	 */
 	protected void reload() {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
 		if (!"".equals(mBaseTitle.trim()))
 			mCurrentTitle = mBaseTitle + " - " + getString(R.string.loading);
 
 		getSherlockActivity().setTitle(mCurrentTitle);
-
 		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
 	}
 

@@ -9,33 +9,36 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
+import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import android.app.Activity;
-import android.app.Dialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.support.v4.content.Loader;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.commonsware.cwac.merge.MergeAdapter;
 
 /**
  * Shows device-specific information for the active profile.
- *
+ * 
  * @author sreichholf
- *
+ * 
  */
-public class DeviceInfoFragment extends DreamDroidListFragment {
+public class DeviceInfoFragment extends AbstractHttpFragment {
 	private ExtendedHashMap mInfo;
-	private GetDeviceInfoTask mGetInfoTask;
 	private MergeAdapter mMerge;
 	private SimpleAdapter mFrontendAdapter;
 	private SimpleAdapter mNicAdapter;
@@ -50,70 +53,41 @@ public class DeviceInfoFragment extends DreamDroidListFragment {
 	private ArrayList<ExtendedHashMap> mHdds;
 	private SimpleHttpClient mShc;
 	private LayoutInflater mInflater;
+	private ListView mList;
 
 	private Activity mActivity;
-
-	/**
-	 * <code>AsyncTask</code> to Fetch the device information async.
-	 *
-	 * @author sre
-	 *
-	 */
-	private class GetDeviceInfoTask extends AsyncTask<Void, String, Boolean> {
-
-		@Override
-		protected Boolean doInBackground(Void... unused) {
-			if(isCancelled())
-				return false;
-			publishProgress(getString(R.string.fetching_data));
-
-			mInfo.clear();
-			DeviceInfoRequestHandler handler = new DeviceInfoRequestHandler();
-			String xml = handler.get(mShc);
-			if (xml != null) {
-				if(isCancelled())
-					return false;
-				publishProgress(getString(R.string.parsing));
-
-				if (handler.parse(xml, mInfo)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			if(!isCancelled())
-				mActivity.setTitle(progress[0]);
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			String title = null;
-
-			if (result) {
-				title = getString(R.string.device_info);
-				onInfoReady();
-			} else {
-				title = getString(R.string.get_content_error);
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-
-			mActivity.setTitle(title);
-
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		mActivity = getSherlockActivity();
 		mActivity.setProgressBarIndeterminateVisibility(false);
 		getSherlockActivity().setTitle(getText(R.string.device_info));
-		
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		// <taken-from-android-list-fragment>
+		FrameLayout root = new FrameLayout(getSherlockActivity());
+
+		TextView tv = new TextView(getSherlockActivity());
+		tv.setId(android.R.id.empty);
+		tv.setGravity(Gravity.CENTER);
+		root.addView(tv, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+				ViewGroup.LayoutParams.FILL_PARENT));
+
+		mList = new ListView(getSherlockActivity());
+		mList.setId(android.R.id.list);
+		mList.setDrawSelectorOnTop(false);
+		root.addView(mList, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+				ViewGroup.LayoutParams.FILL_PARENT));
+
+		ListView.LayoutParams lp = new ListView.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+				ViewGroup.LayoutParams.FILL_PARENT);
+		root.setLayoutParams(lp);
+		// </taken-from-android-list-fragment>
+
 		mMerge = new MergeAdapter();
 		mInfo = new ExtendedHashMap();
 		mFrontends = new ArrayList<ExtendedHashMap>();
@@ -132,44 +106,22 @@ public class DeviceInfoFragment extends DreamDroidListFragment {
 		mDeviceName = (TextView) fields.findViewById(R.id.DeviceName);
 		setClient();
 
-		if(savedInstanceState == null){
+		setAdapter();
+		mList.setAdapter(mMerge);
+
+		if (savedInstanceState == null) {
 			reload();
 		} else {
 			mInfo = (ExtendedHashMap) savedInstanceState.getParcelable("info");
 			onInfoReady();
 		}
+
+		return root;
 	}
 
-	@Override
-	public void onDestroy(){
-		if(mGetInfoTask != null)
-			mGetInfoTask.cancel(true);
-		super.onDestroy();
-	}
-	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("info", mInfo);
-	}
-
-	/**
-	 * Instanciates a <code>SimpleHttpClient</code> for execution of
-	 * http-requests
-	 */
-	private void setClient() {
-		mShc = SimpleHttpClient.getInstance();
-	}
-
-	/**
-	 * Reloads the device information
-	 */
-	private void reload() {
-		if (mGetInfoTask != null) {
-			mGetInfoTask.cancel(true);
-		}
-
-		mGetInfoTask = new GetDeviceInfoTask();
-		mGetInfoTask.execute();
 	}
 
 	/**
@@ -203,7 +155,8 @@ public class DeviceInfoFragment extends DreamDroidListFragment {
 		mMerge.addAdapter(mNicAdapter);
 
 		mHddAdapter = new SimpleAdapter(mActivity, mHdds, android.R.layout.two_line_list_item, new String[] {
-				DeviceInfo.KEY_HDD_MODEL, DeviceInfo.KEY_HDD_CAPACITY }, new int[] { android.R.id.text1, android.R.id.text2 });
+				DeviceInfo.KEY_HDD_MODEL, DeviceInfo.KEY_HDD_CAPACITY }, new int[] { android.R.id.text1,
+				android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.hdds));
 		mMerge.addAdapter(mHddAdapter);
@@ -214,9 +167,14 @@ public class DeviceInfoFragment extends DreamDroidListFragment {
 	 */
 	@SuppressWarnings("unchecked")
 	private void onInfoReady() {
-		mFrontends = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_FRONTENDS);
-		mNics = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_NICS);
-		mHdds = (ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_HDDS);
+		mFrontends.clear();
+		mFrontends.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_FRONTENDS));
+
+		mNics.clear();
+		mNics.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_NICS));
+
+		mHdds.clear();
+		mHdds.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_HDDS));
 
 		mGuiVersion.setText(mInfo.getString(DeviceInfo.KEY_GUI_VERSION));
 		mImageVersion.setText(mInfo.getString(DeviceInfo.KEY_IMAGE_VERSION));
@@ -224,37 +182,22 @@ public class DeviceInfoFragment extends DreamDroidListFragment {
 		mFrontprocessorVersion.setText(mInfo.getString(DeviceInfo.KEY_FRONT_PROCESSOR_VERSION));
 		mDeviceName.setText(mInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 
-		if (getListAdapter() == null) {
-			setAdapter();
-			setListAdapter(mMerge);
-		} else {
-			mMerge.notifyDataSetChanged();
-		}
+		mMerge.notifyDataSetChanged();
 	}
 
-	/**
-	 * Shows a toast message
-	 *
-	 * @param toastText
-	 *            The text to set for the toast
+	@Override
+	public Loader<ExtendedHashMap> onCreateLoader(int id, Bundle args) {
+		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new DeviceInfoRequestHandler(), args);
+		return loader;
+	}
+
+	/*
+	 * You want override this if you don't override onLoadFinished!
 	 */
-	private void showToast(String toastText) {
-		Toast toast = Toast.makeText(mActivity, toastText, Toast.LENGTH_LONG);
-		toast.show();
-	}
-
-	@Override
-	public Dialog onCreateDialog(int id) {
-		return null;
-	}
-
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		return false;
-	}
-
-	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		return false;
+	protected void applyData(int loaderId, ExtendedHashMap content) {
+		if (content != null) {
+			mInfo = content;
+			onInfoReady();
+		}
 	}
 }

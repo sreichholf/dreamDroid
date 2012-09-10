@@ -23,10 +23,11 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -47,7 +48,6 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class CurrentServiceFragment extends AbstractHttpFragment implements PrimitiveDialog.DialogActionListener {
 	private ExtendedHashMap mCurrent;
-	private GetCurrentServiceTask mCurrentServiceTask;
 
 	private TextView mServiceName;
 	private TextView mProvider;
@@ -68,65 +68,12 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	private ExtendedHashMap mCurrentItem;
 	private boolean mCurrentServiceReady;
 
-	/**
-	 * <code>AsyncTask</code> to fetch the current service information async.
-	 * 
-	 * @author sre
-	 * 
-	 */
-	private class GetCurrentServiceTask extends AsyncTask<Void, String, Boolean> {
-
-		@Override
-		protected Boolean doInBackground(Void... unused) {
-			if (isCancelled())
-				return false;
-			publishProgress(getString(R.string.fetching_data));
-
-			mCurrent.clear();
-			CurrentServiceRequestHandler handler = new CurrentServiceRequestHandler();
-			String xml = handler.get(mShc);
-			if (xml != null) {
-				if (isCancelled())
-					return false;
-				publishProgress(getString(R.string.parsing));
-
-				if (handler.parse(xml, mCurrent)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			if (!isCancelled())
-				getSherlockActivity().setTitle(progress[0]);
-		}
-
-		protected void onPostExecute(Boolean result) {
-			String title = null;
-			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-
-			if (result) {
-				title = getString(R.string.current_service);
-				onCurrentServiceReady();
-			} else {
-				title = getString(R.string.get_content_error);
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
-				}
-			}
-
-			getSherlockActivity().setTitle(title);
-
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mCurrentServiceReady = false;
-		mCurrentTitle = getString(R.string.current_service);
+		mCurrentTitle = mBaseTitle = getString(R.string.current_service);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
@@ -149,29 +96,22 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
 		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
+		ExtendedHashMap current = null;
 		if (savedInstanceState != null) {
-			mCurrent = (ExtendedHashMap) savedInstanceState.getParcelable("current");
+			current = (ExtendedHashMap) savedInstanceState.getParcelable("current");
 			@SuppressWarnings("unchecked")
 			HashMap<String, Object> currentItem = (HashMap<String, Object>) savedInstanceState
 					.getParcelable("currentItem");
 			mCurrentItem = new ExtendedHashMap(currentItem);
 		}
 
-		if (mCurrent == null) {
-			mCurrent = new ExtendedHashMap();
+		if (current == null) {
 			reload();
 		} else {
-			onCurrentServiceReady();
+			applyData(0, current);
 		}
 
 		return view;
-	}
-
-	@Override
-	public void onDestroy() {
-		if (mCurrentServiceTask != null)
-			mCurrentServiceTask.cancel(true);
-		super.onDestroy();
 	}
 
 	@Override
@@ -259,25 +199,15 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	}
 
 	/**
-	 * Reloads all current service information
-	 */
-	private void reload() {
-		if (mCurrentServiceTask != null) {
-			mCurrentServiceTask.cancel(true);
-		}
-		mCurrentServiceReady = false;
-		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-		mCurrentServiceTask = new GetCurrentServiceTask();
-		mCurrentServiceTask.execute();
-	}
-
-	/**
 	 * Called after loading the current service has finished to update the
 	 * GUI-Content
 	 */
-	@SuppressWarnings("unchecked")
-	private void onCurrentServiceReady() {
+	@Override
+	protected void applyData(int loaderId, ExtendedHashMap content) {
+		
+		mCurrent = content;
 		mCurrentServiceReady = true;
+		
 		mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
 		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
 		mNow = events.get(0);
@@ -357,5 +287,11 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);
 			break;
 		}
+	}
+	
+	@Override
+	public Loader<ExtendedHashMap> onCreateLoader(int id, Bundle args) {
+		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new CurrentServiceRequestHandler(), args);
+		return loader;
 	}
 }

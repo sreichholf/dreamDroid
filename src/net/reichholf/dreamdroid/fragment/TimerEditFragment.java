@@ -38,6 +38,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -517,7 +518,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	/**
 	 * Set the GUI-Content from <code>mTimer</code>
 	 */
-	private void reload() {
+	protected void reload() {
 		// Name
 		mName.setText(mTimer.getString(Timer.KEY_NAME));
 		mName.setHint(R.string.title);

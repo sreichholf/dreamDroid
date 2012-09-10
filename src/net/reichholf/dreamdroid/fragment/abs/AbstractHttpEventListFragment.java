@@ -34,7 +34,6 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 
 	protected ProgressDialog mProgress;
 	protected ExtendedHashMap mCurrentItem;
-	protected MultiPaneHandler mMultiPaneHandler;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -44,7 +43,6 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 			mName = savedInstanceState.getString("name");
 			mCurrentItem = (ExtendedHashMap) savedInstanceState.getParcelable("currentItem");
 		}
-		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 	}
 
 	@Override

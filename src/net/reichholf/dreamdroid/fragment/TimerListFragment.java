@@ -48,26 +48,29 @@ import com.actionbarsherlock.view.MenuItem;
 public class TimerListFragment extends AbstractHttpListFragment {
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
-	private MultiPaneHandler mMultiPaneHandler;	
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-		
+
 		mCurrentTitle = mBaseTitle = getString(R.string.timer);
-		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
-		
+
 		setHasOptionsMenu(true);
 		setAdapter();
-		
-		if(savedInstanceState != null){
+
+		if (savedInstanceState != null) {
 			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
 		} else {
 			reload();
 		}
 	}
-	
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+	}
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("timer", mTimer);
@@ -127,7 +130,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	/**
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
-	private void setAdapter() {		
+	private void setAdapter() {
 		mAdapter = new TimerListAdapter(getSherlockActivity(), R.layout.timer_list_item, mMapList);
 		setListAdapter(mAdapter);
 	}
@@ -165,19 +168,19 @@ public class TimerListFragment extends AbstractHttpListFragment {
 				mProgress.dismiss();
 			}
 		}
-		
+
 		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.cleaning_timerlist), true);
 		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<NameValuePair>());
 	}
-	
+
 	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result){		
-		if(mProgress != null){		
+	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
 		}
 		super.onSimpleResult(success, result);
-		
+
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			reload();
 		}
@@ -186,13 +189,13 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
-		switch(id){
-		case(Statics.DIALOG_TIMER_SELECTED_ID):
+		switch (id) {
+		case (Statics.DIALOG_TIMER_SELECTED_ID):
 			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getSherlockActivity());
 			adBuilder.setTitle(R.string.pick_action);
 			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-	
+
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
 					case 0:
@@ -206,10 +209,11 @@ public class TimerListFragment extends AbstractHttpListFragment {
 			});
 			dialog = adBuilder.create();
 			break;
-		case(Statics.DIALOG_TIMER_DELETE_CONFIRM_ID):
+		case (Statics.DIALOG_TIMER_DELETE_CONFIRM_ID):
 			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
 			builder.setTitle(mTimer.getString(Timer.KEY_NAME)).setMessage(getText(R.string.delete_confirm))
-					.setCancelable(false).setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					.setCancelable(false)
+					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							deleteTimer(mTimer);
 							dialog.dismiss();
@@ -224,7 +228,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 		}
 		return dialog;
 	}
-	
+
 	@Override
 	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new TimerListRequestHandler(), false, args);

@@ -43,10 +43,11 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
+		
 		if (mReference != null) {
 			setAdapter();
-			reload();
+			if(mMapList.size() <= 0)
+				reload();
 		} else {
 			finish();
 		}

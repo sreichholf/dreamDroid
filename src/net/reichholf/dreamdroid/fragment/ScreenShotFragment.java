@@ -206,7 +206,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	private void reload() {
+	protected void reload() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		switch (mType) {
@@ -290,4 +290,5 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 			}
 		}
 	}
+
 }

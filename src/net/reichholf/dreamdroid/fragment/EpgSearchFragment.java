@@ -40,7 +40,8 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 		String needle = getArguments().getString(SearchManager.QUERY);
 		if(needle != null){
 			mNeedle = needle;
-			reload();
+			if(mMapList.size() == 0)
+				reload();
 		}
 	}
 
