@@ -37,11 +37,12 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	@Override
 	public void onResume() {
 		super.onResume();
+		getMultiPaneHandler().onDetailFragmentResume(this);
 	}
 
 	@Override
 	public void onPause() {
-		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
+		MultiPaneHandler mph = getMultiPaneHandler();
 		if (mph != null)
 			mph.onDetailFragmentPause(this);
 		super.onPause();

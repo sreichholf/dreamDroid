@@ -88,9 +88,10 @@ public class DreamDroid extends Application {
 			+ KEY_FILE_PORT + " INTEGER;";
 	
 	public static OnActiveProfileChangedListener onActiveProfileChangedListener = null;
-	
+
 	private static boolean sFeatureSleeptimer = false;
 	private static boolean sFeatureNowNext = false;
+
 	private static Profile sProfile;
 	private static SharedPreferences sSp;
 	private static SQLiteDatabase sDb;
@@ -98,7 +99,7 @@ public class DreamDroid extends Application {
 	private static ArrayList<String> sTags;
 	
 	private static EpgSearchListener sSearchListener;
-
+	
 	/**
 	 * @param context
 	 * @return
@@ -368,13 +369,6 @@ public class DreamDroid extends Application {
 	 */
 	public static boolean reloadActiveProfile() {
 		return setActiveProfile(sProfile.getId());
-	}
-
-	/**
-	 * @return
-	 */
-	public static void checkInterfaceVersion() {
-
 	}
 
 	/**

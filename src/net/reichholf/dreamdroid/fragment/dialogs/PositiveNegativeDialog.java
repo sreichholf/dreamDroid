@@ -41,6 +41,7 @@ public class PositiveNegativeDialog extends PrimitiveDialog {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		setRetainInstance(true);
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(getArguments().getString("title")).setMessage(getText(mText))
 				.setCancelable(false)

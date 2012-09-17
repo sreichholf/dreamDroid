@@ -35,6 +35,7 @@ public class SimpleChoiceDialog extends PrimitiveDialog {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		setRetainInstance(true);
 		AlertDialog.Builder adBuilder = new AlertDialog.Builder(getActivity());
 		adBuilder.setTitle(getText(R.string.pick_action));
 		adBuilder.setItems(mActions, new DialogInterface.OnClickListener() {

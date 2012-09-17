@@ -327,15 +327,6 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		if (mMultiPane) {
 			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-			Fragment currentDetailFragment = getCurrentDetailFragment();
-			if (currentDetailFragment != null) {
-				if (currentDetailFragment.isVisible()) {
-					// TODO fix this hack (remove current fragment just to readd
-					// it in showFragment, do we really have to do that?)
-					ft.remove(currentDetailFragment);
-				}
-			}
-
 			showFragment(ft, R.id.detail_view, fragment);
 			if (addToBackStack) {
 				ft.addToBackStack(null);

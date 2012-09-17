@@ -32,12 +32,12 @@ public abstract class DreamDroidFragment extends SherlockFragment implements Act
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		getSherlockActivity().setTitle(mCurrentTitle);
-		getMultiPaneHandler().onDetailFragmentResume(this);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+		getMultiPaneHandler().onDetailFragmentResume(this);
 	}
 
 	@Override

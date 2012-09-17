@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,10 +42,11 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		View view = convertView;
 		if (view == null) {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			if (DreamDroid.featureNowNext())
+			if (DreamDroid.featureNowNext()){
 				view = li.inflate(R.layout.service_list_item_nn, null);
-			else
+			} else {
 				view = li.inflate(R.layout.service_list_item, null);
+			}
 		}
 
 		ExtendedHashMap service = getItem(position);
