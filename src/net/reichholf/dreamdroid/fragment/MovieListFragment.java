@@ -324,7 +324,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 			int[] actionIds = { Statics.ACTION_ZAP, Statics.ACTION_DELETE, Statics.ACTION_DOWNLOAD,
 					Statics.ACTION_STREAM };
 
-			mMultiPaneHandler.showDialogFragment(
+			getMultiPaneHandler().showDialogFragment(
 					SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds),
 					"dialog_movie_selected");
 		}
@@ -403,7 +403,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 			break;
 
 		case Statics.ACTION_DELETE:
-			mMultiPaneHandler.showDialogFragment(PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE),
+			getMultiPaneHandler().showDialogFragment(PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE),
 					R.string.delete_confirm, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED,
 					android.R.string.no, Statics.ACTION_NONE), "dialog_delete_movie_confirm");
 			break;

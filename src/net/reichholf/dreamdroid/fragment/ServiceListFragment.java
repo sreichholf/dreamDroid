@@ -664,7 +664,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 		args.putSerializable(sData, map);
 		f.setArguments(args);
 
-		mMultiPaneHandler.showDetails(f, true);
+		getMultiPaneHandler().showDetails(f, true);
 	}
 
 	/**
@@ -717,7 +717,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 							getText(R.string.zap), getText(R.string.stream) };
 					int[] actionIds = { Statics.ACTION_CURRENT, Statics.ACTION_EPG, Statics.ACTION_ZAP, Statics.ACTION_STREAM };
 
-					mMultiPaneHandler.showDialogFragment(SimpleChoiceDialog.newInstance(
+					getMultiPaneHandler().showDialogFragment(SimpleChoiceDialog.newInstance(
 							mCurrentService.getString(Event.KEY_SERVICE_NAME), actions, actionIds),
 							"service_action_dialog");
 				}
@@ -748,7 +748,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 	 * @param event
 	 */
 	private void setTimerByEventData(ExtendedHashMap event) {
-		Timer.editUsingEvent(mMultiPaneHandler, event, this);
+		Timer.editUsingEvent(getMultiPaneHandler(), event, this);
 	}
 
 	public void reloadNav() {
@@ -907,7 +907,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 		case Statics.ACTION_CURRENT:
 			Bundle args = new Bundle();
 			args.putParcelable("currentItem", mCurrentService);
-			mMultiPaneHandler.showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
+			getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
 			break;
 
 		case Statics.ACTION_EPG:

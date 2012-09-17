@@ -177,7 +177,6 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	private void reinit(){
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		ft.replace(getId(), new VirtualRemoteFragment());
-		ft.addToBackStack(null); //TODO fix backstab stuff... history breaks this way!
 		ft.commit();
 	}
 	/**

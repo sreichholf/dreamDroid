@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import android.app.Activity;
@@ -64,6 +63,12 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		mActivity = getSherlockActivity();
 		mActivity.setProgressBarIndeterminateVisibility(false);
 		getSherlockActivity().setTitle(getText(R.string.device_info));
+
+		if (savedInstanceState != null) {
+			mInfo = (ExtendedHashMap) savedInstanceState.getParcelable("info");
+		} else {
+			mInfo = new ExtendedHashMap();
+		}
 	}
 
 	@Override
@@ -89,7 +94,6 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		// </taken-from-android-list-fragment>
 
 		mMerge = new MergeAdapter();
-		mInfo = new ExtendedHashMap();
 		mFrontends = new ArrayList<ExtendedHashMap>();
 		mNics = new ArrayList<ExtendedHashMap>();
 		mHdds = new ArrayList<ExtendedHashMap>();
@@ -106,13 +110,9 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		mDeviceName = (TextView) fields.findViewById(R.id.DeviceName);
 		setClient();
 
-		setAdapter();
-		mList.setAdapter(mMerge);
-
-		if (savedInstanceState == null) {
+		if (mInfo == null || mInfo.isEmpty()) {
 			reload();
 		} else {
-			mInfo = (ExtendedHashMap) savedInstanceState.getParcelable("info");
 			onInfoReady();
 		}
 
@@ -167,6 +167,11 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	 */
 	@SuppressWarnings("unchecked")
 	private void onInfoReady() {
+		if (mList.getAdapter() == null) {
+			setAdapter();
+			mList.setAdapter(mMerge);
+		}
+
 		mFrontends.clear();
 		mFrontends.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_FRONTENDS));
 
@@ -196,7 +201,8 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	 */
 	protected void applyData(int loaderId, ExtendedHashMap content) {
 		if (content != null) {
-			mInfo = content;
+			mInfo.clear();
+			mInfo.putAll(content);
 			onInfoReady();
 		}
 	}

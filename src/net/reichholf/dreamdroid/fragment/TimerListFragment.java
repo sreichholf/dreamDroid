@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -124,7 +123,7 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 *            The timer to be edited
 	 */
 	private void editTimer(ExtendedHashMap timer, boolean create) {
-		Timer.edit(mMultiPaneHandler, timer, this, create);
+		Timer.edit(getMultiPaneHandler(), timer, this, create);
 	}
 
 	/**

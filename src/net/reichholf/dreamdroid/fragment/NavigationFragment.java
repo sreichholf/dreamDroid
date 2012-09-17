@@ -81,7 +81,6 @@ public class NavigationFragment extends AbstractHttpListFragment {
 	private boolean mHighlightCurrent;
 
 	private ExtendedHashMap mSleepTimer;
-	private FragmentMainActivity mActivity;
 
 	private SetPowerStateTask mSetPowerStateTask;
 	private SleepTimerTask mSleepTimerTask;
@@ -235,7 +234,6 @@ public class NavigationFragment extends AbstractHttpListFragment {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
-		mActivity = (FragmentMainActivity) getSherlockActivity();
 		mSleepTimer = new ExtendedHashMap();
 		mCurrentListItem = -1;
 
@@ -264,7 +262,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		if (mCurrentListItem == position && mActivity.isMultiPane()) {
+		if (mCurrentListItem == position && getMainActivity().isMultiPane()) {
 			// Don't reload what we already see
 			return;
 		}
@@ -291,7 +289,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 	}
 
 	private void setAdapter() {
-		mAdapter = new NavigationListAdapter(mActivity, MENU_ITEMS);
+		mAdapter = new NavigationListAdapter(getMainActivity(), MENU_ITEMS);
 		setListAdapter(mAdapter);
 	}
 
@@ -306,7 +304,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 
 		switch (id) {
 		case Statics.DIALOG_SEND_MESSAGE_ID:
-			dialog = new Dialog(mActivity);
+			dialog = new Dialog(getMainActivity());
 			dialog.setContentView(R.layout.send_message_dialog);
 			dialog.setTitle(R.string.send_message);
 
@@ -338,7 +336,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			break;
 
 		case Statics.DIALOG_SET_POWERSTATE_ID:
-			dialog = new Dialog(mActivity);
+			dialog = new Dialog(getMainActivity());
 			dialog.setContentView(R.layout.powercontrol);
 			dialog.setTitle(R.string.powercontrol);
 
@@ -355,7 +353,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			break;
 
 		case Statics.DIALOG_ABOUT_ID:
-			dialog = new Dialog(mActivity);
+			dialog = new Dialog(getMainActivity());
 			dialog.setContentView(R.layout.about);
 			dialog.setTitle(R.string.about);
 
@@ -378,7 +376,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			break;
 
 		case Statics.DIALOG_SLEEPTIMER_ID:
-			dialog = new Dialog(mActivity);
+			dialog = new Dialog(getMainActivity());
 			dialog.setContentView(R.layout.sleeptimer);
 			dialog.setTitle(R.string.sleeptimer);
 			final NumberPicker time = (NumberPicker) dialog.findViewById(R.id.NumberPicker);
@@ -433,7 +431,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 
 			break;
 		case Statics.DIALOG_SLEEPTIMER_PROGRESS_ID:
-			dialog = ProgressDialog.show(mActivity, getText(R.string.sleeptimer), getText(R.string.loading));
+			dialog = ProgressDialog.show(getMainActivity(), getText(R.string.sleeptimer), getText(R.string.loading));
 			break;
 		default:
 			dialog = null;
@@ -454,31 +452,31 @@ public class NavigationFragment extends AbstractHttpListFragment {
 
 		switch (id) {
 		case Statics.ITEM_TIMER:
-			mActivity.showDetails(TimerListFragment.class);
+			getMainActivity().showDetails(TimerListFragment.class);
 			return true;
 
 		case Statics.ITEM_MOVIES:
-			mActivity.showDetails(MovieListFragment.class);
+			getMainActivity().showDetails(MovieListFragment.class);
 			return true;
 
 		case Statics.ITEM_SERVICES:
-			mActivity.showDetails(ServiceListFragment.class);
+			getMainActivity().showDetails(ServiceListFragment.class);
 			return true;
 
 		case Statics.ITEM_INFO:
-			mActivity.showDetails(DeviceInfoFragment.class);
+			getMainActivity().showDetails(DeviceInfoFragment.class);
 			return true;
 
 		case Statics.ITEM_CURRENT:
-			mActivity.showDetails(CurrentServiceFragment.class);
+			getMainActivity().showDetails(CurrentServiceFragment.class);
 			return true;
 
 		case Statics.ITEM_REMOTE:
-			mActivity.showDetails(VirtualRemoteFragment.class, SimpleNoTitleFragmentActivity.class);
+			getMainActivity().showDetails(VirtualRemoteFragment.class, SimpleNoTitleFragmentActivity.class);
 			return true;
 
 		case Statics.ITEM_PREFERENCES:
-			intent = new Intent(mActivity, DreamDroidPreferenceActivity.class);
+			intent = new Intent(getMainActivity(), DreamDroidPreferenceActivity.class);
 			startActivity(intent);
 			return true;
 
@@ -487,11 +485,11 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			return true;
 
 		case Statics.ITEM_EPG_SEARCH:
-			mActivity.onSearchRequested();
+			getMainActivity().onSearchRequested();
 			return true;
 
 		case Statics.ITEM_SCREENSHOT:
-			mActivity.showDetails(ScreenShotFragment.class);
+			getMainActivity().showDetails(ScreenShotFragment.class);
 			return true;
 
 		case Statics.ITEM_TOGGLE_STANDBY:
@@ -519,7 +517,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
-			mActivity.onActiveProfileChanged(DreamDroid.getActiveProfile());
+			getMainActivity().onActiveProfileChanged(DreamDroid.getActiveProfile());
 			return true;
 
 		case Statics.ITEM_SLEEPTIMER:
@@ -528,12 +526,12 @@ public class NavigationFragment extends AbstractHttpListFragment {
 
 		case Statics.ITEM_MEDIA_PLAYER:
 			showToast(getString(R.string.not_implemented));
-			// TODO startActivity( new Intent(mActivity,
+			// TODO startActivity( new Intent(getMainActivity(),
 			// MediaplayerNavigationActivity.class) );
 			return true;
 
 		case Statics.ITEM_PROFILES:
-			mActivity.showDetails(ProfileListFragment.class);
+			getMainActivity().showDetails(ProfileListFragment.class);
 			return true;
 
 		default:
@@ -621,5 +619,9 @@ public class NavigationFragment extends AbstractHttpListFragment {
 	@Override
 	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int arg0, Bundle arg1) {
 		return null;
+	}
+	
+	private FragmentMainActivity getMainActivity(){
+		return (FragmentMainActivity) getSherlockActivity();
 	}
 }

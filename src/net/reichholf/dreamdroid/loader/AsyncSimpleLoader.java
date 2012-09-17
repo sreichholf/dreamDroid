@@ -8,14 +8,15 @@ package net.reichholf.dreamdroid.loader;
 
 import java.util.ArrayList;
 
-import org.apache.http.NameValuePair;
-
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractSimpleRequestHandler;
+
+import org.apache.http.NameValuePair;
+
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.content.AsyncTaskLoader;
-import android.content.Context;
 
 /**
  * @author sre

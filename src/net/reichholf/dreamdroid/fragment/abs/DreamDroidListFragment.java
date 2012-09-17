@@ -20,7 +20,6 @@ import com.actionbarsherlock.app.SherlockListFragment;
 public abstract class DreamDroidListFragment extends SherlockListFragment implements ActivityCallbackHandler {
 	protected String mCurrentTitle;
 	protected String mBaseTitle;
-	protected MultiPaneHandler mMultiPaneHandler;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -33,13 +32,11 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		getSherlockActivity().setTitle(mCurrentTitle);
-		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		((MultiPaneHandler) getSherlockActivity()).onDetailFragmentResume(this);
 	}
 
 	@Override
@@ -54,5 +51,9 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
+	}
+	
+	protected MultiPaneHandler getMultiPaneHandler() {
+		return (MultiPaneHandler) getSherlockActivity();
 	}
 }

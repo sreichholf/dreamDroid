@@ -59,8 +59,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	protected SimpleResultTask mSimpleResultTask;
 	protected SetVolumeTask mVolumeTask;
-	
-	protected MultiPaneHandler mMultiPaneHandler;
 
 	/**
 	 * @author sre
@@ -191,8 +189,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
 		
 		getListView().setFastScrollEnabled(true);
 		try {

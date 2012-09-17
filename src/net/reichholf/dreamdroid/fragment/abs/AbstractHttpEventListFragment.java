@@ -59,7 +59,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		mCurrentItem = mMapList.get((int) id);
 		Bundle args = new Bundle();
 		args.putParcelable("currentItem", mCurrentItem);
-		mMultiPaneHandler.showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
+		getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
 	}
 
 	/**
@@ -86,7 +86,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		args.putString(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
 
 		f.setArguments(args);
-		mMultiPaneHandler.showDetails(f);
+		getMultiPaneHandler().showDetails(f);
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	 * @param event
 	 */
 	protected void setTimerByEventData(ExtendedHashMap event) {
-		Timer.editUsingEvent(mMultiPaneHandler, event, this);
+		Timer.editUsingEvent(getMultiPaneHandler(), event, this);
 	}
 
 	public void onDialogAction(int action) {

@@ -20,7 +20,6 @@ import com.actionbarsherlock.app.SherlockFragment;
 public abstract class DreamDroidFragment extends SherlockFragment implements ActivityCallbackHandler {
 	protected String mCurrentTitle;
 	protected String mBaseTitle;
-	protected MultiPaneHandler mMultiPaneHandler;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -33,18 +32,17 @@ public abstract class DreamDroidFragment extends SherlockFragment implements Act
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		getSherlockActivity().setTitle(mCurrentTitle);
-		mMultiPaneHandler = (MultiPaneHandler) getSherlockActivity();
+		getMultiPaneHandler().onDetailFragmentResume(this);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		((MultiPaneHandler) getSherlockActivity()).onDetailFragmentResume(this);
 	}
 
 	@Override
 	public void onPause() {
-		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
+		MultiPaneHandler mph = getMultiPaneHandler();
 		if (mph != null)
 			mph.onDetailFragmentPause(this);
 		super.onPause();
@@ -54,5 +52,9 @@ public abstract class DreamDroidFragment extends SherlockFragment implements Act
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
+	}
+
+	protected MultiPaneHandler getMultiPaneHandler() {
+		return (MultiPaneHandler) getSherlockActivity();
 	}
 }

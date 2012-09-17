@@ -68,13 +68,23 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	private ExtendedHashMap mCurrentItem;
 	private boolean mCurrentServiceReady;
 
-
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mCurrentServiceReady = false;
 		mCurrentTitle = mBaseTitle = getString(R.string.current_service);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+
+		if (savedInstanceState != null) {
+			// currents service data
+			HashMap<String, Object> current = (HashMap<String, Object>) savedInstanceState.getParcelable("current");
+			mCurrent = new ExtendedHashMap(current);
+			// currently selected item (now or next dialog)
+			HashMap<String, Object> currentItem = (HashMap<String, Object>) savedInstanceState
+					.getParcelable("currentItem");
+			mCurrentItem = new ExtendedHashMap(currentItem);
+		}
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -96,19 +106,10 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
 		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
-		ExtendedHashMap current = null;
-		if (savedInstanceState != null) {
-			current = (ExtendedHashMap) savedInstanceState.getParcelable("current");
-			@SuppressWarnings("unchecked")
-			HashMap<String, Object> currentItem = (HashMap<String, Object>) savedInstanceState
-					.getParcelable("currentItem");
-			mCurrentItem = new ExtendedHashMap(currentItem);
-		}
-
-		if (current == null) {
+		if (mCurrent == null) {
 			reload();
 		} else {
-			applyData(0, current);
+			applyData(0, mCurrent);
 		}
 
 		return view;
@@ -204,10 +205,9 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	 */
 	@Override
 	protected void applyData(int loaderId, ExtendedHashMap content) {
-		
 		mCurrent = content;
 		mCurrentServiceReady = true;
-		
+
 		mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
 		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
 		mNow = events.get(0);
@@ -288,10 +288,11 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 			break;
 		}
 	}
-	
+
 	@Override
 	public Loader<ExtendedHashMap> onCreateLoader(int id, Bundle args) {
-		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new CurrentServiceRequestHandler(), args);
+		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new CurrentServiceRequestHandler(),
+				args);
 		return loader;
 	}
 }

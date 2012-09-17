@@ -212,10 +212,10 @@ public class ProfileListFragment extends DreamDroidListFragment implements Primi
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile.set(mCursor);
-		// getActivity().showDialog(Statics.DIALOG_PROFILE_ID);
+
 		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 		int[] actionIds = { Statics.ACTION_EDIT, Statics.ACTION_DELETE };
-		mMultiPaneHandler.showDialogFragment(SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds),
+		getMultiPaneHandler().showDialogFragment(SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds),
 				"dialog_profile_selected");
 		return true;
 	}
@@ -281,7 +281,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Primi
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
-			if (!mMultiPaneHandler.isMultiPane()) {
+			if (!getMultiPaneHandler().isMultiPane()) {
 				getActivity().finish();
 			}
 		} else {
@@ -300,7 +300,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Primi
 		Fragment f = new ProfileEditFragment();
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
-		mMultiPaneHandler.showDetails(f, true);
+		getMultiPaneHandler().showDetails(f, true);
 	}
 
 	/**
@@ -313,7 +313,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Primi
 		Fragment f = new ProfileEditFragment();
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
-		mMultiPaneHandler.showDetails(f);
+		getMultiPaneHandler().showDetails(f);
 	}
 
 	/**
@@ -344,7 +344,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Primi
 			editProfile();
 			break;
 		case Statics.ACTION_DELETE:
-			mMultiPaneHandler.showDialogFragment(PositiveNegativeDialog.newInstance(mProfile.getName(),
+			getMultiPaneHandler().showDialogFragment(PositiveNegativeDialog.newInstance(mProfile.getName(),
 					R.string.confirm_delete_profile, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED,
 					android.R.string.no, Statics.ACTION_NONE), "dialog_delete_profile_confirm");
 			break;

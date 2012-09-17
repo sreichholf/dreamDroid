@@ -52,7 +52,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 
 	private boolean mMultiPane;
 
-	private FragmentManager mFragmentManager;
+//	private FragmentManager getSupportFragmentManager();
 	private NavigationFragment mNavigationFragment;
 
 	private TextView mActiveProfile;
@@ -114,10 +114,8 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		super.onCreate(savedInstanceState);
 		setProgressBarIndeterminateVisibility(false);
 
-		mFragmentManager = getSupportFragmentManager();
-
 		if (savedInstanceState != null) {
-			mNavigationFragment = (NavigationFragment) mFragmentManager.getFragment(savedInstanceState, "navigation");
+			mNavigationFragment = (NavigationFragment) getSupportFragmentManager().getFragment(savedInstanceState, "navigation");
 		}
 
 		DreamDroid.setActiveProfileChangedListener(this);
@@ -161,7 +159,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 			}
 		}
 
-		FragmentTransaction ft = mFragmentManager.beginTransaction();
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		showFragment(ft, R.id.navigation_view, mNavigationFragment);
 		Fragment detailFragment = getCurrentDetailFragment();
 		if (detailFragment != null) {
@@ -203,17 +201,17 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		mFragmentManager.putFragment(outState, "navigation", mNavigationFragment);
+		getSupportFragmentManager().putFragment(outState, "navigation", mNavigationFragment);
 		Fragment currentDetailFragment = getCurrentDetailFragment();
 		if (currentDetailFragment != null) {
-			mFragmentManager.putFragment(outState, "current", currentDetailFragment);
+			getSupportFragmentManager().putFragment(outState, "current", currentDetailFragment);
 		}
 		super.onSaveInstanceState(outState);
 	}
 
 	public void onDestroy() {
 		DreamDroid.unregisterEpgSearchListener(this);
-		super.onPause();
+		super.onDestroy();
 	}
 
 	/*
@@ -327,7 +325,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	@Override
 	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack) {
 		if (mMultiPane) {
-			FragmentTransaction ft = mFragmentManager.beginTransaction();
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			Fragment currentDetailFragment = getCurrentDetailFragment();
 			if (currentDetailFragment != null) {
@@ -422,7 +420,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	public void finish(boolean finishFragment) {
 		if (mMultiPane && finishFragment) {
 			// TODO finish() for Fragment
-			// mFragmentManager.popBackStackImmediate();
+			// getSupportFragmentManager().popBackStackImmediate();
 		} else {
 			super.finish();
 		}
