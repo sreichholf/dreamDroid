@@ -22,7 +22,7 @@ import android.util.Log;
  */
 public class DeviceDetector {
 	public static String LOG_TAG = DeviceDetector.class.getName();
-	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se",  "dm7020hd", "dm7025", "dm8000", "vuduo", "vusolo", "vuultimo", "vuuno", "et5x00", "et6x00", "et9x00", "gb800se", "gb800solo", "gb800ue", "gbquad", "azboxhd", "azboxme", "azboxminime", "odinm9", "tmtwin", "ini-x000", "ini-1000", "venton-hdx", "vanguard-hdx" };
+	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se",  "dm7020hd", "dm7025", "dm8000", "bm750", "vuduo", "vusolo", "vuultimo", "vuuno", "et5x00", "et6x00", "et9x00", "gb800se", "gb800solo", "gb800ue", "gbquad", "azboxhd", "azboxme", "azboxminime", "odinm9", "tmtwin", "ini-x000", "ini-1000", "venton-hdx", "ventonhdx", "vanguard-hdx" };
 	
 	public static ArrayList<Profile> getAvailableHosts(){
 		ArrayList<Profile> profiles = new ArrayList<Profile>();
