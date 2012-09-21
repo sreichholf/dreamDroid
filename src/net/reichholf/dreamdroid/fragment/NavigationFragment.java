@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -143,6 +144,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 		private ExtendedHashMap mResult;
 		private SleepTimerRequestHandler mHandler;
 		private boolean mDialogOnFinish;
+		private SimpleProgressDialog mProgressDialogFragment;
 
 		public SleepTimerTask(boolean dialogOnFinish) {
 			mHandler = new SleepTimerRequestHandler();
@@ -171,13 +173,13 @@ public class NavigationFragment extends AbstractHttpListFragment {
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			getSherlockActivity().showDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
+			mProgressDialogFragment = SimpleProgressDialog.newInstance(getString(R.string.sleeptimer), getString(R.string.loading));
+			getMultiPaneHandler().showDialogFragment(mProgressDialogFragment, "dialog_sleeptimer_progress");
 		}
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-			getSherlockActivity().removeDialog(Statics.DIALOG_SLEEPTIMER_PROGRESS_ID);
-
+			mProgressDialogFragment.dismiss();
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 			}
