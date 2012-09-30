@@ -40,17 +40,32 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View view = convertView;
-		if (view == null) {
+		ExtendedHashMap service = getItem(position);
+		String next = service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
+		String now = service.getString(Event.KEY_EVENT_TITLE);
+
+		boolean hasNext = next != null && !"".equals(next);
+		boolean hasNow = now != null && !"".equals(now);
+
+		int viewId = android.R.id.text1;
+		int layoutId = android.R.layout.simple_list_item_1;
+
+		if (hasNext) {
+			viewId = R.id.service_list_item_nn;
+			layoutId = R.layout.service_list_item_nn;
+		} else if (hasNow) {
+			layoutId = R.layout.service_list_item;
+		}
+		if (view == null || view.getId() != viewId) {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			if (DreamDroid.featureNowNext()){
-				view = li.inflate(R.layout.service_list_item_nn, null);
-			} else {
-				view = li.inflate(R.layout.service_list_item, null);
-			}
+			view = li.inflate(layoutId, null);
 		}
 
-		ExtendedHashMap service = getItem(position);
 		if (service != null) {
+			if (!hasNow) {
+				setTextView(view, android.R.id.text1, service.getString(Event.KEY_SERVICE_NAME));
+				return view;
+			}
 			setTextView(view, R.id.service_name, service.getString(Event.KEY_SERVICE_NAME));
 			setTextView(view, R.id.event_now_title, service.getString(Event.KEY_EVENT_TITLE));
 			setTextView(view, R.id.event_now_start, service.getString(Event.KEY_EVENT_START_TIME_READABLE));
@@ -62,14 +77,16 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			String duration = service.getString(Event.KEY_EVENT_DURATION);
 			String start = service.getString(Event.KEY_EVENT_START);
 
-			if(duration != null && start != null){
+			if (duration != null && start != null) {
 				try {
 					max = Double.valueOf(duration).longValue() / 60;
 					cur = max - DateTime.getRemaining(duration, start);
-				} catch (Exception e) {}
+				} catch (Exception e) {
+					Log.e(DreamDroid.LOG_TAG, e.toString());
+				}
 			}
-			
-			if(max > 0 && cur >= 0){
+
+			if (max > 0 && cur >= 0) {
 				progress.setVisibility(View.VISIBLE);
 				progress.setMax((int) max);
 				progress.setProgress((int) cur);
@@ -77,7 +94,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 				progress.setVisibility(View.GONE);
 			}
 
-			if (DreamDroid.featureNowNext()) {
+			if (hasNext) {
 				setTextView(view, R.id.event_next_title,
 						service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE)));
 				setTextView(view, R.id.event_next_start,
