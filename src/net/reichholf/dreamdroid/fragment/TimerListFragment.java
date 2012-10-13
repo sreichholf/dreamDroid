@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -24,10 +27,7 @@ import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import org.apache.http.NameValuePair;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
@@ -44,7 +44,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sreichholf
  * 
  */
-public class TimerListFragment extends AbstractHttpListFragment {
+public class TimerListFragment extends AbstractHttpListFragment implements PrimitiveDialog.DialogActionListener {
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
 
@@ -79,7 +79,11 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mTimer = mMapList.get((int) id);
-		getSherlockActivity().showDialog(Statics.DIALOG_TIMER_SELECTED_ID);
+		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
+		int[] actionIds = { Statics.ACTION_EDIT, Statics.ACTION_DELETE };
+		
+		SimpleChoiceDialog dia = SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds);
+		getMultiPaneHandler().showDialogFragment(dia, "dialog_timer_selected");
 	}
 
 	@Override
@@ -138,7 +142,11 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	 * Confirmation dialog before timer deletion
 	 */
 	private void deleteTimerConfirm() {
-		getSherlockActivity().showDialog(Statics.DIALOG_TIMER_DELETE_CONFIRM_ID);
+		PositiveNegativeDialog dia = PositiveNegativeDialog.newInstance(mTimer.getString(Timer.KEY_NAME),
+				R.string.delete_confirm, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
+				Statics.ACTION_NONE);
+
+		getMultiPaneHandler().showDialogFragment(dia, "dialog_delete_timer_confirm");
 	}
 
 	/**
@@ -186,51 +194,25 @@ public class TimerListFragment extends AbstractHttpListFragment {
 	}
 
 	@Override
-	public Dialog onCreateDialog(int id) {
-		Dialog dialog = null;
-		switch (id) {
-		case (Statics.DIALOG_TIMER_SELECTED_ID):
-			CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-			AlertDialog.Builder adBuilder = new AlertDialog.Builder(getSherlockActivity());
-			adBuilder.setTitle(R.string.pick_action);
-			adBuilder.setItems(actions, new DialogInterface.OnClickListener() {
-
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case 0:
-						editTimer(mTimer, false);
-						break;
-					case 1:
-						deleteTimerConfirm();
-						break;
-					}
-				}
-			});
-			dialog = adBuilder.create();
-			break;
-		case (Statics.DIALOG_TIMER_DELETE_CONFIRM_ID):
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
-			builder.setTitle(mTimer.getString(Timer.KEY_NAME)).setMessage(getText(R.string.delete_confirm))
-					.setCancelable(false)
-					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							deleteTimer(mTimer);
-							dialog.dismiss();
-						}
-					}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							dialog.dismiss();
-						}
-					});
-			dialog = builder.create();
-			break;
-		}
-		return dialog;
-	}
-
-	@Override
 	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new TimerListRequestHandler(), false, args);
 		return loader;
+	}
+
+	@Override
+	public void onDialogAction(int action) {
+		switch (action) {
+		case Statics.ACTION_EDIT:
+			editTimer(mTimer, false);
+			break;
+		case Statics.ACTION_DELETE:
+			deleteTimerConfirm();
+			break;
+		case Statics.ACTION_DELETE_CONFIRMED:
+			deleteTimer(mTimer);
+			break;
+		default:
+			break;
+		}
 	}
 }

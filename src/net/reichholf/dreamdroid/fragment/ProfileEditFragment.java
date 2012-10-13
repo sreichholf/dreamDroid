@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
 import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -223,11 +222,6 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	protected void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(mActivity, toastText, Toast.LENGTH_LONG);
 		toast.show();
-	}
-
-	@Override
-	public Dialog onCreateDialog(int id) {
-		return null;
 	}
 
 	@Override

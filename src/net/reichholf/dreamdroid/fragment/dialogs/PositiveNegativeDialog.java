@@ -16,23 +16,23 @@ import android.os.Bundle;
  * 
  */
 public class PositiveNegativeDialog extends PrimitiveDialog {
-	private int mText;
+	private int mMessageId;
 	private int mPositiveText;
 	private int mPositiveId;
 	private int mNegativeText;
 	private int mNegativeId;
-
-	public static PositiveNegativeDialog newInstance(String title, int text, int positiveText, int positiveId,
+	
+	public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId,
 			int negativeString, int negativeId) {
-		PositiveNegativeDialog fragment = new PositiveNegativeDialog(text, positiveText, positiveId, negativeString, negativeId);
+		PositiveNegativeDialog fragment = new PositiveNegativeDialog(messageId, positiveText, positiveId, negativeString, negativeId);
 		Bundle args = new Bundle();
 		args.putString("title", title);
 		fragment.setArguments(args);
 		return fragment;
 	}
 
-	public PositiveNegativeDialog(int text, int positiveText, int positiveId, int negativeText, int negativeId){
-		mText = text;
+	private PositiveNegativeDialog(int messageId, int positiveText, int positiveId, int negativeText, int negativeId){
+		mMessageId = messageId;
 		mPositiveText = positiveText;
 		mPositiveId = positiveId;
 		mNegativeText = negativeText;
@@ -43,7 +43,7 @@ public class PositiveNegativeDialog extends PrimitiveDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getArguments().getString("title")).setMessage(getText(mText))
+		builder.setTitle(getArguments().getString("title")).setMessage(getString(mMessageId))
 				.setCancelable(false)
 				.setPositiveButton(getText(mPositiveText), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {

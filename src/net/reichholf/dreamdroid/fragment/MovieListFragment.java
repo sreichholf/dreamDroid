@@ -413,9 +413,4 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 			return;
 		}
 	}
-
-	@Override
-	public Dialog onCreateDialog(int id) {
-		return null;
-	}
 }

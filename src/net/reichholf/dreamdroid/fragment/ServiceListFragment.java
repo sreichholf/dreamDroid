@@ -37,7 +37,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -723,11 +722,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements Primiti
 				}
 			}
 		}
-	}
-
-	@Override
-	public Dialog onCreateDialog(int id) {
-		return null;
 	}
 
 	/**

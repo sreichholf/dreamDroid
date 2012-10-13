@@ -18,7 +18,6 @@ import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.widget.SimpleAdapter;
@@ -52,10 +51,7 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 			finish();
 		}
 	}
-	
-	public Dialog onCreateDialog(int id){
-		return null;
-	}
+
 	
 	/**
 	 * Initializes the <code>SimpleListAdapter</code>

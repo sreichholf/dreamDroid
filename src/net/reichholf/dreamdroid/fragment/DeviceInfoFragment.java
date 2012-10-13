@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
@@ -50,7 +49,6 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	private ArrayList<ExtendedHashMap> mFrontends;
 	private ArrayList<ExtendedHashMap> mNics;
 	private ArrayList<ExtendedHashMap> mHdds;
-	private SimpleHttpClient mShc;
 	private LayoutInflater mInflater;
 	private ListView mList;
 
@@ -71,6 +69,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// <taken-from-android-list-fragment>

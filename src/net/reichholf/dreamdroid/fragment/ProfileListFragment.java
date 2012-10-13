@@ -19,7 +19,6 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -223,11 +222,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Primi
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putInt("cursorPosition", mCursor.getPosition());
 		super.onSaveInstanceState(outState);
-	}
-
-	public Dialog onCreateDialog(int id) {
-		Dialog dialog = null;
-		return dialog;
 	}
 
 	@Override
