@@ -209,6 +209,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 		mCurrentServiceReady = true;
 
 		mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
+		@SuppressWarnings("unchecked")
 		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
 		mNow = events.get(0);
 		mNext = events.get(1);

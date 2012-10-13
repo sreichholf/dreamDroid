@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -37,6 +38,7 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -347,103 +349,88 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 			dialog.show();
 			break;
-
-		case (Statics.DIALOG_TIMER_PICK_REPEATED_ID):
-			CharSequence[] days = getResources().getTextArray(R.array.weekdays);
-			AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
-			builder.setTitle(getText(R.string.choose_days));
-			builder.setMultiChoiceItems(days, mCheckedDays, new OnMultiChoiceClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					mCheckedDays[which] = isChecked;
-
-					String text = setRepeated(mCheckedDays, mTimer);
-					mRepeatings.setText(text);
-
-				}
-
-			});
-			dialog = builder.create();
-
-			break;
-
-		case (Statics.DIALOG_TIMER_PICK_TAGS_ID):
-			CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
-			boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
-
-			int tc = 0;
-			for (String tag : DreamDroid.getTags()) {
-				tags[tc] = tag;
-
-				if (mSelectedTags.contains(tag)) {
-					selectedTags[tc] = true;
-				} else {
-					selectedTags[tc] = false;
-				}
-
-				tc++;
-			}
-
-			mTagsChanged = false;
-			mOldTags = new ArrayList<String>();
-			mOldTags.addAll(mSelectedTags);
-
-			builder = new AlertDialog.Builder(getSherlockActivity());
-			builder.setTitle(getText(R.string.choose_tags));
-
-			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					String tag = DreamDroid.getTags().get(which);
-					mTagsChanged = true;
-					if (isChecked) {
-						if (!mSelectedTags.contains(tag)) {
-							mSelectedTags.add(tag);
-						}
-					} else {
-						int idx = mSelectedTags.indexOf(tag);
-						if (idx >= 0) {
-							mSelectedTags.remove(idx);
-						}
-					}
-				}
-
-			});
-
-			builder.setPositiveButton(android.R.string.ok, new Dialog.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					if (mTagsChanged) {
-						// TODO Update current Tags
-						String tags = Tag.implodeTags(mSelectedTags);
-						mTimer.put(Timer.KEY_TAGS, tags);
-						mTags.setText(tags);
-					}
-					dialog.dismiss();
-					getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
-				}
-
-			});
-
-			builder.setNegativeButton(android.R.string.cancel, new Dialog.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					mSelectedTags.clear();
-					mSelectedTags.addAll(mOldTags);
-					dialog.dismiss();
-					getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
-				}
-
-			});
-
-			dialog = builder.create();
-			break;
 		default:
 			dialog = null;
 		}
 
 		return dialog;
+	}
+
+	protected void pickRepeatings() {
+		CharSequence[] days = getResources().getTextArray(R.array.weekdays);
+		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_days, days, mCheckedDays,
+				new OnMultiChoiceClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+						mCheckedDays[which] = isChecked;
+						String text = setRepeated(mCheckedDays, mTimer);
+						mRepeatings.setText(text);
+					}
+				});
+		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_repeatings");
+	}
+
+	protected void pickTags() {
+		CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
+		boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
+
+		int tc = 0;
+		for (String tag : DreamDroid.getTags()) {
+			tags[tc] = tag;
+			if (mSelectedTags.contains(tag)) {
+				selectedTags[tc] = true;
+			} else {
+				selectedTags[tc] = false;
+			}
+			tc++;
+		}
+
+		Dialog.OnClickListener positiveListener = new Dialog.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if (mTagsChanged) {
+					// TODO Update current Tags
+					String tags = Tag.implodeTags(mSelectedTags);
+					mTimer.put(Timer.KEY_TAGS, tags);
+					mTags.setText(tags);
+				}
+				dialog.dismiss();
+			}
+		};
+
+		Dialog.OnClickListener negativeListener = new Dialog.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				mSelectedTags.clear();
+				mSelectedTags.addAll(mOldTags);
+				dialog.dismiss();
+			}
+		};
+
+		mTagsChanged = false;
+		mOldTags = new ArrayList<String>();
+		mOldTags.addAll(mSelectedTags);
+
+		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags,
+				new OnMultiChoiceClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+						String tag = DreamDroid.getTags().get(which);
+						mTagsChanged = true;
+						if (isChecked) {
+							if (!mSelectedTags.contains(tag)) {
+								mSelectedTags.add(tag);
+							}
+						} else {
+							int idx = mSelectedTags.indexOf(tag);
+							if (idx >= 0) {
+								mSelectedTags.remove(idx);
+							}
+						}
+					}
+				}, positiveListener, negativeListener, R.string.ok, R.string.cancel);
+
+		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
 	}
 
 	/**
@@ -485,11 +472,11 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			return true;
 
 		case Statics.ITEM_PICK_REPEATED:
-			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_REPEATED_ID);
+			pickRepeatings();
 			return true;
 
 		case Statics.ITEM_PICK_TAGS:
-			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_TAGS_ID);
+			pickTags();
 		default:
 			return super.onItemClicked(id);
 		}

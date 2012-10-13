@@ -12,6 +12,7 @@ import java.util.Arrays;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
@@ -30,7 +31,6 @@ import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
@@ -209,92 +209,73 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 			reload();
 			return true;
 		case Statics.ITEM_TAGS:
-			getSherlockActivity().showDialog(Statics.DIALOG_PICK_TAGS_ID);
+			pickTags();
 			return true;
 		default:
 			return super.onItemClicked(id);
 		}
 	}
+	
+	protected void pickTags() {
+		CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
+		boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
 
-	@Override
-	public Dialog onCreateDialog(int id) {
-		final Dialog dialog;
-		AlertDialog.Builder builder;
+		int tc = 0;
+		for (String tag : DreamDroid.getTags()) {
+			tags[tc] = tag;
 
-		switch (id) {
-		case (Statics.DIALOG_PICK_TAGS_ID):
-			CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
-			boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
-
-			int tc = 0;
-			for (String tag : DreamDroid.getTags()) {
-				tags[tc] = tag;
-
-				if (mSelectedTags.contains(tag)) {
-					selectedTags[tc] = true;
-				} else {
-					selectedTags[tc] = false;
-				}
-
-				tc++;
+			if (mSelectedTags.contains(tag)) {
+				selectedTags[tc] = true;
+			} else {
+				selectedTags[tc] = false;
 			}
 
-			mTagsChanged = false;
-			mOldTags = new ArrayList<String>();
-			mOldTags.addAll(mSelectedTags);
-
-			builder = new AlertDialog.Builder(getSherlockActivity());
-			builder.setTitle(getText(R.string.choose_tags));
-
-			builder.setMultiChoiceItems(tags, selectedTags, new OnMultiChoiceClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					String tag = DreamDroid.getTags().get(which);
-					mTagsChanged = true;
-					if (isChecked) {
-						if (!mSelectedTags.contains(tag)) {
-							mSelectedTags.add(tag);
-						}
-					} else {
-						int idx = mSelectedTags.indexOf(tag);
-						if (idx >= 0) {
-							mSelectedTags.remove(idx);
-						}
-					}
-				}
-
-			});
-
-			builder.setPositiveButton(android.R.string.ok, new Dialog.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					if (mTagsChanged) {
-						reload();
-					}
-					dialog.dismiss();
-					getSherlockActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
-				}
-
-			});
-
-			builder.setNegativeButton(android.R.string.cancel, new Dialog.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					mSelectedTags.clear();
-					mSelectedTags.addAll(mOldTags);
-					dialog.dismiss();
-					getSherlockActivity().removeDialog(Statics.DIALOG_PICK_TAGS_ID);
-				}
-
-			});
-
-			dialog = builder.create();
-			break;
-		default:
-			dialog = null;
+			tc++;
 		}
 
-		return dialog;
+		mTagsChanged = false;
+		mOldTags = new ArrayList<String>();
+		mOldTags.addAll(mSelectedTags);
+
+		Dialog.OnClickListener positiveListener = new Dialog.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if (mTagsChanged) {
+					reload();
+				}
+				dialog.dismiss();
+			}
+		};
+
+		Dialog.OnClickListener negativeListener = new Dialog.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				mSelectedTags.clear();
+				mSelectedTags.addAll(mOldTags);
+				dialog.dismiss();
+			}
+		};
+		
+		
+		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags, new OnMultiChoiceClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+				String tag = DreamDroid.getTags().get(which);
+				mTagsChanged = true;
+				if (isChecked) {
+					if (!mSelectedTags.contains(tag)) {
+						mSelectedTags.add(tag);
+					}
+				} else {
+					int idx = mSelectedTags.indexOf(tag);
+					if (idx >= 0) {
+						mSelectedTags.remove(idx);
+					}
+				}
+			}
+		}, positiveListener, negativeListener, R.string.ok, R.string.cancel);
+		
+		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
 	}
 
 	@Override
@@ -431,5 +412,10 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 		default:
 			return;
 		}
+	}
+
+	@Override
+	public Dialog onCreateDialog(int id) {
+		return null;
 	}
 }
