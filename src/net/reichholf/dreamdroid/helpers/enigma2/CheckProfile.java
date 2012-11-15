@@ -23,7 +23,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequest
  * 
  */
 public class CheckProfile {
-	public static final int[] FEATURE_EPGNOWNEXT_VERSION = { 1, 6, 8 };
+	public static final int[] FEATURE_EPGNOWNEXT_VERSION = { 1, 7, 0 };
 
 	public static final String KEY_HAS_ERROR = "error";
 	public static final String KEY_VALUE = "value";

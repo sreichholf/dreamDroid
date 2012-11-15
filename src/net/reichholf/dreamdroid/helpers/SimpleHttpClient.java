@@ -113,7 +113,7 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String buildUrl(String uri, List<NameValuePair> parameters) {
-		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8);
+		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
 		return mPrefix + mHostname + ":" + mPort + uri + parms;
 	}
 

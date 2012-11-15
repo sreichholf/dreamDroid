@@ -27,7 +27,7 @@ public class DateTime {
 	 * @return
 	 */
 	public static int getRemaining(String duration, String eventstart) {
-		if(Python.NONE.equals(duration.trim()) || Python.NONE.equals(eventstart.trim())){
+		if(duration == null || eventstart == null || Python.NONE.equals(duration) || Python.NONE.equals(eventstart)){
 			return 0;
 		}
 		
@@ -61,7 +61,7 @@ public class DateTime {
 	 * @return
 	 */
 	public static String getDurationString(String duration, String eventstart) {
-		if(Python.NONE.equals(duration.trim()) || Python.NONE.equals(eventstart.trim())){
+		if(duration == null || eventstart == null || Python.NONE.equals(duration) || Python.NONE.equals(eventstart)){
 			return "0";
 		}
 		
