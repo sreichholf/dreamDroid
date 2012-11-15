@@ -27,6 +27,10 @@ public class DateTime {
 	 * @return
 	 */
 	public static int getRemaining(String duration, String eventstart) {
+		if(Python.NONE.equals(duration.trim()) || Python.NONE.equals(eventstart.trim())){
+			return 0;
+		}
+		
 		long d = Double.valueOf(duration).longValue();
 		
 		if (eventstart != null) {
@@ -57,6 +61,10 @@ public class DateTime {
 	 * @return
 	 */
 	public static String getDurationString(String duration, String eventstart) {
+		if(Python.NONE.equals(duration.trim()) || Python.NONE.equals(eventstart.trim())){
+			return "0";
+		}
+		
 		long d = Double.valueOf(duration).longValue();
 		String durationPrefix = "";
 

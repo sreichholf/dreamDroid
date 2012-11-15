@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import android.content.Context;
 import android.util.Log;
@@ -54,6 +55,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			viewId = R.id.service_list_item_nn;
 			layoutId = R.layout.service_list_item_nn;
 		} else if (hasNow) {
+			viewId = R.id.service_list_item;
 			layoutId = R.layout.service_list_item;
 		}
 		if (view == null || view.getId() != viewId) {
@@ -77,7 +79,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			String duration = service.getString(Event.KEY_EVENT_DURATION);
 			String start = service.getString(Event.KEY_EVENT_START);
 
-			if (duration != null && start != null) {
+			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
 				try {
 					max = Double.valueOf(duration).longValue() / 60;
 					cur = max - DateTime.getRemaining(duration, start);
