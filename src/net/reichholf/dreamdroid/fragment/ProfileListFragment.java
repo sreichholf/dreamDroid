@@ -349,8 +349,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Primi
 				showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
 			}
 			// TODO Add error handling
-			mProfile = null;
 			mCursor.requery();
+			mProfile = new Profile();
 			mAdapter.notifyDataSetChanged();
 			break;
 		}
