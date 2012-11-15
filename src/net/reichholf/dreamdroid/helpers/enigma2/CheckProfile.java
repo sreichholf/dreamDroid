@@ -75,10 +75,9 @@ public class CheckProfile {
 							int vc = checkVersion(version);
 							if (vc >= 0) {
 								int[] requiredForSleeptimer = { 1, 6, 5 };
-								int[] requiredForNowNext = { 1, 6, 8 };
 								if (checkVersion(version, requiredForSleeptimer) >= 0)
 									DreamDroid.enableSleepTimer();
-								if (checkVersion(version, requiredForNowNext) >= 0)
+								if (checkVersion(version, FEATURE_EPGNOWNEXT_VERSION) >= 0)
 									DreamDroid.enableNowNext();
 
 								addEntry(resultList, R.string.interface_version, false, version);
@@ -117,9 +116,9 @@ public class CheckProfile {
 	public static int checkVersion(String version, int[] required) {
 		String[] parts = version.split("\\.");
 
-		for (int i = 0; i < REQUIRED_VERSION.length; i++) {
+		for (int i = 0; i < required.length; i++) {
 			int cur = 0;
-			int req = REQUIRED_VERSION[i];
+			int req = required[i];
 
 			if (parts.length >= i + 1) {
 				try {
@@ -129,7 +128,7 @@ public class CheckProfile {
 			}
 
 			if (cur == req) {
-				if ((i + 1) == REQUIRED_VERSION.length) {
+				if ((i + 1) == required.length) {
 					return 0;
 				}
 				continue;

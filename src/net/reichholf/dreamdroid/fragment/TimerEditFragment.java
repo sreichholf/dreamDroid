@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -303,7 +304,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		Button buttonApply;
 
 		applyViewValues();
-
+		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 		switch (id) {
 
 		case (Statics.DIALOG_TIMER_PICK_BEGIN_ID):
@@ -313,6 +314,15 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			dialog.setContentView(R.layout.date_time_picker);
 			dialog.setTitle(R.string.set_time_begin);
 
+			if (currentapiVersion >= 11) {
+				DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
+				try {
+					Method m = dp.getClass().getMethod("setCalendarViewShown", boolean.class);
+					m.invoke(dp, false);
+				}
+				catch (Exception e) {} // eat exception in our case
+			}
+			
 			setDateAndTimePicker(dialog, cal);
 			dialogRegisterCancel(dialog);
 
@@ -333,7 +343,16 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			dialog = new Dialog(getSherlockActivity());
 			dialog.setContentView(R.layout.date_time_picker);
 			dialog.setTitle(R.string.set_time_end);
-
+			
+			if (currentapiVersion >= 11) {
+				DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
+				try {
+					Method m = dp.getClass().getMethod("setCalendarViewShown", boolean.class);
+					m.invoke(dp, false);
+				}
+				catch (Exception e) {} // eat exception in our case
+			}
+			
 			setDateAndTimePicker(dialog, cal);
 			dialogRegisterCancel(dialog);
 
