@@ -205,25 +205,29 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	 */
 	@Override
 	protected void applyData(int loaderId, ExtendedHashMap content) {
-		mCurrent = content;
-		mCurrentServiceReady = true;
-
-		mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
-		@SuppressWarnings("unchecked")
-		ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
-		mNow = events.get(0);
-		mNext = events.get(1);
-
-		mServiceName.setText(mService.getString(CurrentService.KEY_SERVICE_NAME));
-		mProvider.setText(mService.getString(CurrentService.KEY_SERVICE_PROVIDER));
-		// Now
-		mNowStart.setText(mNow.getString(Event.KEY_EVENT_START_READABLE));
-		mNowTitle.setText(mNow.getString(Event.KEY_EVENT_TITLE));
-		mNowDuration.setText(mNow.getString(Event.KEY_EVENT_DURATION_READABLE));
-		// Next
-		mNextStart.setText(mNext.getString(Event.KEY_EVENT_START_READABLE));
-		mNextTitle.setText(mNext.getString(Event.KEY_EVENT_TITLE));
-		mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
+		if(content != null){
+			mCurrent = content;
+			mCurrentServiceReady = true;
+	
+			mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
+			@SuppressWarnings("unchecked")
+			ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
+			mNow = events.get(0);
+			mNext = events.get(1);
+	
+			mServiceName.setText(mService.getString(CurrentService.KEY_SERVICE_NAME));
+			mProvider.setText(mService.getString(CurrentService.KEY_SERVICE_PROVIDER));
+			// Now
+			mNowStart.setText(mNow.getString(Event.KEY_EVENT_START_READABLE));
+			mNowTitle.setText(mNow.getString(Event.KEY_EVENT_TITLE));
+			mNowDuration.setText(mNow.getString(Event.KEY_EVENT_DURATION_READABLE));
+			// Next
+			mNextStart.setText(mNext.getString(Event.KEY_EVENT_START_READABLE));
+			mNextTitle.setText(mNext.getString(Event.KEY_EVENT_TITLE));
+			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
+		} else {
+			showToast(getText(R.string.not_available));
+		}
 	}
 
 	/**

@@ -33,6 +33,7 @@ public class AsyncSimpleLoader extends AsyncTaskLoader<ExtendedHashMap> {
 		init(context, handler, args);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void init(Context context, AbstractSimpleRequestHandler handler, Bundle args) {
 		mHandler = handler;
 		mShc = new SimpleHttpClient();
@@ -63,9 +64,11 @@ public class AsyncSimpleLoader extends AsyncTaskLoader<ExtendedHashMap> {
 			xml = mHandler.get(mShc, mParams);
 
 		if (xml != null) {
-			mHandler.parse(xml, content);
+			if (mHandler.parse(xml, content)) {
+				return content;
+			}
 		}
-		return content;
+		return null;
 	}
 
 }

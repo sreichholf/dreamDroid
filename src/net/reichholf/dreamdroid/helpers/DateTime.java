@@ -27,13 +27,13 @@ public class DateTime {
 	 * @return
 	 */
 	public static int getRemaining(String duration, String eventstart) {
-		if(duration == null || eventstart == null || Python.NONE.equals(duration) || Python.NONE.equals(eventstart)){
+		if(duration == null || Python.NONE.equals(duration)){
 			return 0;
 		}
 		
 		long d = Double.valueOf(duration).longValue();
 		
-		if (eventstart != null) {
+		if (eventstart != null && ! Python.NONE.equals(eventstart)) {
 			try {
 				long s = Double.valueOf(eventstart).longValue() * 1000;
 				Date now = new Date();
@@ -61,14 +61,14 @@ public class DateTime {
 	 * @return
 	 */
 	public static String getDurationString(String duration, String eventstart) {
-		if(duration == null || eventstart == null || Python.NONE.equals(duration) || Python.NONE.equals(eventstart)){
+		if(duration == null || Python.NONE.equals(duration)){
 			return "0";
 		}
 		
 		long d = Double.valueOf(duration).longValue();
 		String durationPrefix = "";
 
-		if (eventstart != null) {
+		if (eventstart != null && !Python.NONE.equals(eventstart)) {
 			try {
 				long s = Double.valueOf(eventstart).longValue() * 1000;
 				Date now = new Date();

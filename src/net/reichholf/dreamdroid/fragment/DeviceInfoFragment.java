@@ -203,6 +203,8 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 			mInfo.clear();
 			mInfo.putAll(content);
 			onInfoReady();
+		} else {
+			showToast(getText(R.string.not_available));
 		}
 	}
 }

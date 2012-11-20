@@ -432,7 +432,6 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 		mCurrentTitle = getLoadFinishedTitle();
 		getSherlockActivity().setTitle(mCurrentTitle);
-
 		applyData(loader.getId(), content);
 	}
 
@@ -450,7 +449,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	 * android.os.Bundle)
 	 */
 	@Override
-	public Loader<ExtendedHashMap> onCreateLoader(int arg0, Bundle arg1) {
+	public Loader<ExtendedHashMap> onCreateLoader(int id, Bundle args) {
 		return null;
 	}
 
