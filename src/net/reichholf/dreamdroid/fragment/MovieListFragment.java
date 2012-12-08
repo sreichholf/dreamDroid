@@ -27,6 +27,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteReques
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -215,7 +216,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 			return super.onItemClicked(id);
 		}
 	}
-	
+
 	protected void pickTags() {
 		CharSequence[] tags = new CharSequence[DreamDroid.getTags().size()];
 		boolean[] selectedTags = new boolean[DreamDroid.getTags().size()];
@@ -255,26 +256,26 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 				dialog.dismiss();
 			}
 		};
-		
-		
-		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags, new OnMultiChoiceClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-				String tag = DreamDroid.getTags().get(which);
-				mTagsChanged = true;
-				if (isChecked) {
-					if (!mSelectedTags.contains(tag)) {
-						mSelectedTags.add(tag);
+
+		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags,
+				new OnMultiChoiceClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+						String tag = DreamDroid.getTags().get(which);
+						mTagsChanged = true;
+						if (isChecked) {
+							if (!mSelectedTags.contains(tag)) {
+								mSelectedTags.add(tag);
+							}
+						} else {
+							int idx = mSelectedTags.indexOf(tag);
+							if (idx >= 0) {
+								mSelectedTags.remove(idx);
+							}
+						}
 					}
-				} else {
-					int idx = mSelectedTags.indexOf(tag);
-					if (idx >= 0) {
-						mSelectedTags.remove(idx);
-					}
-				}
-			}
-		}, positiveListener, negativeListener, R.string.ok, R.string.cancel);
-		
+				}, positiveListener, negativeListener, R.string.ok, R.string.cancel);
+
 		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
 	}
 
@@ -358,14 +359,15 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 	}
 
 	@Override
-	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new MovieListRequestHandler(), true, args);
 		return loader;
 	}
 
 	@Override
-	public void onLoadFinished(Loader<ArrayList<ExtendedHashMap>> loader, ArrayList<ExtendedHashMap> list) {
-		super.onLoadFinished(loader, list);
+	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+			LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		super.onLoadFinished(loader, result);
 
 		mLocationAdapter.clear();
 		for (String location : DreamDroid.getLocations()) {
@@ -384,9 +386,10 @@ public class MovieListFragment extends AbstractHttpListFragment implements Primi
 			break;
 
 		case Statics.ACTION_DELETE:
-			getMultiPaneHandler().showDialogFragment(PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE),
-					R.string.delete_confirm, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED,
-					android.R.string.no, Statics.ACTION_NONE), "dialog_delete_movie_confirm");
+			getMultiPaneHandler().showDialogFragment(
+					PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE), R.string.delete_confirm,
+							android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
+							Statics.ACTION_NONE), "dialog_delete_movie_confirm");
 			break;
 
 		case Statics.ACTION_DELETE_CONFIRMED:

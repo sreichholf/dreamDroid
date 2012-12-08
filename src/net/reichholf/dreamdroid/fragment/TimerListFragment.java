@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 
@@ -81,7 +82,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Primi
 		mTimer = mMapList.get((int) id);
 		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 		int[] actionIds = { Statics.ACTION_EDIT, Statics.ACTION_DELETE };
-		
+
 		SimpleChoiceDialog dia = SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds);
 		getMultiPaneHandler().showDialogFragment(dia, "dialog_timer_selected");
 	}
@@ -194,7 +195,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Primi
 	}
 
 	@Override
-	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new TimerListRequestHandler(), false, args);
 		return loader;
 	}

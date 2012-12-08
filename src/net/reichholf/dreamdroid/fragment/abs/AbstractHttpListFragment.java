@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -47,7 +48,7 @@ import com.actionbarsherlock.view.MenuItem;
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<ArrayList<ExtendedHashMap>> {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>> {
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
@@ -189,7 +190,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
+
 		getListView().setFastScrollEnabled(true);
 		try {
 			setEmptyText(getText(R.string.loading));
@@ -505,25 +506,28 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
-	public void onLoadFinished(Loader<ArrayList<ExtendedHashMap>> loader, ArrayList<ExtendedHashMap> list) {
+	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+			LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		mMapList.clear();
-		if (list != null) {
-			mCurrentTitle = getLoadFinishedTitle();
-			getSherlockActivity().setTitle(mCurrentTitle);
-
-			if (list.size() == 0)
-				setEmptyText(getText(R.string.no_list_item));
-			else
-				mMapList.addAll(list);
-		} else {
-			setEmptyText(getText(R.string.error));
+		if (result.isError()) {
+			setEmptyText(result.getErrorText());
+			return;
 		}
+
+		ArrayList<ExtendedHashMap> list = result.getResult();
+		mCurrentTitle = getLoadFinishedTitle();
+		getSherlockActivity().setTitle(mCurrentTitle);
+
+		if (list.size() == 0)
+			setEmptyText(getText(R.string.no_list_item));
+		else
+			mMapList.addAll(list);
 		mAdapter.notifyDataSetChanged();
 	}
 
 	@Override
-	public void onLoaderReset(Loader<ArrayList<ExtendedHashMap>> loader) {
+	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 	}
 }

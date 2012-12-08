@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.loader;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
@@ -24,7 +25,7 @@ import android.util.Log;
  * @author sre
  * 
  */
-public class AsyncListLoader extends AsyncTaskLoader<ArrayList<ExtendedHashMap>> {
+public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<ExtendedHashMap>>> {
 	protected ArrayList<ExtendedHashMap> mList;
 	protected ListRequestInterface mListRequestHandler;
 	protected boolean mRequireLocsAndTags;
@@ -36,6 +37,7 @@ public class AsyncListLoader extends AsyncTaskLoader<ArrayList<ExtendedHashMap>>
 	/**
 	 * @param context
 	 */
+	@SuppressWarnings("unchecked")
 	public AsyncListLoader(Context context, ListRequestInterface listRequestHandler, boolean requireLocsAndTags,
 			Bundle args) {
 		super(context);
@@ -61,7 +63,7 @@ public class AsyncListLoader extends AsyncTaskLoader<ArrayList<ExtendedHashMap>>
 	}
 
 	@Override
-	public ArrayList<ExtendedHashMap> loadInBackground() {
+	public LoaderResult<ArrayList<ExtendedHashMap>> loadInBackground() {
 		if (mListRequestHandler == null) {
 			throw new UnsupportedOperationException(
 					"Method doInBackground not re-implemented while no ListRequestHandler has been given");
@@ -82,14 +84,22 @@ public class AsyncListLoader extends AsyncTaskLoader<ArrayList<ExtendedHashMap>>
 		}
 
 		mList = new ArrayList<ExtendedHashMap>();
+		LoaderResult<ArrayList<ExtendedHashMap>> result = new LoaderResult<ArrayList<ExtendedHashMap>>();
 
 		String xml = mListRequestHandler.getList(mShc, mParams);
 		if (xml != null) {
 			mList.clear();
 			if (mListRequestHandler.parseList(xml, mList))
-				return mList;
+				result.set(mList);
+			else
+				result.set(getContext().getString(R.string.error_parsing));
+		} else {
+			if (mShc.hasError())
+				result.set(mShc.getErrorText());
+			else
+				result.set(getContext().getString(R.string.error));
 		}
-		return null;
+		return result;
 	}
 
 }

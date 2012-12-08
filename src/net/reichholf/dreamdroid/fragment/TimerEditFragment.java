@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.lang.reflect.Method;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -319,10 +320,10 @@ public class TimerEditFragment extends AbstractHttpFragment {
 				try {
 					Method m = dp.getClass().getMethod("setCalendarViewShown", boolean.class);
 					m.invoke(dp, false);
-				}
-				catch (Exception e) {} // eat exception in our case
+				} catch (Exception e) {
+				} // eat exception in our case
 			}
-			
+
 			setDateAndTimePicker(dialog, cal);
 			dialogRegisterCancel(dialog);
 
@@ -343,16 +344,16 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			dialog = new Dialog(getSherlockActivity());
 			dialog.setContentView(R.layout.date_time_picker);
 			dialog.setTitle(R.string.set_time_end);
-			
+
 			if (currentapiVersion >= 11) {
 				DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
 				try {
 					Method m = dp.getClass().getMethod("setCalendarViewShown", boolean.class);
 					m.invoke(dp, false);
-				}
-				catch (Exception e) {} // eat exception in our case
+				} catch (Exception e) {
+				} // eat exception in our case
 			}
-			
+
 			setDateAndTimePicker(dialog, cal);
 			dialogRegisterCancel(dialog);
 
@@ -574,8 +575,9 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		Date dateBegin = new Date(b);
 		Date dateEnd = new Date(e);
 
-		mStart.setText(dateBegin.toLocaleString());
-		mEnd.setText(dateEnd.toLocaleString());
+		DateFormat df = DateFormat.getDateTimeInstance();
+		mStart.setText(df.format(dateBegin));
+		mEnd.setText(df.format(dateEnd));
 
 		// Repeatings
 		int repeatedValue = Integer.valueOf(mTimer.getString(Timer.KEY_REPEATED));

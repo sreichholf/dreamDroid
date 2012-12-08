@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.loader;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractSimpleRequestHandler;
@@ -22,7 +23,7 @@ import android.support.v4.content.AsyncTaskLoader;
  * @author sre
  * 
  */
-public class AsyncSimpleLoader extends AsyncTaskLoader<ExtendedHashMap> {
+public class AsyncSimpleLoader extends AsyncTaskLoader< LoaderResult<ExtendedHashMap> > {
 
 	private AbstractSimpleRequestHandler mHandler;
 	private SimpleHttpClient mShc;
@@ -55,20 +56,27 @@ public class AsyncSimpleLoader extends AsyncTaskLoader<ExtendedHashMap> {
 	}
 
 	@Override
-	public ExtendedHashMap loadInBackground() {
+	public LoaderResult<ExtendedHashMap> loadInBackground() {
 		ExtendedHashMap content = new ExtendedHashMap();
 		String xml = null;
 		if (mParams == null)
 			xml = mHandler.get(mShc);
 		else
 			xml = mHandler.get(mShc, mParams);
-
+		
+		LoaderResult<ExtendedHashMap> result = new LoaderResult<ExtendedHashMap>();
 		if (xml != null) {
-			if (mHandler.parse(xml, content)) {
-				return content;
-			}
+			if (mHandler.parse(xml, content))
+				result.set(content);
+			else
+				result.set(getContext().getString(R.string.error_parsing));
+		} else {
+			if(mShc.hasError())
+				result.set(mShc.getErrorText());
+			else
+				result.set(getContext().getString(R.string.error));
 		}
-		return null;
+		return result;
 	}
 
 }

@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -49,7 +50,7 @@ import com.actionbarsherlock.view.MenuItem;
  * 
  */
 public abstract class AbstractHttpFragment extends DreamDroidFragment implements
-		LoaderManager.LoaderCallbacks<ExtendedHashMap> {
+		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>> {
 
 	protected final String sData = "data";
 
@@ -427,16 +428,20 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	}
 
 	@Override
-	public void onLoadFinished(Loader<ExtendedHashMap> loader, ExtendedHashMap content) {
+	public void onLoadFinished(Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		mCurrentTitle = getLoadFinishedTitle();
 		getSherlockActivity().setTitle(mCurrentTitle);
-		applyData(loader.getId(), content);
+		if (result.isError()) {
+			showToast(result.getErrorText());
+			return;
+		}
+		applyData(loader.getId(), result.getResult());
 	}
 
 	@Override
-	public void onLoaderReset(Loader<ExtendedHashMap> loader) {
+	public void onLoaderReset(Loader<LoaderResult<ExtendedHashMap>> loader) {
 	}
 
 	/*
@@ -449,7 +454,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	 * android.os.Bundle)
 	 */
 	@Override
-	public Loader<ExtendedHashMap> onCreateLoader(int id, Bundle args) {
+	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		return null;
 	}
 

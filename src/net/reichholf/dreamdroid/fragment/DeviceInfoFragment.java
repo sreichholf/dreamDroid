@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
@@ -190,7 +191,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	}
 
 	@Override
-	public Loader<ExtendedHashMap> onCreateLoader(int id, Bundle args) {
+	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new DeviceInfoRequestHandler(), args);
 		return loader;
 	}

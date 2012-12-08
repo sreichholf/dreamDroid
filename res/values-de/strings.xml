@@ -202,4 +202,5 @@
 <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
+<string name="error_parsing">Fehler beim Einlesen der Daten!</string>
 </resources>

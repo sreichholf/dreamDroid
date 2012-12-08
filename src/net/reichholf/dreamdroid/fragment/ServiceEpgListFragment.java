@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -42,17 +43,16 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
+
 		if (mReference != null) {
 			setAdapter();
-			if(mMapList.size() <= 0)
+			if (mMapList.size() <= 0)
 				reload();
 		} else {
 			finish();
 		}
 	}
 
-	
 	/**
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
@@ -71,12 +71,12 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	}
 
 	@Override
-	protected String getLoadFinishedTitle(){
+	protected String getLoadFinishedTitle() {
 		return mBaseTitle + " - " + mName;
 	}
-	
+
 	@Override
-	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new EventListRequestHandler(), false, args);
 		return loader;
 	}

@@ -25,6 +25,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -619,7 +620,7 @@ public class NavigationFragment extends AbstractHttpListFragment {
 	}
 
 	@Override
-	public Loader<ArrayList<ExtendedHashMap>> onCreateLoader(int arg0, Bundle arg1) {
+	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int arg0, Bundle arg1) {
 		return null;
 	}
 	

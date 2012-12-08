@@ -24,6 +24,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceReq
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -205,16 +206,16 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	 */
 	@Override
 	protected void applyData(int loaderId, ExtendedHashMap content) {
-		if(content != null){
+		if (content != null) {
 			mCurrent = content;
 			mCurrentServiceReady = true;
-	
+
 			mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
 			@SuppressWarnings("unchecked")
 			ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
 			mNow = events.get(0);
 			mNext = events.get(1);
-	
+
 			mServiceName.setText(mService.getString(CurrentService.KEY_SERVICE_NAME));
 			mProvider.setText(mService.getString(CurrentService.KEY_SERVICE_PROVIDER));
 			// Now
@@ -295,7 +296,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Prim
 	}
 
 	@Override
-	public Loader<ExtendedHashMap> onCreateLoader(int id, Bundle args) {
+	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new CurrentServiceRequestHandler(),
 				args);
 		return loader;
