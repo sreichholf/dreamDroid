@@ -33,6 +33,11 @@ public class SimpleChoiceDialog extends PrimitiveDialog {
 		mActionIds = actionIds;
 	}
 
+	public SimpleChoiceDialog(CharSequence[] actions, int[] actionIds, boolean autoDismiss) {
+		mActions = actions;
+		mActionIds = actionIds;
+	}
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);

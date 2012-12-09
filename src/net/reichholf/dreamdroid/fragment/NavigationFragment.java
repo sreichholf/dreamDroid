@@ -15,6 +15,8 @@ import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -58,7 +60,8 @@ import com.michaelnovakjr.numberpicker.NumberPicker;
  * @author sreichholf
  * 
  */
-public class NavigationFragment extends AbstractHttpListFragment {
+public class NavigationFragment extends AbstractHttpListFragment implements PrimitiveDialog.DialogActionListener {
+
 	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (1=yes,
 	// 0=no) ]
 	public static final int[][] MENU_ITEMS = {
@@ -174,7 +177,8 @@ public class NavigationFragment extends AbstractHttpListFragment {
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			mProgressDialogFragment = SimpleProgressDialog.newInstance(getString(R.string.sleeptimer), getString(R.string.loading));
+			mProgressDialogFragment = SimpleProgressDialog.newInstance(getString(R.string.sleeptimer),
+					getString(R.string.loading));
 			getMultiPaneHandler().showDialogFragment(mProgressDialogFragment, "dialog_sleeptimer_progress");
 		}
 
@@ -512,7 +516,13 @@ public class NavigationFragment extends AbstractHttpListFragment {
 			return true;
 
 		case Statics.ITEM_POWERSTATE_DIALOG:
-			getSherlockActivity().showDialog(Statics.DIALOG_SET_POWERSTATE_ID);
+			CharSequence[] actions = { getText(R.string.standby), getText(R.string.restart_gui),
+					getText(R.string.reboot), getText(R.string.shutdown) };
+			int[] actionIds = { Statics.ITEM_TOGGLE_STANDBY, Statics.ITEM_RESTART_GUI, Statics.ITEM_REBOOT,
+					Statics.ITEM_SHUTDOWN };
+			getMultiPaneHandler().showDialogFragment(
+					SimpleChoiceDialog.newInstance(getString(R.string.powercontrol), actions, actionIds),
+					"powerstate_dialog");
 			return true;
 
 		case Statics.ITEM_ABOUT:
@@ -623,8 +633,19 @@ public class NavigationFragment extends AbstractHttpListFragment {
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int arg0, Bundle arg1) {
 		return null;
 	}
-	
-	private FragmentMainActivity getMainActivity(){
+
+	private FragmentMainActivity getMainActivity() {
 		return (FragmentMainActivity) getSherlockActivity();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog.
+	 * DialogActionListener#onDialogAction(int)
+	 */
+	@Override
+	public void onDialogAction(int action) {
+		onItemClicked(action);
 	}
 }
