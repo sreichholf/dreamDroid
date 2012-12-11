@@ -15,9 +15,12 @@ import net.reichholf.dreamdroid.activities.FragmentMainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -32,26 +35,15 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioGroup;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
-import com.michaelnovakjr.numberpicker.NumberPicker;
 
 /**
  * This is where all begins. It's the "main menu activity" which acts as central
@@ -60,7 +52,8 @@ import com.michaelnovakjr.numberpicker.NumberPicker;
  * @author sreichholf
  * 
  */
-public class NavigationFragment extends AbstractHttpListFragment implements PrimitiveDialog.DialogActionListener {
+public class NavigationFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
+		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
 	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (1=yes,
 	// 0=no) ]
@@ -84,8 +77,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 	private int[] mCurrent;
 	private int mCurrentListItem;
 	private boolean mHighlightCurrent;
-
-	private ExtendedHashMap mSleepTimer;
 
 	private SetPowerStateTask mSetPowerStateTask;
 	private SleepTimerTask mSleepTimerTask;
@@ -198,7 +189,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 	 * @param action
 	 * @param enabled
 	 */
-	private void setSleepTimer(String time, String action, boolean enabled) {
+	public void onSetSleepTimer(String time, String action, boolean enabled) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("cmd", SleepTimer.CMD_SET));
 		params.add(new BasicNameValuePair("time", time));
@@ -219,7 +210,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 	private void getSleepTimer(boolean showDialogOnFinish) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		execSleepTimerTask(params, showDialogOnFinish);
-
 	}
 
 	/**
@@ -241,7 +231,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
-		mSleepTimer = new ExtendedHashMap();
 		mCurrentListItem = -1;
 
 		setHasOptionsMenu(true);
@@ -306,147 +295,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 		inflater.inflate(R.menu.preferences, menu);
 	}
 
-	public Dialog onCreateDialog(int id) {
-		final Dialog dialog;
-
-		switch (id) {
-		case Statics.DIALOG_SEND_MESSAGE_ID:
-			dialog = new Dialog(getMainActivity());
-			dialog.setContentView(R.layout.send_message_dialog);
-			dialog.setTitle(R.string.send_message);
-
-			Button buttonCancel = (Button) dialog.findViewById(R.id.ButtonCancel);
-			buttonCancel.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dialog.dismiss();
-				}
-			});
-
-			Button buttonSend = (Button) dialog.findViewById(R.id.ButtonSend);
-			buttonSend.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					EditText text = (EditText) dialog.findViewById(R.id.EditTextMessage);
-					EditText timeout = (EditText) dialog.findViewById(R.id.EditTextTimeout);
-
-					Spinner type = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
-					String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
-
-					sendMessage(text.getText().toString(), t, timeout.getText().toString());
-				}
-			});
-
-			Spinner spinnerType = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
-			spinnerType.setSelection(2);
-
-			break;
-
-		case Statics.DIALOG_SET_POWERSTATE_ID:
-			dialog = new Dialog(getMainActivity());
-			dialog.setContentView(R.layout.powercontrol);
-			dialog.setTitle(R.string.powercontrol);
-
-			Button buttonToggle = (Button) dialog.findViewById(R.id.ButtonToggle);
-			Button buttonGui = (Button) dialog.findViewById(R.id.ButtonGui);
-			Button buttonReboot = (Button) dialog.findViewById(R.id.ButtonReboot);
-			Button buttonShutdown = (Button) dialog.findViewById(R.id.ButtonShutdown);
-
-			registerOnClickListener(buttonToggle, Statics.ITEM_TOGGLE_STANDBY);
-			registerOnClickListener(buttonGui, Statics.ITEM_RESTART_GUI);
-			registerOnClickListener(buttonReboot, Statics.ITEM_REBOOT);
-			registerOnClickListener(buttonShutdown, Statics.ITEM_SHUTDOWN);
-
-			break;
-
-		case Statics.DIALOG_ABOUT_ID:
-			dialog = new Dialog(getMainActivity());
-			dialog.setContentView(R.layout.about);
-			dialog.setTitle(R.string.about);
-
-			TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
-			CharSequence text = DreamDroid.VERSION_STRING + "\n\n" + getText(R.string.license) + "\n\n"
-					+ getText(R.string.source_code_link);
-			aboutText.setText(text);
-
-			Button buttonDonate = (Button) dialog.findViewById(R.id.ButtonDonate);
-			buttonDonate.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					Uri uriUrl = Uri
-							.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=stephan%40reichholf%2enet&item_name=dreamDroid&lc=EN&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted");
-					Intent i = new Intent(Intent.ACTION_VIEW, uriUrl);
-					startActivity(i);
-				}
-			});
-
-			break;
-
-		case Statics.DIALOG_SLEEPTIMER_ID:
-			dialog = new Dialog(getMainActivity());
-			dialog.setContentView(R.layout.sleeptimer);
-			dialog.setTitle(R.string.sleeptimer);
-			final NumberPicker time = (NumberPicker) dialog.findViewById(R.id.NumberPicker);
-			final CheckBox enabled = (CheckBox) dialog.findViewById(R.id.CheckBoxEnabled);
-			final RadioGroup action = (RadioGroup) dialog.findViewById(R.id.RadioGroupAction);
-
-			time.setRange(0, 999);
-
-			int min = 90;
-			try {
-				min = Integer.parseInt(mSleepTimer.getString(SleepTimer.KEY_MINUTES));
-			} catch (NumberFormatException nfe) {
-			}
-
-			boolean enable = Python.TRUE.equals(mSleepTimer.getString(SleepTimer.KEY_ENABLED));
-			String act = mSleepTimer.getString(SleepTimer.KEY_ACTION);
-
-			time.setCurrent(min);
-			enabled.setChecked(enable);
-
-			if (SleepTimer.ACTION_SHUTDOWN.equals(act)) {
-				action.check(R.id.RadioButtonShutdown);
-			} else {
-				action.check(R.id.RadioButtonStandby);
-			}
-
-			Button buttonCloseSleepTimer = (Button) dialog.findViewById(R.id.ButtonClose);
-			buttonCloseSleepTimer.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dialog.dismiss();
-				}
-
-			});
-
-			Button buttonSaveSleepTimer = (Button) dialog.findViewById(R.id.ButtonSave);
-			buttonSaveSleepTimer.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					String t = Integer.valueOf(time.getCurrent()).toString();
-					int id = action.getCheckedRadioButtonId();
-					String a = SleepTimer.ACTION_STANDBY;
-
-					if (id == R.id.RadioButtonShutdown) {
-						a = SleepTimer.ACTION_SHUTDOWN;
-					}
-
-					setSleepTimer(t, a, enabled.isChecked());
-					dialog.dismiss();
-				}
-			});
-
-			break;
-		case Statics.DIALOG_SLEEPTIMER_PROGRESS_ID:
-			dialog = ProgressDialog.show(getMainActivity(), getText(R.string.sleeptimer), getText(R.string.loading));
-			break;
-		default:
-			dialog = null;
-		}
-
-		return dialog;
-	}
-
 	/**
 	 * Execute the proper action for a item ID (<code>ITEM_*</code> statics)
 	 * 
@@ -488,7 +336,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 			return true;
 
 		case Statics.ITEM_MESSAGE:
-			getSherlockActivity().showDialog(Statics.DIALOG_SEND_MESSAGE_ID);
+			getMultiPaneHandler().showDialogFragment(SendMessageDialog.newInstance(), "sendmessage_dialog");
 			return true;
 
 		case Statics.ITEM_EPG_SEARCH:
@@ -526,7 +374,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 			return true;
 
 		case Statics.ITEM_ABOUT:
-			getSherlockActivity().showDialog(Statics.DIALOG_ABOUT_ID);
+			getMultiPaneHandler().showDialogFragment(AboutDialog.newInstance(), "about_dialog");
 			return true;
 
 		case Statics.ITEM_CHECK_CONN:
@@ -590,7 +438,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 	 * @param timeout
 	 *            Timeout for the message, 0 means no timeout will occur
 	 */
-	private void sendMessage(String text, String type, String timeout) {
+	public void onSendMessage(String text, String type, String timeout) {
 		ExtendedHashMap msg = new ExtendedHashMap();
 		msg.put(Message.KEY_TEXT, text);
 		msg.put(Message.KEY_TYPE, type);
@@ -609,9 +457,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Prim
 	 */
 	private void onSleepTimerResult(boolean success, ExtendedHashMap sleepTimer, boolean openDialog) {
 		if (success) {
-			mSleepTimer = sleepTimer;
 			if (openDialog) {
-				getSherlockActivity().showDialog(Statics.DIALOG_SLEEPTIMER_ID);
+				getMultiPaneHandler().showDialogFragment(SleepTimerDialog.newInstance(sleepTimer), "sleeptimer_dialog");
 				return;
 			}
 			String text = sleepTimer.getString(SleepTimer.KEY_TEXT);

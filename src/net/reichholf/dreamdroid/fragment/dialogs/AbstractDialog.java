@@ -13,17 +13,7 @@ import android.support.v4.app.DialogFragment;
  * @author sre
  * 
  */
-public abstract class PrimitiveDialog extends DialogFragment {
-
-	protected void finishDialog(int action) {
-		((DialogActionListener) getActivity()).onDialogAction(action);
-		dismiss();
-	}
-
-	public interface DialogActionListener {
-		public void onDialogAction(int action);
-	}
-
+public class AbstractDialog extends DialogFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

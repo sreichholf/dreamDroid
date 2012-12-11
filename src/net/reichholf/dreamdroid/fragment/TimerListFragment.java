@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -45,7 +45,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sreichholf
  * 
  */
-public class TimerListFragment extends AbstractHttpListFragment implements PrimitiveDialog.DialogActionListener {
+public class TimerListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
 

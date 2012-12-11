@@ -14,7 +14,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -59,7 +59,7 @@ import com.actionbarsherlock.view.MenuInflater;
  * @author sreichholf
  * 
  */
-public class MovieListFragment extends AbstractHttpListFragment implements PrimitiveDialog.DialogActionListener {
+public class MovieListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
 	private String mCurrentLocation;
 
 	private boolean mTagsChanged;

@@ -13,7 +13,7 @@ import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
@@ -45,7 +45,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sre
  * 
  */
-public class ProfileListFragment extends DreamDroidListFragment implements PrimitiveDialog.DialogActionListener {
+public class ProfileListFragment extends DreamDroidListFragment implements ActionDialog.DialogActionListener {
 	private Profile mProfile;
 	private ArrayList<Profile> mDetectedProfiles;
 

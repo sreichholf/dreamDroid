@@ -14,7 +14,7 @@ import android.os.Bundle;
  * @author sre
  * 
  */
-public class SimpleProgressDialog extends PrimitiveDialog {
+public class SimpleProgressDialog extends ActionDialog {
 	String mTitle;
 	String mMessage;
 

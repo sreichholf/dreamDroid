@@ -16,7 +16,7 @@ import android.os.Bundle;
  * @author sre
  * 
  */
-public class SimpleChoiceDialog extends PrimitiveDialog {
+public class SimpleChoiceDialog extends ActionDialog {
 	private int[] mActionIds;
 	private CharSequence[] mActions;
 

@@ -9,7 +9,7 @@ package net.reichholf.dreamdroid.fragment.abs;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -27,7 +27,7 @@ import android.widget.ListView;
  * 
  */
 public abstract class AbstractHttpEventListFragment extends AbstractHttpListFragment implements
-		PrimitiveDialog.DialogActionListener {
+		ActionDialog.DialogActionListener {
 
 	protected String mReference;
 	protected String mName;

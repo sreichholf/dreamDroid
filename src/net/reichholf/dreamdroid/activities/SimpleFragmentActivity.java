@@ -11,7 +11,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Intent;
@@ -33,7 +33,7 @@ import com.actionbarsherlock.view.MenuItem;
  * 
  */
 public class SimpleFragmentActivity extends SherlockFragmentActivity implements MultiPaneHandler,
-		PrimitiveDialog.DialogActionListener {
+		ActionDialog.DialogActionListener {
 	public static final int MENU_HOME = 89283794;
 
 	private Fragment mFragment;
@@ -280,7 +280,7 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	@Override
 	public void onDialogAction(int action) {
 		if (mFragment != null)
-			((PrimitiveDialog.DialogActionListener) mFragment).onDialogAction(action);
+			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action);
 
 	}
 }

@@ -15,7 +15,7 @@ import android.os.Bundle;
  * @author sre
  * 
  */
-public class PositiveNegativeDialog extends PrimitiveDialog {
+public class PositiveNegativeDialog extends ActionDialog {
 	private int mMessageId;
 	private int mPositiveText;
 	private int mPositiveId;

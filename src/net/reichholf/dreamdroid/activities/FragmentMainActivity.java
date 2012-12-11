@@ -6,9 +6,6 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import java.util.Arrays;
-import java.util.List;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.OnActiveProfileChangedListener;
 import net.reichholf.dreamdroid.Profile;
@@ -18,9 +15,10 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import net.reichholf.dreamdroid.fragment.ViewPagerNavigationFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import android.app.Dialog;
 import android.content.Intent;
@@ -42,17 +40,12 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
  * 
  */
 public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler,
-		OnActiveProfileChangedListener, DreamDroid.EpgSearchListener, PrimitiveDialog.DialogActionListener {
-	public static List<Integer> NAVIGATION_DIALOG_IDS = Arrays.asList(new
-	 Integer[] { 
-			 Statics.DIALOG_ABOUT_ID,
-			 Statics.DIALOG_SEND_MESSAGE_ID, Statics.DIALOG_SET_POWERSTATE_ID,
-			 Statics.DIALOG_SLEEPTIMER_ID,
-			 Statics.DIALOG_SLEEPTIMER_PROGRESS_ID });
+		OnActiveProfileChangedListener, DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
+		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
 	private boolean mMultiPane;
 
-//	private FragmentManager getSupportFragmentManager();
+	// private FragmentManager getSupportFragmentManager();
 	private NavigationFragment mNavigationFragment;
 
 	private TextView mActiveProfile;
@@ -115,7 +108,8 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		setProgressBarIndeterminateVisibility(false);
 
 		if (savedInstanceState != null) {
-			mNavigationFragment = (NavigationFragment) getSupportFragmentManager().getFragment(savedInstanceState, "navigation");
+			mNavigationFragment = (NavigationFragment) getSupportFragmentManager().getFragment(savedInstanceState,
+					"navigation");
 		}
 
 		DreamDroid.setActiveProfileChangedListener(this);
@@ -187,10 +181,6 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 			Log.i(DreamDroid.LOG_TAG, "Fragment not added, adding");
 			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());
 		}
-	}
-
-	private boolean isNavigationDialog(int id) {
-		return NAVIGATION_DIALOG_IDS.contains(id);
 	}
 
 	/*
@@ -357,11 +347,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-		if (isNavigationDialog(id) || callbackHandler == null) {
-			dialog = mNavigationFragment.onCreateDialog(id);
-		} else {
-			dialog = callbackHandler.onCreateDialog(id);
-		}
+		dialog = callbackHandler.onCreateDialog(id);
 
 		if (dialog == null) {
 			dialog = super.onCreateDialog(id);
@@ -465,7 +451,33 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	@Override
 	public void onDialogAction(int action) {
 		if (mDetailFragment != null)
-			((PrimitiveDialog.DialogActionListener) mDetailFragment).onDialogAction(action);
+			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action);
 
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog.
+	 * SleepTimerDialogActionListener#setSleepTimer(java.lang.String,
+	 * java.lang.String, boolean)
+	 */
+	@Override
+	public void onSetSleepTimer(String time, String action, boolean enabled) {
+		if (mNavigationFragment != null)
+			((SleepTimerDialog.SleepTimerDialogActionListener) mNavigationFragment).onSetSleepTimer(time, action,
+					enabled);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog.
+	 * SendMessageDialogActionListener#onSendMessage(java.lang.String,
+	 * java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void onSendMessage(String text, String type, String timeout) {
+		((SendMessageDialog.SendMessageDialogActionListener) mNavigationFragment).onSendMessage(text, type, timeout);
 	}
 }

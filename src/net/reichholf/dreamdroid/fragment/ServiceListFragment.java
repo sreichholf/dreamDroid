@@ -16,7 +16,7 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
@@ -74,7 +74,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sreichholf
  * 
  */
-public class ServiceListFragment extends AbstractHttpFragment implements PrimitiveDialog.DialogActionListener {
+public class ServiceListFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener {
 	public static final String SERVICE_REF_ROOT = "root";
 
 	private boolean mPickMode;

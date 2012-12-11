@@ -24,7 +24,7 @@ import android.widget.TextView;
  * @author sre
  * 
  */
-public class EpgDetailDialog extends PrimitiveDialog {
+public class EpgDetailDialog extends ActionDialog {
 	private ExtendedHashMap mCurrentItem;
 
 	public EpgDetailDialog() {
