@@ -20,7 +20,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
@@ -150,8 +150,8 @@ public class SimpleHttpClient {
 		String url = buildUrl(uri, parameters);
 
 		try {
-			HttpGet get = new HttpGet(url);
-			HttpResponse resp = mDhc.execute(get, mContext);
+			HttpPost request = new HttpPost(url);
+			HttpResponse resp = mDhc.execute(request, mContext);
 			StatusLine s = resp.getStatusLine();
 
 			if (s.getStatusCode() == HttpStatus.SC_OK) {
