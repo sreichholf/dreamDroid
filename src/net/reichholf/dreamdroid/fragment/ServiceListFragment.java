@@ -454,15 +454,16 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		outState.putSerializable("detailitems", mDetailItems);
 		outState.putParcelable("currentService", mCurrentService);
 
-		for (GetServiceListTask task : mListTasks) {
-			if (task != null) {
-				task.cancel(true);
-				mListTasks.remove(task);
-				task = null;
+		synchronized (mListTasks) {
+			for (GetServiceListTask task : mListTasks) {
+				if (task != null) {
+					task.cancel(true);
+					mListTasks.remove(task);
+					task = null;
 
+				}
 			}
 		}
-
 		super.onSaveInstanceState(outState);
 	}
 
@@ -714,11 +715,12 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 					CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
 							getText(R.string.zap), getText(R.string.stream) };
-					int[] actionIds = { Statics.ACTION_CURRENT, Statics.ACTION_EPG, Statics.ACTION_ZAP, Statics.ACTION_STREAM };
+					int[] actionIds = { Statics.ACTION_CURRENT, Statics.ACTION_EPG, Statics.ACTION_ZAP,
+							Statics.ACTION_STREAM };
 
-					getMultiPaneHandler().showDialogFragment(SimpleChoiceDialog.newInstance(
-							mCurrentService.getString(Event.KEY_SERVICE_NAME), actions, actionIds),
-							"service_action_dialog");
+					getMultiPaneHandler().showDialogFragment(
+							SimpleChoiceDialog.newInstance(mCurrentService.getString(Event.KEY_SERVICE_NAME), actions,
+									actionIds), "service_action_dialog");
 				}
 			}
 		}
@@ -793,7 +795,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	/**
 	 * @param task
 	 */
-	public void enqueueListTask(GetServiceListTask task) {
+	public synchronized void enqueueListTask(GetServiceListTask task) {
 		mListTasks.add(task);
 		if (mListTasks.size() == 1) {
 			nextListTaskPlease();
@@ -801,7 +803,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	}
 
 	@SuppressWarnings("unchecked")
-	public void nextListTaskPlease() {
+	public synchronized void nextListTaskPlease() {
 		if (mListTasks.size() > 0) {
 			GetServiceListTask task = mListTasks.get(0);
 
