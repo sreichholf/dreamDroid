@@ -10,6 +10,6 @@ package net.reichholf.dreamdroid;
  * @author sre
  *
  */
-public interface OnActiveProfileChangedListener{
+public interface ActiveProfileChangedListener{
 	public void onActiveProfileChanged(Profile p);
 }

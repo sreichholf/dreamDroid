@@ -6,44 +6,41 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+
 import net.reichholf.dreamdroid.DreamDroid;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-
-import android.util.Log;
+import org.apache.http.util.ByteArrayBuffer;
 
 /**
  * @author sreichholf
  * 
  */
 public class SimpleHttpClient {
-	private UsernamePasswordCredentials mCreds = null;
-	private DefaultHttpClient mDhc;
-	private HttpContext mContext;
+	// private UsernamePasswordCredentials mCreds = null;
+	// private HttpURLConnection mConnection;
+	// private DefaultHttpClient mDhc;
+	// private HttpContext mContext;
 
 	private String mPrefix;
 	private String mHostname;
@@ -64,29 +61,22 @@ public class SimpleHttpClient {
 	 *            SharedPreferences of the Base-Context
 	 */
 	public SimpleHttpClient() {
-		BasicHttpParams params = new BasicHttpParams();
-		params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);
+		try {
+			SSLContext context = SSLContext.getInstance("TLS");
+			context.init(null, new TrustManager[] { new EasyX509TrustManager(null) }, null);
+			HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+		} catch (KeyManagementException e) {
+		} catch (NoSuchAlgorithmException e) {
+		} catch (KeyStoreException e) {
+		}
 
-		mDhc = new DefaultHttpClient(getEasySSLClientConnectionManager(), params);
+		HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		});
 
-		mContext = new BasicHttpContext();
 		applyConfig();
-	}
-
-	/**
-	 * @return ThreadSafeClientConnManager Instance
-	 */
-	public ThreadSafeClientConnManager getEasySSLClientConnectionManager() {
-		BasicHttpParams params = new BasicHttpParams();
-
-		SchemeRegistry schemeRegistry = new SchemeRegistry();
-
-		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-		schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
-
-		ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
-
-		return cm;
 	}
 
 	/**
@@ -95,16 +85,19 @@ public class SimpleHttpClient {
 	 * @param pass
 	 *            Password for http-auth
 	 */
-	public void setCredentials(String user, String pass) {
-		mCreds = new UsernamePasswordCredentials(user, pass);
-		mDhc.getCredentialsProvider().setCredentials(AuthScope.ANY, mCreds);
+	public void setCredentials(final String user, final String pass) {
+		Authenticator.setDefault(new Authenticator() {
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(user, pass.toCharArray());
+			}
+		});
 	}
 
 	/**
 	 * 
 	 */
 	public void unsetCrendentials() {
-		mDhc.getCredentialsProvider().setCredentials(AuthScope.ANY, null);
+		// mDhc.getCredentialsProvider().setCredentials(AuthScope.ANY, null);
 	}
 
 	/**
@@ -147,60 +140,40 @@ public class SimpleHttpClient {
 			uri = "/".concat(uri);
 		}
 
-		String url = buildUrl(uri, parameters);
-
+		HttpURLConnection conn = null;
 		try {
-			HttpPost request = new HttpPost(url);
-			HttpResponse resp = mDhc.execute(request, mContext);
-			StatusLine s = resp.getStatusLine();
+			URL url = new URL(buildUrl(uri, parameters));
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setConnectTimeout(10000);
+			conn.setRequestMethod("POST");
 
-			if (s.getStatusCode() == HttpStatus.SC_OK) {
-				HttpEntity entity = resp.getEntity();
-				if (entity != null) {
-					mBytes = EntityUtils.toByteArray(entity);
-					return true;
-
-				} else {
-					mErrorText = "HttpEntity is null";
-					mError = true;
-				}
-
-			} else {
-				mErrorText = s.getStatusCode() + " - " + s.getReasonPhrase();
+			if (conn.getResponseCode() != 200) {
+				mErrorText = conn.getResponseMessage();
 				mError = true;
 				return false;
 			}
 
-		} catch (IllegalArgumentException e) {
-			Log.e(getClass().getSimpleName(), e.toString());
-			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
-			if (e.getMessage() != null) {
-				mErrorText += ": " + e.getMessage();
-			}
-			mError = true;
-			return false;
-
-		} catch (ClientProtocolException e) {
-			Log.e(getClass().getSimpleName(), e.toString());
-
-			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
-			if (e.getMessage() != null) {
-				mErrorText += ": " + e.getMessage();
+			BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
+			ByteArrayBuffer baf = new ByteArrayBuffer(50);
+			int read = 0;
+			int bufSize = 512;
+			byte[] buffer = new byte[bufSize];
+			while ((read = bis.read(buffer)) != -1) {
+				baf.append(buffer, 0, read);
 			}
 
-			mError = true;
-			return false;
+			mBytes = baf.toByteArray();
+			return true;
 
+		} catch (MalformedURLException e) {
+			mError = true;
+			mErrorText = e.toString();
 		} catch (IOException e) {
-			Log.e(getClass().getSimpleName(), e.toString());
-
-			mErrorText = e.getClass().getSimpleName().replace("Exception", "");
-			if (e.getMessage() != null) {
-				mErrorText += ": " + e.getMessage();
-			}
-
 			mError = true;
-			return false;
+			mErrorText = e.toString();
+		} finally {
+			if (conn != null)
+				conn.disconnect();
 		}
 
 		return false;

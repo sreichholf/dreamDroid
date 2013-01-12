@@ -7,7 +7,7 @@
 package net.reichholf.dreamdroid.activities;
 
 import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.OnActiveProfileChangedListener;
+import net.reichholf.dreamdroid.ActiveProfileChangedListener;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
@@ -40,7 +40,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
  * 
  */
 public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler,
-		OnActiveProfileChangedListener, DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
+		ActiveProfileChangedListener, DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
 	private boolean mMultiPane;

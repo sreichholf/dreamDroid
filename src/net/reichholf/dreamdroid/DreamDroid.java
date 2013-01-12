@@ -87,7 +87,7 @@ public class DreamDroid extends Application {
 	private static final String PROFILES_TABLE_UPGRADE_5_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_FILE_PORT + " INTEGER;";
 	
-	public static OnActiveProfileChangedListener onActiveProfileChangedListener = null;
+	public static ActiveProfileChangedListener onActiveProfileChangedListener = null;
 
 	private static boolean sFeatureSleeptimer = false;
 	private static boolean sFeatureNowNext = false;
@@ -360,7 +360,7 @@ public class DreamDroid extends Application {
 		return false;
 	}
 	
-	public static void setActiveProfileChangedListener(OnActiveProfileChangedListener listener){
+	public static void setActiveProfileChangedListener(ActiveProfileChangedListener listener){
 		onActiveProfileChangedListener = listener;
 	}
 
