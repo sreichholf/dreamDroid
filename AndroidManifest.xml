@@ -65,7 +65,6 @@
             android:name="android.app.default_searchable"
             android:value=".activities.SimpleFragmentActivity" >
         </meta-data>
-        <activity android:name="de.duenndns.ssl.MemorizingActivity"></activity>
     </application>
 
 </manifest>

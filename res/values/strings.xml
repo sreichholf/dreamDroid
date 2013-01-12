@@ -223,10 +223,6 @@
     <string name="autodiscover_dreamboxes">Dreambox Autodisocvery</string>
     <string name="autodiscovery_failed">Could not autodiscover any dreambox on your local network!</string>
     <string name="add_all">Add All</string>
-    <string name="error_parsing">An error occurred on parsing the data!</string>
-    <string name="mtm_accept_cert">Accept Unknown Certificate?</string>
-    <string name="mtm_decision_always">Always</string>
-    <string name="mtm_decision_once">Once</string>
-    <string name="mtm_decision_abort">Abort</string>
-    <string name="mtm_notification">Certificate Verification</string>
+    <string name="error_parsing">An error occured on parsing the data!</string>
+
 </resources>

@@ -8,8 +8,6 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import java.util.ArrayList;
 
-import android.content.Context;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -39,7 +37,7 @@ public class CheckProfile {
 	 * @param profile
 	 * @return
 	 */
-	public static ExtendedHashMap checkProfile(Context context, Profile profile) {
+	public static ExtendedHashMap checkProfile(Profile profile) {
 		int[] versionZero = { 0, 0, 0 };
 		CURRENT_VERSION = versionZero;
 		DreamDroid.disableSleepTimer();
@@ -51,7 +49,7 @@ public class CheckProfile {
 		checkResult.put(KEY_RESULT_LIST, resultList);
 		setError(checkResult, false, -1);
 
-		SimpleHttpClient shc = SimpleHttpClient.getInstance(context);
+		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		String host = profile.getHost();
 
 		if (host != null) {

@@ -213,7 +213,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * 
 	 */
 	private void setClient() {
-		mShc = SimpleHttpClient.getInstance(getSherlockActivity().getApplicationContext());
+		mShc = SimpleHttpClient.getInstance();
 	}
 
 	/**

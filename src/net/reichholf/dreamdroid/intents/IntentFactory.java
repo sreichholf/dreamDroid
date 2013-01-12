@@ -66,9 +66,9 @@ public class IntentFactory {
 	 * @param ref
 	 *            A ServiceReference
 	 */
-	public static Intent getStreamFileIntent(Context context, String fileName) {
+	public static Intent getStreamFileIntent(String fileName) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		SimpleHttpClient shc = SimpleHttpClient.getInstance(context);
+		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("file", fileName));
 		String uriString = shc.buildFileStreamUrl(URIStore.FILE, params);
