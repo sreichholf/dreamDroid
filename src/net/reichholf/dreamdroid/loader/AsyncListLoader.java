@@ -43,7 +43,7 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 		super(context);
 		mListRequestHandler = listRequestHandler;
 		mRequireLocsAndTags = requireLocsAndTags;
-		mShc = new SimpleHttpClient();
+		mShc = new SimpleHttpClient(context);
 
 		if (args != null && args.containsKey("params"))
 			mParams = (ArrayList<NameValuePair>) args.getSerializable("params");

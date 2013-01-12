@@ -37,7 +37,7 @@ public class AsyncSimpleLoader extends AsyncTaskLoader< LoaderResult<ExtendedHas
 	@SuppressWarnings("unchecked")
 	private void init(Context context, AbstractSimpleRequestHandler handler, Bundle args) {
 		mHandler = handler;
-		mShc = new SimpleHttpClient();
+		mShc = new SimpleHttpClient(context);
 		if (args != null && args.containsKey("params"))
 			mParams = (ArrayList<NameValuePair>) args.getSerializable("params");
 		else

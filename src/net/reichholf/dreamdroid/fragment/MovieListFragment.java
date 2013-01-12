@@ -407,7 +407,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 		case Statics.ACTION_STREAM:
 			try {
-				startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME)));
+				startActivity(IntentFactory.getStreamFileIntent(getSherlockActivity().getApplicationContext(), mMovie.getString(Movie.KEY_FILE_NAME)));
 			} catch (ActivityNotFoundException e) {
 				showToast(getText(R.string.missing_stream_player));
 			}

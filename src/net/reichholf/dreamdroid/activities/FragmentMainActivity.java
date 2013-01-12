@@ -70,7 +70,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		@Override
 		protected ExtendedHashMap doInBackground(Void... params) {
 			publishProgress(getText(R.string.checking).toString());
-			return CheckProfile.checkProfile(mProfile);
+			return CheckProfile.checkProfile(getApplicationContext(), mProfile);
 		}
 
 		/*

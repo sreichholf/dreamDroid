@@ -180,7 +180,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	 * 
 	 */
 	protected void setClient() {
-		mShc = SimpleHttpClient.getInstance();
+		mShc = SimpleHttpClient.getInstance(getSherlockActivity().getApplicationContext());
 	}
 
 	/**

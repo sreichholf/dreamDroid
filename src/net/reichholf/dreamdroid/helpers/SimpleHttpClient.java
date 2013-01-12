@@ -32,6 +32,10 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.ByteArrayBuffer;
 
+import de.duenndns.ssl.MemorizingTrustManager;
+
+import android.content.Context;
+
 /**
  * @author sreichholf
  * 
@@ -60,14 +64,14 @@ public class SimpleHttpClient {
 	 * @param sp
 	 *            SharedPreferences of the Base-Context
 	 */
-	public SimpleHttpClient() {
+	public SimpleHttpClient(Context m) {
 		try {
 			SSLContext context = SSLContext.getInstance("TLS");
-			context.init(null, new TrustManager[] { new EasyX509TrustManager(null) }, null);
+			context.init(null, MemorizingTrustManager.getInstanceList(m),
+					new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
 		} catch (KeyManagementException e) {
 		} catch (NoSuchAlgorithmException e) {
-		} catch (KeyStoreException e) {
 		}
 
 		HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
@@ -232,7 +236,7 @@ public class SimpleHttpClient {
 	 * @param sp
 	 * @return
 	 */
-	public static SimpleHttpClient getInstance() {
-		return new SimpleHttpClient();
+	public static SimpleHttpClient getInstance(Context m) {
+		return new SimpleHttpClient(m);
 	}
 }
