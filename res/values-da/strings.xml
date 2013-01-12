@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">Beskrivelse</string>
 <string name="title">Titel</string>
 <string name="mo">Man</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>Bouquets (TV)</item>
 <item>Provider (TV)</item>
@@ -12,16 +14,19 @@
 <item>Provider (Radio)</item>
 <item>All (Radio)</item>
 </string-array>
+
 <string name="timer">Timer</string>
 <string name="service">Service</string>
 <string name="afterevent">Efter film</string>
 <string name="location">Lokation</string>
+
 <string-array name="afterevents">
 <item>Gør intet</item>
 <item>Standby</item>
 <item>Dyb Standby</item>
 <item>Auto</item>
 </string-array>
+
 <string name="begin_time">Starttid</string>
 <string name="repeatings">Gentagelser</string>
 <string name="end_time">Sluttid</string>
@@ -29,24 +34,21 @@
 <string name="movies">Film</string>
 <string name="device_info">Enheds information</string>
 <string name="send_message">Send besked</string>
-
 <string name="save">Gem</string>
-<string name="cancel">Annulér</string>
+<string name="cancel">Annuller</string>
 <string name="fetching_data">Henter data...</string>
 <string name="parsing">Fletter</string>
 <string name="get_content_error">Fejl ved hentning af indhold</string>
 <string name="zap">Zap</string>
 <string name="browse_epg">Gennemse EPG</string>
-<string name="edit">Redigér</string>
+<string name="edit">Rediger</string>
 <string name="delete">Slet</string>
 <string name="epg">EPG</string>
-<string name="ssl_enabled">Aktivér SSL</string>
+<string name="ssl_enabled">Aktiver SSL</string>
 <string name="host">Hostname/IP</string>
 <string name="port">Port</string>
 <string name="settings">Indstillinger</string>
 <string name="host_long">Hostname eller IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">Luk</string>
 <string name="minutes_short">Min.</string>
 <string name="user">Bruger</string>
@@ -63,6 +65,7 @@
 <string name="set_time_end">Slut dato og tid</string>
 <string name="apply">Anvend</string>
 <string name="reload">Indlæs igen</string>
+
 <string-array name="weekdays_short">
 <item>man</item>
 <item>tir</item>
@@ -81,6 +84,7 @@
 <item>Lørdag</item>
 <item>Søndag</item>
 </string-array>
+
 <string name="none">Ingen</string>
 <string name="choose_days">Vælg dage</string>
 <string name="mo_to_fr">Mandag til Fredag</string>
@@ -102,14 +106,16 @@
 <string name="message_text_hint">Indtast din besked</string>
 <string name="send">Send</string>
 <string name="type">Skriv</string>
+
 <string-array name="message_types">
 <item>JaNej</item>
 <item>Advarsel</item>
 <item>Info</item>
 <item>Fejl</item>
 </string-array>
+
 <string name="virtual_remote">Virtuel fjernbetjening</string>
-<string name="login_enabled">Aktivér Login</string>
+<string name="login_enabled">Aktiver Login</string>
 <string name="wait_request_finished">Vent venligst indtil den igangværende anmodning er afsluttet!</string>
 <string name="current_service">Nuværende</string>
 <string name="provider">Udbyder</string>
@@ -121,7 +127,7 @@
 <string name="quickzap">QuickZap Layout</string>
 <string name="no_epg_available">Der er i øjeblikket ingen EPG-information tilgængelig for denne kanal.</string>
 <string name="ok">OK</string>
-<string name="activate">Aktivér</string>
+<string name="activate">Aktiver</string>
 <string name="confirm_delete_profile">Vil du virkelig slette denne profil?</string>
 <string name="profile_activated">Aktiveret profil</string>
 <string name="profile_not_activated">Fejl ved aktivering af profil</string>
@@ -159,22 +165,22 @@
 <string name="not_available">Ikke tilgængelig</string>
 <string name="checking">Kontrollerer...</string>
 <string name="error">FEJL!</string>
-<string name="check_connectivity">Kontrollér forbindelse</string>
+<string name="check_connectivity">Kontroller forbindelse</string>
 <string name="version_too_low">Version lt; 1.6</string>
 <string name="connection_error">Forbindelses fejl</string>
 <string name="port_out_of_range">Porten ikke mellem 1 og 65535</string>
 <string name="illegal_host">Ugyldig host</string>
-<string name="edit_timer">Redigér timer</string>
+<string name="edit_timer">Rediger timer</string>
 <string name="cleaning_timerlist">Rydder op i timerliste</string>
 <string name="cleanup">Oprydning</string>
 <string name="in_standby">Enheden er nu i Standby-Mode</string>
 <string name="is_running">Enheden er nu kørende</string>
 <string name="stream">Stream</string>
-
 <string name="stream_host">Streaming Hostname/IP</string>
 <string name="stream_host_long">Host/IP til streaming (valgfri)</string>
 <string name="stream_current">Stream nuværende</string>
 <string name="similar">Lignende programmer</string>
+
 <string-array name="timer_state">
 <item>Venter...</item>
 <item>Klargjort...</item>
@@ -186,11 +192,12 @@
 <item>Optag</item>
 <item>zap</item>
 </string-array>
+
 <string name="sleeptimer">Sleep Timer</string>
 <string name="current_volume">Volumen er nu %s</string>
 <string name="muted">Lydløs</string>
-<string name="enable_volume_control">Aktivér Volume Kontrol</string>
-<string name="enable_volume_control_long">Aktivér direkte Volume Kontrol med H/W-knapper</string>
+<string name="enable_volume_control">Aktiver Volume Kontrol</string>
+<string name="enable_volume_control_long">Aktiver direkte Volume Kontrol med H/W-knapper</string>
 <string name="download">Download</string>
 <string name="extras">Ekstra</string>
 <string name="main_menu">Forsiden</string>
@@ -202,4 +209,16 @@
 <string name="screenshot_saved">Skærmbillede gemt i \'%s\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Ingen streaming afspiller installeret</string>
+<string name="mediaplayer">Mediaplayer</string>
+<string name="edit_profile">Ændre profil</string>
+<string name="force_tablet_layout_long">Gennemtving optimeret opsætning for Tablet</string>
+<string name="force_tablet_layout">Gennemtving opsætning for Tablet</string>
+<string name="mobile_imdb">Brug mobil version af imdb.com</string>
+<string name="mobile_imdb_long">Brug m.imdb.com istedet for www.imdb.com</string>
+<string name="searching">Søger.&#8230;</string>
+<string name="searching_known_devices">Søger efter tilsluttede dreambokse på netværket, kan tage flere minutter.&#8230;</string>
+<string name="autodiscover_dreamboxes">Autosøg tilsluttede dreambokse.</string>
+<string name="autodiscovery_failed">Fandt ingen tilsluttede dreambokse på netværket.</string>
+<string name="add_all">Tilføj alt.</string>
+
 </resources>

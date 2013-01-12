@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">Opis</string>
 <string name="title">Tytuł</string>
 <string name="mo">Pn</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>Bukiety (TV)</item>
 <item>Dostawcy (TV)</item>
@@ -12,16 +14,19 @@
 <item>Dostawcy (Radio)</item>
 <item>Wszystkie (Radio)</item>
 </string-array>
+
 <string name="timer">Zaplanowane zadania</string>
 <string name="service">Kanał</string>
 <string name="afterevent">Po zdarzeniu</string>
 <string name="location">Lokalizacja</string>
+
 <string-array name="afterevents">
 <item>Nic</item>
 <item>Czuwanie</item>
 <item>Głębokie czuwanie</item>
 <item>Automatycznie</item>
 </string-array>
+
 <string name="begin_time">Czas rozpoczęcia</string>
 <string name="repeatings">Powtarzanie</string>
 <string name="end_time">Czas zakończenia</string>
@@ -29,7 +34,6 @@
 <string name="movies">Filmy</string>
 <string name="device_info">Informacje o urządzeniu</string>
 <string name="send_message">Wyślij wiadomość</string>
-
 <string name="save">Zapisz</string>
 <string name="cancel">Anuluj</string>
 <string name="fetching_data">Pobieranie danych...</string>
@@ -45,8 +49,6 @@
 <string name="port">Port</string>
 <string name="settings">Ustawienia</string>
 <string name="host_long">Nazwa hosta lub IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">Zamknij</string>
 <string name="minutes_short">min.</string>
 <string name="user">Użytkownik</string>
@@ -63,6 +65,7 @@
 <string name="set_time_end">Data i czas zakończenia</string>
 <string name="apply">Zastosuj</string>
 <string name="reload">Przeładuj</string>
+
 <string-array name="weekdays_short">
 <item>Pn</item>
 <item>Wt</item>
@@ -81,6 +84,7 @@
 <item>Sobota</item>
 <item>Niedziela</item>
 </string-array>
+
 <string name="none">Brak</string>
 <string name="choose_days">Wybierz dzień</string>
 <string name="mo_to_fr">Od poniedziałku do piątku</string>
@@ -102,12 +106,14 @@
 <string name="message_text_hint">Wprowadź treść wiadomości</string>
 <string name="send">Wyślij</string>
 <string name="type">Typ</string>
+
 <string-array name="message_types">
 <item>Tak/Nie</item>
 <item>Ostrzeżenie</item>
 <item>Info</item>
 <item></item>
 </string-array>
+
 <string name="virtual_remote">Pilot</string>
 <string name="login_enabled">Włącz logowanie</string>
 <string name="wait_request_finished">Proszę czekać dopóki uruchomione zapytanie nie zostanie ukończone</string>
@@ -170,11 +176,11 @@
 <string name="in_standby">Urządzenie jest w trybie czuwania</string>
 <string name="is_running">Urządzenie jest uruchomione</string>
 <string name="stream">Strumieniuj</string>
-
 <string name="stream_host">Nazwa hosta/IP strumieniowania</string>
 <string name="stream_host_long">Host/IP dla strumieniowania (opcjonalne)</string>
 <string name="stream_current">Strumieniuj</string>
 <string name="similar">Podobne wydarzenia</string>
+
 <string-array name="timer_state">
 <item>oczekiwanie...</item>
 <item>gotowe...</item>
@@ -186,6 +192,7 @@
 <item>nagrywaj</item>
 <item>przełącz</item>
 </string-array>
+
 <string name="sleeptimer">Wyłącznik czasowy</string>
 <string name="current_volume">Głośność %s</string>
 <string name="muted">Wyciszone</string>
@@ -202,4 +209,16 @@
 <string name="screenshot_saved">Zrzut ekranu zapisano do \'%s\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Brak odgrywarki streamu video na tym urządzeniu!</string>
+<string name="mediaplayer">Odtwarzacz multimedialny</string>
+<string name="edit_profile">Edytuj profil</string>
+<string name="force_tablet_layout_long">Wymuś zoptymalizowany układ dla tableta</string>
+<string name="force_tablet_layout">Wymuś układ dla tableta</string>
+<string name="mobile_imdb">Użyj mobilnej wersji imdb.com</string>
+<string name="mobile_imdb_long">Użyj m.imdb.com zamiast www.imdb.com</string>
+<string name="searching">Szukanie&#8230;</string>
+<string name="searching_known_devices">Wyszukiwanie Dreamboxów w sieci lokalnej. To może zająć kilka minut&#8230;</string>
+<string name="autodiscover_dreamboxes">Autowyszukiwanie Dreamboxa</string>
+<string name="autodiscovery_failed">Nie znaleziono automatycznie żadnego Dreamboxa w twojej sieci lokalnej!</string>
+<string name="add_all">Dodaj wszystko</string>
+
 </resources>

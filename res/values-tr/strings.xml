@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">Tanım</string>
 <string name="title">Başlık</string>
 <string name="mo">Pazartesi</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>Buketler (TV)</item>
 <item>Sağlayıcı (TV)</item>
@@ -12,16 +14,19 @@
 <item>Sağlayıcı (Radyo)</item>
 <item>Tüm Kanallar (Radyo)</item>
 </string-array>
+
 <string name="timer">Zamanlayıcı</string>
 <string name="service">Servisler</string>
 <string name="afterevent">Olay sonrası</string>
 <string name="location">Konum</string>
+
 <string-array name="afterevents">
 <item>Hiçbiri</item>
 <item>Bekleme</item>
 <item>Kapanma</item>
 <item>Otomatik</item>
 </string-array>
+
 <string name="begin_time">Başlangıç zamanı</string>
 <string name="repeatings">Tekrarlar</string>
 <string name="end_time">Bitiş zamanı</string>
@@ -29,11 +34,10 @@
 <string name="movies">Filmler</string>
 <string name="device_info">Aygıt bilgisi</string>
 <string name="send_message">Mesaj gönder</string>
-
 <string name="save">Kaydet</string>
 <string name="cancel">iptal</string>
-<string name="fetching_data">Veri alınıyor...</string>
-<string name="parsing">Veri okunuyor...</string>
+<string name="fetching_data">Veri alınıyor&#8230;</string>
+<string name="parsing">Veri okunuyor&#8230;</string>
 <string name="get_content_error">İçerik alma hatası!</string>
 <string name="zap">Zap</string>
 <string name="browse_epg">EPG ara</string>
@@ -43,18 +47,18 @@
 <string name="ssl_enabled">SSL etkinleştir</string>
 <string name="host">Hostname/IP</string>
 <string name="port">Port</string>
+<string name="port_stream_live">Port (Canlı yayın akışı)</string>
+<string name="port_stream_file">Port (Filmler)</string>
 <string name="settings">Ayarlar</string>
 <string name="host_long">Bilgisayar adı veya IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">Kapat</string>
 <string name="minutes_short">dk.</string>
 <string name="user">Kullanıcı</string>
 <string name="user_long">Giriş için kullanıcı ismi</string>
 <string name="pass">Şifre</string>
 <string name="pass_long">Giriş için şifre</string>
-<string name="saving">Kaydediliyor. Lütfen bekleyin...</string>
-<string name="deleting">Siliniyor. Lütfen bekleyin...</string>
+<string name="saving">Kaydediliyor. Lütfen bekleyin&#8230;</string>
+<string name="deleting">Siliniyor. Lütfen bekleyin&#8230;</string>
 <string name="delete_confirm">Gerçekten silinsin mi?</string>
 <string name="set_timer">Zamanı ayarla</string>
 <string name="home">Ev</string>
@@ -63,6 +67,7 @@
 <string name="set_time_end">Bitiş tarihi ve zamanı</string>
 <string name="apply">Uygula</string>
 <string name="reload">Tekrar yükle</string>
+
 <string-array name="weekdays_short">
 <item>Pz</item>
 <item>Sa</item>
@@ -81,6 +86,7 @@
 <item>Cumartesi</item>
 <item>Pazar </item>
 </string-array>
+
 <string name="none">Hiçbiri</string>
 <string name="choose_days">Günleri seç</string>
 <string name="mo_to_fr">Pazartesi\'den Cuma\'ya</string>
@@ -102,12 +108,14 @@
 <string name="message_text_hint">Mesajınızı giriniz</string>
 <string name="send">Gönder</string>
 <string name="type">Tür</string>
+
 <string-array name="message_types">
 <item>EvetHayır</item>
 <item>Uyarı</item>
 <item>Bilgi</item>
 <item>Hata</item>
 </string-array>
+
 <string name="virtual_remote">Sanal Kumanda</string>
 <string name="login_enabled">Giriş Aktif</string>
 <string name="wait_request_finished">Lütfen çalışan işlem tamamlanana kadar bekleyin!</string>
@@ -133,7 +141,7 @@
 <string name="profile_add">Profil ekle</string>
 <string name="profile_not_added">Profil eklenemedi</string>
 <string name="profile_not_updated">Profil güncellenemedi</string>
-<string name="no_list_item">Gösterilecek öge yok...</string>
+<string name="no_list_item">Gösterilecek öge yok&#8230;</string>
 <string name="locations_default_fallback">Konum yükleme hatası, varsayılana geri dönülüyor:</string>
 <string name="tags">Etiketler</string>
 <string name="screenshot">Ekran görüntüsü</string>
@@ -150,14 +158,14 @@
 <string name="set_default">Varsayılan olarak kaydet</string>
 <string name="default_bouquet_set_to">Varsayılan buket olarak ayarlandı: </string>
 <string name="default_bouquet_not_set">Varsayılan buket ayarlanamadı!</string>
-<string name="loading">Yükleniyor...</string>
+<string name="loading">Yükleniyor&#8230;</string>
 <string name="about">Hakkında</string>
 <string name="license">Lisans</string>
 <string name="source_code_link">Kaynak kodu mevcut: http://github.com/sreichholf/dreamDroid</string>
 <string name="active_profile">Profili etkinleştir</string>
 <string name="connection_state">Bağlantı durumu</string>
 <string name="not_available">Mevcut değil</string>
-<string name="checking">kontrol ediliyor...</string>
+<string name="checking">kontrol ediliyor&#8230;</string>
 <string name="error">HATA!</string>
 <string name="check_connectivity">Bağlantıyı kontrol et</string>
 <string name="version_too_low">Sürüm &lt; 1.6.5</string>
@@ -170,15 +178,15 @@
 <string name="in_standby">Cihaz şimdi bekleme modunda</string>
 <string name="is_running">Cihaz şimdi çalışıyor</string>
 <string name="stream">Akış</string>
-
 <string name="stream_host">Akış Host Adı / IP</string>
 <string name="stream_host_long">Akış için Host Adı / IP (opsiyonel)</string>
 <string name="stream_current">Şuanki Akış</string>
 <string name="similar">Benzer</string>
+
 <string-array name="timer_state">
-<item>bekliyor...</item>
-<item>hazır...</item>
-<item>çalışıyor...</item>
+<item>bekliyor&#8230;</item>
+<item>hazır&#8230;</item>
+<item>çalışıyor&#8230;</item>
 <item>bitti</item>
 <item>devre dışı</item>
 </string-array>
@@ -186,6 +194,7 @@
 <item>kayıt</item>
 <item>zap</item>
 </string-array>
+
 <string name="sleeptimer">Kapanma Zamanı</string>
 <string name="current_volume">Ses şuan %s</string>
 <string name="muted">Sessiz</string>
@@ -202,4 +211,13 @@
 <string name="screenshot_saved">Ekran görüntüsü kaydedildi \'%s\'</string>
 <string name="imdb">imdb</string>
 <string name="missing_stream_player">Bu cihazda kurulu yayın oynatıcısı yok!</string>
+<string name="mediaplayer">Video oynatıcı</string>
+<string name="edit_profile">Profili Düzenle</string>
+<string name="mobile_imdb">Imdb.com mobil sürümünü kullanın</string>
+<string name="mobile_imdb_long">M.imdb.com yerine www.imdb.com kullanımı</string>
+<string name="searching">Aranıyor &#8230;</string>
+<string name="searching_known_devices">Yerel ağınızdaki dreamboxes aranıyor. Bu işlem birkaç dakika sürebilir &#8230;</string>
+<string name="autodiscover_dreamboxes">Dreambox\'da otomatik bul</string>
+<string name="add_all">Hepsini ekle</string>
+
 </resources>

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">描述</string>
 <string name="title">标题</string>
 <string name="mo">周一</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>喜爱频道(TV)</item>
 <item>服务商(TV)</item>
@@ -12,16 +14,19 @@
 <item>服务商(广播)</item>
 <item>所有(广播)</item>
 </string-array>
+
 <string name="timer">定时</string>
 <string name="service">频道</string>
 <string name="afterevent">事件之后</string>
 <string name="location">位置</string>
+
 <string-array name="afterevents">
 <item>什么都不做</item>
 <item>待机</item>
 <item>深度休眠</item>
 <item>自动</item>
 </string-array>
+
 <string name="begin_time">开始时间</string>
 <string name="repeatings">重复</string>
 <string name="end_time">结束时间</string>
@@ -29,7 +34,6 @@
 <string name="movies">影片</string>
 <string name="device_info">设备信息</string>
 <string name="send_message">发送信息</string>
-
 <string name="save">保存</string>
 <string name="cancel">取消</string>
 <string name="fetching_data">获取数据</string>
@@ -44,8 +48,6 @@
 <string name="port">端口</string>
 <string name="settings">设置</string>
 <string name="host_long">主机或IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">关闭</string>
 <string name="minutes_short">分钟</string>
 <string name="user">用户</string>
@@ -62,6 +64,7 @@
 <string name="set_time_end">结束日期和时间</string>
 <string name="apply">应用</string>
 <string name="reload">重新加载</string>
+
 <string-array name="weekdays_short">
 <item>一</item>
 <item>二</item>
@@ -80,6 +83,7 @@
 <item>周六</item>
 <item>周日</item>
 </string-array>
+
 <string name="none">无</string>
 <string name="choose_days">现在日期</string>
 <string name="mo_to_fr">周一至周五</string>
@@ -100,12 +104,14 @@
 <string name="message_text_hint">输入你的信息文本</string>
 <string name="send">发送</string>
 <string name="type">类型</string>
+
 <string-array name="message_types">
 <item>是否</item>
 <item>警告</item>
 <item>信息</item>
 <item>错误</item>
 </string-array>
+
 <string name="virtual_remote">虚拟远程</string>
 <string name="login_enabled">允许登录</string>
 <string name="wait_request_finished">请等待任务完成</string>
@@ -164,11 +170,11 @@
 <string name="in_standby">设备现在处于待机状态</string>
 <string name="is_running">设备正在运行中</string>
 <string name="stream">流</string>
-
 <string name="stream_host">流主机名/IP</string>
 <string name="stream_host_long">流的主机名/IP(可选)</string>
 <string name="stream_current">当前流</string>
 <string name="similar">相似的事件</string>
+
 <string-array name="timer_state">
 <item>等待...</item>
 <item>准备中...</item>
@@ -180,6 +186,7 @@
 <item>录制</item>
 <item>打包</item>
 </string-array>
+
 <string name="sleeptimer">睡眠定时器</string>
 <string name="current_volume">音量现在是%s</string>
 <string name="muted">静音</string>
@@ -193,4 +200,5 @@
 <string name="simple_remote">简单远程布局</string>
 <string name="screenshot_saved">截屏已经保存到\'%s\'</string>
 <string name="missing_stream_player">没有安装能够播放视频流的播放器，建议使用Daroon Player</string>
+
 </resources>

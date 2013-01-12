@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">Описание</string>
 <string name="title">Заголовок</string>
 <string name="mo">Mo</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>Фавориты (TV)</item>
 <item>Провайдер (TV)</item>
@@ -12,16 +14,19 @@
 <item>Провайдер (Radio)</item>
 <item>Все (Radio)</item>
 </string-array>
+
 <string name="timer">Таймер</string>
 <string name="service">Сервис</string>
 <string name="afterevent">Следующее событие</string>
 <string name="location">Позиция</string>
+
 <string-array name="afterevents">
 <item>Ничего</item>
 <item>Ожидание</item>
 <item>Полное Выключение</item>
 <item>Автовыбор</item>
 </string-array>
+
 <string name="begin_time">Время начала</string>
 <string name="repeatings">Повторы</string>
 <string name="end_time">Время окончания</string>
@@ -29,7 +34,6 @@
 <string name="movies">Фильмы</string>
 <string name="device_info">Информация об устройстве</string>
 <string name="send_message">Отправить сообщение</string>
-
 <string name="save">Сохранить</string>
 <string name="cancel">Отмена</string>
 <string name="fetching_data">Запрос данных....</string>
@@ -43,10 +47,10 @@
 <string name="ssl_enabled">Использовать шифрование SSL</string>
 <string name="host">Хост/IP</string>
 <string name="port">Порт</string>
+<string name="port_stream_live">Порт (Поток)</string>
+<string name="port_stream_file">Порт (Фильмы)</string>
 <string name="settings">Настройки</string>
 <string name="host_long">Хост или IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">Закрыть</string>
 <string name="minutes_short">мин.</string>
 <string name="user">Пользователь</string>
@@ -63,6 +67,7 @@
 <string name="set_time_end">Дата/время окончания</string>
 <string name="apply">Применить</string>
 <string name="reload">Перезагрузить</string>
+
 <string-array name="weekdays_short">
 <item>Пн</item>
 <item>Вт</item>
@@ -81,6 +86,7 @@
 <item>Суббота</item>
 <item>Воскресенье</item>
 </string-array>
+
 <string name="none">Пусто</string>
 <string name="choose_days">Выбрать дни</string>
 <string name="mo_to_fr">Рабочие дни</string>
@@ -102,13 +108,15 @@
 <string name="message_text_hint">Введите текст</string>
 <string name="send">Отправить</string>
 <string name="type">Тип</string>
+
 <string-array name="message_types">
 <item>Да/Нет</item>
 <item>Предупреждение</item>
 <item>Информация</item>
 <item>Ошибка</item>
 </string-array>
-<string name="virtual_remote">Виртуальный пульт</string>
+
+<string name="virtual_remote">Virtual Remote</string>
 <string name="login_enabled">Вход допустим</string>
 <string name="wait_request_finished">Пожалуйста подождите обработки запроса!</string>
 <string name="current_service">Текущий сервис</string>
@@ -170,11 +178,11 @@
 <string name="in_standby">Устройство в режиме ожидания</string>
 <string name="is_running">Устройство работает</string>
 <string name="stream">Потоковое вещание</string>
-
 <string name="stream_host">Имя/адрес потокового хоста</string>
 <string name="stream_host_long">Хост/IP для потокового вещания (дополнительно)</string>
 <string name="stream_current">Потоковое вещание</string>
 <string name="similar">Подобные события</string>
+
 <string-array name="timer_state">
 <item>ожидаю...</item>
 <item>подготовка...</item>
@@ -186,6 +194,7 @@
 <item>запись</item>
 <item>переход</item>
 </string-array>
+
 <string name="sleeptimer">Таймер сна</string>
 <string name="current_volume">Уровень звука</string>
 <string name="muted">Без звука</string>
@@ -202,4 +211,14 @@
 <string name="screenshot_saved">Скриншот сохранен в  \'%s\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Проигрыватель потокового видео не установлен на устройство!</string>
+<string name="mediaplayer">Медиаплейер</string>
+<string name="edit_profile">Изменить профиль</string>
+<string name="mobile_imdb">Использовать мобильную версию imdb.com</string>
+<string name="mobile_imdb_long">Использовать m.imdb.com вместо www.imdb.com</string>
+<string name="searching">Идёт поиск</string>
+<string name="searching_known_devices">Поиск Dreambox в Вашей локальной сети. Это займёт несколько минут.</string>
+<string name="autodiscover_dreamboxes">Автопоиск ресивера</string>
+<string name="autodiscovery_failed">Ресивер не найден</string>
+<string name="add_all">Добавить всё.</string>
+
 </resources>

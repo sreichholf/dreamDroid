@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">Опис</string>
 <string name="title">Заголовок</string>
 <string name="mo">Mo</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>Фаворити (TV)</item>
 <item>Провайдер (TV)</item>
@@ -12,16 +14,19 @@
 <item>Провайдер (Radio)</item>
 <item>Всі (Radio)</item>
 </string-array>
+
 <string name="timer">Таймери</string>
 <string name="service">Сервіс</string>
 <string name="afterevent">Наступна подія</string>
 <string name="location">Позиція</string>
+
 <string-array name="afterevents">
 <item>Нічого</item>
 <item>Очікування</item>
 <item>Повне вимкнення</item>
 <item>Автовибір</item>
 </string-array>
+
 <string name="begin_time">Час початку</string>
 <string name="repeatings">Повтори</string>
 <string name="end_time">Час завершення</string>
@@ -29,11 +34,10 @@
 <string name="movies">Записи</string>
 <string name="device_info">Інфо про пристрій</string>
 <string name="send_message">Надіслати повідомлення</string>
-
 <string name="save">Зберегти</string>
 <string name="cancel">Скасувати</string>
-<string name="fetching_data">Отримую дані...</string>
-<string name="parsing">Обробляю...</string>
+<string name="fetching_data">Отримую дані&#8230;</string>
+<string name="parsing">Обробляю&#8230;</string>
 <string name="get_content_error">Помилка прийому даних!</string>
 <string name="zap">Перехід</string>
 <string name="browse_epg">Огляд телегіду</string>
@@ -43,18 +47,18 @@
 <string name="ssl_enabled">Використовувати шифрування SSL</string>
 <string name="host">Хост/IP</string>
 <string name="port">Порт</string>
+<string name="port_stream_live">Порт (живе мовлення)</string>
+<string name="port_stream_file">Порт (фільми)</string>
 <string name="settings">Налаштування</string>
 <string name="host_long">Ім\'я хосту або IP-адреса</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">Закрити</string>
 <string name="minutes_short">хв.</string>
 <string name="user">Користувач</string>
 <string name="user_long">Ім\'я користувача</string>
 <string name="pass">Пароль</string>
 <string name="pass_long">Пароль для авторизації</string>
-<string name="saving">Зберігаю. Зачекайте...</string>
-<string name="deleting">Видаляю. Зачекайте...</string>
+<string name="saving">Зберігаю. Зачекайте&#8230;</string>
+<string name="deleting">Видаляю. Зачекайте&#8230;</string>
 <string name="delete_confirm">Дійсно видалити?</string>
 <string name="set_timer">Встановити таймер</string>
 <string name="home">Додому</string>
@@ -63,6 +67,7 @@
 <string name="set_time_end">Дата і час завершення</string>
 <string name="apply">Застосувати</string>
 <string name="reload">Оновити</string>
+
 <string-array name="weekdays_short">
 <item>Пн</item>
 <item>Вт</item>
@@ -81,6 +86,7 @@
 <item>Субота</item>
 <item>Неділя</item>
 </string-array>
+
 <string name="none">Пусто</string>
 <string name="choose_days">Выбрать дни</string>
 <string name="mo_to_fr">Понеділок - п\'ятниця</string>
@@ -102,12 +108,14 @@
 <string name="message_text_hint">Введіть текст вашого повідомлення</string>
 <string name="send">Надіслати</string>
 <string name="type">Тип</string>
+
 <string-array name="message_types">
 <item>Так/Ні</item>
 <item>Попередження</item>
 <item>Інформація</item>
 <item>Помилка</item>
 </string-array>
+
 <string name="virtual_remote">Віртуальний пульт</string>
 <string name="login_enabled">Дозволити вхід</string>
 <string name="wait_request_finished">Будь-ласка почекайте завершення обробки запиту!</string>
@@ -116,7 +124,7 @@
 <string name="now">Зараз</string>
 <string name="next">Далі</string>
 <string name="epg_search">Пошук по телегіду</string>
-<string name="epg_search_hint">Пошук по телегіду...</string>
+<string name="epg_search_hint">Пошук по телегіду&#8230;</string>
 <string name="standard">Стандартне розкладка кнопок</string>
 <string name="quickzap">Розкладка для швидкого переходу</string>
 <string name="no_epg_available">Інформація телегіду для каналу недоступна!</string>
@@ -133,7 +141,7 @@
 <string name="profile_add">Додати профіль</string>
 <string name="profile_not_added">Не можу додати профіль</string>
 <string name="profile_not_updated">Не можу оновити профіль</string>
-<string name="no_list_item">Список порожній...</string>
+<string name="no_list_item">Список порожній&#8230;</string>
 <string name="locations_default_fallback">Помилка завантаження позицій, відновлюю вихідні:</string>
 <string name="tags">Мітки</string>
 <string name="screenshot">Знімок екрану</string>
@@ -150,14 +158,14 @@
 <string name="set_default">Встановити за замовчуванням</string>
 <string name="default_bouquet_set_to">Фаворит за замовчуванням встановлено на:</string>
 <string name="default_bouquet_not_set">Фаворит за замовчуванням НЕ встановлено!</string>
-<string name="loading">Завантаження...</string>
+<string name="loading">Завантаження&#8230;</string>
 <string name="about">Про програму</string>
 <string name="license">ЛІЦЕНЗІЯ:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
 <string name="source_code_link">Вихідний код доступний на: http://github.com/sreichholf/dreamDroid</string>
 <string name="active_profile">Активний профіль</string>
 <string name="connection_state">Стан з\'єднання</string>
 <string name="not_available">Недоступно</string>
-<string name="checking">перевіряю...</string>
+<string name="checking">перевіряю&#8230;</string>
 <string name="error">ПОМИЛКА!</string>
 <string name="check_connectivity">Перевірити з\'єднання</string>
 <string name="version_too_low">Версія &lt; 1.6.5</string>
@@ -170,15 +178,15 @@
 <string name="in_standby">Пристрій в режимі очікування</string>
 <string name="is_running">Пристрій увімкнено</string>
 <string name="stream">Передати потоком</string>
-
 <string name="stream_host">Ім\'я / IP-адреса потокового хосту</string>
 <string name="stream_host_long">Хост/IP для потокового мовлення (не обов\'язково)</string>
 <string name="stream_current">Передати потоком</string>
 <string name="similar">Подібні події</string>
+
 <string-array name="timer_state">
-<item>очікую...</item>
-<item>підготовка...</item>
-<item>виконання...</item>
+<item>очікую&#8230;</item>
+<item>підготовка&#8230;</item>
+<item>виконання&#8230;</item>
 <item>завершено</item>
 <item>вимкнено</item>
 </string-array>
@@ -186,6 +194,7 @@
 <item>запис</item>
 <item>перехід</item>
 </string-array>
+
 <string name="sleeptimer">Таймер сну</string>
 <string name="current_volume">Рівень гучності %s</string>
 <string name="muted">ВИМКНЕНО</string>
@@ -202,4 +211,16 @@
 <string name="screenshot_saved">Знімок екрану збережено до  \'%s\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Програвач потокового відео не встановлено на вашому пристрої!</string>
+<string name="mediaplayer">Програвач</string>
+<string name="edit_profile">Редагувати профіль</string>
+<string name="force_tablet_layout_long">Компонування оптимізоване для планшетів</string>
+<string name="force_tablet_layout">Вигляд як на планшеті</string>
+<string name="mobile_imdb">Використовувати мобільну версію imdb.com</string>
+<string name="mobile_imdb_long">Використовувати m.imdb.com замість imdb.com</string>
+<string name="searching">Шукаю&#8230;</string>
+<string name="searching_known_devices">Здійснюється пошук Dreambox\'ів у вашій локальній мережі. Це може зайняти кілька хвилин &#8230;</string>
+<string name="autodiscover_dreamboxes">Автопошук Dreambox\'ів</string>
+<string name="autodiscovery_failed">Не знайдено жодного Dreambox\'у у вашій мережі!</string>
+<string name="add_all">Додати всі</string>
+
 </resources>

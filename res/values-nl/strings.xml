@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">Omschrijving</string>
 <string name="title">Titel</string>
 <string name="mo">Ma</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>Boeketten (TV)</item>
 <item>Provider (TV)</item>
@@ -12,16 +14,19 @@
 <item>Provider (Radio)</item>
 <item>Alles (Radio)</item>
 </string-array>
+
 <string name="timer">Timer</string>
 <string name="service">Kanaal</string>
 <string name="afterevent">Afterevent</string>
 <string name="location">Lokatie</string>
+
 <string-array name="afterevents">
 <item>Niets</item>
 <item>Slaapstand</item>
 <item>Diepe Slaapstand</item>
 <item>Automatisch</item>
 </string-array>
+
 <string name="begin_time">Begintijd</string>
 <string name="repeatings">Herhalingen</string>
 <string name="end_time">Eindtijd</string>
@@ -29,7 +34,6 @@
 <string name="movies">Films</string>
 <string name="device_info">Apparaat Informatie</string>
 <string name="send_message">Stuur Bericht</string>
-
 <string name="save">Opslaan</string>
 <string name="cancel">Annuleren</string>
 <string name="fetching_data">Data ophalen...</string>
@@ -45,8 +49,6 @@
 <string name="port">Poort</string>
 <string name="settings">Instellingen</string>
 <string name="host_long">Hostname of IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">Sluit</string>
 <string name="minutes_short">min.</string>
 <string name="user">Gebruiker</string>
@@ -63,6 +65,7 @@
 <string name="set_time_end">Einddatum en uur</string>
 <string name="apply">Uitvoeren</string>
 <string name="reload">Herladen</string>
+
 <string-array name="weekdays_short">
 <item>Ma</item>
 <item>Di</item>
@@ -81,6 +84,7 @@
 <item>Zaterdag</item>
 <item>Zondag</item>
 </string-array>
+
 <string name="none">Geen</string>
 <string name="choose_days">Kies dagen</string>
 <string name="mo_to_fr">Maandag tot Vrijdag</string>
@@ -102,12 +106,14 @@
 <string name="message_text_hint">Voer je berichttekst in</string>
 <string name="send">Zend</string>
 <string name="type">Type</string>
+
 <string-array name="message_types">
 <item>Ja</item>
 <item>Nee</item>
 <item>Waarschuwing</item>
 <item>Info</item>
 </string-array>
+
 <string name="virtual_remote">Virtuele Afstandsbediening</string>
 <string name="login_enabled">Login Toestaan</string>
 <string name="wait_request_finished">Wacht aub tot de lopende aanvraag afgelopen is!</string>
@@ -170,11 +176,11 @@
 <string name="in_standby">Toestel is nu in Slaaptoestand</string>
 <string name="is_running">Toestel is nu in bedrijf</string>
 <string name="stream">Stream</string>
-
 <string name="stream_host">Streamen van Hostnaam/IP</string>
 <string name="stream_host_long">Host/IP  voor streamen (optioneel)</string>
 <string name="stream_current">Stream huidige</string>
 <string name="similar">Gelijke gebeurtenissen</string>
+
 <string-array name="timer_state">
 <item>wachten...</item>
 <item>voorbereid...</item>
@@ -186,6 +192,7 @@
 <item>opnemen</item>
 <item>zap</item>
 </string-array>
+
 <string name="sleeptimer">SlaapTimer</string>
 <string name="current_volume">Volume is nu %s</string>
 <string name="muted">gedempt</string>
@@ -202,4 +209,10 @@
 <string name="screenshot_saved">Screenshot opgeslagen als \'%s\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Geen speler voor Videostreams geinstalleerd op dit apparaat</string>
+<string name="mediaplayer">Mediaspeler</string>
+<string name="edit_profile">Bewerk Profiel</string>
+<string name="searching">Zoeken</string>
+<string name="autodiscover_dreamboxes">Automatisch zoeken Dreambox</string>
+<string name="add_all">Alles toevoegen</string>
+
 </resources>
