@@ -47,13 +47,13 @@ public class PositiveNegativeDialog extends ActionDialog {
 				.setCancelable(false)
 				.setPositiveButton(getText(mPositiveText), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
-						finishDialog(mPositiveId);
+						finishDialog(mPositiveId, null);
 						dialog.dismiss();
 					}
 				}).setNegativeButton(getText(mNegativeText), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						dialog.dismiss();
-						finishDialog(mNegativeId);
+						finishDialog(mNegativeId, null);
 					}
 				});
 		return builder.create();

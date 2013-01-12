@@ -81,11 +81,11 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
-		if (savedInstanceState == null) {
+		if (savedInstanceState == null && mCurrentLocation != null) {
 			mSelectedTags = new ArrayList<String>();
 			mOldTags = new ArrayList<String>();
 			reload();
-		} else {
+		} else if (savedInstanceState != null) {
 			mMovie = (ExtendedHashMap) savedInstanceState.getParcelable("movie");
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
 			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
@@ -379,7 +379,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	public void onDialogAction(int action) {
+	public void onDialogAction(int action, Object details) {
 		switch (action) {
 		case Statics.ACTION_ZAP:
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));

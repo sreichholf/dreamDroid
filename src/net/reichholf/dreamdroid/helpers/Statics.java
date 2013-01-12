@@ -25,6 +25,8 @@ public class Statics {
 	public static final int ACTION_DOWNLOAD = 0xc010;
 	public static final int ACTION_DELETE_CONFIRMED = 0xc011;
 	public static final int ACTION_EDIT = 0xc012;
+	public static final int ACTION_PICK_TIME_BEGIN = 0x0c13;
+	public static final int ACTION_PICK_TIME_END = 0x0c14;
 	public static final int ACTION_NONE = 0xcfff;
 
 	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
@@ -58,7 +60,7 @@ public class Statics {
 	public static final int ITEM_SAVE = R.id.menu_save;
 	public static final int ITEM_CANCEL = R.id.menu_cancel;
 	public static final int ITEM_PICK_SERVICE = 0x6027;
-	public static final int ITEM_PICK_START = 0x6028;
+	public static final int ITEM_PICK_BEGIN = 0x6028;
 	public static final int ITEM_PICK_END = 0x6029;
 	public static final int ITEM_PICK_REPEATED = 0x6030;
 	public static final int ITEM_PICK_TAGS = 0x6031;

@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import android.app.Dialog;
 import android.view.KeyEvent;
 
 /**
@@ -14,7 +13,6 @@ import android.view.KeyEvent;
  *
  */
 public interface ActivityCallbackHandler {
-	public Dialog onCreateDialog(int id);
 	public boolean onKeyDown(int keyCode, KeyEvent event);
 	public boolean onKeyUp(int keyCode, KeyEvent event);
 }

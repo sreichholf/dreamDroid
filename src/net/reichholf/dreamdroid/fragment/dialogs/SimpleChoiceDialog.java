@@ -33,11 +33,6 @@ public class SimpleChoiceDialog extends ActionDialog {
 		mActionIds = actionIds;
 	}
 
-	public SimpleChoiceDialog(CharSequence[] actions, int[] actionIds, boolean autoDismiss) {
-		mActions = actions;
-		mActionIds = actionIds;
-	}
-
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
@@ -46,7 +41,7 @@ public class SimpleChoiceDialog extends ActionDialog {
 		adBuilder.setItems(mActions, new DialogInterface.OnClickListener() {
 
 			public void onClick(DialogInterface dialog, int which) {
-				finishDialog(mActionIds[which]);
+				finishDialog(mActionIds[which], null);
 			}
 		});
 

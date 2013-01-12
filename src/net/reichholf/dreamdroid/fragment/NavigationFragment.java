@@ -492,7 +492,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 * DialogActionListener#onDialogAction(int)
 	 */
 	@Override
-	public void onDialogAction(int action) {
+	public void onDialogAction(int action, Object details) {
 		onItemClicked(action);
 	}
 }

@@ -28,7 +28,6 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -344,10 +343,6 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 		mVolumeTask = new SetVolumeTask();
 		mVolumeTask.execute(params);
-	}
-
-	public Dialog onCreateDialog(int id) {
-		return null;
 	}
 
 	/**

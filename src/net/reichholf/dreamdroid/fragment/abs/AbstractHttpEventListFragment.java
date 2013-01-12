@@ -106,7 +106,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		Timer.editUsingEvent(getMultiPaneHandler(), event, this);
 	}
 
-	public void onDialogAction(int action) {
+	public void onDialogAction(int action, Object details) {
 		switch (action) {
 		case Statics.ACTION_SET_TIMER:
 			setTimerById(mCurrentItem);

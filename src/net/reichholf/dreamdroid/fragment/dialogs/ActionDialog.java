@@ -11,13 +11,12 @@ package net.reichholf.dreamdroid.fragment.dialogs;
  * 
  */
 public abstract class ActionDialog extends AbstractDialog {
-	protected void finishDialog(int action) {
-		((DialogActionListener) getActivity()).onDialogAction(action);
+	protected void finishDialog(int action, Object details) {
+		((DialogActionListener) getActivity()).onDialogAction(action, details);
 		dismiss();
 	}
 
 	public interface DialogActionListener {
-		public void onDialogAction(int action);
+		public void onDialogAction(int action, Object details);
 	}
-
 }

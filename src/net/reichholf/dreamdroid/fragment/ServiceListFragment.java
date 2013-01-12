@@ -895,7 +895,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	 * DialogActionListener#onDialogAction(int)
 	 */
 	@Override
-	public void onDialogAction(int action) {
+	public void onDialogAction(int action, Object details) {
 		String ref = mCurrentService.getString(Service.KEY_REFERENCE);
 		String name = mCurrentService.getString(Service.KEY_NAME);
 

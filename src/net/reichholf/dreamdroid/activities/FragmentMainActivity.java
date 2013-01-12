@@ -6,8 +6,8 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.ActiveProfileChangedListener;
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
@@ -20,7 +20,6 @@ import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -344,19 +343,6 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	}
 
 	@Override
-	protected Dialog onCreateDialog(int id) {
-		Dialog dialog = null;
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-		dialog = callbackHandler.onCreateDialog(id);
-
-		if (dialog == null) {
-			dialog = super.onCreateDialog(id);
-		}
-
-		return dialog;
-	}
-
-	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
 		if (callbackHandler != null)
@@ -449,9 +435,9 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	 * EpgDetailDialogListener#onFinishEpgDetailDialog(int)
 	 */
 	@Override
-	public void onDialogAction(int action) {
+	public void onDialogAction(int action, Object details) {
 		if (mDetailFragment != null)
-			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action);
+			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details);
 
 	}
 

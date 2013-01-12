@@ -79,7 +79,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonSetTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_SET_TIMER);
+					finishDialog(Statics.ACTION_SET_TIMER, null);
 				}
 			});
 
@@ -87,7 +87,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonEditTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_EDIT_TIMER);
+					finishDialog(Statics.ACTION_EDIT_TIMER, null);
 				}
 			});
 
@@ -95,7 +95,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonIMDb.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_IMDB);
+					finishDialog(Statics.ACTION_IMDB, null);
 				}
 			});
 
@@ -103,7 +103,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonSimilar.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_FIND_SIMILAR);
+					finishDialog(Statics.ACTION_FIND_SIMILAR, null);
 				}
 			});
 		} else {

@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
@@ -202,21 +201,6 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 		}
 	}
 
-	@SuppressWarnings("deprecation")
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		Dialog dialog = null;
-		if (mCallBackHandler != null) {
-			dialog = mCallBackHandler.onCreateDialog(id);
-		}
-
-		if (dialog == null) {
-			dialog = super.onCreateDialog(id);
-		}
-
-		return dialog;
-	}
-
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (mCallBackHandler != null) {
@@ -278,9 +262,9 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	}
 
 	@Override
-	public void onDialogAction(int action) {
+	public void onDialogAction(int action, Object details) {
 		if (mFragment != null)
-			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action);
+			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action, details);
 
 	}
 }

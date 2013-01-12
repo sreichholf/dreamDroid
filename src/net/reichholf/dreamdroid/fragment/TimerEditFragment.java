@@ -6,20 +6,21 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.TimePickerDialog;
+import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -47,13 +48,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -65,7 +63,7 @@ import com.actionbarsherlock.view.MenuInflater;
  * @author sreichholf
  * 
  */
-public class TimerEditFragment extends AbstractHttpFragment {
+public class TimerEditFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener {
 	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
 
 	private boolean[] mCheckedDays = { false, false, false, false, false, false, false };
@@ -172,7 +170,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 
 		// onClickListeners
 		registerOnClickListener(mService, Statics.ITEM_PICK_SERVICE);
-		registerOnClickListener(mStart, Statics.ITEM_PICK_START);
+		registerOnClickListener(mStart, Statics.ITEM_PICK_BEGIN);
 		registerOnClickListener(mEnd, Statics.ITEM_PICK_END);
 		registerOnClickListener(mRepeatings, Statics.ITEM_PICK_REPEATED);
 		registerOnClickListener(mTags, Statics.ITEM_PICK_TAGS);
@@ -202,8 +200,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			}
 		});
 
-		// Initialize if savedInstanceState won't
-		if (savedInstanceState == null) {
+		// Initialize if savedInstanceState won't and instance was not retained
+		if (savedInstanceState == null && mTimer == null && mTimerOld == null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) getArguments().get(sData);
 			ExtendedHashMap data = new ExtendedHashMap();
 			data.putAll(map);
@@ -226,8 +224,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			} else {
 				reload();
 			}
-		} else {
-
+		} else if (savedInstanceState != null) {
 			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
 			mTimerOld = (ExtendedHashMap) savedInstanceState.getParcelable("timerOld");
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
@@ -235,6 +232,8 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			if (mTimer != null) {
 				reload();
 			}
+		} else {
+			reload();
 		}
 
 		return view;
@@ -295,83 +294,6 @@ public class TimerEditFragment extends AbstractHttpFragment {
 		}
 
 		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public Dialog onCreateDialog(int id) {
-		final Dialog dialog;
-
-		Calendar cal;
-		Button buttonApply;
-
-		applyViewValues();
-		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-		switch (id) {
-
-		case (Statics.DIALOG_TIMER_PICK_BEGIN_ID):
-			cal = getCalendarFromTimestamp(mTimer.getString("begin"));
-
-			dialog = new Dialog(getSherlockActivity());
-			dialog.setContentView(R.layout.date_time_picker);
-			dialog.setTitle(R.string.set_time_begin);
-
-			if (currentapiVersion >= 11) {
-				DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
-				try {
-					Method m = dp.getClass().getMethod("setCalendarViewShown", boolean.class);
-					m.invoke(dp, false);
-				} catch (Exception e) {
-				} // eat exception in our case
-			}
-
-			setDateAndTimePicker(dialog, cal);
-			dialogRegisterCancel(dialog);
-
-			buttonApply = (Button) dialog.findViewById(R.id.ButtonApply);
-			buttonApply.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					onTimerBeginSet(getCalendarFromPicker(dialog));
-				}
-			});
-
-			dialog.show();
-			break;
-
-		case (Statics.DIALOG_TIMER_PICK_END_ID):
-			cal = getCalendarFromTimestamp(mTimer.getString("end"));
-
-			dialog = new Dialog(getSherlockActivity());
-			dialog.setContentView(R.layout.date_time_picker);
-			dialog.setTitle(R.string.set_time_end);
-
-			if (currentapiVersion >= 11) {
-				DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
-				try {
-					Method m = dp.getClass().getMethod("setCalendarViewShown", boolean.class);
-					m.invoke(dp, false);
-				} catch (Exception e) {
-				} // eat exception in our case
-			}
-
-			setDateAndTimePicker(dialog, cal);
-			dialogRegisterCancel(dialog);
-
-			buttonApply = (Button) dialog.findViewById(R.id.ButtonApply);
-			buttonApply.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					onTimerEndSet(getCalendarFromPicker(dialog));
-				}
-			});
-
-			dialog.show();
-			break;
-		default:
-			dialog = null;
-		}
-
-		return dialog;
 	}
 
 	protected void pickRepeatings() {
@@ -468,6 +390,7 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 * @param id
 	 */
 	protected boolean onItemClicked(int id) {
+		Bundle args;
 		switch (id) {
 		case Statics.ITEM_SAVE:
 			saveTimer();
@@ -481,12 +404,24 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			pickService();
 			return true;
 
-		case Statics.ITEM_PICK_START:
-			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
+		case Statics.ITEM_PICK_BEGIN:
+			args = new Bundle();
+			args.putInt(TimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_BEGIN);
+			args.putString(TimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_BEGIN));
+
+			TimePickerDialog beginPicker = TimePickerDialog.newInstance();
+			beginPicker.setArguments(args);
+			getMultiPaneHandler().showDialogFragment(beginPicker, "dialog_pick_start_time");
 			return true;
 
 		case Statics.ITEM_PICK_END:
-			getSherlockActivity().showDialog(Statics.DIALOG_TIMER_PICK_END_ID);
+			args = new Bundle();
+			args.putInt(TimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_END);
+			args.putString(TimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_END));
+
+			TimePickerDialog endPicker = TimePickerDialog.newInstance();
+			endPicker.setArguments(args);
+			getMultiPaneHandler().showDialogFragment(endPicker, "dialog_pick_end_time");
 			return true;
 
 		case Statics.ITEM_PICK_REPEATED:
@@ -718,90 +653,16 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	}
 
 	/**
-	 * Set the the values of the date and the time picker of the DateTimePicker
-	 * dialog
-	 * 
-	 * @param dialog
-	 *            The Dialog containing the date and the time picker
-	 * @param cal
-	 *            The calendar-object to set date and time from
-	 */
-	private void setDateAndTimePicker(final Dialog dialog, Calendar cal) {
-		DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
-		TimePicker tp = (TimePicker) dialog.findViewById(R.id.TimePicker);
-
-		dp.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-		tp.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
-		tp.setCurrentMinute(cal.get(Calendar.MINUTE));
-	}
-
-	/**
-	 * @param dialog
-	 *            The dialog containing the date and the time picker
-	 * @return <code>Calendar</code> container set to the date and time of the
-	 *         Date- and TimePicker
-	 */
-	private Calendar getCalendarFromPicker(final Dialog dialog) {
-		Calendar cal = GregorianCalendar.getInstance();
-		DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
-		TimePicker tp = (TimePicker) dialog.findViewById(R.id.TimePicker);
-
-		cal.set(Calendar.YEAR, dp.getYear());
-		cal.set(Calendar.MONTH, dp.getMonth());
-		cal.set(Calendar.DAY_OF_MONTH, dp.getDayOfMonth());
-		cal.set(Calendar.HOUR_OF_DAY, tp.getCurrentHour());
-		cal.set(Calendar.MINUTE, tp.getCurrentMinute());
-		cal.set(Calendar.SECOND, 0);
-
-		return cal;
-	}
-
-	/**
-	 * Convert a unix timestamp to a java Calendar instance
-	 * 
-	 * @param timestamp
-	 *            A unix timestamp
-	 * @return
-	 */
-	private Calendar getCalendarFromTimestamp(String timestamp) {
-		long ts = (Long.valueOf(timestamp)) * 1000;
-		Date date = new Date(ts);
-
-		Calendar cal = GregorianCalendar.getInstance();
-		cal.setTime(date);
-
-		return cal;
-	}
-
-	/**
-	 * Registers an OnClickListener for a dialogs cancel-button with id
-	 * <code>R.id.ButtonCancel</code>
-	 * 
-	 * @param dialog
-	 *            The Dialog containing a <code>R.id.ButtonCancel</code>
-	 */
-	private void dialogRegisterCancel(final Dialog dialog) {
-		Button buttonCancel = (Button) dialog.findViewById(R.id.ButtonCancel);
-
-		buttonCancel.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				dialog.dismiss();
-			}
-		});
-	}
-
-	/**
 	 * Apply the values of the TimePicker for the Timer-Begin to
 	 * <code>mTimer</code>
 	 * 
 	 * @param cal
 	 *            Calndear Object
 	 */
-	private void onTimerBeginSet(Calendar cal) {
-		String seconds = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
-		mTimer.put(Timer.KEY_BEGIN, seconds);
-		getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_BEGIN_ID);
+	private void setBegin(Calendar cal) {
+		String timestamp = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
+		mTimer.put(Timer.KEY_BEGIN, timestamp);
+		mTimer.put(Timer.KEY_BEGIN_READEABLE, DateTime.getYearDateTimeString(timestamp));
 		reload();
 	}
 
@@ -811,10 +672,10 @@ public class TimerEditFragment extends AbstractHttpFragment {
 	 * 
 	 * @param cal
 	 */
-	private void onTimerEndSet(Calendar cal) {
-		String seconds = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
-		mTimer.put(Timer.KEY_END, seconds);
-		getSherlockActivity().removeDialog(Statics.DIALOG_TIMER_PICK_END_ID);
+	private void setEnd(Calendar cal) {
+		String timestamp = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
+		mTimer.put(Timer.KEY_END, timestamp);
+		mTimer.put(Timer.KEY_END_READABLE, DateTime.getYearDateTimeString(timestamp));
 		reload();
 	}
 
@@ -834,5 +695,24 @@ public class TimerEditFragment extends AbstractHttpFragment {
 			a.setResult(resultCode);
 			a.finish();
 		}
+	}
+
+	@Override
+	public void onDialogAction(int action, Object details) {
+		applyViewValues();
+		Calendar cal;
+		switch (action) {
+		case Statics.ACTION_PICK_TIME_BEGIN:
+			cal = (Calendar) details;
+			setBegin(cal);
+			break;
+		case Statics.ACTION_PICK_TIME_END:
+			cal = (Calendar) details;
+			setEnd(cal);
+			break;
+		default:
+			break;
+		}
+
 	}
 }

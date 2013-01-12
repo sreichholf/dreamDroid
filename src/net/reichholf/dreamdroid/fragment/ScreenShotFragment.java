@@ -142,12 +142,16 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		mFilename = extras.getString(KEY_FILENAME);
 		mScannerConn = new MediaScannerConnection(getSherlockActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
-
-		if (savedInstanceState == null) {
+		
+		if(mRawImage == null)
+			mRawImage = new byte[0];
+		if (savedInstanceState == null && mRawImage.length == 0) {
 			reload();
-		} else {
+		} else if (savedInstanceState != null) {
 			byte[] image = savedInstanceState.getByteArray("rawImage");
 			onScreenshotAvailable(image);
+		} else {
+			onScreenshotAvailable(mRawImage);
 		}
 
 		return mImageView;
@@ -168,6 +172,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
+		mScannerConn.disconnect();
 		outState.putByteArray("rawImage", mRawImage);
 	}
 

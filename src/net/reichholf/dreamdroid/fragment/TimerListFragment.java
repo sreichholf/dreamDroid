@@ -201,7 +201,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	public void onDialogAction(int action) {
+	public void onDialogAction(int action, Object details) {
 		switch (action) {
 		case Statics.ACTION_EDIT:
 			editTimer(mTimer, false);

@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.fragment.abs;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import android.app.Dialog;
 import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockListFragment;
@@ -57,10 +56,5 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	
 	protected MultiPaneHandler getMultiPaneHandler() {
 		return (MultiPaneHandler) getSherlockActivity();
-	}
-	
-	@Override
-	public Dialog onCreateDialog(int id) {
-		return null;
 	}
 }

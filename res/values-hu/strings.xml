@@ -187,7 +187,7 @@
 <item>felvétele</item>
 </string-array>
 <string name="sleeptimer">Kikapcsolási iső</string>
-<string name="current_volume">A hangerő most %-on</string>
+<string name="current_volume">A hangerő most %s-on</string>
 <string name="muted">Némítva</string>
 <string name="enable_volume_control">Hangerőszabályzás engedélyezése</string>
 <string name="enable_volume_control_long">Közvetlen hangerőszabályzás engedélyezése H/W betűk segítségével</string>
@@ -199,7 +199,7 @@
 <string name="enable_instant_zap_long">Azonnali zap egy szolgáltató rövid megnyomásakor</string>
 <string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
 <string name="simple_remote">Egyszerű távirányító rajz</string>
-<string name="screenshot_saved">Pillanatkép mentve \'%-on\'</string>
+<string name="screenshot_saved">Pillanatkép mentve \'%s-on\'</string>
 <string name="imdb">IMDb</string>
 <string name="missing_stream_player">Nincs streamelésre alkalmas lejátszó telepítve a telefonon!</string>
 </resources>
