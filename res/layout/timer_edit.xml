@@ -25,14 +25,44 @@
                 android:id="@+id/EditTextTitle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="50dip"
                 android:hint="@string/title" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
 
             <CheckBox
                 android:id="@+id/CheckBoxEnabled"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="-45dip" />
+                android:layout_marginRight="-45dip" />
+
+            <TextView
+                android:id="@+id/TextViewEnabled"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="45dp"
+                android:layout_weight="1"
+                android:paddingLeft="3dip"
+                android:text="@string/enabled"
+                android:textSize="20dip" />
+
+            <CheckBox
+                android:id="@+id/CheckBoxZap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="-45dip" />
+
+            <TextView
+                android:id="@+id/TextViewZap"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="45dp"
+                android:layout_weight="1"
+                android:paddingLeft="3dip"
+                android:text="@string/zap"
+                android:textSize="20dip" />
         </LinearLayout>
 
         <TextView
@@ -171,4 +201,5 @@
             android:text="@+id/TextViewTags"
             android:textSize="20dip" />
     </LinearLayout>
+
 </ScrollView>

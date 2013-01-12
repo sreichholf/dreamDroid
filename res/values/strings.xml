@@ -224,5 +224,6 @@
     <string name="autodiscovery_failed">Could not autodiscover any dreambox on your local network!</string>
     <string name="add_all">Add All</string>
     <string name="error_parsing">An error occured on parsing the data!</string>
+    <string name="enabled">Enabled</string>
 
 </resources>

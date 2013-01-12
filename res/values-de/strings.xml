@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-<string name="description">Dreambox</string>
+<string name="description">Beschreibung</string>
 <string name="title">Titel</string>
 <string name="mo">Mo</string>
 <string name="app_name">DreamDroid</string>
@@ -223,5 +223,6 @@
 <string name="autodiscover_dreamboxes">Automatische Konfiguration</string>
 <string name="autodiscovery_failed">Leider konnte keine Dreambox im lokalen Netzwerk gefunden werden!</string>
 <string name="add_all">Alle hinzufügen</string>
+<string name="enabled">Aktiviert</string>
 
 </resources>

@@ -78,6 +78,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	private EditText mName;
 	private EditText mDescription;
 	private CheckBox mEnabled;
+	private CheckBox mZap;
 	private Spinner mAfterevent;
 	private Spinner mLocation;
 	private TextView mStart;
@@ -160,6 +161,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		mName = (EditText) view.findViewById(R.id.EditTextTitle);
 		mDescription = (EditText) view.findViewById(R.id.EditTextDescription);
 		mEnabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
+		mZap = (CheckBox) view.findViewById(R.id.CheckBoxZap);
 		mAfterevent = (Spinner) view.findViewById(R.id.SpinnerAfterEvent);
 		mLocation = (Spinner) view.findViewById(R.id.SpinnerLocation);
 		mStart = (TextView) view.findViewById(R.id.TextViewBegin);
@@ -174,6 +176,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		registerOnClickListener(mEnd, Statics.ITEM_PICK_END);
 		registerOnClickListener(mRepeatings, Statics.ITEM_PICK_REPEATED);
 		registerOnClickListener(mTags, Statics.ITEM_PICK_TAGS);
+
 
 		mAfterevent.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
@@ -473,6 +476,13 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		} else {
 			mEnabled.setChecked(false);
 		}
+		
+		int zap = Integer.valueOf(mTimer.getString(Timer.KEY_JUST_PLAY));
+		if(zap == 1){
+			mZap.setChecked(true);
+		} else {
+			mZap.setChecked(false);
+		}
 
 		mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 
@@ -615,6 +625,12 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			mTimer.put(Timer.KEY_DISABLED, "0");
 		} else {
 			mTimer.put(Timer.KEY_DISABLED, "1");
+		}
+		
+		if (mZap.isChecked()) {
+			mTimer.put(Timer.KEY_JUST_PLAY, "1");
+		} else {
+			mTimer.put(Timer.KEY_JUST_PLAY, "0");
 		}
 
 		String ae = Integer.valueOf(mAfterevent.getSelectedItemPosition()).toString();
