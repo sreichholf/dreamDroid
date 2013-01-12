@@ -23,7 +23,6 @@
  */
 package de.duenndns.ssl;
 
-
 import net.reichholf.dreamdroid.R;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -33,13 +32,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-public class MemorizingActivity extends Activity
-		implements OnClickListener,OnCancelListener {
+public class MemorizingActivity extends Activity implements OnClickListener, OnCancelListener {
 	final static String TAG = "MemorizingActivity";
 
 	int decisionId;
 	String app;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		Log.d(TAG, "onCreate");
@@ -55,13 +53,10 @@ public class MemorizingActivity extends Activity
 		String cert = i.getStringExtra(MemorizingTrustManager.DECISION_INTENT_CERT);
 		Log.d(TAG, "onResume with " + i.getExtras() + " decId=" + decisionId);
 		Log.d(TAG, "data: " + i.getData());
-		new AlertDialog.Builder(this).setTitle(R.string.mtm_accept_cert)
-			.setMessage(cert)
-			.setPositiveButton(R.string.mtm_decision_always, this)
-			.setNeutralButton(R.string.mtm_decision_once, this)
-			.setNegativeButton(R.string.mtm_decision_abort, this)
-.setOnCancelListener(this)
-			.create().show();
+		new AlertDialog.Builder(this).setTitle(R.string.mtm_accept_cert).setMessage(cert)
+				.setPositiveButton(R.string.mtm_decision_always, this)
+				.setNeutralButton(R.string.mtm_decision_once, this)
+				.setNegativeButton(R.string.mtm_decision_abort, this).setOnCancelListener(this).create().show();
 	}
 
 	void sendDecision(int decision) {
