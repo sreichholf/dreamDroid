@@ -640,17 +640,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 	/**
 	 * @param ref
-	 * @return
-	 */
-	private boolean isBouquetList(String ref) {
-		if (ref.startsWith("1:7:")) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * @param ref
 	 *            The ServiceReference to catch the EPG for
 	 * @param nam
 	 *            The name of the Service for the reference
@@ -679,7 +668,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		ExtendedHashMap item = new ExtendedHashMap((HashMap<String, Object>) l.getItemAtPosition(position));
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
-		if (isBouquetList(ref)) {
+		if (Service.isBouquet(ref)) {
 			if (l.equals(mNavList)) {
 				if (SERVICE_REF_ROOT.equals(mNavReference)) {
 					ExtendedHashMap map = new ExtendedHashMap();

@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -39,6 +40,17 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	}
 
 	@Override
+	public boolean areAllItemsEnabled() {
+		return false;
+	}
+
+	@Override
+	public boolean isEnabled(int position) {
+		ExtendedHashMap service = getItem(position);
+		return !Service.isMarker(service.getString(Service.KEY_REFERENCE));
+	}
+
+	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View view = convertView;
 		ExtendedHashMap service = getItem(position);
@@ -51,12 +63,17 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		int viewId = android.R.id.text1;
 		int layoutId = android.R.layout.simple_list_item_1;
 
-		if (hasNext) {
-			viewId = R.id.service_list_item_nn;
-			layoutId = R.layout.service_list_item_nn;
-		} else if (hasNow) {
-			viewId = R.id.service_list_item;
-			layoutId = R.layout.service_list_item;
+		if (Service.isMarker(service.getString(Service.KEY_REFERENCE))) {
+			layoutId = R.layout.service_list_marker;
+			hasNow = false;
+		} else {
+			if (hasNext) {
+				viewId = R.id.service_list_item_nn;
+				layoutId = R.layout.service_list_item_nn;
+			} else if (hasNow) {
+				viewId = R.id.service_list_item;
+				layoutId = R.layout.service_list_item;
+			}
 		}
 		if (view == null || view.getId() != viewId) {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
