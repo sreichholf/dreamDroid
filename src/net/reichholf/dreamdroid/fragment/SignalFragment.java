@@ -105,8 +105,10 @@ public class SignalFragment extends AbstractHttpFragment {
 		mSound.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				if (isChecked) {
-					mHandler.removeCallbacks(mPlaySoundTask);
-					mHandler.post(mPlaySoundTask);
+					if (mEnabled.isChecked()) {
+						mHandler.removeCallbacks(mPlaySoundTask);
+						mHandler.post(mPlaySoundTask);
+					}
 				} else {
 					mHandler.removeCallbacks(mPlaySoundTask);
 				}
@@ -163,10 +165,10 @@ public class SignalFragment extends AbstractHttpFragment {
 		if (mEnabled.isChecked()) {
 			mHandler.removeCallbacks(mUpdateTask);
 			mHandler.post(mUpdateTask);
-		}
-		if (mSound.isChecked()) {
-			mHandler.removeCallbacks(mPlaySoundTask);
-			mHandler.post(mPlaySoundTask);
+			if (mSound.isChecked()) {
+				mHandler.removeCallbacks(mPlaySoundTask);
+				mHandler.post(mPlaySoundTask);
+			}
 		}
 	}
 

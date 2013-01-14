@@ -2,8 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
+    android:layout_gravity="center_horizontal"
     android:padding="20dp" >
 
     <org.codeandmagic.android.gauge.GaugeView

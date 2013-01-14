@@ -2,29 +2,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="fill_parent"
-    android:gravity="left"
-    android:orientation="horizontal"
+    android:layout_gravity="center_horizontal"
     android:padding="20dp" >
 
     <org.codeandmagic.android.gauge.GaugeView
         android:id="@+id/gauge_view1"
         android:layout_width="200dp"
         android:layout_height="200dp"
+        android:layout_centerVertical="true"
         android:layout_marginRight="20dp" />
-
-    <ToggleButton
-        android:id="@+id/toggle_enabled"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true" />
 
     <LinearLayout
         android:id="@+id/layout_snrdb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/gauge_view1"
-        android:gravity="right" >
+        android:layout_alignTop="@id/gauge_view1"
+        android:layout_marginTop="30dp"
+        android:layout_toRightOf="@id/gauge_view1" >
 
         <TextView
             android:id="@+id/text_snrdb_title"
@@ -85,12 +79,20 @@
             android:textSize="20sp" />
     </LinearLayout>
 
+    <ToggleButton
+        android:id="@+id/toggle_enabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true" />
+
     <CheckBox
         android:id="@+id/check_accoustic_feedback"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/layout_agc"
-        android:layout_centerVertical="true"
+        android:layout_below="@+id/layout_agc"
+        android:layout_marginTop="15dp"
         android:text="@string/accoustic_feedback" />
 
 </RelativeLayout>
