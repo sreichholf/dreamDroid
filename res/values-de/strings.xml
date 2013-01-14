@@ -224,5 +224,6 @@
 <string name="autodiscovery_failed">Leider konnte keine Dreambox im lokalen Netzwerk gefunden werden!</string>
 <string name="add_all">Alle hinzufügen</string>
 <string name="enabled">Aktiviert</string>
-
+    <string name="signal_meter">Signal Messung</string>
+    <string name="accoustic_feedback">Akkustisches Feedback</string>
 </resources>

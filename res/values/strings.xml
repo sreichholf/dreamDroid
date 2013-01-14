@@ -225,5 +225,7 @@
     <string name="add_all">Add All</string>
     <string name="error_parsing">An error occured on parsing the data!</string>
     <string name="enabled">Enabled</string>
+    <string name="signal_meter">Signal Meter</string>
+    <string name="accoustic_feedback">Accoustic Feedback</string>
 
 </resources>

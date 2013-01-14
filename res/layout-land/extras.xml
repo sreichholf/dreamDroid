@@ -61,6 +61,15 @@
                 android:text="@string/about" />
 
             <Button
+                android:id="@+id/ButtonSignal"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_info"
+                android:text="@string/signal_meter" />
+
+            <Button
                 android:id="@+id/ButtonCheckConnection"
                 android:layout_width="fill_parent"
                 android:layout_height="65dp"

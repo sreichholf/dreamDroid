@@ -1,0 +1,96 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    android:gravity="left"
+    android:orientation="horizontal"
+    android:padding="20dp" >
+
+    <org.codeandmagic.android.gauge.GaugeView
+        android:id="@+id/gauge_view1"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginRight="20dp" />
+
+    <ToggleButton
+        android:id="@+id/toggle_enabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true" />
+
+    <LinearLayout
+        android:id="@+id/layout_snrdb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/gauge_view1"
+        android:gravity="right" >
+
+        <TextView
+            android:id="@+id/text_snrdb_title"
+            android:layout_width="90dp"
+            android:layout_height="wrap_content"
+            android:text="SNRdb"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/text_snrdb"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_ber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_snrdb"
+        android:layout_toRightOf="@id/gauge_view1" >
+
+        <TextView
+            android:id="@+id/text_ber_title"
+            android:layout_width="90dp"
+            android:layout_height="wrap_content"
+            android:text="BER"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/text_ber"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_agc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_ber"
+        android:layout_toRightOf="@id/gauge_view1" >
+
+        <TextView
+            android:id="@+id/text_agc_title"
+            android:layout_width="90dp"
+            android:layout_height="wrap_content"
+            android:text="AGC"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/text_agc"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/check_accoustic_feedback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/layout_agc"
+        android:layout_centerVertical="true"
+        android:text="@string/accoustic_feedback" />
+
+</RelativeLayout>

@@ -61,14 +61,30 @@
                 android:text="@string/check_connectivity" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/ButtonAbout"
+        <LinearLayout
+            android:id="@+id/LinearLayout3"
             android:layout_width="fill_parent"
-            android:layout_height="65dp"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_menu_help"
-            android:text="@string/about" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/ButtonSignal"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_info"
+                android:text="@string/signal_meter" />
+
+            <Button
+                android:id="@+id/ButtonAbout"
+                android:layout_width="fill_parent"
+                android:layout_height="65dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_help"
+                android:text="@string/about" />
+        </LinearLayout>
     </LinearLayout>
 
 </ScrollView>

@@ -37,6 +37,7 @@ public class ViewPagerNavigationFragment extends NavigationFragment {
 	private Button mButtonMessage;
 	private Button mButtonAbout;
 	private Button mButtonProfiles;
+	private Button mButtonSignal;
 	private ViewPager mPager;
 
 	@Override
@@ -65,6 +66,7 @@ public class ViewPagerNavigationFragment extends NavigationFragment {
 		mButtonAbout = (Button) pageViews[1].findViewById(R.id.ButtonAbout);
 		mButtonMessage = (Button) pageViews[1].findViewById(R.id.ButtonMessage);
 		mButtonConnectivity = (Button) pageViews[1].findViewById(R.id.ButtonCheckConnection);
+		mButtonSignal = (Button) pageViews[1].findViewById(R.id.ButtonSignal);
 
 		registerOnClickListener(mButtonSleepTimer, Statics.ITEM_SLEEPTIMER);
 		registerOnClickListener(mButtonScreenshot, Statics.ITEM_SCREENSHOT);
@@ -79,6 +81,7 @@ public class ViewPagerNavigationFragment extends NavigationFragment {
 		registerOnClickListener(mButtonServices, Statics.ITEM_SERVICES);
 		registerOnClickListener(mButtonTimer, Statics.ITEM_TIMER);
 		registerOnClickListener(mButtonRemote, Statics.ITEM_REMOTE);
+		registerOnClickListener(mButtonSignal, Statics.ITEM_SIGNAL);
 		return v;
 	}
 
