@@ -72,8 +72,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 			{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
 			{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1, 0 },
-			{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 }, 
-			{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.drawable.ic_menu_info, 1, 0 },};
+			{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
+			{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.drawable.ic_menu_info, 1, 0 }, };
 
 	private int[] mCurrent;
 	private int mCurrentListItem;
@@ -171,7 +171,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		protected void onProgressUpdate(Void... progress) {
 			mProgressDialogFragment = SimpleProgressDialog.newInstance(getString(R.string.sleeptimer),
 					getString(R.string.loading));
-			getMultiPaneHandler().showDialogFragment(mProgressDialogFragment, "dialog_sleeptimer_progress");
+			getMultiPaneHandler().showDialogFragment(mProgressDialogFragment, "sleeptimer_progress_dialog");
 		}
 
 		@Override
@@ -395,10 +395,10 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		case Statics.ITEM_PROFILES:
 			getMainActivity().showDetails(ProfileListFragment.class);
 			return true;
-		
+
 		case Statics.ITEM_SIGNAL:
 			getMainActivity().showDetails(SignalFragment.class);
-			
+
 		default:
 			return super.onItemClicked(id);
 		}
@@ -496,7 +496,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 * DialogActionListener#onDialogAction(int)
 	 */
 	@Override
-	public void onDialogAction(int action, Object details) {
+	public void onDialogAction(int action, Object details, String dialogTag) {
 		onItemClicked(action);
 	}
 }

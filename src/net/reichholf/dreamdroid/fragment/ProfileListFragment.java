@@ -332,7 +332,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	@Override
-	public void onDialogAction(int action, Object details) {
+	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
 		case Statics.ACTION_EDIT:
 			editProfile();

@@ -714,7 +714,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	}
 
 	@Override
-	public void onDialogAction(int action, Object details) {
+	public void onDialogAction(int action, Object details, String dialogTag) {
 		applyViewValues();
 		Calendar cal;
 		switch (action) {

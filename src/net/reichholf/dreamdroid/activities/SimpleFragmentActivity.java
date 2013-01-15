@@ -262,9 +262,9 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	}
 
 	@Override
-	public void onDialogAction(int action, Object details) {
+	public void onDialogAction(int action, Object details, String dialogTag) {
 		if (mFragment != null)
-			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action, details);
+			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action, details, dialogTag);
 
 	}
 }

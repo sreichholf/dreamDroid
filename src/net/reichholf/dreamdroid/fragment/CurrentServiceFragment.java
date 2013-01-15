@@ -278,7 +278,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	}
 
 	@Override
-	public void onDialogAction(int action, Object details) {
+	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
 		case Statics.ACTION_SET_TIMER:
 			setTimerById(mCurrentItem);

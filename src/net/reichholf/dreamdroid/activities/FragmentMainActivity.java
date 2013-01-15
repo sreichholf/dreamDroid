@@ -6,6 +6,10 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import net.reichholf.dreamdroid.ActiveProfileChangedListener;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -41,6 +45,13 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler,
 		ActiveProfileChangedListener, DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
+
+	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(
+			new String[] { 	"about_dialog",
+							"powerstate_dialog",
+							"sendmessage_dialog",
+							"sleeptimer_dialog",
+							"sleeptimer_progress_dialog" });
 
 	private boolean mMultiPane;
 
@@ -435,10 +446,22 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	 * EpgDetailDialogListener#onFinishEpgDetailDialog(int)
 	 */
 	@Override
-	public void onDialogAction(int action, Object details) {
-		if (mDetailFragment != null)
-			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details);
+	public void onDialogAction(int action, Object details, String dialogTag) {
+		if (isNavigationDialog(dialogTag)) {
+			((ActionDialog.DialogActionListener) mNavigationFragment).onDialogAction(action, details, dialogTag);
+		} else if (mDetailFragment != null) {
+			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
+		}
+	}
 
+	private boolean isNavigationDialog(String dialogTag) {
+		Iterator<String> iter = NAVIGATION_DIALOG_TAGS.iterator();
+		while (iter.hasNext()) {
+			String tag = iter.next();
+			if (tag.equals(dialogTag))
+				return true;
+		}
+		return false;
 	}
 
 	/*

@@ -379,7 +379,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	public void onDialogAction(int action, Object details) {
+	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
 		case Statics.ACTION_ZAP:
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
