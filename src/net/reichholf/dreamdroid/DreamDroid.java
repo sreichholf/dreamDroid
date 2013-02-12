@@ -16,12 +16,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
 import android.app.Application;
 import android.content.ComponentName;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -43,50 +40,6 @@ public class DreamDroid extends Application {
 
 	public static boolean DATE_LOCALE_WO;
 
-	public static final String KEY_ID = "_id";
-	public static final String KEY_PROFILE = "profile";
-	public static final String KEY_HOST = "host";
-	public static final String KEY_STREAM_HOST = "streamhost";
-	public static final String KEY_STREAM_PORT = "streamport";
-	public static final String KEY_FILE_PORT = "fileport";
-	public static final String KEY_PORT = "port";
-	public static final String KEY_LOGIN = "login";
-	public static final String KEY_USER = "user";
-	public static final String KEY_PASS = "pass";
-	public static final String KEY_SSL = "ssl";
-	public static final String KEY_SIMPLE_REMOTE = "simpleremote";
-
-	private static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 6;
-	private static final String PROFILES_TABLE_NAME = "profiles";
-
-	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " + 
-				PROFILES_TABLE_NAME + " (" +
-				KEY_ID + " INTEGER PRIMARY KEY, " + 
-				KEY_PROFILE + " TEXT, " +
-				KEY_HOST + " TEXT, " +
-				KEY_STREAM_HOST + " TEXT, " + 
-				KEY_PORT + " INTEGER, " + 
-				KEY_STREAM_PORT + " INTEGER, " + 
-				KEY_FILE_PORT + " INTEGER, " +
-				KEY_LOGIN + " BOOLEAN, " + 
-				KEY_USER + " TEXT, " + 
-				KEY_PASS + " TEXT, " + 
-				KEY_SSL + " BOOLEAN, " + 
-				KEY_SIMPLE_REMOTE + " BOOLEAN );";
-
-	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_STREAM_HOST + " TEXT;";
-
-	private static final String PROFILES_TABLE_UPGRADE_3_4 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_SIMPLE_REMOTE + " BOOLEAN;";
-
-	private static final String PROFILES_TABLE_UPGRADE_4_5 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_STREAM_PORT + " INTEGER;";
-	
-	private static final String PROFILES_TABLE_UPGRADE_5_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_FILE_PORT + " INTEGER;";
-	
 	public static ActiveProfileChangedListener onActiveProfileChangedListener = null;
 
 	private static boolean sFeatureSleeptimer = false;
@@ -94,12 +47,11 @@ public class DreamDroid extends Application {
 
 	private static Profile sProfile;
 	private static SharedPreferences sSp;
-	private static SQLiteDatabase sDb;
 	private static ArrayList<String> sLocations;
 	private static ArrayList<String> sTags;
-	
+
 	private static EpgSearchListener sSearchListener;
-	
+
 	/**
 	 * @param context
 	 * @return
@@ -110,7 +62,7 @@ public class DreamDroid extends Application {
 			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
 			return "dreamDroid " + pinfo.versionName + "\n© Stephan Reichholf\nstephan@reichholf.net";
 		} catch (android.content.pm.PackageManager.NameNotFoundException e) {
-			return "dreamDroid\n© 2010 Stephan Reichholf\nstephan@reichholf.net";
+			return "dreamDroid\n© 2013 Stephan Reichholf\nstephan@reichholf.net";
 		}
 	}
 
@@ -140,43 +92,11 @@ public class DreamDroid extends Application {
 		sLocations = new ArrayList<String>();
 		sTags = new ArrayList<String>();
 
-		sDb = openOrCreateDatabase(DATABASE_NAME, MODE_PRIVATE, null);
-
-		if (sDb.needUpgrade(DATABASE_VERSION)) {
-			if (sDb.getVersion() == 2) {
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_2_3);
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_3_4);
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_4_5);
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-				sDb.setVersion(DATABASE_VERSION);
-			} else if (sDb.getVersion() == 3) {
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_3_4);
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_4_5);
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-				sDb.setVersion(DATABASE_VERSION);
-			} else if (sDb.getVersion() == 4){
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_4_5);
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-				sDb.setVersion(DATABASE_VERSION);
-			} else if (sDb.getVersion() == 5){
-				sDb.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-				sDb.setVersion(DATABASE_VERSION);
-			} else {
-				sDb.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME);
-				sDb.setVersion(0);
-			}
-		}
-
-		if (sDb.getVersion() != DATABASE_VERSION) {
-			// Create the Profiles-Tables if it doesn't exist
-			sDb.execSQL(PROFILES_TABLE_CREATE);
-			sDb.setVersion(DATABASE_VERSION);
-		}
-
 		// the profile-table is initial - let's migrate the current config as
 		// default Profile
-		Cursor c = getProfiles();
-		if (c.getCount() == 0) {
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getBaseContext());
+		ArrayList<Profile> profiles = dbh.getProfiles();
+		if (profiles.isEmpty()) {
 			String host = sSp.getString("host", "dm8000");
 			String streamHost = sSp.getString("host", "");
 
@@ -186,17 +106,16 @@ public class DreamDroid extends Application {
 
 			boolean login = sSp.getBoolean("login", false);
 			boolean ssl = sSp.getBoolean("ssl", false);
-			
+
 			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false);
-			DreamDroid.addProfile(p);
+			dbh.addProfile(p);
 			SharedPreferences.Editor editor = sSp.edit();
 			editor.remove("currentProfile");
 			editor.commit();
 		}
-		c.close();
 
 		int profileId = sSp.getInt("currentProfile", 1);
-		if (setActiveProfile(profileId)) {
+		if (setActiveProfile(getBaseContext(), profileId)) {
 			showToast(getText(R.string.profile_activated) + " '" + sProfile.getName() + "'");
 		} else {
 			showToast(getText(R.string.profile_not_activated));
@@ -205,8 +124,8 @@ public class DreamDroid extends Application {
 			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false);
 		}
 	}
-	
-	public static SharedPreferences getSharedPreferences(){
+
+	public static SharedPreferences getSharedPreferences() {
 		return sSp;
 	}
 
@@ -227,42 +146,18 @@ public class DreamDroid extends Application {
 		toast.show();
 	}
 
-	/**
-	 * @param p
-	 */
-	public static boolean addProfile(Profile p) {
-		ContentValues values = new ContentValues();
-		values.put(KEY_PROFILE, p.getName());
-		values.put(KEY_HOST, p.getHost());
-		values.put(KEY_STREAM_HOST, p.getStreamHostValue());
-		values.put(KEY_PORT, p.getPort());
-		values.put(KEY_STREAM_PORT, p.getStreamPort());
-		values.put(KEY_FILE_PORT, p.getFilePort());
-		values.put(KEY_LOGIN, p.isLogin());
-		values.put(KEY_USER, p.getUser());
-		values.put(KEY_PASS, p.getPass());
-		values.put(KEY_SSL, p.isSsl());
-		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
-
-		if (sDb.insert(PROFILES_TABLE_NAME, null, values) > -1) {
-			return true;
-		}
-
-		return false;
-	}
-	
-	public static void disableNowNext(){
+	public static void disableNowNext() {
 		sFeatureNowNext = false;
 	}
-	
-	public static void enableNowNext(){
+
+	public static void enableNowNext() {
 		sFeatureNowNext = true;
 	}
-	
-	public static boolean featureNowNext(){
+
+	public static boolean featureNowNext() {
 		return sFeatureNowNext;
 	}
-		
+
 	public static void disableSleepTimer() {
 		sFeatureSleeptimer = false;
 	}
@@ -275,100 +170,42 @@ public class DreamDroid extends Application {
 		return sFeatureSleeptimer;
 	}
 
-	/**
-	 * @return Cursor for all Settings
-	 */
-	public static Cursor getProfiles() {
-		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE };
-		return sDb.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE);
-	}
-
-	public static Cursor getProfile(int id) {
-		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE };
-		return sDb.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null, null, null, KEY_PROFILE);
-	}
-
-	/**
-	 * @param p
-	 */
-	public static boolean updateProfile(Profile p) {
-		ContentValues values = new ContentValues();
-		values.put(KEY_PROFILE, p.getName());
-		values.put(KEY_HOST, p.getHost());
-		values.put(KEY_STREAM_HOST, p.getStreamHostValue());
-		values.put(KEY_PORT, p.getPort());
-		values.put(KEY_STREAM_PORT, p.getStreamPort());
-		values.put(KEY_FILE_PORT, p.getFilePort());
-		values.put(KEY_LOGIN, p.isLogin());
-		values.put(KEY_USER, p.getUser());
-		values.put(KEY_PASS, p.getPass());
-		values.put(KEY_SSL, p.isSsl());
-		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
-
-		int numRows = sDb.update(PROFILES_TABLE_NAME, values, KEY_ID + "=" + p.getId(), null);
-
-		if (numRows == 1) {
-			return true;
-		}
-
-		return false;
+	public void onActiveProfileChanged(Profile p) {
 
 	}
-	
-	public void onActiveProfileChanged(Profile p){
-		
-	}
 
-	/**
-	 * @param p
-	 */
-	public static boolean deleteProfile(Profile p) {
-		int numRows = sDb.delete(PROFILES_TABLE_NAME, KEY_ID + "=" + p.getId(), null);
-		if (numRows == 1) {
-			return true;
-		}
-
-		return false;
-	}
-	
-	public static Profile getActiveProfile(){
+	public static Profile getActiveProfile() {
 		return sProfile;
 	}
-	
+
 	/**
 	 * @param id
 	 * @return
 	 */
-	public static boolean setActiveProfile(int id) {
-		Cursor c = getProfile(id);
-		if (c.getCount() == 1) {
-			c.moveToFirst();
-			sProfile = new Profile(c);
+	public static boolean setActiveProfile(Context ctx, int id) {
+		DatabaseHelper dbh = DatabaseHelper.getInstance(ctx);
+		sProfile = dbh.getProfile(id);
+		if (sProfile.getId() == id) {
 			SharedPreferences.Editor editor = sSp.edit();
 			editor.putInt("currentProfile", id);
 			editor.commit();
-			c.close();
-			if(onActiveProfileChangedListener != null){
+			if (onActiveProfileChangedListener != null) {
 				onActiveProfileChangedListener.onActiveProfileChanged(sProfile);
 			}
-			
 			return true;
 		}
-		c.close();
 		return false;
 	}
-	
-	public static void setActiveProfileChangedListener(ActiveProfileChangedListener listener){
+
+	public static void setActiveProfileChangedListener(ActiveProfileChangedListener listener) {
 		onActiveProfileChangedListener = listener;
 	}
 
 	/**
 	 * @return
 	 */
-	public static boolean reloadActiveProfile() {
-		return setActiveProfile(sProfile.getId());
+	public static boolean reloadActiveProfile(Context ctx) {
+		return setActiveProfile(ctx, sProfile.getId());
 	}
 
 	/**
@@ -395,8 +232,8 @@ public class DreamDroid extends Application {
 
 		return gotLoc;
 	}
-	
-	public static ArrayList<String> getLocations(){
+
+	public static ArrayList<String> getLocations() {
 		return sLocations;
 	}
 
@@ -424,30 +261,30 @@ public class DreamDroid extends Application {
 
 		return gotTags;
 	}
-	
-	public static ArrayList<String> getTags(){
+
+	public static ArrayList<String> getTags() {
 		return sTags;
 	}
-	
-	public static boolean search(Context context, Bundle args){
-		if( sSearchListener != null){
+
+	public static boolean search(Context context, Bundle args) {
+		if (sSearchListener != null) {
 			sSearchListener.onEpgSearch(args);
 			return true;
 		} else {
 			return false;
 		}
 	}
-	
-	public interface EpgSearchListener{
+
+	public interface EpgSearchListener {
 		public void onEpgSearch(Bundle args);
 	}
-	
-	public static void registerEpgSearchListener(EpgSearchListener listener){
+
+	public static void registerEpgSearchListener(EpgSearchListener listener) {
 		sSearchListener = listener;
 	}
-	
-	public static void unregisterEpgSearchListener(EpgSearchListener listener){
-		if(listener == sSearchListener)
+
+	public static void unregisterEpgSearchListener(EpgSearchListener listener) {
+		if (listener == sSearchListener)
 			sSearchListener = null;
 	}
 }

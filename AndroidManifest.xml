@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="156"
-    android:versionName="1.0 beta 15_1" >
+    android:versionCode="159"
+    android:versionName="1.0 beta 16" >
 
     <uses-sdk
         android:maxSdkVersion="17"
@@ -26,7 +26,6 @@
     </uses-permission>
     <uses-permission android:name="android.permission.VIBRATE" >
     </uses-permission>
-    <uses-permission android:name="com.flattr4android.permission.READ_THING" />
 
     <application
         android:name=".DreamDroid"

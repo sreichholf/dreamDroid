@@ -6,7 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
@@ -177,7 +177,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
 		mCurrentProfile.setSimpleRemote(mSimpleRemote.isChecked());
-
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity().getBaseContext());
 		if (mCurrentProfile.getId() > 0) {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
 				showToast(getText(R.string.host_empty));
@@ -186,14 +186,14 @@ public class ProfileEditFragment extends DreamDroidFragment {
 			if (mCurrentProfile.getStreamHost() == null) {
 				mCurrentProfile.setStreamHost("");
 			}
-			if (DreamDroid.updateProfile(mCurrentProfile)) {
+			if (dbh.updateProfile(mCurrentProfile)) {
 				showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getName() + "'");
 				finish(Activity.RESULT_OK);
 			} else {
 				showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getName() + "'");
 			}
 		} else {
-			if (DreamDroid.addProfile(mCurrentProfile)) {
+			if (dbh.addProfile(mCurrentProfile)) {
 				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");
 				finish(Activity.RESULT_OK);
 			} else {

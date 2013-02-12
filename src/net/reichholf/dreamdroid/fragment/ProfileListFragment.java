@@ -8,13 +8,15 @@ package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
 import android.app.Activity;
@@ -23,7 +25,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -32,7 +33,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
@@ -47,10 +48,11 @@ import com.actionbarsherlock.view.MenuItem;
  */
 public class ProfileListFragment extends DreamDroidListFragment implements ActionDialog.DialogActionListener {
 	private Profile mProfile;
+	private ArrayList<Profile> mProfiles;
+	private ArrayList<ExtendedHashMap> mProfileMapList;
 	private ArrayList<Profile> mDetectedProfiles;
 
-	private SimpleCursorAdapter mAdapter;
-	private Cursor mCursor;
+	private SimpleAdapter mAdapter;
 	private Activity mActivity;
 	private DetectDevicesTask mDetectDevicesTask;
 
@@ -68,7 +70,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		protected void onPostExecute(ArrayList<Profile> profiles) {
 			onDevicesDetected(profiles);
 		}
-
 	}
 
 	/**
@@ -103,14 +104,15 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 * 
 	 */
 	private void addAllDetectedDevices() {
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity().getBaseContext());
 		for (Profile p : mDetectedProfiles) {
-			if (DreamDroid.addProfile(p)) {
+			if (dbh.addProfile(p)) {
 				showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
 			} else {
 				showToast(getText(R.string.profile_not_added) + " '" + p.getName() + "'");
 			}
 		}
-		mCursor.requery();
+		reloadProfiles();
 	}
 
 	/**
@@ -177,21 +179,15 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mBaseTitle = mCurrentTitle = getString(R.string.profiles);
 		mActivity.setProgressBarIndeterminateVisibility(false);
 
-		mCursor = DreamDroid.getProfiles();
-
-		mProfile = new Profile();
-		if (savedInstanceState != null) {
-			int pos = savedInstanceState.getInt("cursorPosition");
-			mCursor.moveToPosition(pos);
-			mProfile.set(mCursor);
-		}
+		mProfiles = new ArrayList<Profile>();
+		mProfileMapList = new ArrayList<ExtendedHashMap>();
 	}
 
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		mAdapter = new SimpleCursorAdapter(mActivity, android.R.layout.two_line_list_item, mCursor, new String[] {
-				DreamDroid.KEY_PROFILE, DreamDroid.KEY_HOST }, new int[] { android.R.id.text1, android.R.id.text2 });
+		mAdapter = new SimpleAdapter(getSherlockActivity(), mProfileMapList, android.R.layout.two_line_list_item,
+				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST }, new int[] { android.R.id.text1,
+						android.R.id.text2 });
 
 		setListAdapter(mAdapter);
 
@@ -201,26 +197,47 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 				return onListItemLongClick(a, v, position, id);
 			}
 		});
+
+		reloadProfiles();
+		mProfile = new Profile();
+		if (savedInstanceState != null) {
+			int pos = savedInstanceState.getInt("cursorPosition");
+			mProfile = mProfiles.get(pos);
+		}
 	}
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		mProfile.set(mCursor);
+		mProfile = mProfiles.get(position);
 		activateProfile();
 	}
 
+	private void reloadProfiles() {
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity().getBaseContext());
+		mProfiles.clear();
+		mProfileMapList.clear();
+		mProfiles.addAll(dbh.getProfiles());
+		for(Profile m : mProfiles){
+			ExtendedHashMap map = new ExtendedHashMap();
+			map.put(DatabaseHelper.KEY_PROFILE, m.getName());
+			map.put(DatabaseHelper.KEY_HOST, m.getHost());
+			mProfileMapList.add(map);
+		}
+		mAdapter.notifyDataSetChanged();
+	}
+
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
-		mProfile.set(mCursor);
+		mProfile = mProfiles.get(position);
 
 		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
 		int[] actionIds = { Statics.ACTION_EDIT, Statics.ACTION_DELETE };
-		getMultiPaneHandler().showDialogFragment(SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds),
-				"dialog_profile_selected");
+		getMultiPaneHandler().showDialogFragment(
+				SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds), "dialog_profile_selected");
 		return true;
 	}
 
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putInt("cursorPosition", mCursor.getPosition());
+		outState.putInt("profileId", mProfile.getId());
 		super.onSaveInstanceState(outState);
 	}
 
@@ -229,11 +246,11 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		if (requestCode == Statics.REQUEST_EDIT_PROFILE) {
 			mActivity.setResult(resultCode, null);
 			if (resultCode == Activity.RESULT_OK) {
-				mCursor.requery();
+				reloadProfiles();
 				mAdapter.notifyDataSetChanged();
 				// Reload the current profile as it may have been
 				// changed/altered
-				DreamDroid.reloadActiveProfile();
+				DreamDroid.reloadActiveProfile(getActivity().getBaseContext());
 			}
 		}
 	}
@@ -273,7 +290,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 * Activates the selected profile
 	 */
 	private void activateProfile() {
-		if (DreamDroid.setActiveProfile(mProfile.getId())) {
+		if (DreamDroid.setActiveProfile(getActivity().getBaseContext(), mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
 			if (!getMultiPaneHandler().isMultiPane()) {
 				getActivity().finish();
@@ -338,18 +355,20 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			editProfile();
 			break;
 		case Statics.ACTION_DELETE:
-			getMultiPaneHandler().showDialogFragment(PositiveNegativeDialog.newInstance(mProfile.getName(),
-					R.string.confirm_delete_profile, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED,
-					android.R.string.no, Statics.ACTION_NONE), "dialog_delete_profile_confirm");
+			getMultiPaneHandler().showDialogFragment(
+					PositiveNegativeDialog.newInstance(mProfile.getName(), R.string.confirm_delete_profile,
+							android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
+							Statics.ACTION_NONE), "dialog_delete_profile_confirm");
 			break;
 		case Statics.ACTION_DELETE_CONFIRMED:
-			if (DreamDroid.deleteProfile(mProfile)) {
+			DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity().getBaseContext());
+			if (dbh.deleteProfile(mProfile)) {
 				showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
 			} else {
 				showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
 			}
 			// TODO Add error handling
-			mCursor.requery();
+			reloadProfiles();
 			mProfile = new Profile();
 			mAdapter.notifyDataSetChanged();
 			break;

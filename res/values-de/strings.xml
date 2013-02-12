@@ -45,23 +45,23 @@
 <string name="delete">Löschen</string>
 <string name="epg">EPG</string>
 <string name="ssl_enabled">https</string>
-<string name="host">88.72.201.164</string>
-<string name="port">8001</string>
-<string name="port_stream_live">8001</string>
-<string name="port_stream_file">8001</string>
+<string name="host">Hostname/IP</string>
+<string name="port">Port</string>
+<string name="port_stream_live">Port (Live)</string>
+<string name="port_stream_file">Port (Filme)</string>
 <string name="settings">Einstellungen</string>
-<string name="host_long">88.72.201.164</string>
+<string name="host_long">Hostname oder IP</string>
 <string name="port_long">Listening Port</string>
 <string name="close">Schließen</string>
 <string name="minutes_short">min.</string>
-<string name="user">root</string>
-<string name="user_long">root</string>
-<string name="pass">dorf2002</string>
-<string name="pass_long">dorf2002</string>
+<string name="user">Benutzer</string>
+<string name="user_long">Benutzername für die Anmeldung</string>
+<string name="pass">Passwort</string>
+<string name="pass_long">Passwort für die Anmeldung</string>
 <string name="saving">Speichern. Bitte warten&#8230;</string>
 <string name="deleting">Lösche. Bitte warten&#8230;</string>
 <string name="delete_confirm">Wirklich löschen?</string>
-<string name="set_timer">Timer festlegen</string>
+<string name="set_timer">Timer setzen</string>
 <string name="home">Startseite</string>
 <string name="pick_action">Aktion auswählen</string>
 <string name="set_time_begin">Startdatum und -zeit</string>
@@ -102,7 +102,7 @@
 <string name="frontends">Tuner</string>
 <string name="nics">Netzwerkschnittstellen</string>
 <string name="hdds">Festplatten</string>
-<string name="not_implemented">Funktion ist noch nicht implementiert!</string>
+<string name="not_implemented">Diese Funktion ist noch nicht implementiert!</string>
 <string name="current_event">Aktuelle Sendung</string>
 <string name="timeout">Anzeigedauer</string>
 <string name="message">Nachricht</string>
@@ -223,7 +223,7 @@
 <string name="autodiscover_dreamboxes">Automatische Konfiguration</string>
 <string name="autodiscovery_failed">Leider konnte keine Dreambox im lokalen Netzwerk gefunden werden!</string>
 <string name="add_all">Alle hinzufügen</string>
+<string name="error_parsing">Beim Lesen der Daten ist ein Fehler aufgetreten!</string>
 <string name="enabled">Aktiviert</string>
-    <string name="signal_meter">Signal Messung</string>
-    <string name="accoustic_feedback">Akkustisches Feedback</string>
+
 </resources>

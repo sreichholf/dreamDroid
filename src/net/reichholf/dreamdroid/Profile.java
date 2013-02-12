@@ -19,7 +19,6 @@ public class Profile implements Serializable {
 	/**
 	 * 
 	 */
-
 	private static final long serialVersionUID = 8176949133234868302L;
 
 	private String mName;
@@ -138,40 +137,40 @@ public class Profile implements Serializable {
 	}
 
 	public void set(Cursor c) {
-		setName(c.getString(c.getColumnIndex(DreamDroid.KEY_PROFILE)));
-		setHost(c.getString(c.getColumnIndex(DreamDroid.KEY_HOST)));
-		setStreamHost(c.getString(c.getColumnIndex(DreamDroid.KEY_STREAM_HOST)));
-		setUser(c.getString(c.getColumnIndex(DreamDroid.KEY_USER)));
-		setPass(c.getString(c.getColumnIndex(DreamDroid.KEY_PASS)));
+		setName(c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE)));
+		setHost(c.getString(c.getColumnIndex(DatabaseHelper.KEY_HOST)));
+		setStreamHost(c.getString(c.getColumnIndex(DatabaseHelper.KEY_STREAM_HOST)));
+		setUser(c.getString(c.getColumnIndex(DatabaseHelper.KEY_USER)));
+		setPass(c.getString(c.getColumnIndex(DatabaseHelper.KEY_PASS)));
 
-		setId(c.getInt(c.getColumnIndex(DreamDroid.KEY_ID)));
-		setPort(c.getInt(c.getColumnIndex(DreamDroid.KEY_PORT)));
+		setId(c.getInt(c.getColumnIndex(DatabaseHelper.KEY_ID)));
+		setPort(c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PORT)));
 		
-		int streamPort = c.getInt(c.getColumnIndex(DreamDroid.KEY_STREAM_PORT));
+		int streamPort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_STREAM_PORT));
 		if (streamPort <= 0)
 			streamPort = 8001;
 		setStreamPort(streamPort);
 
-		int filePort = c.getInt(c.getColumnIndex(DreamDroid.KEY_FILE_PORT));
+		int filePort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_PORT));
 		if (filePort <= 0)
 			filePort = 80;
 		setFilePort(filePort);
 
-		int login = c.getInt(c.getColumnIndex(DreamDroid.KEY_LOGIN));
+		int login = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_LOGIN));
 		if (login == 1) {
 			setLogin(true);
 		} else {
 			setLogin(false);
 		}
 
-		int ssl = c.getInt(c.getColumnIndex(DreamDroid.KEY_SSL));
+		int ssl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SSL));
 		if (ssl == 1) {
 			setSsl(true);
 		} else {
 			setSsl(false);
 		}
 
-		int simpleRemote = c.getInt(c.getColumnIndex(DreamDroid.KEY_SIMPLE_REMOTE));
+		int simpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SIMPLE_REMOTE));
 		if (simpleRemote == 1) {
 			setSimpleRemote(true);
 		} else {

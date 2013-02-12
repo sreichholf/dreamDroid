@@ -3,8 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="lib" path="libs/flattr-android-sdk-0.0.1.4.jar"/>
-	<classpathentry kind="lib" path="libs/java-flattr-rest-0.0.1.4.jar"/>
 	<classpathentry kind="lib" path="libs/jmdns-3.4.1.jar"/>
 	<classpathentry kind="lib" path="libs/signpost-core-1.2.1.1.jar"/>
 	<classpathentry kind="src" path="gen"/>

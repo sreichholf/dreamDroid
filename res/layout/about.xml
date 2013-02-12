@@ -41,16 +41,6 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="5dp"
                     android:background="@drawable/button_paypal_donate" />
-
-                <com.flattr4android.sdk.FlattrButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="5dp"
-                    flattr_sdk:button_style="horizontal"
-                    flattr_sdk:thing_id="6420aa9c7b7b41b49777aa0cec33e50f"
-                    flattr_sdk:token="578d7bffb6aadc2bdeeedfc956507db0"
-                    flattr_sdk:token_secret="62ff25450f5010c32e58703811714e65" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
