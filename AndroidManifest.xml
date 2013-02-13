@@ -31,6 +31,7 @@
         android:name=".DreamDroid"
         android:allowBackup="true"
         android:allowClearUserData="true"
+        android:backupAgent="DreamDroidBackupAgent"
         android:icon="@drawable/ic_launcher_dreamdroid"
         android:killAfterRestore="true"
         android:label="@string/app_name"
@@ -60,6 +61,9 @@
         <activity android:name=".activities.FragmentMainActivity" >
         </activity>
 
+        <meta-data
+            android:name="com.google.android.backup.api_key"
+            android:value="AEdPqrEAAAAIpJ1ddymOdlswxM_S0SOTS9GK0WKiqESIKU7KLw" />
         <meta-data
             android:name="android.app.default_searchable"
             android:value=".activities.SimpleFragmentActivity" >

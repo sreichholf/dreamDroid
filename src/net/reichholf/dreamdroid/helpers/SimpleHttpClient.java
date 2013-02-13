@@ -26,6 +26,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 
 import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.Profile;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -208,12 +209,13 @@ public class SimpleHttpClient {
 	 * 
 	 */
 	public void applyConfig() {
-		mHostname = DreamDroid.getActiveProfile().getHost().trim();
-		mStreamHostname = DreamDroid.getActiveProfile().getStreamHost().trim();
-		mPort = DreamDroid.getActiveProfile().getPortString();
-		mFilePort = DreamDroid.getActiveProfile().getFilePortString();
-		mLogin = DreamDroid.getActiveProfile().isLogin();
-		mSsl = DreamDroid.getActiveProfile().isSsl();
+		Profile p = DreamDroid.getActiveProfile();
+		mHostname = p.getHost().trim();
+		mStreamHostname = p.getStreamHost().trim();
+		mPort = p.getPortString();
+		mFilePort = p.getFilePortString();
+		mLogin = p.isLogin();
+		mSsl = p.isSsl();
 
 		if (mSsl) {
 			mPrefix = "https://";
@@ -222,8 +224,8 @@ public class SimpleHttpClient {
 		}
 
 		if (mLogin) {
-			mUser = DreamDroid.getActiveProfile().getUser();
-			mPass = DreamDroid.getActiveProfile().getPass();
+			mUser = p.getUser();
+			mPass = p.getPass();
 			setCredentials(mUser, mPass);
 		}
 	}

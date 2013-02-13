@@ -43,7 +43,9 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 		super(context);
 		mListRequestHandler = listRequestHandler;
 		mRequireLocsAndTags = requireLocsAndTags;
+		DreamDroid.loadCurrentProfile(context);
 		mShc = new SimpleHttpClient();
+		
 
 		if (args != null && args.containsKey("params"))
 			mParams = (ArrayList<NameValuePair>) args.getSerializable("params");

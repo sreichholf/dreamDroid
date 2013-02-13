@@ -177,7 +177,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
 		mCurrentProfile.setSimpleRemote(mSimpleRemote.isChecked());
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity().getBaseContext());
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getSherlockActivity());
 		if (mCurrentProfile.getId() > 0) {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
 				showToast(getText(R.string.host_empty));

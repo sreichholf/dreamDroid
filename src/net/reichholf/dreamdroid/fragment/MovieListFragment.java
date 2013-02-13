@@ -296,7 +296,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	 */
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mMovie = mMapList.get(position);
-		boolean isInsta = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);
+		boolean isInsta = DreamDroid.getSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {

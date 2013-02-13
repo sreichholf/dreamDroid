@@ -152,6 +152,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 		setHasOptionsMenu(true);
 		// CustomExceptionHandler.register(this);
 		mShc = null;
+		DreamDroid.loadCurrentProfile(getSherlockActivity());
 		setClient();
 	}
 
@@ -307,7 +308,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (DreamDroid.getSharedPreferences().getBoolean("volume_control", false)) {
+		if (DreamDroid.getSharedPreferences(getSherlockActivity()).getBoolean("volume_control", false)) {
 			switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				onVolumeButtonClicked(Volume.CMD_UP);

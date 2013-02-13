@@ -421,4 +421,18 @@ public class Profile implements Serializable {
 	public String getFilePortString() {
 		return String.valueOf(mFilePort);
 	}
+	
+	public boolean equals(Profile p){
+		return mHost.equals(p.getHost())
+				&& mStreamHost.equals(p.getStreamHost())
+				&& mUser.equals(p.getUser())
+				&& mPass.equals(p.getPass())
+				&& mLogin == p.isLogin()
+				&& mSsl == p.isSsl()
+				&& mSimpleRemote == p.isSimpleRemote()
+				&& mId == p.getId()
+				&& mPort == p.getPort()
+				&& mStreamPort == p.getStreamPort()
+				&& mFilePort == p.getFilePort();
+	}
 }

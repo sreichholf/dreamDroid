@@ -31,20 +31,20 @@ public class IntentFactory {
 	/**
 	 * @param event
 	 */
-	public static void queryIMDb(Context ctx, ExtendedHashMap event){
+	public static void queryIMDb(Context context, ExtendedHashMap event){
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "imdb:///find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 		intent.setData(Uri.parse(uriString));
 		try{			
-			ctx.startActivity(intent);
+			context.startActivity(intent);
 		} catch(ActivityNotFoundException anfex) {
-			if(DreamDroid.getSharedPreferences().getBoolean("mobile_imdb", false)){
+			if(DreamDroid.getSharedPreferences(context).getBoolean("mobile_imdb", false)){
 				uriString = "http://m.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 			} else {
 				uriString = "http://www.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 			}
 			intent.setData(Uri.parse(uriString));
-			ctx.startActivity(intent);
+			context.startActivity(intent);
 		}
 	}
 	

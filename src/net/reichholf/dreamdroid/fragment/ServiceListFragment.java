@@ -305,9 +305,9 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		mListTasks = new ArrayList<GetServiceListTask>();
 
 		if (mDetailReference == null) {
-			mDetailReference = DreamDroid.getSharedPreferences()
+			mDetailReference = DreamDroid.getSharedPreferences(getSherlockActivity())
 					.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "");
-			mDetailName = DreamDroid.getSharedPreferences().getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
+			mDetailName = DreamDroid.getSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
 		}
 
 		if (mExtras != null) {
@@ -588,7 +588,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
-		String defaultReference = DreamDroid.getSharedPreferences().getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF,
+		String defaultReference = DreamDroid.getSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF,
 				null);
 		setDefault.setEnabled(true);
 		if (defaultReference != null) {
@@ -615,7 +615,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			return true;
 		case Statics.ITEM_SET_DEFAULT:
 			if (mDetailReference != null) {
-				Editor editor = DreamDroid.getSharedPreferences().edit();
+				Editor editor = DreamDroid.getSharedPreferences(getSherlockActivity()).edit();
 				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mDetailReference);
 				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mDetailName);
 
@@ -696,7 +696,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				intent.putExtra(sData, (Serializable) map);
 				finish(Activity.RESULT_OK, intent);
 			} else {
-				boolean instantZap = DreamDroid.getSharedPreferences().getBoolean("instant_zap", false);
+				boolean instantZap = DreamDroid.getSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
 				} else {

@@ -144,7 +144,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		}
 
 		// Force Multipane Layout if User selected the option for it
-		if (!mMultiPane && DreamDroid.getSharedPreferences().getBoolean("force_multipane", false)) {
+		if (!mMultiPane && DreamDroid.getSharedPreferences(this).getBoolean("force_multipane", false)) {
 			setContentView(R.layout.forced_dualpane);
 			mMultiPane = true;
 		}

@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.loader;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -37,6 +38,7 @@ public class AsyncSimpleLoader extends AsyncTaskLoader< LoaderResult<ExtendedHas
 	@SuppressWarnings("unchecked")
 	private void init(Context context, AbstractSimpleRequestHandler handler, Bundle args) {
 		mHandler = handler;
+		DreamDroid.loadCurrentProfile(context);
 		mShc = new SimpleHttpClient();
 		if (args != null && args.containsKey("params"))
 			mParams = (ArrayList<NameValuePair>) args.getSerializable("params");

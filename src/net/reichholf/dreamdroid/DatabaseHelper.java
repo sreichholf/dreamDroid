@@ -31,10 +31,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_PASS = "pass";
 	public static final String KEY_SSL = "ssl";
 	public static final String KEY_SIMPLE_REMOTE = "simpleremote";
-	
-	private static DatabaseHelper sInstance = null;
-	
-	private static final String DATABASE_NAME = "dreamdroid";
+
+	public static final String DATABASE_NAME = "dreamdroid";
 	private static final int DATABASE_VERSION = 6;
 	private static final String PROFILES_TABLE_NAME = "profiles";
 
@@ -64,6 +62,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	
 	private static final String PROFILES_TABLE_UPGRADE_5_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_FILE_PORT + " INTEGER;";
+	
+	private Context mContext;
 	/**
 	 * @param context
 	 * @param name
@@ -72,6 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		mContext = context;
 	}
 
 	/* (non-Javadoc)
@@ -109,6 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			db.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME);
 			db.setVersion(0);
 		}
+		DreamDroid.scheduleBackup(mContext);
 	}
 	
 	/**
@@ -130,6 +132,51 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		
 		SQLiteDatabase db = getWritableDatabase();
 		if (db.insert(PROFILES_TABLE_NAME, null, values) > -1) {
+			db.close();
+			DreamDroid.scheduleBackup(mContext);
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param p
+	 */
+	public boolean updateProfile(Profile p) {
+		ContentValues values = new ContentValues();
+		values.put(KEY_PROFILE, p.getName());
+		values.put(KEY_HOST, p.getHost());
+		values.put(KEY_STREAM_HOST, p.getStreamHostValue());
+		values.put(KEY_PORT, p.getPort());
+		values.put(KEY_STREAM_PORT, p.getStreamPort());
+		values.put(KEY_FILE_PORT, p.getFilePort());
+		values.put(KEY_LOGIN, p.isLogin());
+		values.put(KEY_USER, p.getUser());
+		values.put(KEY_PASS, p.getPass());
+		values.put(KEY_SSL, p.isSsl());
+		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
+		
+		SQLiteDatabase db = getWritableDatabase();
+		int numRows = db.update(PROFILES_TABLE_NAME, values, KEY_ID + "=" + p.getId(), null);
+		db.close();
+		if (numRows == 1) {
+			DreamDroid.scheduleBackup(mContext);
+			return true;
+		}
+
+		return false;
+	}
+	
+	/**
+	 * @param p
+	 */
+	public boolean deleteProfile(Profile p) {
+		SQLiteDatabase db = getWritableDatabase();
+		int numRows = db.delete(PROFILES_TABLE_NAME, KEY_ID + "=" + p.getId(), null);
+		db.close();
+		if (numRows == 1) {
+			DreamDroid.scheduleBackup(mContext);
 			return true;
 		}
 
@@ -155,6 +202,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			list.add(new Profile(c));
 		}
 		c.close();
+		db.close();
 		return list;
 	}
 
@@ -168,52 +216,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if(c.getCount() == 1 && c.moveToFirst())
 			p.set(c);
 		c.close();
+		db.close();
 		return p;
 	}
 
-	/**
-	 * @param p
-	 */
-	public boolean updateProfile(Profile p) {
-		ContentValues values = new ContentValues();
-		values.put(KEY_PROFILE, p.getName());
-		values.put(KEY_HOST, p.getHost());
-		values.put(KEY_STREAM_HOST, p.getStreamHostValue());
-		values.put(KEY_PORT, p.getPort());
-		values.put(KEY_STREAM_PORT, p.getStreamPort());
-		values.put(KEY_FILE_PORT, p.getFilePort());
-		values.put(KEY_LOGIN, p.isLogin());
-		values.put(KEY_USER, p.getUser());
-		values.put(KEY_PASS, p.getPass());
-		values.put(KEY_SSL, p.isSsl());
-		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
-		
-		SQLiteDatabase db = getWritableDatabase();
-		int numRows = db.update(PROFILES_TABLE_NAME, values, KEY_ID + "=" + p.getId(), null);
-
-		if (numRows == 1) {
-			return true;
-		}
-
-		return false;
-	}
-	
-	/**
-	 * @param p
-	 */
-	public boolean deleteProfile(Profile p) {
-		SQLiteDatabase db = getWritableDatabase();
-		int numRows = db.delete(PROFILES_TABLE_NAME, KEY_ID + "=" + p.getId(), null);
-		if (numRows == 1) {
-			return true;
-		}
-
-		return false;
-	}
 	
 	public static DatabaseHelper getInstance(Context ctx){
-		if(sInstance == null)
-			sInstance = new DatabaseHelper(ctx);
-		return sInstance;
+		return new DatabaseHelper(ctx);
 	}
 }

@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,15 +16,17 @@ import java.util.GregorianCalendar;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
+import android.annotation.TargetApi;
 import android.app.Application;
+import android.app.backup.BackupManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * @author sre
@@ -46,7 +50,6 @@ public class DreamDroid extends Application {
 	private static boolean sFeatureNowNext = false;
 
 	private static Profile sProfile;
-	private static SharedPreferences sSp;
 	private static ArrayList<String> sLocations;
 	private static ArrayList<String> sTags;
 
@@ -88,62 +91,13 @@ public class DreamDroid extends Application {
 			DATE_LOCALE_WO = false;
 		}
 
-		sSp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		sLocations = new ArrayList<String>();
 		sTags = new ArrayList<String>();
-
-		// the profile-table is initial - let's migrate the current config as
-		// default Profile
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getBaseContext());
-		ArrayList<Profile> profiles = dbh.getProfiles();
-		if (profiles.isEmpty()) {
-			String host = sSp.getString("host", "dm8000");
-			String streamHost = sSp.getString("host", "");
-
-			int port = Integer.valueOf(sSp.getString("port", "80"));
-			String user = sSp.getString("user", "root");
-			String pass = sSp.getString("pass", "dreambox");
-
-			boolean login = sSp.getBoolean("login", false);
-			boolean ssl = sSp.getBoolean("ssl", false);
-
-			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false);
-			dbh.addProfile(p);
-			SharedPreferences.Editor editor = sSp.edit();
-			editor.remove("currentProfile");
-			editor.commit();
-		}
-
-		int profileId = sSp.getInt("currentProfile", 1);
-		if (setActiveProfile(getBaseContext(), profileId)) {
-			showToast(getText(R.string.profile_activated) + " '" + sProfile.getName() + "'");
-		} else {
-			showToast(getText(R.string.profile_not_activated));
-			// However we got here... we're creating an
-			// "do-not-crash-default-profile now
-			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false);
-		}
+		loadCurrentProfile(this);
 	}
 
-	public static SharedPreferences getSharedPreferences() {
-		return sSp;
-	}
-
-	/**
-	 * @param text
-	 *            Toast text
-	 */
-	protected void showToast(String text) {
-		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
-		toast.show();
-	}
-
-	/**
-	 * @param text
-	 */
-	protected void showToast(CharSequence text) {
-		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
-		toast.show();
+	public static SharedPreferences getSharedPreferences(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context);
 	}
 
 	public static void disableNowNext() {
@@ -178,18 +132,57 @@ public class DreamDroid extends Application {
 		return sProfile;
 	}
 
+	public static void loadCurrentProfile(Context context) {
+		// the profile-table is initial - let's migrate the current config as
+		// default Profile
+		SharedPreferences sp = DreamDroid.getSharedPreferences(context);
+		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
+		ArrayList<Profile> profiles = dbh.getProfiles();
+		if (profiles.isEmpty()) {
+			String host = sp.getString("host", "dm8000");
+			String streamHost = sp.getString("host", "");
+
+			int port = Integer.valueOf(sp.getString("port", "80"));
+			String user = sp.getString("user", "root");
+			String pass = sp.getString("pass", "dreambox");
+
+			boolean login = sp.getBoolean("login", false);
+			boolean ssl = sp.getBoolean("ssl", false);
+
+			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false);
+			dbh.addProfile(p);
+			SharedPreferences.Editor editor = sp.edit();
+			editor.remove("currentProfile");
+			editor.commit();
+		}
+
+		int profileId = sp.getInt("currentProfile", 1);
+		if (!setActiveProfile(context, profileId)) {
+			// However we got here... we're creating an
+			// "do-not-crash-default-profile now
+			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false);
+		}
+	}
+
 	/**
 	 * @param id
 	 * @return
 	 */
-	public static boolean setActiveProfile(Context ctx, int id) {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(ctx);
+	public static boolean setActiveProfile(Context context, int id) {
+		Profile oldProfile = sProfile;
+		if (oldProfile == null)
+			oldProfile = new Profile();
+
+		if (oldProfile.getId() == id)
+			return true;
+
+		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		sProfile = dbh.getProfile(id);
 		if (sProfile.getId() == id) {
-			SharedPreferences.Editor editor = sSp.edit();
+			SharedPreferences.Editor editor = getSharedPreferences(context).edit();
 			editor.putInt("currentProfile", id);
 			editor.commit();
-			if (onActiveProfileChangedListener != null) {
+			if (onActiveProfileChangedListener != null && !sProfile.equals(oldProfile)) {
 				onActiveProfileChangedListener.onActiveProfileChanged(sProfile);
 			}
 			return true;
@@ -286,5 +279,22 @@ public class DreamDroid extends Application {
 	public static void unregisterEpgSearchListener(EpgSearchListener listener) {
 		if (listener == sSearchListener)
 			sSearchListener = null;
+	}
+
+	public static void scheduleBackup(Context context) {
+		Log.d(LOG_TAG, "Scheduling backup");
+		try {
+			Class managerClass = Class.forName("android.app.backup.BackupManager");
+			Constructor managerConstructor = managerClass.getConstructor(Context.class);
+			Object manager = managerConstructor.newInstance(context);
+			Method m = managerClass.getMethod("dataChanged");
+			m.invoke(manager);
+			Log.d(LOG_TAG, "Backup requested");
+		} catch (ClassNotFoundException e) {
+			Log.d(LOG_TAG, "No backup manager found");
+		} catch (Throwable t) {
+			Log.d(LOG_TAG, "Scheduling backup failed " + t);
+			t.printStackTrace();
+		}
 	}
 }

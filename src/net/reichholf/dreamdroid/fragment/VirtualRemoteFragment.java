@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -112,7 +111,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		mCurrentTitle = getString(R.string.virtual_remote);
-		mPrefs = PreferenceManager.getDefaultSharedPreferences( getSherlockActivity().getBaseContext());
+		mPrefs = DreamDroid.getSharedPreferences(getSherlockActivity());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
 		mSimpleRemote = DreamDroid.getActiveProfile().isSimpleRemote();
