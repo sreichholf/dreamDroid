@@ -18,7 +18,6 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
-import net.reichholf.dreamdroid.fragment.ViewPagerNavigationFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
@@ -105,20 +104,20 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 			onProfileChecked(result);
 		}
 	}
-	
-	public void onProfileChecked(ExtendedHashMap result){
+
+	public void onProfileChecked(ExtendedHashMap result) {
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error);
 		} else {
 			setConnectionState(getString(R.string.ok));
 			mNavigationFragment.setAvailableFeatures();
-			if(mInitial && getCurrentDetailFragment() == null){
+			if (mInitial && getCurrentDetailFragment() == null) {
 				mNavigationFragment.setSelectedItem(0);
 			}
 		}
 	}
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -167,19 +166,8 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		sm.setBehindScrollScale(0.25f);
 		sm.setFadeDegree(0.25f);
 
-		if (mNavigationFragment == null) {
-			if (mMultiPane) {
-				mNavigationFragment = new NavigationFragment();
-			} else {
-				mNavigationFragment = new NavigationFragment();
-				mNavigationFragment = new ViewPagerNavigationFragment();
-			}
-		} else {
-			if (mMultiPane && !mNavigationFragment.getClass().equals(NavigationFragment.class)) {
-				mNavigationFragment = new NavigationFragment();
-			} else if (!mMultiPane && mNavigationFragment.getClass().equals(NavigationFragment.class)) {
-				mNavigationFragment = new ViewPagerNavigationFragment();
-			}
+		if (mNavigationFragment == null || !mNavigationFragment.getClass().equals(NavigationFragment.class)) {
+			mNavigationFragment = new NavigationFragment();
 		}
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -241,16 +229,16 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	@Override
-	public void showMenu(){
-		if(mSlider)
+	public void showMenu() {
+		if (mSlider)
 			super.showMenu();
 	}
-	
+
 	@Override
-	public void showContent(){
-		if(mSlider)
+	public void showContent() {
+		if (mSlider)
 			super.showContent();
 	}
 
