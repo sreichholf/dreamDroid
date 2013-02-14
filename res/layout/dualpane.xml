@@ -5,7 +5,7 @@
     android:orientation="vertical" >
 
     <FrameLayout
-        android:id="@+id/navigation_view"
+        android:id="@+id/detail_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginBottom="20dp" />

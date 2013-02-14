@@ -33,27 +33,28 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.MenuItem;
+import com.slidingmenu.lib.SlidingMenu;
+import com.slidingmenu.lib.app.SlidingFragmentActivity;
 
 /**
  * @author sre
  * 
  */
-public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler,
+public class FragmentMainActivity extends SlidingFragmentActivity implements MultiPaneHandler,
 		ActiveProfileChangedListener, DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
-	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(
-			new String[] { 	"about_dialog",
-							"powerstate_dialog",
-							"sendmessage_dialog",
-							"sleeptimer_dialog",
-							"sleeptimer_progress_dialog" });
+	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
+			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog" });
 
 	private boolean mMultiPane;
+	private boolean mSlider;
+	private boolean mInitial;
 
 	// private FragmentManager getSupportFragmentManager();
 	private NavigationFragment mNavigationFragment;
@@ -101,16 +102,23 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		@Override
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(DreamDroid.LOG_TAG, result.toString());
-			if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
-				String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
-				setConnectionState(error);
-			} else {
-				setConnectionState(getString(R.string.ok));
-				mNavigationFragment.setAvailableFeatures();
+			onProfileChecked(result);
+		}
+	}
+	
+	public void onProfileChecked(ExtendedHashMap result){
+		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
+			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
+			setConnectionState(error);
+		} else {
+			setConnectionState(getString(R.string.ok));
+			mNavigationFragment.setAvailableFeatures();
+			if(mInitial && getCurrentDetailFragment() == null){
+				mNavigationFragment.setSelectedItem(0);
 			}
 		}
 	}
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -136,23 +144,34 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 
 	private void initViews() {
 		setContentView(R.layout.dualpane);
-
-		if (findViewById(R.id.detail_view) != null) {
-			mMultiPane = true;
+		mMultiPane = true;
+		mSlider = findViewById(R.id.navigation_view) == null;
+		if (mSlider) {
+			setBehindContentView(R.layout.menu_frame);
+			getSlidingMenu().setSlidingEnabled(true);
+			getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+			// show home as up so we can toggle
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		} else {
-			mMultiPane = false;
+			// add a dummy view
+			View v = new View(this);
+			setBehindContentView(v);
+			getSlidingMenu().setSlidingEnabled(false);
+			getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
 		}
 
-		// Force Multipane Layout if User selected the option for it
-		if (!mMultiPane && DreamDroid.getSharedPreferences(this).getBoolean("force_multipane", false)) {
-			setContentView(R.layout.forced_dualpane);
-			mMultiPane = true;
-		}
+		SlidingMenu sm = getSlidingMenu();
+		sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+		sm.setShadowWidthRes(R.dimen.shadow_width);
+		sm.setShadowDrawable(R.drawable.shadow);
+		sm.setBehindScrollScale(0.25f);
+		sm.setFadeDegree(0.25f);
 
 		if (mNavigationFragment == null) {
 			if (mMultiPane) {
 				mNavigationFragment = new NavigationFragment();
 			} else {
+				mNavigationFragment = new NavigationFragment();
 				mNavigationFragment = new ViewPagerNavigationFragment();
 			}
 		} else {
@@ -169,8 +188,8 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		if (detailFragment != null) {
 			showFragment(ft, R.id.detail_view, detailFragment);
 		}
-		ft.commit();
 
+		ft.commit();
 		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
 		if (mActiveProfile == null) {
 			mActiveProfile = new TextView(this);
@@ -179,7 +198,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 		if (mConnectionState == null) {
 			mConnectionState = new TextView(this);
 		}
-
+		mInitial = true;
 		onActiveProfileChanged(DreamDroid.getActiveProfile());
 	}
 
@@ -212,6 +231,27 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	public void onDestroy() {
 		DreamDroid.unregisterEpgSearchListener(this);
 		super.onDestroy();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			toggle();
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
+	@Override
+	public void showMenu(){
+		if(mSlider)
+			super.showMenu();
+	}
+	
+	@Override
+	public void showContent(){
+		if(mSlider)
+			super.showContent();
 	}
 
 	/*
@@ -345,12 +385,11 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 
 	@Override
 	public void setTitle(CharSequence title) {
-		if (mMultiPane) {
-			TextView t = (TextView) findViewById(R.id.detail_title);
+		TextView t = (TextView) findViewById(R.id.detail_title);
+		if (t != null) {
 			t.setText(title.toString());
 			return;
 		}
-		super.setTitle(title);
 	}
 
 	@Override
@@ -404,6 +443,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	public void onDetailFragmentResume(Fragment fragment) {
 		if (fragment != mNavigationFragment || !mMultiPane)
 			mDetailFragment = fragment;
+		showDetails(fragment);
 	}
 
 	@Override

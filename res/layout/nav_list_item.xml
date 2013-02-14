@@ -4,6 +4,6 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:minHeight="20dp"
-    android:textSize="14dp"
+    android:minHeight="50dp"
+    android:textSize="13dp"
     android:textStyle="bold" />

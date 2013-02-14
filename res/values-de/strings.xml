@@ -117,7 +117,7 @@
 <item>Fehler</item>
 </string-array>
 
-<string name="virtual_remote">Virt. Fern-\nbedienung</string>
+<string name="virtual_remote">Virt. Fernbedienung</string>
 <string name="login_enabled">Login aktivieren</string>
 <string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
 <string name="current_service">Es läuft</string>

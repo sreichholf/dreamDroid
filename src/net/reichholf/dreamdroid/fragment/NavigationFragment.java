@@ -66,14 +66,16 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
 			// { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer,
 			// R.drawable.ic_menu_music, 1, 0 },
-			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock,
-					DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
+			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
 			{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
 			{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 			{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
 			{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1, 0 },
 			{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
-			{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.drawable.ic_menu_info, 1, 0 }, };
+			{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.drawable.ic_menu_info, 1, 0 },
+			{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 1 },
+		};
+	
 
 	private int[] mCurrent;
 	private int mCurrentListItem;
@@ -257,6 +259,10 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		getListView().setTextFilterEnabled(true);
 	}
 
+	public void setSelectedItem(int position){
+		onListItemClick(getListView(), null, position, position);
+	}
+	
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (mCurrentListItem == position && getMainActivity().isMultiPane()) {
@@ -283,6 +289,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		}
 
 		onItemClicked(mCurrent[0]);
+		getMainActivity().showContent();
 	}
 
 	private void setAdapter() {

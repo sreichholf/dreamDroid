@@ -12,7 +12,9 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,18 +28,16 @@ public class AboutDialog extends AbstractDialog {
 		return new AboutDialog();
 	}
 
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		Dialog dialog = new Dialog(getActivity());
-		dialog.setContentView(R.layout.about);
-		dialog.setTitle(R.string.about);
-
-		TextView aboutText = (TextView) dialog.findViewById(R.id.TextViewAbout);
+	@Override 
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View v = inflater.inflate(R.layout.about, container, false);
+		getDialog().setTitle(R.string.about);
+		TextView aboutText = (TextView) v.findViewById(R.id.TextViewAbout);
 		CharSequence text = DreamDroid.VERSION_STRING + "\n\n" + getText(R.string.license) + "\n\n"
 				+ getText(R.string.source_code_link);
 		aboutText.setText(text);
 
-		Button buttonDonate = (Button) dialog.findViewById(R.id.ButtonDonate);
+		Button buttonDonate = (Button) v.findViewById(R.id.ButtonDonate);
 		buttonDonate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -47,6 +47,6 @@ public class AboutDialog extends AbstractDialog {
 				startActivity(i);
 			}
 		});
-		return dialog;
+		return v;
 	}
 }

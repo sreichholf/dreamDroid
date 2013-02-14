@@ -42,6 +42,7 @@ All required libraries can be found in the "libraries" folder of this git reposi
 * VPI - Jake Wharton's ViewPagerIndicator (2.3.1): http://viewpagerindicator.com/
 * ABS - Jake Wharton's ActionBarSherlock (4.1.0): http://actionbarsherlock.com/ 
 * numberpicker - Michael Novakjr's Numberpicker (cloned on 2012-09-08): https://github.com/mrn/numberpicker/
+* SlidingMenu - jfeinstein's Sliding menu (cloned on 2013-02-14): https://github.com/jfeinstein10/SlidingMenu
 
 The following SDK versions have to be installed for a clean build:
 
