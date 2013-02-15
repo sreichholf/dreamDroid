@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
@@ -32,6 +33,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
@@ -91,7 +93,9 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
 			if (resultCode == Activity.RESULT_OK) {
-				reload();
+				if(getSherlockActivity() != null) //we're somewhere active!
+					reload();
+				Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!");
 			}
 		}
 	}

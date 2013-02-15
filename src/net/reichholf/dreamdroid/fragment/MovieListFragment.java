@@ -40,6 +40,7 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
 import android.view.View;
 import android.widget.AdapterView;
@@ -296,7 +297,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	 */
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mMovie = mMapList.get(position);
-		boolean isInsta = DreamDroid.getSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
+		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {

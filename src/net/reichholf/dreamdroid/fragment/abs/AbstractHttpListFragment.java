@@ -11,7 +11,6 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
@@ -31,6 +30,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.KeyEvent;
@@ -39,7 +39,6 @@ import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.MenuItem;
 
 /**
@@ -389,7 +388,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (DreamDroid.getSharedPreferences(getSherlockActivity()).getBoolean("volume_control", false)) {
+		if (PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("volume_control", false)) {
 			switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				onVolumeButtonClicked(Volume.CMD_UP);
@@ -482,23 +481,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 		getSherlockActivity().setTitle(mCurrentTitle);
 		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
-	}
-
-	/**
-	 * If a targetFragment has been set using setTargetFragement() return to it.
-	 * 
-	 * @param resultCode
-	 * @param data
-	 */
-	protected void finish(int resultCode, Intent data) {
-		SherlockFragment f = (SherlockFragment) getTargetFragment();
-		if (f != null) {
-			MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-			mph.showDetails(f);
-			if (resultCode != Statics.RESULT_NONE || data != null) {
-				f.onActivityResult(getTargetRequestCode(), resultCode, data);
-			}
-		}
 	}
 
 	protected String getLoadFinishedTitle() {

@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
@@ -22,6 +23,7 @@ public class DreamDroidPreferenceActivity extends PreferenceActivity {
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
 	}

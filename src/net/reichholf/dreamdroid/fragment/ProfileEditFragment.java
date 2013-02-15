@@ -9,13 +9,11 @@ package net.reichholf.dreamdroid.fragment;
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
 import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -232,23 +230,5 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
-	}
-
-	/**
-	 * If a targetFragment has been set using setTargetFragement() return to it.
-	 */
-	protected void finish(int resultCode) {
-		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-		if (mph.isMultiPane()) {
-			Fragment f = getTargetFragment();
-			if (f != null) {
-				mph.showDetails(f);
-				f.onActivityResult(getTargetRequestCode(), resultCode, null);
-			}
-		} else {
-			Activity a = getSherlockActivity();
-			a.setResult(resultCode);
-			a.finish();
-		}
 	}
 }

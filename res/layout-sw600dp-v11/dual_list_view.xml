@@ -15,7 +15,7 @@
         android:layout_height="35dp"
         android:layout_marginLeft="200dp"
         android:layout_toRightOf="@id/listView2Header"
-        android:textSize="20sp"
+        android:textAppearance="@android:style/TextAppearance.Large"
         android:textStyle="bold" />
 
     <View

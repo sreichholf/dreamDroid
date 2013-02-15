@@ -15,9 +15,8 @@
         android:summary="@string/mobile_imdb_long"
         android:title="@string/mobile_imdb" />
     <CheckBoxPreference
-        android:enabled="false"
-        android:key="force_multipane"
-        android:summary="@string/force_tablet_layout_long"
-        android:title="@string/force_tablet_layout" />
+        android:key="light_theme"
+        android:summary="@string/use_light_theme_long"
+        android:title="@string/use_light_theme" />
 
 </PreferenceScreen>

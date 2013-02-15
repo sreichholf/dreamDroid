@@ -27,7 +27,9 @@ public class Statics {
 	public static final int ACTION_EDIT = 0xc012;
 	public static final int ACTION_PICK_TIME_BEGIN = 0x0c13;
 	public static final int ACTION_PICK_TIME_END = 0x0c14;
+	public static final int ACTION_LEAVE_CONFIRMED = 0xc15;
 	public static final int ACTION_NONE = 0xcfff;
+	
 
 	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
 	public static final int DIALOG_TIMER_PICK_END_ID = 0x8010;

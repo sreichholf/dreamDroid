@@ -217,11 +217,10 @@ public class Timer {
 		
 		TimerEditFragment f = new TimerEditFragment();
 		Bundle args = new Bundle();
-	
 		data.put("timer", timer);
-	
 		args.putSerializable(DATA, data);
-		String action = create ? DreamDroid.ACTION_NEW : Intent.ACTION_EDIT;
+		
+		String action = create ? DreamDroid.ACTION_CREATE : Intent.ACTION_EDIT;
 		args.putString("action", action);
 		
 		f.setArguments(args);

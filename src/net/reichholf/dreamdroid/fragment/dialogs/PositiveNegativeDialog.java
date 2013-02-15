@@ -43,7 +43,9 @@ public class PositiveNegativeDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getArguments().getString("title")).setMessage(getString(mMessageId))
+		if(mMessageId != -1)
+			builder.setMessage(getString(mMessageId));
+		builder.setTitle(getArguments().getString("title"))
 				.setCancelable(false)
 				.setPositiveButton(getText(mPositiveText), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {

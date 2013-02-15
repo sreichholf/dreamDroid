@@ -23,32 +23,28 @@
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
                     android:text="V+"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button1"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="1"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button2"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="2"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button3"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="3"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
@@ -56,8 +52,7 @@
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
                     android:text="B+"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -68,32 +63,28 @@
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
                     android:text="V-"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button4"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="4"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button5"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="5"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button6"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="6"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
@@ -101,8 +92,7 @@
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
                     android:text="B-"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -113,24 +103,21 @@
                     android:layout_column="2"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="7"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button8"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="8"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button9"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="9"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -141,32 +128,28 @@
                     android:layout_column="2"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="&lt;"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/Button0"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="0"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonRightArrow"
                     android:background="@drawable/button_key_oval_grey"
                     android:text=">"
-                    android:textColor="#FFF"
-                    android:textSize="18dp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonPower"
                     android:background="@drawable/button_key_oval_red"
                     android:text="PWR"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
             </TableRow>
         </TableLayout>
@@ -185,32 +168,28 @@
                     android:layout_column="1"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="Mute"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonInfo"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="Info"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonUp"
                     android:background="@drawable/button_key_square"
                     android:text="UP"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonMenu"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="Menu"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
@@ -218,8 +197,7 @@
                     android:layout_column="1"
                     android:background="@drawable/button_key_oval_red"
                     android:text="Exit"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -230,24 +208,21 @@
                     android:layout_column="2"
                     android:background="@drawable/button_key_square"
                     android:text="LEFT"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonOk"
                     android:background="@drawable/button_key_square"
                     android:text="OK"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonRight"
                     android:background="@drawable/button_key_square"
                     android:text="RIGHT"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
             </TableRow>
 
@@ -258,24 +233,21 @@
                     android:layout_column="2"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="Audio"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonDown"
                     android:background="@drawable/button_key_square"
                     android:text="DOWN"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonPvr"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="Video"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
             </TableRow>
         </TableLayout>
@@ -314,32 +286,28 @@
                     android:layout_column="1"
                     android:background="@drawable/button_key_oval_black"
                     android:text="TV"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonRadio"
                     android:background="@drawable/button_key_oval_black"
                     android:text="RADIO"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonText"
                     android:background="@drawable/button_key_oval_black"
                     android:text="TEXT"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/ButtonHelp"
                     android:background="@drawable/button_key_oval_black"
                     android:text="Help"
-                    android:textColor="#FFF"
-                    android:textSize="14dp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
             </TableRow>
         </TableLayout>

@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,7 +16,9 @@ public class TabbedNavigationActivity extends Activity {
 	 * @see android.app.ActivityGroup#onCreate(android.os.Bundle)
 	 */
 	public void onCreate(Bundle savedInstanceState) {
+		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
+
 		Intent intent = new Intent(this, FragmentMainActivity.class);
 		startActivity(intent);
 		finish();

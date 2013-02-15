@@ -10,10 +10,9 @@
 
         <TextView
             android:id="@+id/TextViewTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/title" />
 
         <LinearLayout
@@ -48,10 +47,9 @@
 
         <TextView
             android:id="@+id/TextViewDescription"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/description" />
 
         <EditText
@@ -63,86 +61,82 @@
 
         <TextView
             android:id="@+id/TextViewBeginTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
             android:paddingLeft="3dip"
             android:text="@string/begin_time" />
 
         <TextView
             android:id="@+id/TextViewBegin"
+            style="@style/SelectableItem"
             android:layout_width="fill_parent"
             android:layout_height="50dip"
-            android:background="@android:drawable/list_selector_background"
             android:clickable="true"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
             android:text="@+id/TextViewBegin"
-            android:textSize="20dip" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/TextViewTime"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/end_time" />
 
         <TextView
             android:id="@+id/TextViewEnd"
+            style="@style/SelectableItem"
             android:layout_width="fill_parent"
             android:layout_height="50dip"
-            android:background="@android:drawable/list_selector_background"
             android:clickable="true"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
             android:text="@+id/TextViewEnd"
-            android:textSize="20dip" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/TextViewRepeatedTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/repeatings" />
 
         <TextView
             android:id="@+id/TextViewRepeated"
+            style="@style/SelectableItem"
             android:layout_width="fill_parent"
             android:layout_height="50dip"
-            android:background="@android:drawable/list_selector_background"
             android:clickable="true"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
             android:text="@+id/TextViewRepeated"
-            android:textSize="20dip" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/TextViewServiceTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/service" />
 
         <TextView
             android:id="@+id/TextViewService"
+            style="@style/SelectableItem"
             android:layout_width="fill_parent"
             android:layout_height="50dip"
-            android:background="@android:drawable/list_selector_background"
             android:clickable="true"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
             android:text="@+id/TextViewService"
-            android:textSize="20dip" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/TextViewAfterEvent"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/afterevent" />
 
         <Spinner
@@ -152,10 +146,9 @@
 
         <TextView
             android:id="@+id/TextViewLocation"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/location" />
 
         <Spinner
@@ -165,22 +158,21 @@
 
         <TextView
             android:id="@+id/TextViewTagsTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/tags" />
 
         <TextView
             android:id="@+id/TextViewTags"
+            style="@style/SelectableItem"
             android:layout_width="fill_parent"
             android:layout_height="50dip"
-            android:background="@android:drawable/list_selector_background"
             android:clickable="true"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
             android:text="@+id/TextViewTags"
-            android:textSize="20dip" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
     </LinearLayout>
 
 </ScrollView>

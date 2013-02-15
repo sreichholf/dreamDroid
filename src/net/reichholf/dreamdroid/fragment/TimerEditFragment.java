@@ -40,7 +40,6 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -176,7 +175,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		registerOnClickListener(mEnd, Statics.ITEM_PICK_END);
 		registerOnClickListener(mRepeatings, Statics.ITEM_PICK_REPEATED);
 		registerOnClickListener(mTags, Statics.ITEM_PICK_TAGS);
-
 
 		mAfterevent.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
@@ -400,7 +398,10 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			return true;
 
 		case Statics.ITEM_CANCEL:
-			finish(Activity.RESULT_CANCELED);
+			if (getTargetFragment() != null)
+				finish(Activity.RESULT_OK);
+			else
+				getMultiPaneHandler().showDetails(TimerListFragment.class);
 			return true;
 
 		case Statics.ITEM_PICK_SERVICE:
@@ -476,9 +477,9 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		} else {
 			mEnabled.setChecked(false);
 		}
-		
+
 		int zap = Integer.valueOf(mTimer.getString(Timer.KEY_JUST_PLAY));
-		if(zap == 1){
+		if (zap == 1) {
 			mZap.setChecked(true);
 		} else {
 			mZap.setChecked(false);
@@ -626,7 +627,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		} else {
 			mTimer.put(Timer.KEY_DISABLED, "1");
 		}
-		
+
 		if (mZap.isChecked()) {
 			mTimer.put(Timer.KEY_JUST_PLAY, "1");
 		} else {
@@ -664,7 +665,10 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		super.onSimpleResult(success, result);
 
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
-			finish(Activity.RESULT_OK);
+			if (getTargetFragment() != null)
+				finish(Activity.RESULT_OK);
+			else
+				getMultiPaneHandler().showDetails(TimerListFragment.class);
 		}
 	}
 
@@ -693,24 +697,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		mTimer.put(Timer.KEY_END, timestamp);
 		mTimer.put(Timer.KEY_END_READABLE, DateTime.getYearDateTimeString(timestamp));
 		reload();
-	}
-
-	/**
-	 * If a targetFragment has been set using setTargetFragement() return to it.
-	 */
-	protected void finish(int resultCode) {
-		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-		if (mph.isMultiPane()) {
-			Fragment f = getTargetFragment();
-			if (f != null) {
-				mph.showDetails(f);
-				f.onActivityResult(getTargetRequestCode(), resultCode, null);
-			}
-		} else {
-			Activity a = getSherlockActivity();
-			a.setResult(resultCode);
-			a.finish();
-		}
 	}
 
 	@Override

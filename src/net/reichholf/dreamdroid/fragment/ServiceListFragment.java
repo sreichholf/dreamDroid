@@ -12,11 +12,10 @@ import java.util.HashMap;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
@@ -43,7 +42,7 @@ import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -305,9 +304,9 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		mListTasks = new ArrayList<GetServiceListTask>();
 
 		if (mDetailReference == null) {
-			mDetailReference = DreamDroid.getSharedPreferences(getSherlockActivity())
+			mDetailReference = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity())
 					.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "");
-			mDetailName = DreamDroid.getSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
+			mDetailName = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
 		}
 
 		if (mExtras != null) {
@@ -588,7 +587,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
-		String defaultReference = DreamDroid.getSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF,
+		String defaultReference = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF,
 				null);
 		setDefault.setEnabled(true);
 		if (defaultReference != null) {
@@ -615,7 +614,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			return true;
 		case Statics.ITEM_SET_DEFAULT:
 			if (mDetailReference != null) {
-				Editor editor = DreamDroid.getSharedPreferences(getSherlockActivity()).edit();
+				Editor editor = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).edit();
 				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mDetailReference);
 				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mDetailName);
 
@@ -696,7 +695,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				intent.putExtra(sData, (Serializable) map);
 				finish(Activity.RESULT_OK, intent);
 			} else {
-				boolean instantZap = DreamDroid.getSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
+				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
 				} else {
@@ -860,21 +859,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 		getSherlockActivity().invalidateOptionsMenu();
 		nextListTaskPlease();
-	}
-
-	protected void finish(int resultCode, Intent data) {
-		MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-		if (mph.isMultiPane()) {
-			Fragment f = getTargetFragment();
-			if (f != null) {
-				mph.showDetails(f);
-				f.onActivityResult(getTargetRequestCode(), resultCode, data);
-			}
-		} else {
-			Activity a = getSherlockActivity();
-			a.setResult(resultCode, data);
-			a.finish();
-		}
 	}
 
 	/*

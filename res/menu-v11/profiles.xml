@@ -4,7 +4,7 @@
           android:title="@string/profile_add"
           android:showAsAction="ifRoom|withText" />
 	<item android:id="@+id/menu_detect_devices"
-          android:icon="@drawable/ic_menu_search"
+          android:icon="@drawable/ic_menu_find"
           android:title="@string/autodiscover_dreamboxes"
           android:showAsAction="ifRoom|withText" />
 </menu>

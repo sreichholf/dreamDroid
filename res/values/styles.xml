@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="SimpleHeader">
+        <item name="android:background">?attr/simpleHeaderBackground</item>
+        <item name="android:paddingLeft">3dip</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.Small</item>
+    </style>
+
+    <style name="MediumHeader" parent="SimpleHeader">
+        <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SelectableItem">
+        <item name="android:background">@android:drawable/list_selector_background</item>
+    </style>
+
+    <style name="Theme.DreamDroid" parent="Theme.Sherlock">
+        <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
+        <item name="simpleHeaderBackground">#333</item>
+        <item name="homeAsUpIndicator">@drawable/indicator</item>
+        <item name="android:homeAsUpIndicator">@drawable/indicator</item>
+    </style>
+
+    <style name="Theme.DreamDroid.Light" parent="Theme.Sherlock.Light">
+        <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
+        <item name="simpleHeaderBackground">#DDD</item>
+        <item name="homeAsUpIndicator">@drawable/indicator</item>
+        <item name="android:homeAsUpIndicator">@drawable/indicator</item>
+    </style>
+
+</resources>

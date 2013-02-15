@@ -5,7 +5,7 @@
           android:title="@string/bouquet_overview"
           android:showAsAction="ifRoom" />
     <item android:id="@+id/menu_default"
-          android:icon="@android:drawable/ic_menu_set_as"
+          android:icon="@drawable/ic_menu_set_as"
           android:title="@string/set_default"
           android:showAsAction="ifRoom" />
 </menu>

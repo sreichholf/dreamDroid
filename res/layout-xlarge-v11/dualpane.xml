@@ -9,7 +9,7 @@
         android:layout_width="fill_parent"
         android:layout_height="30dp"
         android:layout_marginLeft="170dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textAppearance="@android:attr/textAppearanceLarge" />
 
     <FrameLayout
         android:id="@+id/navigation_view"
@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/active_profile"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="@android:attr/textAppearanceSmall" />
 
                 <TextView
                     android:id="@+id/TextViewConnectionStateTitle"
@@ -63,7 +63,7 @@
                     android:layout_weight="1"
                     android:gravity="right"
                     android:text="@string/connection_state"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="@android:attr/textAppearanceSmall" />
             </TableRow>
 
             <TableRow android:layout_marginTop="3dp" >
@@ -74,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="..."
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="@android:attr/textAppearanceSmall" />
 
                 <TextView
                     android:id="@+id/TextViewConnectionState"
@@ -83,7 +83,7 @@
                     android:layout_weight="1"
                     android:gravity="right"
                     android:text="..."
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="@android:attr/textAppearanceSmall" />
             </TableRow>
         </TableLayout>
     </LinearLayout>

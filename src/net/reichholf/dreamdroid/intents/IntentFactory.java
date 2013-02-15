@@ -21,24 +21,25 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
  * @author sre
- *
+ * 
  */
 public class IntentFactory {
 	/**
 	 * @param event
 	 */
-	public static void queryIMDb(Context context, ExtendedHashMap event){
+	public static void queryIMDb(Context context, ExtendedHashMap event) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "imdb:///find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 		intent.setData(Uri.parse(uriString));
-		try{			
+		try {
 			context.startActivity(intent);
-		} catch(ActivityNotFoundException anfex) {
-			if(DreamDroid.getSharedPreferences(context).getBoolean("mobile_imdb", false)){
+		} catch (ActivityNotFoundException anfex) {
+			if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("mobile_imdb", false)) {
 				uriString = "http://m.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 			} else {
 				uriString = "http://www.imdb.com/find?q=" + event.getString(Event.KEY_EVENT_TITLE);
@@ -47,21 +48,22 @@ public class IntentFactory {
 			context.startActivity(intent);
 		}
 	}
-	
+
 	/**
 	 * @param ref
 	 *            A ServiceReference
 	 */
 	public static Intent getStreamServiceIntent(String ref) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = "http://" + DreamDroid.getActiveProfile().getStreamHost().trim() + ":" + DreamDroid.getActiveProfile().getStreamPortString() + "/" + ref;
+		String uriString = "http://" + DreamDroid.getActiveProfile().getStreamHost().trim() + ":"
+				+ DreamDroid.getActiveProfile().getStreamPortString() + "/" + ref;
 		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
 
 		intent.setDataAndType(Uri.parse(uriString), "video/*");
-		
+
 		return intent;
 	}
-	
+
 	/**
 	 * @param ref
 	 *            A ServiceReference
@@ -72,7 +74,7 @@ public class IntentFactory {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("file", fileName));
 		String uriString = shc.buildFileStreamUrl(URIStore.FILE, params);
-		
+
 		intent.setDataAndType(Uri.parse(uriString), "video/*");
 		return intent;
 	}

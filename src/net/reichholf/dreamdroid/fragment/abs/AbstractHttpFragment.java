@@ -32,6 +32,7 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.KeyEvent;
@@ -39,7 +40,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
@@ -308,7 +308,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (DreamDroid.getSharedPreferences(getSherlockActivity()).getBoolean("volume_control", false)) {
+		if (PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("volume_control", false)) {
 			switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				onVolumeButtonClicked(Volume.CMD_UP);
@@ -364,39 +364,6 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 			}
 		}
 		showToast(text);
-	}
-
-	/**
-	 * If a targetFragment has been set using setTargetFragement() return to it.
-	 */
-	protected void finish() {
-		finish(Statics.RESULT_NONE, null);
-	}
-
-	/**
-	 * If a targetFragment has been set using setTargetFragement() return to it.
-	 * 
-	 * @param resultCode
-	 */
-	protected void finish(int resultCode) {
-		finish(resultCode, null);
-	}
-
-	/**
-	 * If a targetFragment has been set using setTargetFragement() return to it.
-	 * 
-	 * @param resultCode
-	 * @param data
-	 */
-	protected void finish(int resultCode, Intent data) {
-		SherlockFragment f = (SherlockFragment) getTargetFragment();
-		if (f != null) {
-			MultiPaneHandler mph = (MultiPaneHandler) getSherlockActivity();
-			mph.showDetails(f);
-			if (resultCode != Statics.RESULT_NONE || data != null) {
-				f.onActivityResult(getTargetRequestCode(), resultCode, data);
-			}
-		}
 	}
 
 	protected ArrayList<NameValuePair> getHttpParams() {

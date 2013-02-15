@@ -4,10 +4,8 @@
 
     <TextView
         android:id="@android:id/text1"
+        style="@style/MediumHeader"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#333"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

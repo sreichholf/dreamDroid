@@ -35,8 +35,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:textColor="#FFF"
-                    android:textSize="18sp"
+                    android:textAppearance="@android:style/TextAppearance.Medium"
                     android:textStyle="bold" />
 
                 <TextView
@@ -46,8 +45,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="#FFF"
-                    android:textSize="13sp" />
+                    android:textAppearance="@android:style/TextAppearance.Small" />
             </LinearLayout>
 
             <LinearLayout
@@ -61,8 +59,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:textColor="#FFF"
-                    android:textSize="13sp"
+                    android:textAppearance="@android:style/TextAppearance.Small"
                     android:textStyle="bold" />
 
                 <TextView
@@ -72,8 +69,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="#FFF"
-                    android:textSize="13sp" />
+                    android:textAppearance="@android:style/TextAppearance.Small" />
             </LinearLayout>
         </LinearLayout>
 
@@ -87,14 +83,14 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="13sp" />
+                android:textAppearance="@android:style/TextAppearance.Small" />
 
             <TextView
                 android:layout_width="15dp"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:text="-"
-                android:textSize="13sp" />
+                android:textAppearance="@android:style/TextAppearance.Small" />
 
             <TextView
                 android:id="@+id/timer_end"
@@ -102,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="right"
-                android:textSize="13sp" />
+                android:textAppearance="@android:style/TextAppearance.Small" />
         </LinearLayout>
     </LinearLayout>
 

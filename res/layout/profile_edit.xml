@@ -11,8 +11,7 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
+            style="@style/SimpleHeader"
             android:text="@string/profile" />
 
         <EditText
@@ -30,16 +29,14 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="80dp"
-                android:background="#333"
-                android:paddingLeft="3dip"
+                style="@style/SimpleHeader"
                 android:text="@string/host" />
 
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="-80dp"
-                android:background="#333"
-                android:paddingLeft="3dip"
+                style="@style/SimpleHeader"
                 android:text="@string/port" />
         </LinearLayout>
 
@@ -69,15 +66,14 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
+            android:background="?attr/simpleHeaderBackground"
             android:orientation="vertical"
             android:paddingRight="5dp" >
 
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:background="#333"
-                android:paddingLeft="3dp"
+                style="@style/SimpleHeader"
                 android:text="@string/stream" />
 
             <EditText
@@ -98,8 +94,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="140dp"
-                    android:background="#333"
-                    android:paddingLeft="3dp"
+                    style="@style/SimpleHeader"
                     android:text="@string/port_stream_live" />
 
                 <EditText
@@ -123,8 +118,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="140dp"
-                    android:background="#333"
-                    android:paddingLeft="3dp"
+                    style="@style/SimpleHeader"
                     android:text="@string/port_stream_file" />
 
                 <EditText
@@ -150,8 +144,7 @@
                 android:layout_marginRight="50dip"
                 android:paddingLeft="3dip"
                 android:text="@string/ssl_enabled"
-                android:textColor="#FFF"
-                android:textSize="18sp" />
+                android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <CheckBox
                 android:id="@+id/CheckBoxSsl"
@@ -171,8 +164,7 @@
                 android:layout_marginRight="50dip"
                 android:paddingLeft="3dip"
                 android:text="@string/login_enabled"
-                android:textColor="#FFF"
-                android:textSize="18sp" />
+                android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <CheckBox
                 android:id="@+id/CheckBoxLogin"
@@ -190,8 +182,7 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:background="#333"
-                android:paddingLeft="3dip"
+                style="@style/SimpleHeader"
                 android:text="@string/user" />
 
             <EditText
@@ -204,8 +195,7 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:background="#333"
-                android:paddingLeft="3dip"
+                style="@style/SimpleHeader"
                 android:text="@string/pass" />
 
             <EditText
@@ -228,8 +218,7 @@
                 android:layout_marginRight="50dip"
                 android:paddingLeft="3dip"
                 android:text="@string/simple_remote"
-                android:textColor="#FFF"
-                android:textSize="18sp" />
+                android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <CheckBox
                 android:id="@+id/CheckBoxSimpleRemote"

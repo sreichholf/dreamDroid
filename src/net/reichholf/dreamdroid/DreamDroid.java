@@ -16,14 +16,12 @@ import java.util.GregorianCalendar;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
-import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.Application;
-import android.app.backup.BackupManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -34,7 +32,7 @@ import android.util.Log;
  */
 public class DreamDroid extends Application {
 	public static String VERSION_STRING;
-	public static final String ACTION_NEW = "dreamdroid.intent.action.NEW";
+	public static final String ACTION_CREATE = "dreamdroid.intent.action.NEW";
 	public static final String LOG_TAG = "net.reichholf.dreamdroid";
 
 	public static final String PREFS_KEY_QUICKZAP = "quickzap";
@@ -96,10 +94,6 @@ public class DreamDroid extends Application {
 		loadCurrentProfile(this);
 	}
 
-	public static SharedPreferences getSharedPreferences(Context context) {
-		return PreferenceManager.getDefaultSharedPreferences(context);
-	}
-
 	public static void disableNowNext() {
 		sFeatureNowNext = false;
 	}
@@ -135,7 +129,7 @@ public class DreamDroid extends Application {
 	public static void loadCurrentProfile(Context context) {
 		// the profile-table is initial - let's migrate the current config as
 		// default Profile
-		SharedPreferences sp = DreamDroid.getSharedPreferences(context);
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		ArrayList<Profile> profiles = dbh.getProfiles();
 		if (profiles.isEmpty()) {
@@ -179,7 +173,7 @@ public class DreamDroid extends Application {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		sProfile = dbh.getProfile(id);
 		if (sProfile.getId() == id) {
-			SharedPreferences.Editor editor = getSharedPreferences(context).edit();
+			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 			editor.putInt("currentProfile", id);
 			editor.commit();
 			if (onActiveProfileChangedListener != null && !sProfile.equals(oldProfile)) {
@@ -296,5 +290,11 @@ public class DreamDroid extends Application {
 			Log.d(LOG_TAG, "Scheduling backup failed " + t);
 			t.printStackTrace();
 		}
+	}
+
+	public static void setTheme(Context context) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+		if (sp.getBoolean("light_theme", false))
+			context.setTheme(R.style.Theme_DreamDroid_Light);
 	}
 }

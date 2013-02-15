@@ -11,10 +11,9 @@
 
         <TextView
             android:id="@+id/ServiceNameTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/service" />
 
         <TextView
@@ -23,13 +22,13 @@
             android:layout_height="40dp"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
-            android:textSize="16sp" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/ProviderTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
             android:paddingLeft="3dip"
             android:text="@string/provider" />
 
@@ -39,21 +38,20 @@
             android:layout_height="40dp"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
-            android:textSize="16sp" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/NowTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/now" />
 
         <LinearLayout
             android:id="@+id/layout_now"
+            style="@style/SelectableItem"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@android:drawable/list_selector_background"
             android:clickable="true"
             android:focusable="true"
             android:orientation="vertical" >
@@ -62,7 +60,7 @@
                 android:id="@+id/event_now_title"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp" />
+                android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <LinearLayout
                 android:layout_width="fill_parent"
@@ -74,7 +72,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="13sp" />
+                    android:textAppearance="@android:style/TextAppearance.Small" />
 
                 <TextView
                     android:id="@+id/event_now_duration"
@@ -82,23 +80,22 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textSize="13sp" />
+                    android:textAppearance="@android:style/TextAppearance.Small" />
             </LinearLayout>
         </LinearLayout>
 
         <TextView
             android:id="@+id/NextTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/next" />
 
         <LinearLayout
             android:id="@+id/layout_next"
+            style="@style/SelectableItem"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="@android:drawable/list_selector_background"
             android:clickable="true"
             android:focusable="true"
             android:orientation="vertical" >
@@ -107,7 +104,7 @@
                 android:id="@+id/event_next_title"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp" />
+                android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <LinearLayout
                 android:layout_width="fill_parent"
@@ -119,7 +116,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="13sp" />
+                    android:textAppearance="@android:style/TextAppearance.Small" />
 
                 <TextView
                     android:id="@+id/event_next_duration"
@@ -127,7 +124,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textSize="13sp" />
+                    android:textAppearance="@android:style/TextAppearance.Small" />
             </LinearLayout>
         </LinearLayout>
 

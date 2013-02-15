@@ -217,7 +217,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfiles.clear();
 		mProfileMapList.clear();
 		mProfiles.addAll(dbh.getProfiles());
-		for(Profile m : mProfiles){
+		for (Profile m : mProfiles) {
 			ExtendedHashMap map = new ExtendedHashMap();
 			map.put(DatabaseHelper.KEY_PROFILE, m.getName());
 			map.put(DatabaseHelper.KEY_HOST, m.getHost());
@@ -292,9 +292,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	private void activateProfile() {
 		if (DreamDroid.setActiveProfile(getSherlockActivity(), mProfile.getId())) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
-			if (!getMultiPaneHandler().isMultiPane()) {
-				getSherlockActivity().finish();
-			}
+			finish(Activity.RESULT_OK);
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
 		}

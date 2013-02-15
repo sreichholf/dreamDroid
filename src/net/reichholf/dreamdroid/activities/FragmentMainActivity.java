@@ -19,11 +19,12 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -51,7 +52,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
 			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog" });
 
-	private boolean mMultiPane;
+	// private boolean mMultiPane;
 	private boolean mSlider;
 	private boolean mInitial;
 
@@ -101,7 +102,8 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		@Override
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(DreamDroid.LOG_TAG, result.toString());
-			onProfileChecked(result);
+			if (!this.isCancelled())
+				onProfileChecked(result);
 		}
 	}
 
@@ -120,6 +122,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		DreamDroid.setTheme(this);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
 		setProgressBarIndeterminateVisibility(false);
@@ -132,7 +135,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		DreamDroid.setActiveProfileChangedListener(this);
 
 		initViews();
-		mNavigationFragment.setHighlightCurrent(mMultiPane);
+		mNavigationFragment.setHighlightCurrent(true);
 
 		// DreamDroid.registerEpgSearchListener(this);
 	}
@@ -143,7 +146,6 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	private void initViews() {
 		setContentView(R.layout.dualpane);
-		mMultiPane = true;
 		mSlider = findViewById(R.id.navigation_view) == null;
 		if (mSlider) {
 			setBehindContentView(R.layout.menu_frame);
@@ -151,20 +153,21 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 			getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
 			// show home as up so we can toggle
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+			SlidingMenu sm = getSlidingMenu();
+			sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+			sm.setShadowWidthRes(R.dimen.shadow_width);
+			sm.setShadowDrawable(R.drawable.shadow);
+			sm.setBehindScrollScale(0.25f);
+			sm.setFadeDegree(0.25f);
 		} else {
 			// add a dummy view
 			View v = new View(this);
 			setBehindContentView(v);
 			getSlidingMenu().setSlidingEnabled(false);
 			getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
+			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
-
-		SlidingMenu sm = getSlidingMenu();
-		sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
-		sm.setShadowWidthRes(R.dimen.shadow_width);
-		sm.setShadowDrawable(R.drawable.shadow);
-		sm.setBehindScrollScale(0.25f);
-		sm.setFadeDegree(0.25f);
 
 		if (mNavigationFragment == null || !mNavigationFragment.getClass().equals(NavigationFragment.class)) {
 			mNavigationFragment = new NavigationFragment();
@@ -208,10 +211,17 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
+		if (mCheckProfileTask != null)
+			mCheckProfileTask.cancel(true);
+
 		getSupportFragmentManager().putFragment(outState, "navigation", mNavigationFragment);
 		Fragment currentDetailFragment = getCurrentDetailFragment();
 		if (currentDetailFragment != null) {
-			getSupportFragmentManager().putFragment(outState, "current", currentDetailFragment);
+			if (currentDetailFragment.getTargetFragment() != null) {
+				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+				ft.add(currentDetailFragment.getTargetFragment(), "target");
+				ft.commit();
+			}
 		}
 		super.onSaveInstanceState(outState);
 	}
@@ -219,6 +229,17 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	public void onDestroy() {
 		DreamDroid.unregisterEpgSearchListener(this);
 		super.onDestroy();
+	}
+
+	@Override
+	public void onBackPressed() {
+		if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+			showDialogFragment(PositiveNegativeDialog.newInstance(getString(R.string.leave_confirm),
+					R.string.leave_confirm_long, android.R.string.yes, Statics.ACTION_LEAVE_CONFIRMED,
+					android.R.string.no, Statics.ACTION_NONE), "dialog_leave_confirm");
+		} else {
+			super.onBackPressed();
+		}
 	}
 
 	@Override
@@ -279,25 +300,13 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	 * 
 	 * @see
 	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java
-	 * .lang.Class)
-	 */
-	@Override
-	public void showDetails(Class<? extends Fragment> fragmentClass) {
-		showDetails(fragmentClass, SimpleFragmentActivity.class);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java
 	 * .lang.Class, java.lang.Class)
 	 */
 	@Override
-	public void showDetails(Class<? extends Fragment> fragmentClass, Class<? extends MultiPaneHandler> handlerClass) {
+	public void showDetails(Class<? extends Fragment> fragmentClass) {
 		try {
 			Fragment fragment = fragmentClass.newInstance();
-			showDetails(fragment, handlerClass);
+			showDetails(fragment);
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -324,51 +333,17 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	 * 
 	 * @see
 	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
-	 * .support.v4.app.Fragment, java.lang.Class)
-	 */
-	@Override
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls) {
-		showDetails(fragment, cls, false);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
 	 * .support.v4.app.Fragment, boolean)
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
-		showDetails(fragment, SimpleFragmentActivity.class, addToBackStack);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
-	 * .support.v4.app.Fragment, java.lang.Class, boolean)
-	 */
-	@Override
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack) {
-		if (mMultiPane) {
-			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-			showFragment(ft, R.id.detail_view, fragment);
-			if (addToBackStack) {
-				ft.addToBackStack(null);
-			}
-			ft.commit();
-		} else {
-			Intent intent = new Intent(this, cls);
-			intent.putExtra("fragmentClass", fragment.getClass());
-			Bundle args = fragment.getArguments();
-			if (args != null) {
-				intent.putExtras(fragment.getArguments());
-			}
-			startActivity(intent);
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+		showFragment(ft, R.id.detail_view, fragment);
+		if (addToBackStack) {
+			ft.addToBackStack(null);
 		}
+		ft.commit();
 	}
 
 	@Override
@@ -415,11 +390,11 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	}
 
 	public boolean isMultiPane() {
-		return mMultiPane;
+		return true;
 	}
 
 	public void finish(boolean finishFragment) {
-		if (mMultiPane && finishFragment) {
+		if (finishFragment) {
 			// TODO finish() for Fragment
 			// getSupportFragmentManager().popBackStackImmediate();
 		} else {
@@ -429,14 +404,14 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	@Override
 	public void onDetailFragmentResume(Fragment fragment) {
-		if (fragment != mNavigationFragment || !mMultiPane)
+		if (fragment != mNavigationFragment)
 			mDetailFragment = fragment;
 		showDetails(fragment);
 	}
 
 	@Override
 	public void onDetailFragmentPause(Fragment fragment) {
-		if (fragment != mNavigationFragment || !mMultiPane)
+		if (fragment != mNavigationFragment)
 			mDetailFragment = null;
 	}
 
@@ -475,7 +450,11 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		if (isNavigationDialog(dialogTag)) {
+		if (action == Statics.ACTION_LEAVE_CONFIRMED) {
+			finish();
+		} else if (action == Statics.ACTION_NONE) {
+			return;
+		} else if (isNavigationDialog(dialogTag)) {
 			((ActionDialog.DialogActionListener) mNavigationFragment).onDialogAction(action, details, dialogTag);
 		} else if (mDetailFragment != null) {
 			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);

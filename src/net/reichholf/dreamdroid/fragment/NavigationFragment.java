@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
-import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
@@ -38,6 +37,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
 import android.view.View;
 import android.widget.ListView;
@@ -66,16 +66,15 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
 			// { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer,
 			// R.drawable.ic_menu_music, 1, 0 },
-			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
+			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock,
+					DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
 			{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
 			{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 			{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
 			{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1, 0 },
 			{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 },
 			{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.drawable.ic_menu_info, 1, 0 },
-			{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 1 },
-		};
-	
+			{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 1 }, };
 
 	private int[] mCurrent;
 	private int mCurrentListItem;
@@ -259,13 +258,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		getListView().setTextFilterEnabled(true);
 	}
 
-	public void setSelectedItem(int position){
+	public void setSelectedItem(int position) {
 		onListItemClick(getListView(), null, position, position);
 	}
-	
+
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		if (mCurrentListItem == position && getMainActivity().isMultiPane()) {
+		if (mCurrentListItem == position) {
 			// Don't reload what we already see
 			return;
 		}
@@ -312,7 +311,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 */
 	protected boolean onItemClicked(int id) {
 		Intent intent;
-
+		
+		//Pop the backstack completely everytime the user navigates "away"
+		//Avoid's "stacking" fragments due to back-button behaviour that feels really mysterious
+		FragmentManager fm = getSherlockActivity().getSupportFragmentManager();
+		if (fm.getBackStackEntryCount() > 0) {
+			fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		}
 		switch (id) {
 		case Statics.ITEM_TIMER:
 			getMainActivity().showDetails(TimerListFragment.class);
@@ -335,7 +340,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			return true;
 
 		case Statics.ITEM_REMOTE:
-			getMainActivity().showDetails(VirtualRemoteFragment.class, SimpleNoTitleFragmentActivity.class);
+			getMainActivity().showDetails(VirtualRemoteFragment.class);
 			return true;
 
 		case Statics.ITEM_PREFERENCES:
@@ -493,7 +498,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	}
 
 	private FragmentMainActivity getMainActivity() {
-		return (FragmentMainActivity) getSherlockActivity();
+		return (FragmentMainActivity) getActivity();
 	}
 
 	/*

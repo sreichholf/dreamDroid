@@ -92,7 +92,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_btn_mail"
+            android:drawableLeft="@drawable/ic_menu_send"
             android:text="@string/send" />
 
         <Button

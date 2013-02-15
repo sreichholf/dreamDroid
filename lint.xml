@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
-    <issue id="ValidFragment">
+    <issue id="ValidFragment" severity="ignore">
         <ignore path="src\net\reichholf\dreamdroid\fragment\dialogs\SimpleChoiceDialog.java" />
     </issue>
 </lint>

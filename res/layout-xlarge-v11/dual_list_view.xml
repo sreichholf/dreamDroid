@@ -17,7 +17,7 @@
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
         android:gravity="top|left"
-        android:textSize="20dp"
+        android:textAppearance="@android:style/TextAppearance.Large"
         android:textStyle="bold" />
 
     <View

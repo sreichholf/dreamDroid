@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
+
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -9,10 +10,9 @@
 
         <TextView
             android:id="@+id/GuiVersionTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/gui_version" />
 
         <TextView
@@ -21,14 +21,13 @@
             android:layout_height="40dp"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
-            android:textSize="16sp" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/ImageVersionTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/image_version" />
 
         <TextView
@@ -37,14 +36,13 @@
             android:layout_height="40dp"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
-            android:textSize="16sp" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/InterfaceVersionTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/interface_version" />
 
         <TextView
@@ -53,14 +51,13 @@
             android:layout_height="40dp"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
-            android:textSize="16sp" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/FrontprocessorVersionTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/front_processor_version" />
 
         <TextView
@@ -69,14 +66,13 @@
             android:layout_height="40dp"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
-            android:textSize="16sp" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
             android:id="@+id/DeviceNameTitle"
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="#333"
-            android:paddingLeft="3dip"
             android:text="@string/device_name" />
 
         <TextView
@@ -85,7 +81,7 @@
             android:layout_height="40dp"
             android:gravity="center_vertical"
             android:paddingLeft="3dip"
-            android:textSize="16sp" />
+            android:textAppearance="@android:style/TextAppearance.Medium" />
     </LinearLayout>
 
 </ScrollView>

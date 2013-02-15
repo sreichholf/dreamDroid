@@ -24,7 +24,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="..."
-            android:textColor="#FFF"
             android:textStyle="bold" />
 
         <TextView
@@ -34,7 +33,6 @@
             android:layout_weight="1"
             android:gravity="right"
             android:text="..."
-            android:textColor="#FFF"
             android:textStyle="bold" />
     </LinearLayout>
 

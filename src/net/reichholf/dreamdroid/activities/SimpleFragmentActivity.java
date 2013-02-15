@@ -40,8 +40,10 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
 		setProgressBarIndeterminateVisibility(false);
 		if (getSupportActionBar() != null)
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -133,28 +135,7 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	 */
 	@Override
 	public void showDetails(Class<? extends Fragment> fragmentClass) {
-		showDetails(fragmentClass, SimpleFragmentActivity.class);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java
-	 * .lang.Class, java.lang.Class)
-	 */
-	@Override
-	public void showDetails(Class<? extends Fragment> fragmentClass, Class<? extends MultiPaneHandler> handlerClass) {
-		try {
-			Fragment fragment = fragmentClass.newInstance();
-			showDetails(fragment, handlerClass);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		showDetails(fragmentClass);
 	}
 
 	/*
@@ -166,31 +147,7 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
-		showDetails(fragment, SimpleFragmentActivity.class, addToBackStack);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
-	 * .support.v4.app.Fragment, java.lang.Class)
-	 */
-	@Override
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> handlerClass) {
-		showDetails(fragment, handlerClass, true);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
-	 * .support.v4.app.Fragment, java.lang.Class, boolean)
-	 */
-	@Override
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> cls, boolean addToBackStack) {
-		Intent intent = new Intent(this, cls);
+		Intent intent = new Intent(this, this.getClass());
 		intent.putExtra("fragmentClass", fragment.getClass());
 		intent.putExtras(fragment.getArguments());
 

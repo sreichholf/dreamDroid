@@ -227,5 +227,9 @@
     <string name="enabled">Enabled</string>
     <string name="signal_meter">Signal Meter</string>
     <string name="accoustic_feedback">Accoustic Feedback</string>
+    <string name="use_light_theme_long">Use a light theme instead of the dark default theme</string>
+    <string name="use_light_theme">Use a light theme</string>
+    <string name="leave_confirm">Really leave?</string>
+    <string name="leave_confirm_long">Do you really want to leave dreamDroid?</string>
 
 </resources>

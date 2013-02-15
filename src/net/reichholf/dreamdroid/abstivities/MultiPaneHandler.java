@@ -12,19 +12,24 @@ import android.support.v4.app.Fragment;
 
 /**
  * @author sre
- *
+ * 
  */
 public interface MultiPaneHandler {
 	public void showDetails(Fragment fragment);
+
 	public void showDetails(Fragment fragment, boolean addToBackStack);
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> handlerClass);
-	public void showDetails(Fragment fragment, Class<? extends MultiPaneHandler> handlerClass, boolean addToBackStack);
+
 	public void showDetails(Class<? extends Fragment> fragmentClass);
-	public void showDetails(Class<? extends Fragment> fragmentClass, Class<? extends MultiPaneHandler> handlerClass);
+
 	public void onDetailFragmentResume(Fragment fragment);
+
 	public void onDetailFragmentPause(Fragment fragment);
+
 	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag);
+
 	public void showDialogFragment(DialogFragment fragment, String tag);
+
 	public boolean isMultiPane();
+
 	public void finish();
 }

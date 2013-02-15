@@ -32,10 +32,12 @@
         android:allowBackup="true"
         android:allowClearUserData="true"
         android:backupAgent="DreamDroidBackupAgent"
+        android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher_dreamdroid"
         android:killAfterRestore="true"
         android:label="@string/app_name"
-        android:theme="@style/Theme.Sherlock" >
+        android:theme="@style/Theme.DreamDroid"
+        android:uiOptions="splitActionBarWhenNarrow" >
         <activity android:name=".activities.TabbedNavigationActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
