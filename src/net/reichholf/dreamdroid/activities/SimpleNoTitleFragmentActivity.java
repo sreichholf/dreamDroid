@@ -6,8 +6,17 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import android.os.Bundle;
+import android.view.WindowManager;
+
 /**
  * @author sre
- *
+ * 
  */
-public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {}
+public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		super.onCreate(savedInstanceState);
+	}
+}
