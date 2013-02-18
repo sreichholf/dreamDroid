@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import net.reichholf.dreamdroid.ActiveProfileChangedListener;
+import net.reichholf.dreamdroid.ProfileChangedListener;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -45,8 +45,8 @@ import com.slidingmenu.lib.app.SlidingFragmentActivity;
  * @author sre
  * 
  */
-public class FragmentMainActivity extends SlidingFragmentActivity implements MultiPaneHandler,
-		ActiveProfileChangedListener, DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
+public class FragmentMainActivity extends SlidingFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
+		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
@@ -125,6 +125,8 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		DreamDroid.setTheme(this);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
+		getSupportActionBar().setDisplayShowTitleEnabled(true);
+		getSupportActionBar().setDisplayUseLogoEnabled(true);
 		setProgressBarIndeterminateVisibility(false);
 
 		if (savedInstanceState != null) {
@@ -132,7 +134,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 					"navigation");
 		}
 
-		DreamDroid.setActiveProfileChangedListener(this);
+		DreamDroid.setCurrentProfileChangedListener(this);
 
 		initViews();
 		mNavigationFragment.setHighlightCurrent(true);
@@ -190,15 +192,16 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 			mConnectionState = new TextView(this);
 		}
 		mInitial = true;
-		onActiveProfileChanged(DreamDroid.getActiveProfile());
+		onProfileChanged(DreamDroid.getCurrentProfile());
 	}
 
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
 		if (fragment.isAdded()) {
-			Log.i(DreamDroid.LOG_TAG, "Fragment already added, showing");
-			ft.show(fragment);
+			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " already added, showing");
+			if (!fragment.isVisible())
+				ft.show(fragment);
 		} else {
-			Log.i(DreamDroid.LOG_TAG, "Fragment not added, adding");
+			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " not added, adding");
 			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());
 		}
 	}
@@ -246,7 +249,8 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			toggle();
+			if (getSlidingMenu().isSlidingEnabled())
+				toggle();
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -270,7 +274,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	 * onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
 	 */
 	@Override
-	public void onActiveProfileChanged(Profile p) {
+	public void onProfileChanged(Profile p) {
 		setProfileName();
 		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
@@ -284,7 +288,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	 *
 	 */
 	public void setProfileName() {
-		mActiveProfile.setText(DreamDroid.getActiveProfile().getName());
+		mActiveProfile.setText(DreamDroid.getCurrentProfile().getName());
 	}
 
 	/**
@@ -404,9 +408,10 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	@Override
 	public void onDetailFragmentResume(Fragment fragment) {
-		if (fragment != mNavigationFragment)
+		if (!fragment.equals(mNavigationFragment) && !fragment.equals(mDetailFragment)) {
 			mDetailFragment = fragment;
-		showDetails(fragment);
+			showDetails(fragment);
+		}
 	}
 
 	@Override

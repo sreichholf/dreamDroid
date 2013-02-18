@@ -51,12 +51,9 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	private CheckBox mSimpleRemote;
 	private LinearLayout mLayoutLogin;
 
-	private Activity mActivity;
-
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mActivity = getSherlockActivity();
-		mActivity.setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		setHasOptionsMenu(true);
 		mBaseTitle = mCurrentTitle = getString(R.string.edit_profile);
 	}
@@ -84,9 +81,9 @@ public class ProfileEditFragment extends DreamDroidFragment {
 			if (mCurrentProfile == null)
 				mCurrentProfile = new Profile();
 			assignProfile();
-		}		
+		}
 		onIsLoginChanged(mLogin.isChecked());
-		
+
 		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
@@ -207,7 +204,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	 *            The text to show
 	 */
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(mActivity, toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -218,7 +215,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	 *            The text to show
 	 */
 	protected void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(mActivity, toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 

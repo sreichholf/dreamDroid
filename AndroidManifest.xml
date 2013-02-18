@@ -58,7 +58,8 @@
         </activity>
         <activity
             android:name=".activities.SimpleNoTitleFragmentActivity"
-            android:theme="@style/Theme.Sherlock.NoActionBar" >
+            android:theme="@style/Theme.Sherlock.NoActionBar"
+            android:uiOptions="" >
         </activity>
         <activity android:name=".activities.FragmentMainActivity" >
         </activity>

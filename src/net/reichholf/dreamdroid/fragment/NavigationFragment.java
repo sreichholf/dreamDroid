@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.FragmentMainActivity;
+import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
@@ -311,70 +312,72 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 */
 	protected boolean onItemClicked(int id) {
 		Intent intent;
-		
-		//Pop the backstack completely everytime the user navigates "away"
-		//Avoid's "stacking" fragments due to back-button behaviour that feels really mysterious
-		FragmentManager fm = getSherlockActivity().getSupportFragmentManager();
-		if (fm.getBackStackEntryCount() > 0) {
-			fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-		}
 		switch (id) {
 		case Statics.ITEM_TIMER:
+			clearBackStack();
 			getMainActivity().showDetails(TimerListFragment.class);
-			return true;
+			break;
 
 		case Statics.ITEM_MOVIES:
+			clearBackStack();
 			getMainActivity().showDetails(MovieListFragment.class);
-			return true;
+			break;
 
 		case Statics.ITEM_SERVICES:
+			clearBackStack();
 			getMainActivity().showDetails(ServiceListFragment.class);
-			return true;
+			break;
 
 		case Statics.ITEM_INFO:
+			clearBackStack();
 			getMainActivity().showDetails(DeviceInfoFragment.class);
-			return true;
+			break;
 
 		case Statics.ITEM_CURRENT:
+			clearBackStack();
 			getMainActivity().showDetails(CurrentServiceFragment.class);
-			return true;
+			break;
 
 		case Statics.ITEM_REMOTE:
-			getMainActivity().showDetails(VirtualRemoteFragment.class);
-			return true;
+			// getMainActivity().showDetails(VirtualRemoteFragment.class);
+			intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
+			intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
+			startActivity(intent);
+			break;
 
 		case Statics.ITEM_PREFERENCES:
 			intent = new Intent(getMainActivity(), DreamDroidPreferenceActivity.class);
 			startActivity(intent);
-			return true;
+			break;
 
 		case Statics.ITEM_MESSAGE:
 			getMultiPaneHandler().showDialogFragment(SendMessageDialog.newInstance(), "sendmessage_dialog");
-			return true;
+			break;
 
 		case Statics.ITEM_EPG_SEARCH:
 			getMainActivity().onSearchRequested();
-			return true;
+			break;
 
 		case Statics.ITEM_SCREENSHOT:
+			clearBackStack();
 			getMainActivity().showDetails(ScreenShotFragment.class);
-			return true;
+			break;
 
 		case Statics.ITEM_TOGGLE_STANDBY:
 			setPowerState(PowerState.STATE_TOGGLE);
-			return true;
+			break;
 
 		case Statics.ITEM_RESTART_GUI:
 			setPowerState(PowerState.STATE_GUI_RESTART);
-			return true;
+			break;
 
 		case Statics.ITEM_REBOOT:
 			setPowerState(PowerState.STATE_SYSTEM_REBOOT);
-			return true;
+			break;
 
 		case Statics.ITEM_SHUTDOWN:
 			setPowerState(PowerState.STATE_SHUTDOWN);
-			return true;
+			break;
 
 		case Statics.ITEM_POWERSTATE_DIALOG:
 			CharSequence[] actions = { getText(R.string.standby), getText(R.string.restart_gui),
@@ -384,36 +387,52 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			getMultiPaneHandler().showDialogFragment(
 					SimpleChoiceDialog.newInstance(getString(R.string.powercontrol), actions, actionIds),
 					"powerstate_dialog");
-			return true;
+			break;
 
 		case Statics.ITEM_ABOUT:
 			getMultiPaneHandler().showDialogFragment(AboutDialog.newInstance(), "about_dialog");
-			return true;
+			break;
 
 		case Statics.ITEM_CHECK_CONN:
-			getMainActivity().onActiveProfileChanged(DreamDroid.getActiveProfile());
-			return true;
+			getMainActivity().onProfileChanged(DreamDroid.getCurrentProfile());
+			break;
 
 		case Statics.ITEM_SLEEPTIMER:
 			getSleepTimer(true);
-			return true;
+			break;
 
 		case Statics.ITEM_MEDIA_PLAYER:
 			showToast(getString(R.string.not_implemented));
 			// TODO startActivity( new Intent(getMainActivity(),
 			// MediaplayerNavigationActivity.class) );
-			return true;
+			break;
 
 		case Statics.ITEM_PROFILES:
+			clearBackStack();
 			getMainActivity().showDetails(ProfileListFragment.class);
-			return true;
+			break;
 
 		case Statics.ITEM_SIGNAL:
+			clearBackStack();
 			getMainActivity().showDetails(SignalFragment.class);
+			break;
 
 		default:
 			return super.onItemClicked(id);
 		}
+
+		return true;
+	}
+
+	private void clearBackStack() {
+		// Pop the backstack completely everytime the user navigates "away"
+		// Avoid's "stacking" fragments due to back-button behaviour that feels
+		// really mysterious
+		FragmentManager fm = getSherlockActivity().getSupportFragmentManager();
+		if (fm.getBackStackEntryCount() > 0) {
+			fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		}
+
 	}
 
 	/**

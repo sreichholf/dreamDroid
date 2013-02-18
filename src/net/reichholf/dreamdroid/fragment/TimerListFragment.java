@@ -89,12 +89,15 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		getMultiPaneHandler().showDialogFragment(dia, "dialog_timer_selected");
 	}
 
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.Fragment#onActivityResult(int, int, android.content.Intent)
+	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
 			if (resultCode == Activity.RESULT_OK) {
 				if(getSherlockActivity() != null) //we're somewhere active!
-					reload();
+					//reload();
 				Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!");
 			}
 		}

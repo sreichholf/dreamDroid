@@ -4,12 +4,14 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid;
+package net.reichholf.dreamdroid.fragment.abs;
+
+import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 
 /**
  * @author sre
- *
+ * 
  */
-public interface ActiveProfileChangedListener{
-	public void onActiveProfileChanged(Profile p);
+public interface MutliPaneContent {
+	public MultiPaneHandler getMultiPaneHandler();
 }

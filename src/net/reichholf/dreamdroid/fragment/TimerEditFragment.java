@@ -40,6 +40,7 @@ import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -63,6 +64,8 @@ import com.actionbarsherlock.view.MenuInflater;
  * 
  */
 public class TimerEditFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener {
+	private static final String TAG = TimerEditFragment.class.getSimpleName();
+
 	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
 
 	private boolean[] mCheckedDays = { false, false, false, false, false, false, false };
@@ -392,21 +395,22 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	 */
 	protected boolean onItemClicked(int id) {
 		Bundle args;
+		boolean consume = false;
 		switch (id) {
 		case Statics.ITEM_SAVE:
 			saveTimer();
-			return true;
+			consume = true;
+			break;
 
 		case Statics.ITEM_CANCEL:
-			if (getTargetFragment() != null)
-				finish(Activity.RESULT_OK);
-			else
-				getMultiPaneHandler().showDetails(TimerListFragment.class);
-			return true;
+			finish(Activity.RESULT_CANCELED);
+			consume = true;
+			break;
 
 		case Statics.ITEM_PICK_SERVICE:
 			pickService();
-			return true;
+			consume = true;
+			break;
 
 		case Statics.ITEM_PICK_BEGIN:
 			args = new Bundle();
@@ -416,7 +420,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			TimePickerDialog beginPicker = TimePickerDialog.newInstance();
 			beginPicker.setArguments(args);
 			getMultiPaneHandler().showDialogFragment(beginPicker, "dialog_pick_start_time");
-			return true;
+			consume = true;
+			break;
 
 		case Statics.ITEM_PICK_END:
 			args = new Bundle();
@@ -426,18 +431,25 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			TimePickerDialog endPicker = TimePickerDialog.newInstance();
 			endPicker.setArguments(args);
 			getMultiPaneHandler().showDialogFragment(endPicker, "dialog_pick_end_time");
-			return true;
+			consume = true;
+			break;
 
 		case Statics.ITEM_PICK_REPEATED:
 			pickRepeatings();
-			return true;
+			consume = true;
+			break;
 
 		case Statics.ITEM_PICK_TAGS:
 			pickTags();
+			consume = true;
+			break;
+
 		default:
-			return super.onItemClicked(id);
+			consume = super.onItemClicked(id);
+			break;
 		}
 
+		return consume;
 	}
 
 	/**
@@ -642,6 +654,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	 * Save the current timer on the target device
 	 */
 	private void saveTimer() {
+		Log.i(TAG, "saveTimer()");
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
@@ -652,7 +665,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 		applyViewValues();
 		ArrayList<NameValuePair> params = Timer.getSaveParams(mTimer, mTimerOld);
-
 		execSimpleResultTask(new TimerChangeRequestHandler(), params);
 	}
 
@@ -665,10 +677,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		super.onSimpleResult(success, result);
 
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
-			if (getTargetFragment() != null)
-				finish(Activity.RESULT_OK);
-			else
-				getMultiPaneHandler().showDetails(TimerListFragment.class);
+			finish(Activity.RESULT_OK);
 		}
 	}
 

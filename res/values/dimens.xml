@@ -19,7 +19,10 @@
     <dimen name="slidingmenu_offset">60dp</dimen>
     <dimen name="list_padding">10dp</dimen>
     <dimen name="shadow_width">15dp</dimen>
-	<dimen name="navListPreferredItemHeight">50dp</dimen>
+    <dimen name="navListPreferredItemHeight">48dip</dimen>
+
     <integer name="num_cols">1</integer>
+
+    <dimen name="dialog_button_bar_height">48dip</dimen>
 
 </resources>

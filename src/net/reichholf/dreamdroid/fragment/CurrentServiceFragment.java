@@ -107,7 +107,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
 		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
-		if (mCurrent == null) {
+		if (mCurrent == null || mCurrent.isEmpty()) {
 			reload();
 		} else {
 			applyData(0, mCurrent);
@@ -206,7 +206,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	 */
 	@Override
 	protected void applyData(int loaderId, ExtendedHashMap content) {
-		if (content != null) {
+		if (content != null && !content.isEmpty()) {
 			mCurrent = content;
 			mCurrentServiceReady = true;
 

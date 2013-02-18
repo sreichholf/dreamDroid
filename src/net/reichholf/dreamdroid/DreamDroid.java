@@ -16,7 +16,6 @@ import java.util.GregorianCalendar;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
-import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -42,8 +41,6 @@ public class DreamDroid extends Application {
 
 	public static boolean DATE_LOCALE_WO;
 
-	public static ActiveProfileChangedListener onActiveProfileChangedListener = null;
-
 	private static boolean sFeatureSleeptimer = false;
 	private static boolean sFeatureNowNext = false;
 
@@ -51,6 +48,7 @@ public class DreamDroid extends Application {
 	private static ArrayList<String> sLocations;
 	private static ArrayList<String> sTags;
 
+	private static ProfileChangedListener sCurrentProfileChangedListener = null;
 	private static EpgSearchListener sSearchListener;
 
 	/**
@@ -118,11 +116,7 @@ public class DreamDroid extends Application {
 		return sFeatureSleeptimer;
 	}
 
-	public void onActiveProfileChanged(Profile p) {
-
-	}
-
-	public static Profile getActiveProfile() {
+	public static Profile getCurrentProfile() {
 		return sProfile;
 	}
 
@@ -151,24 +145,25 @@ public class DreamDroid extends Application {
 		}
 
 		int profileId = sp.getInt("currentProfile", 1);
-		if (!setActiveProfile(context, profileId)) {
+		if (!setCurrentProfile(context, profileId)) {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
 			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false);
 		}
 	}
 
+	public static boolean setCurrentProfile(Context context, int id) {
+		return setCurrentProfile(context, id, false);
+	}
+
 	/**
 	 * @param id
 	 * @return
 	 */
-	public static boolean setActiveProfile(Context context, int id) {
+	public static boolean setCurrentProfile(Context context, int id, boolean forceEvent) {
 		Profile oldProfile = sProfile;
 		if (oldProfile == null)
 			oldProfile = new Profile();
-
-		if (oldProfile.getId() == id)
-			return true;
 
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		sProfile = dbh.getProfile(id);
@@ -176,23 +171,35 @@ public class DreamDroid extends Application {
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 			editor.putInt("currentProfile", id);
 			editor.commit();
-			if (onActiveProfileChangedListener != null && !sProfile.equals(oldProfile)) {
-				onActiveProfileChangedListener.onActiveProfileChanged(sProfile);
+			if (!sProfile.equals(oldProfile) || forceEvent) {
+				activeProfileChanged();
 			}
 			return true;
 		}
 		return false;
 	}
 
-	public static void setActiveProfileChangedListener(ActiveProfileChangedListener listener) {
-		onActiveProfileChangedListener = listener;
+	public static void profileChanged(Context context, Profile p) {
+		if (p.getId() == sProfile.getId()) {
+			reloadCurrentProfile(context);
+		}
+	}
+
+	private static void activeProfileChanged() {
+		if (sCurrentProfileChangedListener != null) {
+			sCurrentProfileChangedListener.onProfileChanged(sProfile);
+		}
+	}
+
+	public static void setCurrentProfileChangedListener(ProfileChangedListener listener) {
+		sCurrentProfileChangedListener = listener;
 	}
 
 	/**
 	 * @return
 	 */
-	public static boolean reloadActiveProfile(Context ctx) {
-		return setActiveProfile(ctx, sProfile.getId());
+	public static boolean reloadCurrentProfile(Context ctx) {
+		return setCurrentProfile(ctx, sProfile.getId(), true);
 	}
 
 	/**

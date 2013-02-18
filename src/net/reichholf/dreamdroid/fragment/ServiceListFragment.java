@@ -10,7 +10,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
@@ -304,9 +306,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		mListTasks = new ArrayList<GetServiceListTask>();
 
 		if (mDetailReference == null) {
-			mDetailReference = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity())
-					.getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, "");
-			mDetailName = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, "");
+			mDetailReference = DreamDroid.getCurrentProfile().getDefaultRef();
+			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
 		}
 
 		if (mExtras != null) {
@@ -587,8 +588,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
-		String defaultReference = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF,
-				null);
+		String defaultReference = DreamDroid.getCurrentProfile().getDefaultRef();
 		setDefault.setEnabled(true);
 		if (defaultReference != null) {
 			if (defaultReference.equals(mDetailReference)) {
@@ -613,12 +613,15 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			reloadNav();
 			return true;
 		case Statics.ITEM_SET_DEFAULT:
-			if (mDetailReference != null) {
-				Editor editor = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).edit();
-				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_REF, mDetailReference);
-				editor.putString(DreamDroid.PREFS_KEY_DEFAULT_BOUQUET_NAME, mDetailName);
+			if (mDetailReference != null || mNavReference != null) {
+				Profile p = DreamDroid.getCurrentProfile();
+				if(mDetailReference != null)
+					p.setDefaultRefValues(mDetailReference, mDetailName);
+				if(mNavReference != null)
+					p.setDefaultRef2Values(mNavReference, mNavName);
 
-				if (editor.commit()) {
+				DatabaseHelper dbh = DatabaseHelper.getInstance(getSherlockActivity());
+				if (dbh.updateProfile(p)) {
 					showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
 				} else {
 					showToast(getText(R.string.default_bouquet_not_set));
@@ -695,7 +698,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				intent.putExtra(sData, (Serializable) map);
 				finish(Activity.RESULT_OK, intent);
 			} else {
-				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
+				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(
+						"instant_zap", false);
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
 				} else {

@@ -20,80 +20,70 @@
 
                 <Button
                     android:id="@+id/ButtonVolP"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
-                    android:text="V+"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="V+" />
 
                 <Button
                     android:id="@+id/Button1"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="1"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/Button2"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="2"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/Button3"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="3"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/ButtonBouP"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
-                    android:text="B+"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="B+" />
             </TableRow>
 
             <TableRow>
 
                 <Button
                     android:id="@+id/ButtonVolM"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
-                    android:text="V-"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="V-" />
 
                 <Button
                     android:id="@+id/Button4"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="4"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/Button5"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="5"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/Button6"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="6"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/ButtonBouM"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_square"
-                    android:text="B-"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="B-" />
             </TableRow>
 
             <TableRow>
@@ -103,22 +93,19 @@
                     android:layout_column="2"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="7"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/Button8"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="8"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/Button9"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="9"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
             </TableRow>
 
             <TableRow>
@@ -128,34 +115,29 @@
                     android:layout_column="2"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="&lt;"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/Button0"
                     android:background="@drawable/button_key_oval_grey"
                     android:text="0"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                   style="@style/RemoteButton.Medium" />
 
                 <Button
                     android:id="@+id/ButtonRightArrow"
+                    style="@style/RemoteButton.Medium"
                     android:background="@drawable/button_key_oval_grey"
-                    android:text=">"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                    android:text=">" />
 
                 <Button
                     android:id="@+id/ButtonPower"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_red"
-                    android:text="PWR"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="PWR" />
             </TableRow>
         </TableLayout>
 
         <TableLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -165,95 +147,83 @@
 
                 <Button
                     android:id="@+id/ButtonMute"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_oval_grey"
-                    android:text="Mute"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="Mute" />
 
                 <Button
                     android:id="@+id/ButtonInfo"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_grey"
-                    android:text="Info"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="Info" />
 
                 <Button
                     android:id="@+id/ButtonUp"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_square"
-                    android:text="UP"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="UP" />
 
                 <Button
                     android:id="@+id/ButtonMenu"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_grey"
-                    android:text="Menu"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="Menu" />
 
                 <Button
                     android:id="@+id/ButtonExit"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_oval_red"
-                    android:text="Exit"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="Exit" />
             </TableRow>
 
             <TableRow>
 
                 <Button
                     android:id="@+id/ButtonLeft"
+                    style="@style/RemoteButton"
                     android:layout_column="2"
                     android:background="@drawable/button_key_square"
-                    android:text="LEFT"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="LEFT" />
 
                 <Button
                     android:id="@+id/ButtonOk"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_square"
-                    android:text="OK"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="OK" />
 
                 <Button
                     android:id="@+id/ButtonRight"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_square"
-                    android:text="RIGHT"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="RIGHT" />
             </TableRow>
 
             <TableRow>
 
                 <Button
                     android:id="@+id/ButtonHelp"
+                    style="@style/RemoteButton"
                     android:layout_column="2"
                     android:background="@drawable/button_key_oval_grey"
-                    android:text="Help"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="Help" />
 
                 <Button
                     android:id="@+id/ButtonDown"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_square"
-                    android:text="DOWN"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="DOWN" />
 
                 <Button
                     android:id="@+id/ButtonPvr"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_grey"
-                    android:text="PVR"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="PVR" />
             </TableRow>
         </TableLayout>
 
         <TableLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -283,65 +253,57 @@
 
                 <Button
                     android:id="@+id/ButtonRwd"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_oval_black"
-                    android:text="RWD"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="RWD" />
 
                 <Button
                     android:id="@+id/ButtonPlay"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_black"
-                    android:text="PLAY"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="PLAY" />
 
                 <Button
                     android:id="@+id/ButtonStop"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_black"
-                    android:text="STOP"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="STOP" />
 
                 <Button
                     android:id="@+id/ButtonFwd"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_black"
-                    android:text="FWD"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="FWD" />
             </TableRow>
 
             <TableRow>
 
                 <Button
                     android:id="@+id/ButtonTv"
+                    style="@style/RemoteButton"
                     android:layout_column="1"
                     android:background="@drawable/button_key_oval_black"
-                    android:text="TV"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="TV" />
 
                 <Button
                     android:id="@+id/ButtonRadio"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_black"
-                    android:text="RADIO"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="RADIO" />
 
                 <Button
                     android:id="@+id/ButtonText"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_black"
-                    android:text="TEXT"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    android:text="TEXT" />
 
                 <Button
                     android:id="@+id/ButtonRec"
+                    style="@style/RemoteButton"
                     android:background="@drawable/button_key_oval_black"
                     android:text="REC"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textColor="#F00"
-                    android:textStyle="bold" />
+                    android:textColor="#F00" />
             </TableRow>
         </TableLayout>
     </LinearLayout>

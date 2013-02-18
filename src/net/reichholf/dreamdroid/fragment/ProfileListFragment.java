@@ -53,7 +53,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	private ArrayList<Profile> mDetectedProfiles;
 
 	private SimpleAdapter mAdapter;
-	private Activity mActivity;
 	private DetectDevicesTask mDetectDevicesTask;
 
 	private ProgressDialog mProgress;
@@ -174,22 +173,28 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-
-		mActivity = getSherlockActivity();
 		mBaseTitle = mCurrentTitle = getString(R.string.profiles);
-		mActivity.setProgressBarIndeterminateVisibility(false);
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		mProfiles = new ArrayList<Profile>();
 		mProfileMapList = new ArrayList<ExtendedHashMap>();
-	}
+		mProfile = new Profile();
 
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
 		mAdapter = new SimpleAdapter(getSherlockActivity(), mProfileMapList, android.R.layout.two_line_list_item,
 				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST }, new int[] { android.R.id.text1,
 						android.R.id.text2 });
-
 		setListAdapter(mAdapter);
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		reloadProfiles();
+		if (savedInstanceState != null) {
+			int pos = savedInstanceState.getInt("cursorPosition");
+			mProfile = mProfiles.get(pos);
+		}
 
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
@@ -197,13 +202,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 				return onListItemLongClick(a, v, position, id);
 			}
 		});
-
-		reloadProfiles();
-		mProfile = new Profile();
-		if (savedInstanceState != null) {
-			int pos = savedInstanceState.getInt("cursorPosition");
-			mProfile = mProfiles.get(pos);
-		}
 	}
 
 	@Override
@@ -236,23 +234,10 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		return true;
 	}
 
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putInt("profileId", mProfile.getId());
 		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == Statics.REQUEST_EDIT_PROFILE) {
-			mActivity.setResult(resultCode, null);
-			if (resultCode == Activity.RESULT_OK) {
-				reloadProfiles();
-				mAdapter.notifyDataSetChanged();
-				// Reload the current profile as it may have been
-				// changed/altered
-				DreamDroid.reloadActiveProfile(getSherlockActivity());
-			}
-		}
 	}
 
 	@Override
@@ -290,7 +275,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 * Activates the selected profile
 	 */
 	private void activateProfile() {
-		if (DreamDroid.setActiveProfile(getSherlockActivity(), mProfile.getId())) {
+		if (DreamDroid.setCurrentProfile(getSherlockActivity(), mProfile.getId(), true)) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
 			finish(Activity.RESULT_OK);
 		} else {
@@ -332,7 +317,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 *            The text to show as toast
 	 */
 	protected void showToast(String text) {
-		Toast toast = Toast.makeText(mActivity, text, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getSherlockActivity(), text, Toast.LENGTH_LONG);
 		toast.show();
 	}
 

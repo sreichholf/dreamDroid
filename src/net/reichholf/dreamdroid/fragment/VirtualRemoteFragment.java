@@ -115,7 +115,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
-		mSimpleRemote = DreamDroid.getActiveProfile().isSimpleRemote();
+		mSimpleRemote = DreamDroid.getCurrentProfile().isSimpleRemote();
 		mVibrator = (Vibrator) getSherlockActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		mEditor.commit();
 	}
