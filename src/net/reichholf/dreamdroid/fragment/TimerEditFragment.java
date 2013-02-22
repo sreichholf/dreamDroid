@@ -101,14 +101,14 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 				if (isCancelled())
 					return false;
 				publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
-				DreamDroid.loadLocations(mShc);
+				DreamDroid.loadLocations(getHttpClient());
 			}
 
 			if (DreamDroid.getTags().size() == 0) {
 				if (isCancelled())
 					return false;
 				publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
-				DreamDroid.loadTags(mShc);
+				DreamDroid.loadTags(getHttpClient());
 			}
 
 			return true;
@@ -144,7 +144,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		mCurrentTitle = getString(R.string.timer);
+		initTitles(getString(R.string.timer));
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
@@ -669,7 +669,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	}
 
 	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;

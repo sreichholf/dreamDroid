@@ -29,7 +29,6 @@ public class Statics {
 	public static final int ACTION_PICK_TIME_END = 0x0c14;
 	public static final int ACTION_LEAVE_CONFIRMED = 0xc15;
 	public static final int ACTION_NONE = 0xcfff;
-	
 
 	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
 	public static final int DIALOG_TIMER_PICK_END_ID = 0x8010;
@@ -79,7 +78,9 @@ public class Statics {
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
 	public static final int REQUEST_PICK_SERVICE = 0x5001;
 	public static final int REQUEST_EDIT_PROFILE = 0x5002;
+	public static final int REQUEST_ANY = 0x5003;
 
+	public static final int RESULT_THEME_CHANGED = 0x00a1;
 	public static final int RESULT_NONE = -9999;
 
 	public static final String KEY_RELOAD = "reload";

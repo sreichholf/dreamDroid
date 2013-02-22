@@ -41,7 +41,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -132,7 +131,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				return false;
 			publishProgress(getString(R.string.fetching_data));
 
-			String xml = mListRequestHandler.getList(mShc, params[0]);
+			String xml = mListRequestHandler.getList(getHttpClient(), params[0]);
 			if (xml != null) {
 				if (isCancelled())
 					return false;
@@ -147,7 +146,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 								return false;
 							publishProgress(getString(R.string.fetching_data));
 
-							if (!DreamDroid.loadLocations(mShc)) {
+							if (!DreamDroid.loadLocations(getHttpClient())) {
 								// TODO Add Error-Msg when loadLocations fails
 							}
 						}
@@ -157,7 +156,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 								return false;
 							publishProgress(getString(R.string.fetching_data));
 
-							if (!DreamDroid.loadTags(mShc)) {
+							if (!DreamDroid.loadTags(getHttpClient())) {
 								// TODO Add Error-Msg when loadTags fails
 							}
 						}
@@ -212,7 +211,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				else
 					handler = new EventListRequestHandler(URIStore.EPG_NOW);
 			}
-			xml = handler.getList(mShc, params[0]);
+			xml = handler.getList(getHttpClient(), params[0]);
 
 			if (xml != null && !isCancelled()) {
 				publishProgress(getString(R.string.parsing));
@@ -239,8 +238,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			} else {
 				title = getString(R.string.get_content_error);
 
-				if (mShc.hasError()) {
-					showToast(getString(R.string.get_content_error) + "\n" + mShc.getErrorText());
+				if (getHttpClient().hasError()) {
+					showToast(getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText());
 				}
 			}
 
@@ -437,7 +436,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		});
 		if (mReload) {
 			loadNavRoot();
-			reloadDetail();
+			reloadDetail(false);
 		} else {
 			mDetailHeader.setText(mDetailName);
 		}
@@ -615,9 +614,9 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		case Statics.ITEM_SET_DEFAULT:
 			if (mDetailReference != null || mNavReference != null) {
 				Profile p = DreamDroid.getCurrentProfile();
-				if(mDetailReference != null)
+				if (mDetailReference != null)
 					p.setDefaultRefValues(mDetailReference, mDetailName);
-				if(mNavReference != null)
+				if (mNavReference != null)
 					p.setDefaultRef2Values(mNavReference, mNavName);
 
 				DatabaseHelper dbh = DatabaseHelper.getInstance(getSherlockActivity());
@@ -632,8 +631,9 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			getSherlockActivity().invalidateOptionsMenu();
 			return true;
 		case Statics.ITEM_RELOAD:
-			reloadNav();
-			reloadDetail();
+			if(!mNavList.equals(mDetailList))
+				reloadNav();
+			reloadDetail(true);
 			return true;
 		default:
 			return super.onItemClicked(id);
@@ -684,7 +684,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				} else {
 					mDetailReference = ref;
 					mDetailName = nam;
-					reloadDetail();
+					reloadDetail(false);
 				}
 			}
 			mBaseTitle = nam;
@@ -743,12 +743,14 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		reload(mNavReference, true);
 	}
 
-	public void reloadDetail() {
+	public void reloadDetail(boolean keepCurrent) {
 		if (mDetailReference != null && !"".equals(mDetailReference)) {
 			// Hide ListView show empty/progress
-			mEmpty.setVisibility(View.VISIBLE);
-			mDetailList.setVisibility(View.GONE);
-			mDetailHeader.setText(mDetailName);
+			if (!keepCurrent) {
+				mEmpty.setVisibility(View.VISIBLE);
+				mDetailList.setVisibility(View.GONE);
+				mDetailHeader.setText(mDetailName);
+			}
 			reload(mDetailReference, false);
 		}
 	}
@@ -835,7 +837,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	}
 
 	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();

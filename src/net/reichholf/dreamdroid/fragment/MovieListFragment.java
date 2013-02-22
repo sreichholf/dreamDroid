@@ -76,7 +76,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mCurrentTitle = mBaseTitle = "";
+		initTitles("");
 		mCurrentLocation = "/hdd/movie/";
 		setHasOptionsMenu(true);
 
@@ -281,7 +281,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
+	public void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
 		super.finishListProgress(title, list);
 
 		if (mCurrentLocation == null) {
@@ -297,7 +297,8 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	 */
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mMovie = mMapList.get(position);
-		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("instant_zap", false);
+		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(
+				"instant_zap", false);
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
@@ -329,7 +330,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
@@ -400,7 +401,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		case Statics.ACTION_DOWNLOAD:
 			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 			params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
-			String url = mShc.buildUrl(URIStore.FILE, params);
+			String url = getHttpClient().buildUrl(URIStore.FILE, params);
 
 			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 			startActivity(intent);

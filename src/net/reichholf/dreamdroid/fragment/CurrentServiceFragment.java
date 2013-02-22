@@ -74,7 +74,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mCurrentServiceReady = false;
-		mCurrentTitle = mBaseTitle = getString(R.string.current_service);
+		initTitles(getString(R.string.current_service));
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		if (savedInstanceState != null) {
@@ -205,7 +205,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	 * GUI-Content
 	 */
 	@Override
-	protected void applyData(int loaderId, ExtendedHashMap content) {
+	public void applyData(int loaderId, ExtendedHashMap content) {
 		if (content != null && !content.isEmpty()) {
 			mCurrent = content;
 			mCurrentServiceReady = true;
@@ -259,7 +259,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	 * net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#onSimpleResult
 	 * (boolean, net.reichholf.dreamdroid.helpers.ExtendedHashMap)
 	 */
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();

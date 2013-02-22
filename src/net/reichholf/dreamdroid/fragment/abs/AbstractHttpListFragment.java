@@ -12,32 +12,25 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
+import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
-import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
-import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
-import android.widget.Toast;
 
 import com.actionbarsherlock.view.MenuItem;
 
@@ -47,7 +40,7 @@ import com.actionbarsherlock.view.MenuItem;
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>> {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment {
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
@@ -55,104 +48,10 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
 	protected BaseAdapter mAdapter;
-	protected SimpleHttpClient mShc;
+	protected DreamDroidHttpFragmentHelper mHttpHelper;
 
-	protected SimpleResultTask mSimpleResultTask;
-	protected SetVolumeTask mVolumeTask;
-
-	/**
-	 * @author sre
-	 * 
-	 */
-	protected class SimpleResultTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
-		private ExtendedHashMap mResult;
-		private SimpleResultRequestHandler mHandler;
-
-		public SimpleResultTask(SimpleResultRequestHandler handler) {
-			mHandler = handler;
-		}
-
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if (isCancelled())
-				return false;
-			publishProgress();
-			String xml = mHandler.get(mShc, params[0]);
-
-			if (xml != null) {
-				ExtendedHashMap result = mHandler.parseSimpleResult(xml);
-
-				String stateText = result.getString("statetext");
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(Void... progress) {
-			if (!isCancelled())
-				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-
-			if (!result || mResult == null) {
-				mResult = new ExtendedHashMap();
-			}
-
-			onSimpleResult(result, mResult);
-		}
-	}
-
-	protected class SetVolumeTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
-		private ExtendedHashMap mVolume;
-		private VolumeRequestHandler mHandler;
-
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if (isCancelled())
-				return false;
-			publishProgress();
-			mHandler = new VolumeRequestHandler();
-			String xml = mHandler.get(mShc, params[0]);
-
-			if (xml != null) {
-				ExtendedHashMap volume = new ExtendedHashMap();
-				mHandler.parse(xml, volume);
-
-				String current = volume.getString(Volume.KEY_CURRENT);
-				if (current != null) {
-					mVolume = volume;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(Void... progress) {
-			if (!isCancelled())
-				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-
-			if (!result || mVolume == null) {
-				mVolume = new ExtendedHashMap();
-			}
-
-			onVolumeSet(result, mVolume);
-		}
+	public AbstractHttpListFragment() {
+		mHttpHelper = new DreamDroidHttpFragmentHelper();
 	}
 
 	protected void setDefaultLocation() {
@@ -164,7 +63,10 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-
+		if (mHttpHelper == null)
+			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
+		else
+			mHttpHelper.bindToFragment(this);
 		mExtras = getArguments();
 		mMapList = null;
 
@@ -183,7 +85,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			mExtras = new Bundle();
 		}
 		DreamDroid.loadCurrentProfile(getSherlockActivity());
-		setClient();
+
 	}
 
 	@Override
@@ -206,13 +108,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemClicked(item.getItemId());
-	}
-
-	/**
-	 * 
-	 */
-	private void setClient() {
-		mShc = SimpleHttpClient.getInstance();
 	}
 
 	/**
@@ -292,18 +187,8 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		}
 	}
 
-	/**
-	 * @param handler
-	 * @param params
-	 */
-	@SuppressWarnings("unchecked")
 	public void execSimpleResultTask(SimpleResultRequestHandler handler, ArrayList<NameValuePair> params) {
-		if (mSimpleResultTask != null) {
-			mSimpleResultTask.cancel(true);
-		}
-
-		mSimpleResultTask = new SimpleResultTask(handler);
-		mSimpleResultTask.execute(params);
+		mHttpHelper.execSimpleResultTask(handler, params);
 	}
 
 	/**
@@ -311,26 +196,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 *            The ServiceReference to zap to
 	 */
 	public void zapTo(String ref) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("sRef", ref));
-		execSimpleResultTask(new ZapRequestHandler(), params);
-	}
-
-	/**
-	 * @param progress
-	 */
-	protected void updateProgress(String progress) {
-		getSherlockActivity().setTitle(progress);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-	}
-
-	/**
-	 * @param title
-	 */
-	protected void finishProgress(String title) {
-		mCurrentTitle = title;
-		getSherlockActivity().setTitle(genWindowTitle(title));
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		mHttpHelper.zapTo(ref);
 	}
 
 	/**
@@ -344,27 +210,17 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * @param success
 	 * @param result
 	 */
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
-		String toastText = (String) getText(R.string.get_content_error);
-		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
-
-		if (stateText != null && !"".equals(stateText)) {
-			toastText = stateText;
-		} else if (mShc.hasError()) {
-			toastText = mShc.getErrorText();
-		}
-
-		showToast(toastText);
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
+		mHttpHelper.onSimpleResult(success, result);
 	}
 
 	/**
 	 * @param title
 	 * @param list
 	 */
-	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
-		finishProgress(title);
+	public void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
+		mHttpHelper.finishProgress(title);
 		setEmptyText(getText(R.string.no_list_item));
-
 		mMapList.clear();
 		mMapList.addAll(list);
 		mAdapter.notifyDataSetChanged();
@@ -374,77 +230,24 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * @param toastText
 	 */
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
-		toast.show();
+		mHttpHelper.showToast(toastText);
 	}
 
 	/**
 	 * @param toastText
 	 */
 	protected void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
-		toast.show();
+		mHttpHelper.showToast(toastText);
 	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("volume_control", false)) {
-			switch (keyCode) {
-			case KeyEvent.KEYCODE_VOLUME_UP:
-				onVolumeButtonClicked(Volume.CMD_UP);
-				return true;
-
-			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				onVolumeButtonClicked(Volume.CMD_DOWN);
-				return true;
-			}
-		}
-		return false;
+		return mHttpHelper.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		return keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || false;
-	}
-
-	/**
-	 * Called after a Button has been clicked
-	 * 
-	 * @param id
-	 *            The id of the item
-	 * @param longClick
-	 *            If true the item has been long-clicked
-	 */
-	@SuppressWarnings("unchecked")
-	private void onVolumeButtonClicked(String set) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("set", set));
-		if (mVolumeTask != null) {
-			mVolumeTask.cancel(true);
-		}
-
-		mVolumeTask = new SetVolumeTask();
-		mVolumeTask.execute(params);
-	}
-
-	/**
-	 * @param success
-	 * @param volume
-	 */
-	private void onVolumeSet(boolean success, ExtendedHashMap volume) {
-		String text = getString(R.string.get_content_error);
-		if (success) {
-			if (Python.TRUE.equals(volume.getString(Volume.KEY_RESULT))) {
-				String current = volume.getString(Volume.KEY_CURRENT);
-				boolean muted = Python.TRUE.equals(volume.getString(Volume.KEY_MUTED));
-				if (muted) {
-					text = getString(R.string.current_volume, getString(R.string.muted));
-				} else {
-					text = getString(R.string.current_volume, current);
-				}
-			}
-		}
-		showToast(text);
+		return mHttpHelper.onKeyUp(keyCode, event);
 	}
 
 	/**
@@ -468,23 +271,18 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return params;
 	}
 
-	protected Bundle getLoaderBundle() {
+	public Bundle getLoaderBundle() {
 		Bundle args = new Bundle();
 		args.putSerializable("params", getHttpParams());
 		return args;
 	}
 
 	protected void reload() {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-		if (!"".equals(mBaseTitle.trim()))
-			mCurrentTitle = mBaseTitle + " - " + getString(R.string.loading);
-
-		getSherlockActivity().setTitle(mCurrentTitle);
-		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
+		mHttpHelper.reload();
 	}
 
-	protected String getLoadFinishedTitle() {
-		return mBaseTitle;
+	public String getLoadFinishedTitle() {
+		return getBaseTitle();
 	}
 
 	@Override
@@ -499,8 +297,8 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		}
 
 		ArrayList<ExtendedHashMap> list = result.getResult();
-		mCurrentTitle = getLoadFinishedTitle();
-		getSherlockActivity().setTitle(mCurrentTitle);
+		setCurrentTitle(getLoadFinishedTitle());
+		getSherlockActivity().setTitle(getCurrentTitle());
 
 		if (list.size() == 0)
 			setEmptyText(getText(R.string.no_list_item));
@@ -511,5 +309,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	@Override
 	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
+	}
+
+	public SimpleHttpClient getHttpClient() {
+		return mHttpHelper.getHttpClient();
 	}
 }

@@ -22,6 +22,7 @@ import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,8 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class SignalFragment extends AbstractHttpFragment {
+	private static final String TAG = SignalFragment.class.getSimpleName();
+
 	private static int sMaxSnrDb = 17;
 	private static int sMinSnrDb = 7;
 
@@ -44,6 +47,7 @@ public class SignalFragment extends AbstractHttpFragment {
 
 	private boolean mIsUpdating = false;
 	private double mSnrDb = sMinSnrDb;
+	private long mStartTime;
 
 	private Handler mHandler = new Handler();
 	private Runnable mPlaySoundTask = new Runnable() {
@@ -61,7 +65,7 @@ public class SignalFragment extends AbstractHttpFragment {
 		public void run() {
 			if (!mIsUpdating)
 				reload();
-			mHandler.postDelayed(this, 1000);
+			mHandler.postDelayed(this, 50);
 		}
 	};
 
@@ -137,7 +141,13 @@ public class SignalFragment extends AbstractHttpFragment {
 	}
 
 	@Override
-	protected void applyData(int loaderId, ExtendedHashMap content) {
+	public void applyData(int loaderId, ExtendedHashMap content) {
+		long stopTime = System.currentTimeMillis();
+		long time = stopTime - mStartTime;
+		Log.w(TAG, "requets & parsing took: " + time + "ms");
+
+		if (!mEnabled.isChecked())
+			return;
 		String _snr = content.getString(Signal.KEY_SNR).replace("%", "").trim();
 
 		int snr = 0;
@@ -158,13 +168,24 @@ public class SignalFragment extends AbstractHttpFragment {
 		mAgc.setText(content.getString(Signal.KEY_AGC, "-").trim());
 
 		mIsUpdating = false;
+		reload();
+	}
+
+	protected void reload() {
+		mStartTime = System.currentTimeMillis();
+		if (!"".equals(getBaseTitle().trim()))
+			setCurrentTitle(getBaseTitle() + " - " + getString(R.string.loading));
+
+		getSherlockActivity().setTitle(getCurrentTitle());
+		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
 	}
 
 	private void startPolling() {
 		mIsUpdating = false;
 		if (mEnabled.isChecked()) {
-			mHandler.removeCallbacks(mUpdateTask);
-			mHandler.post(mUpdateTask);
+			reload();
+			// mHandler.removeCallbacks(mUpdateTask);
+			// mHandler.post(mUpdateTask);
 			if (mSound.isChecked()) {
 				mHandler.removeCallbacks(mPlaySoundTask);
 				mHandler.post(mPlaySoundTask);
@@ -175,6 +196,10 @@ public class SignalFragment extends AbstractHttpFragment {
 	private void stopPolling() {
 		mHandler.removeCallbacks(mPlaySoundTask);
 		mHandler.removeCallbacks(mUpdateTask);
+		mSnr.setTargetValue(0);
+		mSnrdb.setText("-");
+		mBer.setText("-");
+		mAgc.setText("-");
 	}
 
 	void playSound(double freqOfTone) {
@@ -199,32 +224,30 @@ public class SignalFragment extends AbstractHttpFragment {
 		int ramp = numSamples / 20; // Amplitude ramp as a percent of sample
 									// count
 
-		for (i = 0; i < ramp; ++i) { // Ramp amplitude up (to avoid clicks)
-			double dVal = sample[i];
-			// Ramp up to maximum
-			final short val = (short) ((dVal * 32767 * i / ramp));
-			// in 16 bit wav PCM, first byte is the low order byte
-			generatedSnd[idx++] = (byte) (val & 0x00ff);
-			generatedSnd[idx++] = (byte) ((val & 0xff00) >>> 8);
-		}
-
-		for (i = i; i < numSamples - ramp; ++i) {
-			// Max amplitude for most of the samples
-			double dVal = sample[i];
-			// scale to maximum amplitude
-			final short val = (short) ((dVal * 32767));
-			// in 16 bit wav PCM, first byte is the low order byte
-			generatedSnd[idx++] = (byte) (val & 0x00ff);
-			generatedSnd[idx++] = (byte) ((val & 0xff00) >>> 8);
-		}
-
-		for (i = i; i < numSamples; ++i) { // Ramp amplitude down
-			double dVal = sample[i];
-			// Ramp down to zero
-			final short val = (short) ((dVal * 32767 * (numSamples - i) / ramp));
-			// in 16 bit wav PCM, first byte is the low order byte
-			generatedSnd[idx++] = (byte) (val & 0x00ff);
-			generatedSnd[idx++] = (byte) ((val & 0xff00) >>> 8);
+		for (i = 0; i < numSamples; ++i) { // Ramp amplitude up (to avoid clicks)
+			if (i < ramp) {
+				double dVal = sample[i];
+				// Ramp up to maximum
+				final short val = (short) ((dVal * 32767 * i / ramp));
+				// in 16 bit wav PCM, first byte is the low order byte
+				generatedSnd[idx++] = (byte) (val & 0x00ff);
+				generatedSnd[idx++] = (byte) ((val & 0xff00) >>> 8);
+			} else if (i < numSamples - ramp) {
+				// Max amplitude for most of the samples
+				double dVal = sample[i];
+				// scale to maximum amplitude
+				final short val = (short) ((dVal * 32767));
+				// in 16 bit wav PCM, first byte is the low order byte
+				generatedSnd[idx++] = (byte) (val & 0x00ff);
+				generatedSnd[idx++] = (byte) ((val & 0xff00) >>> 8);
+			} else {
+				double dVal = sample[i];
+				// Ramp down to zero
+				final short val = (short) ((dVal * 32767 * (numSamples - i) / ramp));
+				// in 16 bit wav PCM, first byte is the low order byte
+				generatedSnd[idx++] = (byte) (val & 0x00ff);
+				generatedSnd[idx++] = (byte) ((val & 0xff00) >>> 8);
+			}
 		}
 
 		AudioTrack audioTrack = null; // Get audio track

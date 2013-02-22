@@ -86,7 +86,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	public NavigationFragment() {
 		super();
-		mCurrentTitle = mBaseTitle = "";
+		initTitles("");
 		setHighlightCurrent(true);
 	}
 
@@ -102,7 +102,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		@Override
 		protected Boolean doInBackground(String... params) {
 			PowerStateRequestHandler handler = new PowerStateRequestHandler();
-			String xml = handler.get(mShc, PowerState.getStateParams(params[0]));
+			String xml = handler.get(getHttpClient(), PowerState.getStateParams(params[0]));
 
 			if (xml != null) {
 				if (isCancelled())
@@ -122,8 +122,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 
-				if (mShc.hasError()) {
-					showToast(getText(R.string.get_content_error) + "\n" + mShc.getErrorText());
+				if (getHttpClient().hasError()) {
+					showToast(getText(R.string.get_content_error) + "\n" + getHttpClient().getErrorText());
 				} else {
 					showToast(getText(R.string.get_content_error));
 				}
@@ -152,7 +152,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		@Override
 		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 			publishProgress();
-			String xml = mHandler.get(mShc, params[0]);
+			String xml = mHandler.get(getHttpClient(), params[0]);
 
 			if (xml != null) {
 				ExtendedHashMap result = new ExtendedHashMap();
@@ -233,7 +233,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
-		mCurrentTitle = mBaseTitle = getString(R.string.app_name);
+		initTitles(getString(R.string.app_name));
 		mCurrentListItem = -1;
 
 		setHasOptionsMenu(true);
@@ -347,7 +347,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		case Statics.ITEM_PREFERENCES:
 			intent = new Intent(getMainActivity(), DreamDroidPreferenceActivity.class);
-			startActivity(intent);
+			startActivityForResult(intent, Statics.REQUEST_ANY);
 			break;
 
 		case Statics.ITEM_MESSAGE:

@@ -6,9 +6,11 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
-import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
+import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
+import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.helpers.Statics;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -18,45 +20,77 @@ import com.actionbarsherlock.app.SherlockListFragment;
  * @author sre
  * 
  */
-public abstract class DreamDroidListFragment extends SherlockListFragment implements ActivityCallbackHandler, MutliPaneContent {
-	protected String mCurrentTitle;
-	protected String mBaseTitle;
+public abstract class DreamDroidListFragment extends SherlockListFragment implements ActivityCallbackHandler,
+		MutliPaneContent {
+	private DreamDroidFragmentHelper mHelper;
+
+	public DreamDroidListFragment() {
+		super();
+		mHelper = new DreamDroidFragmentHelper();
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		if (mHelper == null)
+			mHelper = new DreamDroidFragmentHelper(this);
+		else
+			mHelper.bindToFragment(this);
+		mHelper.onCreate(savedInstanceState);
 		setRetainInstance(true);
-		mBaseTitle = mCurrentTitle = getString(R.string.app_name);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getSherlockActivity().setTitle(mCurrentTitle);
+		mHelper.onActivityCreated(savedInstanceState);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		getMultiPaneHandler().onDetailFragmentResume(this);
+		mHelper.onResume();
 	}
 
 	@Override
 	public void onPause() {
-		MultiPaneHandler mph = getMultiPaneHandler();
-		if (mph != null)
-			mph.onDetailFragmentPause(this);
+		mHelper.onPause();
 		super.onPause();
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
+		mHelper.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
 	}
 
 	public MultiPaneHandler getMultiPaneHandler() {
-		return (MultiPaneHandler) getSherlockActivity();
+		return mHelper.getMultiPaneHandler();
+	}
+
+	public String getBaseTitle() {
+		return mHelper.getBaseTitle();
+	}
+
+	public void setBaseTitle(String baseTitle) {
+		mHelper.setBaseTitle(baseTitle);
+	}
+
+	public String getCurrentTitle() {
+		return mHelper.getCurrenTtitle();
+	}
+
+	public void setCurrentTitle(String currentTitle) {
+		mHelper.setCurrentTitle(currentTitle);
+	}
+
+	public void initTitles(String title) {
+		mHelper.setBaseTitle(title);
+		mHelper.setCurrentTitle(title);
+	}
+
+	protected void finish() {
+		finish(Statics.RESULT_NONE, null);
 	}
 
 	protected void finish(int resultCode) {
@@ -64,6 +98,6 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	}
 
 	protected void finish(int resultCode, Intent data) {
-		DreamDroidFragmentHelper.finish(this, resultCode, data);
+		mHelper.finish(resultCode, data);
 	}
 }

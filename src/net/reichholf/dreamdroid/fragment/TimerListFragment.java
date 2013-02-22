@@ -56,7 +56,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
-		mCurrentTitle = mBaseTitle = getString(R.string.timer);
+		initTitles(getString(R.string.timer));
 
 		setHasOptionsMenu(true);
 		setAdapter();
@@ -89,16 +89,19 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		getMultiPaneHandler().showDialogFragment(dia, "dialog_timer_selected");
 	}
 
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.Fragment#onActivityResult(int, int, android.content.Intent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.support.v4.app.Fragment#onActivityResult(int, int,
+	 * android.content.Intent)
 	 */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
 			if (resultCode == Activity.RESULT_OK) {
-				if(getSherlockActivity() != null) //we're somewhere active!
-					//reload();
-				Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!");
+				if (getSherlockActivity() != null) // we're somewhere active!
+					// reload();
+					Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!");
 			}
 		}
 	}
@@ -189,7 +192,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;

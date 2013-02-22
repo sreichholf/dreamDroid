@@ -282,6 +282,7 @@ public class DreamDroid extends Application {
 			sSearchListener = null;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void scheduleBackup(Context context) {
 		Log.d(LOG_TAG, "Scheduling backup");
 		try {

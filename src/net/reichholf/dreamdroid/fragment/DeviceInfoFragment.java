@@ -108,7 +108,6 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		mInterfaceVersion = (TextView) fields.findViewById(R.id.InterfaceVersion);
 		mFrontprocessorVersion = (TextView) fields.findViewById(R.id.FrontprocessorVersion);
 		mDeviceName = (TextView) fields.findViewById(R.id.DeviceName);
-		setClient();
 
 		if (mInfo == null || mInfo.isEmpty()) {
 			reload();
@@ -199,7 +198,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	/*
 	 * You want override this if you don't override onLoadFinished!
 	 */
-	protected void applyData(int loaderId, ExtendedHashMap content) {
+	public void applyData(int loaderId, ExtendedHashMap content) {
 		if (content != null) {
 			mInfo.clear();
 			mInfo.putAll(content);

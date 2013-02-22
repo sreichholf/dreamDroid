@@ -74,8 +74,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 			if (isCancelled())
 				return false;
 			publishProgress();
-			mShc.fetchPageContent(URIStore.SCREENSHOT, params[0]);
-			mBytes = mShc.getBytes();
+			getHttpClient().fetchPageContent(URIStore.SCREENSHOT, params[0]);
+			mBytes = getHttpClient().getBytes();
 
 			if (mBytes.length > 0) {
 				return true;
@@ -96,8 +96,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 				onScreenshotAvailable(mBytes);
 			} else {
 				String error = getString(R.string.get_content_error);
-				if (mShc.hasError()) {
-					error = error.concat("\n").concat(mShc.getErrorText());
+				if (getHttpClient().hasError()) {
+					error = error.concat("\n").concat(getHttpClient().getErrorText());
 				}
 				showToast(error);
 			}
@@ -123,7 +123,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		setHasOptionsMenu(true);
 		getSherlockActivity().setTitle(getText(R.string.screenshot));
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-		mBaseTitle = mCurrentTitle = getString(R.string.screenshot);
+		initTitles(getString(R.string.screenshot));
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -142,8 +142,8 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		mFilename = extras.getString(KEY_FILENAME);
 		mScannerConn = new MediaScannerConnection(getSherlockActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
-		
-		if(mRawImage == null)
+
+		if (mRawImage == null)
 			mRawImage = new byte[0];
 		if (savedInstanceState == null && mRawImage.length == 0) {
 			reload();

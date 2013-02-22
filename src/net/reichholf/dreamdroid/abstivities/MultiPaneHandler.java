@@ -21,9 +21,9 @@ public interface MultiPaneHandler {
 
 	public void showDetails(Class<? extends Fragment> fragmentClass);
 
-	public void onDetailFragmentResume(Fragment fragment);
+	public void onFragmentResume(Fragment fragment);
 
-	public void onDetailFragmentPause(Fragment fragment);
+	public void onFragmentPause(Fragment fragment);
 
 	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag);
 

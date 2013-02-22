@@ -35,7 +35,7 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
-		mCurrentTitle = mBaseTitle = getString(R.string.epg);
+		initTitles(getString(R.string.epg));
 		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
 		mName = getDataForKey(Event.KEY_SERVICE_NAME);
 	}
@@ -71,8 +71,8 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	}
 
 	@Override
-	protected String getLoadFinishedTitle() {
-		return mBaseTitle + " - " + mName;
+	public String getLoadFinishedTitle() {
+		return getBaseTitle() + " - " + mName;
 	}
 
 	@Override

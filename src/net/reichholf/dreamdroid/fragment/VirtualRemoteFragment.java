@@ -48,58 +48,30 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 	private Vibrator mVibrator;
 
-	private final int[][] mButtonsCommon = {
-		{ R.id.ButtonPower, Remote.KEY_POWER },
-		{ R.id.ButtonExit, Remote.KEY_EXIT },
-		{ R.id.ButtonVolP, Remote.KEY_VOLP },
-		{ R.id.ButtonVolM, Remote.KEY_VOLM },
-		{ R.id.ButtonMute, Remote.KEY_MUTE },
-		{ R.id.ButtonBouP, Remote.KEY_BOUP },
-		{ R.id.ButtonBouM, Remote.KEY_BOUM },
-		{ R.id.ButtonUp, Remote.KEY_UP },
-		{ R.id.ButtonDown, Remote.KEY_DOWN },
-		{ R.id.ButtonLeft, Remote.KEY_LEFT },
-		{ R.id.ButtonRight, Remote.KEY_RIGHT },
-		{ R.id.ButtonOk, Remote.KEY_OK },
-		{ R.id.ButtonInfo, Remote.KEY_INFO },
-		{ R.id.ButtonMenu, Remote.KEY_MENU },
-		{ R.id.ButtonHelp, Remote.KEY_HELP },
-		{ R.id.ButtonPvr, Remote.KEY_PVR },
-		{ R.id.ButtonRed, Remote.KEY_RED },
-		{ R.id.ButtonGreen, Remote.KEY_GREEN },
-		{ R.id.ButtonYellow, Remote.KEY_YELLOW },
-		{ R.id.ButtonBlue, Remote.KEY_BLUE }
-	};
-	
-	private final int[][] mButtonsExtended = {
-		{ R.id.ButtonRwd, Remote.KEY_REWIND },
-		{ R.id.ButtonPlay, Remote.KEY_PLAY },
-		{ R.id.ButtonStop, Remote.KEY_STOP },
-		{ R.id.ButtonFwd, Remote.KEY_FORWARD },
-		{ R.id.ButtonRec, Remote.KEY_RECORD }
-	};
-	
-	private final int[][] mButtonsSimple = {
-		{ R.id.ButtonAudio, Remote.KEY_AUDIO }
-	};
-	
-	private final int[][] mButtonsStandard = {
-		{ R.id.Button1, Remote.KEY_1 },
-		{ R.id.Button2, Remote.KEY_2 },
-		{ R.id.Button3, Remote.KEY_3 },
-		{ R.id.Button4, Remote.KEY_4 },
-		{ R.id.Button5, Remote.KEY_5 },
-		{ R.id.Button6, Remote.KEY_6 },
-		{ R.id.Button7, Remote.KEY_7 },
-		{ R.id.Button8, Remote.KEY_8 },
-		{ R.id.Button9, Remote.KEY_9 },
-		{ R.id.Button0, Remote.KEY_0 },
-		{ R.id.ButtonLeftArrow, Remote.KEY_PREV },
-		{ R.id.ButtonRightArrow, Remote.KEY_NEXT },		
-		{ R.id.ButtonTv, Remote.KEY_TV },
-		{ R.id.ButtonRadio, Remote.KEY_RADIO },
-		{ R.id.ButtonText, Remote.KEY_TEXT }		
-	};
+	private final int[][] mButtonsCommon = { { R.id.ButtonPower, Remote.KEY_POWER },
+			{ R.id.ButtonExit, Remote.KEY_EXIT }, { R.id.ButtonVolP, Remote.KEY_VOLP },
+			{ R.id.ButtonVolM, Remote.KEY_VOLM }, { R.id.ButtonMute, Remote.KEY_MUTE },
+			{ R.id.ButtonBouP, Remote.KEY_BOUP }, { R.id.ButtonBouM, Remote.KEY_BOUM },
+			{ R.id.ButtonUp, Remote.KEY_UP }, { R.id.ButtonDown, Remote.KEY_DOWN },
+			{ R.id.ButtonLeft, Remote.KEY_LEFT }, { R.id.ButtonRight, Remote.KEY_RIGHT },
+			{ R.id.ButtonOk, Remote.KEY_OK }, { R.id.ButtonInfo, Remote.KEY_INFO },
+			{ R.id.ButtonMenu, Remote.KEY_MENU }, { R.id.ButtonHelp, Remote.KEY_HELP },
+			{ R.id.ButtonPvr, Remote.KEY_PVR }, { R.id.ButtonRed, Remote.KEY_RED },
+			{ R.id.ButtonGreen, Remote.KEY_GREEN }, { R.id.ButtonYellow, Remote.KEY_YELLOW },
+			{ R.id.ButtonBlue, Remote.KEY_BLUE } };
+
+	private final int[][] mButtonsExtended = { { R.id.ButtonRwd, Remote.KEY_REWIND },
+			{ R.id.ButtonPlay, Remote.KEY_PLAY }, { R.id.ButtonStop, Remote.KEY_STOP },
+			{ R.id.ButtonFwd, Remote.KEY_FORWARD }, { R.id.ButtonRec, Remote.KEY_RECORD } };
+
+	private final int[][] mButtonsSimple = { { R.id.ButtonAudio, Remote.KEY_AUDIO } };
+
+	private final int[][] mButtonsStandard = { { R.id.Button1, Remote.KEY_1 }, { R.id.Button2, Remote.KEY_2 },
+			{ R.id.Button3, Remote.KEY_3 }, { R.id.Button4, Remote.KEY_4 }, { R.id.Button5, Remote.KEY_5 },
+			{ R.id.Button6, Remote.KEY_6 }, { R.id.Button7, Remote.KEY_7 }, { R.id.Button8, Remote.KEY_8 },
+			{ R.id.Button9, Remote.KEY_9 }, { R.id.Button0, Remote.KEY_0 }, { R.id.ButtonLeftArrow, Remote.KEY_PREV },
+			{ R.id.ButtonRightArrow, Remote.KEY_NEXT }, { R.id.ButtonTv, Remote.KEY_TV },
+			{ R.id.ButtonRadio, Remote.KEY_RADIO }, { R.id.ButtonText, Remote.KEY_TEXT } };
 
 	private boolean mQuickZap;
 	private boolean mSimpleRemote;
@@ -111,7 +83,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-		mCurrentTitle = getString(R.string.virtual_remote);
+		initTitles(getString(R.string.virtual_remote));
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
@@ -119,8 +91,8 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		mVibrator = (Vibrator) getSherlockActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		mEditor.commit();
 	}
-	
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return getRemoteView();
 	}
 
@@ -164,21 +136,22 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 	/**
 	 * @param buttonmap
-	 *            array of (button view id, command id) to register callbacks for
+	 *            array of (button view id, command id) to register callbacks
+	 *            for
 	 */
 	private void registerButtons(View view, int[][] buttonmap) {
 		for (int i = 0; i < buttonmap.length; i++) {
-			Button btn = (Button)view.findViewById(buttonmap[i][0]);
+			Button btn = (Button) view.findViewById(buttonmap[i][0]);
 			registerOnClickListener(btn, buttonmap[i][1]);
 		}
 	}
-	
-	
-	private void reinit(){
+
+	private void reinit() {
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		ft.replace(getId(), new VirtualRemoteFragment());
 		ft.commit();
 	}
+
 	/**
 	 * Apply Gui-Element-Attributes and register OnClickListeners in dependence
 	 * of the active layout (Standard or QuickZap)
@@ -186,11 +159,11 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	private View getRemoteView() {
 		LayoutInflater inflater = getSherlockActivity().getLayoutInflater();
 		View view = null;
-		if (mQuickZap) {			
+		if (mQuickZap) {
 			view = inflater.inflate(R.layout.virtual_remote_quick_zap, null, false);
-			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.quickzap);			
+			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.quickzap);
 		} else {
-			if(mSimpleRemote){
+			if (mSimpleRemote) {
 				view = inflater.inflate(R.layout.virtual_remote_simple, null, false);
 				registerButtons(view, mButtonsSimple);
 			} else {
@@ -202,7 +175,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		}
 		registerButtons(view, mButtonsCommon);
 		getSherlockActivity().setTitle(mBaseTitle);
-		
+
 		return view;
 	}
 
@@ -252,7 +225,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("command", String.valueOf(id)));
-		if(mSimpleRemote){
+		if (mSimpleRemote) {
 			params.add(new BasicNameValuePair("rcu", "standard"));
 		} else {
 			params.add(new BasicNameValuePair("rcu", "advanced"));
@@ -262,27 +235,27 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		}
 		execSimpleResultTask(new RemoteCommandRequestHandler(), params);
 	}
-	
+
 	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		boolean hasError = false;
-		String toastText = getString(R.string.get_content_error);					
+		String toastText = getString(R.string.get_content_error);
 		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
-		String state = result.getString(SimpleResult.KEY_STATE);		
-			
-		if (stateText == null || "".equals(stateText)) {			
+		String state = result.getString(SimpleResult.KEY_STATE);
+
+		if (stateText == null || "".equals(stateText)) {
 			hasError = true;
-		} 
-		
-		if (mShc.hasError()) {
-			toastText = toastText + "\n" + mShc.getErrorText();
+		}
+
+		if (getHttpClient().hasError()) {
+			toastText = toastText + "\n" + getHttpClient().getErrorText();
 			hasError = true;
-		} else if (Python.FALSE.equals(state)){
+		} else if (Python.FALSE.equals(state)) {
 			hasError = true;
 			toastText = stateText;
 		}
-		
-		if(hasError){
+
+		if (hasError) {
 			showToast(toastText);
 		}
 	}

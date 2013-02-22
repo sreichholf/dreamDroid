@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import net.reichholf.dreamdroid.ProfileChangedListener;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.ProfileChangedListener;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
@@ -25,6 +25,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -157,7 +158,8 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 			SlidingMenu sm = getSlidingMenu();
-			sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+			//sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+			sm.setBehindWidthRes(R.dimen.slidingmenu_width);
 			sm.setShadowWidthRes(R.dimen.shadow_width);
 			sm.setShadowDrawable(R.drawable.shadow);
 			sm.setBehindScrollScale(0.25f);
@@ -407,7 +409,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	}
 
 	@Override
-	public void onDetailFragmentResume(Fragment fragment) {
+	public void onFragmentResume(Fragment fragment) {
 		if (!fragment.equals(mNavigationFragment) && !fragment.equals(mDetailFragment)) {
 			mDetailFragment = fragment;
 			showDetails(fragment);
@@ -415,7 +417,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	}
 
 	@Override
-	public void onDetailFragmentPause(Fragment fragment) {
+	public void onFragmentPause(Fragment fragment) {
 		if (fragment != mNavigationFragment)
 			mDetailFragment = null;
 	}
@@ -500,5 +502,15 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	@Override
 	public void onSendMessage(String text, String type, String timeout) {
 		((SendMessageDialog.SendMessageDialogActionListener) mNavigationFragment).onSendMessage(text, type, timeout);
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch(resultCode){
+		case Statics.RESULT_THEME_CHANGED:
+			Intent intent= new Intent(this, FragmentMainActivity.class);
+			startActivity(intent);
+			finish();
+		}
 	}
 }

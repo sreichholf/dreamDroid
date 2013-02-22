@@ -4,7 +4,7 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.fragment.abs;
+package net.reichholf.dreamdroid.fragment.interfaces;
 
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 

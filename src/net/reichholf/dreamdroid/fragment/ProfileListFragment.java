@@ -173,7 +173,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		mBaseTitle = mCurrentTitle = getString(R.string.profiles);
+		initTitles(getString(R.string.profiles));
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		mProfiles = new ArrayList<Profile>();

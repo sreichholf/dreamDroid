@@ -90,7 +90,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 	}
 
 	@Override
-	protected void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
