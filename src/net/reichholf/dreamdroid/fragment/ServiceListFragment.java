@@ -821,9 +821,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	}
 
 	public void loadNavRoot() {
-		if(mDetailHeader == null){
-			String title = getString(R.string.services);
-			getSherlockActivity().setTitle(title);
+		if (mDetailHeader == null) {
+			getSherlockActivity().setTitle(getString(R.string.services));
 		}
 
 		mNavItems.clear();
@@ -859,8 +858,11 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	 * @param list
 	 */
 	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list, boolean isBouquetList) {
-		finishProgress(title);
 		setDetailHeader(title);
+		if (mDetailHeader != null)
+			finishProgress(getString(R.string.services));
+		else
+			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		if (isBouquetList) {
 			mNavItems.clear();
 			mNavItems.addAll(list);

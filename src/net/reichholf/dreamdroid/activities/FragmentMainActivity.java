@@ -50,6 +50,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
+	@SuppressWarnings("unused")
 	private static final String TAG = FragmentMainActivity.class.getSimpleName();
 
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
