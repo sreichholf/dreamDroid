@@ -84,7 +84,7 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 		mHelper.setCurrentTitle(currentTitle);
 	}
 
-	public void initTitles(String title) {
+	public void initTitle(String title) {
 		mHelper.setBaseTitle(title);
 		mHelper.setCurrentTitle(title);
 	}

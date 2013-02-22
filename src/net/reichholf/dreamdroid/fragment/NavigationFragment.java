@@ -56,13 +56,13 @@ import com.actionbarsherlock.view.MenuInflater;
 public class NavigationFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
-	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (1=yes,
+	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (2=yes if no SlidingMenu else no, 1=yes,
 	// 0=no) ]
 	public static final int[][] MENU_ITEMS = {
 			{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
 			{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0 },
 			{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0 },
-			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 0 },
+			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 2},
 			{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0 },
 			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
 			// { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer,
@@ -86,7 +86,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	public NavigationFragment() {
 		super();
-		initTitles("");
+		initTitle("");
 		setHighlightCurrent(true);
 	}
 
@@ -233,7 +233,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
-		initTitles(getString(R.string.app_name));
+		initTitle(getString(R.string.app_name));
 		mCurrentListItem = -1;
 
 		setHasOptionsMenu(true);
@@ -275,7 +275,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		// only mark the entry if it isn't a "dialog-only-item"
 		// TODO find a reliable way to mark the current item...
 		if (mHighlightCurrent) {
-			if (mCurrent[4] == 0) {
+			if (mCurrent[4] == 0 || (mCurrent[4] == 2 && !getMultiPaneHandler().isSlidingMenu())) {
 				l.setItemChecked(position, true);
 				mCurrentListItem = position;
 			} else {
@@ -339,10 +339,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			break;
 
 		case Statics.ITEM_REMOTE:
-			// getMainActivity().showDetails(VirtualRemoteFragment.class);
-			intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
-			intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
-			startActivity(intent);
+			if(getMultiPaneHandler().isSlidingMenu()){
+				intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
+				intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
+				startActivity(intent);
+			} else {
+				getMainActivity().showDetails(VirtualRemoteFragment.class);
+			}
 			break;
 
 		case Statics.ITEM_PREFERENCES:

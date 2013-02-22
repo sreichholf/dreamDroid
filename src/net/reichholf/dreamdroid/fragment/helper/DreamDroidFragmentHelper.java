@@ -66,8 +66,7 @@ public class DreamDroidFragmentHelper {
 	}
 
 	public String getBaseTitle() {
-		// return mBaseTitle;
-		return "";
+		return mBaseTitle;
 	}
 
 	public void setBaseTitle(String baseTitle) {

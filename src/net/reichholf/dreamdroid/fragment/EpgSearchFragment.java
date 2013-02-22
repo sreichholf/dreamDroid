@@ -35,7 +35,7 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		initTitles(getString(R.string.epg_search));
+		initTitle(getString(R.string.epg_search));
 		setAdapter();
 		String needle = getArguments().getString(SearchManager.QUERY);
 		if (needle != null) {

@@ -50,6 +50,8 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
+	private static final String TAG = FragmentMainActivity.class.getSimpleName();
+
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
 			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog" });
 
@@ -158,7 +160,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 			SlidingMenu sm = getSlidingMenu();
-			//sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+			// sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
 			sm.setBehindWidthRes(R.dimen.slidingmenu_width);
 			sm.setShadowWidthRes(R.dimen.shadow_width);
 			sm.setShadowDrawable(R.drawable.shadow);
@@ -358,6 +360,8 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		if (t != null) {
 			t.setText(title.toString());
 			return;
+		} else {
+			super.setTitle(title);
 		}
 	}
 
@@ -397,6 +401,10 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	public boolean isMultiPane() {
 		return true;
+	}
+
+	public boolean isSlidingMenu() {
+		return mSlider;
 	}
 
 	public void finish(boolean finishFragment) {
@@ -506,9 +514,9 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		switch(resultCode){
+		switch (resultCode) {
 		case Statics.RESULT_THEME_CHANGED:
-			Intent intent= new Intent(this, FragmentMainActivity.class);
+			Intent intent = new Intent(this, FragmentMainActivity.class);
 			startActivity(intent);
 			finish();
 		}

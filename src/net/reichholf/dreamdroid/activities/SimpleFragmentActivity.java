@@ -224,4 +224,9 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action, details, dialogTag);
 
 	}
+
+	@Override
+	public boolean isSlidingMenu() {
+		return false;
+	}
 }

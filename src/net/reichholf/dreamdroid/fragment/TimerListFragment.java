@@ -56,7 +56,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
-		initTitles(getString(R.string.timer));
+		initTitle(getString(R.string.timer));
 
 		setHasOptionsMenu(true);
 		setAdapter();

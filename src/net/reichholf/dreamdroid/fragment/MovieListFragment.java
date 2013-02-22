@@ -76,7 +76,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		initTitles("");
+		initTitle(getString(R.string.movies));
 		mCurrentLocation = "/hdd/movie/";
 		setHasOptionsMenu(true);
 

@@ -35,7 +35,7 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 		super.onCreate(savedInstanceState);
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
-		initTitles(getString(R.string.epg));
+		initTitle(getString(R.string.epg));
 		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
 		mName = getDataForKey(Event.KEY_SERVICE_NAME);
 	}
