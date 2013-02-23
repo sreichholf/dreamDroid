@@ -30,20 +30,24 @@ public class DeviceDetector {
 		ArrayList<Profile> profiles = new ArrayList<Profile>();
 		for (String hostname : KNOWN_HOSTNAMES) {
 			try {
-				if (!InetAddress.getByName(hostname).isReachable(1500))
+				InetAddress host = InetAddress.getByName(hostname);
+				if (!host.isReachable(1500))
 					continue;
 				boolean simpleRemote = false;
 				if (!hostname.equals("dm8000") && !hostname.equals("dm7020hd")) {
 					simpleRemote = true;
 				}
 
+				String ip = host.getHostAddress();
+
 				Profile p = new Profile();
 				p.setName(hostname);
-				p.setHost(hostname);
+				p.setHost(ip);
+				p.setStreamHost(ip);
 				p.setPort(80);
 				p.setUser("root");
 				p.setSimpleRemote(simpleRemote);
-				profiles.add(p);
+				addToList(profiles, p);
 			} catch (UnknownHostException e) {
 				Log.w(LOG_TAG, e.getMessage());
 			} catch (IOException e) {
@@ -58,7 +62,7 @@ public class DeviceDetector {
 			for (ServiceInfo s : si) {
 				Log.i(LOG_TAG, s.getHostAddresses().toString());
 				if (s.getName().toLowerCase(Locale.US).matches("dm[0-9]{1,4}.*")) {
-					String address = s.getHostAddress();
+					String address = s.getHostAddresses()[0];
 					int port = s.getPort();
 					boolean simpleRemote = false;
 					if (!s.getName().toLowerCase(Locale.US).contains("dm8000")
@@ -69,10 +73,11 @@ public class DeviceDetector {
 					Profile p = new Profile();
 					p.setName(s.getName());
 					p.setHost(address);
+					p.setStreamHost(address);
 					p.setPort(port);
 					p.setUser("root");
 					p.setSimpleRemote(simpleRemote);
-					profiles.add(p);
+					addToList(profiles, p);
 				}
 			}
 		} catch (IOException e) {
@@ -80,5 +85,15 @@ public class DeviceDetector {
 		}
 
 		return profiles;
+	}
+
+	private static void addToList(ArrayList<Profile> list, Profile profile) {
+		for (Profile p : list) {
+			if (profile.getHost().equals(p.getHost())) {
+				list.remove(p);
+				break;
+			}
+		}
+		list.add(profile);
 	}
 }
