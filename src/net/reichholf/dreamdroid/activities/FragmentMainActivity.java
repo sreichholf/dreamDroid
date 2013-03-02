@@ -155,13 +155,12 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		mSlider = findViewById(R.id.navigation_view) == null;
 		if (mSlider) {
 			setBehindContentView(R.layout.menu_frame);
-			getSlidingMenu().setSlidingEnabled(true);
-			getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-			// show home as up so we can toggle
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 			SlidingMenu sm = getSlidingMenu();
-			// sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+			sm.setSlidingEnabled(true);
+			setSlidingActionBarEnabled(false);
+			sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
 			sm.setBehindWidthRes(R.dimen.slidingmenu_width);
 			sm.setShadowWidthRes(R.dimen.shadow_width);
 			sm.setShadowDrawable(R.drawable.shadow);
@@ -171,9 +170,12 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 			// add a dummy view
 			View v = new View(this);
 			setBehindContentView(v);
-			getSlidingMenu().setSlidingEnabled(false);
-			getSlidingMenu().setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+
+			showContent();
+			SlidingMenu sm = getSlidingMenu();
+			sm.setSlidingEnabled(false);
+			sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
 		}
 
 		if (mNavigationFragment == null || !mNavigationFragment.getClass().equals(NavigationFragment.class)) {
@@ -258,18 +260,6 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 				toggle();
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	public void showMenu() {
-		if (mSlider)
-			super.showMenu();
-	}
-
-	@Override
-	public void showContent() {
-		if (mSlider)
-			super.showContent();
 	}
 
 	/*
