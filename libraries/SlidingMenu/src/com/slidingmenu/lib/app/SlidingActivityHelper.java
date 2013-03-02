@@ -64,8 +64,8 @@ public class SlidingActivityHelper {
 		final boolean open;
 		final boolean secondary;
 		if (savedInstanceState != null) {
-			open = savedInstanceState.getBoolean("SlidingActivityHelper.open");
-			secondary = savedInstanceState.getBoolean("SlidingActivityHelper.secondary");
+			open = savedInstanceState.getBoolean("SlidingActivityHelper.open") && mSlidingMenu.isSlidingEnabled();
+			secondary = savedInstanceState.getBoolean("SlidingActivityHelper.secondary") && mSlidingMenu.isSlidingEnabled();
 		} else {
 			open = false;
 			secondary = false;
