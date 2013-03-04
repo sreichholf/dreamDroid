@@ -312,6 +312,11 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
 		}
 
+//		if( mNavReference == null ){
+//			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
+//			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
+//		}
+
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
 			if (map != null) {

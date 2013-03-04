@@ -20,7 +20,7 @@ import org.apache.http.NameValuePair;
 
 /**
  * @author sre
- *
+ * 
  */
 public class Request {
 	public static String get(SimpleHttpClient shc, String uri, ArrayList<NameValuePair> params) {
@@ -30,7 +30,7 @@ public class Request {
 
 		return null;
 	}
-	
+
 	public static String get(SimpleHttpClient shc, String uri) {
 		if (shc.fetchPageContent(uri)) {
 			return shc.getPageContentString();
@@ -38,7 +38,22 @@ public class Request {
 
 		return null;
 	}
+
+	public static byte[] getBytes(SimpleHttpClient shc, String uri, ArrayList<NameValuePair> params) {
+		if (shc.fetchPageContent(uri, params)) {
+			return shc.getBytes();
+		}
+		return new byte[0];
+	}
 	
+	public static byte[] getBytes(SimpleHttpClient shc, String uri) {
+		if (shc.fetchPageContent(uri)) {
+			return shc.getBytes();
+		}
+
+		return new byte[0];
+	}
+
 	/**
 	 * @param xml
 	 * @param result
@@ -51,7 +66,7 @@ public class Request {
 		sdp.getParser().setHandler(handler);
 		return sdp.parse(xml);
 	}
-	
+
 	/**
 	 * @param xml
 	 * @param list
@@ -65,7 +80,7 @@ public class Request {
 
 		return sdp.parse(xml);
 	}
-	
+
 	/**
 	 * @param xml
 	 * @param list

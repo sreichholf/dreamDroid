@@ -18,9 +18,9 @@ import org.apache.http.NameValuePair;
 
 /**
  * @author sre
- *
+ * 
  */
-public abstract class AbstractSimpleRequestHandler implements SimpleRequestInterface{
+public abstract class AbstractSimpleRequestHandler implements SimpleRequestInterface {
 	protected String mUri;
 	private E2SimpleHandler mHandler;
 
@@ -33,26 +33,38 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 		mHandler = handler;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleRequestParamInterface#get(net.reichholf.dreamdroid.helpers.SimpleHttpClient, java.util.ArrayList)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.helpers.enigma2.requesthandler.
+	 * SimpleRequestParamInterface
+	 * #get(net.reichholf.dreamdroid.helpers.SimpleHttpClient,
+	 * java.util.ArrayList)
 	 */
 	public String get(SimpleHttpClient shc) {
 		return Request.get(shc, mUri);
 	}
-	
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleRequestParamInterface#get(net.reichholf.dreamdroid.helpers.SimpleHttpClient, java.util.ArrayList)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.helpers.enigma2.requesthandler.
+	 * SimpleRequestParamInterface
+	 * #get(net.reichholf.dreamdroid.helpers.SimpleHttpClient,
+	 * java.util.ArrayList)
 	 */
 	public String get(SimpleHttpClient shc, ArrayList<NameValuePair> params) {
 		return Request.get(shc, mUri, params);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleRequestParamInterface#parse(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.reichholf.dreamdroid.helpers.enigma2.requesthandler.
+	 * SimpleRequestParamInterface#parse(java.lang.String)
 	 */
 	public boolean parse(String xml, ExtendedHashMap result) {
-		if(Request.parse(xml, result, mHandler)){
+		if (Request.parse(xml, result, mHandler)) {
 			return true;
 		} else {
 			result.clear();
@@ -60,8 +72,8 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 			return false;
 		}
 	}
-	
-	public ExtendedHashMap getDefault(){
+
+	public ExtendedHashMap getDefault() {
 		return new ExtendedHashMap();
 	}
 }

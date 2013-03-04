@@ -56,18 +56,14 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
 			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog" });
 
-	// private boolean mMultiPane;
 	private boolean mSlider;
-	private boolean mInitial;
-
-	// private FragmentManager getSupportFragmentManager();
-	private NavigationFragment mNavigationFragment;
 
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
 
 	private CheckProfileTask mCheckProfileTask;
 
+	private NavigationFragment mNavigationFragment;
 	private Fragment mDetailFragment;
 
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
@@ -95,7 +91,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		 */
 		@Override
 		protected void onProgressUpdate(String... progress) {
-			setConnectionState(progress[0]);
+			setConnectionState(progress[0], false);
 		}
 
 		/*
@@ -114,11 +110,11 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	public void onProfileChecked(ExtendedHashMap result) {
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
-			setConnectionState(error);
+			setConnectionState(error, true);
 		} else {
-			setConnectionState(getString(R.string.ok));
+			setConnectionState(getString(R.string.ok), true);
 			mNavigationFragment.setAvailableFeatures();
-			if (mInitial && getCurrentDetailFragment() == null) {
+			if (getCurrentDetailFragment() == null) {
 				mNavigationFragment.setSelectedItem(0);
 			}
 		}
@@ -144,6 +140,19 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		mNavigationFragment.setHighlightCurrent(true);
 
 		// DreamDroid.registerEpgSearchListener(this);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		onProfileChanged(DreamDroid.getCurrentProfile());
+	}
+
+	@Override
+	public void onPause() {
+		if (mCheckProfileTask != null)
+			mCheckProfileTask.cancel(true);
+		super.onPause();
 	}
 
 	private Fragment getCurrentDetailFragment() {
@@ -198,8 +207,6 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		if (mConnectionState == null) {
 			mConnectionState = new TextView(this);
 		}
-		mInitial = true;
-		onProfileChanged(DreamDroid.getCurrentProfile());
 	}
 
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
@@ -221,9 +228,6 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		if (mCheckProfileTask != null)
-			mCheckProfileTask.cancel(true);
-
 		getSupportFragmentManager().putFragment(outState, "navigation", mNavigationFragment);
 		Fragment currentDetailFragment = getCurrentDetailFragment();
 		if (currentDetailFragment != null) {
@@ -236,6 +240,7 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		super.onSaveInstanceState(outState);
 	}
 
+	@Override
 	public void onDestroy() {
 		DreamDroid.unregisterEpgSearchListener(this);
 		super.onDestroy();
@@ -289,9 +294,10 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	/**
 	 * @param state
 	 */
-	private void setConnectionState(String state) {
+	private void setConnectionState(String state, boolean finished) {
 		mConnectionState.setText(state);
-		setProgressBarIndeterminateVisibility(false);
+		if (finished)
+			setProgressBarIndeterminateVisibility(false);
 	}
 
 	/*

@@ -14,9 +14,11 @@ import java.util.GregorianCalendar;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.loader.AsyncByteLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -26,14 +28,18 @@ import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.Loader;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -45,7 +51,8 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sre
  * 
  */
-public class ScreenShotFragment extends AbstractHttpFragment {
+public class ScreenShotFragment extends DreamDroidFragment implements
+		LoaderManager.LoaderCallbacks<LoaderResult<byte[]>> {
 	public static final int TYPE_OSD = 0;
 	public static final int TYPE_VIDEO = 1;
 	public static final int TYPE_ALL = 2;
@@ -64,45 +71,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	private String mFilename;
 	private byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
-	private GetScreenshotTask mGetScreenshotTask;
-
-	private class GetScreenshotTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
-		private byte[] mBytes;
-
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if (isCancelled())
-				return false;
-			publishProgress();
-			getHttpClient().fetchPageContent(URIStore.SCREENSHOT, params[0]);
-			mBytes = getHttpClient().getBytes();
-
-			if (mBytes.length > 0) {
-				return true;
-			}
-
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(Void... progress) {
-			if (!isCancelled())
-				updateProgress();
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			if (result) {
-				onScreenshotAvailable(mBytes);
-			} else {
-				String error = getString(R.string.get_content_error);
-				if (getHttpClient().hasError()) {
-					error = error.concat("\n").concat(getHttpClient().getErrorText());
-				}
-				showToast(error);
-			}
-		}
-	}
 
 	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {
 		@Override
@@ -126,6 +94,7 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		initTitles(getString(R.string.screenshot));
 	}
 
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mImageView = new ImageView(getSherlockActivity());
 		mImageView.setBackgroundColor(Color.BLACK);
@@ -140,28 +109,33 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
 		mSize = extras.getInt(KEY_SIZE, 720);
 		mFilename = extras.getString(KEY_FILENAME);
-		mScannerConn = new MediaScannerConnection(getSherlockActivity(), new DummyMediaScannerConnectionClient());
-		mScannerConn.connect();
 
-		if (mRawImage == null)
+		if (savedInstanceState != null) {
+			mRawImage = savedInstanceState.getByteArray("rawImage");
+		} else if (mRawImage == null) {
 			mRawImage = new byte[0];
-		if (savedInstanceState == null && mRawImage.length == 0) {
-			reload();
-		} else if (savedInstanceState != null) {
-			byte[] image = savedInstanceState.getByteArray("rawImage");
-			onScreenshotAvailable(image);
-		} else {
-			onScreenshotAvailable(mRawImage);
 		}
 
 		return mImageView;
 	}
 
 	@Override
-	public void onDestroy() {
-		cancelTaskIfRunning();
+	public void onResume() {
+		super.onResume();
+		mScannerConn = new MediaScannerConnection(getSherlockActivity(), new DummyMediaScannerConnectionClient());
+		mScannerConn.connect();
+
+		if (mRawImage.length == 0) {
+			reload();
+		} else {
+			onScreenshotAvailable(mRawImage);
+		}
+	}
+
+	@Override
+	public void onPause() {
 		mScannerConn.disconnect();
-		super.onDestroy();
+		super.onPause();
 	}
 
 	@Override
@@ -190,13 +164,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 	}
 
 	/**
-	 * 
-	 */
-	private void updateProgress() {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-	}
-
-	/**
 	 * @param bytes
 	 */
 	private void onScreenshotAvailable(byte[] bytes) {
@@ -207,10 +174,6 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
-	/**
-	 * 
-	 */
-	@SuppressWarnings("unchecked")
 	protected void reload() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
@@ -243,17 +206,10 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 		}
 		params.add(new BasicNameValuePair("filename", mFilename));
 
-		cancelTaskIfRunning();
-		mGetScreenshotTask = new GetScreenshotTask();
-		mGetScreenshotTask.execute(params);
-	}
-
-	private void cancelTaskIfRunning() {
-		if (mGetScreenshotTask != null) {
-			if (mGetScreenshotTask.getStatus().equals(AsyncTask.Status.RUNNING)) {
-				mGetScreenshotTask.cancel(true);
-			}
-		}
+		Bundle args = new Bundle();
+		args.putString("uri", URIStore.SCREENSHOT);
+		args.putSerializable("params", params);
+		getLoaderManager().restartLoader(0, args, (LoaderCallbacks<LoaderResult<byte[]>>) this);
 	}
 
 	/**
@@ -294,6 +250,48 @@ public class ScreenShotFragment extends AbstractHttpFragment {
 				showToast(e.toString());
 			}
 		}
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
+		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+		AsyncByteLoader loader = new AsyncByteLoader(getSherlockActivity(), args);
+		return loader;
+	}
+
+	@Override
+	public void onLoadFinished(Loader<LoaderResult<byte[]>> loader, LoaderResult<byte[]> result) {
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		if (!result.isError()) {
+			if (result.getResult().length > 0)
+				onScreenshotAvailable(result.getResult());
+			else
+				showToast(getString(R.string.error));
+		} else {
+			showToast(result.getErrorText());
+		}
+	}
+
+	@Override
+	public void onLoaderReset(Loader<LoaderResult<byte[]>> loader) {
+		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+	}
+
+	protected void showToast(String toastText) {
+		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
+		toast.show();
 	}
 
 }
