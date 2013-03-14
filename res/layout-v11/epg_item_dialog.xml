@@ -21,6 +21,13 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/epg_short"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dip"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/epg_time"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

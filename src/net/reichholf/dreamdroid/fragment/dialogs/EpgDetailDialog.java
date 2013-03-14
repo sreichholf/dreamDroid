@@ -61,6 +61,7 @@ public class EpgDetailDialog extends ActionDialog {
 		if (!"N/A".equals(title) && date != null) {
 			date = date.concat(" (" + (String) mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
 					+ getText(R.string.minutes_short) + ")");
+			String descShort = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION, "");
 			String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 
 			view = inflater.inflate(R.layout.epg_item_dialog, container);
@@ -69,6 +70,11 @@ public class EpgDetailDialog extends ActionDialog {
 			TextView textServiceName = (TextView) view.findViewById(R.id.service_name);
 			textServiceName.setText(servicename);
 
+			TextView textShort = (TextView) view.findViewById(R.id.epg_short);
+			if("".equals(descShort))
+				textShort.setVisibility(View.GONE);
+			else
+				textShort.setText(descShort);
 			TextView textTime = (TextView) view.findViewById(R.id.epg_time);
 			textTime.setText(date);
 

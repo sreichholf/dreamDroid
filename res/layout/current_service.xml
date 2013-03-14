@@ -82,6 +82,14 @@
                     android:gravity="right"
                     android:textAppearance="@android:style/TextAppearance.Small" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/event_now_desc"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@android:style/TextAppearance.Small" />
         </LinearLayout>
 
         <TextView
@@ -126,6 +134,14 @@
                     android:gravity="right"
                     android:textAppearance="@android:style/TextAppearance.Small" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/event_next_desc"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@android:style/TextAppearance.Small" />
         </LinearLayout>
 
         <Button

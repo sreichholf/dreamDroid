@@ -54,9 +54,11 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	private TextView mProvider;
 	private TextView mNowStart;
 	private TextView mNowTitle;
+	private TextView mNowDesc;
 	private TextView mNowDuration;
 	private TextView mNextStart;
 	private TextView mNextTitle;
+	private TextView mNextDesc;
 	private TextView mNextDuration;
 	private Button mStream;
 	private LinearLayout mNowLayout;
@@ -95,13 +97,16 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		mProvider = (TextView) view.findViewById(R.id.provider);
 		mNowStart = (TextView) view.findViewById(R.id.event_now_start);
 		mNowTitle = (TextView) view.findViewById(R.id.event_now_title);
+		mNowDesc = (TextView) view.findViewById(R.id.event_now_desc);
 		mNowDuration = (TextView) view.findViewById(R.id.event_now_duration);
 		mNextStart = (TextView) view.findViewById(R.id.event_next_start);
 		mNextTitle = (TextView) view.findViewById(R.id.event_next_title);
+		mNextDesc = (TextView) view.findViewById(R.id.event_next_desc);
 		mNextDuration = (TextView) view.findViewById(R.id.event_next_duration);
 		mStream = (Button) view.findViewById(R.id.ButtonStream);
 		mNowLayout = (LinearLayout) view.findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) view.findViewById(R.id.layout_next);
+		
 
 		registerOnClickListener(mNowLayout, Statics.ITEM_NOW);
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
@@ -221,10 +226,12 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			// Now
 			mNowStart.setText(mNow.getString(Event.KEY_EVENT_START_READABLE));
 			mNowTitle.setText(mNow.getString(Event.KEY_EVENT_TITLE));
+			mNowDesc.setText(mNow.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED, ""));
 			mNowDuration.setText(mNow.getString(Event.KEY_EVENT_DURATION_READABLE));
 			// Next
 			mNextStart.setText(mNext.getString(Event.KEY_EVENT_START_READABLE));
 			mNextTitle.setText(mNext.getString(Event.KEY_EVENT_TITLE));
+			mNextDesc.setText(mNext.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED, ""));
 			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 		} else {
 			showToast(getText(R.string.not_available));
