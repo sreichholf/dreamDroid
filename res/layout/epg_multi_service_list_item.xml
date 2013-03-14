@@ -53,4 +53,14 @@
             android:textAppearance="@android:style/TextAppearance.Small" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/event_short"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textAppearance="@android:style/TextAppearance.Small"
+        android:textStyle="bold" />
+
 </LinearLayout>
