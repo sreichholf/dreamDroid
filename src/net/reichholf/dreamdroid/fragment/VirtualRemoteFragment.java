@@ -82,8 +82,8 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		initTitles(getString(R.string.virtual_remote));
+
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);

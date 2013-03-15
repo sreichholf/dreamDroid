@@ -70,11 +70,6 @@ public class SignalFragment extends AbstractHttpFragment {
 	};
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
-
-	@Override
 	public void onResume() {
 		super.onResume();
 		startPolling();
@@ -224,7 +219,8 @@ public class SignalFragment extends AbstractHttpFragment {
 		int ramp = numSamples / 20; // Amplitude ramp as a percent of sample
 									// count
 
-		for (i = 0; i < numSamples; ++i) { // Ramp amplitude up (to avoid clicks)
+		for (i = 0; i < numSamples; ++i) { // Ramp amplitude up (to avoid
+											// clicks)
 			if (i < ramp) {
 				double dVal = sample[i];
 				// Ramp up to maximum

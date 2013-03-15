@@ -75,10 +75,9 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mCurrentServiceReady = false;
 		initTitles(getString(R.string.current_service));
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
+		mCurrentServiceReady = false;
 		if (savedInstanceState != null) {
 			// currents service data
 			HashMap<String, Object> current = (HashMap<String, Object>) savedInstanceState.getParcelable("current");
@@ -106,7 +105,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		mStream = (Button) view.findViewById(R.id.ButtonStream);
 		mNowLayout = (LinearLayout) view.findViewById(R.id.layout_now);
 		mNextLayout = (LinearLayout) view.findViewById(R.id.layout_next);
-		
 
 		registerOnClickListener(mNowLayout, Statics.ITEM_NOW);
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);

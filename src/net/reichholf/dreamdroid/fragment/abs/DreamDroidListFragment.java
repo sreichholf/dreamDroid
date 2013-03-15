@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -27,6 +28,12 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	public DreamDroidListFragment() {
 		super();
 		mHelper = new DreamDroidFragmentHelper();
+	}
+
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		mHelper.onAttach(activity);
 	}
 
 	@Override

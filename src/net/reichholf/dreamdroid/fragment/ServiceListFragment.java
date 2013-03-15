@@ -259,11 +259,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		mCurrentTitle = mBaseTitle = getString(R.string.services);
-
 		mReload = true;
-
 		Bundle args = getArguments();
 		String mode = null;
 
@@ -312,10 +309,10 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
 		}
 
-//		if( mNavReference == null ){
-//			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
-//			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
-//		}
+		// if( mNavReference == null ){
+		// mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
+		// mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
+		// }
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -326,7 +323,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		} else {
 			mExtras = new Bundle();
 		}
-		getSherlockActivity().invalidateOptionsMenu();
 	}
 
 	@Override
@@ -360,7 +356,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		mDetailList.setFastScrollEnabled(true);
 
 		setAdapter();
-		getSherlockActivity().setTitle(mCurrentTitle);
 		return v;
 	}
 
@@ -410,6 +405,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		getSherlockActivity().invalidateOptionsMenu();
+		getSherlockActivity().setTitle(mCurrentTitle);
 
 		mNavList.setOnItemClickListener(new OnItemClickListener() {
 			@Override

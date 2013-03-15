@@ -51,9 +51,9 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	private CheckBox mSimpleRemote;
 	private LinearLayout mLayoutLogin;
 
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		setHasOptionsMenu(true);
 		initTitles(getString(R.string.edit_profile));
 	}

@@ -56,13 +56,14 @@ import com.actionbarsherlock.view.MenuInflater;
 public class NavigationFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
-	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (2=yes if no SlidingMenu else no, 1=yes,
+	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (2=yes if
+	// no SlidingMenu else no, 1=yes,
 	// 0=no) ]
 	public static final int[][] MENU_ITEMS = {
 			{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
 			{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0 },
 			{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_clock, 1, 0 },
-			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 2},
+			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_small_tiles, 1, 2 },
 			{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_help, 1, 0 },
 			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
 			// { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer,
@@ -231,9 +232,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-
 		initTitle(getString(R.string.app_name));
+
 		mCurrentListItem = -1;
 
 		setHasOptionsMenu(true);
@@ -339,7 +339,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			break;
 
 		case Statics.ITEM_REMOTE:
-			if(getMultiPaneHandler().isSlidingMenu()){
+			if (getMultiPaneHandler().isSlidingMenu()) {
 				intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
 				intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
 				startActivity(intent);

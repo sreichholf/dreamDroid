@@ -33,9 +33,8 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-
 		initTitle(getString(R.string.epg));
+
 		mReference = getDataForKey(Event.KEY_SERVICE_REFERENCE);
 		mName = getDataForKey(Event.KEY_SERVICE_NAME);
 	}
@@ -58,8 +57,9 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	 */
 	private void setAdapter() {
 		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.epg_list_item, new String[] {
-				Event.KEY_EVENT_TITLE, Event.KEY_EVENT_DESCRIPTION_EXTENDED, Event.KEY_EVENT_START_READABLE, Event.KEY_EVENT_DURATION_READABLE }, new int[] {
-				R.id.event_title, R.id.event_short, R.id.event_start, R.id.event_duration });
+				Event.KEY_EVENT_TITLE, Event.KEY_EVENT_DESCRIPTION_EXTENDED, Event.KEY_EVENT_START_READABLE,
+				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.event_title, R.id.event_short, R.id.event_start,
+				R.id.event_duration });
 		setListAdapter(mAdapter);
 	}
 

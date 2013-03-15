@@ -174,7 +174,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.profiles));
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		mProfiles = new ArrayList<Profile>();
 		mProfileMapList = new ArrayList<ExtendedHashMap>();

@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -46,7 +47,11 @@ public class DreamDroidFragmentHelper {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		getSherlockActivity().setTitle(mCurrentTitle);
 	}
-
+	
+	public void onAttach(Activity activity) {
+		activity.setProgressBarIndeterminateVisibility(false);
+	}
+	
 	public void onResume() {
 		getMultiPaneHandler().onFragmentResume(mFragment);
 	}

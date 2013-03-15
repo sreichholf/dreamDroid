@@ -54,11 +54,8 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
-
-		initTitle(getString(R.string.timer));
-
 		setHasOptionsMenu(true);
+		initTitle(getString(R.string.timer));
 		setAdapter();
 
 		if (savedInstanceState != null) {
@@ -66,11 +63,6 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		} else {
 			reload();
 		}
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
 	}
 
 	@Override

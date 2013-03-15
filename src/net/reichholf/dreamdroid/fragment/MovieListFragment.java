@@ -75,12 +75,10 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		initTitle(getString(R.string.movies));
+
 		mCurrentLocation = "/hdd/movie/";
 		setHasOptionsMenu(true);
-
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 
 		if (savedInstanceState == null && mCurrentLocation != null) {
 			mSelectedTags = new ArrayList<String>();
@@ -97,6 +95,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
 		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.movie_list_item, new String[] {
 				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
 				Movie.KEY_LENGTH }, new int[] { R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,

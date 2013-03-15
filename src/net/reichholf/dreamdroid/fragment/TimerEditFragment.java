@@ -145,7 +145,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitles(getString(R.string.timer));
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
 	@Override

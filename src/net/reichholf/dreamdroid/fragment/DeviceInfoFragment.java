@@ -15,7 +15,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.view.Gravity;
@@ -53,15 +52,10 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	private LayoutInflater mInflater;
 	private ListView mList;
 
-	private Activity mActivity;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		mActivity = getSherlockActivity();
-		mActivity.setProgressBarIndeterminateVisibility(false);
-		getSherlockActivity().setTitle(getText(R.string.device_info));
+		initTitles(getString(R.string.device_info));
 
 		if (savedInstanceState != null) {
 			mInfo = (ExtendedHashMap) savedInstanceState.getParcelable("info");
@@ -140,22 +134,23 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	 * <code>com.commonsware.cwac.merge.MergeAdapter</code>
 	 */
 	private void setAdapter() {
-		mFrontendAdapter = new SimpleAdapter(mActivity, mFrontends, android.R.layout.two_line_list_item, new String[] {
-				DeviceInfo.KEY_FRONTEND_NAME, DeviceInfo.KEY_FRONTEND_MODEL }, new int[] { android.R.id.text1,
-				android.R.id.text2 });
+		mFrontendAdapter = new SimpleAdapter(getSherlockActivity(), mFrontends, android.R.layout.two_line_list_item,
+				new String[] { DeviceInfo.KEY_FRONTEND_NAME, DeviceInfo.KEY_FRONTEND_MODEL }, new int[] {
+						android.R.id.text1, android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.frontends));
 		mMerge.addAdapter(mFrontendAdapter);
 
-		mNicAdapter = new SimpleAdapter(mActivity, mNics, android.R.layout.two_line_list_item, new String[] {
-				DeviceInfo.KEY_NIC_NAME, DeviceInfo.KEY_NIC_IP }, new int[] { android.R.id.text1, android.R.id.text2 });
+		mNicAdapter = new SimpleAdapter(getSherlockActivity(), mNics, android.R.layout.two_line_list_item,
+				new String[] { DeviceInfo.KEY_NIC_NAME, DeviceInfo.KEY_NIC_IP }, new int[] { android.R.id.text1,
+						android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.nics));
 		mMerge.addAdapter(mNicAdapter);
 
-		mHddAdapter = new SimpleAdapter(mActivity, mHdds, android.R.layout.two_line_list_item, new String[] {
-				DeviceInfo.KEY_HDD_MODEL, DeviceInfo.KEY_HDD_CAPACITY }, new int[] { android.R.id.text1,
-				android.R.id.text2 });
+		mHddAdapter = new SimpleAdapter(getSherlockActivity(), mHdds, android.R.layout.two_line_list_item,
+				new String[] { DeviceInfo.KEY_HDD_MODEL, DeviceInfo.KEY_HDD_CAPACITY }, new int[] { android.R.id.text1,
+						android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.hdds));
 		mMerge.addAdapter(mHddAdapter);

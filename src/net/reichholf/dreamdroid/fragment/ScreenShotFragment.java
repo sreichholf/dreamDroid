@@ -89,9 +89,13 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		getSherlockActivity().setTitle(getText(R.string.screenshot));
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 		initTitles(getString(R.string.screenshot));
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		getSherlockActivity().setTitle(getText(R.string.screenshot));
 	}
 
 	@Override
