@@ -134,7 +134,7 @@ public class SimpleHttpClient {
 		// Set login, ssl, port, host etc;
 		applyConfig();
 
-		mErrorText = null;
+		mErrorText = "";
 		mError = false;
 		mBytes = new byte[0];
 		if (!uri.startsWith("/")) {
@@ -170,6 +170,9 @@ public class SimpleHttpClient {
 			mError = true;
 			mErrorText = e.toString();
 		} catch (IOException e) {
+			mError = true;
+			mErrorText = e.toString();
+		} catch (Exception e) {
 			mError = true;
 			mErrorText = e.toString();
 		} finally {

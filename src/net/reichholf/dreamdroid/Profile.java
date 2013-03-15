@@ -44,6 +44,9 @@ public class Profile implements Serializable {
 
 	public Profile() {
 		setId(-1);
+		setName("");
+		setHost(null);
+		setStreamHost(null);
 		setPort(80);
 		setStreamPort(8001);
 		setFilePort(80);
@@ -189,6 +192,8 @@ public class Profile implements Serializable {
 	 *            the Profile to set
 	 */
 	public void setName(String name) {
+		if(name == null)
+			name = "";
 		mName = name;
 	}
 
@@ -197,6 +202,8 @@ public class Profile implements Serializable {
 	 *            the Host to set
 	 */
 	public void setHost(String host) {
+		if(host == null)
+			host = "";
 		mHost = host.replace("http://", "").replace("https://", "");
 	}
 
@@ -205,9 +212,8 @@ public class Profile implements Serializable {
 	 *            the streaming host to set
 	 */
 	public void setStreamHost(String streamHost) {
-		if (streamHost == null) {
+		if (streamHost == null)
 			streamHost = "";
-		}
 		mStreamHost = streamHost.replace("http://", "").replace("https://", "");
 	}
 
@@ -216,6 +222,8 @@ public class Profile implements Serializable {
 	 *            the User to set
 	 */
 	public void setUser(String user) {
+		if(user == null)
+			user = "";
 		mUser = user;
 	}
 
@@ -224,6 +232,8 @@ public class Profile implements Serializable {
 	 *            the Pass to set
 	 */
 	public void setPass(String pass) {
+		if(pass == null)
+			pass = "";
 		mPass = pass;
 	}
 
