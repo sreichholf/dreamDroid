@@ -33,15 +33,14 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.ByteArrayBuffer;
 
+import android.util.Log;
+
 /**
  * @author sreichholf
  * 
  */
 public class SimpleHttpClient {
-	// private UsernamePasswordCredentials mCreds = null;
-	// private HttpURLConnection mConnection;
-	// private DefaultHttpClient mDhc;
-	// private HttpContext mContext;
+	public static String LOG_TAG = "SimpleHttpClient";
 
 	private String mPrefix;
 	private String mHostname;
@@ -56,6 +55,7 @@ public class SimpleHttpClient {
 	private boolean mLogin;
 	private boolean mSsl;
 	private boolean mError;
+	private boolean mIsLoopProtected;
 
 	/**
 	 * @param sp
@@ -146,9 +146,19 @@ public class SimpleHttpClient {
 			URL url = new URL(buildUrl(uri, parameters));
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setConnectTimeout(10000);
-			conn.setRequestMethod("POST");
+			if (DreamDroid.featurePostRequest())
+				conn.setRequestMethod("POST");
 
 			if (conn.getResponseCode() != 200) {
+				if (conn.getResponseCode() == 405 && !mIsLoopProtected) {
+					// Method not allowed, the target device either can't handle
+					// POST or GET requests (old device or Anti-Hijack enabled)
+					DreamDroid.setFeaturePostRequest(!DreamDroid.featurePostRequest());
+					conn.disconnect();
+					mIsLoopProtected = true;
+					return fetchPageContent(uri, parameters);
+				}
+				mIsLoopProtected = false;
 				mErrorText = conn.getResponseMessage();
 				mError = true;
 				return false;
@@ -178,6 +188,8 @@ public class SimpleHttpClient {
 		} finally {
 			if (conn != null)
 				conn.disconnect();
+			if (mError)
+				Log.e(LOG_TAG, mErrorText);
 		}
 
 		return false;

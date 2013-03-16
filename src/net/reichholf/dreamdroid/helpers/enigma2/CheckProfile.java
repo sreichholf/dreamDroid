@@ -23,7 +23,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequest
  * 
  */
 public class CheckProfile {
+	public static final String LOG_TAG = "CheckProfile";
+
 	public static final int[] FEATURE_EPGNOWNEXT_VERSION = { 1, 7, 0 };
+	public static final int[] FEATURE_POST_REQEUEST = { 1, 7, 3 };
 
 	public static final String KEY_HAS_ERROR = "error";
 	public static final String KEY_VALUE = "value";
@@ -79,6 +82,10 @@ public class CheckProfile {
 									DreamDroid.enableSleepTimer();
 								if (checkVersion(version, FEATURE_EPGNOWNEXT_VERSION) >= 0)
 									DreamDroid.enableNowNext();
+								if (checkVersion(version, FEATURE_POST_REQEUEST) >= 0)
+									DreamDroid.setFeaturePostRequest(true);
+								else
+									DreamDroid.setFeaturePostRequest(false);
 
 								addEntry(resultList, R.string.interface_version, false, version);
 							} else {

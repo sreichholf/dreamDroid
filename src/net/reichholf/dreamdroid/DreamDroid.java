@@ -51,6 +51,8 @@ public class DreamDroid extends Application {
 	private static ProfileChangedListener sCurrentProfileChangedListener = null;
 	private static EpgSearchListener sSearchListener;
 
+	private static boolean sFeaturePostRequest = true;
+
 	/**
 	 * @param context
 	 * @return
@@ -102,6 +104,14 @@ public class DreamDroid extends Application {
 
 	public static boolean featureNowNext() {
 		return sFeatureNowNext;
+	}
+
+	public static boolean featurePostRequest() {
+		return sFeaturePostRequest;
+	}
+
+	public static void setFeaturePostRequest(boolean enabled) {
+		sFeaturePostRequest = enabled;
 	}
 
 	public static void disableSleepTimer() {
