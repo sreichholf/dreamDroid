@@ -19,7 +19,6 @@ import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -276,7 +275,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	private void activateProfile() {
 		if (DreamDroid.setCurrentProfile(getSherlockActivity(), mProfile.getId(), true)) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
-			finish(Activity.RESULT_OK);
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
 		}
