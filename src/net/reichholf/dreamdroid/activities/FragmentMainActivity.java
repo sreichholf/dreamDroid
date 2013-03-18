@@ -229,14 +229,6 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		getSupportFragmentManager().putFragment(outState, "navigation", mNavigationFragment);
-		Fragment currentDetailFragment = getCurrentDetailFragment();
-		if (currentDetailFragment != null) {
-			if (currentDetailFragment.getTargetFragment() != null) {
-				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-				ft.add(currentDetailFragment.getTargetFragment(), "target");
-				ft.commit();
-			}
-		}
 		super.onSaveInstanceState(outState);
 	}
 
