@@ -61,7 +61,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		boolean hasNow = now != null && !"".equals(now);
 
 		int viewId = android.R.id.text1;
-		int layoutId = android.R.layout.simple_list_item_1;
+		int layoutId = R.layout.simple_list_item_1;
 
 		if (Service.isMarker(service.getString(Service.KEY_REFERENCE))) {
 			layoutId = R.layout.service_list_marker;
