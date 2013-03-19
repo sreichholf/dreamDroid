@@ -461,16 +461,14 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		outState.putSerializable("detailitems", mDetailItems);
 		outState.putParcelable("currentService", mCurrentService);
 
-		synchronized (mListTasks) {
-			for (GetServiceListTask task : mListTasks) {
-				if (task != null) {
-					task.cancel(true);
-					mListTasks.remove(task);
-					task = null;
-
-				}
+		for (GetServiceListTask task : mListTasks) {
+			if (task != null) {
+				task.cancel(true);
+				task = null;
 			}
 		}
+		mListTasks.clear();
+
 		super.onSaveInstanceState(outState);
 	}
 
@@ -797,15 +795,15 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	/**
 	 * @param task
 	 */
-	public synchronized void enqueueListTask(GetServiceListTask task) {
+	public void enqueueListTask(GetServiceListTask task) {
 		mListTasks.add(task);
-		if (mListTasks.size() == 1) {
+		if (mListTasks.size() > 0) {
 			nextListTaskPlease();
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized void nextListTaskPlease() {
+	public void nextListTaskPlease() {
 		if (mListTasks.size() > 0) {
 			GetServiceListTask task = mListTasks.get(0);
 
