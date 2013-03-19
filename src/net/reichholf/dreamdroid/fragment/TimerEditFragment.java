@@ -537,7 +537,11 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		mEnd.setText(df.format(dateEnd));
 
 		// Repeatings
-		int repeatedValue = Integer.valueOf(mTimer.getString(Timer.KEY_REPEATED));
+		int repeatedValue = 0;
+		try{
+			repeatedValue = Integer.valueOf(mTimer.getString(Timer.KEY_REPEATED));
+		} catch (NumberFormatException ex){}
+		
 		String repeatedText = getRepeated(repeatedValue);
 		mRepeatings.setText(repeatedText);
 
