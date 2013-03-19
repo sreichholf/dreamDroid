@@ -189,6 +189,8 @@ public class SimpleHttpClient {
 			if (conn != null)
 				conn.disconnect();
 			if (mError)
+				if(mErrorText == null)
+					mErrorText = "Error text is null";
 				Log.e(LOG_TAG, mErrorText);
 		}
 
