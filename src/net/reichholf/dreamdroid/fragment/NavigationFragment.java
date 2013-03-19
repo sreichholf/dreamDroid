@@ -339,6 +339,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			break;
 
 		case Statics.ITEM_REMOTE:
+			clearBackStack();
 			if (getMultiPaneHandler().isSlidingMenu()) {
 				intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
 				intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
@@ -433,9 +434,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		// really mysterious
 		FragmentManager fm = getSherlockActivity().getSupportFragmentManager();
 		if (fm.getBackStackEntryCount() > 0) {
-			fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+			fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		}
-
 	}
 
 	/**
