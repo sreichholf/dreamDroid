@@ -339,12 +339,12 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			break;
 
 		case Statics.ITEM_REMOTE:
-			clearBackStack();
 			if (getMultiPaneHandler().isSlidingMenu()) {
 				intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
 				intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
 				startActivity(intent);
 			} else {
+				clearBackStack();
 				getMainActivity().showDetails(VirtualRemoteFragment.class);
 			}
 			break;
