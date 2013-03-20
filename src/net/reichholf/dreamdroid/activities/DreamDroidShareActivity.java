@@ -96,6 +96,7 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setTitle(getText(R.string.watch_on_dream));
 		load();
 	}
 
@@ -109,9 +110,9 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 		String url = null;
 		Intent i = getIntent();
 		mShc = SimpleHttpClient.getInstance(p);
-		if (i.getAction() == Intent.ACTION_SEND)
+		if (Intent.ACTION_SEND.equals(i.getAction()))
 			url = i.getExtras().getString(Intent.EXTRA_TEXT);
-		else if (i.getAction() == Intent.ACTION_VIEW)
+		else if (Intent.ACTION_VIEW.equals(i.getAction()))
 			url = i.getDataString();
 
 		if (url != null) {
@@ -123,6 +124,8 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 			params.add(new BasicNameValuePair("file", ref));
 			execSimpleResultTask(params);
+		} else {
+			finish();
 		}
 	}
 

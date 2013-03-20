@@ -83,8 +83,9 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
             -->
-            <intent-filter>
+            <intent-filter android:label="@string/watch_on_dream" >
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
