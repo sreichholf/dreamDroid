@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="175"
-    android:versionName="1.0 beta 19r4" >
+    android:versionCode="176"
+    android:versionName="1.0 beta 19r5" >
 
     <uses-sdk
         android:maxSdkVersion="17"
@@ -71,6 +71,28 @@
             android:name="android.app.default_searchable"
             android:value=".activities.SimpleFragmentActivity" >
         </meta-data>
+
+        <activity android:name=".activities.DreamDroidShareActivity" >
+
+            <!--
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
+                <data android:scheme="http" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

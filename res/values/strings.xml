@@ -231,5 +231,6 @@
     <string name="use_light_theme">Use a light theme</string>
     <string name="leave_confirm">Really leave?</string>
     <string name="leave_confirm_long">Do you really want to leave dreamDroid?</string>
+    <string name="sent">Sent</string>
 
 </resources>

@@ -225,5 +225,6 @@
 <string name="add_all">Alle hinzufügen</string>
 <string name="error_parsing">Beim Lesen der Daten ist ein Fehler aufgetreten!</string>
 <string name="enabled">Aktiviert</string>
+<string name="sent">Gesendet</string>
 
 </resources>

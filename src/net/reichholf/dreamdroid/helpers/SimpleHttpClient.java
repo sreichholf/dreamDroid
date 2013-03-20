@@ -42,6 +42,8 @@ import android.util.Log;
 public class SimpleHttpClient {
 	public static String LOG_TAG = "SimpleHttpClient";
 
+	private Profile mProfile;
+
 	private String mPrefix;
 	private String mHostname;
 	private String mStreamHostname;
@@ -62,6 +64,16 @@ public class SimpleHttpClient {
 	 *            SharedPreferences of the Base-Context
 	 */
 	public SimpleHttpClient() {
+		mProfile = null;
+		init();
+	}
+
+	public SimpleHttpClient(Profile p) {
+		mProfile = p;
+		init();
+	}
+
+	private void init() {
 		try {
 			SSLContext context = SSLContext.getInstance("TLS");
 			context.init(null, new TrustManager[] { new EasyX509TrustManager(null) }, null);
@@ -189,9 +201,9 @@ public class SimpleHttpClient {
 			if (conn != null)
 				conn.disconnect();
 			if (mError)
-				if(mErrorText == null)
+				if (mErrorText == null)
 					mErrorText = "Error text is null";
-				Log.e(LOG_TAG, mErrorText);
+			Log.e(LOG_TAG, mErrorText);
 		}
 
 		return false;
@@ -226,7 +238,10 @@ public class SimpleHttpClient {
 	 * 
 	 */
 	public void applyConfig() {
-		Profile p = DreamDroid.getCurrentProfile();
+		Profile p = mProfile;
+		if (p == null)
+			p = DreamDroid.getCurrentProfile();
+
 		mHostname = p.getHost().trim();
 		mStreamHostname = p.getStreamHost().trim();
 		mPort = p.getPortString();
@@ -253,5 +268,9 @@ public class SimpleHttpClient {
 	 */
 	public static SimpleHttpClient getInstance() {
 		return new SimpleHttpClient();
+	}
+	
+	public static SimpleHttpClient getInstance(Profile p){
+		return new SimpleHttpClient(p);
 	}
 }
