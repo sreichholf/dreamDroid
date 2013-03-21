@@ -72,7 +72,9 @@
             android:value=".activities.SimpleFragmentActivity" >
         </meta-data>
 
-        <activity android:name=".activities.DreamDroidShareActivity" >
+        <activity
+            android:name=".activities.DreamDroidShareActivity"
+            android:theme="@style/Theme.Sherlock.Light.Dialog" >
 
             <!--
             <intent-filter>

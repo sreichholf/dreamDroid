@@ -906,7 +906,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 		case Statics.ACTION_STREAM:
 			try {
-				startActivity(IntentFactory.getStreamServiceIntent(ref));
+				startActivity(IntentFactory.getStreamServiceIntent(ref, name));
 			} catch (ActivityNotFoundException e) {
 				showToast(getText(R.string.missing_stream_player));
 			}

@@ -227,5 +227,6 @@
 <string name="enabled">Aktiviert</string>
 <string name="sent">Gesendet</string>
 <string name="watch_on_dream">Auf Dreambox ansehen</string>
+<string name="sent_from_dreamdroid">Mit dreamDroid gesendet (%s)</string>
 
 </resources>

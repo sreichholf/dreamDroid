@@ -53,13 +53,14 @@ public class IntentFactory {
 	 * @param ref
 	 *            A ServiceReference
 	 */
-	public static Intent getStreamServiceIntent(String ref) {
+	public static Intent getStreamServiceIntent(String ref, String title) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "http://" + DreamDroid.getCurrentProfile().getStreamHost().trim() + ":"
 				+ DreamDroid.getCurrentProfile().getStreamPortString() + "/" + ref;
 		Log.i(DreamDroid.LOG_TAG, "Streaming URL set to '" + uriString + "'");
 
 		intent.setDataAndType(Uri.parse(uriString), "video/*");
+		intent.putExtra("title", title);
 
 		return intent;
 	}
@@ -68,7 +69,7 @@ public class IntentFactory {
 	 * @param ref
 	 *            A ServiceReference
 	 */
-	public static Intent getStreamFileIntent(String fileName) {
+	public static Intent getStreamFileIntent(String fileName, String title) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -76,6 +77,7 @@ public class IntentFactory {
 		String uriString = shc.buildFileStreamUrl(URIStore.FILE, params);
 
 		intent.setDataAndType(Uri.parse(uriString), "video/*");
+		intent.putExtra("title", title);
 		return intent;
 	}
 }

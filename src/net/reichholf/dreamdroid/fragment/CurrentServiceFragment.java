@@ -178,8 +178,9 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 				return true;
 			case Statics.ITEM_STREAM:
 				ref = mService.getString(Service.KEY_REFERENCE);
+				String name = mService.getString(Service.KEY_NAME);
 				if (!"".equals(ref) && ref != null) {
-					streamService(ref);
+					streamService(ref, name);
 				} else {
 					showToast(getText(R.string.not_available));
 				}
@@ -277,8 +278,8 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	 * @param ref
 	 *            A ServiceReference
 	 */
-	private void streamService(String ref) {
-		Intent intent = IntentFactory.getStreamServiceIntent(ref);
+	private void streamService(String ref, String name) {
+		Intent intent = IntentFactory.getStreamServiceIntent(ref, name);
 		startActivity(intent);
 	}
 

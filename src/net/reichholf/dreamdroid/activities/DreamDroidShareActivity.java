@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.activities;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
@@ -96,8 +97,20 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.share_list_content);
 		setTitle(getText(R.string.watch_on_dream));
 		load();
+	}
+
+	@Override
+	public void onDestroy() {
+		if (mProgress != null) {
+			mProgress.dismiss();
+			mProgress = null;
+		}
+		if (mSimpleResultTask != null)
+			mSimpleResultTask.cancel(true);
+		super.onDestroy();
 	}
 
 	@Override
@@ -109,9 +122,10 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 	private void playOnDream(Profile p) {
 		String url = null;
 		Intent i = getIntent();
+		Bundle extras = i.getExtras();
 		mShc = SimpleHttpClient.getInstance(p);
 		if (Intent.ACTION_SEND.equals(i.getAction()))
-			url = i.getExtras().getString(Intent.EXTRA_TEXT);
+			url = extras.getString(Intent.EXTRA_TEXT);
 		else if (Intent.ACTION_VIEW.equals(i.getAction()))
 			url = i.getDataString();
 
@@ -119,8 +133,26 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 			Log.i(LOG_TAG, url);
 			Log.i(LOG_TAG, p.getHost());
 
+			String time = (new GregorianCalendar()).getTime().toLocaleString();
+			String title = getString(R.string.sent_from_dreamdroid, time);
+			if (extras != null) {
+				// semperVidLinks sends "artist" and "song" attributes for the
+				// youtube video titles
+				String song = extras.getString("song");
+				if (song != null) {
+					String artist = extras.getString("artist");
+					if (artist != null)
+						title = artist + " - " + song;
+				} else {
+					title = extras.getString("title", title);
+				}
+			}
+
 			url = URLEncoder.encode(url).replace("+", "%20");
-			String ref = "4097:0:1:0:0:0:0:0:0:0:" + url;
+			title = URLEncoder.encode(title).replace("+", "%20");
+
+			String ref = "4097:0:1:0:0:0:0:0:0:0:" + url + ":" + title;
+			Log.i(LOG_TAG, ref);
 			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 			params.add(new BasicNameValuePair("file", ref));
 			execSimpleResultTask(params);
@@ -160,8 +192,10 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 	}
 
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-		if (mProgress != null)
+		if (mProgress != null) {
 			mProgress.dismiss();
+			mProgress = null;
+		}
 
 		String toastText = (String) getText(R.string.sent);
 		if (mShc.hasError()) {
