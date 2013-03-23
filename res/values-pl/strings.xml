@@ -47,6 +47,8 @@
 <string name="ssl_enabled">Włącz SSL</string>
 <string name="host">Nazwa hosta/IP</string>
 <string name="port">Port</string>
+<string name="port_stream_live">Port (na żywo)</string>
+<string name="port_stream_file">Port (Filmy)</string>
 <string name="settings">Ustawienia</string>
 <string name="host_long">Nazwa hosta lub IP</string>
 <string name="close">Zamknij</string>
@@ -94,7 +96,7 @@
 <string name="gui_version">Wersja GUI</string>
 <string name="image_version">Wersja Image</string>
 <string name="interface_version">Wersja interfejsu</string>
-<string name="front_processor_version">Wersja frontprocesora</string>
+<string name="front_processor_version">Wersja procesora</string>
 <string name="device_name">Nazwa urządzenia</string>
 <string name="frontends">Tuner</string>
 <string name="nics">Interfejsy sieciowe</string>
@@ -222,5 +224,15 @@
 <string name="add_all">Dodaj wszystko</string>
 <string name="error_parsing">Wystąpił błąd przy analizowaniu danych!</string>
 <string name="enabled">Włączone</string>
+<string name="signal_meter">Miernik Sygnału</string>
+<string name="accoustic_feedback">Sygnał Dzwiękowy</string>
+<string name="use_light_theme_long">Uzyj jasną skórkę zamiast ciemnej skórki</string>
+<string name="use_light_theme">Uzyj jasną skórkę</string>
+<string name="leave_confirm">Zamknij program</string>
+<string name="leave_confirm_long">Naprawdę chcesz opuścić dreamDroid?</string>
+<string name="sent_as">Wyślij jako %s</string>
+<string name="watch_on_dream">zobacz na Dreambox</string>
+<string name="sent_from_dreamdroid">Wyślij z dreaDroid na %s</string>
+<string name="no_profile_available">Brak profilu połącznia! Proszę skonfigurować profil by używać aplikacji!</string>
 
 </resources>
