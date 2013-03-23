@@ -8,7 +8,7 @@ package net.reichholf.dreamdroid.activities;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
+import java.util.Date;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
@@ -25,6 +25,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
@@ -45,6 +46,7 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 	private SimpleAdapter mAdapter;
 	private ArrayList<ExtendedHashMap> mProfileMapList;
 	private ProgressDialog mProgress;
+	private String mTitle;
 
 	ArrayList<Profile> mProfiles;
 
@@ -133,7 +135,7 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 			Log.i(LOG_TAG, url);
 			Log.i(LOG_TAG, p.getHost());
 
-			String time = (new GregorianCalendar()).getTime().toLocaleString();
+			String time = DateFormat.getDateFormat(this).format(new Date());
 			String title = getString(R.string.sent_from_dreamdroid, time);
 			if (extras != null) {
 				// semperVidLinks sends "artist" and "song" attributes for the
@@ -147,6 +149,7 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 					title = extras.getString("title", title);
 				}
 			}
+			mTitle = new String(title);
 
 			url = URLEncoder.encode(url).replace("+", "%20");
 			title = URLEncoder.encode(title).replace("+", "%20");
@@ -166,18 +169,26 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 		mProfileMapList = new ArrayList<ExtendedHashMap>();
 		mProfileMapList.clear();
 		mProfiles = dbh.getProfiles();
-		for (Profile m : mProfiles) {
-			ExtendedHashMap map = new ExtendedHashMap();
-			map.put(DatabaseHelper.KEY_PROFILE, m.getName());
-			map.put(DatabaseHelper.KEY_HOST, m.getHost());
-			mProfileMapList.add(map);
-		}
+		if (mProfiles.size() > 1) {
+			for (Profile m : mProfiles) {
+				ExtendedHashMap map = new ExtendedHashMap();
+				map.put(DatabaseHelper.KEY_PROFILE, m.getName());
+				map.put(DatabaseHelper.KEY_HOST, m.getHost());
+				mProfileMapList.add(map);
+			}
 
-		mAdapter = new SimpleAdapter(this, mProfileMapList, android.R.layout.two_line_list_item, new String[] {
-				DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST }, new int[] { android.R.id.text1,
-				android.R.id.text2 });
-		setListAdapter(mAdapter);
-		mAdapter.notifyDataSetChanged();
+			mAdapter = new SimpleAdapter(this, mProfileMapList, android.R.layout.two_line_list_item, new String[] {
+					DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST }, new int[] { android.R.id.text1,
+					android.R.id.text2 });
+			setListAdapter(mAdapter);
+			mAdapter.notifyDataSetChanged();
+		} else {
+			if (mProfiles.size() == 1) {
+				playOnDream(mProfiles.get(0));
+			} else {
+				showToast(getString(R.string.no_profile_available));
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -197,13 +208,19 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 			mProgress = null;
 		}
 
-		String toastText = (String) getText(R.string.sent);
+		if (mTitle == null)
+			mTitle = "...";
+		String toastText = getString(R.string.sent_as, mTitle);
 		if (mShc.hasError()) {
 			toastText = mShc.getErrorText();
 		}
 
-		Toast toast = Toast.makeText(this, toastText, Toast.LENGTH_LONG);
-		toast.show();
+		showToast(toastText);
 		finish();
+	}
+
+	public void showToast(String text) {
+		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
+		toast.show();
 	}
 }
