@@ -47,6 +47,8 @@
 <string name="ssl_enabled">Habilitar SSL</string>
 <string name="host">Nombre del host/IP</string>
 <string name="port">Puerto</string>
+<string name="port_stream_live">Puerto (En vivo)</string>
+<string name="port_stream_file">Puerto (Películas)</string>
 <string name="settings">Ajustes</string>
 <string name="host_long">Nombre del host o IP</string>
 <string name="close">Cerrar</string>

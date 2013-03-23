@@ -223,5 +223,7 @@
 <string name="autodiscover_dreamboxes">Ricerca automatica Dreambox</string>
 <string name="autodiscovery_failed">Impossibile trovare alcun Dreambox nella rete locale!</string>
 <string name="add_all">Aggiungi tutti</string>
+<string name="error_parsing">Si è verificato un errore durante l\'elaborazione dei dati!</string>
+<string name="enabled">Abilitato</string>
 
 </resources>

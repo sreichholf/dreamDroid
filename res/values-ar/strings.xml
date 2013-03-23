@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">الوصف</string>
 <string name="title">العنوان</string>
 <string name="app_name">دريم درويد</string>
+
 <string-array name="servicelist">
 <item>قائمة الخدمات</item>
 <item></item>
@@ -11,16 +13,19 @@
 <item></item>
 <item></item>
 </string-array>
+
 <string name="timer">المؤقت</string>
 <string name="service">الخدمة</string>
 <string name="afterevent">بعد الحدث</string>
 <string name="location">الموقع</string>
+
 <string-array name="afterevents">
 <item></item>
 <item></item>
 <item></item>
 <item></item>
 </string-array>
+
 <string name="begin_time">وقت البدء</string>
 <string name="repeatings">التكرار</string>
 <string name="end_time">وقت النهاية</string>
@@ -28,7 +33,6 @@
 <string name="movies">الأفلام</string>
 <string name="device_info">عن الجهاز</string>
 <string name="send_message">ارسال رسالة</string>
-
 <string name="save">حفظ</string>
 <string name="cancel">الغاء</string>
 <string name="fetching_data">جاري قراءة البيانات</string>
@@ -44,8 +48,6 @@
 <string name="port">المنفذ</string>
 <string name="settings">اعدادات</string>
 <string name="host_long">عنوان الجهاز او IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">اغلاق</string>
 <string name="minutes_short">دقيقة</string>
 <string name="user">المستخدم</string>
@@ -62,6 +64,7 @@
 <string name="set_time_end">تاريخ ووقت النهاية</string>
 <string name="apply">تنفيذ</string>
 <string name="reload">اعادة تحميل</string>
+
 <string-array name="weekdays_short">
 <item>ايام الاسبوع _مختصر </item>
 <item></item>
@@ -80,6 +83,7 @@
 <item></item>
 <item></item>
 </string-array>
+
 <string name="none">لا شيء</string>
 <string name="choose_days">اختر الايام</string>
 <string name="mo_to_fr">الاثنين الى الجمعة</string>
@@ -98,12 +102,14 @@
 <string name="message_text_hint">أدخل الرسالة</string>
 <string name="send">ارسال</string>
 <string name="type">نوع</string>
+
 <string-array name="message_types">
 <item>انواع الرسائل</item>
 <item></item>
 <item></item>
 <item></item>
 </string-array>
+
 <string name="virtual_remote">الريموت الوهمي</string>
 <string name="login_enabled">مكن من الدخول بكلمة السر</string>
 <string name="wait_request_finished">انتظر حتى تنتهي العملية الحالية</string>
@@ -173,6 +179,7 @@
 <item></item>
 <item></item>
 </string-array>
+
 <string name="sleeptimer">مؤقت النوم</string>
 <string name="current_volume">درجة الصوت %s</string>
 <string name="muted">كتم الصوت</string>
@@ -188,4 +195,5 @@
 <string name="screenshot_saved">تم حفظ صورة الشاشة الى \'%s\'</string>
 <string name="imdb">موقع IMDb</string>
 <string name="missing_stream_player">لا يوجد مشغل فيديو مناسب</string>
+
 </resources>

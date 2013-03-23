@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
 <string name="description">Descripció</string>
 <string name="title">Títol</string>
 <string name="app_name">DreamDroid</string>
+
 <string-array name="servicelist">
 <item>Bouquets(TV)</item>
 <item>Proveedor(TV)</item>
@@ -11,15 +13,18 @@
 <item>Proveedor(Radio)</item>
 <item>Todos los servicios(Radio)</item>
 </string-array>
+
 <string name="timer">Temporitzador</string>
 <string name="service">Serveis</string>
 <string name="location">Localització</string>
+
 <string-array name="afterevents">
 <item>Res</item>
 <item>En repos</item>
 <item>En repos profund</item>
 <item>Automatric</item>
 </string-array>
+
 <string name="begin_time">Hora inici</string>
 <string name="repeatings">Repeticions</string>
 <string name="end_time">Hora final</string>
@@ -27,7 +32,6 @@
 <string name="movies">Pel·lícules</string>
 <string name="device_info">Informació de l\'equip</string>
 <string name="send_message">Enviar missatge</string>
-
 <string name="save">Guardar</string>
 <string name="cancel">Cancel·lar</string>
 <string name="fetching_data">Recepcionant dades...</string>
@@ -42,8 +46,6 @@
 <string name="port">Port</string>
 <string name="settings">Ajustos</string>
 <string name="host_long">Nom del host o IP</string>
-<string name="port_long">Listening Port
-</string>
 <string name="close">Tancar</string>
 <string name="minutes_short">min.</string>
 <string name="user">Usuari</string>
@@ -60,6 +62,7 @@
 <string name="set_time_end">Data y hora final</string>
 <string name="apply">Aplicar</string>
 <string name="reload">Recarregar</string>
+
 <string-array name="weekdays_short">
 <item>DL</item>
 <item>DM</item>
@@ -78,6 +81,7 @@
 <item>Dissabte</item>
 <item>Diumenge</item>
 </string-array>
+
 <string name="none">Cap</string>
 <string name="choose_days">Selecciona els dies</string>
 <string name="mo_to_fr">Dilluns a Divendres</string>
@@ -98,12 +102,14 @@
 <string name="message_text_hint">Introdueix el teu missatge de text</string>
 <string name="send">Enviar</string>
 <string name="type">Tipus</string>
+
 <string-array name="message_types">
 <item>SiNo</item>
 <item>Atenció</item>
 <item>Info</item>
 <item>Error</item>
 </string-array>
+
 <string name="virtual_remote">Control remot virtual</string>
 <string name="login_enabled">Habilitar inici sessió</string>
 <string name="wait_request_finished">Espera a finalitzar la petició en curs !</string>
@@ -176,6 +182,7 @@
 <item>grabar</item>
 <item>zap</item>
 </string-array>
+
 <string name="sleeptimer">Temporitzador desconexió</string>
 <string name="current_volume">Volum al %s</string>
 <string name="muted">Silenciat</string>
@@ -188,4 +195,5 @@
 <string name="wrong_activity">Crida errònia ! Refer el accessos directes creats per dreamDroid</string>
 <string name="simple_remote">Vista simple control remot</string>
 <string name="screenshot_saved">Captura pantalla guardada a \'%s\'</string>
+
 </resources>
