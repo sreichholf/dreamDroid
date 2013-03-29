@@ -19,15 +19,18 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -48,7 +51,8 @@ import com.slidingmenu.lib.app.SlidingFragmentActivity;
  */
 public class FragmentMainActivity extends SlidingFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
 		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
-		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
+		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener,
+		MultiChoiceDialog.MultiChoiceDialogListener {
 
 	@SuppressWarnings("unused")
 	private static final String TAG = FragmentMainActivity.class.getSimpleName();
@@ -240,7 +244,9 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	@Override
 	public void onBackPressed() {
-		if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+		boolean shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREF_KEY_CONFIRM_APP_CLOSE, true);
+		
+		if (shouldConfirm && getSupportFragmentManager().getBackStackEntryCount() == 0) {
 			showDialogFragment(PositiveNegativeDialog.newInstance(getString(R.string.leave_confirm),
 					R.string.leave_confirm_long, android.R.string.yes, Statics.ACTION_LEAVE_CONFIRMED,
 					android.R.string.no, Statics.ACTION_NONE), "dialog_leave_confirm");
@@ -508,6 +514,28 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 			Intent intent = new Intent(this, FragmentMainActivity.class);
 			startActivity(intent);
 			finish();
+		}
+	}
+
+	@Override
+	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
+		if (isNavigationDialog(dialogTag)) {
+			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationFragment).onMultiChoiceDialogChange(dialogTag,
+					dialog, which, isChecked);
+		} else if (mDetailFragment != null) {
+			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment).onMultiChoiceDialogChange(dialogTag,
+					dialog, which, isChecked);
+		}
+	}
+
+	@Override
+	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
+		if (isNavigationDialog(dialogTag)) {
+			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationFragment).onMultiChoiceDialogFinish(dialogTag,
+					result);
+		} else if (mDetailFragment != null) {
+			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment)
+					.onMultiChoiceDialogFinish(dialogTag, result);
 		}
 	}
 }

@@ -254,7 +254,9 @@ public class DreamDroidHttpFragmentHelper {
 				String current = volume.getString(Volume.KEY_CURRENT);
 				boolean muted = Python.TRUE.equals(volume.getString(Volume.KEY_MUTED));
 				if (muted) {
-					text = mFragment.getString(R.string.current_volume, mFragment.getString(R.string.muted));
+					text = mFragment.getString(R.string.current_volume);
+					if(text == null)
+						text = mFragment.getString(R.string.muted);
 				} else {
 					text = mFragment.getString(R.string.current_volume, current);
 				}

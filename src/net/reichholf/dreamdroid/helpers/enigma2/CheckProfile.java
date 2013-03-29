@@ -31,6 +31,7 @@ public class CheckProfile {
 	public static final String KEY_HAS_ERROR = "error";
 	public static final String KEY_VALUE = "value";
 	public static final String KEY_ERROR_TEXT = "text";
+	public static final String KEY_ERROR_TEXT_EXT = "text_ext";
 	public static final String KEY_WHAT = "what";
 	public static final String KEY_RESULT_LIST = "list";
 	public static final int[] REQUIRED_VERSION = { 1, 6, 5 };
@@ -99,7 +100,7 @@ public class CheckProfile {
 
 					} else if (shc.hasError()) {
 						addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.connection_error);
-						setError(checkResult, true, R.string.connection_error);
+						setError(checkResult, true, R.string.connection_error, shc.getErrorText());
 					} else if (xml == null) {
 						// TODO Unexpected Error
 					}
@@ -182,7 +183,18 @@ public class CheckProfile {
 	 * @param hasError
 	 */
 	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId) {
+		setError(checkResult, hasError, errorTextId, null);
+	}
+
+	/**
+	 * @param checkResult
+	 * @param hasError
+	 */
+	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId, String extendedText) {
 		checkResult.put(KEY_HAS_ERROR, hasError);
 		checkResult.put(KEY_ERROR_TEXT, errorTextId);
+		if (extendedText == null)
+			extendedText = "";
+		checkResult.put(KEY_ERROR_TEXT_EXT, extendedText);
 	}
 }

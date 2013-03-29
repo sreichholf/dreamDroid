@@ -185,7 +185,7 @@
 </string-array>
 
 <string name="sleeptimer">Tempo para desligar</string>
-<string name="current_volume">Volume é %</string>
+<string name="current_volume">Volume é %s</string>
 <string name="muted">Sem Som</string>
 <string name="enable_volume_control">Ativar controlo volume</string>
 <string name="enable_volume_control_long">Ativar controlo volume com as teclas</string>

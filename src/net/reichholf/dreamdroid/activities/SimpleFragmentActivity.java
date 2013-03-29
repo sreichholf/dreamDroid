@@ -12,7 +12,9 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import android.app.SearchManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -32,7 +34,7 @@ import com.actionbarsherlock.view.MenuItem;
  * 
  */
 public class SimpleFragmentActivity extends SherlockFragmentActivity implements MultiPaneHandler,
-		ActionDialog.DialogActionListener {
+		ActionDialog.DialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener {
 	public static final int MENU_HOME = 89283794;
 
 	private Fragment mFragment;
@@ -222,7 +224,19 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		if (mFragment != null)
 			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action, details, dialogTag);
+	}
 
+	@Override
+	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
+		if (mFragment != null)
+			((MultiChoiceDialog.MultiChoiceDialogListener) mFragment).onMultiChoiceDialogChange(dialogTag, dialog,
+					which, isChecked);
+	}
+
+	@Override
+	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
+		if (mFragment != null)
+			((MultiChoiceDialog.MultiChoiceDialogListener) mFragment).onMultiChoiceDialogFinish(dialogTag, result);
 	}
 
 	@Override

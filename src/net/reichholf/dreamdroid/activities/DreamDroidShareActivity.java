@@ -121,6 +121,7 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 		playOnDream(profile);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void playOnDream(Profile p) {
 		String url = null;
 		Intent i = getIntent();
@@ -146,7 +147,9 @@ public class DreamDroidShareActivity extends SherlockListActivity {
 					if (artist != null)
 						title = artist + " - " + song;
 				} else {
-					title = extras.getString("title", title);
+					String tmp = extras.getString("title");
+					if(tmp != null)
+						title = tmp;
 				}
 			}
 			mTitle = new String(title);

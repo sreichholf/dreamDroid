@@ -12,9 +12,9 @@ import java.util.Arrays;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -32,11 +32,10 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.Dialog;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -60,7 +59,8 @@ import com.actionbarsherlock.view.MenuInflater;
  * @author sreichholf
  * 
  */
-public class MovieListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
+public class MovieListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
+		MultiChoiceDialog.MultiChoiceDialogListener {
 	private String mCurrentLocation;
 
 	private boolean mTagsChanged;
@@ -238,43 +238,8 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		mOldTags = new ArrayList<String>();
 		mOldTags.addAll(mSelectedTags);
 
-		Dialog.OnClickListener positiveListener = new Dialog.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				if (mTagsChanged) {
-					reload();
-				}
-				dialog.dismiss();
-			}
-		};
-
-		Dialog.OnClickListener negativeListener = new Dialog.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				mSelectedTags.clear();
-				mSelectedTags.addAll(mOldTags);
-				dialog.dismiss();
-			}
-		};
-
-		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags,
-				new OnMultiChoiceClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-						String tag = DreamDroid.getTags().get(which);
-						mTagsChanged = true;
-						if (isChecked) {
-							if (!mSelectedTags.contains(tag)) {
-								mSelectedTags.add(tag);
-							}
-						} else {
-							int idx = mSelectedTags.indexOf(tag);
-							if (idx >= 0) {
-								mSelectedTags.remove(idx);
-							}
-						}
-					}
-				}, positiveListener, negativeListener, R.string.ok, R.string.cancel);
+		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags, R.string.ok,
+				R.string.cancel);
 
 		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
 	}
@@ -408,7 +373,8 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 		case Statics.ACTION_STREAM:
 			try {
-				startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME), mMovie.getString(Movie.KEY_TITLE)));
+				startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME),
+						mMovie.getString(Movie.KEY_TITLE)));
 			} catch (ActivityNotFoundException e) {
 				showToast(getText(R.string.missing_stream_player));
 			}
@@ -416,5 +382,36 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		default:
 			return;
 		}
+	}
+
+	@Override
+	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
+		String tag = DreamDroid.getTags().get(which);
+		mTagsChanged = true;
+		if (isChecked) {
+			if (!mSelectedTags.contains(tag)) {
+				mSelectedTags.add(tag);
+			}
+		} else {
+			int idx = mSelectedTags.indexOf(tag);
+			if (idx >= 0) {
+				mSelectedTags.remove(idx);
+			}
+		}
+	}
+
+	@Override
+	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
+		if ("dialog_pick_tags".equals(dialogTag)) {
+			if (result == Activity.RESULT_CANCELED) {
+				mSelectedTags.clear();
+				mSelectedTags.addAll(mOldTags);
+			} else if (result == Activity.RESULT_OK) {
+				if (mTagsChanged) {
+					reload();
+				}
+			}
+		}
+
 	}
 }

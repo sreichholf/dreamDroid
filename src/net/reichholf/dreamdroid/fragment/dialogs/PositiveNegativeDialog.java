@@ -21,32 +21,47 @@ public class PositiveNegativeDialog extends ActionDialog {
 	private int mPositiveId;
 	private int mNegativeText;
 	private int mNegativeId;
-	
+
+	private static String KEY_TITLE = "title";
+	private static String KEY_MESSAGE_ID = "messageId";
+	private static String KEY_POSITIVE_TEXT = "positiveText";
+	private static String KEY_POSITIVE_ID = "positiveId";
+	private static String KEY_NEGATIVE_TEXT = "negativeText";
+	private static String KEY_NEGATIVE_ID = "negativeId";
+
 	public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId,
-			int negativeString, int negativeId) {
-		PositiveNegativeDialog fragment = new PositiveNegativeDialog(messageId, positiveText, positiveId, negativeString, negativeId);
+			int negativeText, int negativeId) {
+
+		PositiveNegativeDialog fragment = new PositiveNegativeDialog();
 		Bundle args = new Bundle();
-		args.putString("title", title);
+		args.putString(KEY_TITLE, title);
+		args.putInt(KEY_MESSAGE_ID, messageId);
+		args.putInt(KEY_POSITIVE_TEXT, positiveText);
+		args.putInt(KEY_POSITIVE_ID, positiveId);
+		args.putInt(KEY_NEGATIVE_TEXT, negativeText);
+		args.putInt(KEY_NEGATIVE_ID, negativeId);
 		fragment.setArguments(args);
+
 		return fragment;
 	}
 
-	private PositiveNegativeDialog(int messageId, int positiveText, int positiveId, int negativeText, int negativeId){
-		mMessageId = messageId;
-		mPositiveText = positiveText;
-		mPositiveId = positiveId;
-		mNegativeText = negativeText;
-		mNegativeId = negativeId;
+	private void init() {
+		Bundle args = getArguments();
+		mMessageId = args.getInt(KEY_MESSAGE_ID);
+		mPositiveText = args.getInt(KEY_POSITIVE_TEXT);
+		mPositiveId = args.getInt(KEY_POSITIVE_ID);
+		mNegativeText = args.getInt(KEY_NEGATIVE_TEXT);
+		mNegativeId = args.getInt(KEY_NEGATIVE_ID);
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
+		init();
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		if(mMessageId != -1)
+		if (mMessageId != -1)
 			builder.setMessage(getString(mMessageId));
-		builder.setTitle(getArguments().getString("title"))
-				.setCancelable(false)
+		builder.setTitle(getArguments().getString("title")).setCancelable(false)
 				.setPositiveButton(getText(mPositiveText), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						finishDialog(mPositiveId, null);

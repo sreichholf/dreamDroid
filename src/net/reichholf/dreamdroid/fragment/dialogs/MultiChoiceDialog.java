@@ -6,8 +6,11 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
+import net.reichholf.dreamdroid.helpers.BundleHelper;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -17,6 +20,12 @@ import android.support.v4.app.DialogFragment;
  * 
  */
 public class MultiChoiceDialog extends DialogFragment {
+	private static final String KEY_TITLE_ID = "titleId";
+	private static final String KEY_ITEMS = "items";
+	private static final String KEY_CHECKED_ITEMS = "checkedItems";
+	private static final String KEY_POSITIVE_STRING_ID = "positiveStringId";
+	private static final String KEY_NEGATIVE_STRING_ID = "negativeStringId";
+
 	private int mTitleId;
 	private CharSequence[] mItems;
 	private boolean[] mCheckedItems;
@@ -25,6 +34,12 @@ public class MultiChoiceDialog extends DialogFragment {
 	private int mPositiveStringId;
 	private Dialog.OnClickListener mNegativeListener;
 	private int mNegativeStringId;
+
+	public interface MultiChoiceDialogListener {
+		public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked);
+
+		public void onMultiChoiceDialogFinish(String dialogTag, int result);
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -46,66 +61,63 @@ public class MultiChoiceDialog extends DialogFragment {
 		super.onSaveInstanceState(outState);
 	}
 
-	public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems,
-			OnMultiChoiceClickListener multiChoiceClickListener) {
-		return newInstance(titleId, items, checkedItems, multiChoiceClickListener, null, null, 0, 0);
+	public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems) {
+		return MultiChoiceDialog.newInstance(titleId, items, checkedItems, -1, -1);
 	}
 
 	public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems,
-			OnMultiChoiceClickListener multiChoiceClickListener, Dialog.OnClickListener positiveListener,
-			Dialog.OnClickListener negativeListener, int positiveStringId, int negativeStringId) {
+			int positiveStringId, int negativeStringId) {
 
-		MultiChoiceDialog fragment = new MultiChoiceDialog(titleId, items, checkedItems, multiChoiceClickListener,
-				positiveListener, negativeListener, positiveStringId, negativeStringId);
-		// Bundle args = new Bundle();
-		// args.putInt(KEY_TITLE_ID, titleId);
-		// args.putCharSequenceArray(KEY_ITEMS, items);
-		// args.putBooleanArray(KEY_CHECKED_ITEMS, checkedItems);
-		// args.putInt(KEY_POSITIVE_STRING_ID, positiveStringId);
-		// args.putInt(KEY_NEGATIVE_STRING_ID, negativeStringId);
-		// MultiChoiceDialog fragment = new MultiChoiceDialog();
-		// fragment.registerListeners(multiChoiceClickListener,
-		// positiveListener, negativeListener);
+		MultiChoiceDialog fragment = new MultiChoiceDialog();
+		Bundle args = new Bundle();
+		args.putInt(KEY_TITLE_ID, titleId);
+		args.putStringArrayList(KEY_ITEMS, BundleHelper.toStringArrayList(items));
+		args.putBooleanArray(KEY_CHECKED_ITEMS, checkedItems);
+		args.putInt(KEY_POSITIVE_STRING_ID, positiveStringId);
+		args.putInt(KEY_NEGATIVE_STRING_ID, negativeStringId);
+		fragment.setArguments(args);
 		return fragment;
 	}
 
-	private static final String KEY_TITLE_ID = "titleId";
-	private static final String KEY_ITEMS = "items";
-	private static final String KEY_CHECKED_ITEMS = "checkedItems";
-	private static final String KEY_POSITIVE_STRING_ID = "positiveStringId";
-	private static final String KEY_NEGATIVE_STRING_ID = "negativeStringId";
-
-	private MultiChoiceDialog(int titleId, CharSequence[] items, boolean[] checkedItems,
-			OnMultiChoiceClickListener multiChoiceClickListener, Dialog.OnClickListener positiveListener,
-			Dialog.OnClickListener negativeListener, int positiveStringId, int negativeStringId) {
-		mTitleId = titleId;
-		mItems = items;
-		mCheckedItems = checkedItems;
-		mMultiChoiceClickListener = multiChoiceClickListener;
-		mPositiveListener = positiveListener;
-		mNegativeListener = negativeListener;
-		mPositiveStringId = positiveStringId;
-		mNegativeStringId = negativeStringId;
-	}
-
-	private MultiChoiceDialog() {
+	public void init() {
 		Bundle args = getArguments();
 		mTitleId = args.getInt(KEY_TITLE_ID);
-		mItems = args.getCharSequenceArray(KEY_ITEMS);
+		mItems = BundleHelper.toCharSequenceArray(args.getStringArrayList((KEY_ITEMS)));
 		mCheckedItems = args.getBooleanArray(KEY_CHECKED_ITEMS);
 		mPositiveStringId = args.getInt(KEY_POSITIVE_STRING_ID);
 		mNegativeStringId = args.getInt(KEY_NEGATIVE_STRING_ID);
-	}
 
-	public void registerListeners(OnMultiChoiceClickListener multiChoiceClickListener,
-			Dialog.OnClickListener positiveListener, Dialog.OnClickListener negativeListener) {
-		mPositiveListener = positiveListener;
-		mNegativeListener = negativeListener;
-		mMultiChoiceClickListener = multiChoiceClickListener;
+		if (mPositiveStringId > 0 && mNegativeStringId > 0) {
+			mPositiveListener = new Dialog.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
+					dismiss();
+				}
+			};
+
+			mNegativeListener = new Dialog.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(),
+							Activity.RESULT_CANCELED);
+					dismiss();
+				}
+			};
+		}
+
+		mMultiChoiceClickListener = new OnMultiChoiceClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+				((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogChange(getTag(), dialog, which,
+						isChecked);
+			}
+		};
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		init();
 		if (savedInstanceState != null) {
 			boolean[] checked = savedInstanceState.getBooleanArray("checkedItems");
 			if (checked != null)

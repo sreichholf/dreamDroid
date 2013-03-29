@@ -18,5 +18,10 @@
         android:key="light_theme"
         android:summary="@string/use_light_theme_long"
         android:title="@string/use_light_theme" />
+    <CheckBoxPreference
+        android:key="confirm_app_close"
+        android:summary="@string/confirm_app_close_long"
+        android:title="@string/confirm_app_close"
+        android:defaultValue="true" />
 
 </PreferenceScreen>

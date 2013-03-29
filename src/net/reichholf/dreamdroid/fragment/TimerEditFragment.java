@@ -33,10 +33,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeReques
 import org.apache.http.NameValuePair;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -63,7 +61,9 @@ import com.actionbarsherlock.view.MenuInflater;
  * @author sreichholf
  * 
  */
-public class TimerEditFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener {
+public class TimerEditFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener,
+		MultiChoiceDialog.MultiChoiceDialogListener {
+
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
 
 	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
@@ -301,16 +301,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 	protected void pickRepeatings() {
 		CharSequence[] days = getResources().getTextArray(R.array.weekdays);
-		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_days, days, mCheckedDays,
-				new OnMultiChoiceClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-						mCheckedDays[which] = isChecked;
-						String text = setRepeated(mCheckedDays, mTimer);
-						mRepeatings.setText(text);
-					}
-				});
-		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_repeatings");
+		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_days, days, mCheckedDays);
+		getMultiPaneHandler().showDialogFragment(f, "dialog_select_repeatings");
 	}
 
 	protected void pickTags() {
@@ -328,52 +320,14 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			tc++;
 		}
 
-		Dialog.OnClickListener positiveListener = new Dialog.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				if (mTagsChanged) {
-					// TODO Update current Tags
-					String tags = Tag.implodeTags(mSelectedTags);
-					mTimer.put(Timer.KEY_TAGS, tags);
-					mTags.setText(tags);
-				}
-				dialog.dismiss();
-			}
-		};
-
-		Dialog.OnClickListener negativeListener = new Dialog.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				mSelectedTags.clear();
-				mSelectedTags.addAll(mOldTags);
-				dialog.dismiss();
-			}
-		};
-
 		mTagsChanged = false;
 		mOldTags = new ArrayList<String>();
 		mOldTags.addAll(mSelectedTags);
 
-		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags,
-				new OnMultiChoiceClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-						String tag = DreamDroid.getTags().get(which);
-						mTagsChanged = true;
-						if (isChecked) {
-							if (!mSelectedTags.contains(tag)) {
-								mSelectedTags.add(tag);
-							}
-						} else {
-							int idx = mSelectedTags.indexOf(tag);
-							if (idx >= 0) {
-								mSelectedTags.remove(idx);
-							}
-						}
-					}
-				}, positiveListener, negativeListener, R.string.ok, R.string.cancel);
+		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags, R.string.ok,
+				R.string.cancel);
 
-		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
+		getMultiPaneHandler().showDialogFragment(f, "dialog_select_tags");
 	}
 
 	/**
@@ -538,10 +492,11 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 		// Repeatings
 		int repeatedValue = 0;
-		try{
+		try {
 			repeatedValue = Integer.valueOf(mTimer.getString(Timer.KEY_REPEATED));
-		} catch (NumberFormatException ex){}
-		
+		} catch (NumberFormatException ex) {
+		}
+
 		String repeatedText = getRepeated(repeatedValue);
 		mRepeatings.setText(repeatedText);
 
@@ -728,5 +683,41 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			break;
 		}
 
+	}
+
+	@Override
+	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
+		if ("dialog_select_tags".equals(dialogTag)) {
+			String tag = DreamDroid.getTags().get(which);
+			mTagsChanged = true;
+			if (isChecked) {
+				if (!mSelectedTags.contains(tag)) {
+					mSelectedTags.add(tag);
+				}
+			} else {
+				int idx = mSelectedTags.indexOf(tag);
+				if (idx >= 0) {
+					mSelectedTags.remove(idx);
+				}
+			}
+		} else if ("dialog_select_repeatings".equals(dialogTag)) {
+			mCheckedDays[which] = isChecked;
+			String text = setRepeated(mCheckedDays, mTimer);
+			mRepeatings.setText(text);
+		}
+	}
+
+	@Override
+	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
+		if ("dialog_select_tags".equals(dialogTag)) {
+			if (result == Activity.RESULT_CANCELED) {
+				mSelectedTags.clear();
+				mSelectedTags.addAll(mOldTags);
+			} else if (mTagsChanged) {
+				String tags = Tag.implodeTags(mSelectedTags);
+				mTimer.put(Timer.KEY_TAGS, tags);
+				mTags.setText(tags);
+			}
+		}
 	}
 }

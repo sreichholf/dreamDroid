@@ -180,7 +180,7 @@
 <item></item>
 </string-array>
 <string name="sleeptimer">Заспиване</string>
-<string name="current_volume">Усилването на звука е %</string>
+<string name="current_volume">Усилването на звука е %s</string>
 <string name="muted">Без звук</string>
 <string name="enable_volume_control">Звуков контрол възможен</string>
 <string name="enable_volume_control_long">Възможност за директен контрол на звука с помощта на H / W-бутони</string>

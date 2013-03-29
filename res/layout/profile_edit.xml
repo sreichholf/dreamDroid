@@ -9,9 +9,9 @@
         android:orientation="vertical" >
 
         <TextView
+            style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            style="@style/SimpleHeader"
             android:text="@string/profile" />
 
         <EditText
@@ -23,26 +23,28 @@
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
             <TextView
+                style="@style/SimpleHeader"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="80dp"
-                style="@style/SimpleHeader"
                 android:text="@string/host" />
 
             <TextView
+                style="@style/SimpleHeader"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="-80dp"
-                style="@style/SimpleHeader"
                 android:text="@string/port" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
             <EditText
                 android:id="@+id/EditTextHost"
@@ -71,9 +73,9 @@
             android:paddingRight="5dp" >
 
             <TextView
+                style="@style/SimpleHeader"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                style="@style/SimpleHeader"
                 android:text="@string/stream" />
 
             <EditText
@@ -88,13 +90,14 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp" >
+                android:layout_marginLeft="5dp"
+                android:orientation="horizontal" >
 
                 <TextView
+                    style="@style/SimpleHeader"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="140dp"
-                    style="@style/SimpleHeader"
                     android:text="@string/port_stream_live" />
 
                 <EditText
@@ -112,13 +115,14 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp" >
+                android:layout_marginLeft="5dp"
+                android:orientation="horizontal" >
 
                 <TextView
+                    style="@style/SimpleHeader"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="140dp"
-                    style="@style/SimpleHeader"
                     android:text="@string/port_stream_file" />
 
                 <EditText
@@ -136,7 +140,8 @@
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
             <TextView
                 android:layout_width="fill_parent"
@@ -156,7 +161,8 @@
         <LinearLayout
             android:id="@+id/LinearLayoutIsLogin"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
             <TextView
                 android:layout_width="fill_parent"
@@ -180,9 +186,9 @@
             android:orientation="vertical" >
 
             <TextView
+                style="@style/SimpleHeader"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                style="@style/SimpleHeader"
                 android:text="@string/user" />
 
             <EditText
@@ -193,9 +199,9 @@
                 android:singleLine="true" />
 
             <TextView
+                style="@style/SimpleHeader"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                style="@style/SimpleHeader"
                 android:text="@string/pass" />
 
             <EditText
@@ -210,7 +216,8 @@
         <LinearLayout
             android:id="@+id/LinearLayoutIsSimpleRemote"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
             <TextView
                 android:layout_width="fill_parent"
