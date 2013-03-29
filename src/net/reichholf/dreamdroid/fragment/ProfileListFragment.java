@@ -205,7 +205,11 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mProfile = mProfiles.get(position);
-		activateProfile();
+
+		CharSequence[] actions = { getText(R.string.activate), getText(R.string.edit), getText(R.string.delete) };
+		int[] actionIds = { Statics.ACTION_ACTIVATE, Statics.ACTION_EDIT, Statics.ACTION_DELETE };
+		getMultiPaneHandler().showDialogFragment(
+				SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds), "dialog_profile_selected");
 	}
 
 	private void reloadProfiles() {
@@ -224,11 +228,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile = mProfiles.get(position);
+		activateProfile();
 
-		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-		int[] actionIds = { Statics.ACTION_EDIT, Statics.ACTION_DELETE };
-		getMultiPaneHandler().showDialogFragment(
-				SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds), "dialog_profile_selected");
 		return true;
 	}
 
@@ -331,6 +332,9 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
+		case Statics.ACTION_ACTIVATE:
+			activateProfile();
+			break;
 		case Statics.ACTION_EDIT:
 			editProfile();
 			break;
