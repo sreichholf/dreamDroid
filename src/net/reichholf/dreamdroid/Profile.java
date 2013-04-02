@@ -28,6 +28,8 @@ public class Profile implements Serializable {
 	private String mPass;
 	private boolean mLogin;
 	private boolean mSsl;
+	private boolean mFileLogin;
+	private boolean mFileSsl;
 	private boolean mSimpleRemote;
 	private int mId;
 	private int mPort;
@@ -51,6 +53,8 @@ public class Profile implements Serializable {
 		setStreamPort(8001);
 		setFilePort(80);
 		setLogin(false);
+		setFileLogin(false);
+		setFileSsl(false);
 		setSimpleRemote(false);
 		setUser("root");
 		setPass("dreambox");
@@ -69,9 +73,10 @@ public class Profile implements Serializable {
 	 * @param ssl
 	 * @param simpleRemote
 	 */
-	public Profile(String name, String host, String streamHost, int port, int streamPort, int filePort,
-			boolean login, String user, String pass, boolean ssl, boolean simpleRemote) {
-		set(name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, simpleRemote);
+	public Profile(String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+			String user, String pass, boolean ssl, boolean fileLogin, boolean fileSsl, boolean simpleRemote) {
+		set(name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, fileLogin, fileSsl,
+				simpleRemote);
 	}
 
 	/**
@@ -87,8 +92,10 @@ public class Profile implements Serializable {
 	 * @param simpleRemote
 	 */
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort,
-			boolean login, String user, String pass, boolean ssl, boolean simpleRemote) {
-		set(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, simpleRemote);
+			boolean login, String user, String pass, boolean ssl, boolean fileLogin, boolean fileSsl,
+			boolean simpleRemote) {
+		set(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, fileLogin, fileSsl,
+				simpleRemote);
 	}
 
 	/**
@@ -102,9 +109,10 @@ public class Profile implements Serializable {
 	 * @param ssl
 	 * @param simpleRemote
 	 */
-	public void set(String name, String host, String streamHost, int port, int streamPort, int filePort,
-			boolean login, String user, String pass, boolean ssl, boolean simpleRemote) {
-		set(-1, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, simpleRemote);
+	public void set(String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+			String user, String pass, boolean ssl, boolean fileLogin, boolean fileSsl, boolean simpleRemote) {
+		set(-1, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, fileLogin, fileSsl,
+				simpleRemote);
 	}
 
 	/**
@@ -120,7 +128,8 @@ public class Profile implements Serializable {
 	 * @param simpleRemote
 	 */
 	public void set(int id, String name, String host, String streamHost, int port, int streamPort, int filePort,
-			boolean login, String user, String pass, boolean ssl, boolean simpleRemote) {
+			boolean login, String user, String pass, boolean ssl, boolean fileLogin, boolean fileSsl,
+			boolean simpleRemote) {
 		setId(id);
 		setName(name);
 		setHost(host);
@@ -129,6 +138,8 @@ public class Profile implements Serializable {
 		setStreamPort(streamPort);
 		setFilePort(filePort);
 		setLogin(login);
+		setFileLogin(fileLogin);
+		setFileSsl(fileSsl);
 		setUser(user);
 		setPass(pass);
 		setSsl(ssl);
@@ -171,6 +182,20 @@ public class Profile implements Serializable {
 			setSsl(false);
 		}
 
+		int fileLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_LOGIN));
+		if (fileLogin == 1) {
+			setFileLogin(true);
+		} else {
+			setFileLogin(false);
+		}
+
+		int fileSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_SSL));
+		if (fileSsl == 1) {
+			setFileSsl(true);
+		} else {
+			setFileSsl(false);
+		}
+
 		int simpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SIMPLE_REMOTE));
 		if (simpleRemote == 1) {
 			setSimpleRemote(true);
@@ -192,7 +217,7 @@ public class Profile implements Serializable {
 	 *            the Profile to set
 	 */
 	public void setName(String name) {
-		if(name == null)
+		if (name == null)
 			name = "";
 		mName = name;
 	}
@@ -202,7 +227,7 @@ public class Profile implements Serializable {
 	 *            the Host to set
 	 */
 	public void setHost(String host) {
-		if(host == null)
+		if (host == null)
 			host = "";
 		mHost = host.replace("http://", "").replace("https://", "");
 	}
@@ -222,7 +247,7 @@ public class Profile implements Serializable {
 	 *            the User to set
 	 */
 	public void setUser(String user) {
-		if(user == null)
+		if (user == null)
 			user = "";
 		mUser = user;
 	}
@@ -232,7 +257,7 @@ public class Profile implements Serializable {
 	 *            the Pass to set
 	 */
 	public void setPass(String pass) {
-		if(pass == null)
+		if (pass == null)
 			pass = "";
 		mPass = pass;
 	}
@@ -251,6 +276,14 @@ public class Profile implements Serializable {
 	 */
 	public void setSsl(boolean ssl) {
 		mSsl = ssl;
+	}
+
+	public void setFileLogin(boolean login) {
+		mFileLogin = login;
+	}
+
+	public void setFileSsl(boolean ssl) {
+		mFileSsl = ssl;
 	}
 
 	/**
@@ -400,6 +433,14 @@ public class Profile implements Serializable {
 		return mSsl;
 	}
 
+	public boolean isFileLogin() {
+		return mFileLogin;
+	}
+
+	public boolean isFileSsl() {
+		return mFileSsl;
+	}
+
 	public boolean isSimpleRemote() {
 		return mSimpleRemote;
 	}
@@ -479,18 +520,11 @@ public class Profile implements Serializable {
 	public void setDefaultRef2Name(String defaultRef2Name) {
 		mDefaultRef2Name = defaultRef2Name;
 	}
-	
+
 	public boolean equals(Profile p) {
-		return getHost().equals(p.getHost())
-				&& getStreamHost().equals(p.getStreamHost())
-				&& getUser().equals(p.getUser())
-				&& getPass().equals(p.getPass())
-				&& isLogin() == p.isLogin()
-				&& isSsl() == p.isSsl()
-				&& isSimpleRemote() == p.isSimpleRemote()
-				&& getId() == p.getId()
-				&& getPort() == p.getPort()
-				&& getStreamPort() == p.getStreamPort()
-				&& getFilePort() == p.getFilePort();
+		return getHost().equals(p.getHost()) && getStreamHost().equals(p.getStreamHost())
+				&& getUser().equals(p.getUser()) && getPass().equals(p.getPass()) && isLogin() == p.isLogin()
+				&& isSsl() == p.isSsl() && isSimpleRemote() == p.isSimpleRemote() && getId() == p.getId()
+				&& getPort() == p.getPort() && getStreamPort() == p.getStreamPort() && getFilePort() == p.getFilePort();
 	}
 }

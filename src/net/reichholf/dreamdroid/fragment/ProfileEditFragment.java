@@ -46,6 +46,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	private EditText mFilePort;
 	private CheckBox mSsl;
 	private CheckBox mLogin;
+	private CheckBox mFileSsl;
+	private CheckBox mFileLogin;
 	private EditText mUser;
 	private EditText mPass;
 	private CheckBox mSimpleRemote;
@@ -73,6 +75,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mUser = (EditText) view.findViewById(R.id.EditTextUser);
 		mPass = (EditText) view.findViewById(R.id.EditTextPass);
 		mSimpleRemote = (CheckBox) view.findViewById(R.id.CheckBoxSimpleRemote);
+		mFileSsl = (CheckBox) view.findViewById(R.id.CheckBoxSslFileStream);
+		mFileLogin = (CheckBox) view.findViewById(R.id.CheckBoxLoginFileStream);
 
 		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LinearLayoutLogin);
 
@@ -97,6 +101,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 				onSslChanged(checked);
 			}
 		});
+
 		return view;
 	}
 
@@ -155,6 +160,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mLogin.setChecked(mCurrentProfile.isLogin());
 		mUser.setText(mCurrentProfile.getUser());
 		mPass.setText(mCurrentProfile.getPass());
+		mFileLogin.setChecked(mCurrentProfile.isFileLogin());
+		mFileSsl.setChecked(mCurrentProfile.isFileSsl());
 		mSimpleRemote.setChecked(mCurrentProfile.isSimpleRemote());
 	}
 
@@ -169,6 +176,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mCurrentProfile.setStreamPort(mStreamPort.getText().toString());
 		mCurrentProfile.setFilePort(mFilePort.getText().toString());
 		mCurrentProfile.setLogin(mLogin.isChecked());
+		mCurrentProfile.setFileLogin(mFileLogin.isChecked());
+		mCurrentProfile.setFileSsl(mFileSsl.isChecked());
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
 		mCurrentProfile.setSimpleRemote(mSimpleRemote.isChecked());

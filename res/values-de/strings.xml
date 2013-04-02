@@ -235,5 +235,6 @@
     <string name="watch_on_dream">Auf Dreambox ansehen</string>
     <string name="sent_from_dreamdroid">Von dreamDroid gesendet (%s)</string>
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
-
+    <string name="login_movies">Login (Filme)</string>
+    <string name="ssl_movies">https (Filme)</string>
 </resources>

@@ -12,13 +12,17 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * @author sre
  *
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
+	public static final String LOG_TAG = DatabaseHelper.class.getSimpleName();
+	
 	public static final String KEY_ID = "_id";
 	public static final String KEY_PROFILE = "profile";
 	public static final String KEY_HOST = "host";
@@ -30,6 +34,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_USER = "user";
 	public static final String KEY_PASS = "pass";
 	public static final String KEY_SSL = "ssl";
+	public static final String KEY_FILE_SSL = "file_ssl";
+	public static final String KEY_FILE_LOGIN = "file_login";
 	public static final String KEY_SIMPLE_REMOTE = "simpleremote";
 	public static final String KEY_DEFAULT_REF = "default_ref";
 	public static final String KEY_DEFAULT_REF_NAME = "default_ref_name";
@@ -37,7 +43,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_DEFAULT_REF_2_NAME = "default_ref_2_name";
 
 	public static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 7;
+	private static final int DATABASE_VERSION = 8;
 	private static final String PROFILES_TABLE_NAME = "profiles";
 
 	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " + 
@@ -57,7 +63,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				KEY_DEFAULT_REF + " TEXT, " + 
 				KEY_DEFAULT_REF_NAME + " TEXT, " +
 				KEY_DEFAULT_REF_2 + " TEXT, " +
-				KEY_DEFAULT_REF_2_NAME + " TEXT );";
+				KEY_DEFAULT_REF_2_NAME + " TEXT" +
+				KEY_FILE_LOGIN + " BOOLEAN," +
+				KEY_FILE_SSL + " BOOLEAN);";
 
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_STREAM_HOST + " TEXT;";
@@ -76,7 +84,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String PROFILES_TABLE_UPGRADE_6_7_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF_2 + " TEXT;";
 	private static final String PROFILES_TABLE_UPGRADE_6_7_4 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF_2_NAME + " TEXT;";
 
-	
+	private static final String PROFILES_TABLE_UPGRADE_7_8_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_LOGIN + " BOOLEAN;";
+	private static final String PROFILES_TABLE_UPGRADE_7_8_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_SSL + " BOOLEAN;";
 	private Context mContext;
 	/**
 	 * @param context
@@ -104,42 +113,58 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_4);
 	}
 	
+	private void upgrade7to8(SQLiteDatabase db){
+		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_1);
+		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_2);
+	}
+	
 	/* (non-Javadoc)
 	 * @see android.database.sqlite.SQLiteOpenHelper#onUpgrade(android.database.sqlite.SQLiteDatabase, int, int)
 	 */
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if (oldVersion == 2) {
-			db.execSQL(PROFILES_TABLE_UPGRADE_2_3);
-			db.execSQL(PROFILES_TABLE_UPGRADE_3_4);
-			db.execSQL(PROFILES_TABLE_UPGRADE_4_5);
-			db.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-			upgrade6to7(db);
-			db.setVersion(DATABASE_VERSION);
-		} else if (oldVersion == 3) {
-			db.execSQL(PROFILES_TABLE_UPGRADE_3_4);
-			db.execSQL(PROFILES_TABLE_UPGRADE_4_5);
-			db.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-			upgrade6to7(db);
-			db.setVersion(DATABASE_VERSION);
-		} else if (oldVersion == 4){
-			db.execSQL(PROFILES_TABLE_UPGRADE_4_5);
-			db.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-			upgrade6to7(db);
-			db.setVersion(DATABASE_VERSION);
-		} else if (oldVersion == 5){
-			db.execSQL(PROFILES_TABLE_UPGRADE_5_6);
-			upgrade6to7(db);
-			db.setVersion(DATABASE_VERSION);
-		} else if(oldVersion == 6){
-			upgrade6to7(db);
-			db.setVersion(DATABASE_VERSION);
-		} else {
-			db.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME);
-			db.setVersion(0);
+		boolean scheduleBackup = oldVersion < newVersion;
+		try {
+			if (oldVersion == 2) {
+				db.execSQL(PROFILES_TABLE_UPGRADE_2_3);
+				oldVersion++;
+			}
+			if (oldVersion == 3) {
+				db.execSQL(PROFILES_TABLE_UPGRADE_3_4);
+				oldVersion++;
+			}
+			if (oldVersion == 4){
+				db.execSQL(PROFILES_TABLE_UPGRADE_4_5);
+				oldVersion++;
+			}
+			if (oldVersion == 5){
+				db.execSQL(PROFILES_TABLE_UPGRADE_5_6);
+				oldVersion++;
+			}
+			if(oldVersion == 6){
+				upgrade6to7(db);
+				oldVersion++;
+			}
+			if (oldVersion == 7){
+				upgrade7to8(db);
+				oldVersion++;
+			}
+			if (oldVersion != 8){
+				emergencyRecovery(db);
+			}
+		} catch (SQLiteException e) {
+			Log.e(LOG_TAG, "onUpgrade: SQLiteException, recreating db. ", e);
+			Log.e(LOG_TAG, "(oldVersion was " + oldVersion + ")");
+			emergencyRecovery(db);
+			return; // this was lossy
 		}
-		if(oldVersion < newVersion)
+		if(scheduleBackup)
 			DreamDroid.scheduleBackup(mContext);
+	}
+	
+	private void emergencyRecovery(SQLiteDatabase db){
+		db.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME + ";");
+		db.execSQL(PROFILES_TABLE_CREATE);
 	}
 	
 	private ContentValues p2cv(Profile p){
@@ -154,6 +179,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		values.put(KEY_USER, p.getUser());
 		values.put(KEY_PASS, p.getPass());
 		values.put(KEY_SSL, p.isSsl());
+		values.put(KEY_FILE_LOGIN, p.isFileLogin());
+		values.put(KEY_FILE_SSL, p.isFileSsl());
 		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
 		values.put(KEY_DEFAULT_REF, p.getDefaultRef());
 		values.put(KEY_DEFAULT_REF_NAME, p.getDefaultRefName());
@@ -211,7 +238,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public ArrayList<Profile> getProfiles() {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
+				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
 		SQLiteDatabase db = getReadableDatabase();
 
 		ArrayList<Profile> list = new ArrayList<Profile>();
@@ -234,7 +261,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public Profile getProfile(int id) {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
+				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor c = db.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null, null, null, KEY_PROFILE);
 

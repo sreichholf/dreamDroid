@@ -68,79 +68,6 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/simpleHeaderBackground"
-            android:orientation="vertical"
-            android:paddingRight="5dp" >
-
-            <TextView
-                style="@style/SimpleHeader"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/stream" />
-
-            <EditText
-                android:id="@+id/EditTextStreamHost"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:ems="10"
-                android:hint="@string/stream_host_long"
-                android:singleLine="true" />
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:orientation="horizontal" >
-
-                <TextView
-                    style="@style/SimpleHeader"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="140dp"
-                    android:text="@string/port_stream_live" />
-
-                <EditText
-                    android:id="@+id/EditTextStreamPort"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="-140dp"
-                    android:gravity="right|center_vertical"
-                    android:hint="@string/port_stream_live"
-                    android:inputType="number"
-                    android:maxLength="5"
-                    android:singleLine="true" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:orientation="horizontal" >
-
-                <TextView
-                    style="@style/SimpleHeader"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="140dp"
-                    android:text="@string/port_stream_file" />
-
-                <EditText
-                    android:id="@+id/EditTextFilePort"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="-140dp"
-                    android:gravity="right|center_vertical"
-                    android:hint="@string/port_stream_file"
-                    android:inputType="number"
-                    android:maxLength="5"
-                    android:singleLine="true" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
             android:orientation="horizontal" >
 
             <TextView
@@ -211,6 +138,103 @@
                 android:hint="@string/pass_long"
                 android:inputType="textPassword"
                 android:singleLine="true" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/simpleHeaderBackground"
+            android:orientation="vertical"
+            android:paddingRight="5dp" >
+
+            <TextView
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/stream" />
+
+            <EditText
+                android:id="@+id/EditTextStreamHost"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:ems="10"
+                android:hint="@string/stream_host_long"
+                android:singleLine="true" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:orientation="horizontal" >
+
+                <TextView
+                    style="@style/SimpleHeader"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="160dp"
+                    android:text="@string/port_stream_live" />
+
+                <EditText
+                    android:id="@+id/EditTextStreamPort"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="-160dp"
+                    android:ems="10"
+                    android:gravity="right|center_vertical"
+                    android:hint="@string/port_stream_live"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:singleLine="true" >
+
+                    <requestFocus />
+                </EditText>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:orientation="horizontal" >
+
+                <TextView
+                    style="@style/SimpleHeader"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="160dp"
+                    android:text="@string/port_stream_file" />
+
+                <EditText
+                    android:id="@+id/EditTextFilePort"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="-160dp"
+                    android:gravity="right|center_vertical"
+                    android:hint="@string/port_stream_file"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <CheckBox
+                    android:id="@+id/CheckBoxSslFileStream"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/ssl_movies" />
+
+                <CheckBox
+                    android:id="@+id/CheckBoxLoginFileStream"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/login_movies" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout

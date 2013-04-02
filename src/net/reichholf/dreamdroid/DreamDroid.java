@@ -148,7 +148,7 @@ public class DreamDroid extends Application {
 			boolean login = sp.getBoolean("login", false);
 			boolean ssl = sp.getBoolean("ssl", false);
 
-			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false);
+			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false, false);
 			dbh.addProfile(p);
 			SharedPreferences.Editor editor = sp.edit();
 			editor.remove("currentProfile");
@@ -159,7 +159,7 @@ public class DreamDroid extends Application {
 		if (!setCurrentProfile(context, profileId)) {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
-			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false);
+			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false, false, false);
 		}
 	}
 

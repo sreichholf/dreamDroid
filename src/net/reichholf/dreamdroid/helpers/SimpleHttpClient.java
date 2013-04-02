@@ -8,11 +8,13 @@ package net.reichholf.dreamdroid.helpers;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -45,6 +47,7 @@ public class SimpleHttpClient {
 	private Profile mProfile;
 
 	private String mPrefix;
+	private String mFilePrefix;
 	private String mHostname;
 	private String mStreamHostname;
 	private String mPort;
@@ -56,6 +59,8 @@ public class SimpleHttpClient {
 
 	private boolean mLogin;
 	private boolean mSsl;
+	private boolean mFileLogin;
+	private boolean mFileSsl;
 	private boolean mError;
 	private boolean mIsLoopProtected;
 
@@ -124,13 +129,32 @@ public class SimpleHttpClient {
 	}
 
 	/**
+	 * @param ref
+	 * @param title
+	 * @return
+	 */
+	public String buildServiceStreamUrl(String ref, String title) {
+		try {
+			ref = URLEncoder.encode(ref, HTTP.UTF_8).replace("+", "%20");
+		} catch (UnsupportedEncodingException e) {
+		}
+		String uriString = "http://" + DreamDroid.getCurrentProfile().getStreamHost().trim() + ":"
+				+ DreamDroid.getCurrentProfile().getStreamPortString() + "/" + ref;
+
+		return uriString;
+	}
+
+	/**
 	 * @param uri
 	 * @param parameters
 	 * @return
 	 */
 	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
-		return "http://" + mStreamHostname + ":" + mFilePort + uri + parms;
+		String fileAuthString = "";
+		if(mFileLogin)
+			fileAuthString = mUser + ":" + mPass +"@";
+		return mFilePrefix + fileAuthString + mStreamHostname + ":" + mFilePort + uri + parms;
 	}
 
 	public boolean fetchPageContent(String uri) {
@@ -248,6 +272,8 @@ public class SimpleHttpClient {
 		mFilePort = p.getFilePortString();
 		mLogin = p.isLogin();
 		mSsl = p.isSsl();
+		mFileLogin = p.isFileLogin();
+		mFileSsl = p.isFileSsl();
 
 		if (mSsl) {
 			mPrefix = "https://";
@@ -260,6 +286,12 @@ public class SimpleHttpClient {
 			mPass = p.getPass();
 			setCredentials(mUser, mPass);
 		}
+
+		if (mFileSsl) {
+			mFilePrefix = "https://";
+		} else {
+			mFilePrefix = "http://";
+		}
 	}
 
 	/**
@@ -269,8 +301,8 @@ public class SimpleHttpClient {
 	public static SimpleHttpClient getInstance() {
 		return new SimpleHttpClient();
 	}
-	
-	public static SimpleHttpClient getInstance(Profile p){
+
+	public static SimpleHttpClient getInstance(Profile p) {
 		return new SimpleHttpClient(p);
 	}
 }
