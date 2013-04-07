@@ -24,32 +24,38 @@ import android.widget.TimePicker;
  * @author sre
  * 
  */
-public class TimePickerDialog extends ActionDialog {
+public class DateTimePickerDialog extends ActionDialog {
 	public static String ARG_REQUEST_CODE = "requestCode";
 	public static String ARG_TIMESTAMP = "timestamp";
+	public static String ARG_TITLE = "title";
 
 	private int mAction;
 	private String mTimestamp;
+	private String mTitle;
 
-	public TimePickerDialog() {
+	public DateTimePickerDialog() {
 	}
 
-	public static TimePickerDialog newInstance() {
-		return new TimePickerDialog();
+	public static DateTimePickerDialog newInstance() {
+		return new DateTimePickerDialog();
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		mAction = getArguments().getInt(ARG_REQUEST_CODE);
 		mTimestamp = getArguments().getString(ARG_TIMESTAMP);
-
+		mTitle = getArguments().getString(ARG_TITLE);
+		if(mTitle == null)
+			getString(R.string.set_time_begin);
+		
+		
 		final Dialog dialog;
 		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 		Calendar cal = getCalendarFromTimestamp(mTimestamp);
 
 		dialog = new Dialog(getActivity());
 		dialog.setContentView(R.layout.date_time_picker);
-		dialog.setTitle(R.string.set_time_begin);
+		dialog.setTitle(mTitle);
 
 		if (currentapiVersion >= 11) {
 			DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);

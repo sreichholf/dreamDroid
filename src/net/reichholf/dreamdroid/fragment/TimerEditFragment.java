@@ -19,7 +19,7 @@ import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.TimePickerDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.DateTimePickerDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -367,10 +367,11 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 		case Statics.ITEM_PICK_BEGIN:
 			args = new Bundle();
-			args.putInt(TimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_BEGIN);
-			args.putString(TimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_BEGIN));
+			args.putInt(DateTimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_BEGIN);
+			args.putString(DateTimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_BEGIN));
+			args.putString(DateTimePickerDialog.ARG_TITLE, getString(R.string.set_time_begin));
 
-			TimePickerDialog beginPicker = TimePickerDialog.newInstance();
+			DateTimePickerDialog beginPicker = DateTimePickerDialog.newInstance();
 			beginPicker.setArguments(args);
 			getMultiPaneHandler().showDialogFragment(beginPicker, "dialog_pick_start_time");
 			consume = true;
@@ -378,10 +379,11 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 		case Statics.ITEM_PICK_END:
 			args = new Bundle();
-			args.putInt(TimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_END);
-			args.putString(TimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_END));
+			args.putInt(DateTimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_END);
+			args.putString(DateTimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_END));
+			args.putString(DateTimePickerDialog.ARG_TITLE, getString(R.string.set_time_end));
 
-			TimePickerDialog endPicker = TimePickerDialog.newInstance();
+			DateTimePickerDialog endPicker = DateTimePickerDialog.newInstance();
 			endPicker.setArguments(args);
 			getMultiPaneHandler().showDialogFragment(endPicker, "dialog_pick_end_time");
 			consume = true;
