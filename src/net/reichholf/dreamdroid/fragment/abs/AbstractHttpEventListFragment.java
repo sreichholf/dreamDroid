@@ -7,17 +7,14 @@
 package net.reichholf.dreamdroid.fragment.abs;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import android.app.ProgressDialog;
-import android.app.SearchManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -76,19 +73,6 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 
-	/**
-	 * @param event
-	 */
-	protected void findSimilarEvents(ExtendedHashMap event) {
-		// TODO fix findSimilarEvents
-		EpgSearchFragment f = new EpgSearchFragment();
-		Bundle args = new Bundle();
-		args.putString(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
-
-		f.setArguments(args);
-		getMultiPaneHandler().showDetails(f);
-	}
-
 	@Override
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		if (mProgress != null) {
@@ -115,7 +99,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 			setTimerByEventData(mCurrentItem);
 			break;
 		case Statics.ACTION_FIND_SIMILAR:
-			findSimilarEvents(mCurrentItem);
+			mHttpHelper.findSimilarEvents(mCurrentItem);
 			break;
 		case Statics.ACTION_IMDB:
 			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);

@@ -255,7 +255,7 @@ public class DreamDroidHttpFragmentHelper {
 				boolean muted = Python.TRUE.equals(volume.getString(Volume.KEY_MUTED));
 				if (muted) {
 					text = mFragment.getString(R.string.current_volume);
-					if(text == null)
+					if (text == null)
 						text = mFragment.getString(R.string.muted);
 				} else {
 					text = mFragment.getString(R.string.current_volume, current);
@@ -312,7 +312,7 @@ public class DreamDroidHttpFragmentHelper {
 		f.setArguments(args);
 
 		MultiPaneHandler m = (MultiPaneHandler) getSherlockActivity();
-		m.showDetails(f);
+		m.showDetails(f, true);
 	}
 
 	@SuppressWarnings("unchecked")
