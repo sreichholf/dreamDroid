@@ -28,6 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_HOST = "host";
 	public static final String KEY_STREAM_HOST = "streamhost";
 	public static final String KEY_STREAM_PORT = "streamport";
+	public static final String KEY_STREAM_LOGIN = "streamlogin";
 	public static final String KEY_FILE_PORT = "fileport";
 	public static final String KEY_PORT = "port";
 	public static final String KEY_LOGIN = "login";
@@ -43,7 +44,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_DEFAULT_REF_2_NAME = "default_ref_2_name";
 
 	public static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 8;
+	private static final int DATABASE_VERSION = 9;
 	private static final String PROFILES_TABLE_NAME = "profiles";
 
 	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " + 
@@ -63,9 +64,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				KEY_DEFAULT_REF + " TEXT, " + 
 				KEY_DEFAULT_REF_NAME + " TEXT, " +
 				KEY_DEFAULT_REF_2 + " TEXT, " +
-				KEY_DEFAULT_REF_2_NAME + " TEXT" +
-				KEY_FILE_LOGIN + " BOOLEAN," +
-				KEY_FILE_SSL + " BOOLEAN);";
+				KEY_DEFAULT_REF_2_NAME + " TEXT, " +
+				KEY_FILE_LOGIN + " BOOLEAN, " +
+				KEY_FILE_SSL + " BOOLEAN, " +
+				KEY_STREAM_LOGIN + " BOOLEAN);";
 
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_STREAM_HOST + " TEXT;";
@@ -86,6 +88,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String PROFILES_TABLE_UPGRADE_7_8_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_LOGIN + " BOOLEAN;";
 	private static final String PROFILES_TABLE_UPGRADE_7_8_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_SSL + " BOOLEAN;";
+	
+	private static final String PROFILES_TABLE_UPGRADE_8_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_STREAM_LOGIN + " BOOLEAN;";
 	private Context mContext;
 	/**
 	 * @param context
@@ -149,9 +153,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				upgrade7to8(db);
 				oldVersion++;
 			}
+			if (oldVersion == 8){
+				db.execSQL(PROFILES_TABLE_UPGRADE_8_9);
+			}
 			if (oldVersion != 8){
 				emergencyRecovery(db);
 			}
+			
+			
 		} catch (SQLiteException e) {
 			Log.e(LOG_TAG, "onUpgrade: SQLiteException, recreating db. ", e);
 			Log.e(LOG_TAG, "(oldVersion was " + oldVersion + ")");
@@ -179,6 +188,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		values.put(KEY_USER, p.getUser());
 		values.put(KEY_PASS, p.getPass());
 		values.put(KEY_SSL, p.isSsl());
+		values.put(KEY_STREAM_LOGIN, p.isStreamLogin());
 		values.put(KEY_FILE_LOGIN, p.isFileLogin());
 		values.put(KEY_FILE_SSL, p.isFileSsl());
 		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
@@ -238,7 +248,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public ArrayList<Profile> getProfiles() {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
+				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_STREAM_LOGIN, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
 		SQLiteDatabase db = getReadableDatabase();
 
 		ArrayList<Profile> list = new ArrayList<Profile>();
@@ -261,7 +271,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public Profile getProfile(int id) {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
+				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_STREAM_LOGIN, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor c = db.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null, null, null, KEY_PROFILE);
 

@@ -51,6 +51,7 @@ public class SimpleHttpClient {
 	private String mHostname;
 	private String mStreamHostname;
 	private String mPort;
+	private String mStreamPort;
 	private String mFilePort;
 	private String mUser;
 	private String mPass;
@@ -59,6 +60,7 @@ public class SimpleHttpClient {
 
 	private boolean mLogin;
 	private boolean mSsl;
+	private boolean mStreamLogin;
 	private boolean mFileLogin;
 	private boolean mFileSsl;
 	private boolean mError;
@@ -138,10 +140,12 @@ public class SimpleHttpClient {
 			ref = URLEncoder.encode(ref, HTTP.UTF_8).replace("+", "%20");
 		} catch (UnsupportedEncodingException e) {
 		}
-		String uriString = "http://" + DreamDroid.getCurrentProfile().getStreamHost().trim() + ":"
-				+ DreamDroid.getCurrentProfile().getStreamPortString() + "/" + ref;
+		String streamLoginString = "";
+		if (mStreamLogin)
+			streamLoginString = mUser + ":" + mPass + "@";
 
-		return uriString;
+		String url = "http://" + streamLoginString + mStreamHostname + ":" + mStreamPort + "/" + ref;
+		return url;
 	}
 
 	/**
@@ -152,9 +156,11 @@ public class SimpleHttpClient {
 	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
 		String fileAuthString = "";
-		if(mFileLogin)
-			fileAuthString = mUser + ":" + mPass +"@";
-		return mFilePrefix + fileAuthString + mStreamHostname + ":" + mFilePort + uri + parms;
+		if (mFileLogin)
+			fileAuthString = mUser + ":" + mPass + "@";
+
+		String url = mFilePrefix + fileAuthString + mStreamHostname + ":" + mFilePort + uri + parms;
+		return url;
 	}
 
 	public boolean fetchPageContent(String uri) {
@@ -269,9 +275,11 @@ public class SimpleHttpClient {
 		mHostname = p.getHost().trim();
 		mStreamHostname = p.getStreamHost().trim();
 		mPort = p.getPortString();
+		mStreamPort = p.getStreamPortString();
 		mFilePort = p.getFilePortString();
 		mLogin = p.isLogin();
 		mSsl = p.isSsl();
+		mStreamLogin = p.isStreamLogin();
 		mFileLogin = p.isFileLogin();
 		mFileSsl = p.isFileSsl();
 

@@ -239,5 +239,6 @@
     <string name="confirm_app_close_long">Ask for confirmation before the app is being closed when pressing &quot;back&quot;</string>
     <string name="login_movies">Login (Movies)</string>
     <string name="ssl_movies">https (Movies)</string>
+    <string name="login_live">Login (live)</string>
 
 </resources>
