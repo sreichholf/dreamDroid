@@ -35,6 +35,31 @@ public class SimpleProgressDialog extends ActionDialog {
 		mMessage = args.getString(KEY_MESSAGE);
 	}
 
+	public void setMessage(String message) {
+		getProgressDialog().setMessage(message);
+	}
+
+	public void setIndeterminate(boolean indeterminate) {
+		getProgressDialog().setIndeterminate(indeterminate);
+	}
+
+	public void setMax(int max) {
+		getProgressDialog().setMax(max);
+	}
+
+	public void setProgress(int value) {
+		getProgressDialog().setProgress(value);
+
+	}
+
+	public void setProgressSystle(int style) {
+		getProgressDialog().setProgressStyle(style);
+	}
+
+	private ProgressDialog getProgressDialog() {
+		return (ProgressDialog) getDialog();
+	}
+
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);

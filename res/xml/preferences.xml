@@ -2,26 +2,51 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:orderingFromXml="true" >
 
-    <CheckBoxPreference
-        android:key="volume_control"
-        android:summary="@string/enable_volume_control_long"
-        android:title="@string/enable_volume_control" />
-    <CheckBoxPreference
-        android:key="instant_zap"
-        android:summary="@string/enable_instant_zap_long"
-        android:title="@string/enable_instant_zap" />
-    <CheckBoxPreference
-        android:key="mobile_imdb"
-        android:summary="@string/mobile_imdb_long"
-        android:title="@string/mobile_imdb" />
-    <CheckBoxPreference
-        android:key="light_theme"
-        android:summary="@string/use_light_theme_long"
-        android:title="@string/use_light_theme" />
-    <CheckBoxPreference
-        android:key="confirm_app_close"
-        android:summary="@string/confirm_app_close_long"
-        android:title="@string/confirm_app_close"
-        android:defaultValue="true" />
+    <PreferenceCategory
+        android:key="usability"
+        android:title="@string/usability" >
+        <CheckBoxPreference
+            android:key="volume_control"
+            android:summary="@string/enable_volume_control_long"
+            android:title="@string/enable_volume_control" />
+        <CheckBoxPreference
+            android:key="instant_zap"
+            android:summary="@string/enable_instant_zap_long"
+            android:title="@string/enable_instant_zap" />
+        <CheckBoxPreference
+            android:key="mobile_imdb"
+            android:summary="@string/mobile_imdb_long"
+            android:title="@string/mobile_imdb" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="confirm_app_close"
+            android:summary="@string/confirm_app_close_long"
+            android:title="@string/confirm_app_close" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="appearance"
+        android:title="@string/appearance" >
+        <CheckBoxPreference
+            android:key="light_theme"
+            android:summary="@string/use_light_theme_long"
+            android:title="@string/use_light_theme" />
+        <CheckBoxPreference
+            android:key="picons"
+            android:summary="@string/use_picons_long"
+            android:title="@string/use_picons" />
+
+        <Preference
+            android:dependency="picons"
+            android:key="sync_picons"
+            android:summary="@string/sync_picons_long"
+            android:title="@string/sync_picons" />
+
+        <EditTextPreference
+            android:dependency="picons"
+            android:key="sync_picons_path"
+            android:summary="@string/sync_picons_path_long"
+            android:title="@string/sync_picons_path"
+            android:defaultValue="/usr/share/enigma2/picon" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

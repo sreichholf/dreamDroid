@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -15,6 +16,7 @@ import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.ImageLoader;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -28,12 +30,16 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -48,6 +54,8 @@ import com.actionbarsherlock.view.MenuItem;
  * 
  */
 public class CurrentServiceFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener {
+	private static final String LOG_TAG = "CurrentServiceFragment";
+
 	private ExtendedHashMap mCurrent;
 
 	private TextView mServiceName;
@@ -70,6 +78,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	private ExtendedHashMap mNext;
 	private ExtendedHashMap mCurrentItem;
 	private boolean mCurrentServiceReady;
+	private ImageLoader mImageLoader;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -87,6 +96,9 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 					.getParcelable("currentItem");
 			mCurrentItem = new ExtendedHashMap(currentItem);
 		}
+
+		mImageLoader = new ImageLoader();
+		mImageLoader.setMode(ImageLoader.Mode.NO_ASYNC_TASK);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -232,6 +244,26 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			mNextTitle.setText(mNext.getString(Event.KEY_EVENT_TITLE));
 			mNextDesc.setText(mNext.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED, ""));
 			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
+
+			ImageView piconView = (ImageView) getView().findViewById(R.id.picon);
+			if (piconView != null) {
+				if (PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("picons", false)) {
+					String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+					String fileName = mService.getString(Event.KEY_SERVICE_REFERENCE).replace(":", "_");
+					if (fileName.endsWith("_"))
+						fileName = fileName.substring(0, fileName.length() - 1);
+
+					fileName = String.format("%s%sdreamDroid%spicons%s%s.png", root, File.separator, File.separator,
+							File.separator, fileName);
+					Log.v(LOG_TAG, fileName);
+					if (piconView.getVisibility() != View.VISIBLE)
+						piconView.setVisibility(View.VISIBLE);
+
+					mImageLoader.load(fileName, piconView);
+				} else {
+					piconView.setVisibility(View.GONE);
+				}
+			}
 		} else {
 			showToast(getText(R.string.not_available));
 		}

@@ -237,4 +237,17 @@
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
     <string name="login_movies">Login (Filme)</string>
     <string name="ssl_movies">https (Filme)</string>
+    <string name="appearance">Erscheinungsbild</string>
+    <string name="usability">Nutzererlebnis</string>
+    <string name="use_picons">Picons nutzen</string>
+    <string name="use_picons_long">Anzeige von picons aktivieren.\nBenötigt picons in /{Speicher}/dreamDroid/picons</string>
+    <string name="sync_picons">Picons synchronisieren</string>
+    <string name="sync_picons_long">Picons über FTP auf Basis des aktuell aktiven Profils nach /{Speicher}/dreamDroid/picons synchronisieren</string>
+    <string name="sync_picons_path">Picons - Entferntes Verzeichnis</string>
+    <string name="sync_picons_path_long">Pfad in dem sich die Picons auf der Dreambox befinden</string>
+    <string name="connecting">Verbinde</string>
+    <string name="connected">Verbunden</string>
+    <string name="logged_in">Anmelden</string>
+    <string name="getting_list_of_files">Hole Dateiliste</string>
+    <string name="picon_sync_finished">%s Picons wurden erfolgreich heruntergeldaen!</string>
 </resources>

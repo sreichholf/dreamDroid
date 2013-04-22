@@ -56,6 +56,8 @@ import com.actionbarsherlock.view.MenuInflater;
 public class NavigationFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
+	private static final String LOG_TAG = "NavigationFragment";
+
 	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (2=yes if
 	// no SlidingMenu else no, 1=yes,
 	// 0=no) ]

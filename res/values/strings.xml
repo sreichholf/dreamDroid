@@ -240,5 +240,18 @@
     <string name="login_movies">Login (Movies)</string>
     <string name="ssl_movies">https (Movies)</string>
     <string name="login_live">Login (live)</string>
+    <string name="appearance">Appearance</string>
+    <string name="usability">Usability</string>
+    <string name="use_picons">Use Picons</string>
+    <string name="use_picons_long">Enable the use of picons in certain areas.\nRequires picons in /{ExternalStorageDir}/dreamDroid/picons</string>
+    <string name="sync_picons">Sync Picons</string>
+    <string name="sync_picons_long">Sync Picons to /{ExternalStorageDir}/dreamDroid/picons using the currently configured connection profile</string>
+    <string name="sync_picons_path">Picons - remote path</string>
+    <string name="sync_picons_path_long">Path where the Picons on your dreambox reside</string>
+    <string name="connecting">Connecting</string>
+    <string name="connected">Connected</string>
+    <string name="logged_in">Logged in</string>
+    <string name="getting_list_of_files">Getting list of files</string>
+    <string name="picon_sync_finished">Successfully downloaded %s picons</string>
 
 </resources>
