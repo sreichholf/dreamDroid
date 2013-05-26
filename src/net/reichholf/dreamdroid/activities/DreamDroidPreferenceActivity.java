@@ -1,16 +1,17 @@
-/* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+/*
+ * Copyright © 2013. Stephan Reichholf
+ *
+ * Unless stated otherwise in a files head all java and xml-code of this Project is:
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
+ *
+ * All grahpics, except the dreamdroid icon, can be used for any other non-commercial purposes.
+ * The dreamdroid icon may not be used in any other projects than dreamdroid itself.
  */
 
 package net.reichholf.dreamdroid.activities;
 
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.helpers.PiconDownloadTask;
-import net.reichholf.dreamdroid.helpers.PiconDownloadTask.DownloadProgress;
-import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -19,9 +20,16 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
+
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.helpers.PiconDownloadTask;
+import net.reichholf.dreamdroid.helpers.PiconDownloadTask.DownloadProgress;
+import net.reichholf.dreamdroid.helpers.Statics;
 
 /**
  * @author sreichholf
@@ -122,6 +130,7 @@ public class DreamDroidPreferenceActivity extends SherlockPreferenceActivity imp
 			break;
 		case DownloadProgress.EVENT_ID_FINISHED:
 			mProgressDialog.setCancelable(true);
+            mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 			if (!progress.error) {
 				message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
 			} else {
@@ -152,6 +161,7 @@ public class DreamDroidPreferenceActivity extends SherlockPreferenceActivity imp
 	public void checkProgress() {
 		if (mProgressDialog == null || !mProgressDialog.isShowing()) {
 			mProgressDialog = new ProgressDialog(this);
+            mProgressDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 			mProgressDialog.setIndeterminate(false);
 			mProgressDialog.setCancelable(false);
 			mProgressDialog.setMax(1);

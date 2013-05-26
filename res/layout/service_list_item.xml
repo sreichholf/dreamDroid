@@ -51,16 +51,16 @@
 
         <TextView
             android:id="@+id/event_now_start"
-            android:layout_width="40dip"
+            android:layout_width="45dip"
             android:layout_height="wrap_content"
-            android:layout_marginRight="-40dip"
+            android:layout_marginRight="-45dip"
             android:textAppearance="@android:style/TextAppearance.Small" />
 
         <TextView
             android:id="@+id/event_now_title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="40dip"
+            android:layout_marginLeft="45dip"
             android:layout_marginRight="55dip"
             android:ellipsize="end"
             android:maxLines="2"
