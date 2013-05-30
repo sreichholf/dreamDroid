@@ -21,5 +21,6 @@
     <dimen name="shadow_width">10dp</dimen>
     <dimen name="navListPreferredItemHeight">48dip</dimen>
     <dimen name="dialog_button_bar_height">48dip</dimen>
+    <dimen name="abs__alert_dialog_title_height">64dip</dimen>
 
 </resources>

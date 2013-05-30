@@ -9,4 +9,6 @@
         <item>0xFFBBBBBB</item>
     </integer-array>
 
+    <color name="abs__holo_blue_light">#ff33b5e5</color>
+
 </resources>
