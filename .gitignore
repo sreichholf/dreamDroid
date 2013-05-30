@@ -1,3 +1,11 @@
 bin/
 gen/
 project.properties
+libraries/ABS/gen/
+libraries/ABS/bin/
+libraries/gaugeview-library/gen/
+libraries/gaugeview-library/bin/
+libraries/numberpicker/gen/
+libraries/numberpicker/bin/
+libraries/SlidingMenu/gen/
+libraries/SlidingMenu/bin/
