@@ -40,9 +40,12 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	private Fragment mFragment;
 	private ActivityCallbackHandler mCallBackHandler;
 
+	protected boolean mThemeSet = false;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		DreamDroid.setTheme(this);
+		if (!mThemeSet)
+			DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
@@ -237,10 +240,5 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
 		if (mFragment != null)
 			((MultiChoiceDialog.MultiChoiceDialogListener) mFragment).onMultiChoiceDialogFinish(dialogTag, result);
-	}
-
-	@Override
-	public boolean isSlidingMenu() {
-		return false;
 	}
 }

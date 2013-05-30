@@ -59,7 +59,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	private static final String LOG_TAG = "NavigationFragment";
 
 	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (2=yes if
-	// no SlidingMenu else no, 1=yes,
+	// no tablet else no, 1=yes,
 	// 0=no) ]
 	public static final int[][] MENU_ITEMS = {
 			{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_list, 1, 0 },
@@ -277,7 +277,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		// only mark the entry if it isn't a "dialog-only-item"
 		// TODO find a reliable way to mark the current item...
 		if (mHighlightCurrent) {
-			if (mCurrent[4] == 0 || (mCurrent[4] == 2 && !getMultiPaneHandler().isSlidingMenu())) {
+			if (mCurrent[4] == 0 || (mCurrent[4] == 2 && isTablet())) {
 				l.setItemChecked(position, true);
 				mCurrentListItem = position;
 			} else {
@@ -341,13 +341,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			break;
 
 		case Statics.ITEM_REMOTE:
-			if (getMultiPaneHandler().isSlidingMenu()) {
+			if (isTablet()) {
+				clearBackStack();
+				getMainActivity().showDetails(VirtualRemoteFragment.class);
+			} else {
 				intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
 				intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
 				startActivity(intent);
-			} else {
-				clearBackStack();
-				getMainActivity().showDetails(VirtualRemoteFragment.class);
 			}
 			break;
 
@@ -507,7 +507,12 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			showToast(getString(R.string.error));
 		}
 	}
-
+	
+	
+	private boolean isTablet(){
+		return getResources().getBoolean(R.bool.is_tablet);
+	}
+	
 	/**
 	 * @param textviewprofile
 	 * @return

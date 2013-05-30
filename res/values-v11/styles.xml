@@ -5,4 +5,8 @@
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
+    <style name="Theme.Sherlock.Dialog" parent="android:Theme.Holo.Dialog"></style>
+
+    <style name="Theme.Sherlock.Light.Dialog" parent="android:Theme.Holo.Light.Dialog"></style>
+
 </resources>
