@@ -52,7 +52,7 @@ public class GaugeView extends View {
 	public static final boolean SHOW_TEXT = false;
 
 	public static final float OUTER_SHADOW_WIDTH = 0.03f;
-	public static final float OUTER_BORDER_WIDTFH = 0.04f;
+	public static final float OUTER_BORDER_WIDTH = 0.04f;
 	public static final float OUTER_RIM_WIDTH = 0.05f;
 	public static final float INNER_RIM_WIDTH = 0.06f;
 	public static final float INNER_RIM_BORDER_WIDTH = 0.005f;
