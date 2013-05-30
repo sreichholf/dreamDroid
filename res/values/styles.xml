@@ -19,6 +19,9 @@
         <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>
     </style>
 
+    <style name="NavigationDrawer">
+        <item name="android:background">?android:windowBackground</item>
+    </style>
     <style name="MediumHeader" parent="SimpleHeader">
         <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>
         <item name="android:textStyle">bold</item>
