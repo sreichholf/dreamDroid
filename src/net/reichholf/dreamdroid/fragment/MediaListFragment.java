@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.MediaListAdapter;
