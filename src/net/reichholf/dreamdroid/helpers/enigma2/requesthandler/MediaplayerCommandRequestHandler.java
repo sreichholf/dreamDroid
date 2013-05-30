@@ -19,7 +19,7 @@ import org.apache.http.message.BasicNameValuePair;
  * 
  */
 public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler {
-	public static final String PARAM_CMD = "cmd";
+	public static final String PARAM_CMD = "command";
 	public static final String PARAM_FILE = "file";
 	public static final String PARAM_NAME = "name";
 	public static final String PARAM_PLAYLIST_PATH = "path";
@@ -46,6 +46,10 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 */
 	public MediaplayerCommandRequestHandler() {
 		super(null);
+	}
+	
+	public MediaplayerCommandRequestHandler(String uri) {
+		super(uri);
 	}
 
 	/**
