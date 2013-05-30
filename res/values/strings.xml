@@ -253,5 +253,6 @@
     <string name="logged_in">Logged in</string>
     <string name="getting_list_of_files">Getting list of files</string>
     <string name="picon_sync_finished">Successfully downloaded %s picons</string>
-
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 </resources>

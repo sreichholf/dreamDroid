@@ -28,28 +28,33 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.slidingmenu.lib.SlidingMenu;
-import com.slidingmenu.lib.app.SlidingFragmentActivity;
 
 /**
  * @author sre
  * 
  */
-public class FragmentMainActivity extends SlidingFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
+public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
 		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener,
 		MultiChoiceDialog.MultiChoiceDialogListener {
@@ -69,6 +74,9 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	private NavigationFragment mNavigationFragment;
 	private Fragment mDetailFragment;
+
+	private ActionBarDrawerToggle mDrawerToggle;
+	private DrawerLayout mDrawerLayout;
 
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
@@ -147,6 +155,14 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 	}
 
 	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		// Sync the toggle state after onRestoreInstanceState has occurred.
+		if (mDrawerToggle != null)
+			mDrawerToggle.syncState();
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
 		onProfileChanged(DreamDroid.getCurrentProfile());
@@ -159,36 +175,43 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 		super.onPause();
 	}
 
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		// Pass any configuration change to the drawer toggle
+		if (mDrawerToggle != null)
+			mDrawerToggle.onConfigurationChanged(newConfig);
+	}
+
 	private Fragment getCurrentDetailFragment() {
 		return mDetailFragment;
 	}
 
 	private void initViews() {
 		setContentView(R.layout.dualpane);
-		mSlider = findViewById(R.id.navigation_view) == null;
+		mSlider = findViewById(R.id.drawer_layout) != null;
 		if (mSlider) {
-			setBehindContentView(R.layout.menu_frame);
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			getSupportActionBar().setHomeButtonEnabled(true);
 
-			SlidingMenu sm = getSlidingMenu();
-			sm.setSlidingEnabled(true);
-			setSlidingActionBarEnabled(false);
-			sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
-			sm.setBehindWidthRes(R.dimen.slidingmenu_width);
-			sm.setShadowWidthRes(R.dimen.shadow_width);
-			sm.setShadowDrawable(R.drawable.shadow);
-			sm.setBehindScrollScale(0.25f);
-			sm.setFadeDegree(0.25f);
+			mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+			mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
+			mDrawerLayout, /* DrawerLayout object */
+			R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
+			R.string.drawer_open, /* "open drawer" description for accessibility */
+			R.string.drawer_close /* "close drawer" description for accessibility */
+			) {
+				public void onDrawerClosed(View view) {
+					supportInvalidateOptionsMenu();
+				}
+
+				public void onDrawerOpened(View drawerView) {
+					supportInvalidateOptionsMenu();
+				}
+			};
+			mDrawerLayout.setDrawerListener(mDrawerToggle);
 		} else {
-			// add a dummy view
-			View v = new View(this);
-			setBehindContentView(v);
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-
-			showContent();
-			SlidingMenu sm = getSlidingMenu();
-			sm.setSlidingEnabled(false);
-			sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_NONE);
 		}
 
 		if (mNavigationFragment == null || !mNavigationFragment.getClass().equals(NavigationFragment.class)) {
@@ -244,8 +267,9 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	@Override
 	public void onBackPressed() {
-		boolean shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREF_KEY_CONFIRM_APP_CLOSE, true);
-		
+		boolean shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+				DreamDroid.PREF_KEY_CONFIRM_APP_CLOSE, true);
+
 		if (shouldConfirm && getSupportFragmentManager().getBackStackEntryCount() == 0) {
 			showDialogFragment(PositiveNegativeDialog.newInstance(getString(R.string.leave_confirm),
 					R.string.leave_confirm_long, android.R.string.yes, Statics.ACTION_LEAVE_CONFIRMED,
@@ -257,12 +281,289 @@ public class FragmentMainActivity extends SlidingFragmentActivity implements Mul
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if (mSlider && mDrawerToggle.onOptionsItemSelected(getMenuItem(item))) {
+			return true;
+		}
+
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			if (getSlidingMenu().isSlidingEnabled())
+			if (isNavigationDrawerVisible())
 				toggle();
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private android.view.MenuItem getMenuItem(final MenuItem item) {
+		return new android.view.MenuItem() {
+			@Override
+			public int getItemId() {
+				return item.getItemId();
+			}
+
+			public boolean isEnabled() {
+				return true;
+			}
+
+			@Override
+			public boolean collapseActionView() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean expandActionView() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public android.view.ActionProvider getActionProvider() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public View getActionView() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public char getAlphabeticShortcut() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public int getGroupId() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public Drawable getIcon() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Intent getIntent() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public ContextMenuInfo getMenuInfo() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public char getNumericShortcut() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public int getOrder() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public SubMenu getSubMenu() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public CharSequence getTitle() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public CharSequence getTitleCondensed() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public boolean hasSubMenu() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isActionViewExpanded() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isCheckable() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isChecked() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public boolean isVisible() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public android.view.MenuItem setActionView(View view) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setActionView(int resId) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setAlphabeticShortcut(char alphaChar) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setCheckable(boolean checkable) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setChecked(boolean checked) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setEnabled(boolean enabled) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setIcon(Drawable icon) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setIcon(int iconRes) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setIntent(Intent intent) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setNumericShortcut(char numericChar) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setOnActionExpandListener(OnActionExpandListener listener) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setOnMenuItemClickListener(OnMenuItemClickListener menuItemClickListener) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setShortcut(char numericChar, char alphaChar) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void setShowAsAction(int actionEnum) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public android.view.MenuItem setShowAsActionFlags(int actionEnum) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setTitle(CharSequence title) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setTitle(int title) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setTitleCondensed(CharSequence title) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setVisible(boolean visible) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public android.view.MenuItem setActionProvider(android.view.ActionProvider actionProvider) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+	}
+
+	public boolean isNavigationDrawerVisible() {
+		if (mSlider) {
+			View navigationView = findViewById(R.id.navigation_view);
+			return navigationView != null && mDrawerLayout.isDrawerOpen(navigationView);
+		}
+		return false;
+	}
+
+	public void toggle() {
+		if (mSlider) {
+			View navigationView = findViewById(R.id.navigation_view);
+			if (navigationView != null) {
+				if (isNavigationDrawerVisible())
+					mDrawerLayout.closeDrawer(navigationView);
+				else
+					mDrawerLayout.openDrawer(navigationView);
+			}
+		}
+	}
+
+	public void showContent() {
+		if (mSlider) {
+			mDrawerLayout.closeDrawers();
+		}
 	}
 
 	/*
