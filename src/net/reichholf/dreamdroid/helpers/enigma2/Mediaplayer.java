@@ -6,13 +6,21 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import java.util.ArrayList;
+
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
+
 /**
  * @author sre
  *
  */
 public class Mediaplayer {
 	public static final String KEY_SERVICE_REFERENCE = "reference";
-	public static final String KEY_ROOT = "isroot";
+	public static final String KEY_ROOT = "root";
 	public static final String KEY_IS_DIRECTORY = "isdirectory";
 	
 	public static final String KEY_ARTIST = "artist";
@@ -21,4 +29,8 @@ public class Mediaplayer {
 	public static final String KEY_YEAR = "year";
 	public static final String KEY_GENRE = "genre";
 	public static final String KEY_COVERFILE = "coverfile";
+	
+	public static final String KEY_TYPE = "type";
+	public static final String KEY_PATH = "path";
+	
 }
