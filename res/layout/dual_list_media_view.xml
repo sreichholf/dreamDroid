@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+    
+	<ListView
+	    android:id="@+id/android:list"
+	    android:layout_width="wrap_content"
+	    android:layout_height="fill_parent"
+	    android:layout_alignParentLeft="true"
+	    android:layout_toLeftOf="@+id/divider"
+	    android:drawSelectorOnTop="false" />
+
+    <LinearLayout
+        android:id="@+id/listView2"
+        android:layout_width="225dp"
+        android:layout_height="fill_parent"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="10dp"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:id="@+id/cover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/no_cover_art" />
+
+        <TextView
+            android:id="@+id/label_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textStyle="bold"
+            android:text="Artist" />
+
+        <TextView
+            android:id="@+id/artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <TextView
+            android:id="@+id/label_album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Album"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textStyle="bold" />
+                
+        <TextView
+            android:id="@+id/album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+			android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <TextView
+            android:id="@+id/label_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Year"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textStyle="bold" />
+        
+        <TextView
+            android:id="@+id/year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+			android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <TextView
+            android:id="@+id/label_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Category"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textStyle="bold" />
+                
+        <TextView
+            android:id="@+id/category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+			android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <TextView
+            android:id="@+id/label_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Title"
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textStyle="bold" />
+                
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+			android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <ProgressBar
+                android:id="@+id/duration"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/play_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/slash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="/" />
+            
+            <TextView
+                android:id="@+id/complete_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+        
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="10dp"
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/listView2"
+        android:background="#999" />
+
+</RelativeLayout>
