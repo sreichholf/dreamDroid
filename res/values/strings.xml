@@ -16,6 +16,18 @@
     </string-array>
 
     <string name="timer">Timer</string>
+    
+    <string name="mediaplayer">Mediaplayer</string>
+    <string name="play">Play</string>
+    <string name="add_to_playlist">Add to Playlist</string>
+    <string name="navigation_back_media">Back</string>
+    <string name="home_media">Home</string>
+    <string name="close_media">Close Mediaplayer</string>
+    <string name="next_media">Next</string>
+    <string name="play_media">Play</string>
+    <string name="previous_media">Previous</string>
+    <string name="stop_media">Stop</string>
+    
     <string name="service">Service</string>
     <string name="afterevent">Afterevent</string>
     <string name="location">Location</string>
@@ -51,7 +63,8 @@
     <string name="port_stream_file">Port (Movies)</string>
     <string name="settings">Settings</string>
     <string name="host_long">Hostname or IP</string>
-    <string name="port_long">istening Port</string>
+    <string name="port_long">istening Port
+</string>
     <string name="close">Close</string>
     <string name="minutes_short">min.</string>
     <string name="user">User</string>
