@@ -39,9 +39,9 @@ All required libraries can be found in the "libraries" folder of this git reposi
 
 ## Required Libraries
 
-* ABS - Jake Wharton's ActionBarSherlock (4.2.0): http://actionbarsherlock.com/ 
+* ABS - Jake Wharton's ActionBarSherlock (4.3.1): http://actionbarsherlock.com/ 
 * numberpicker - Michael Novakjr's Numberpicker (cloned on 2012-09-08): https://github.com/mrn/numberpicker/
-* SlidingMenu - jfeinstein's Sliding menu (cloned on 2013-02-14, some minor fixes added): https://github.com/jfeinstein10/SlidingMenu
+* gaugeview-library - CodeAndMagic's GaugeView: https://github.com/CodeAndMagic/GaugeView 
 
 The following SDK versions have to be installed for a clean build:
 
