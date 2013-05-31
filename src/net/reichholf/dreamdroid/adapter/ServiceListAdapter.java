@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.adapter;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -16,10 +15,9 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ImageLoader;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import android.content.Context;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,10 +32,9 @@ import android.widget.TextView;
  * 
  */
 public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
+	@SuppressWarnings("unused")
 	private static String LOG_TAG = "ServiceListAdapter";
-
 	private ImageLoader mImageLoader;
-	private String mRoot;
 
 	/**
 	 * @param context
@@ -48,7 +45,6 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		super(context, textViewResourceId, services);
 		mImageLoader = new ImageLoader();
 		mImageLoader.setMode(ImageLoader.Mode.CORRECT);
-		mRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
 	}
 
 	@Override
@@ -93,23 +89,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		}
 
 		ImageView piconView = (ImageView) view.findViewById(R.id.picon);
-		if (piconView != null) {
-			if (PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("picons", false)) {
-				String fileName = service.getString(Event.KEY_SERVICE_REFERENCE).replace(":", "_");
-				if (fileName.endsWith("_"))
-					fileName = fileName.substring(0, fileName.length() - 1);
-
-				fileName = String.format("%s%sdreamDroid%spicons%s%s.png", mRoot, File.separator, File.separator,
-						File.separator, fileName);
-				Log.v(LOG_TAG, fileName);
-				if (piconView.getVisibility() != View.VISIBLE)
-					piconView.setVisibility(View.VISIBLE);
-
-				mImageLoader.load(fileName, piconView);
-			} else {
-				piconView.setVisibility(View.GONE);
-			}
-		}
+		Picon.setPiconForView(getContext(), piconView, mImageLoader, service);
 
 		if (service != null) {
 			if (!hasNow) {
