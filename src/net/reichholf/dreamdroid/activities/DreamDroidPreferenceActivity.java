@@ -130,7 +130,7 @@ public class DreamDroidPreferenceActivity extends SherlockPreferenceActivity imp
 			break;
 		case DownloadProgress.EVENT_ID_FINISHED:
 			mProgressDialog.setCancelable(true);
-            mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 			if (!progress.error) {
 				message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
 			} else {
@@ -161,7 +161,8 @@ public class DreamDroidPreferenceActivity extends SherlockPreferenceActivity imp
 	public void checkProgress() {
 		if (mProgressDialog == null || !mProgressDialog.isShowing()) {
 			mProgressDialog = new ProgressDialog(this);
-            mProgressDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			mProgressDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+					WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 			mProgressDialog.setIndeterminate(false);
 			mProgressDialog.setCancelable(false);
 			mProgressDialog.setMax(1);
