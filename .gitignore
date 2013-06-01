@@ -1,5 +1,6 @@
 bin/
 gen/
+dreamDroid.apk
 project.properties
 libraries/ABS/gen/
 libraries/ABS/bin/
