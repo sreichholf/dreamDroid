@@ -35,7 +35,10 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -63,31 +66,41 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 		setAdapter();
 		
-		reload();
-		
-		//mDetailList = (ListView) v.findViewById(R.id.listView2);
-
-		// Some may call this a Hack, but I think it a proper solution
-		// On devices with resolutions other than xlarge, there is no second
-		// ListView (@id/listView2).
-		// So we just use the only one available and the rest will work as
-		// normal with almost no additional adjustments.
-		
-		/**
-		if (mDetailList == null) {
-			mDetailList = mNavList;
-			mDetailItems = mNavItems;
+		if (isDetailViewAvailable(v)) {
+		    ImageButton playButton = (ImageButton) v.findViewById(R.id.imageButtonPlay);
+		    
+		    playButton.setOnClickListener(new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		play();
+		        }
+		    });
+		    
+		    ImageButton stopButton = (ImageButton) v.findViewById(R.id.imageButtonStop);
+		    
+		    stopButton.setOnClickListener(new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		stop();
+		        }
+		    });
+		    
+		    ImageButton previousButton = (ImageButton) v.findViewById(R.id.imageButtonPrevious);
+		    
+		    previousButton.setOnClickListener(new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		previous();
+		        }
+		    });
+		    
+		    ImageButton nextbutton = (ImageButton) v.findViewById(R.id.imageButtonNext);
+		    
+		    nextbutton.setOnClickListener(new View.OnClickListener() {
+		    	public void onClick(View v) {
+		    		next();
+		        }
+		    });
 		}
-		mDetailHeader = (TextView) v.findViewById(R.id.listView2Header);
-
-		mNavList.setFastScrollEnabled(true);
-		mDetailList.setFastScrollEnabled(true);
-
-
-		setAdapter();
 		
-		getSherlockActivity().setTitle(mCurrentTitle);
-		**/
+		reload();
 		
 		return v;
 	}	
@@ -112,63 +125,17 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
 				
 				setArgs("path", mediaPath);
-				
-				reload();
 			}
-			
-		} else {
-			reload();
-		}
+		} 
+		
 	}	
 
-/**		
-		setHasOptionsMenu(true);
-		setAdapter();
-
-		reload();
-
-		if (savedInstanceState != null) {
-			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
-		} else {
-			reload();
-		}
-
-	}
-**/
-
-/**	
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-	}
-**/
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
-		/**
-		mNavList.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-				onListItemClick((ListView) a, v, position, id);
-			}
-		});
-
-		if (mReload) {
-			loadNavRoot();
-			reloadDetail(false);
-		} else {
-			setDetailHeader(mDetailName);
-		}
-		**/
-	}	
-
-	/**
-	public void onListItemClick(ListView l, View v, int position, long id) {
-		onListItemClick(l, v, position, id, false);
 	}
-	**/
+
 	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
@@ -219,6 +186,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		ArrayList<ExtendedHashMap> list = result.getResult();
 		
 		if (list.size() == 0)
+			// TODO add to dual_media_list_view.xml
 			setEmptyText(getText(R.string.no_list_item));
 		else {
 			// get first media item
@@ -241,25 +209,8 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		
 		mAdapter.notifyDataSetChanged();
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see android.support.v4.app.Fragment#onActivityResult(int, int,
-	 * android.content.Intent)
-	 */
-	/**	
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
-			if (resultCode == Activity.RESULT_OK) {
-				if (getSherlockActivity() != null) // we're somewhere active!
-					// reload();
-					Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!");
-			}
-		}
-	}
-**/
+
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
@@ -279,7 +230,25 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 				
 			case (Statics.ITEM_MEDIA_BACK):
 				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_ROOT);
-				setArgs("path", mediaPath);
+				String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
+			
+				// media path is not a directory
+				if (isDirectory.equals("False")) {
+					mediaPath = mediaPath.substring(0, mediaPath.length() - 1);
+					int pos = mediaPath.lastIndexOf("/");
+					mediaPath = mediaPath.substring(0, pos + 1);
+					setArgs("path", mediaPath);
+				} 
+				else {
+				
+					// if root path then clear args
+					if (mediaPath.equals("None")) {
+						args.clear();
+					}
+					else {
+						setArgs("path", mediaPath);
+					}
+				}
 				
 				reload();
 				
@@ -411,10 +380,10 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	// save playlist /web/mediaplayerwrite?filename=/media/hdd/andreas/Music/A - Z/A/playlist1
 
 	/**
+	 * play media file
 	 * 
 	 * @param filePath
 	 */
-	
 	private void playFile(String filePath) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_FILE, filePath));
@@ -422,6 +391,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_PLAY), params);
 	}
 	
+	// play current media item
 	private void play() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD, MediaplayerCommandRequestHandler.CMD_PLAY));
@@ -429,6 +399,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 	}
 	
+	// stop playing media item
 	private void stop() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD, MediaplayerCommandRequestHandler.CMD_STOP));
@@ -440,6 +411,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		imageView.setImageResource(R.drawable.no_cover_art); 
 	}
 	
+	// play previous media item
 	private void previous() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD, MediaplayerCommandRequestHandler.CMD_PREVIOUS));
@@ -447,6 +419,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 	}
 	
+	// play next media item
 	private void next() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD, MediaplayerCommandRequestHandler.CMD_NEXT));
@@ -454,6 +427,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 	}
 	
+	// exit Mediaplayer
 	private void exit() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD, MediaplayerCommandRequestHandler.CMD_EXIT));
@@ -486,30 +460,64 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	}
 	
 	/**
-	private void setAdapter() {
-		ListAdapter adapter;
-		if (!mNavList.equals(mDetailList)) {
-			adapter = new SimpleAdapter(getSherlockActivity(), mNavItems, android.R.layout.simple_list_item_1,
-					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
-			mNavList.setAdapter(adapter);
+	 * Check if DetailView is available for current device
+	 */	
+	private boolean isDetailViewAvailable(View v){
+		LinearLayout detailLayout = (LinearLayout) v.findViewById(R.id.detailView);
+		
+		if (detailLayout != null) {
+			return true;
 		}
-		adapter = new MediaListAdapter(getSherlockActivity(), R.layout.media_list_item, mDetailItems);
-		mDetailList.setAdapter(adapter);
+		else {
+			return false;
+		}
 	}
-	**/	
 
+	
+	private String getCommandFromKeyState(String keyStateText) {
+		String command = "";
+		
+		if (keyStateText.contains("next")) {
+			command = "next";
+		}
+		
+		if (keyStateText.contains("play")) {
+			command = "play";
+		}
+
+		if (keyStateText.contains("previous")) {
+			command = "previous";
+		}
+
+		if (keyStateText.startsWith("Playback")) {
+			command = "play";
+		}
+		
+		return command;
+	}
+	
 	@Override
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
+		
+		// crash after new DramDroid Version
+		/**
 		if (mChoice != null) {
 			mChoice.dismiss();
 			mChoice = null;
 		}
+		**/
+		
 		super.onSimpleResult(success, result);
 
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			
-			// check if play command was executed
-			if (result.getString(SimpleResult.KEY_STATE_TEXT).startsWith("Playback") ) {
+			String command = getCommandFromKeyState(result.getString(SimpleResult.KEY_STATE_TEXT));
+			
+			// check if necessary command was executed and if detail view is used
+			//if (result.getString(SimpleResult.KEY_STATE_TEXT).startsWith("Playback") && isDetailViewAvailable()) {
+			if (command.equals("next") ||	
+				command.equals("play") ||
+				command.equals("previous")) {
 				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
 				
 				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -523,7 +531,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 				// add media info to detail view
 				new GetCurrentMediaInfoTask().execute("");
 			}
-
 			
 			reload();
 		}
