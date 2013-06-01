@@ -6,7 +6,7 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Mediaplayer;
@@ -25,7 +25,8 @@ public class E2MediaPlayerListHandler extends E2ListHandler {
 	private boolean inRoot;
 
 	private ExtendedHashMap mItem;
-	private ArrayList<ExtendedHashMap> mList;
+	// creates a runtime error because mList is null for endElement mList.add(mItem);
+	//private ArrayList<ExtendedHashMap> mList;
 
 	/**
 	 * @param list
