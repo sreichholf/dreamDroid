@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item android:id="@+id/menu_home_media"
+          android:icon="@drawable/ic_menu_home"
+          android:title="@string/home_media"
+          android:showAsAction="ifRoom" />
+	<item android:id="@+id/menu_navigation_back_media"
+          android:icon="@drawable/ic_menu_navigation_back"
+          android:title="@string/navigation_back_media"
+          android:showAsAction="ifRoom" />
+	<item android:id="@+id/menu_close_media"
+          android:icon="@drawable/ic_menu_close_clear_cancel"
+          android:title="@string/close_media"
+          android:showAsAction="ifRoom" />	
 	<item android:id="@+id/menu_previous_media"
           android:icon="@drawable/ic_menu_previous"
           android:title="@string/previous_media"
@@ -15,17 +27,5 @@
 	<item android:id="@+id/menu_stop_media"
           android:icon="@drawable/ic_menu_stop"
           android:title="@string/stop_media"
-          android:showAsAction="ifRoom" />	     
-	<item android:id="@+id/menu_home_media"
-          android:icon="@drawable/ic_menu_home"
-          android:title="@string/home_media"
-          android:showAsAction="ifRoom" />
-	<item android:id="@+id/menu_navigation_back_media"
-          android:icon="@drawable/ic_menu_navigation_back"
-          android:title="@string/navigation_back_media"
-          android:showAsAction="ifRoom" />
-	<item android:id="@+id/menu_close_media"
-          android:icon="@drawable/ic_menu_close_clear_cancel"
-          android:title="@string/close_media"
-          android:showAsAction="ifRoom" />	
+          android:showAsAction="ifRoom" />	           
 </menu>
