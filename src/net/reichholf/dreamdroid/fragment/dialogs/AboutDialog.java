@@ -27,13 +27,14 @@ public class AboutDialog extends AbstractDialog {
 		return new AboutDialog();
 	}
 
-	@Override 
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.about, container, false);
 		getDialog().setTitle(R.string.about);
 		TextView aboutText = (TextView) v.findViewById(R.id.TextViewAbout);
-		CharSequence text = DreamDroid.VERSION_STRING + "\n\n" + getText(R.string.license) + "\n\n"
-				+ getText(R.string.source_code_link);
+
+		String text = String.format("%s\n\n%s\n\n%s", DreamDroid.VERSION_STRING, getString(R.string.license),
+				getString(R.string.source_code_link));
 		aboutText.setText(text);
 
 		Button buttonDonate = (Button) v.findViewById(R.id.ButtonDonate);

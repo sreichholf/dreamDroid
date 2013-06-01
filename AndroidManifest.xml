@@ -3,7 +3,7 @@
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
     android:versionCode="188"
-    android:versionName="1.0 beta 20pre6" >
+    android:versionName="1.0 beta 21" >
 
     <uses-sdk
         android:maxSdkVersion="17"

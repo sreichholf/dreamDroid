@@ -31,6 +31,7 @@ import android.util.Log;
  */
 public class DreamDroid extends Application {
 	public static String VERSION_STRING;
+
 	public static final String ACTION_CREATE = "dreamdroid.intent.action.NEW";
 	public static final String LOG_TAG = "net.reichholf.dreamdroid";
 
@@ -62,7 +63,7 @@ public class DreamDroid extends Application {
 		try {
 			ComponentName comp = new ComponentName(context, context.getClass());
 			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
-			return "dreamDroid " + pinfo.versionName + "\n© Stephan Reichholf\nstephan@reichholf.net";
+			return String.format("dreamDroid %s (%s)\n© Stephan Reichholf\nstephan@reichholf.net", pinfo.versionName, pinfo.versionCode);
 		} catch (android.content.pm.PackageManager.NameNotFoundException e) {
 			return "dreamDroid\n© 2013 Stephan Reichholf\nstephan@reichholf.net";
 		}
@@ -148,7 +149,8 @@ public class DreamDroid extends Application {
 			boolean login = sp.getBoolean("login", false);
 			boolean ssl = sp.getBoolean("ssl", false);
 
-			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false, false, false);
+			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
+					false, false);
 			dbh.addProfile(p);
 			SharedPreferences.Editor editor = sp.edit();
 			editor.remove("currentProfile");
@@ -159,7 +161,8 @@ public class DreamDroid extends Application {
 		if (!setCurrentProfile(context, profileId)) {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
-			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false, false, false, false);
+			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false, false, false,
+					false);
 		}
 	}
 
