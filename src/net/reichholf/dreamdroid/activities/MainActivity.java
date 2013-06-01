@@ -54,13 +54,13 @@ import com.actionbarsherlock.view.MenuItem;
  * @author sre
  * 
  */
-public class FragmentMainActivity extends SherlockFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
+public class MainActivity extends SherlockFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
 		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener,
 		MultiChoiceDialog.MultiChoiceDialogListener {
 
 	@SuppressWarnings("unused")
-	private static final String TAG = FragmentMainActivity.class.getSimpleName();
+	private static final String TAG = MainActivity.class.getSimpleName();
 
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
 			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog" });
@@ -812,7 +812,7 @@ public class FragmentMainActivity extends SherlockFragmentActivity implements Mu
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (resultCode) {
 		case Statics.RESULT_THEME_CHANGED:
-			Intent intent = new Intent(this, FragmentMainActivity.class);
+			Intent intent = new Intent(this, MainActivity.class);
 			startActivity(intent);
 			finish();
 		}

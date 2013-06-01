@@ -61,8 +61,6 @@
             android:theme="@style/Theme.Sherlock.NoActionBar"
             android:uiOptions="" >
         </activity>
-        <activity android:name=".activities.FragmentMainActivity" >
-        </activity>
 
         <meta-data
             android:name="com.google.android.backup.api_key"
@@ -98,6 +96,7 @@
                 <data android:scheme="mms" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.MainActivity"></activity>
     </application>
 
 </manifest>

@@ -19,7 +19,7 @@ public class TabbedNavigationActivity extends Activity {
 		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
 
-		Intent intent = new Intent(this, FragmentMainActivity.class);
+		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
 		finish();
 	}

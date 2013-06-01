@@ -34,7 +34,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.ImageView;
 
 /**
@@ -45,6 +44,7 @@ import android.widget.ImageView;
  * performance.
  */
 public class ImageLoader {
+	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "ImageLoader";
 
 	public enum Mode {

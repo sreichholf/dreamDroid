@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
-import net.reichholf.dreamdroid.activities.FragmentMainActivity;
+import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
@@ -527,8 +527,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		return null;
 	}
 
-	private FragmentMainActivity getMainActivity() {
-		return (FragmentMainActivity) getActivity();
+	private MainActivity getMainActivity() {
+		return (MainActivity) getActivity();
 	}
 
 	/*

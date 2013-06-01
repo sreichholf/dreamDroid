@@ -9,6 +9,7 @@
         android:layout_width="fill_parent"
         android:layout_height="30dp"
         android:layout_marginLeft="10dp"
+        android:layout_marginBottom="-30dp"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout
@@ -16,6 +17,7 @@
         android:layout_height="fill_parent"
         android:layout_below="@id/detail_title"
         android:background="?android:attr/detailsElementBackground"
+        android:layout_marginTop="30dp"
         android:orientation="vertical" >
 
         <FrameLayout

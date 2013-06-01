@@ -4,35 +4,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <FrameLayout
-        android:id="@+id/detail_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="20dp" />
-
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="45dp"
-        android:layout_marginBottom="0dp"
-        android:layout_marginTop="-20dp"
-        android:orientation="horizontal" >
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/TextViewProfile"
+        <FrameLayout
+            android:id="@+id/detail_view"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="..."
-            android:textStyle="bold" />
+            android:layout_height="fill_parent"
+            android:layout_marginBottom="20dp" />
 
-        <TextView
-            android:id="@+id/TextViewConnectionState"
+        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:text="..."
-            android:textStyle="bold" />
+            android:layout_height="20dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginTop="-20dp"
+            android:gravity="top"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/TextViewProfile"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="..."
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/TextViewConnectionState"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:text="..."
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
     <FrameLayout
