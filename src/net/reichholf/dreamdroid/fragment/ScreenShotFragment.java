@@ -23,6 +23,8 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import uk.co.senab.photoview.PhotoViewAttacher;
+
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
@@ -71,6 +73,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	private String mFilename;
 	private byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
+	private PhotoViewAttacher mAttacher;
 
 	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {
 		@Override
@@ -119,7 +122,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		} else if (mRawImage == null) {
 			mRawImage = new byte[0];
 		}
-
+		mAttacher = new PhotoViewAttacher(mImageView);
 		return mImageView;
 	}
 
@@ -175,6 +178,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 			return;
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+		mAttacher.update();
 		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
