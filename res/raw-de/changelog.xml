@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelog>
+    <release version="1.0 beta 21" versioncode="190" >
+        <change>Grundlegende Unterstützung für Picons. Diese können über die allgemeinen Einstellungen aktiviert und mit Hilfe das aktuell aktiven Verbindungsprofils importiert werden.</change>
+        <change>Diverse kleine Layout Optimierungen</change>
+        <change>Das "Sliding Menu" wurde durch Googles Implementierung, den "Navigation Drawer", ersetzt (wie aus der neuen Play Music App bekannt)</change>
+        <change>Diverse kleine Fehlerbehebungen und Optimierungen</change>
+        <change>Changelog Dialog hinzugefügt</change>
+    </release>
+</changelog>

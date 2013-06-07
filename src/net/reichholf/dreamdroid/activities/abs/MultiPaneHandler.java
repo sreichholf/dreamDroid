@@ -4,7 +4,7 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.abstivities;
+package net.reichholf.dreamdroid.activities.abs;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelog>
+    <release version="1.0 beta 21" versioncode="189" >
+        <change>Add basic picon support. Configuration and import can be done via settings menu.</change>
+        <change>Minor layout fixes</change>
+        <change>Replace the "Sliding Menu" with the google implementation called "Navigation Drawer" (as seen in the new Play Music App)</change>
+        <change>Some small bugfixes and cleanups</change>
+        <change>Add changelog dialog</change>
+    </release>
+</changelog>

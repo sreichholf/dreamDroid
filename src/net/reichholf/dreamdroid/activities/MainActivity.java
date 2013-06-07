@@ -14,7 +14,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.ProfileChangedListener;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
@@ -49,6 +49,8 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
+
+import de.cketti.library.changelog.ChangeLog;
 
 /**
  * @author sre
@@ -151,6 +153,10 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 		initViews();
 		mNavigationFragment.setHighlightCurrent(true);
 
+		ChangeLog cl = new ChangeLog(this);
+		if (cl.isFirstRun()) {
+			cl.getLogDialog().show();
+		}
 		// DreamDroid.registerEpgSearchListener(this);
 	}
 

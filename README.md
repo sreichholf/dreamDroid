@@ -41,7 +41,8 @@ All required libraries can be found in the "libraries" folder of this git reposi
 
 * ABS - Jake Wharton's ActionBarSherlock (4.3.1): http://actionbarsherlock.com/ 
 * numberpicker - Michael Novakjr's Numberpicker (cloned on 2012-09-08): https://github.com/mrn/numberpicker/
-* gaugeview-library - CodeAndMagic's GaugeView: https://github.com/CodeAndMagic/GaugeView 
+* gaugeview-library - CodeAndMagic's GaugeView: https://github.com/CodeAndMagic/GaugeView
+* ckChangeLog - ckettis ckChangeLog library: https://github.com/cketti/ckChangeLog
 
 The following SDK versions have to be installed for a clean build:
 

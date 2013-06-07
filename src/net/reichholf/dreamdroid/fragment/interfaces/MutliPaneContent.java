@@ -6,7 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment.interfaces;
 
-import net.reichholf.dreamdroid.abstivities.MultiPaneHandler;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 
 /**
  * @author sre
