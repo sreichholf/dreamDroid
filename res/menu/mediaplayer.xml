@@ -3,10 +3,12 @@
 	<item android:id="@+id/menu_home_media"
           android:icon="@drawable/ic_menu_home"
           android:title="@string/home_media"
+          android:enabled="false"
           android:showAsAction="ifRoom" />
 	<item android:id="@+id/menu_navigation_back_media"
           android:icon="@drawable/ic_menu_navigation_back"
           android:title="@string/navigation_back_media"
+          android:enabled="false"
           android:showAsAction="ifRoom" />
 	<item android:id="@+id/menu_close_media"
           android:icon="@drawable/ic_menu_close_clear_cancel"
