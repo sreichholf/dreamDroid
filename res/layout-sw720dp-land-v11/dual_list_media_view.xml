@@ -10,7 +10,7 @@
 	    android:layout_height="fill_parent"
 	    android:layout_alignParentLeft="true"
 	    android:layout_toLeftOf="@+id/divider"
-	    android:drawSelectorOnTop="false" />
+	    android:drawSelectorOnTop="false"/>
 	
     <LinearLayout
         android:id="@+id/detailView"
