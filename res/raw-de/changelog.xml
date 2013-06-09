@@ -6,5 +6,6 @@
         <change>Das "Sliding Menu" wurde durch Googles Implementierung, den "Navigation Drawer", ersetzt (wie aus der neuen Play Music App bekannt)</change>
         <change>Diverse kleine Fehlerbehebungen und Optimierungen</change>
         <change>Changelog Dialog hinzugefügt</change>
+        <change>Die Sortierung einiger Menüeinträge wurde leicht angepasst</change>
     </release>
 </changelog>
