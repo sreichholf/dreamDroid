@@ -53,7 +53,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  * @author asc
  * 
  */
-//public class MediaListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
 public class MediaListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
 	private ExtendedHashMap mMedia;
 	private SimpleChoiceDialog mChoice;
@@ -66,6 +65,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 		setAdapter();
 		
+		// only if detail view is available the application should have listeners for the buttons
 		if (isDetailViewAvailable(v)) {
 		    ImageButton playButton = (ImageButton) v.findViewById(R.id.imageButtonPlay);
 		    
@@ -192,6 +192,12 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			// get first media item
 			ExtendedHashMap media = list.get(0);
 			
+			// save current media object
+			mMedia = media;
+			
+			// check for changes in options menu
+			getSherlockActivity().invalidateOptionsMenu(); 
+			
 			String root = media.getString(Mediaplayer.KEY_ROOT);
 			String path = "";
 			
@@ -218,6 +224,26 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
+    public void onPrepareOptionsMenu(Menu menu) {
+		
+		if (mMedia != null) {
+			
+			String rootPath = (String) mMedia.get(Mediaplayer.KEY_ROOT);
+			MenuItem homeMenuItem = menu.findItem(Statics.ITEM_MEDIA_HOME);
+			MenuItem backMenuItem = menu.findItem(Statics.ITEM_MEDIA_BACK);
+						
+			if (rootPath.equals("None"))  {
+				homeMenuItem.setEnabled(false);
+				backMenuItem.setEnabled(false);
+			}
+			else {
+				homeMenuItem.setEnabled(true);
+				backMenuItem.setEnabled(true);
+			}			
+		}
+    }
+	
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case (Statics.ITEM_MEDIA_HOME):
@@ -229,25 +255,15 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 				return true;
 				
 			case (Statics.ITEM_MEDIA_BACK):
-				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_ROOT);
-				String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
+
+				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
 			
-				// media path is not a directory
-				if (isDirectory.equals("False")) {
-					mediaPath = mediaPath.substring(0, mediaPath.length() - 1);
-					int pos = mediaPath.lastIndexOf("/");
-					mediaPath = mediaPath.substring(0, pos + 1);
-					setArgs("path", mediaPath);
-				} 
+				// if root path then clear args
+				if (mediaPath.equals("None")) {
+					args.clear();
+				}
 				else {
-				
-					// if root path then clear args
-					if (mediaPath.equals("None")) {
-						args.clear();
-					}
-					else {
-						setArgs("path", mediaPath);
-					}
+					setArgs("path", mediaPath);
 				}
 				
 				reload();
