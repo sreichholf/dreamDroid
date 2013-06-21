@@ -47,11 +47,11 @@ public class DreamDroidFragmentHelper {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		getSherlockActivity().setTitle(mCurrentTitle);
 	}
-	
+
 	public void onAttach(Activity activity) {
 		activity.setProgressBarIndeterminateVisibility(false);
 	}
-	
+
 	public void onResume() {
 		getMultiPaneHandler().onFragmentResume(mFragment);
 	}
@@ -97,14 +97,16 @@ public class DreamDroidFragmentHelper {
 				explicitShow = true;
 			}
 			Fragment target = mFragment.getTargetFragment();
-			FragmentTransaction ft = getSherlockActivity().getSupportFragmentManager().beginTransaction();
-			ft.remove(mFragment);
-			ft.commit();
 
 			if (target != null) {
 				if (resultCode != Statics.RESULT_NONE || data != null) {
-					if (explicitShow)
+					if (explicitShow) {
+						FragmentTransaction ft = getSherlockActivity().getSupportFragmentManager().beginTransaction();
+						ft.remove(mFragment);
+						ft.commit();
+
 						mph.showDetails(target);
+					}
 					target.onActivityResult(mFragment.getTargetRequestCode(), resultCode, data);
 				}
 			}

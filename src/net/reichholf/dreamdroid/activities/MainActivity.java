@@ -250,8 +250,9 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
 		if (fragment.isAdded()) {
 			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " already added, showing");
-			if (mDetailFragment != null && !fragment.isVisible())
+			if (mDetailFragment != null && !fragment.isVisible()){
 				ft.hide(mDetailFragment);
+			}
 			ft.show(fragment);
 		} else {
 			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " not added, adding");
@@ -654,7 +655,8 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+//		ft.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
+		ft.setCustomAnimations(android.R.anim.fade_in, android.R.anim.slide_out_right);
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {
 			ft.addToBackStack(null);
