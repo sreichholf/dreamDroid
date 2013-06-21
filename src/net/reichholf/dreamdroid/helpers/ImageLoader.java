@@ -276,6 +276,8 @@ public class ImageLoader {
 	// Hard cache, with a fixed maximum capacity and a life duration
 	private final HashMap<String, Bitmap> sHardBitmapCache = new LinkedHashMap<String, Bitmap>(HARD_CACHE_CAPACITY / 2,
 			0.75f, true) {
+		private static final long serialVersionUID = -1823041807642754548L;
+
 		@Override
 		protected boolean removeEldestEntry(LinkedHashMap.Entry<String, Bitmap> eldest) {
 			if (size() > HARD_CACHE_CAPACITY) {

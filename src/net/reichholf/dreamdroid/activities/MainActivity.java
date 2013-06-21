@@ -46,6 +46,7 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
@@ -125,6 +126,10 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error, true);
+
+			String text = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error);
+			Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
+			toast.show();
 		} else {
 			setConnectionState(getString(R.string.ok), true);
 			mNavigationFragment.setAvailableFeatures();
@@ -155,7 +160,7 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 
 		ChangeLog cl = new ChangeLog(this);
 		if (cl.isFirstRun()) {
-			cl.getLogDialog().show();
+			cl.getFullLogDialog().show();
 		}
 		// DreamDroid.registerEpgSearchListener(this);
 	}
@@ -245,8 +250,9 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
 		if (fragment.isAdded()) {
 			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " already added, showing");
-			if (!fragment.isVisible())
-				ft.show(fragment);
+			if (mDetailFragment != null && !fragment.isVisible())
+				ft.hide(mDetailFragment);
+			ft.show(fragment);
 		} else {
 			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " not added, adding");
 			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());
