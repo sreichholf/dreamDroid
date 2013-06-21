@@ -24,7 +24,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
-
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
@@ -143,6 +142,12 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	public void onPause() {
 		mScannerConn.disconnect();
 		super.onPause();
+	}
+	
+	@Override
+	public void onDestroy(){
+		super.onDestroy();
+		mAttacher.cleanup();
 	}
 
 	@Override
