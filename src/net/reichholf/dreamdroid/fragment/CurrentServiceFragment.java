@@ -120,13 +120,17 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
 		registerOnClickListener(mStream, Statics.ITEM_STREAM);
 
+		return view;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		if (mCurrent == null || mCurrent.isEmpty()) {
 			reload();
 		} else {
 			applyData(0, mCurrent);
 		}
-
-		return view;
 	}
 
 	@Override

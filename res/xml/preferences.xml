@@ -31,6 +31,11 @@
             android:summary="@string/use_light_theme_long"
             android:title="@string/use_light_theme" />
         <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="enable_animations"
+            android:summary="@string/enable_animations_long"
+            android:title="@string/enable_animations" />
+        <CheckBoxPreference
             android:key="picons"
             android:summary="@string/use_picons_long"
             android:title="@string/use_picons" />
@@ -42,11 +47,11 @@
             android:title="@string/sync_picons" />
 
         <EditTextPreference
+            android:defaultValue="/usr/share/enigma2/picon"
             android:dependency="picons"
             android:key="sync_picons_path"
             android:summary="@string/sync_picons_path_long"
-            android:title="@string/sync_picons_path"
-            android:defaultValue="/usr/share/enigma2/picon" />
+            android:title="@string/sync_picons_path" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -655,8 +655,12 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//		ft.setTransition(FragmentTransaction.TRANSIT_ENTER_MASK);
-		ft.setCustomAnimations(android.R.anim.fade_in, android.R.anim.slide_out_right);
+
+		if(mDetailFragment != null &&
+			mDetailFragment.isVisible() &&
+			PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREF_KEY_ENABLE_ANIMATIONS, true))
+			ft.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
+
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {
 			ft.addToBackStack(null);

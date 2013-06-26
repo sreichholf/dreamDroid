@@ -255,4 +255,6 @@
     <string name="picon_sync_finished">Successfully downloaded %s picons</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="enable_animations_long">Enable additional view animations</string>
+    <string name="enable_animations">Enable animations</string>
 </resources>
