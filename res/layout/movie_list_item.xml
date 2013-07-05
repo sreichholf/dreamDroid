@@ -3,6 +3,7 @@
     android:id="@+id/LinearLayoutMain"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/card_list_item_selector"
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:orientation="vertical"
     android:paddingRight="5dip" >

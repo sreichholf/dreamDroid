@@ -3,6 +3,7 @@
     android:id="@+id/service_list_item"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/card_list_item_selector"
     android:orientation="vertical" >
 
     <ImageView
@@ -63,7 +64,7 @@
             android:layout_marginLeft="45dip"
             android:layout_marginRight="55dip"
             android:ellipsize="end"
-            android:maxLines="2"
+            android:maxLines="1"
             android:textAppearance="@android:style/TextAppearance.Small" />
 
         <TextView

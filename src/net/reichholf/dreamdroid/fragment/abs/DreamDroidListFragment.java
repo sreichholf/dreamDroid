@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
@@ -14,6 +15,9 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.actionbarsherlock.app.SherlockListFragment;
 
@@ -24,6 +28,8 @@ import com.actionbarsherlock.app.SherlockListFragment;
 public abstract class DreamDroidListFragment extends SherlockListFragment implements ActivityCallbackHandler,
 		MutliPaneContent {
 	private DreamDroidFragmentHelper mHelper;
+
+	protected boolean mCardListStyle = false;
 
 	public DreamDroidListFragment() {
 		super();
@@ -45,6 +51,15 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
 		setRetainInstance(true);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		if (mCardListStyle) {
+			View view = inflater.inflate(R.layout.card_list_view, container, false);
+			return view;
+		}
+		return super.onCreateView(inflater, container, savedInstanceState);
 	}
 
 	@Override

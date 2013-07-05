@@ -90,6 +90,9 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 
 		ImageView piconView = (ImageView) view.findViewById(R.id.picon);
 		Picon.setPiconForView(getContext(), piconView, mImageLoader, service);
+		
+		if(layoutId != R.layout.service_list_marker)
+			view.setBackgroundResource(R.drawable.card_list_item_selector);
 
 		if (service != null) {
 			if (!hasNow) {

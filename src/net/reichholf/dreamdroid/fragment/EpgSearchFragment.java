@@ -34,6 +34,7 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mCardListStyle = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.epg_search));
 

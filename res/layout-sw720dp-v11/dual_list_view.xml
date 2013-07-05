@@ -33,6 +33,7 @@
 
     <ListView
         android:id="@+id/listView2"
+        style="@style/CardListView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/listView2Header" />

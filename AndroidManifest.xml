@@ -2,12 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="193"
-    android:versionName="1.0 beta 21" >
+    android:versionCode="194"
+    android:versionName="1.0 beta (194)" >
 
     <uses-sdk
         android:maxSdkVersion="17"
-        android:minSdkVersion="7"
+        android:minSdkVersion="8"
         android:targetSdkVersion="11" >
     </uses-sdk>
 
@@ -36,7 +36,7 @@
         android:icon="@drawable/ic_launcher_dreamdroid"
         android:killAfterRestore="true"
         android:label="@string/app_name"
-        android:theme="@style/Theme.DreamDroid"
+        android:theme="@style/Theme.DreamDroid.Light"
         android:uiOptions="splitActionBarWhenNarrow" >
         <activity android:name=".activities.TabbedNavigationActivity" >
             <intent-filter>
@@ -51,10 +51,11 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
-
+            <!--
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+            -->
         </activity>
         <activity
             android:name=".activities.SimpleNoTitleFragmentActivity"
@@ -74,15 +75,6 @@
             android:name=".activities.DreamDroidShareActivity"
             android:theme="@style/Theme.Sherlock.Light.Dialog" >
 
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-            -->
             <intent-filter android:label="@string/watch_on_dream" >
                 <action android:name="android.intent.action.VIEW" />
 
@@ -96,7 +88,8 @@
                 <data android:scheme="mms" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MainActivity"></activity>
+        <activity android:name=".activities.MainActivity" >
+        </activity>
     </application>
 
 </manifest>

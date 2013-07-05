@@ -353,7 +353,13 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		mDetailHeader = (TextView) v.findViewById(R.id.listView2Header);
 
 		mNavList.setFastScrollEnabled(true);
+		
 		mDetailList.setFastScrollEnabled(true);
+//		mDetailList.setDivider(null);
+//		mDetailList.setSelector(android.R.color.transparent);
+//		mDetailList.setDividerHeight(12);
+//		mDetailList.setPadding(3, 3, 3, 3);
+//		mDetailList.setBackgroundColor(Color.parseColor("#DDDDDD"));
 
 		setAdapter();
 		return v;
@@ -435,6 +441,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				return onListItemLongClick((ListView) a, v, position, id);
 			}
 		});
+
 		if (mReload) {
 			loadNavRoot();
 			reloadDetail(false);
@@ -678,7 +685,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
 		if (Service.isBouquet(ref)) {
 			if (l.equals(mNavList)) {
-				if (SERVICE_REF_ROOT.equals(mNavReference)) {
+				if (SERVICE_REF_ROOT.equals(mNavReference) && ref.toUpperCase().contains("FROM")) { //without FROM it's a "all" reference
 					ExtendedHashMap map = new ExtendedHashMap();
 					map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
 					map.put(Event.KEY_SERVICE_NAME, String.valueOf(nam));

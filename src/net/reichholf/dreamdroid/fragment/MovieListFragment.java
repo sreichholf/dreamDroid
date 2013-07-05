@@ -74,6 +74,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mCardListStyle = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
 

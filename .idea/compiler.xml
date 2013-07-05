@@ -2,6 +2,14 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/gen" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/libraries/ckChangelog/gen" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/libraries/ABS/gen" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/libraries/numberpicker/gen" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/libraries/gaugeview-library/gen" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/libraries/PhotoView/gen" includeSubdirectories="true" />
+    </excludeFromCompile>
     <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="!?*.java" />

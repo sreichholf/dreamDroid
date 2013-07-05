@@ -301,7 +301,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.search, menu);
+//		inflater.inflate(R.menu.search, menu);
 		inflater.inflate(R.menu.preferences, menu);
 	}
 
@@ -358,10 +358,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		case Statics.ITEM_MESSAGE:
 			getMultiPaneHandler().showDialogFragment(SendMessageDialog.newInstance(), "sendmessage_dialog");
-			break;
-
-		case Statics.ITEM_EPG_SEARCH:
-			getMainActivity().onSearchRequested();
 			break;
 
 		case Statics.ITEM_SCREENSHOT:

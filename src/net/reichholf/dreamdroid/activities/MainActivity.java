@@ -26,6 +26,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -49,7 +50,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.widget.SearchView;
 
 import de.cketti.library.changelog.ChangeLog;
 
@@ -60,7 +63,7 @@ import de.cketti.library.changelog.ChangeLog;
 public class MainActivity extends SherlockFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
 		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener,
-		MultiChoiceDialog.MultiChoiceDialogListener {
+		MultiChoiceDialog.MultiChoiceDialogListener, SearchView.OnQueryTextListener {
 
 	@SuppressWarnings("unused")
 	private static final String TAG = MainActivity.class.getSimpleName();
@@ -194,6 +197,17 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 			mDrawerToggle.onConfigurationChanged(newConfig);
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		SearchView searchView = new SearchView(getSupportActionBar().getThemedContext());
+		searchView.setQueryHint(getString(R.string.epg_search_hint));
+		searchView.setOnQueryTextListener(this);
+
+		menu.add(getString(R.string.epg_search)).setIcon(R.drawable.ic_menu_search).setActionView(searchView)
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+		return true;
+	}
+
 	private Fragment getCurrentDetailFragment() {
 		return mDetailFragment;
 	}
@@ -250,7 +264,7 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
 		if (fragment.isAdded()) {
 			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " already added, showing");
-			if (mDetailFragment != null && !fragment.isVisible()){
+			if (mDetailFragment != null && !fragment.isVisible()) {
 				ft.hide(mDetailFragment);
 			}
 			ft.show(fragment);
@@ -656,9 +670,10 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-		if(mDetailFragment != null &&
-			mDetailFragment.isVisible() &&
-			PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREF_KEY_ENABLE_ANIMATIONS, true))
+		if (mDetailFragment != null
+				&& mDetailFragment.isVisible()
+				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+						DreamDroid.PREF_KEY_ENABLE_ANIMATIONS, true))
 			ft.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
 
 		showFragment(ft, R.id.detail_view, fragment);
@@ -856,5 +871,34 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment)
 					.onMultiChoiceDialogFinish(dialogTag, result);
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.actionbarsherlock.widget.SearchView.OnQueryTextListener#onQueryTextSubmit
+	 * (java.lang.String)
+	 */
+	@Override
+	public boolean onQueryTextSubmit(String query) {
+		Bundle args = new Bundle();
+		args.putString(SearchManager.QUERY, query);
+		Fragment f = new EpgSearchFragment();
+		f.setArguments(args);
+		showDetails(f, true);
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.actionbarsherlock.widget.SearchView.OnQueryTextListener#onQueryTextChange
+	 * (java.lang.String)
+	 */
+	@Override
+	public boolean onQueryTextChange(String newText) {
+		return false;
 	}
 }

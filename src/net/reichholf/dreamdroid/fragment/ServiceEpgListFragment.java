@@ -32,6 +32,7 @@ import android.widget.SimpleAdapter;
 public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mCardListStyle = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.epg));
 

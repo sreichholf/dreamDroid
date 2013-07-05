@@ -316,8 +316,8 @@ public class DreamDroid extends Application {
 	}
 
 	public static void setTheme(Context context) {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-		if (sp.getBoolean("light_theme", false))
-			context.setTheme(R.style.Theme_DreamDroid_Light);
+//		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+//		if (sp.getBoolean("light_theme", false))
+//			context.setTheme(R.style.Theme_DreamDroid_Light);
 	}
 }
