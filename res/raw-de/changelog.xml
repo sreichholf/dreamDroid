@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 21" versioncode="193" >
+    <release version="1.0 beta 21" versioncode="194" >
+        <change>Ergebnisse der EPG-Suche werden nun in der Detailansicht angezeigt (wie es von Beginn an hätte sein sollen)</change>
+        <change>Das helle Theme ist nun standardäßig aktiv (jedoch mit dunkler ActionBar). Ein Wechsel des Themes ist nicht mehr möglich</change>
+        <change>Kanäle, Filme, EPG und Timer werden nun im "Karten-Stil" dargestellt (wie z.B. im aktuellen Play-Store)</change>
         <change>Grundlegende Unterstützung für Picons. Diese können über die allgemeinen Einstellungen aktiviert und mit Hilfe das aktuell aktiven Verbindungsprofils importiert werden.</change>
         <change>Diverse kleine Layout Optimierungen</change>
         <change>Das "Sliding Menu" wurde durch Googles Implementierung, den "Navigation Drawer", ersetzt (wie aus der neuen Play Music App bekannt)</change>
-		<change>Fixes für erhöhte Stabilität</change>
+        <change>Fixes für erhöhte Stabilität</change>
         <change>Diverse kleine Fehlerbehebungen und Optimierungen</change>
         <change>Changelog Dialog hinzugefügt</change>
         <change>Die Sortierung einiger Menüeinträge wurde leicht angepasst</change>
