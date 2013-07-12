@@ -260,7 +260,7 @@ public class GaugeView extends View {
 		// The needle is not displayed although the onDraw() is being triggered by invalidate()
 		// calls.
 		if (Build.VERSION.SDK_INT >= 11) {
-			//setLayerType(1, null);
+			setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 		}
 
 		initDrawingRects();
