@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 21" versioncode="195" >
+    <release version="1.0 beta 21" versioncode="196" >
         <change>Search results are now shown in the detail view (that's how it was supposed to be like from the very beginning)</change>
         <change>Make the Light theme default (but with a dark ActionBar) and disable Theme Switching for now</change>
         <change>Implement "card-style-lists" as known from the latest play-store for Services, Movies, EPG and Timers</change>
