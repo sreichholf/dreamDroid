@@ -83,27 +83,48 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 				layoutId = R.layout.service_list_item;
 			}
 		}
+		
+		ServiceViewHolder viewHolder = null;
 		if (view == null || view.getId() != viewId) {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			view = li.inflate(layoutId, null);
+			
+			viewHolder = new ServiceViewHolder();
+			if(hasNow){
+				viewHolder.picon = (ImageView) view.findViewById(R.id.picon);
+				viewHolder.progress =  (ProgressBar) view.findViewById(R.id.service_progress);
+				viewHolder.serviceName = (TextView) view.findViewById(R.id.service_name);
+				viewHolder.eventNowTitle = (TextView) view.findViewById(R.id.event_now_title);
+				viewHolder.eventNowStart = (TextView) view.findViewById(R.id.event_now_start);
+				viewHolder.eventNowDuration = (TextView) view.findViewById(R.id.event_now_duration);
+				if(hasNext){
+					viewHolder.eventNextTitle = (TextView) view.findViewById(R.id.event_next_title);
+					viewHolder.eventNextStart = (TextView) view.findViewById(R.id.event_next_start);
+					viewHolder.eventNextDuration = (TextView) view.findViewById(R.id.event_next_duration);
+				}
+			} else {
+				viewHolder.serviceName = (TextView) view.findViewById(android.R.id.text1);
+			}
+			view.setTag(viewHolder);
+		} else {
+			viewHolder = (ServiceViewHolder) view.getTag();
 		}
 
-		ImageView piconView = (ImageView) view.findViewById(R.id.picon);
-		Picon.setPiconForView(getContext(), piconView, mImageLoader, service);
+		
+		Picon.setPiconForView(getContext(), viewHolder.picon, mImageLoader, service);
 		
 		if(layoutId != R.layout.service_list_marker)
 			view.setBackgroundResource(R.drawable.card_list_item_selector);
 
 		if (service != null) {
 			if (!hasNow) {
-				setTextView(view, android.R.id.text1, service.getString(Event.KEY_SERVICE_NAME));
+				setTextView(viewHolder.serviceName, service.getString(Event.KEY_SERVICE_NAME));
 				return view;
 			}
-			setTextView(view, R.id.service_name, service.getString(Event.KEY_SERVICE_NAME));
-			setTextView(view, R.id.event_now_title, service.getString(Event.KEY_EVENT_TITLE));
-			setTextView(view, R.id.event_now_start, service.getString(Event.KEY_EVENT_START_TIME_READABLE));
-			setTextView(view, R.id.event_now_duration, service.getString(Event.KEY_EVENT_DURATION_READABLE));
-			ProgressBar progress = (ProgressBar) view.findViewById(R.id.service_progress);
+			setTextView(viewHolder.serviceName, service.getString(Event.KEY_SERVICE_NAME));
+			setTextView(viewHolder.eventNowTitle, service.getString(Event.KEY_EVENT_TITLE));
+			setTextView(viewHolder.eventNowStart, service.getString(Event.KEY_EVENT_START_TIME_READABLE));
+			setTextView(viewHolder.eventNowDuration, service.getString(Event.KEY_EVENT_DURATION_READABLE));
 
 			long max = -1;
 			long cur = -1;
@@ -120,19 +141,19 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			}
 
 			if (max > 0 && cur >= 0) {
-				progress.setVisibility(View.VISIBLE);
-				progress.setMax((int) max);
-				progress.setProgress((int) cur);
+				viewHolder.progress.setVisibility(View.VISIBLE);
+				viewHolder.progress.setMax((int) max);
+				viewHolder.progress.setProgress((int) cur);
 			} else {
-				progress.setVisibility(View.GONE);
+				viewHolder.progress.setVisibility(View.GONE);
 			}
 
 			if (hasNext) {
-				setTextView(view, R.id.event_next_title,
+				setTextView(viewHolder.eventNextTitle,
 						service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE)));
-				setTextView(view, R.id.event_next_start,
+				setTextView(viewHolder.eventNextStart,
 						service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_START_TIME_READABLE)));
-				setTextView(view, R.id.event_next_duration,
+				setTextView(viewHolder.eventNextDuration,
 						service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_DURATION_READABLE)));
 			}
 		}
@@ -140,10 +161,22 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		return view;
 	}
 
-	private void setTextView(View view, int id, String value) {
-		TextView tv = (TextView) view.findViewById(id);
+	private void setTextView(TextView tv, String value) {
 		if (tv != null)
 			tv.setText(value);
+	}
+	
+	static class ServiceViewHolder {
+		ImageView picon;
+		ProgressBar progress;
+		TextView serviceName;
+		TextView eventNowTitle;
+		TextView eventNowStart;
+		TextView eventNowDuration;
+		TextView eventNextTitle;
+		TextView eventNextStart;
+		TextView eventNextDuration;
+		TextView eventTitle;
 	}
 
 }
