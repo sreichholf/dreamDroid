@@ -61,7 +61,9 @@ import com.actionbarsherlock.view.MenuInflater;
  */
 public class MovieListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
 		MultiChoiceDialog.MultiChoiceDialogListener {
+
 	private String mCurrentLocation;
+	private int mSelectedLocationPosition;
 
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
@@ -77,19 +79,21 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		mCardListStyle = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
-
-		mCurrentLocation = "/hdd/movie/";
 		setHasOptionsMenu(true);
 
-		if (savedInstanceState == null && mCurrentLocation != null) {
+		mCurrentLocation = "/hdd/movie/";
+		mSelectedLocationPosition = 0;
+
+		if (savedInstanceState == null) {
 			mSelectedTags = new ArrayList<String>();
 			mOldTags = new ArrayList<String>();
 			reload();
-		} else if (savedInstanceState != null) {
+		} else {
 			mMovie = (ExtendedHashMap) savedInstanceState.getParcelable("movie");
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
 			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 			mCurrentLocation = savedInstanceState.getString("currentLocation");
+			mSelectedLocationPosition = savedInstanceState.getInt("selectedLocationPosition", 0);
 		}
 	}
 
@@ -114,18 +118,34 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onResume() {
+		super.onResume();
+		setupListNavigation();
+	}
+
+	public void setupListNavigation() {
 		ActionBar actionBar = getSherlockActivity().getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
-		mLocationAdapter = new ArrayAdapter<String>(getSherlockActivity(), android.R.layout.simple_list_item_1);
-		mLocationAdapter.add(mCurrentLocation);
+		mLocationAdapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
+				R.layout.sherlock_spinner_dropdown_item);
+		mLocationAdapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+
+		for (String location : DreamDroid.getLocations()) {
+			mLocationAdapter.add(location);
+		}
+
+		int pos = mLocationAdapter.getPosition(mCurrentLocation);
+		if (pos < 0)
+			pos = 0;
+		if (pos != mSelectedLocationPosition)
+			mSelectedLocationPosition = pos;
+
 		actionBar.setListNavigationCallbacks(mLocationAdapter, new OnNavigationListener() {
 			@Override
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+				mSelectedLocationPosition = itemPosition;
 				if (DreamDroid.getLocations().size() > itemPosition) {
-					ActionBar actionBar = getSherlockActivity().getSupportActionBar();
-					int position = actionBar.getSelectedNavigationIndex();
-					String selectedLoc = mLocationAdapter.getItem(position);
+					String selectedLoc = mLocationAdapter.getItem(itemPosition);
 					if (!selectedLoc.equals(mCurrentLocation)) {
 						mCurrentLocation = selectedLoc;
 						reload();
@@ -134,7 +154,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 				return true;
 			}
 		});
-		super.onResume();
+		actionBar.setSelectedNavigationItem(mSelectedLocationPosition);
 	}
 
 	@Override
@@ -196,6 +216,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		}
 		outState.putStringArray("oldTags", oldTags);
 		outState.putString("currentLocation", mCurrentLocation);
+		outState.putInt("selectedLocationPosition", mSelectedLocationPosition);
 
 		super.onSaveInstanceState(outState);
 	}
@@ -341,8 +362,8 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 			mLocationAdapter.add(location);
 		}
 
-		getSherlockActivity().getSupportActionBar().setSelectedNavigationItem(
-				mLocationAdapter.getPosition(mCurrentLocation));
+		mSelectedLocationPosition = mLocationAdapter.getPosition(mCurrentLocation);
+		getSherlockActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedLocationPosition);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 21" versioncode="194" >
+    <release version="1.0 beta 21" versioncode="195" >
         <change>Ergebnisse der EPG-Suche werden nun in der Detailansicht angezeigt (wie es von Beginn an hätte sein sollen)</change>
         <change>Das helle Theme ist nun standardäßig aktiv (jedoch mit dunkler ActionBar). Ein Wechsel des Themes ist nicht mehr möglich</change>
         <change>Kanäle, Filme, EPG und Timer werden nun im "Karten-Stil" dargestellt (wie z.B. im aktuellen Play-Store)</change>

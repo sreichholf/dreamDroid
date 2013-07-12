@@ -61,9 +61,9 @@ import de.cketti.library.changelog.ChangeLog;
  * 
  */
 public class MainActivity extends SherlockFragmentActivity implements MultiPaneHandler, ProfileChangedListener,
-		DreamDroid.EpgSearchListener, ActionDialog.DialogActionListener,
-		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener,
-		MultiChoiceDialog.MultiChoiceDialogListener, SearchView.OnQueryTextListener {
+		ActionDialog.DialogActionListener, SleepTimerDialog.SleepTimerDialogActionListener,
+		SendMessageDialog.SendMessageDialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener,
+		SearchView.OnQueryTextListener {
 
 	@SuppressWarnings("unused")
 	private static final String TAG = MainActivity.class.getSimpleName();
@@ -288,7 +288,6 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 
 	@Override
 	public void onDestroy() {
-		DreamDroid.unregisterEpgSearchListener(this);
 		super.onDestroy();
 	}
 
@@ -674,7 +673,8 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 						DreamDroid.PREF_KEY_ENABLE_ANIMATIONS, true))
-			ft.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
+			ft.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right, R.anim.slide_in_right,
+					R.anim.slide_out_left);
 
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {
@@ -757,13 +757,6 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	public void onFragmentPause(Fragment fragment) {
 		if (fragment != mNavigationFragment)
 			mDetailFragment = null;
-	}
-
-	@Override
-	public void onEpgSearch(Bundle args) {
-		Fragment f = new EpgSearchFragment();
-		f.setArguments(args);
-		showDetails(f);
 	}
 
 	@Override

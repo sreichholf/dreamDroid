@@ -60,19 +60,6 @@ public class SimpleFragmentActivity extends SherlockFragmentActivity implements 
 			initFragment = false;
 		}
 
-		Intent intent = getIntent();
-		if (Intent.ACTION_SEARCH.equals(intent.getAction()) && savedInstanceState == null) {
-			Bundle args = new Bundle();
-			args.putString(SearchManager.QUERY, intent.getStringExtra(SearchManager.QUERY));
-
-			if (DreamDroid.search(this, args)) {
-				finish();
-				return;
-			} else {
-				mFragment = new EpgSearchFragment();
-				mFragment.setArguments(args);
-			}
-		}
 		initViews(initFragment);
 	}
 

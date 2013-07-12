@@ -353,14 +353,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		mDetailHeader = (TextView) v.findViewById(R.id.listView2Header);
 
 		mNavList.setFastScrollEnabled(true);
-		
 		mDetailList.setFastScrollEnabled(true);
-//		mDetailList.setDivider(null);
-//		mDetailList.setSelector(android.R.color.transparent);
-//		mDetailList.setDividerHeight(12);
-//		mDetailList.setPadding(3, 3, 3, 3);
-//		mDetailList.setBackgroundColor(Color.parseColor("#DDDDDD"));
-
 		setAdapter();
 		return v;
 	}

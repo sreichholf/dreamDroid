@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListFragment;
 
@@ -84,6 +85,14 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 	public void onSaveInstanceState(Bundle outState) {
 		mHelper.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void setEmptyText(CharSequence text) {
+		if (mCardListStyle)
+			((TextView) getView().findViewById(android.R.id.empty)).setText(text);
+		else
+			super.setEmptyText(text);
 	}
 
 	public MultiPaneHandler getMultiPaneHandler() {

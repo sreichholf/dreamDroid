@@ -21,7 +21,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -52,7 +51,6 @@ public class DreamDroid extends Application {
 	private static ArrayList<String> sTags;
 
 	private static ProfileChangedListener sCurrentProfileChangedListener = null;
-	private static EpgSearchListener sSearchListener;
 
 	private static boolean sFeaturePostRequest = true;
 
@@ -273,28 +271,6 @@ public class DreamDroid extends Application {
 
 	public static ArrayList<String> getTags() {
 		return sTags;
-	}
-
-	public static boolean search(Context context, Bundle args) {
-		if (sSearchListener != null) {
-			sSearchListener.onEpgSearch(args);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public interface EpgSearchListener {
-		public void onEpgSearch(Bundle args);
-	}
-
-	public static void registerEpgSearchListener(EpgSearchListener listener) {
-		sSearchListener = listener;
-	}
-
-	public static void unregisterEpgSearchListener(EpgSearchListener listener) {
-		if (listener == sSearchListener)
-			sSearchListener = null;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
