@@ -53,6 +53,9 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			if (root.equals("None")) {
 				mediaName.setText(media.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
 			}
+			else if (root.equals("playlist")){
+				mediaName.setText(media.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
+			}
 			else if (isDirectory.equals("False")){
 				int pos = reference.lastIndexOf("/");
 				mediaName.setText(reference.substring(pos + 1));

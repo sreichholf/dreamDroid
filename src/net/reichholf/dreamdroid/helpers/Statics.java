@@ -93,8 +93,11 @@ public class Statics {
 	public static final int ITEM_MEDIA_PREVIOUS = R.id.menu_previous_media;
 	public static final int ITEM_MEDIA_STOP = R.id.menu_stop_media;
 	public static final int ITEM_MEDIA_PLAY = R.id.menu_play_media;
+	public static final int ITEM_MEDIA_PLAYLIST = R.id.menu_playlist;
+	public static final int ITEM_MEDIA_FILEBROWSER = R.id.menu_filebrowser;
 	
 	public static final int ACTION_ADD_TO_PLAYLIST = 0xc16;
 	public static final int ACTION_PLAY_MEDIA = 0xc17;
+	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc18;
 
 }

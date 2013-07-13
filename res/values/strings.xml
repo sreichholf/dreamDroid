@@ -27,6 +27,9 @@
     <string name="play_media">Play</string>
     <string name="previous_media">Previous</string>
     <string name="stop_media">Stop</string>
+    <string name="playlist">Playlist</string>
+    <string name="filebrowser">File Browser</string>
+    <string name="delete_from_playlist">Delete from Playlist</string>
     
     <string name="service">Service</string>
     <string name="afterevent">Afterevent</string>

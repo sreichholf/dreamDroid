@@ -29,5 +29,13 @@
 	<item android:id="@+id/menu_stop_media"
           android:icon="@drawable/ic_menu_stop"
           android:title="@string/stop_media"
-          android:showAsAction="ifRoom" />	           
+          android:showAsAction="ifRoom" />	    
+	<item android:id="@+id/menu_playlist"
+          android:icon="@drawable/ic_menu_list"
+          android:title="@string/playlist"
+          android:showAsAction="ifRoom" />	 
+	<item android:id="@+id/menu_filebrowser"
+          android:icon="@drawable/ic_menu_locations"
+          android:title="@string/filebrowser"
+          android:showAsAction="ifRoom" />	                            
 </menu>
