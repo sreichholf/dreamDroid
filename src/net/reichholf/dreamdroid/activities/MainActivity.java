@@ -218,7 +218,7 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 		searchView.setOnQueryTextListener(this);
 
 		menu.add(getString(R.string.epg_search)).setIcon(R.drawable.ic_menu_search).setActionView(searchView)
-				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
 	}
 

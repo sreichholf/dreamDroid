@@ -100,14 +100,12 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.movie_list_item, new String[] {
 				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
 				Movie.KEY_LENGTH }, new int[] { R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
 				R.id.event_duration });
 
 		setListAdapter(mAdapter);
-
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
@@ -118,12 +116,14 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onResume() {
-		super.onResume();
 		setupListNavigation();
+		super.onResume();
 	}
 
 	public void setupListNavigation() {
 		ActionBar actionBar = getSherlockActivity().getSupportActionBar();
+		if (actionBar.getNavigationMode() == ActionBar.NAVIGATION_MODE_LIST)
+			return;
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
 		mLocationAdapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
@@ -355,6 +355,11 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 			LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		//when popping fromt he backstack (e.g. after epg search) onStart will restore the loader which will in return call onLoadfinished
+		//because this in done twice (in onStart and in onResumed and we are not ready to handle this before onResume, we ignore any onLoadFinished
+		//that happens while we are not in a Resumed state
+		if (!isResumed())
+			return;
 		super.onLoadFinished(loader, result);
 
 		mLocationAdapter.clear();
