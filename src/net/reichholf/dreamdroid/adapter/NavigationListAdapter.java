@@ -34,7 +34,7 @@ public class NavigationListAdapter extends ArrayAdapter<int[]> {
 		View view = convertView;
 		if(view == null){
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			view = li.inflate(R.layout.nav_list_item, null);
+			view = li.inflate(R.layout.nav_list_item, parent, false);
 		}
 
 		int[] item = getItem(position);

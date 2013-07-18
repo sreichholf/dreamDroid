@@ -3,5 +3,7 @@
 
     <attr name="simpleHeaderBackground" format="color" />
     <attr name="navListPreferredItemHeight" format="dimension" />
+    <attr name="cardBackground" format="reference" />
+    <attr name="cardListView" format="reference" />
 
 </resources>

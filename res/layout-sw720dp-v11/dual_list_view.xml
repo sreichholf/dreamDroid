@@ -4,16 +4,12 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <ListView
-        android:id="@+id/listView1"
-        android:layout_width="fill_parent"
-        android:layout_height="250dp" />
-
     <TextView
         android:id="@+id/listView2Header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/listView1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
         android:gravity="top|left"
@@ -24,7 +20,7 @@
         android:id="@+id/divider"
         android:layout_width="fill_parent"
         android:layout_height="10dp"
-        android:layout_below="@id/listView1"
+        android:layout_alignParentTop="true"
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="20dp"
@@ -33,10 +29,11 @@
 
     <ListView
         android:id="@+id/listView2"
-        style="@style/CardListView"
+        style="?attr/cardListView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/listView2Header" />
+        android:layout_below="@id/listView2Header"
+        android:layout_marginBottom="250dp" />
 
     <LinearLayout
         android:id="@android:id/empty"
@@ -52,5 +49,12 @@
             android:layout_marginLeft="5dp"
             android:text="@string/loading" />
     </LinearLayout>
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="fill_parent"
+        android:layout_height="250dp"
+        android:layout_below="@id/listView2"
+        android:layout_marginTop="-250dp" />
 
 </RelativeLayout>

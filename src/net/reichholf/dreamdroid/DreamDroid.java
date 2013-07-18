@@ -290,10 +290,14 @@ public class DreamDroid extends Application {
 			t.printStackTrace();
 		}
 	}
-
+	
+	public static boolean isLightTheme(Context context) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+		return sp.getBoolean("light_theme", true);
+	}
+	
 	public static void setTheme(Context context) {
-//		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-//		if (sp.getBoolean("light_theme", false))
-//			context.setTheme(R.style.Theme_DreamDroid_Light);
+		if (!isLightTheme(context))
+			context.setTheme(R.style.Theme_DreamDroid);
 	}
 }

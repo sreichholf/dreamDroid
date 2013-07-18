@@ -48,7 +48,7 @@ public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		View view = convertView;
 		if (view == null) {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			view = li.inflate(R.layout.timer_list_item, null);
+			view = li.inflate(R.layout.timer_list_item, parent, false);
 		}
 
 		ExtendedHashMap timer = getItem(position);

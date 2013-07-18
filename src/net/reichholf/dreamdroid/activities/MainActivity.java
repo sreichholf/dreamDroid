@@ -221,19 +221,18 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 
 			mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 			mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
-			mDrawerLayout, /* DrawerLayout object */
-			R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
-			R.string.drawer_open, /* "open drawer" description for accessibility */
-			R.string.drawer_close /* "close drawer" description for accessibility */
-			) {
-				public void onDrawerClosed(View view) {
-					supportInvalidateOptionsMenu();
-				}
-
-				public void onDrawerOpened(View drawerView) {
-					supportInvalidateOptionsMenu();
-				}
-			};
+				mDrawerLayout, /* DrawerLayout object */
+				R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
+				R.string.drawer_open, /* "open drawer" description for accessibility */
+				R.string.drawer_close /* "close drawer" description for accessibility */
+					) {
+						public void onDrawerClosed(View view) {
+							supportInvalidateOptionsMenu();
+						}
+						public void onDrawerOpened(View drawerView) {
+							supportInvalidateOptionsMenu();
+						}
+					};
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);

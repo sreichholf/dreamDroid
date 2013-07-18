@@ -30,7 +30,7 @@
 
         <ListView
             android:id="@android:id/list"
-            style="@style/CardListView"
+            style="?attr/cardListView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:drawSelectorOnTop="false" />

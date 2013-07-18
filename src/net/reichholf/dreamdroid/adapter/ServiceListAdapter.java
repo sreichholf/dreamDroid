@@ -35,16 +35,18 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	@SuppressWarnings("unused")
 	private static String LOG_TAG = "ServiceListAdapter";
 	private ImageLoader mImageLoader;
+	private LayoutInflater mInflater;
 
 	/**
 	 * @param context
 	 * @param textViewResourceId
 	 * @param services
 	 */
-	public ServiceListAdapter(Context context, int textViewResourceId, ArrayList<ExtendedHashMap> services) {
-		super(context, textViewResourceId, services);
+	public ServiceListAdapter(Context context, ArrayList<ExtendedHashMap> services) {
+		super(context, 0, services);
 		mImageLoader = new ImageLoader();
 		mImageLoader.setMode(ImageLoader.Mode.CORRECT);
+		mInflater = LayoutInflater.from(context);
 	}
 
 	@Override
@@ -83,21 +85,19 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 				layoutId = R.layout.service_list_item;
 			}
 		}
-		
+
 		ServiceViewHolder viewHolder = null;
 		if (view == null || view.getId() != viewId) {
-			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			view = li.inflate(layoutId, null);
-			
+			view = mInflater.inflate(layoutId, parent, false);
 			viewHolder = new ServiceViewHolder();
-			if(hasNow){
+			if (hasNow) {
 				viewHolder.picon = (ImageView) view.findViewById(R.id.picon);
-				viewHolder.progress =  (ProgressBar) view.findViewById(R.id.service_progress);
+				viewHolder.progress = (ProgressBar) view.findViewById(R.id.service_progress);
 				viewHolder.serviceName = (TextView) view.findViewById(R.id.service_name);
 				viewHolder.eventNowTitle = (TextView) view.findViewById(R.id.event_now_title);
 				viewHolder.eventNowStart = (TextView) view.findViewById(R.id.event_now_start);
 				viewHolder.eventNowDuration = (TextView) view.findViewById(R.id.event_now_duration);
-				if(hasNext){
+				if (hasNext) {
 					viewHolder.eventNextTitle = (TextView) view.findViewById(R.id.event_next_title);
 					viewHolder.eventNextStart = (TextView) view.findViewById(R.id.event_next_start);
 					viewHolder.eventNextDuration = (TextView) view.findViewById(R.id.event_next_duration);
@@ -110,11 +110,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			viewHolder = (ServiceViewHolder) view.getTag();
 		}
 
-		
 		Picon.setPiconForView(getContext(), viewHolder.picon, mImageLoader, service);
-		
-		if(layoutId != R.layout.service_list_marker)
-			view.setBackgroundResource(R.drawable.card_list_item_selector);
 
 		if (service != null) {
 			if (!hasNow) {
@@ -165,7 +161,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		if (tv != null)
 			tv.setText(value);
 	}
-	
+
 	static class ServiceViewHolder {
 		ImageView picon;
 		ProgressBar progress;

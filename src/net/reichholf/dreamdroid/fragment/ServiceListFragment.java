@@ -258,7 +258,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		mCurrentTitle = mBaseTitle = getString(R.string.services);
 		mReload = true;
 		Bundle args = getArguments();
@@ -500,7 +499,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
 			mNavList.setAdapter(adapter);
 		}
-		adapter = new ServiceListAdapter(getSherlockActivity(), R.layout.service_list_item, mDetailItems);
+		adapter = new ServiceListAdapter(getSherlockActivity(), mDetailItems);
 		mDetailList.setAdapter(adapter);
 	}
 

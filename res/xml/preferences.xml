@@ -28,7 +28,7 @@
         android:title="@string/appearance" >
         <CheckBoxPreference
             android:defaultValue="true"
-            android:enabled="false"
+            android:enabled="true"
             android:key="light_theme"
             android:summary="@string/use_light_theme_long"
             android:title="@string/use_light_theme" />

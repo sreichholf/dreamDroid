@@ -3,7 +3,7 @@
     android:id="@+id/LinearLayoutMain"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/card_list_item_selector"
+    android:background="?attr/cardBackground"
     android:minHeight="45dip"
     android:orientation="vertical"
     android:paddingRight="5dip" >

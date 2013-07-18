@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="CardListView">
+    <style name="CardListView"></style>
+
+    <style name="CardListView.Light">
         <item name="android:divider">@null</item>
         <item name="android:dividerHeight">5dp</item>
         <item name="android:drawSelectorOnTop">false</item>
@@ -44,11 +46,15 @@
     <style name="Theme.DreamDroid" parent="Theme.Sherlock">
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#333</item>
+        <item name="cardBackground">@android:color/transparent</item>
+        <item name="cardListView">@style/CardListView</item>
     </style>
 
     <style name="Theme.DreamDroid.Light" parent="Theme.Sherlock.Light.DarkActionBar">
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#DDD</item>
+        <item name="cardBackground">@drawable/card_list_item_selector</item>
+        <item name="cardListView">@style/CardListView.Light</item>
     </style>
 
     <style name="TextAppearance.Sherlock.DialogWindowTitle" parent="Widget">
