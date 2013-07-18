@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -126,6 +127,9 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 	}
 
 	public void onProfileChecked(ExtendedHashMap result) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		boolean isFirstStart = sp.getBoolean(DreamDroid.PREF_KEY_FIRST_START, true);
+
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error, true);
@@ -133,12 +137,22 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 			String text = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error);
 			Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
 			toast.show();
+
+			if (isFirstStart)
+				// FIXME this is REALLY ugly
+				mNavigationFragment.setSelectedItem(NavigationFragment.MENU_ITEMS.length - 3);
 		} else {
 			setConnectionState(getString(R.string.ok), true);
 			mNavigationFragment.setAvailableFeatures();
 			if (getCurrentDetailFragment() == null) {
 				mNavigationFragment.setSelectedItem(0);
 			}
+		}
+
+		if (isFirstStart) {
+			if (!isNavigationDrawerVisible())
+				toggle();
+			sp.edit().putBoolean(DreamDroid.PREF_KEY_FIRST_START, false).commit();
 		}
 	}
 
@@ -221,18 +235,19 @@ public class MainActivity extends SherlockFragmentActivity implements MultiPaneH
 
 			mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 			mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
-				mDrawerLayout, /* DrawerLayout object */
-				R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
-				R.string.drawer_open, /* "open drawer" description for accessibility */
-				R.string.drawer_close /* "close drawer" description for accessibility */
-					) {
-						public void onDrawerClosed(View view) {
-							supportInvalidateOptionsMenu();
-						}
-						public void onDrawerOpened(View drawerView) {
-							supportInvalidateOptionsMenu();
-						}
-					};
+			mDrawerLayout, /* DrawerLayout object */
+			R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
+			R.string.drawer_open, /* "open drawer" description for accessibility */
+			R.string.drawer_close /* "close drawer" description for accessibility */
+			) {
+				public void onDrawerClosed(View view) {
+					supportInvalidateOptionsMenu();
+				}
+
+				public void onDrawerOpened(View drawerView) {
+					supportInvalidateOptionsMenu();
+				}
+			};
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);

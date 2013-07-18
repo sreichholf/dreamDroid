@@ -262,13 +262,15 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	}
 
 	public void setSelectedItem(int position) {
+		getListView().smoothScrollToPosition(position);
 		onListItemClick(getListView(), null, position, position);
 	}
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (mCurrentListItem == position) {
-			// Don't reload what we already see
+			// Don't reload what we already see but close
+			getMainActivity().showContent();
 			return;
 		}
 
