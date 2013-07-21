@@ -2,11 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="198"
+    android:versionCode="199"
     android:versionName="1.0 beta 22.1" >
 
     <uses-sdk
-        android:maxSdkVersion="18"
         android:minSdkVersion="8"
         android:targetSdkVersion="11" >
     </uses-sdk>
