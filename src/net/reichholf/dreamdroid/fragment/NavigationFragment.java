@@ -37,6 +37,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
@@ -70,7 +71,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
 			// { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer,
 			// R.drawable.ic_menu_music, 1, 0 },
-			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock, DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
+			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_clock,
+					DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
 			{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
 			{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 			{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
@@ -261,7 +263,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	}
 
 	public void setSelectedItem(int position) {
-		getListView().smoothScrollToPosition(position);
+		if (Build.VERSION.SDK_INT >= 8)
+			getListView().smoothScrollToPosition(position);
 		onListItemClick(getListView(), null, position, position);
 	}
 
@@ -503,12 +506,11 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			showToast(getString(R.string.error));
 		}
 	}
-	
-	
-	private boolean isTablet(){
+
+	private boolean isTablet() {
 		return getResources().getBoolean(R.bool.is_tablet);
 	}
-	
+
 	/**
 	 * @param textviewprofile
 	 * @return

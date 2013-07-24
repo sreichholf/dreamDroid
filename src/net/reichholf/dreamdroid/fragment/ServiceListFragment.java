@@ -402,7 +402,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getSherlockActivity().invalidateOptionsMenu();
+		getSherlockActivity().supportInvalidateOptionsMenu();
 		getSherlockActivity().setTitle(mCurrentTitle);
 
 		mNavList.setOnItemClickListener(new OnItemClickListener() {
@@ -632,7 +632,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			} else {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
-			getSherlockActivity().invalidateOptionsMenu();
+			getSherlockActivity().supportInvalidateOptionsMenu();
 			return true;
 		case Statics.ITEM_RELOAD:
 			if (!mNavList.equals(mDetailList))
@@ -837,7 +837,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 		mNavReference = SERVICE_REF_ROOT;
 		mNavName = "";
-		getSherlockActivity().invalidateOptionsMenu();
+		getSherlockActivity().supportInvalidateOptionsMenu();
 		((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
@@ -872,7 +872,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			mDetailItems.addAll(list);
 			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
-		getSherlockActivity().invalidateOptionsMenu();
+		getSherlockActivity().supportInvalidateOptionsMenu();
 		nextListTaskPlease();
 	}
 

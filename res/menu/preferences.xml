@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_preferences"
-          android:icon="@drawable/ic_menu_preferences"
-          android:title="@string/settings"
-          android:showAsAction="never" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/menu_preferences"
+        android:icon="@drawable/ic_menu_preferences"
+        dreamDroid:showAsAction="never"
+        android:title="@string/settings"/>
+
 </menu>

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_reload"
-          android:icon="@drawable/ic_menu_refresh"
-          android:title="@string/reload"
-          android:showAsAction="ifRoom" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/menu_reload"
+        android:icon="@drawable/ic_menu_refresh"
+        dreamDroid:showAsAction="ifRoom"
+        android:title="@string/reload"/>
+
 </menu>

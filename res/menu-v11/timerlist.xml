@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-	<item android:id="@+id/menu_create_timer"
-          android:icon="@android:drawable/ic_menu_add"
-          android:title="@string/new_timer"
-          android:showAsAction="ifRoom|withText" />
-	<item android:id="@+id/menu_cleanup"
-          android:icon="@drawable/ic_menu_clear_playlist"
-          android:title="@string/cleanup"
-          android:showAsAction="ifRoom|withText" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/menu_create_timer"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/new_timer"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_cleanup"
+        android:icon="@drawable/ic_menu_clear_playlist"
+        android:title="@string/cleanup"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+
 </menu>
