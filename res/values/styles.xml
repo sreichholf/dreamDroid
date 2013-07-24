@@ -43,20 +43,20 @@
         <item name="android:background">@android:drawable/list_selector_background</item>
     </style>
 
-    <style name="Theme.DreamDroid" parent="Theme.Sherlock">
+    <style name="Theme.DreamDroid" parent="Theme.AppCompat">
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#333</item>
         <item name="cardBackground">@android:color/transparent</item>
         <item name="cardListView">@style/CardListView</item>
     </style>
 
-    <style name="Theme.DreamDroid.Light" parent="Theme.Sherlock.Light.DarkActionBar">
+    <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#DDD</item>
         <item name="cardBackground">@drawable/card_list_item_selector</item>
         <item name="cardListView">@style/CardListView.Light</item>
     </style>
-
+<!-- 
     <style name="TextAppearance.Sherlock.DialogWindowTitle" parent="Widget">
         <item name="android:textSize">22sp</item>
         <item name="android:textColor">@color/abs__holo_blue_light</item>
@@ -128,5 +128,5 @@
         <item name="windowActionBar">false</item>
         <item name="windowContentOverlay">@null</item>
     </style>
-
+ -->
 </resources>

@@ -23,7 +23,7 @@ public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		if (sp.getBoolean("light_theme", false))
-			setTheme(R.style.Theme_Sherlock_Light_NoActionBar);
+			setTheme(R.style.Theme_AppCompat_Light);
 
 		mThemeSet = true;
 		super.onCreate(savedInstanceState);

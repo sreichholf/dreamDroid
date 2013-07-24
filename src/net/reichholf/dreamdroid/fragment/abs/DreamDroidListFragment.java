@@ -15,19 +15,18 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockListFragment;
-
 /**
  * @author sre
  * 
  */
-public abstract class DreamDroidListFragment extends SherlockListFragment implements ActivityCallbackHandler,
-		MutliPaneContent {
+public abstract class DreamDroidListFragment extends ListFragment implements ActivityCallbackHandler, MutliPaneContent {
 	private DreamDroidFragmentHelper mHelper;
 
 	protected boolean mCardListStyle = false;
@@ -130,5 +129,9 @@ public abstract class DreamDroidListFragment extends SherlockListFragment implem
 
 	protected void finish(int resultCode, Intent data) {
 		mHelper.finish(resultCode, data);
+	}
+
+	protected ActionBarActivity getSherlockActivity() {
+		return (ActionBarActivity) getActivity();
 	}
 }

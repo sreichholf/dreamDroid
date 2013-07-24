@@ -32,10 +32,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v7.app.ActionBarActivity;
 import android.view.KeyEvent;
 import android.widget.Toast;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 /**
  * @author sre
@@ -66,8 +65,8 @@ public class DreamDroidHttpFragmentHelper {
 		mShc = SimpleHttpClient.getInstance();
 	}
 
-	public SherlockFragmentActivity getSherlockActivity() {
-		return (SherlockFragmentActivity) mFragment.getActivity();
+	public ActionBarActivity getSherlockActivity() {
+		return (ActionBarActivity) mFragment.getActivity();
 	}
 
 	public HttpBaseFragment getBaseFragment() {

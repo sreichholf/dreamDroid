@@ -18,12 +18,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
-
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -35,7 +34,7 @@ import net.reichholf.dreamdroid.helpers.Statics;
  * @author sreichholf
  * 
  */
-public class DreamDroidPreferenceActivity extends SherlockPreferenceActivity implements
+public class DreamDroidPreferenceActivity extends PreferenceActivity implements
 		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener {
 
 	private static final String LOG_TAG = "DreamDroidPreferenceActivity";

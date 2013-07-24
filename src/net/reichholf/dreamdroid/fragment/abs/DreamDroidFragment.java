@@ -14,14 +14,16 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 
-import com.actionbarsherlock.app.SherlockFragment;
+
 
 /**
  * @author sre
  * 
  */
-public abstract class DreamDroidFragment extends SherlockFragment implements ActivityCallbackHandler, MutliPaneContent {
+public abstract class DreamDroidFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
 	private DreamDroidFragmentHelper mHelper = null;
 
 	public DreamDroidFragment() {
@@ -105,5 +107,9 @@ public abstract class DreamDroidFragment extends SherlockFragment implements Act
 
 	protected void finish(int resultCode, Intent data) {
 		mHelper.finish(resultCode, data);
+	}
+	
+	protected ActionBarActivity getSherlockActivity() {
+		return (ActionBarActivity) getActivity();
 	}
 }

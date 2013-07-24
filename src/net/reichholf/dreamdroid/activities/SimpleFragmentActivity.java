@@ -21,19 +21,18 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.Window;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 
 /**
  * @author sre
  * 
  */
-public class SimpleFragmentActivity extends SherlockFragmentActivity implements MultiPaneHandler,
+public class SimpleFragmentActivity extends ActionBarActivity implements MultiPaneHandler,
 		ActionDialog.DialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener {
 	public static final int MENU_HOME = 89283794;
 

@@ -2,11 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="199"
-    android:versionName="1.0 beta 22.1" >
+    android:versionCode="200"
+    android:versionName="1.0 beta 23" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="7"
         android:targetSdkVersion="11" >
     </uses-sdk>
 
@@ -58,7 +58,7 @@
         </activity>
         <activity
             android:name=".activities.SimpleNoTitleFragmentActivity"
-            android:theme="@style/Theme.Sherlock.NoActionBar"
+            android:theme="@style/Theme.Base"
             android:uiOptions="" >
         </activity>
 

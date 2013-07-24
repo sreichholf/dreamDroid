@@ -16,8 +16,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBarActivity;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 public class DreamDroidFragmentHelper {
 	private Fragment mFragment;
@@ -36,8 +36,8 @@ public class DreamDroidFragmentHelper {
 		mFragment = fragment;
 	}
 
-	public SherlockFragmentActivity getSherlockActivity() {
-		return (SherlockFragmentActivity) mFragment.getActivity();
+	public ActionBarActivity getSherlockActivity() {
+		return (ActionBarActivity) mFragment.getActivity();
 	}
 
 	public void onCreate(Bundle savedInstanceState) {

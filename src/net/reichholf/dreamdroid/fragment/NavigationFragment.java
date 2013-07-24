@@ -8,8 +8,8 @@ package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
 
-import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
@@ -40,11 +40,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ListView;
-
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
 
 /**
  * This is where all begins. It's the "main menu activity" which acts as central
@@ -303,7 +302,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//		inflater.inflate(R.menu.search, menu);
 		inflater.inflate(R.menu.preferences, menu);
 	}
 

@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -32,13 +33,11 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListActivity;
-
 /**
  * @author sre
  * 
  */
-public class DreamDroidShareActivity extends SherlockListActivity {
+public class DreamDroidShareActivity extends ListActivity {
 	public static String LOG_TAG = DreamDroidShareActivity.class.getSimpleName();
 
 	private SimpleResultTask mSimpleResultTask;

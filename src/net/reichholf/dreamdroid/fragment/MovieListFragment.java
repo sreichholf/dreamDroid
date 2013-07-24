@@ -41,17 +41,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.OnNavigationListener;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
 
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations
@@ -127,8 +126,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
 		mLocationAdapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
-				R.layout.sherlock_spinner_dropdown_item);
-		mLocationAdapter.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+				R.layout.support_simple_spinner_dropdown_item);
 
 		for (String location : DreamDroid.getLocations()) {
 			mLocationAdapter.add(location);
