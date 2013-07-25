@@ -631,12 +631,9 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.actionbarsherlock.widget.SearchView.OnQueryTextListener#onQueryTextSubmit
-	 * (java.lang.String)
+
+	/* (non-Javadoc)
+	 * @see android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextSubmit(java.lang.String)
 	 */
 	@Override
 	public boolean onQueryTextSubmit(String query) {
@@ -648,12 +645,9 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.actionbarsherlock.widget.SearchView.OnQueryTextListener#onQueryTextChange
-	 * (java.lang.String)
+
+	/* (non-Javadoc)
+	 * @see android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextChange(java.lang.String)
 	 */
 	@Override
 	public boolean onQueryTextChange(String newText) {
