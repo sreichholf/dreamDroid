@@ -72,8 +72,7 @@
 
         <activity
             android:name=".activities.DreamDroidShareActivity"
-            android:theme="@style/Theme.Sherlock.Light.Dialog" >
-
+            android:theme="@style/Theme.DreamDroid.Dialog" >
             <intent-filter android:label="@string/watch_on_dream" >
                 <action android:name="android.intent.action.VIEW" />
 
