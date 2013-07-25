@@ -68,15 +68,15 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// <taken-from-android-list-fragment>
-		FrameLayout root = new FrameLayout(getSherlockActivity());
+		FrameLayout root = new FrameLayout(getActionBarActivity());
 
-		TextView tv = new TextView(getSherlockActivity());
+		TextView tv = new TextView(getActionBarActivity());
 		tv.setId(android.R.id.empty);
 		tv.setGravity(Gravity.CENTER);
 		root.addView(tv, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
 				ViewGroup.LayoutParams.FILL_PARENT));
 
-		mList = new ListView(getSherlockActivity());
+		mList = new ListView(getActionBarActivity());
 		mList.setId(android.R.id.list);
 		mList.setDrawSelectorOnTop(false);
 		root.addView(mList, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
@@ -134,21 +134,21 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	 * <code>com.commonsware.cwac.merge.MergeAdapter</code>
 	 */
 	private void setAdapter() {
-		mFrontendAdapter = new SimpleAdapter(getSherlockActivity(), mFrontends, android.R.layout.two_line_list_item,
+		mFrontendAdapter = new SimpleAdapter(getActionBarActivity(), mFrontends, android.R.layout.two_line_list_item,
 				new String[] { DeviceInfo.KEY_FRONTEND_NAME, DeviceInfo.KEY_FRONTEND_MODEL }, new int[] {
 						android.R.id.text1, android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.frontends));
 		mMerge.addAdapter(mFrontendAdapter);
 
-		mNicAdapter = new SimpleAdapter(getSherlockActivity(), mNics, android.R.layout.two_line_list_item,
+		mNicAdapter = new SimpleAdapter(getActionBarActivity(), mNics, android.R.layout.two_line_list_item,
 				new String[] { DeviceInfo.KEY_NIC_NAME, DeviceInfo.KEY_NIC_IP }, new int[] { android.R.id.text1,
 						android.R.id.text2 });
 
 		mMerge.addView(getListHeaderView(R.string.nics));
 		mMerge.addAdapter(mNicAdapter);
 
-		mHddAdapter = new SimpleAdapter(getSherlockActivity(), mHdds, android.R.layout.two_line_list_item,
+		mHddAdapter = new SimpleAdapter(getActionBarActivity(), mHdds, android.R.layout.two_line_list_item,
 				new String[] { DeviceInfo.KEY_HDD_MODEL, DeviceInfo.KEY_HDD_CAPACITY }, new int[] { android.R.id.text1,
 						android.R.id.text2 });
 
@@ -186,7 +186,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new DeviceInfoRequestHandler(), args);
+		AsyncSimpleLoader loader = new AsyncSimpleLoader(getActionBarActivity(), new DeviceInfoRequestHandler(), args);
 		return loader;
 	}
 

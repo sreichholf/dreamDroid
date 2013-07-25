@@ -92,7 +92,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
 			if (resultCode == Activity.RESULT_OK) {
-				if (getSherlockActivity() != null) // we're somewhere active!
+				if (getActionBarActivity() != null) // we're somewhere active!
 					// reload();
 					Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!");
 			}
@@ -138,7 +138,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new TimerListAdapter(getSherlockActivity(), R.layout.timer_list_item, mMapList);
+		mAdapter = new TimerListAdapter(getActionBarActivity(), R.layout.timer_list_item, mMapList);
 		setListAdapter(mAdapter);
 	}
 
@@ -166,7 +166,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			}
 		}
 		ArrayList<NameValuePair> params = Timer.getDeleteParams(timer);
-		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.cleaning_timerlist), true);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.cleaning_timerlist), true);
 		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
 
@@ -180,7 +180,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			}
 		}
 
-		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.cleaning_timerlist), true);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.cleaning_timerlist), true);
 		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<NameValuePair>());
 	}
 
@@ -199,7 +199,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new TimerListRequestHandler(), false, args);
+		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new TimerListRequestHandler(), false, args);
 		return loader;
 	}
 

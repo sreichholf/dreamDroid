@@ -122,7 +122,7 @@ public class SignalFragment extends AbstractHttpFragment {
 
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new SignalRequestHandler(), args);
+		AsyncSimpleLoader loader = new AsyncSimpleLoader(getActionBarActivity(), new SignalRequestHandler(), args);
 		mIsUpdating = true;
 		return loader;
 	}
@@ -171,7 +171,7 @@ public class SignalFragment extends AbstractHttpFragment {
 		if (!"".equals(getBaseTitle().trim()))
 			setCurrentTitle(getBaseTitle() + " - " + getString(R.string.loading));
 
-		getSherlockActivity().setTitle(getCurrentTitle());
+		getActionBarActivity().setTitle(getCurrentTitle());
 		getLoaderManager().restartLoader(0, getLoaderBundle(), this);
 	}
 

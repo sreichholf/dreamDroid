@@ -402,8 +402,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getSherlockActivity().supportInvalidateOptionsMenu();
-		getSherlockActivity().setTitle(mCurrentTitle);
+		getActionBarActivity().supportInvalidateOptionsMenu();
+		getActionBarActivity().setTitle(mCurrentTitle);
 
 		mNavList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -494,11 +494,11 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	private void setAdapter() {
 		ListAdapter adapter;
 		if (!mNavList.equals(mDetailList)) {
-			adapter = new SimpleAdapter(getSherlockActivity(), mNavItems, android.R.layout.simple_list_item_1,
+			adapter = new SimpleAdapter(getActionBarActivity(), mNavItems, android.R.layout.simple_list_item_1,
 					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
 			mNavList.setAdapter(adapter);
 		}
-		adapter = new ServiceListAdapter(getSherlockActivity(), mDetailItems);
+		adapter = new ServiceListAdapter(getActionBarActivity(), mDetailItems);
 		mDetailList.setAdapter(adapter);
 	}
 
@@ -623,7 +623,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				if (mNavReference != null)
 					p.setDefaultRef2Values(mNavReference, mNavName);
 
-				DatabaseHelper dbh = DatabaseHelper.getInstance(getSherlockActivity());
+				DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
 				if (dbh.updateProfile(p)) {
 					showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
 				} else {
@@ -632,7 +632,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			} else {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
-			getSherlockActivity().supportInvalidateOptionsMenu();
+			getActionBarActivity().supportInvalidateOptionsMenu();
 			return true;
 		case Statics.ITEM_RELOAD:
 			if (!mNavList.equals(mDetailList))
@@ -702,7 +702,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				intent.putExtra(sData, (Serializable) map);
 				finish(Activity.RESULT_OK, intent);
 			} else {
-				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(
+				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity()).getBoolean(
 						"instant_zap", false);
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
@@ -732,7 +732,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			}
 		}
 
-		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 
@@ -820,7 +820,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 	public void loadNavRoot() {
 		if (mDetailHeader == null) {
-			getSherlockActivity().setTitle(getString(R.string.services));
+			getActionBarActivity().setTitle(getString(R.string.services));
 		}
 
 		mNavItems.clear();
@@ -837,7 +837,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 		mNavReference = SERVICE_REF_ROOT;
 		mNavName = "";
-		getSherlockActivity().supportInvalidateOptionsMenu();
+		getActionBarActivity().supportInvalidateOptionsMenu();
 		((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
@@ -860,7 +860,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		if (mDetailHeader != null)
 			finishProgress(getString(R.string.services));
 		else
-			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+			getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 		if (isBouquetList) {
 			mNavItems.clear();
 			mNavItems.addAll(list);
@@ -872,7 +872,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			mDetailItems.addAll(list);
 			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
-		getSherlockActivity().supportInvalidateOptionsMenu();
+		getActionBarActivity().supportInvalidateOptionsMenu();
 		nextListTaskPlease();
 	}
 
@@ -923,7 +923,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			break;
 
 		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentService);
+			IntentFactory.queryIMDb(getActionBarActivity(), mCurrentService);
 			break;
 		}
 	}

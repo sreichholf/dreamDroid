@@ -52,7 +52,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 			mHttpHelper.bindToFragment(this);
 		setHasOptionsMenu(true);
 		// CustomExceptionHandler.register(this);
-		DreamDroid.loadCurrentProfile(getSherlockActivity());
+		DreamDroid.loadCurrentProfile(getActionBarActivity());
 	}
 
 	@Override
@@ -124,7 +124,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	 * @param toastText
 	 */
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -164,9 +164,9 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 		setCurrentTitle(getLoadFinishedTitle());
-		getSherlockActivity().setTitle(getCurrentTitle());
+		getActionBarActivity().setTitle(getCurrentTitle());
 		if (result.isError()) {
 			showToast(result.getErrorText());
 			return;

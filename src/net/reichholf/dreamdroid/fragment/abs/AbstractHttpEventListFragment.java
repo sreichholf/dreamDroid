@@ -69,7 +69,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 			}
 		}
 
-		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 
@@ -102,7 +102,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 			mHttpHelper.findSimilarEvents(mCurrentItem);
 			break;
 		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);
+			IntentFactory.queryIMDb(getActionBarActivity(), mCurrentItem);
 			break;
 		}
 	}

@@ -82,7 +82,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			if (mProgress != null) {
 				mProgress.dismiss();
 			}
-			mProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.searching),
+			mProgress = ProgressDialog.show(getActionBarActivity(), getText(R.string.searching),
 					getText(R.string.searching_known_devices));
 			mProgress.setCancelable(false);
 			mDetectDevicesTask = new DetectDevicesTask();
@@ -101,7 +101,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 * 
 	 */
 	private void addAllDetectedDevices() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getSherlockActivity());
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
 		for (Profile p : mDetectedProfiles) {
 			if (dbh.addProfile(p)) {
 				showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
@@ -120,7 +120,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProgress.dismiss();
 		mDetectedProfiles = profiles;
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getSherlockActivity());
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActionBarActivity());
 		builder.setTitle(R.string.autodiscover_dreamboxes);
 
 		if (mDetectedProfiles.size() > 0) {
@@ -177,7 +177,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfileMapList = new ArrayList<ExtendedHashMap>();
 		mProfile = new Profile();
 
-		mAdapter = new SimpleAdapter(getSherlockActivity(), mProfileMapList, android.R.layout.two_line_list_item,
+		mAdapter = new SimpleAdapter(getActionBarActivity(), mProfileMapList, android.R.layout.two_line_list_item,
 				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST }, new int[] { android.R.id.text1,
 						android.R.id.text2 });
 		setListAdapter(mAdapter);
@@ -212,7 +212,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	private void reloadProfiles() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getSherlockActivity());
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
 		mProfiles.clear();
 		mProfileMapList.clear();
 		mProfiles.addAll(dbh.getProfiles());
@@ -273,7 +273,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 * Activates the selected profile
 	 */
 	private void activateProfile() {
-		if (DreamDroid.setCurrentProfile(getSherlockActivity(), mProfile.getId(), true)) {
+		if (DreamDroid.setCurrentProfile(getActionBarActivity(), mProfile.getId(), true)) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
@@ -314,7 +314,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 *            The text to show as toast
 	 */
 	protected void showToast(String text) {
-		Toast toast = Toast.makeText(getSherlockActivity(), text, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getActionBarActivity(), text, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -344,7 +344,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 							Statics.ACTION_NONE), "dialog_delete_profile_confirm");
 			break;
 		case Statics.ACTION_DELETE_CONFIRMED:
-			DatabaseHelper dbh = DatabaseHelper.getInstance(getSherlockActivity());
+			DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
 			if (dbh.deleteProfile(mProfile)) {
 				showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
 			} else {

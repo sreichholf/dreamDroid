@@ -119,13 +119,13 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 				return;
 			if (mLoadProgress != null) {
 				if (!mLoadProgress.isShowing()) {
-					mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(),
+					mLoadProgress = ProgressDialog.show(getActionBarActivity(), getText(R.string.loading).toString(),
 							progress[0]);
 				} else {
 					mLoadProgress.setMessage(progress[0]);
 				}
 			} else {
-				mLoadProgress = ProgressDialog.show(getSherlockActivity(), getText(R.string.loading).toString(),
+				mLoadProgress = ProgressDialog.show(getActionBarActivity(), getText(R.string.loading).toString(),
 						progress[0]);
 			}
 		}
@@ -421,7 +421,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_PICK_SERVICE);
-		((MultiPaneHandler) getSherlockActivity()).showDetails(f, true);
+		((MultiPaneHandler) getActionBarActivity()).showDetails(f, true);
 	}
 
 	/**
@@ -454,7 +454,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 
 		// Afterevents
-		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getSherlockActivity(),
+		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getActionBarActivity(),
 				R.array.afterevents, android.R.layout.simple_spinner_item);
 		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
@@ -463,7 +463,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
-		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getSherlockActivity(),
+		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getActionBarActivity(),
 				android.R.layout.simple_spinner_item, DreamDroid.getLocations());
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
@@ -619,7 +619,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 				mProgress.dismiss();
 			}
 		}
-		Activity activtiy = getSherlockActivity();
+		Activity activtiy = getActionBarActivity();
 		mProgress = ProgressDialog.show(activtiy, "", getText(R.string.saving), true);
 
 		applyViewValues();

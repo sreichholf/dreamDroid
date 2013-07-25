@@ -83,11 +83,11 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.virtual_remote));
 
-		mPrefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
 		mEditor = mPrefs.edit();
 		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
 		mSimpleRemote = DreamDroid.getCurrentProfile().isSimpleRemote();
-		mVibrator = (Vibrator) getSherlockActivity().getSystemService(Context.VIBRATOR_SERVICE);
+		mVibrator = (Vibrator) getActionBarActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		mEditor.commit();
 	}
 
@@ -156,7 +156,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	 * of the active layout (Standard or QuickZap)
 	 */
 	private View getRemoteView() {
-		LayoutInflater inflater = getSherlockActivity().getLayoutInflater();
+		LayoutInflater inflater = getActionBarActivity().getLayoutInflater();
 		View view = null;
 		if (mQuickZap) {
 			view = inflater.inflate(R.layout.virtual_remote_quick_zap, null, false);
@@ -173,7 +173,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.virtual_remote);
 		}
 		registerButtons(view, mButtonsCommon);
-		getSherlockActivity().setTitle(mBaseTitle);
+		getActionBarActivity().setTitle(mBaseTitle);
 
 		return view;
 	}

@@ -109,7 +109,7 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 		mHelper.finish(resultCode, data);
 	}
 	
-	protected ActionBarActivity getSherlockActivity() {
+	protected ActionBarActivity getActionBarActivity() {
 		return (ActionBarActivity) getActivity();
 	}
 }

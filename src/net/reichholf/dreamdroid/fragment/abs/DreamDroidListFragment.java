@@ -131,7 +131,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		mHelper.finish(resultCode, data);
 	}
 
-	protected ActionBarActivity getSherlockActivity() {
+	protected ActionBarActivity getActionBarActivity() {
 		return (ActionBarActivity) getActivity();
 	}
 }

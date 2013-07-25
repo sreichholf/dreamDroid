@@ -61,7 +61,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 		if (mHttpHelper == null)
 			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
 		else
@@ -83,7 +83,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		} else {
 			mExtras = new Bundle();
 		}
-		DreamDroid.loadCurrentProfile(getSherlockActivity());
+		DreamDroid.loadCurrentProfile(getActionBarActivity());
 
 	}
 
@@ -178,7 +178,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		Intent intent;
 		switch (id) {
 		case Statics.ITEM_HOME:
-			intent = new Intent(getSherlockActivity(), TabbedNavigationActivity.class);
+			intent = new Intent(getActionBarActivity(), TabbedNavigationActivity.class);
 			startActivity(intent);
 			return true;
 		default:
@@ -287,7 +287,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 			LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 
 		mMapList.clear();
 		if (result.isError()) {
@@ -297,7 +297,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 		ArrayList<ExtendedHashMap> list = result.getResult();
 		setCurrentTitle(getLoadFinishedTitle());
-		getSherlockActivity().setTitle(getCurrentTitle());
+		getActionBarActivity().setTitle(getCurrentTitle());
 
 		if (list.size() == 0)
 			setEmptyText(getText(R.string.no_list_item));

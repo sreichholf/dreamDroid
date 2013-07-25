@@ -96,12 +96,12 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getSherlockActivity().setTitle(getText(R.string.screenshot));
+		getActionBarActivity().setTitle(getText(R.string.screenshot));
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mImageView = new ImageView(getSherlockActivity());
+		mImageView = new ImageView(getActionBarActivity());
 		mImageView.setBackgroundColor(Color.BLACK);
 
 		Bundle extras = getArguments();
@@ -127,7 +127,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		mScannerConn = new MediaScannerConnection(getSherlockActivity(), new DummyMediaScannerConnectionClient());
+		mScannerConn = new MediaScannerConnection(getActionBarActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
 
 		if (mRawImage.length == 0) {
@@ -183,7 +183,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		mAttacher.update();
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
 	protected void reload() {
@@ -278,14 +278,14 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
-		AsyncByteLoader loader = new AsyncByteLoader(getSherlockActivity(), args);
+		getActionBarActivity().setProgressBarIndeterminateVisibility(true);
+		AsyncByteLoader loader = new AsyncByteLoader(getActionBarActivity(), args);
 		return loader;
 	}
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<byte[]>> loader, LoaderResult<byte[]> result) {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 		if (!result.isError()) {
 			if (result.getResult().length > 0)
 				onScreenshotAvailable(result.getResult());
@@ -298,11 +298,11 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public void onLoaderReset(Loader<LoaderResult<byte[]>> loader) {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 	}
 
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 

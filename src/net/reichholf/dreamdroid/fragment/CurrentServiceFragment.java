@@ -212,7 +212,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			mCurrentItem = event;
 			Bundle args = new Bundle();
 			args.putParcelable("currentItem", mCurrentItem);
-			((MultiPaneHandler) getSherlockActivity()).showDialogFragment(EpgDetailDialog.class, args,
+			((MultiPaneHandler) getActionBarActivity()).showDialogFragment(EpgDetailDialog.class, args,
 					"current_epg_detail_dialog");
 		}
 	}
@@ -247,7 +247,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 
 			ImageView piconView = (ImageView) getView().findViewById(R.id.picon);
-			Picon.setPiconForView(getSherlockActivity(), piconView, mImageLoader, mService);
+			Picon.setPiconForView(getActionBarActivity(), piconView, mImageLoader, mService);
 		} else {
 			showToast(getText(R.string.not_available));
 		}
@@ -257,7 +257,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	 * @param event
 	 */
 	protected void setTimerByEventData(ExtendedHashMap event) {
-		Timer.editUsingEvent((MultiPaneHandler) getSherlockActivity(), event, this);
+		Timer.editUsingEvent((MultiPaneHandler) getActionBarActivity(), event, this);
 	}
 
 	/**
@@ -270,7 +270,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			}
 		}
 
-		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 
@@ -312,14 +312,14 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			findSimilarEvents(mCurrentItem);
 			break;
 		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getSherlockActivity(), mCurrentItem);
+			IntentFactory.queryIMDb(getActionBarActivity(), mCurrentItem);
 			break;
 		}
 	}
 
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		AsyncSimpleLoader loader = new AsyncSimpleLoader(getSherlockActivity(), new CurrentServiceRequestHandler(),
+		AsyncSimpleLoader loader = new AsyncSimpleLoader(getActionBarActivity(), new CurrentServiceRequestHandler(),
 				args);
 		return loader;
 	}

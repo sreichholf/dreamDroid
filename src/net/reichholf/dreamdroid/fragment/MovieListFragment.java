@@ -99,7 +99,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleAdapter(getSherlockActivity(), mMapList, R.layout.movie_list_item, new String[] {
+		mAdapter = new SimpleAdapter(getActionBarActivity(), mMapList, R.layout.movie_list_item, new String[] {
 				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
 				Movie.KEY_LENGTH }, new int[] { R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
 				R.id.event_duration });
@@ -120,7 +120,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	public void setupListNavigation() {
-		ActionBar actionBar = getSherlockActivity().getSupportActionBar();
+		ActionBar actionBar = getActionBarActivity().getSupportActionBar();
 		if (actionBar.getNavigationMode() == ActionBar.NAVIGATION_MODE_LIST)
 			return;
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
@@ -157,7 +157,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onPause() {
-		getSherlockActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		getActionBarActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		super.onPause();
 	}
 
@@ -281,7 +281,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	 */
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mMovie = mMapList.get(position);
-		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(
+		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity()).getBoolean(
 				"instant_zap", false);
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
@@ -308,7 +308,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 			}
 		}
 
-		mProgress = ProgressDialog.show(getSherlockActivity(), "", getText(R.string.deleting), true);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.deleting), true);
 		mReloadOnSimpleResult = true;
 		execSimpleResultTask(new MovieDeleteRequestHandler(), Movie.getDeleteParams(mMovie));
 	}
@@ -346,7 +346,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getSherlockActivity(), new MovieListRequestHandler(), true, args);
+		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new MovieListRequestHandler(), true, args);
 		return loader;
 	}
 
@@ -366,7 +366,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		}
 
 		mSelectedLocationPosition = mLocationAdapter.getPosition(mCurrentLocation);
-		getSherlockActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedLocationPosition);
+		getActionBarActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedLocationPosition);
 	}
 
 	@Override
