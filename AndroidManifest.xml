@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
     android:versionCode="200"
@@ -47,14 +48,13 @@
         <activity android:name=".activities.DreamDroidPreferenceActivity" >
         </activity>
         <activity android:name=".activities.SimpleFragmentActivity" >
+            <meta-data
+                android:name="android.support.UI_OPTIONS"
+                android:value="splitActionBarWhenNarrow" />
+
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
-            <!--
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-            -->
         </activity>
         <activity
             android:name=".activities.SimpleNoTitleFragmentActivity"
@@ -87,6 +87,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.MainActivity" >
+            <meta-data
+                android:name="android.support.UI_OPTIONS"
+                android:value="splitActionBarWhenNarrow" />
         </activity>
     </application>
 
