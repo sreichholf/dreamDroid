@@ -24,9 +24,10 @@ public class Picon {
 	public static String getPiconFileName(ExtendedHashMap service) {
 		String root = Environment.getExternalStorageDirectory().getAbsolutePath();
 		String fileName = service.getString(Event.KEY_SERVICE_REFERENCE);
-		if (fileName == null)
-			return null;
+
+		fileName = fileName.substring(0, fileName.lastIndexOf(':'));
 		fileName = fileName.replace(":", "_");
+
 		if (fileName.endsWith("_"))
 			fileName = fileName.substring(0, fileName.length() - 1);
 
