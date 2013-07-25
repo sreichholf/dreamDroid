@@ -58,7 +58,7 @@
         </activity>
         <activity
             android:name=".activities.SimpleNoTitleFragmentActivity"
-            android:theme="@style/Theme.Base"
+            android:theme="@style/Theme.DreamDroid.Light"
             android:uiOptions="" >
         </activity>
 

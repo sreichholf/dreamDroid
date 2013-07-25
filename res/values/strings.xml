@@ -220,7 +220,7 @@
     <string name="mobile_imdb_long">Use m.imdb.com instead of www.imdb.com</string>
     <string name="searching">Searching&#8230;</string>
     <string name="searching_known_devices">Searching for dreamboxes in your local network. This may take a few minutes&#8230;</string>
-    <string name="autodiscover_dreamboxes">Dreambox Autodisocvery</string>
+    <string name="autodiscover_dreamboxes">Dreambox Autodiscovery</string>
     <string name="autodiscovery_failed">Could not autodiscover any dreambox on your local network!</string>
     <string name="add_all">Add All</string>
     <string name="error_parsing">An error occured on parsing the data!</string>
