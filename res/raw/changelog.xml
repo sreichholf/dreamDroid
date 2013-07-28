@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 22" versioncode="197" >
+    <release version="1.0 beta 23.1" versioncode="201">
+        <change>FIX: Configured picon path was ignored</change>
+        <change>FIX: Search issues on android >= 3.0</change>
+        <change>FIX: Picons with for renamed services didn't work</change>
+        <change>TECH: Replace "ActionBarSherlock" with Googles recently released "ActionBarCompat". Nothing should've really changed for Users, though</change>
+    </release> 
+    <release version="1.0 beta 22.1" versioncode="199" >
         <change>On first start: Show the navigation menu. If connecting with the default Profile fails, open the list of Profiles so the user can adjust the settings</change>
         <change>Search results are now shown in the detail view (that's how it was supposed to be like from the very beginning)</change>
-        <change>Make the Light theme default (but with a dark ActionBar) and disable Theme Switching for now</change>
+        <change>Make the Light theme default (but with a dark ActionBar)</change>
         <change>Implement "card-style-lists" as known from the latest play-store for Services, Movies, EPG and Timers</change>
         <change>Add basic picon support. Configuration and import can be done via settings menu.</change>
         <change>Minor layout fixes</change>
