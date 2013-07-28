@@ -38,9 +38,11 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_DEFAULT_BOUQUET_REF = "default_bouquet_ref";
 	public static final String PREFS_KEY_DEFAULT_BOUQUET_NAME = "default_bouquet_name";
 	public static final String PREFS_KEY_DEFAULT_BOUQUET_IS_LIST = "default_bouquet_is_bouquet_list";
-	public static final String PREF_KEY_CONFIRM_APP_CLOSE = "confirm_app_close";
-	public static final String PREF_KEY_ENABLE_ANIMATIONS = "enable_animations";
-	public static final String PREF_KEY_FIRST_START = "first_start";
+	public static final String PREFS_KEY_CONFIRM_APP_CLOSE = "confirm_app_close";
+	public static final String PREFS_KEY_ENABLE_ANIMATIONS = "enable_animations";
+	public static final String PREFS_KEY_FIRST_START = "first_start";
+	public static final String PREFS_KEY_SYNC_PICONS_PATH = "sync_picons_path";
+	public static final String PREFS_KEY_PICONS_ENABLED = "picons";
 
 	public static boolean DATE_LOCALE_WO;
 

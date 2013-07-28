@@ -154,7 +154,8 @@ public class DreamDroidPreferenceActivity extends PreferenceActivity implements
 		}
 
 		mSyncPiconTask = new PiconDownloadTask(this);
-		mSyncPiconTask.execute("/usr/share/enigma2/picon");
+		mSyncPiconTask.execute(PreferenceManager.getDefaultSharedPreferences(this).getString(
+				DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"));
 	}
 
 	public void checkProgress() {

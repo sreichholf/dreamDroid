@@ -125,7 +125,7 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 
 	public void onProfileChecked(ExtendedHashMap result) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean isFirstStart = sp.getBoolean(DreamDroid.PREF_KEY_FIRST_START, true);
+		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
 
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
@@ -149,7 +149,7 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 		if (isFirstStart) {
 			if (!isNavigationDrawerVisible())
 				toggle();
-			sp.edit().putBoolean(DreamDroid.PREF_KEY_FIRST_START, false).commit();
+			sp.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false).commit();
 		}
 	}
 
@@ -316,7 +316,7 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 	@Override
 	public void onBackPressed() {
 		boolean shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-				DreamDroid.PREF_KEY_CONFIRM_APP_CLOSE, true);
+				DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true);
 
 		if (shouldConfirm && getSupportFragmentManager().getBackStackEntryCount() == 0) {
 			showDialogFragment(PositiveNegativeDialog.newInstance(getString(R.string.leave_confirm),
@@ -447,7 +447,7 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 		if (mDetailFragment != null
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-						DreamDroid.PREF_KEY_ENABLE_ANIMATIONS, true))
+						DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
 			ft.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right, R.anim.slide_in_right,
 					R.anim.slide_out_left);
 

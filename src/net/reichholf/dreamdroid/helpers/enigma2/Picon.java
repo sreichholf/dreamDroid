@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import java.io.File;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ImageLoader;
 import android.content.Context;
@@ -42,7 +43,8 @@ public class Picon {
 		if (piconView == null) {
 			return;
 		}
-		if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean("picons", false)) {
+		if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED,
+				false)) {
 			piconView.setVisibility(View.GONE);
 			return;
 		}
