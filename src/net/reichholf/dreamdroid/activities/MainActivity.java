@@ -32,6 +32,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -211,12 +212,17 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.search, menu);
 		MenuItem searchItem = menu.findItem(R.id.action_search);
-		
-		// there is a bug with NAVIGATION_MODE_LIST and SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW which makes the
-		// List "invisible" after the search view as expanded, the following thow lines are a workaround for this bug!
-		searchItem.expandActionView();
-		searchItem.collapseActionView();
-		
+
+		// there is a bug with NAVIGATION_MODE_LIST and
+		// SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW which makes the
+		// List "invisible" after the search view as expanded, the following
+		// thow lines are a workaround for this bug!
+		// SDK < 11 is handled differently... (non-collapsible there)
+		if (Build.VERSION.SDK_INT >= 11) {
+			MenuItemCompat.expandActionView(searchItem);
+			MenuItemCompat.collapseActionView(searchItem);
+		}
+
 		SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
 		searchView.setQueryHint(getString(R.string.epg_search_hint));
 		searchView.setOnQueryTextListener(this);
@@ -635,9 +641,12 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 		}
 	}
 
-
-	/* (non-Javadoc)
-	 * @see android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextSubmit(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextSubmit
+	 * (java.lang.String)
 	 */
 	@Override
 	public boolean onQueryTextSubmit(String query) {
@@ -649,9 +658,12 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 		return true;
 	}
 
-
-	/* (non-Javadoc)
-	 * @see android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextChange(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextChange
+	 * (java.lang.String)
 	 */
 	@Override
 	public boolean onQueryTextChange(String newText) {
