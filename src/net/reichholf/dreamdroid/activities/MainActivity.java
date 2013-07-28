@@ -209,15 +209,19 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		SearchView searchView = new SearchView(getSupportActionBar().getThemedContext());
+		getMenuInflater().inflate(R.menu.search, menu);
+		MenuItem searchItem = menu.findItem(R.id.action_search);
+		
+		// there is a bug with NAVIGATION_MODE_LIST and SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW which makes the
+		// List "invisible" after the search view as expanded, the following thow lines are a workaround for this bug!
+		searchItem.expandActionView();
+		searchItem.collapseActionView();
+		
+		SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
 		searchView.setQueryHint(getString(R.string.epg_search_hint));
 		searchView.setOnQueryTextListener(this);
 
-		MenuItem searchItem = menu.add(getString(R.string.epg_search)).setIcon(R.drawable.ic_menu_search);
-		MenuItemCompat.setActionView(searchItem, searchView);
-		MenuItemCompat.setShowAsAction(searchItem, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-
-		return true;
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	private Fragment getCurrentDetailFragment() {
