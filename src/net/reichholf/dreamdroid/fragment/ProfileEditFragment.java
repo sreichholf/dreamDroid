@@ -79,7 +79,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mFileSsl = (CheckBox) view.findViewById(R.id.CheckBoxSslFileStream);
 		mFileLogin = (CheckBox) view.findViewById(R.id.CheckBoxLoginFileStream);
 
-		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LinearLayoutLogin);
+		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LoginLayout);
 
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
 			mCurrentProfile = (Profile) getArguments().getSerializable("profile");

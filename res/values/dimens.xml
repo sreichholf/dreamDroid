@@ -22,5 +22,7 @@
     <dimen name="navListPreferredItemHeight">48dip</dimen>
     <dimen name="dialog_button_bar_height">48dip</dimen>
     <dimen name="abs__alert_dialog_title_height">64dip</dimen>
+    <dimen name="content_horz_padding">6dp</dimen>
+    <dimen name="content_vert_padding">3dp</dimen>
 
 </resources>

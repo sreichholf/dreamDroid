@@ -47,11 +47,12 @@
     <string name="ssl_enabled">https</string>
     <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
+    <string name="live">Live</string>
     <string name="port_stream_live">Port (Live)</string>
     <string name="port_stream_file">Port (Movies)</string>
     <string name="settings">Settings</string>
     <string name="host_long">Hostname or IP</string>
-    <string name="port_long">istening Port</string>
+    <string name="port_long">Listening Port</string>
     <string name="close">Close</string>
     <string name="minutes_short">min.</string>
     <string name="user">User</string>
@@ -98,11 +99,11 @@
     <string name="image_version">Image version</string>
     <string name="interface_version">Interface version</string>
     <string name="front_processor_version">Frontprocessor version</string>
-    <string name="device_name">Devicename</string>
+    <string name="device_name">Device name</string>
     <string name="frontends">Frontends</string>
     <string name="nics">Network Interfaces</string>
-    <string name="hdds">Harddisks</string>
-    <string name="not_implemented">This function is not implemented, yet!</string>
+    <string name="hdds">Hard disks</string>
+    <string name="not_implemented">This function is not implemented yet!</string>
     <string name="current_event">Current event</string>
     <string name="timeout">Timeout</string>
     <string name="message">Message</string>
@@ -118,6 +119,7 @@
     </string-array>
 
     <string name="virtual_remote">Virtual Remote</string>
+    <string name="login">Login</string>
     <string name="login_enabled">Enable Login</string>
     <string name="wait_request_finished">Please wait until the running request has finished!</string>
     <string name="current_service">Current</string>
@@ -137,6 +139,7 @@
     <string name="profile_not_deleted">Error deleting profile</string>
     <string name="profile_deleted">Deleted profile</string>
     <string name="profile">Profile</string>
+    <string name="profile_name">Profile name</string>
     <string name="profile_updated">Updated profile</string>
     <string name="profile_added">Added profile</string>
     <string name="profile_add">Add Profile</string>
@@ -164,6 +167,7 @@
     <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Profile</string>
+    <string name="connection">Connection</string>
     <string name="connection_state">State</string>
     <string name="not_available">Not available</string>
     <string name="checking">checking&#8230;</string>
@@ -223,10 +227,10 @@
     <string name="autodiscover_dreamboxes">Dreambox Autodiscovery</string>
     <string name="autodiscovery_failed">Could not autodiscover any dreambox on your local network!</string>
     <string name="add_all">Add All</string>
-    <string name="error_parsing">An error occured on parsing the data!</string>
+    <string name="error_parsing">An error occurred on parsing the data!</string>
     <string name="enabled">Enabled</string>
     <string name="signal_meter">Signal Meter</string>
-    <string name="accoustic_feedback">Accoustic Feedback</string>
+    <string name="accoustic_feedback">Acoustic Feedback</string>
     <string name="use_light_theme_long">Use a light theme instead of the dark default theme</string>
     <string name="use_light_theme">Use a light theme</string>
     <string name="leave_confirm">Really leave?</string>

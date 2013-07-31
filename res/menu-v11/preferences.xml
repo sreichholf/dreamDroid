@@ -3,9 +3,21 @@
     xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
 
     <item
+        android:id="@+id/menu_check_connectivity"
+        android:icon="@drawable/ic_menu_link"
+        dreamDroid:showAsAction="never"
+        android:title="@string/check_connectivity"/>
+
+    <item
         android:id="@+id/menu_preferences"
         android:icon="@android:drawable/ic_menu_preferences"
         android:title="@string/settings"
         dreamDroid:showAsAction="never"/>
+
+    <item
+        android:id="@+id/menu_about"
+        android:icon="@drawable/ic_menu_help"
+        dreamDroid:showAsAction="never"
+        android:title="@string/about"/>
 
 </menu>
