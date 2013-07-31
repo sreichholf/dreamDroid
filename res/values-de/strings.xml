@@ -47,6 +47,7 @@
     <string name="ssl_enabled">https</string>
     <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
+    <string name="live">Live</string>
     <string name="port_stream_live">Port (Live)</string>
     <string name="port_stream_file">Port (Filme)</string>
     <string name="settings">Einstellungen</string>
@@ -94,10 +95,10 @@
     <string name="daily">Täglich</string>
     <string name="new_timer">Neuer Timer</string>
     <string name="locations">Orte</string>
-    <string name="gui_version">GUI Version</string>
-    <string name="image_version">Image Version</string>
-    <string name="interface_version">Interface Version</string>
-    <string name="front_processor_version">Frontprozessor Version</string>
+    <string name="gui_version">GUI-Version</string>
+    <string name="image_version">Image-Version</string>
+    <string name="interface_version">Interface-Version</string>
+    <string name="front_processor_version">Frontprozessor-Version</string>
     <string name="device_name">Gerätename</string>
     <string name="frontends">Tuner</string>
     <string name="nics">Netzwerkschnittstellen</string>
@@ -118,6 +119,7 @@
     </string-array>
 
     <string name="virtual_remote">Virt. Fern-\nbedienung</string>
+    <string name="login">Login</string>
     <string name="login_enabled">Login aktivieren</string>
     <string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
     <string name="current_service">Es läuft</string>
@@ -137,6 +139,7 @@
     <string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
     <string name="profile_deleted">Profil gelöscht</string>
     <string name="profile">Profil</string>
+    <string name="profile_name">Profilname</string>
     <string name="profile_updated">Profil aktualisiert</string>
     <string name="profile_added">Profil hinzugefügt</string>
     <string name="profile_add">Profil hinzufügen</string>
@@ -161,9 +164,10 @@
     <string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
     <string name="loading">Lade&#8230;</string>
     <string name="about">Über</string>
-    <string name="license">Lizenz:\nLizensiert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="license">Lizenz:\nLizenziert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktives Profil</string>
+    <string name="connection">Verbindung</string>
     <string name="connection_state">Verbindungsstatus</string>
     <string name="not_available">Nicht verfügbar</string>
     <string name="checking">prüfe&#8230;</string>
@@ -235,6 +239,8 @@
     <string name="watch_on_dream">Auf Dreambox ansehen</string>
     <string name="sent_from_dreamdroid">Von dreamDroid gesendet (%s)</string>
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
+    <string name="confirm_app_close">Vor Verlassen nachfragen</string>
+    <string name="confirm_app_close_long">Nach Zustimmung fragen, bevor die App geschlossen wird, weil die &#x201E;Zurück&#x201C;-Taste gedrückt wurde</string>
     <string name="login_movies">Login (Filme)</string>
     <string name="ssl_movies">https (Filme)</string>
     <string name="appearance">Erscheinungsbild</string>
@@ -249,5 +255,9 @@
     <string name="connected">Verbunden</string>
     <string name="logged_in">Anmelden</string>
     <string name="getting_list_of_files">Hole Dateiliste</string>
-    <string name="picon_sync_finished">%s Picons wurden erfolgreich heruntergeldaen!</string>
+    <string name="picon_sync_finished">%s Picons wurden erfolgreich heruntergeladen!</string>
+    <string name="drawer_open">Seitenleiste öffnen</string>
+    <string name="drawer_close">Seitenleiste schließen</string>
+    <string name="enable_animations_long">Zusätzliche Animationen aktivieren</string>
+    <string name="enable_animations">Animationen aktivieren</string>
 </resources>
