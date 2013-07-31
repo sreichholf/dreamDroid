@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 23.2" versioncode="202">
+        <change>FIX: Crash in "Current" when picons are enabled and box is in standby</change>
+        <change>UPDATE: German translation</change>
+    </release>
     <release version="1.0 beta 23.1" versioncode="201">
         <change>FIX: Configured picon path was ignored</change>
         <change>FIX: Search issues on android >= 3.0</change>

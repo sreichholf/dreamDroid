@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+        <release version="1.0 beta 23.2" versioncode="202">
+        <change>FIX: Crash in "Es läuft" wenn Picons aktiviert sind und die Box sich im Standby befindet</change>
+        <change>UPDATE: Deutsche Übersetzung</change>
+    </release>
+    
     <release version="1.0 beta 23.1" versioncode="201">
         <change>FIX: Eingestellter Pfad zur Synchronisation von Picons wurde nicht beachtet</change>
         <change>FIX: Probleme mit der Suche unter Android >= 3.0</change>
