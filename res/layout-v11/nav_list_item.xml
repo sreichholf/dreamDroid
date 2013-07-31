@@ -22,4 +22,6 @@
     android:background="?android:attr/activatedBackgroundIndicator"
     android:gravity="center_vertical"
     android:minHeight="?attr/navListPreferredItemHeight"
-    android:textAppearance="?android:attr/textAppearanceMedium" />
+    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:drawablePadding="6dp"
+    android:paddingLeft="4dp" />
