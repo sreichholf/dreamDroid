@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent" >
+    android:layout_height="fill_parent"
+    android:paddingBottom="@dimen/content_vert_padding"
+    android:paddingLeft="@dimen/content_horz_padding"
+    android:paddingRight="@dimen/content_horz_padding"
+    android:paddingTop="@dimen/content_vert_padding" >
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -18,9 +22,11 @@
         <TextView
             android:id="@+id/GuiVersion"
             android:layout_width="fill_parent"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:padding="3dp"
+            android:text="@string/loading"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
@@ -33,9 +39,11 @@
         <TextView
             android:id="@+id/ImageVersion"
             android:layout_width="fill_parent"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:padding="3dp"
+            android:text="@string/loading"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
@@ -48,9 +56,11 @@
         <TextView
             android:id="@+id/InterfaceVersion"
             android:layout_width="fill_parent"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:padding="3dp"
+            android:text="@string/loading"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
@@ -63,9 +73,11 @@
         <TextView
             android:id="@+id/FrontprocessorVersion"
             android:layout_width="fill_parent"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:padding="3dp"
+            android:text="@string/loading"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
         <TextView
@@ -78,10 +90,57 @@
         <TextView
             android:id="@+id/DeviceName"
             android:layout_width="fill_parent"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:padding="3dp"
+            android:text="@string/loading"
             android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <TextView
+            android:id="@+id/FrontendsTitle"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/frontends" />
+
+        <LinearLayout
+            android:id="@+id/FrontendsList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/NicsTitle"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nics" />
+
+        <LinearLayout
+            android:id="@+id/NicsList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/HddsTitle"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/hdds" />
+
+        <LinearLayout
+            android:id="@+id/HddsList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:orientation="vertical" >
+        </LinearLayout>
     </LinearLayout>
 
 </ScrollView>

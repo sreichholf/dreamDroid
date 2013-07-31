@@ -35,6 +35,7 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -77,9 +78,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_info, 1, 0 },
 			{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
 			{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.drawable.ic_menu_info, 1, 0 },
-			{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1, 0 },
-			{ Statics.ITEM_CHECK_CONN, R.string.check_connectivity, R.drawable.ic_menu_link, 1, 1 },
-			{ Statics.ITEM_ABOUT, R.string.about, R.drawable.ic_menu_help, 1, 1 }, };
+			{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1, 0 }, };
 
 	private int[] mCurrent;
 	private int mCurrentListItem;
@@ -262,6 +261,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		getListView().setTextFilterEnabled(true);
 	}
 
+	@SuppressLint("NewApi")
 	public void setSelectedItem(int position) {
 		if (Build.VERSION.SDK_INT >= 8)
 			getListView().smoothScrollToPosition(position);

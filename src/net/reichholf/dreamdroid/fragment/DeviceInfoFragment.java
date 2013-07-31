@@ -17,17 +17,11 @@ import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.SimpleAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.commonsware.cwac.merge.MergeAdapter;
 
 /**
  * Shows device-specific information for the active profile.
@@ -37,20 +31,18 @@ import com.commonsware.cwac.merge.MergeAdapter;
  */
 public class DeviceInfoFragment extends AbstractHttpFragment {
 	private ExtendedHashMap mInfo;
-	private MergeAdapter mMerge;
-	private SimpleAdapter mFrontendAdapter;
-	private SimpleAdapter mNicAdapter;
-	private SimpleAdapter mHddAdapter;
 	private TextView mGuiVersion;
 	private TextView mImageVersion;
 	private TextView mInterfaceVersion;
 	private TextView mFrontprocessorVersion;
 	private TextView mDeviceName;
+	private LinearLayout mFrontendsList;
+	private LinearLayout mNicsList;
+	private LinearLayout mHddsList;
 	private ArrayList<ExtendedHashMap> mFrontends;
 	private ArrayList<ExtendedHashMap> mNics;
 	private ArrayList<ExtendedHashMap> mHdds;
 	private LayoutInflater mInflater;
-	private ListView mList;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,44 +56,24 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		// <taken-from-android-list-fragment>
-		FrameLayout root = new FrameLayout(getActionBarActivity());
-
-		TextView tv = new TextView(getActionBarActivity());
-		tv.setId(android.R.id.empty);
-		tv.setGravity(Gravity.CENTER);
-		root.addView(tv, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-				ViewGroup.LayoutParams.FILL_PARENT));
-
-		mList = new ListView(getActionBarActivity());
-		mList.setId(android.R.id.list);
-		mList.setDrawSelectorOnTop(false);
-		root.addView(mList, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-				ViewGroup.LayoutParams.FILL_PARENT));
-
-		ListView.LayoutParams lp = new ListView.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-				ViewGroup.LayoutParams.FILL_PARENT);
-		root.setLayoutParams(lp);
-		// </taken-from-android-list-fragment>
-
-		mMerge = new MergeAdapter();
 		mFrontends = new ArrayList<ExtendedHashMap>();
 		mNics = new ArrayList<ExtendedHashMap>();
 		mHdds = new ArrayList<ExtendedHashMap>();
 
 		mInflater = getLayoutInflater(savedInstanceState);
-		ScrollView fields = (ScrollView) mInflater.inflate(R.layout.device_info, null);
+		View view = mInflater.inflate(R.layout.device_info, null);
 
-		mMerge.addView(fields);
-
-		mGuiVersion = (TextView) fields.findViewById(R.id.GuiVersion);
-		mImageVersion = (TextView) fields.findViewById(R.id.ImageVersion);
-		mInterfaceVersion = (TextView) fields.findViewById(R.id.InterfaceVersion);
-		mFrontprocessorVersion = (TextView) fields.findViewById(R.id.FrontprocessorVersion);
-		mDeviceName = (TextView) fields.findViewById(R.id.DeviceName);
+		mGuiVersion = (TextView) view.findViewById(R.id.GuiVersion);
+		mImageVersion = (TextView) view.findViewById(R.id.ImageVersion);
+		mInterfaceVersion = (TextView) view.findViewById(R.id.InterfaceVersion);
+		mFrontprocessorVersion = (TextView) view.findViewById(R.id.FrontprocessorVersion);
+		mDeviceName = (TextView) view.findViewById(R.id.DeviceName);
+		
+		mFrontendsList = (LinearLayout) view.findViewById(R.id.FrontendsList);
+		mNicsList = (LinearLayout) view.findViewById(R.id.NicsList);
+		mHddsList = (LinearLayout) view.findViewById(R.id.HddsList);
 
 		if (mInfo == null || mInfo.isEmpty()) {
 			reload();
@@ -109,7 +81,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 			onInfoReady();
 		}
 
-		return root;
+		return view;
 	}
 
 	@Override
@@ -118,70 +90,65 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	}
 
 	/**
-	 * @param id
-	 *            ID of the R.string to be set as the content of the
-	 *            <code>DreamDroid.R.layout.simple_header</code>
-	 * @return
-	 */
-	private TextView getListHeaderView(int id) {
-		TextView header = (TextView) mInflater.inflate(R.layout.simple_header, null);
-		header.setText(id);
-		return header;
-	}
-
-	/**
 	 * Set all required stuff for the
 	 * <code>com.commonsware.cwac.merge.MergeAdapter</code>
 	 */
-	private void setAdapter() {
-		mFrontendAdapter = new SimpleAdapter(getActionBarActivity(), mFrontends, android.R.layout.two_line_list_item,
-				new String[] { DeviceInfo.KEY_FRONTEND_NAME, DeviceInfo.KEY_FRONTEND_MODEL }, new int[] {
-						android.R.id.text1, android.R.id.text2 });
-
-		mMerge.addView(getListHeaderView(R.string.frontends));
-		mMerge.addAdapter(mFrontendAdapter);
-
-		mNicAdapter = new SimpleAdapter(getActionBarActivity(), mNics, android.R.layout.two_line_list_item,
-				new String[] { DeviceInfo.KEY_NIC_NAME, DeviceInfo.KEY_NIC_IP }, new int[] { android.R.id.text1,
-						android.R.id.text2 });
-
-		mMerge.addView(getListHeaderView(R.string.nics));
-		mMerge.addAdapter(mNicAdapter);
-
-		mHddAdapter = new SimpleAdapter(getActionBarActivity(), mHdds, android.R.layout.two_line_list_item,
-				new String[] { DeviceInfo.KEY_HDD_MODEL, DeviceInfo.KEY_HDD_CAPACITY }, new int[] { android.R.id.text1,
-						android.R.id.text2 });
-
-		mMerge.addView(getListHeaderView(R.string.hdds));
-		mMerge.addAdapter(mHddAdapter);
-	}
 
 	/**
 	 * Called when device info has been loaded and parsed successfully
 	 */
 	@SuppressWarnings("unchecked")
 	private void onInfoReady() {
-		if (mList.getAdapter() == null) {
-			setAdapter();
-			mList.setAdapter(mMerge);
-		}
-
 		mFrontends.clear();
 		mFrontends.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_FRONTENDS));
+		
+		for (int i=0; i<mFrontends.size(); i++) {
+			View item = mInflater.inflate(R.layout.two_line_list_item, null);
+			
+			TextView title = (TextView) item.findViewById(R.id.text1);
+			title.setText((String) mFrontends.get(i).get(DeviceInfo.KEY_FRONTEND_NAME));
+			
+			TextView desc = (TextView) item.findViewById(R.id.text2);
+			desc.setText((String) mFrontends.get(i).get(DeviceInfo.KEY_FRONTEND_MODEL));
+			
+			mFrontendsList.addView(item);
+		}
 
 		mNics.clear();
 		mNics.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_NICS));
+		
+		for (int i=0; i<mNics.size(); i++) {
+			View item = mInflater.inflate(R.layout.two_line_list_item, null);
+			
+			TextView title = (TextView) item.findViewById(R.id.text1);
+			title.setText((String) mNics.get(i).get(DeviceInfo.KEY_NIC_NAME));
+			
+			TextView desc = (TextView) item.findViewById(R.id.text2);
+			desc.setText((String) mNics.get(i).get(DeviceInfo.KEY_NIC_IP));
+			
+			mNicsList.addView(item);
+		}
 
 		mHdds.clear();
 		mHdds.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_HDDS));
+		
+		for (int i=0; i<mHdds.size(); i++) {
+			View item = mInflater.inflate(R.layout.two_line_list_item, null);
+			
+			TextView title = (TextView) item.findViewById(R.id.text1);
+			title.setText((String) mHdds.get(i).get(DeviceInfo.KEY_HDD_MODEL));
+			
+			TextView desc = (TextView) item.findViewById(R.id.text2);
+			desc.setText((String) mHdds.get(i).get(DeviceInfo.KEY_HDD_CAPACITY));
+			
+			mHddsList.addView(item);
+		}
 
 		mGuiVersion.setText(mInfo.getString(DeviceInfo.KEY_GUI_VERSION));
 		mImageVersion.setText(mInfo.getString(DeviceInfo.KEY_IMAGE_VERSION));
 		mInterfaceVersion.setText(mInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION));
 		mFrontprocessorVersion.setText(mInfo.getString(DeviceInfo.KEY_FRONT_PROCESSOR_VERSION));
 		mDeviceName.setText(mInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
-
-		mMerge.notifyDataSetChanged();
 	}
 
 	@Override
