@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <string name="description">Dreambox</string>
+    <string name="description">Beschreibung</string>
     <string name="title">Titel</string>
     <string name="mo">Mo</string>
     <string name="app_name">DreamDroid</string>
@@ -106,6 +106,7 @@
     <string name="not_implemented">Funktion ist noch nicht implementiert!</string>
     <string name="current_event">Aktuelle Sendung</string>
     <string name="timeout">Anzeigedauer</string>
+    <string name="seconds">Sekunden</string>
     <string name="message">Nachricht</string>
     <string name="message_text_hint">Nachricht eingeben</string>
     <string name="send">Senden</string>

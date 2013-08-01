@@ -454,7 +454,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	}
 
 	/**
-	 * Shows succes/error toasts after power state has been set
+	 * Shows success/error toasts after power state has been set
 	 * 
 	 * @param isRunning
 	 */
