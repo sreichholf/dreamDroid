@@ -4,104 +4,111 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <View
-        android:id="@+id/divider"
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="3dp"
-        android:background="@android:drawable/divider_horizontal_bright" />
-
-    <TableLayout
-        android:id="@+id/TableLayout01"
+    <LinearLayout
+        android:id="@+id/LinearLayout1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="3dp" >
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/content_vert_padding"
+        android:paddingLeft="@dimen/content_horz_padding"
+        android:paddingRight="@dimen/content_horz_padding"
+        android:paddingTop="@dimen/content_vert_padding" >
 
-        <TableRow
-            android:id="@+id/TableRowMessage"
+        <EditText
+            android:id="@+id/EditTextMessage"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:hint="@string/message_text_hint" >
+        </EditText>
 
-            <TextView
-                android:id="@+id/TextViewMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:text="@string/message" />
-
-            <EditText
-                android:id="@+id/EditTextMessage"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/message_text_hint"
-                android:maxLines="2" />
-        </TableRow>
-
-        <TableRow
-            android:id="@+id/TableRowType"
+        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:gravity="center_vertical" >
 
             <TextView
                 android:id="@+id/TextViewType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
+                android:layout_marginRight="8dp"
                 android:text="@string/type" />
 
             <Spinner
                 android:id="@+id/SpinnerMessageType"
-                android:layout_width="fill_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:entries="@array/message_types" />
-        </TableRow>
+        </LinearLayout>
 
-        <TableRow
-            android:id="@+id/TableRowTimeout"
+        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" >
 
             <TextView
                 android:id="@+id/TextViewTimeout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_weight="0"
+                android:layout_marginRight="8dp"
                 android:text="@string/timeout" />
 
             <EditText
                 android:id="@+id/EditTextTimeout"
-                android:layout_width="fill_parent"
+                android:layout_width="60dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:inputType="number"
                 android:maxLength="2"
                 android:text="20" />
-        </TableRow>
-    </TableLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="8dp"
+                android:text="@string/seconds" />
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:id="@+id/buttonPanel"
+        style="@style/ButtonPanel"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:dividerPadding="0dip"
+        android:minHeight="@dimen/dialog_button_bar_height"
+        android:orientation="vertical"
+        android:showDividers="beginning" >
 
-        <Button
-            android:id="@+id/ButtonSend"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            style="@style/ButtonBar"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_menu_send"
-            android:text="@string/send" />
+            android:measureWithLargestChild="true"
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/ButtonCancel"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_btn_close"
-            android:text="@string/cancel" />
+            <Button
+                android:id="@+id/ButtonCancel"
+                style="@style/ButtonBarButton"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_btn_close"
+                android:text="@string/cancel" />
+
+            <Button
+                android:id="@+id/ButtonSend"
+                style="@style/ButtonBarButton"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_menu_send"
+                android:text="@string/send" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

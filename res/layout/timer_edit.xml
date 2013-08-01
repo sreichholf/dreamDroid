@@ -1,35 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent" >
+    android:layout_height="fill_parent"
+    android:paddingBottom="@dimen/content_vert_padding"
+    android:paddingLeft="@dimen/content_horz_padding"
+    android:paddingRight="@dimen/content_horz_padding"
+    android:paddingTop="@dimen/content_vert_padding" >
 
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/TextViewTitle"
-            style="@style/SimpleHeader"
+        <EditText
+            android:id="@+id/EditTextTitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/title" />
-
-        <LinearLayout
-            android:id="@+id/LinearLayoutTitle"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
-
-            <EditText
-                android:id="@+id/EditTextTitle"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/title" />
-        </LinearLayout>
+            android:hint="@string/title" />
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal" >
 
             <CheckBox
                 android:id="@+id/CheckBoxEnabled"
@@ -55,26 +48,29 @@
         <EditText
             android:id="@+id/EditTextDescription"
             android:layout_width="fill_parent"
-            android:layout_height="0dip"
-            android:layout_weight="1"
-            android:hint="@string/description" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:hint="@string/description"
+            android:singleLine="false" />
 
         <TextView
             android:id="@+id/TextViewBeginTitle"
             style="@style/SimpleHeader"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="3dip"
             android:text="@string/begin_time" />
 
         <TextView
             android:id="@+id/TextViewBegin"
             style="@style/SelectableItem"
             android:layout_width="fill_parent"
-            android:layout_height="50dip"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:paddingBottom="8dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:paddingTop="8dp"
             android:text="@+id/TextViewBegin"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
@@ -89,10 +85,13 @@
             android:id="@+id/TextViewEnd"
             style="@style/SelectableItem"
             android:layout_width="fill_parent"
-            android:layout_height="50dip"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:paddingBottom="8dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:paddingTop="8dp"
             android:text="@+id/TextViewEnd"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
@@ -107,10 +106,13 @@
             android:id="@+id/TextViewRepeated"
             style="@style/SelectableItem"
             android:layout_width="fill_parent"
-            android:layout_height="50dip"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:paddingBottom="8dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:paddingTop="8dp"
             android:text="@+id/TextViewRepeated"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
@@ -125,10 +127,13 @@
             android:id="@+id/TextViewService"
             style="@style/SelectableItem"
             android:layout_width="fill_parent"
-            android:layout_height="50dip"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:clickable="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:paddingBottom="8dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:paddingTop="8dp"
             android:text="@+id/TextViewService"
             android:textAppearance="@android:style/TextAppearance.Medium" />
 
@@ -142,7 +147,12 @@
         <Spinner
             android:id="@+id/SpinnerAfterEvent"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:paddingTop="8dp" />
 
         <TextView
             android:id="@+id/TextViewLocation"
@@ -154,7 +164,12 @@
         <Spinner
             android:id="@+id/SpinnerLocation"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:paddingTop="8dp" />
 
         <TextView
             android:id="@+id/TextViewTagsTitle"
@@ -167,10 +182,12 @@
             android:id="@+id/TextViewTags"
             style="@style/SelectableItem"
             android:layout_width="fill_parent"
-            android:layout_height="50dip"
+            android:layout_height="wrap_content"
             android:clickable="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="3dip"
+            android:paddingBottom="8dp"
+            android:paddingLeft="3dp"
+            android:paddingRight="3dp"
+            android:paddingTop="8dp"
             android:text="@+id/TextViewTags"
             android:textAppearance="@android:style/TextAppearance.Medium" />
     </LinearLayout>

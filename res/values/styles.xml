@@ -13,6 +13,7 @@
     </style>
 
     <style name="SimpleHeader" parent="@android:style/TextAppearance.Small">
+
         <!-- <item name="android:textAllCaps">true</item> -->
         <item name="android:paddingLeft">3dp</item>
         <item name="android:paddingRight">3dp</item>
@@ -21,6 +22,12 @@
         <item name="android:textColor">#888</item>
         <item name="android:background">@drawable/simple_heading_line</item>
     </style>
+
+    <style name="ButtonPanel"></style>
+
+    <style name="ButtonBar" parent="@android:style/ButtonBar"></style>
+
+    <style name="ButtonBarButton"></style>
 
     <style name="RemoteButton">
         <item name="android:textColor">@android:color/white</item>
