@@ -6,6 +6,6 @@
         android:id="@+id/menu_reload"
         android:icon="@drawable/ic_menu_refresh"
         android:title="@string/reload"
-        dreamDroid:showAsAction="ifRoom|withText"/>
+        dreamDroid:showAsAction="ifRoom"/>
 
 </menu>

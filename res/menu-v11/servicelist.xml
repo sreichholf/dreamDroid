@@ -6,7 +6,7 @@
         android:id="@+id/menu_overview"
         android:icon="@drawable/ic_menu_list"
         android:title="@string/bouquet_overview"
-        dreamDroid:showAsAction="ifRoom|withText"/>
+        dreamDroid:showAsAction="always|withText"/>
     <item
         android:id="@+id/menu_default"
         android:icon="@android:drawable/ic_menu_set_as"

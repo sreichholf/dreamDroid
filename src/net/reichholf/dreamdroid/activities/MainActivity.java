@@ -136,8 +136,10 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 			toast.show();
 
 			if (isFirstStart)
-				// FIXME this is REALLY ugly
-				mNavigationFragment.setSelectedItem(NavigationFragment.MENU_ITEMS.length - 3);
+				for (int i = 0; i < NavigationFragment.MENU_ITEMS.length; i++) {
+					if (NavigationFragment.MENU_ITEMS[i][0] == Statics.ITEM_PROFILES)
+						mNavigationFragment.setSelectedItem(i);
+				}
 		} else {
 			setConnectionState(getString(R.string.ok), true);
 			mNavigationFragment.setAvailableFeatures();
@@ -210,6 +212,8 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+
 		getMenuInflater().inflate(R.menu.search, menu);
 		MenuItem searchItem = menu.findItem(R.id.action_search);
 
@@ -227,7 +231,7 @@ public class MainActivity extends ActionBarActivity implements MultiPaneHandler,
 		searchView.setQueryHint(getString(R.string.epg_search_hint));
 		searchView.setOnQueryTextListener(this);
 
-		return super.onCreateOptionsMenu(menu);
+		return true;
 	}
 
 	private Fragment getCurrentDetailFragment() {

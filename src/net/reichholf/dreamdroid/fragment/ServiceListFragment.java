@@ -585,25 +585,25 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	public void onPrepareOptionsMenu(Menu menu) {
 		MenuItem overview = menu.findItem(R.id.menu_overview);
 		if (!SERVICE_REF_ROOT.equals(mNavReference) || mNavList.equals(mDetailList)) {
-			overview.setEnabled(true);
+			overview.setVisible(true);
 		} else {
-			overview.setEnabled(false);
+			overview.setVisible(false);
 		}
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
 		String defaultReference = DreamDroid.getCurrentProfile().getDefaultRef();
-		setDefault.setEnabled(true);
+		setDefault.setVisible(true);
 		if (defaultReference != null) {
 			if (defaultReference.equals(mDetailReference)) {
-				setDefault.setEnabled(false);
+				setDefault.setVisible(false);
 			}
 		}
 
 		MenuItem reload = menu.findItem(R.id.menu_reload);
 		if (!mPickMode) {
-			reload.setEnabled(true);
+			reload.setVisible(true);
 		} else {
-			reload.setEnabled(false);
+			reload.setVisible(false);
 		}
 	}
 
@@ -676,7 +676,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
 		if (Service.isBouquet(ref)) {
 			if (l.equals(mNavList)) {
-				if (SERVICE_REF_ROOT.equals(mNavReference) && ref.toUpperCase().contains("FROM")) { //without FROM it's a "all" reference
+				// without FROM it's a "all" reference
+				if (SERVICE_REF_ROOT.equals(mNavReference) && ref.toUpperCase().contains("FROM")) { 
 					ExtendedHashMap map = new ExtendedHashMap();
 					map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
 					map.put(Event.KEY_SERVICE_NAME, String.valueOf(nam));
