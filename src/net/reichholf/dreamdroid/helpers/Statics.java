@@ -51,8 +51,8 @@ public class Statics {
 	public static final int ITEM_REBOOT = 0x6015;
 	public static final int ITEM_SHUTDOWN = 0x6016;
 	public static final int ITEM_POWERSTATE_DIALOG = 0x6017;
-	public static final int ITEM_ABOUT = 0x6018;
-	public static final int ITEM_CHECK_CONN = 0x6019;
+	public static final int ITEM_ABOUT = R.id.menu_about;
+	public static final int ITEM_CHECK_CONN = R.id.menu_check_connectivity;
 	public static final int ITEM_SLEEPTIMER = 0x6020;
 	public static final int ITEM_MEDIA_PLAYER = 0x6021;
 	public static final int ITEM_PROFILES = 0x6022;
