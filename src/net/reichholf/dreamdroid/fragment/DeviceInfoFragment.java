@@ -101,7 +101,9 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	private void onInfoReady() {
 		mFrontends.clear();
 		mFrontends.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_FRONTENDS));
-		
+
+		mFrontendsList.removeAllViews();
+
 		for (int i=0; i<mFrontends.size(); i++) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
 			
@@ -116,7 +118,9 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 
 		mNics.clear();
 		mNics.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_NICS));
-		
+
+		mNicsList.removeAllViews();
+
 		for (int i=0; i<mNics.size(); i++) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
 			
@@ -131,7 +135,9 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 
 		mHdds.clear();
 		mHdds.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_HDDS));
-		
+
+		mHddsList.removeAllViews();
+
 		for (int i=0; i<mHdds.size(); i++) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
 			
