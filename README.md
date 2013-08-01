@@ -30,7 +30,7 @@ Officially supported are the following devices:
 # Requirements
 
 * The target dreamboxes should be running a WebInterface with Version 1.6.8 or later.
-* dreamDroid requires at least Android 2.1 (which is the minimum SDK Version required by ActionBarSherlock >= 4.0) to work properly.
+* dreamDroid requires at least Android 2.1 (which is the minimum SDK Version required by android-support-v7-appcompat) to work properly.
 
 # Developing / building dreamDroid (with eclipse)
 
@@ -39,12 +39,13 @@ All required libraries can be found in the "libraries" folder of this git reposi
 
 ## Required Libraries
 
-* ABS - Jake Wharton's ActionBarSherlock (4.3.1): http://actionbarsherlock.com/ 
+* android-support-v7-appcompat - Googles appcompat library (for the ActionBar)
 * numberpicker - Michael Novakjr's Numberpicker (cloned on 2012-09-08): https://github.com/mrn/numberpicker/
 * gaugeview-library - CodeAndMagic's GaugeView: https://github.com/CodeAndMagic/GaugeView
 * ckChangeLog - ckettis ckChangeLog library: https://github.com/cketti/ckChangeLog
+* PhotoView - Chris Banes PhotoView library: https://github.com/chrisbanes/PhotoView
 
 The following SDK versions have to be installed for a clean build:
 
-* API v15 (4.0.3) for the numberpicker
-* API v16 (4.2.2) for dreamDroid itself
+* API V16 (4.1.2) for android-support-v7-appcompat, gaugeview-library and PhotoView
+* API v17 (4.2.2) for ckChangelog, numberpicker and dreamDroid itself
