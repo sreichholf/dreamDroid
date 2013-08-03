@@ -32,6 +32,7 @@ import org.apache.http.message.BasicNameValuePair;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -65,7 +66,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_media_view, null, false);
-
 		setAdapter();
 
 		// only if detail view is available the application should have
@@ -103,6 +103,10 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 				}
 			});
 		}
+
+		SlidingPaneLayout spl = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
+		if (spl != null)
+			spl.openPane();
 
 		reload();
 
