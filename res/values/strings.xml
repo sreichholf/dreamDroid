@@ -16,6 +16,21 @@
     </string-array>
 
     <string name="timer">Timer</string>
+    
+    <string name="mediaplayer">Mediaplayer</string>
+    <string name="play">Play</string>
+    <string name="add_to_playlist">Add to Playlist</string>
+    <string name="navigation_back_media">Back</string>
+    <string name="home_media">Home</string>
+    <string name="close_media">Close Mediaplayer</string>
+    <string name="next_media">Next</string>
+    <string name="play_media">Play</string>
+    <string name="previous_media">Previous</string>
+    <string name="stop_media">Stop</string>
+    <string name="playlist">Playlist</string>
+    <string name="filebrowser">File Browser</string>
+    <string name="delete_from_playlist">Delete from Playlist</string>
+    
     <string name="service">Service</string>
     <string name="afterevent">Afterevent</string>
     <string name="location">Location</string>

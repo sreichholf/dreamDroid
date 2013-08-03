@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+ 
+    <LinearLayout
+        android:id="@+id/detailView"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_marginLeft="10dp"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+           	android:layout_width="wrap_content" 
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+            
+	        <LinearLayout
+	           	android:layout_width="wrap_content" 
+	            android:layout_height="wrap_content" >
+	
+	            <ImageButton
+	                android:id="@+id/imageButtonPrevious"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/ic_menu_previous" />
+	
+	            <ImageButton
+	                android:id="@+id/imageButtonPlay"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/ic_menu_play" />
+	
+	            <ImageButton
+	                android:id="@+id/imageButtonNext"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/ic_menu_next" />
+	
+	            <ImageButton
+	                android:id="@+id/imageButtonStop"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:src="@drawable/ic_menu_stop" />
+	
+	        </LinearLayout>
+	
+	        <ImageView
+	            android:id="@+id/cover"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_marginTop="10dp"
+	            android:src="@drawable/no_cover_art" />
+        </LinearLayout>
+ 
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:orientation="vertical" >
+	                
+	        <TextView
+	            android:id="@+id/label_artist"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:text="Artist"
+	            android:textAppearance="@android:style/TextAppearance.Small"
+	            android:textStyle="bold" />
+	
+	        <TextView
+	            android:id="@+id/artist"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:textAppearance="@android:style/TextAppearance.Medium" />
+	
+	        <TextView
+	            android:id="@+id/label_album"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_marginTop="5dp"
+	            android:text="Album"
+	            android:textAppearance="@android:style/TextAppearance.Small"
+	            android:textStyle="bold" />
+	
+	        <TextView
+	            android:id="@+id/album"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:textAppearance="@android:style/TextAppearance.Medium" />
+	
+	        <TextView
+	            android:id="@+id/label_year"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_marginTop="5dp"
+	            android:text="Year"
+	            android:textAppearance="@android:style/TextAppearance.Small"
+	            android:textStyle="bold" />
+	
+	        <TextView
+	            android:id="@+id/year"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:textAppearance="@android:style/TextAppearance.Medium" />
+	
+	        <TextView
+	            android:id="@+id/label_category"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_marginTop="5dp"
+	            android:text="Category"
+	            android:textAppearance="@android:style/TextAppearance.Small"
+	            android:textStyle="bold" />
+	
+	        <TextView
+	            android:id="@+id/category"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:textAppearance="@android:style/TextAppearance.Medium" />
+	
+	        <TextView
+	            android:id="@+id/label_title"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_marginTop="5dp"
+	            android:text="Title"
+	            android:textAppearance="@android:style/TextAppearance.Small"
+	            android:textStyle="bold" />
+	
+	        <TextView
+	            android:id="@+id/title"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:textAppearance="@android:style/TextAppearance.Medium" />
+        </LinearLayout> 
+ 
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/listView2Header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/detailView"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:gravity="top|left"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:textStyle="bold" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="fill_parent"
+        android:layout_height="10dp"
+        android:layout_below="@+id/detailView"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_toRightOf="@id/listView2Header"
+        android:background="#999" />	
+        
+    <ListView
+        android:id="@+id/android:list"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/listView2Header" />
+
+</RelativeLayout>

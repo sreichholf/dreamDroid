@@ -1,3 +1,7 @@
 bin/
 gen/
-out/
+dreamDroid.apk
+libraries/gaugeview-library/gen/
+libraries/gaugeview-library/bin/
+libraries/numberpicker/gen/
+libraries/numberpicker/bin/

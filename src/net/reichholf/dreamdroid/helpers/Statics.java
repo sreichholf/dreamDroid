@@ -45,6 +45,7 @@ public class Statics {
 	public static final int ITEM_REMOTE = 0x6008;
 	public static final int ITEM_PREFERENCES = R.id.menu_preferences;
 	public static final int ITEM_CURRENT = 0x6010;
+	public static final int ITEM_EPG_SEARCH = R.id.menu_search;
 	public static final int ITEM_SCREENSHOT = 0x6012;
 	public static final int ITEM_TOGGLE_STANDBY = 0x6013;
 	public static final int ITEM_RESTART_GUI = 0x6014;
@@ -84,5 +85,19 @@ public class Statics {
 	public static final int RESULT_NONE = -9999;
 
 	public static final String KEY_RELOAD = "reload";
+	
+	public static final int ITEM_MEDIA_HOME = R.id.menu_home_media;
+	public static final int ITEM_MEDIA_BACK = R.id.menu_navigation_back_media;
+	public static final int ITEM_MEDIA_CLOSE = R.id.menu_close_media;
+	public static final int ITEM_MEDIA_NEXT = R.id.menu_next_media;
+	public static final int ITEM_MEDIA_PREVIOUS = R.id.menu_previous_media;
+	public static final int ITEM_MEDIA_STOP = R.id.menu_stop_media;
+	public static final int ITEM_MEDIA_PLAY = R.id.menu_play_media;
+	public static final int ITEM_MEDIA_PLAYLIST = R.id.menu_playlist;
+	public static final int ITEM_MEDIA_FILEBROWSER = R.id.menu_filebrowser;
+	
+	public static final int ACTION_ADD_TO_PLAYLIST = 0xc16;
+	public static final int ACTION_PLAY_MEDIA = 0xc17;
+	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc18;
 
 }
