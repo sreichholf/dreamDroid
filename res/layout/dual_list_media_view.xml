@@ -29,14 +29,15 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_alignParentRight="true"
+        android:layout_marginLeft="20dp"
         android:background="@drawable/simple_left_line"
         android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:layout_marginLeft="20dp" >
+        android:paddingLeft="10dp" >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:gravity="center" >
 
             <ImageButton
                 android:id="@+id/imageButtonPrevious"
@@ -72,7 +73,8 @@
 
         <TextView
             android:id="@+id/label_artist"
-            android:layout_width="wrap_content"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Artist"
             android:textAppearance="@android:style/TextAppearance.Small"
@@ -86,12 +88,11 @@
 
         <TextView
             android:id="@+id/label_album"
-            android:layout_width="wrap_content"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="Album"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textStyle="bold" />
+            android:text="Album" />
 
         <TextView
             android:id="@+id/album"
@@ -101,12 +102,11 @@
 
         <TextView
             android:id="@+id/label_year"
-            android:layout_width="wrap_content"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="Year"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textStyle="bold" />
+            android:text="Year" />
 
         <TextView
             android:id="@+id/year"
@@ -116,12 +116,11 @@
 
         <TextView
             android:id="@+id/label_category"
-            android:layout_width="wrap_content"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="Category"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textStyle="bold" />
+            android:text="Category" />
 
         <TextView
             android:id="@+id/category"
@@ -131,12 +130,11 @@
 
         <TextView
             android:id="@+id/label_title"
-            android:layout_width="wrap_content"
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:text="Title"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textStyle="bold" />
+            android:text="Title" />
 
         <TextView
             android:id="@+id/title"
