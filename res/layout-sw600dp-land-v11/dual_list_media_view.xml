@@ -2,14 +2,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
-    
-	<ListView
-	    android:id="@+id/android:list"
-	    android:layout_width="wrap_content"
-	    android:layout_height="fill_parent"
-	    android:layout_alignParentLeft="true"
-	    android:layout_toLeftOf="@+id/divider"
-	    android:drawSelectorOnTop="false" />
+
+    <ListView
+        android:id="@+id/android:list"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/divider"
+        android:drawSelectorOnTop="false" />
 
     <LinearLayout
         android:id="@+id/detailView"
@@ -46,7 +46,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_menu_stop" />
-
         </LinearLayout>
 
         <ImageView
@@ -137,5 +136,20 @@
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/detailView"
         android:background="#999" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/android:list"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@android:id/empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="@string/loading" />
+    </LinearLayout>
 
 </RelativeLayout>

@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.adapter;
 
 import java.util.ArrayList;
 
-import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Mediaplayer;
 import android.content.Context;
@@ -23,14 +22,14 @@ import android.widget.TextView;
  * 
  */
 public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
-	
+
 	/**
 	 * @param context
 	 * @param textViewResourceId
 	 * @param objects
 	 */
-	public MediaListAdapter(Context context, int textViewResourceId, ArrayList<ExtendedHashMap> items) {
-		super(context, textViewResourceId, items);
+	public MediaListAdapter(Context context, ArrayList<ExtendedHashMap> items) {
+		super(context, 0, items);
 
 	}
 
@@ -39,36 +38,33 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		View view = convertView;
 		if (view == null) {
 			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			view = li.inflate(R.layout.media_item, null);
+			view = li.inflate(android.R.layout.simple_list_item_1, null);
 		}
 
 		ExtendedHashMap media = getItem(position);
 		if (media != null) {
-			TextView mediaName = (TextView) view.findViewById(R.id.media_name);
+			TextView mediaName = (TextView) view.findViewById(android.R.id.text1);
 
 			String root = media.getString(Mediaplayer.KEY_ROOT);
 			String isDirectory = media.getString(Mediaplayer.KEY_IS_DIRECTORY);
 			String reference = media.getString(Mediaplayer.KEY_SERVICE_REFERENCE);
-			
+
 			if (root.equals("None")) {
 				mediaName.setText(media.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
-			}
-			else if (root.equals("playlist")){
+			} else if (root.equals("playlist")) {
 				mediaName.setText(media.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
-			}
-			else if (isDirectory.equals("False")){
+			} else if (isDirectory.equals("False")) {
 				int pos = reference.lastIndexOf("/");
 				mediaName.setText(reference.substring(pos + 1));
-			}
-			else {
+			} else {
 				String path = media.getString(Mediaplayer.KEY_SERVICE_REFERENCE);
-				path = path.substring(0, path.length()-1);
+				path = path.substring(0, path.length() - 1);
 				int pos = path.lastIndexOf("/");
-				path = path.substring(pos+1);
+				path = path.substring(pos + 1);
 				mediaName.setText(path + "/");
 			}
 		}
-	
+
 		return view;
 	}
 

@@ -88,8 +88,9 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 
 	@Override
 	public void setEmptyText(CharSequence text) {
-		if (mCardListStyle)
-			((TextView) getView().findViewById(android.R.id.empty)).setText(text);
+		TextView emptyView = (TextView) getView().findViewById(android.R.id.empty);
+		if (emptyView != null)
+			emptyView.setText(text);
 		else
 			super.setEmptyText(text);
 	}
