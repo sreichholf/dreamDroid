@@ -15,41 +15,7 @@
             android:layout_height="fill_parent"
             android:layout_marginBottom="20dp" />
 
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="20dp"
-            android:layout_marginBottom="0dp"
-            android:layout_marginTop="-20dp"
-            android:paddingLeft="4dp"
-            android:paddingRight="4dp"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp"
-            android:gravity="top"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/TextViewProfile"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/loading"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                android:textColor="#888"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/TextViewConnectionState"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:text="@string/loading"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                android:textColor="#888"
-                android:textSize="12sp" />
-        </LinearLayout>
+        <include layout="@layout/dualpane_connection_state" />
     </LinearLayout>
 
     <FrameLayout
