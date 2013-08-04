@@ -16,7 +16,6 @@
     </string-array>
 
     <string name="timer">Timer</string>
-    
     <string name="mediaplayer">Mediaplayer</string>
     <string name="play">Play</string>
     <string name="add_to_playlist">Add to Playlist</string>
@@ -30,7 +29,6 @@
     <string name="playlist">Playlist</string>
     <string name="filebrowser">File Browser</string>
     <string name="delete_from_playlist">Delete from Playlist</string>
-    
     <string name="service">Service</string>
     <string name="afterevent">Afterevent</string>
     <string name="location">Location</string>
@@ -232,7 +230,6 @@
     <string name="screenshot_saved">Screenshot saved to \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">No Player for Videostreams installed on this device!</string>
-    <string name="mediaplayer">Mediaplayer</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="force_tablet_layout_long">Force Tablet-Optimized Layout</string>
     <string name="force_tablet_layout">Force Tablet Layout</string>
@@ -277,4 +274,5 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="enable_animations_long">Enable additional view animations</string>
     <string name="enable_animations">Enable animations</string>
+
 </resources>

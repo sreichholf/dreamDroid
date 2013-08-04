@@ -90,11 +90,6 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 	}
 
 	/**
-	 * Set all required stuff for the
-	 * <code>com.commonsware.cwac.merge.MergeAdapter</code>
-	 */
-
-	/**
 	 * Called when device info has been loaded and parsed successfully
 	 */
 	@SuppressWarnings("unchecked")
