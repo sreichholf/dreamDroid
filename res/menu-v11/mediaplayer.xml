@@ -1,42 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-	<item android:id="@+id/menu_home_media"
-          android:icon="@drawable/ic_menu_home"
-          android:title="@string/home_media"
-          android:enabled="false"
-          android:showAsAction="ifRoom|withText" />
-	<item android:id="@+id/menu_navigation_back_media"
-          android:icon="@drawable/ic_menu_navigation_back"
-          android:title="@string/navigation_back_media"
-          android:enabled="false"
-          android:showAsAction="ifRoom|withText" />
-	<item android:id="@+id/menu_close_media"
-          android:icon="@drawable/ic_menu_close_clear_cancel"
-          android:title="@string/close_media"
-          android:showAsAction="ifRoom|withText" />	
-	<item android:id="@+id/menu_previous_media"
-          android:icon="@drawable/ic_menu_previous"
-          android:title="@string/previous_media"
-          android:showAsAction="ifRoom|withText" />
-	<item android:id="@+id/menu_play_media"
-          android:icon="@drawable/ic_menu_play"
-          android:title="@string/play_media"
-          android:showAsAction="ifRoom|withText" />
-	<item android:id="@+id/menu_next_media"
-          android:icon="@drawable/ic_menu_next"
-          android:title="@string/next_media"
-          android:showAsAction="ifRoom|withText" />
-	<item android:id="@+id/menu_stop_media"
-          android:icon="@drawable/ic_menu_stop"
-          android:title="@string/stop_media"
-          android:showAsAction="ifRoom|withText" />	   
-	<item android:id="@+id/menu_playlist"
-          android:icon="@drawable/ic_menu_list"
-          android:title="@string/playlist"
-          android:showAsAction="ifRoom|withText" />	 
-	<item android:id="@+id/menu_filebrowser"
-          android:icon="@drawable/ic_menu_locations"
-          android:title="@string/filebrowser"
-          android:showAsAction="ifRoom|withText" />	          
-	
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/menu_home_media"
+        android:enabled="false"
+        android:icon="@drawable/ic_menu_home"
+        android:title="@string/home_media"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_navigation_back_media"
+        android:enabled="false"
+        android:icon="@drawable/ic_menu_navigation_back"
+        android:title="@string/navigation_back_media"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_close_media"
+        android:icon="@drawable/ic_menu_close_clear_cancel"
+        android:title="@string/close_media"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_playlist"
+        android:icon="@drawable/ic_menu_list"
+        android:title="@string/playlist"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_filebrowser"
+        android:icon="@drawable/ic_menu_locations"
+        android:title="@string/filebrowser"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+
 </menu>

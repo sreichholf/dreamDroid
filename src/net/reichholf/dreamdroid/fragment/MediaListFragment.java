@@ -269,12 +269,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			MenuItem filebrowserMenuItem = menu.findItem(Statics.ITEM_MEDIA_FILEBROWSER);
 			MenuItem playlistMenuItem = menu.findItem(Statics.ITEM_MEDIA_PLAYLIST);
 
-			MenuItem playMenuItem = menu.findItem(Statics.ITEM_MEDIA_PLAY);
-			MenuItem stopMenuItem = menu.findItem(Statics.ITEM_MEDIA_STOP);
-
-			MenuItem nextMenuItem = menu.findItem(Statics.ITEM_MEDIA_NEXT);
-			MenuItem previousMenuItem = menu.findItem(Statics.ITEM_MEDIA_PREVIOUS);
-
 			if (rootPath.equals("None")) {
 				homeMenuItem.setEnabled(false);
 				backMenuItem.setEnabled(false);
@@ -289,19 +283,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 				backMenuItem.setEnabled(true);
 				filebrowserMenuItem.setEnabled(false);
 			}
-
-			if (mMode == PLAY_MODE) {
-				playMenuItem.setEnabled(false);
-				stopMenuItem.setEnabled(true);
-				nextMenuItem.setEnabled(true);
-				previousMenuItem.setEnabled(true);
-			} else {
-				playMenuItem.setEnabled(true);
-				stopMenuItem.setEnabled(false);
-				nextMenuItem.setEnabled(false);
-				previousMenuItem.setEnabled(false);
-			}
-
 		}
 	}
 
@@ -352,22 +333,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 		case (Statics.ITEM_MEDIA_CLOSE):
 			exit();
-			return true;
-
-		case (Statics.ITEM_MEDIA_PREVIOUS):
-			previous();
-			return true;
-
-		case (Statics.ITEM_MEDIA_NEXT):
-			next();
-			return true;
-
-		case (Statics.ITEM_MEDIA_STOP):
-			stop();
-			return true;
-
-		case (Statics.ITEM_MEDIA_PLAY):
-			play();
 			return true;
 
 		default:
