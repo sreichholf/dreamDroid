@@ -195,7 +195,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		ArrayList<ExtendedHashMap> list = result.getResult();
 
 		if (list.size() == 0)
-			// TODO add to dual_media_list_view.xml
 			setEmptyText(getText(R.string.no_list_item));
 		else {
 			// get first media item
