@@ -434,29 +434,29 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 	public void deleteMediaInfo() {
 		TextView artist = (TextView) getView().findViewById(R.id.artist);
-		TextView album = (TextView) getView().findViewById(R.id.album);
-		TextView year = (TextView) getView().findViewById(R.id.year);
-		TextView category = (TextView) getView().findViewById(R.id.category);
+//		TextView album = (TextView) getView().findViewById(R.id.album);
+//		TextView year = (TextView) getView().findViewById(R.id.year);
+//		TextView category = (TextView) getView().findViewById(R.id.category);
 		TextView title = (TextView) getView().findViewById(R.id.title);
 
-		artist.setText("");
-		album.setText("");
-		year.setText("");
-		category.setText("");
-		title.setText("");
+		artist.setText("-");
+//		album.setText("-");
+//		year.setText("");
+//		category.setText("");
+		title.setText("-");
 	}
 
 	public void setMediaInfo(ExtendedHashMap map) {
 		TextView artist = (TextView) getView().findViewById(R.id.artist);
-		TextView album = (TextView) getView().findViewById(R.id.album);
-		TextView year = (TextView) getView().findViewById(R.id.year);
-		TextView category = (TextView) getView().findViewById(R.id.category);
+//		TextView album = (TextView) getView().findViewById(R.id.album);
+//		TextView year = (TextView) getView().findViewById(R.id.year);
+//		TextView category = (TextView) getView().findViewById(R.id.category);
 		TextView title = (TextView) getView().findViewById(R.id.title);
 
 		artist.setText(map.getString(Mediaplayer.KEY_ARTIST));
-		album.setText(map.getString(Mediaplayer.KEY_ALBUM));
-		year.setText(map.getString(Mediaplayer.KEY_YEAR));
-		category.setText(map.getString(Mediaplayer.KEY_GENRE));
+//		album.setText(map.getString(Mediaplayer.KEY_ALBUM));
+//		year.setText(map.getString(Mediaplayer.KEY_YEAR));
+//		category.setText(map.getString(Mediaplayer.KEY_GENRE));
 		title.setText(map.getString(Mediaplayer.KEY_TITLE));
 	}
 

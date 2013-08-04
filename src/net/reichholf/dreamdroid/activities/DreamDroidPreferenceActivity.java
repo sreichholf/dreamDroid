@@ -105,7 +105,7 @@ public class DreamDroidPreferenceActivity extends PreferenceActivity implements
 	 */
 	@Override
 	public void updatePiconDownloadProgress(int eventid, DownloadProgress progress) {
-		String message = "";
+		String message = "-";
 		checkProgress();
 		switch (eventid) {
 		case DownloadProgress.EVENT_ID_CONNECTING:
@@ -138,6 +138,8 @@ public class DreamDroidPreferenceActivity extends PreferenceActivity implements
 			break;
 		}
 
+		if (message.isEmpty())
+			message = "-";
 		Log.i(LOG_TAG, message);
 		if (mProgressDialog != null && mProgressDialog.isShowing()) {
 			mProgressDialog.setMessage(message);
