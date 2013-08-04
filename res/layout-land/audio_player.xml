@@ -39,7 +39,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/loading"
-                    android:textColor="@color/black"
                     android:textStyle="bold" />
 
                 <TextView
@@ -61,25 +60,33 @@
                         android:id="@+id/imageButtonPrevious"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_menu_previous" />
+                        android:background="@drawable/list_selector_holo_dark"
+                        android:padding="5dp"
+                        android:src="?attr/ic_media_previous" />
 
                     <ImageButton
                         android:id="@+id/imageButtonPlay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_menu_play" />
+                        android:background="@drawable/list_selector_holo_dark"
+                        android:padding="5dp"
+                        android:src="?attr/ic_media_play" />
 
                     <ImageButton
                         android:id="@+id/imageButtonNext"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_menu_next" />
+                        android:background="@drawable/list_selector_holo_dark"
+                        android:padding="5dp"
+                        android:src="?attr/ic_media_next" />
 
                     <ImageButton
                         android:id="@+id/imageButtonStop"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_menu_stop" />
+                        android:background="@drawable/list_selector_holo_dark"
+                        android:padding="5dp"
+                        android:src="?attr/ic_media_stop" />
                 </LinearLayout>
             </RelativeLayout>
         </LinearLayout>

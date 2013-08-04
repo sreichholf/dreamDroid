@@ -222,7 +222,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			}
 
 			// check for changes in options menu
-			getActionBarActivity().invalidateOptionsMenu();
+			getActionBarActivity().supportInvalidateOptionsMenu();
 
 			String root = media.getString(Mediaplayer.KEY_ROOT);
 			String path = "";
@@ -434,29 +434,29 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 	public void deleteMediaInfo() {
 		TextView artist = (TextView) getView().findViewById(R.id.artist);
-//		TextView album = (TextView) getView().findViewById(R.id.album);
-//		TextView year = (TextView) getView().findViewById(R.id.year);
-//		TextView category = (TextView) getView().findViewById(R.id.category);
+		// TextView album = (TextView) getView().findViewById(R.id.album);
+		// TextView year = (TextView) getView().findViewById(R.id.year);
+		// TextView category = (TextView) getView().findViewById(R.id.category);
 		TextView title = (TextView) getView().findViewById(R.id.title);
 
 		artist.setText("-");
-//		album.setText("-");
-//		year.setText("");
-//		category.setText("");
+		// album.setText("-");
+		// year.setText("");
+		// category.setText("");
 		title.setText("-");
 	}
 
 	public void setMediaInfo(ExtendedHashMap map) {
 		TextView artist = (TextView) getView().findViewById(R.id.artist);
-//		TextView album = (TextView) getView().findViewById(R.id.album);
-//		TextView year = (TextView) getView().findViewById(R.id.year);
-//		TextView category = (TextView) getView().findViewById(R.id.category);
+		// TextView album = (TextView) getView().findViewById(R.id.album);
+		// TextView year = (TextView) getView().findViewById(R.id.year);
+		// TextView category = (TextView) getView().findViewById(R.id.category);
 		TextView title = (TextView) getView().findViewById(R.id.title);
 
 		artist.setText(map.getString(Mediaplayer.KEY_ARTIST));
-//		album.setText(map.getString(Mediaplayer.KEY_ALBUM));
-//		year.setText(map.getString(Mediaplayer.KEY_YEAR));
-//		category.setText(map.getString(Mediaplayer.KEY_GENRE));
+		// album.setText(map.getString(Mediaplayer.KEY_ALBUM));
+		// year.setText(map.getString(Mediaplayer.KEY_YEAR));
+		// category.setText(map.getString(Mediaplayer.KEY_GENRE));
 		title.setText(map.getString(Mediaplayer.KEY_TITLE));
 	}
 
@@ -510,7 +510,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		mMode = PLAY_MODE;
 
 		// invalidate options menu
-		getActionBarActivity().invalidateOptionsMenu();
+		getActionBarActivity().supportInvalidateOptionsMenu();
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_FILE, filePath));
@@ -523,7 +523,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		mMode = PLAY_MODE;
 
 		// invalidate options menu
-		getActionBarActivity().invalidateOptionsMenu();
+		getActionBarActivity().supportInvalidateOptionsMenu();
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
@@ -537,7 +537,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		mMode = STOP_MODE;
 
 		// invalidate options menu
-		getActionBarActivity().invalidateOptionsMenu();
+		getActionBarActivity().supportInvalidateOptionsMenu();
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,

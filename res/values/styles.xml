@@ -54,20 +54,4 @@
         <item name="android:background">@android:drawable/list_selector_background</item>
     </style>
 
-    <style name="Theme.DreamDroid" parent="Theme.AppCompat">
-        <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
-        <item name="simpleHeaderBackground">#333</item>
-        <item name="cardBackground">@android:color/transparent</item>
-        <item name="cardListView">@style/CardListView</item>
-    </style>
-
-    <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
-        <item name="simpleHeaderBackground">#DDD</item>
-        <item name="cardBackground">@drawable/card_list_item_selector</item>
-        <item name="cardListView">@style/CardListView.Light</item>
-    </style>
-
-    <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light" />
-
 </resources>
