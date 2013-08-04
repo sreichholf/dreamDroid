@@ -103,6 +103,7 @@
     <string name="frontends">Tuner</string>
     <string name="nics">Netzwerkschnittstellen</string>
     <string name="hdds">Festplatten</string>
+    <string name="hdd_capacity">%1$s (%2$s frei)</string>
     <string name="not_implemented">Funktion ist noch nicht implementiert!</string>
     <string name="current_event">Aktuelle Sendung</string>
     <string name="timeout">Anzeigedauer</string>

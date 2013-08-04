@@ -140,7 +140,9 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 			title.setText((String) mHdds.get(i).get(DeviceInfo.KEY_HDD_MODEL));
 			
 			TextView desc = (TextView) item.findViewById(R.id.text2);
-			desc.setText((String) mHdds.get(i).get(DeviceInfo.KEY_HDD_CAPACITY));
+			desc.setText(String.format(getString(R.string.hdd_capacity),
+					mHdds.get(i).get(DeviceInfo.KEY_HDD_CAPACITY),
+					mHdds.get(i).get(DeviceInfo.KEY_HDD_FREE_SPACE)));
 			
 			mHddsList.addView(item);
 		}
