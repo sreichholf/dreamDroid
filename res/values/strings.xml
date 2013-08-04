@@ -116,6 +116,7 @@
     <string name="frontends">Frontends</string>
     <string name="nics">Network Interfaces</string>
     <string name="hdds">Hard disks</string>
+    <string name="hdd_capacity">%1$s (%2$s free)</string>
     <string name="not_implemented">This function is not implemented yet!</string>
     <string name="current_event">Current event</string>
     <string name="timeout">Timeout</string>
