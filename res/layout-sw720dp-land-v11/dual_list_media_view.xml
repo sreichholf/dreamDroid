@@ -5,7 +5,7 @@
 
     <ListView
         android:id="@+id/android:list"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/divider"

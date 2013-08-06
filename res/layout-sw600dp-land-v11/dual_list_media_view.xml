@@ -5,7 +5,7 @@
 
     <ListView
         android:id="@+id/android:list"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/divider"
@@ -13,10 +13,9 @@
 
     <LinearLayout
         android:id="@+id/detailView"
-        android:layout_width="300dp"
+        android:layout_width="350dp"
         android:layout_height="fill_parent"
         android:layout_alignParentRight="true"
-        android:layout_marginLeft="10dp"
         android:orientation="vertical" >
 
         <include layout="@layout/audio_player" />

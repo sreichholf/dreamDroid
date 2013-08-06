@@ -18,6 +18,7 @@
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:text="@string/loading"
                 android:textStyle="bold" />
 
@@ -26,22 +27,38 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/title"
-                android:text="@string/loading" >
-            </TextView>
+                android:text="@string/loading" />
+
+            <ImageButton
+                android:id="@+id/toggle_playlist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_margin="0dp"
+                android:background="@drawable/list_selector_holo_dark"
+                android:padding="5dp"
+                android:src="@drawable/ic_menu_list" />
         </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_margin="10dp"
-            android:layout_weight="1"
-            android:background="@color/black" >
+            android:layout_weight="1" >
 
             <ImageView
                 android:id="@+id/cover"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:background="@color/black"
                 android:scaleType="fitCenter" />
+
+            <ListView
+                android:id="@+id/playlist"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
         </LinearLayout>
 
         <LinearLayout

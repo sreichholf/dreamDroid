@@ -37,8 +37,8 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View view = convertView;
 		if (view == null) {
-			LayoutInflater li = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			view = li.inflate(android.R.layout.simple_list_item_1, null);
+			LayoutInflater li = LayoutInflater.from(getContext());
+			view = li.inflate(android.R.layout.simple_list_item_1, parent, false);
 		}
 
 		ExtendedHashMap media = getItem(position);

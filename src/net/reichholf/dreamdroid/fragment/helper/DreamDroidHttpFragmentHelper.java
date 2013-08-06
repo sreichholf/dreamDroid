@@ -41,6 +41,7 @@ import android.widget.Toast;
  * 
  */
 public class DreamDroidHttpFragmentHelper {
+	public static int LOADER_DEFAULT_ID = 0;
 	private Fragment mFragment;
 
 	protected final String sData = "data";
@@ -322,7 +323,7 @@ public class DreamDroidHttpFragmentHelper {
 					getBaseFragment().getBaseTitle() + " - " + mFragment.getString(R.string.loading));
 
 		getSherlockActivity().setTitle(getBaseFragment().getCurrentTitle());
-		mFragment.getLoaderManager().restartLoader(0, getBaseFragment().getLoaderBundle(),
+		mFragment.getLoaderManager().restartLoader(LOADER_DEFAULT_ID, getBaseFragment().getLoaderBundle(),
 				(LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
 	}
 

@@ -19,15 +19,5 @@
         android:icon="@drawable/ic_menu_close_clear_cancel"
         android:title="@string/close_media"
         dreamDroid:showAsAction="ifRoom|withText"/>
-    <item
-        android:id="@+id/menu_playlist"
-        android:icon="@drawable/ic_menu_list"
-        android:title="@string/playlist"
-        dreamDroid:showAsAction="ifRoom|withText"/>
-    <item
-        android:id="@+id/menu_filebrowser"
-        android:icon="@drawable/ic_menu_locations"
-        android:title="@string/filebrowser"
-        dreamDroid:showAsAction="ifRoom|withText"/>
 
 </menu>

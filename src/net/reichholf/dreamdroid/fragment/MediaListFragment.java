@@ -31,6 +31,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.view.LayoutInflater;
@@ -39,6 +40,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -54,25 +56,51 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  * 
  */
 public class MediaListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
+	public static int LOADER_PLAYLIST_ID = 1;
+	public static String PLAYLIST_AS_ROOT = "playlist";
+
 	private ExtendedHashMap mMedia;
 	private SimpleChoiceDialog mChoice;
-	private Bundle args;
-	protected ImageLoader imageLoader = ImageLoader.getInstance();
+	private Bundle mArgs;
+	protected ImageLoader mImageLoader = ImageLoader.getInstance();
 	static int PLAY_MODE = 0;
 	static int STOP_MODE = 1;
 	int mMode = STOP_MODE;
 	private ExtendedHashMap mMediaInfo;
 
+	private MediaListAdapter mPlaylistAdapter;
+	private ArrayList<ExtendedHashMap> mPlaylist;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_media_view, null, false);
-		setAdapter();
+		setAdapter(v);
 
 		// only if detail view is available the application should have
 		// listeners for the buttons
 		if (isDetailViewAvailable(v)) {
-			ImageButton playButton = (ImageButton) v.findViewById(R.id.imageButtonPlay);
+			ImageButton togglePlaylistButton = (ImageButton) v.findViewById(R.id.toggle_playlist);
+			ListView playList = (ListView) v.findViewById(R.id.playlist);
+			playList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
+					ExtendedHashMap item = mPlaylist.get(position);
+					playFile(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE), PLAYLIST_AS_ROOT);
+				}
+			});
 
+			togglePlaylistButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					ListView playList = (ListView) getView().findViewById(R.id.playlist);
+					ImageView cover = (ImageView) getView().findViewById(R.id.cover);
+					int vis = playList.getVisibility();
+					playList.setVisibility(cover.getVisibility());
+					cover.setVisibility(vis);
+				}
+			});
+
+			ImageButton playButton = (ImageButton) v.findViewById(R.id.imageButtonPlay);
 			playButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					play();
@@ -80,7 +108,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			});
 
 			ImageButton stopButton = (ImageButton) v.findViewById(R.id.imageButtonStop);
-
 			stopButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					stop();
@@ -88,7 +115,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			});
 
 			ImageButton previousButton = (ImageButton) v.findViewById(R.id.imageButtonPrevious);
-
 			previousButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					previous();
@@ -96,7 +122,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			});
 
 			ImageButton nextbutton = (ImageButton) v.findViewById(R.id.imageButtonNext);
-
 			nextbutton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					next();
@@ -108,6 +133,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		if (spl != null)
 			spl.openPane();
 
+		reloadPlaylist();
 		reload();
 
 		return v;
@@ -117,29 +143,20 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
-
+		setHasOptionsMenu(true);
 		initTitle(getString(R.string.mediaplayer));
 
-		setHasOptionsMenu(true);
-
+		mPlaylist = new ArrayList<ExtendedHashMap>();
 		if (savedInstanceState != null) {
 			mMedia = (ExtendedHashMap) savedInstanceState.getParcelable("media_filesystem");
-
 			String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
 
 			// only navigate into a directory
 			if (isDirectory.equals("True")) {
 				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
-
 				setArgs("path", mediaPath);
 			}
 		}
-
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
 	}
 
 	@Override
@@ -153,21 +170,12 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		mMedia = mMapList.get((int) id);
 
 		String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
-		String root = mMedia.getString(Mediaplayer.KEY_ROOT);
 
 		// only navigate into a directory
 		if (isDirectory.equals("True")) {
 			String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
-
 			setArgs("path", mediaPath);
-
 			reload();
-		} else if (root.equals("playlist")) {
-			CharSequence[] actions = { getText(R.string.play), getText(R.string.delete_from_playlist) };
-			int[] actionIds = { Statics.ACTION_PLAY_MEDIA, Statics.ACTION_DELETE_FROM_PLAYLIST };
-
-			mChoice = SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds);
-			getMultiPaneHandler().showDialogFragment(mChoice, "dialog_play_media");
 		} else {
 			CharSequence[] actions = { getText(R.string.play), getText(R.string.add_to_playlist) };
 			int[] actionIds = { Statics.ACTION_PLAY_MEDIA, Statics.ACTION_ADD_TO_PLAYLIST };
@@ -178,7 +186,17 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	public Bundle getLoaderBundle() {
-		return args;
+		return mArgs;
+	}
+
+	public void reloadPlaylist() {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("path", PLAYLIST_AS_ROOT));
+		Bundle args = new Bundle();
+		args.putSerializable("params", params);
+
+		getLoaderManager().restartLoader(LOADER_PLAYLIST_ID, args,
+				(LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>) this);
 	}
 
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
@@ -186,12 +204,22 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 
+		if (loader.getId() == LOADER_PLAYLIST_ID) {
+			mPlaylist.clear();
+			if (result.isError()) {
+				showToast(result.getErrorText());
+				return;
+			}
+			mPlaylist.addAll(result.getResult());
+			mPlaylistAdapter.notifyDataSetChanged();
+			return;
+		}
+
 		mMapList.clear();
 		if (result.isError()) {
 			setEmptyText(result.getErrorText());
 			return;
 		}
-
 		ArrayList<ExtendedHashMap> list = result.getResult();
 
 		if (list.size() == 0)
@@ -202,7 +230,6 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 			// save current media object
 			mMedia = media;
-
 			if (mMode == PLAY_MODE) {
 				// add media info to detail view
 				setMediaInfo(mMediaInfo);
@@ -212,12 +239,10 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 				params.add(new BasicNameValuePair("file", "/tmp/.id3coverart"));
-
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
-
 				// String imageUrl =
 				// "http://192.168.2.100/file?file=/tmp/.id3coverart";
-				imageLoader.displayImage(imageUrl, imageView);
+				mImageLoader.displayImage(imageUrl, imageView);
 			}
 
 			// check for changes in options menu
@@ -226,20 +251,14 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			String root = media.getString(Mediaplayer.KEY_ROOT);
 			String path = "";
 
-			// create Playlist as title
-			if (root.equals("playlist")) {
-				path = " - " + getString(R.string.playlist);
-			}
 			// create current title and remove first item from result list if
 			// not a root item
-			else if (!root.equals("None")) {
+			if (!root.equals("None")) {
 				path = " - " + root;
 				list.remove(0);
 			}
 
 			setCurrentTitle(getLoadFinishedTitle() + path);
-			getActionBarActivity().setTitle(getCurrentTitle());
-
 			mMapList.addAll(list);
 		}
 
@@ -265,22 +284,13 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			String rootPath = (String) mMedia.get(Mediaplayer.KEY_ROOT);
 			MenuItem homeMenuItem = menu.findItem(Statics.ITEM_MEDIA_HOME);
 			MenuItem backMenuItem = menu.findItem(Statics.ITEM_MEDIA_BACK);
-			MenuItem filebrowserMenuItem = menu.findItem(Statics.ITEM_MEDIA_FILEBROWSER);
-			MenuItem playlistMenuItem = menu.findItem(Statics.ITEM_MEDIA_PLAYLIST);
 
 			if (rootPath.equals("None")) {
 				homeMenuItem.setEnabled(false);
 				backMenuItem.setEnabled(false);
-				playlistMenuItem.setEnabled(true);
-				filebrowserMenuItem.setEnabled(false);
-			} else if (rootPath.equals("playlist")) {
-				filebrowserMenuItem.setEnabled(true);
-				playlistMenuItem.setEnabled(false);
 			} else {
-				playlistMenuItem.setEnabled(true);
 				homeMenuItem.setEnabled(true);
 				backMenuItem.setEnabled(true);
-				filebrowserMenuItem.setEnabled(false);
 			}
 		}
 	}
@@ -288,46 +298,26 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-
-		case (Statics.ITEM_MEDIA_PLAYLIST):
-			setArgs("path", "playlist");
-
-			reload();
-
-			return true;
-
-		case (Statics.ITEM_MEDIA_FILEBROWSER):
-			setArgs("path", "filesystems");
-
-			reload();
-
-			return true;
-
 		case (Statics.ITEM_MEDIA_HOME):
-			if (args != null) {
-				args.clear();
+			if (mArgs != null) {
+				mArgs.clear();
 			}
-
 			// loads media files without path parameter
 			reload();
-
 			return true;
 
 		case (Statics.ITEM_MEDIA_BACK):
-
 			String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
-
 			// if root path then clear args
 			if (mediaPath.equals("None")) {
-				if (args != null) {
-					args.clear();
+				if (mArgs != null) {
+					mArgs.clear();
 				}
 			} else {
 				setArgs("path", mediaPath);
 			}
 
 			reload();
-
 			return true;
 
 		case (Statics.ITEM_MEDIA_CLOSE):
@@ -470,7 +460,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 	 * 
 	 * @param filePath
 	 */
-	private void playFile(String filePath) {
+	private void playFile(String filePath, String root) {
 		mMode = PLAY_MODE;
 
 		// invalidate options menu
@@ -478,6 +468,8 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_FILE, filePath));
+		if (root != null)
+			params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_ROOT, root));
 
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_PLAY), params);
 	}
@@ -545,21 +537,25 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(name, value));
 
-		if (args != null) {
-			args.clear();
-			args.putSerializable("params", params);
+		if (mArgs != null) {
+			mArgs.clear();
+			mArgs.putSerializable("params", params);
 		} else {
-			args = new Bundle();
-			args.putSerializable("params", params);
+			mArgs = new Bundle();
+			mArgs.putSerializable("params", params);
 		}
 	}
 
 	/**
-	 * Initializes the <code>SimpleListAdapter</code>
+	 * Initializes the <code>MediaListAdapter</code>
 	 */
-	private void setAdapter() {
+	private void setAdapter(View v) {
 		mAdapter = new MediaListAdapter(getActionBarActivity(), mMapList);
 		setListAdapter(mAdapter);
+
+		mPlaylistAdapter = new MediaListAdapter(getActionBarActivity(), mPlaylist);
+		ListView playlistView = (ListView) v.findViewById(R.id.playlist);
+		playlistView.setAdapter(mPlaylistAdapter);
 	}
 
 	/**
@@ -599,23 +595,11 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-
-		// crash after new DreamDroid Version
-		/**
-		 * if (mChoice != null) { mChoice.dismiss(); mChoice = null; }
-		 **/
-
-		super.onSimpleResult(success, result);
-
+		if (!success)
+			super.onSimpleResult(success, result);
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 
 			String command = getCommandFromKeyState(result.getString(SimpleResult.KEY_STATE_TEXT));
-
-			// check if necessary command was executed and if detail view is
-			// used
-			// if
-			// (result.getString(SimpleResult.KEY_STATE_TEXT).startsWith("Playback")
-			// && isDetailViewAvailable()) {
 			if (command.equals("next") || command.equals("play") || command.equals("previous")) {
 
 				// add image to detail view
@@ -625,16 +609,13 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 				params.add(new BasicNameValuePair("file", "/tmp/.id3coverart"));
 
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
-
-				// String imageUrl =
-				// "http://192.168.2.100/file?file=/tmp/.id3coverart";
-				imageLoader.displayImage(imageUrl, imageView);
+				mImageLoader.displayImage(imageUrl, imageView);
 
 				// add media info to detail view
 				new GetCurrentMediaInfoTask().execute("");
 			}
-
 			reload();
+			reloadPlaylist();
 		}
 	}
 
@@ -647,15 +628,9 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-
 		String filePath = mMedia.getString(Mediaplayer.KEY_SERVICE_REFERENCE);
 
 		switch (action) {
-
-		case Statics.ACTION_PLAY_MEDIA:
-			playFile(filePath);
-			break;
-
 		case Statics.ACTION_ADD_TO_PLAYLIST:
 			addToPlaylist(filePath);
 			break;

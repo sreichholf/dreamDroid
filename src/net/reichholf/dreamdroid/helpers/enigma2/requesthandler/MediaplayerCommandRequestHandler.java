@@ -22,6 +22,7 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	public static final String PARAM_CMD = "command";
 	public static final String PARAM_FILE = "file";
 	public static final String PARAM_NAME = "name";
+	public static final String PARAM_ROOT = "root";
 	public static final String PARAM_PLAYLIST_PATH = "path";
 	public static final String PARAM_PLAYLIST_TYPES = "types";
 
