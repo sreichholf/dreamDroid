@@ -12,6 +12,20 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    compile "com.android.support:support-v4:18.0.+"
+    compile 'com.android.support:appcompat-v7:18.0.+'
+
+    compile files('libs/ftp4j-1.7.2.jar')
+    compile files('libs/jmdns-3.4.1.jar')
+    compile files('libs/signpost-core-1.2.1.1.jar')
+    compile files('libs/universal-image-loader-1.8.4.jar')
+    compile project(":libraries:ckChangelog")
+    compile project(":libraries:gaugeview-library")
+    compile project(":libraries:numberpicker")
+    compile project(":libraries:PhotoView")
+}
+
 android {
     compileSdkVersion 18
     buildToolsVersion "18.0.1"
@@ -34,13 +48,3 @@ android {
         release.setRoot('build-types/release')
     }
 }
-
-dependencies {
-   compile project(":libraries:appcompat")
-   compile fileTree(dir: 'libs', include: '*.jar')
-   compile project(":libraries:ckChangelog")
-   compile project(":libraries:gaugeview-library")
-   compile project(":libraries:numberpicker")
-   compile project(":libraries:PhotoView")
-}
-
