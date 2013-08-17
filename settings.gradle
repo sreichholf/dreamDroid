@@ -1,0 +1,6 @@
+include ':libraries:appcompat'
+include ':libraries:numberpicker'
+include ':libraries:PhotoView'
+include ':'
+include ':libraries:ckChangelog'
+include ':libraries:gaugeview-library'

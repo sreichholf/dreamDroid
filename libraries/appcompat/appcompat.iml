@@ -14,7 +14,7 @@
     </facet>
     <facet type="android-gradle" name="Android-Gradle">
       <configuration>
-        <option name="GRADLE_PROJECT_PATH" value=":libraries:PhotoView" />
+        <option name="GRADLE_PROJECT_PATH" value=":libraries:appcompat" />
       </configuration>
     </facet>
   </component>
