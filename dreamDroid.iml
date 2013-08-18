@@ -67,17 +67,16 @@
     </content>
     <orderEntry type="jdk" jdkName="Android 4.3 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="appcompat" exported="" />
     <orderEntry type="module" module-name="ckChangelog" exported="" />
     <orderEntry type="module" module-name="gaugeview-library" exported="" />
     <orderEntry type="module" module-name="numberpicker" exported="" />
     <orderEntry type="module" module-name="PhotoView" exported="" />
-    <orderEntry type="library" name="android-support-v4" level="project" />
-    <orderEntry type="library" name="android-support-v7-appcompat" level="project" />
     <orderEntry type="library" name="ftp4j-1.7.2" level="project" />
     <orderEntry type="library" name="jmdns-3.4.1" level="project" />
     <orderEntry type="library" name="signpost-core-1.2.1.1" level="project" />
     <orderEntry type="library" name="universal-image-loader-1.8.4" level="project" />
+    <orderEntry type="library" exported="" name="support-v4-18.0.0" level="project" />
+    <orderEntry type="library" exported="" name="ComAndroidSupportAppcompatV71800.aar" level="project" />
   </component>
 </module>
 

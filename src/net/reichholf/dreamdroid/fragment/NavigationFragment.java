@@ -407,7 +407,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		case Statics.ITEM_MEDIA_PLAYER:
 			clearBackStack();
-			getMainActivity().showDetails(MediaListFragment.class);
+			getMainActivity().showDetails(MediaPlayerFragment.class);
 			break;
 
 		case Statics.ITEM_PROFILES:

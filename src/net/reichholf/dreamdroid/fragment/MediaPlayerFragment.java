@@ -55,7 +55,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  * @author asc
  * 
  */
-public class MediaListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
+public class MediaPlayerFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
 	public static int LOADER_PLAYLIST_ID = 1;
 	public static String PLAYLIST_AS_ROOT = "playlist";
 
@@ -130,8 +130,25 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		}
 
 		SlidingPaneLayout spl = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
-		if (spl != null)
+		if (spl != null){
+            spl.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+                @Override
+                public void onPanelSlide(View view, float v) {
+                    return;
+                }
+
+                @Override
+                public void onPanelOpened(View view) {
+                    getActionBarActivity().supportInvalidateOptionsMenu();
+                }
+
+                @Override
+                public void onPanelClosed(View view) {
+                    getActionBarActivity().supportInvalidateOptionsMenu();
+                }
+            });
 			spl.openPane();
+        }
 
 		reloadPlaylist();
 		reload();
@@ -205,6 +222,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 
 		if (loader.getId() == LOADER_PLAYLIST_ID) {
+            setCurrentTitle(getLoadFinishedTitle());
 			mPlaylist.clear();
 			if (result.isError()) {
 				showToast(result.getErrorText());
@@ -261,7 +279,7 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 			setCurrentTitle(getLoadFinishedTitle() + path);
 			mMapList.addAll(list);
 		}
-
+        getActionBarActivity().setTitle(getCurrentTitle());
 		mAdapter.notifyDataSetChanged();
 	}
 
@@ -276,21 +294,35 @@ public class MediaListFragment extends AbstractHttpListFragment implements Actio
 		inflater.inflate(R.menu.mediaplayer, menu);
 	}
 
+    private SlidingPaneLayout getSlidingPaneLayout(){
+        return (SlidingPaneLayout) getView().findViewById(R.id.sliding_pane);
+    }
+
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-
 		if (mMedia != null) {
-
 			String rootPath = (String) mMedia.get(Mediaplayer.KEY_ROOT);
 			MenuItem homeMenuItem = menu.findItem(Statics.ITEM_MEDIA_HOME);
 			MenuItem backMenuItem = menu.findItem(Statics.ITEM_MEDIA_BACK);
 
-			if (rootPath.equals("None")) {
-				homeMenuItem.setEnabled(false);
-				backMenuItem.setEnabled(false);
+            boolean isPaneOpen = true;
+            SlidingPaneLayout spl = getSlidingPaneLayout();
+            if(spl != null)
+                isPaneOpen = spl.isOpen();
+
+            if (!isPaneOpen) {
+				homeMenuItem.setVisible(false);
+				backMenuItem.setVisible(false);
 			} else {
-				homeMenuItem.setEnabled(true);
-				backMenuItem.setEnabled(true);
+                homeMenuItem.setVisible(true);
+                backMenuItem.setVisible(true);
+                if(rootPath.equals("None")){
+                    homeMenuItem.setEnabled(false);
+                    backMenuItem.setEnabled(false);
+                } else {
+                    homeMenuItem.setEnabled(true);
+                    backMenuItem.setEnabled(true);
+                }
 			}
 		}
 	}
