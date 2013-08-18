@@ -310,19 +310,12 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
             if(spl != null)
                 isPaneOpen = spl.isOpen();
 
-            if (!isPaneOpen) {
+            if (!isPaneOpen || rootPath.equals("None")) {
 				homeMenuItem.setVisible(false);
 				backMenuItem.setVisible(false);
 			} else {
                 homeMenuItem.setVisible(true);
                 backMenuItem.setVisible(true);
-                if(rootPath.equals("None")){
-                    homeMenuItem.setEnabled(false);
-                    backMenuItem.setEnabled(false);
-                } else {
-                    homeMenuItem.setEnabled(true);
-                    backMenuItem.setEnabled(true);
-                }
 			}
 		}
 	}
