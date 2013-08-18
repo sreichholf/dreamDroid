@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-        <release version="1.0 beta 23.2" versioncode="202">
+    <release version="1.0 beta 24" versioncode="203">
+        <change>Optische Verbesserungen</change>
+        <change>MediaPlayer Unterstützung (</change>
+    </release>
+    <release version="1.0 beta 23.2" versioncode="202">
         <change>FIX: Crash in "Es läuft" wenn Picons aktiviert sind und die Box sich im Standby befindet</change>
         <change>UPDATE: Deutsche Übersetzung</change>
     </release>
-    
     <release version="1.0 beta 23.1" versioncode="201">
         <change>FIX: Eingestellter Pfad zur Synchronisation von Picons wurde nicht beachtet</change>
         <change>FIX: Probleme mit der Suche unter Android >= 3.0</change>
         <change>FIX: Picons funktionierten nicht mit umbenannten Kanälen</change>
         <change>TECH: "ActionBarSherlock" wurde durch Googles kürzlich veröffentlichte "ActionBarCompat" ersetzt. Für Benutzer sollte sich nichts verändert haben.</change>
-    </release> 
+    </release>
     <release version="1.0 beta 22.1" versioncode="199" >
         <change>Beim ersten Start wird nun das Navigationsmenü geöffnet. Schlägt die Verbindung fehl so wird die Liste der Profile geöffnet damit der Benutzer die Verbindungseinstellungen anpassen kann.</change>
         <change>Ergebnisse der EPG-Suche werden nun in der Detailansicht angezeigt (wie es von Beginn an hätte sein sollen)</change>
