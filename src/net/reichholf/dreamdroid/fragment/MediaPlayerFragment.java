@@ -56,10 +56,12 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  * 
  */
 public class MediaPlayerFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
+	public static final String STATE_MEDIA_INDEX = "media_index";
 	public static int LOADER_PLAYLIST_ID = 1;
 	public static String PLAYLIST_AS_ROOT = "playlist";
 
 	private ExtendedHashMap mMedia;
+	private int mMediaIndex;
 	private SimpleChoiceDialog mChoice;
 	private Bundle mArgs;
 	protected ImageLoader mImageLoader = ImageLoader.getInstance();
@@ -165,9 +167,11 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		mPlaylist = new ArrayList<ExtendedHashMap>();
 		if (savedInstanceState != null) {
-			mMedia = (ExtendedHashMap) savedInstanceState.getParcelable("media_filesystem");
+			mMediaIndex = savedInstanceState.getInt(STATE_MEDIA_INDEX, -1);
+			if(mMediaIndex < 0)
+				return;
+			mMedia = mMapList.get(mMediaIndex);
 			String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
-
 			// only navigate into a directory
 			if (isDirectory.equals("True")) {
 				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
@@ -178,13 +182,14 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable("media_filesystem", mMedia);
+		outState.putInt(STATE_MEDIA_INDEX, mMediaIndex);
 		super.onSaveInstanceState(outState);
 	}
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		mMedia = mMapList.get((int) id);
+		mMediaIndex = position;
+		mMedia = mMapList.get(mMediaIndex);
 
 		String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
 
