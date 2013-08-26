@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/menu_reload"
-        android:icon="@drawable/ic_menu_refresh"
+        android:icon="@drawable/ic_action_refresh"
         dreamDroid:showAsAction="ifRoom"
         android:title="@string/reload"/>
 

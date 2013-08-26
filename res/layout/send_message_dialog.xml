@@ -96,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_btn_close"
+                android:drawableLeft="@drawable/ic_menu_close"
                 android:text="@string/cancel" />
 
             <Button

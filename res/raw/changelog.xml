@@ -2,7 +2,7 @@
 <changelog>
     <release version="1.0 beta 24" versioncode="203">
         <change>Visual improvements</change>
-        <change>Add basic MediaPlayer Control</change>
+        <change>Add experimental MediaPlayer Control</change>
     </release>
     <release version="1.0 beta 23.2" versioncode="202">
         <change>FIX: Crash in "Current" when picons are enabled and box is in standby</change>

@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/menu_tags"
-        android:icon="@drawable/ic_menu_tags"
+        android:icon="@drawable/ic_action_tags"
         android:title="@string/tags"
         dreamDroid:showAsAction="ifRoom|withText"/>
 

@@ -4,12 +4,12 @@
 
     <item
         android:id="@+id/menu_overview"
-        android:icon="@drawable/ic_menu_list"
+        android:icon="@drawable/ic_action_list"
         android:title="@string/bouquet_overview"
         dreamDroid:showAsAction="always|withText"/>
     <item
         android:id="@+id/menu_default"
-        android:icon="@android:drawable/ic_menu_set_as"
+        android:icon="@drawable/ic_action_fav"
         android:title="@string/set_default"
         dreamDroid:showAsAction="ifRoom|withText"/>
 

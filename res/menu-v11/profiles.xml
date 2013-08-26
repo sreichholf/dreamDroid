@@ -3,12 +3,12 @@
 
     <item
         android:id="@+id/menu_add_profile"
-        android:icon="@android:drawable/ic_menu_add"
+        android:icon="@drawable/ic_action_add"
         android:title="@string/profile_add"
         dreamDroid:showAsAction="ifRoom|withText"/>
     <item
         android:id="@+id/menu_detect_devices"
-        android:icon="@drawable/ic_menu_find"
+        android:icon="@drawable/ic_action_devices"
         android:title="@string/autodiscover_dreamboxes"
         dreamDroid:showAsAction="ifRoom|withText"/>
 

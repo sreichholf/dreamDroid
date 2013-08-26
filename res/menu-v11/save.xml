@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/menu_save"
-        android:icon="@android:drawable/ic_menu_save"
+        android:icon="@drawable/ic_action_save"
         android:title="@string/save"
         dreamDroid:showAsAction="ifRoom|withText"/>
 

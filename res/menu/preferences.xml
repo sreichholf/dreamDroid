@@ -4,19 +4,19 @@
 
     <item
         android:id="@+id/menu_check_connectivity"
-        android:icon="@drawable/ic_menu_link"
+        android:icon="@drawable/ic_action_connectivity"
         dreamDroid:showAsAction="never"
         android:title="@string/check_connectivity"/>
 
     <item
         android:id="@+id/menu_preferences"
-        android:icon="@drawable/ic_menu_preferences"
+        android:icon="@drawable/ic_action_settings"
         dreamDroid:showAsAction="never"
         android:title="@string/settings"/>
 
     <item
         android:id="@+id/menu_about"
-        android:icon="@drawable/ic_menu_help"
+        android:icon="@drawable/ic_action_about"
         dreamDroid:showAsAction="never"
         android:title="@string/about"/>
 
