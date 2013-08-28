@@ -44,7 +44,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_menu_save"
+            android:drawableLeft="?attr/ic_menu_save"
             android:text="@string/apply" />
 
         <Button
@@ -52,7 +52,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_menu_close"
+            android:drawableLeft="?attr/ic_menu_close"
             android:text="@string/cancel" />
     </LinearLayout>
 

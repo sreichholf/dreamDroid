@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_menu_save"
+                android:drawableLeft="?attr/ic_menu_save"
                 android:maxLines="2"
                 android:minHeight="@dimen/dialog_button_bar_height"
                 android:text="@string/apply" />
@@ -70,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_menu_close"
+                android:drawableLeft="?attr/ic_menu_close"
                 android:maxLines="2"
                 android:minHeight="@dimen/dialog_button_bar_height"
                 android:text="@string/cancel" />

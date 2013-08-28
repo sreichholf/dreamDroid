@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.adapter;
 
 import net.reichholf.dreamdroid.R;
 import android.content.Context;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +41,10 @@ public class NavigationListAdapter extends ArrayAdapter<int[]> {
 		int[] item = getItem(position);
 		TextView text = (TextView) view.findViewById(android.R.id.text1);
 		text.setText(item[1]);
-		text.setCompoundDrawablesWithIntrinsicBounds(item[2], 0, 0, 0);
+        TypedValue drawable = new TypedValue();
+        getContext().getTheme().resolveAttribute(item[2], drawable, true);
+        if(drawable != null)
+		    text.setCompoundDrawablesWithIntrinsicBounds(drawable.resourceId , 0, 0, 0);
 		return view;
 	}
 }

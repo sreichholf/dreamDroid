@@ -183,7 +183,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="6dp"
-            android:drawableLeft="@drawable/ic_menu_movie"
+            android:drawableLeft="?attr/ic_menu_movie"
             android:gravity="center_vertical"
             android:text="@string/stream_current" />
     </LinearLayout>

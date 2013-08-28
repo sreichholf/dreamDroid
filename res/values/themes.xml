@@ -11,6 +11,24 @@
         <item name="ic_media_stop">@drawable/ic_media_stop_holo_dark</item>
         <item name="ic_media_previous">@drawable/ic_media_previous_holo_dark</item>
         <item name="ic_media_next">@drawable/ic_media_next_holo_dark</item>
+        <item name="ic_menu_clear_playlist">@drawable/ic_menu_close_holo_dark</item>
+        <item name="ic_menu_clock">@drawable/ic_menu_clock_holo_dark</item>
+        <item name="ic_menu_close">@drawable/ic_menu_close_holo_dark</item>
+        <item name="ic_menu_device">@drawable/ic_menu_device_holo_dark</item>
+        <item name="ic_menu_event">@drawable/ic_menu_event_holo_dark</item>
+        <item name="ic_menu_info">@drawable/ic_menu_info_holo_dark</item>
+        <item name="ic_menu_list">@drawable/ic_menu_list_holo_dark</item>
+        <item name="ic_menu_mail">@drawable/ic_menu_mail_holo_dark</item>
+        <item name="ic_menu_movie">@drawable/ic_menu_movie_holo_dark</item>
+        <item name="ic_menu_music">@drawable/ic_menu_music_holo_dark</item>
+        <item name="ic_menu_picture">@drawable/ic_menu_picture_holo_dark</item>
+        <item name="ic_menu_power_off">@drawable/ic_menu_power_off_holo_dark</item>
+        <item name="ic_menu_remote">@drawable/ic_menu_remote_holo_dark</item>
+        <item name="ic_menu_save">@drawable/ic_menu_save_holo_dark</item>
+        <item name="ic_menu_send">@drawable/ic_menu_send_holo_dark</item>
+        <item name="ic_menu_services">@drawable/ic_menu_services_holo_dark</item>
+        <item name="ic_menu_sleeptimer">@drawable/ic_menu_sleeptimer_holo_dark</item>
+        <item name="ic_menu_timer">@drawable/ic_menu_timer_holo_dark</item>
     </style>
 
     <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -22,7 +40,25 @@
         <item name="ic_media_pause">@drawable/ic_media_pause_holo_light</item>
         <item name="ic_media_stop">@drawable/ic_media_stop_holo_light</item>
         <item name="ic_media_previous">@drawable/ic_media_previous_holo_light</item>
-        <item name="ic_media_next">@drawable/ic_media_next_holo_light</item>
+		<item name="ic_media_next">@drawable/ic_media_next_holo_light</item>
+        <item name="ic_menu_clear_playlist">@drawable/ic_menu_clear_playlist_holo_light</item>
+        <item name="ic_menu_clock">@drawable/ic_menu_clock_holo_light</item>
+        <item name="ic_menu_close">@drawable/ic_menu_close_holo_light</item>
+        <item name="ic_menu_device">@drawable/ic_menu_device_holo_light</item>
+        <item name="ic_menu_event">@drawable/ic_menu_event_holo_light</item>
+        <item name="ic_menu_info">@drawable/ic_menu_info_holo_light</item>
+        <item name="ic_menu_list">@drawable/ic_menu_list_holo_light</item>
+        <item name="ic_menu_mail">@drawable/ic_menu_mail_holo_light</item>
+        <item name="ic_menu_movie">@drawable/ic_menu_movie_holo_light</item>
+        <item name="ic_menu_music">@drawable/ic_menu_music_holo_light</item>
+        <item name="ic_menu_picture">@drawable/ic_menu_picture_holo_light</item>
+        <item name="ic_menu_power_off">@drawable/ic_menu_power_off_holo_light</item>
+        <item name="ic_menu_remote">@drawable/ic_menu_remote_holo_light</item>
+        <item name="ic_menu_save">@drawable/ic_menu_save_holo_light</item>
+        <item name="ic_menu_send">@drawable/ic_menu_send_holo_light</item>
+        <item name="ic_menu_services">@drawable/ic_menu_services_holo_light</item>
+        <item name="ic_menu_sleeptimer">@drawable/ic_menu_sleeptimer_holo_light</item>
+        <item name="ic_menu_timer">@drawable/ic_menu_timer_holo_light</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light" />

@@ -63,21 +63,21 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	// [ ID, string.ID, drawable.ID, Available (1=yes, 0=no), isDialog (2=yes if
 	// no SlidingMenu else no, 1=yes,
 	// 0=no) ]
-	public static final int[][] MENU_ITEMS = {
-			{ Statics.ITEM_SERVICES, R.string.services, R.drawable.ic_menu_services, 1, 0 },
-			{ Statics.ITEM_MOVIES, R.string.movies, R.drawable.ic_menu_movie, 1, 0 },
-			{ Statics.ITEM_TIMER, R.string.timer, R.drawable.ic_menu_timer, 1, 0 },
-			{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.drawable.ic_menu_remote, 1, 2 },
-			{ Statics.ITEM_CURRENT, R.string.current_service, R.drawable.ic_menu_event, 1, 0 },
-			{ Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.drawable.ic_menu_power_off, 1, 1 },
-			{ Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.drawable.ic_menu_music, 1, 0 },
-			{ Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.drawable.ic_menu_sleeptimer,
-					DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
-			{ Statics.ITEM_SCREENSHOT, R.string.screenshot, R.drawable.ic_menu_picture, 1, 0 },
-			{ Statics.ITEM_INFO, R.string.device_info, R.drawable.ic_menu_device, 1, 0 },
-			{ Statics.ITEM_MESSAGE, R.string.send_message, R.drawable.ic_menu_mail, 1, 1 },
-			{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.drawable.ic_menu_info, 1, 0 },
-			{ Statics.ITEM_PROFILES, R.string.profiles, R.drawable.ic_menu_list, 1, 0 }, };
+    public static final int[][] MENU_ITEMS = {
+            { Statics.ITEM_SERVICES, R.string.services, R.attr.ic_menu_services, 1, 0 },
+            { Statics.ITEM_MOVIES, R.string.movies, R.attr.ic_menu_movie, 1, 0 },
+            { Statics.ITEM_TIMER, R.string.timer, R.attr.ic_menu_timer, 1, 0 },
+            { Statics.ITEM_REMOTE, R.string.virtual_remote, R.attr.ic_menu_remote, 1, 2 },
+            { Statics.ITEM_CURRENT, R.string.current_service, R.attr.ic_menu_event, 1, 0 },
+            { Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.attr.ic_menu_power_off, 1, 1 },
+            { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.attr.ic_menu_music, 1, 0 },
+            { Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.attr.ic_menu_sleeptimer,
+                    DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
+            { Statics.ITEM_SCREENSHOT, R.string.screenshot, R.attr.ic_menu_picture, 1, 0 },
+            { Statics.ITEM_INFO, R.string.device_info, R.attr.ic_menu_device, 1, 0 },
+            { Statics.ITEM_MESSAGE, R.string.send_message, R.attr.ic_menu_mail, 1, 1 },
+            { Statics.ITEM_SIGNAL, R.string.signal_meter, R.attr.ic_menu_info, 1, 0 },
+            { Statics.ITEM_PROFILES, R.string.profiles, R.attr.ic_menu_list, 1, 0 }, };
 
 	private int[] mCurrent;
 	private int mCurrentListItem;

@@ -9,7 +9,7 @@
         android:title="@string/new_timer"/>
     <item
         android:id="@+id/menu_cleanup"
-        android:icon="@drawable/ic_menu_clear_playlist"
+        android:icon="@drawable/ic_menu_clear_playlist_holo_light"
         dreamDroid:showAsAction="ifRoom"
         android:title="@string/cleanup"/>
 
