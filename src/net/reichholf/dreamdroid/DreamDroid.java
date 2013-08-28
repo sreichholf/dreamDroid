@@ -211,6 +211,9 @@ public class DreamDroid extends Application {
 			editor.putInt("currentProfile", id);
 			editor.commit();
 			if (!sProfile.equals(oldProfile) || forceEvent) {
+				//reset locations and tags, they will be reloaded when needed the next time
+				sLocations.clear();
+				sTags.clear();
 				activeProfileChanged();
 			}
 			return true;
