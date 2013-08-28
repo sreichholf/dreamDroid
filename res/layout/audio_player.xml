@@ -38,7 +38,7 @@
                 android:layout_margin="0dp"
                 android:background="@drawable/list_selector_holo_dark"
                 android:padding="5dp"
-                android:src="@drawable/ic_menu_list_holo_light" />
+                android:src="?attr/ic_menu_list" />
         </RelativeLayout>
 
         <LinearLayout
