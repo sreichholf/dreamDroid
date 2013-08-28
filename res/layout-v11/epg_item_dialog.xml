@@ -74,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_weight="1"
-                android:drawableLeft="?attr/ic_menu_clock"
+                android:drawableLeft="?attr/ic_btn_clock"
                 android:maxLines="2"
                 android:minHeight="@dimen/dialog_button_bar_height"
                 android:text="@string/set_timer" />
@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_weight="1"
-                android:drawableLeft="?attr/ic_menu_clock"
+                android:drawableLeft="?attr/ic_btn_clock"
                 android:maxLines="2"
                 android:minHeight="@dimen/dialog_button_bar_height"
                 android:text="@string/edit_timer" />
@@ -118,7 +118,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_weight="1"
-                android:drawableLeft="?attr/ic_menu_movie"
+                android:drawableLeft="?attr/ic_btn_movie"
                 android:maxLines="2"
                 android:minHeight="@dimen/dialog_button_bar_height"
                 android:text="@string/imdb" />
@@ -130,7 +130,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:layout_weight="1"
-                android:drawableLeft="?attr/ic_menu_movie"
+                android:drawableLeft="?attr/ic_btn_movie"
                 android:maxLines="2"
                 android:minHeight="@dimen/dialog_button_bar_height"
                 android:text="@string/similar" />

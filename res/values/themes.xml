@@ -29,6 +29,11 @@
         <item name="ic_menu_services">@drawable/ic_menu_services_holo_dark</item>
         <item name="ic_menu_sleeptimer">@drawable/ic_menu_sleeptimer_holo_dark</item>
         <item name="ic_menu_timer">@drawable/ic_menu_timer_holo_dark</item>
+		<item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
+		<item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
+		<item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
+		<item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
+		<item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
     </style>
 
     <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -59,6 +64,11 @@
         <item name="ic_menu_services">@drawable/ic_menu_services_holo_light</item>
         <item name="ic_menu_sleeptimer">@drawable/ic_menu_sleeptimer_holo_light</item>
         <item name="ic_menu_timer">@drawable/ic_menu_timer_holo_light</item>
+		<item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
+		<item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
+		<item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
+		<item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
+		<item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light" />
