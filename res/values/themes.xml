@@ -22,7 +22,7 @@
         <item name="ic_menu_movie">@drawable/ic_menu_movie_holo_dark</item>
         <item name="ic_menu_music">@drawable/ic_menu_music_holo_dark</item>
         <item name="ic_menu_picture">@drawable/ic_menu_picture_holo_dark</item>
-        <item name="ic_menu_power_off">@drawable/ic_menu_power_off_holo_dark</item>
+        <item name="ic_menu_power_off">@drawable/ic_menu_power_holo_dark</item>
         <item name="ic_menu_remote">@drawable/ic_menu_remote_holo_dark</item>
         <item name="ic_menu_save">@drawable/ic_menu_save_holo_dark</item>
         <item name="ic_menu_send">@drawable/ic_menu_send_holo_dark</item>
@@ -52,7 +52,7 @@
         <item name="ic_menu_movie">@drawable/ic_menu_movie_holo_light</item>
         <item name="ic_menu_music">@drawable/ic_menu_music_holo_light</item>
         <item name="ic_menu_picture">@drawable/ic_menu_picture_holo_light</item>
-        <item name="ic_menu_power_off">@drawable/ic_menu_power_off_holo_light</item>
+        <item name="ic_menu_power_off">@drawable/ic_menu_power_holo_light</item>
         <item name="ic_menu_remote">@drawable/ic_menu_remote_holo_light</item>
         <item name="ic_menu_save">@drawable/ic_menu_save_holo_light</item>
         <item name="ic_menu_send">@drawable/ic_menu_send_holo_light</item>
