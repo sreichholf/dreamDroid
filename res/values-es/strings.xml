@@ -183,7 +183,6 @@
     <string name="source_code_link">Código fuente disponible en : http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Perfil activo</string>
     <string name="connection_state">Estado de la conexión</string>
-    <string name="connection_state">Estado</string>
     <string name="not_available">No disponible</string>
     <string name="checking">comprobando&#8230;</string>
     <string name="error">ERROR!</string>
