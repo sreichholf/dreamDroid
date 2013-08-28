@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="description">توضیحات</string>
+<string name="title">عنوان</string>
+<string-array name="servicelist">
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+<item></item>
+</string-array>
+<string name="timer">زمان</string>
+<string name="service">کانال</string>
+<string name="afterevent">بعد از رخداد</string>
+<string name="location">مکان</string>
+<string-array name="afterevents">
+<item>هیچ چیز</item>
+<item>خاموشی موقت</item>
+<item>خاموش</item>
+<item>خودکار</item>
+</string-array>
+<string name="begin_time">زمان شروع</string>
+<string name="repeatings">تکرار</string>
+<string name="end_time">زمان پایان</string>
+<string name="services">کانال</string>
+<string name="movies">فیلم</string>
+<string name="device_info">اطلاعات دستگاه</string>
+<string name="send_message">ارسال پیام</string>
+<string name="save">ذخیره</string>
+<string name="cancel">لغو</string>
+<string name="fetching_data">در حال گرفتن اطلاعات</string>
+<string name="parsing">در حال تجزیه و تحلیل</string>
+<string name="get_content_error">خطا در هنگام گرفتن مطالب </string>
+<string name="browse_epg">باز نمودن برنامه راهنمای الکترونیک</string>
+<string name="edit">ویرایش</string>
+<string name="delete">حذف</string>
+<string name="epg">برنامه راهنمای الکترونیک</string>
+<string name="ssl_enabled">فعال کردن SSL</string>
+<string name="port">پورت</string>
+<string name="settings">تنظیمات</string>
+<string name="port_long">پورت شنونده</string>
+<string name="close">بستن</string>
+<string name="minutes_short">دقیقه</string>
+<string name="user">کاربر</string>
+<string name="user_long">نام کاربری برای ورود</string>
+<string name="pass">رمز عبور</string>
+<string name="pass_long">رمز عبور برای ورود</string>
+<string name="saving">در حال ذخیره کردن - لطفا صبر کنید</string>
+<string name="deleting">در حال حذف کردن - لطفا صبر کنید</string>
+<string name="delete_confirm">حذف شود ؟</string>
+<string name="set_timer">تنطیم نمودن تایمر</string>
+<string name="home">خانه</string>
+<string name="pick_action">انتخاب یک اقدام</string>
+<string name="set_time_begin">شروع تاریخ و زمان</string>
+<string name="set_time_end">پایان تاریخ و زمان</string>
+<string name="apply">بکار گرفتن</string>
+<string name="reload">بازنگری</string>
+<string-array name="weekdays_short">
+<item>دوشنبه</item>
+<item>سه شنبه</item>
+<item>چهارشنبه</item>
+<item>پنجشنبه</item>
+<item>جمعه</item>
+<item>شنبه</item>
+<item>یکشنبه</item>
+</string-array>
+<string-array name="weekdays">
+<item>دوشنبه</item>
+<item>سه شنبه</item>
+<item>چهارشنبه</item>
+<item>پنجشنبه</item>
+<item>جمعه</item>
+<item>شنبه</item>
+<item>یکشنبه</item>
+</string-array>
+<string name="none">هیج کدام</string>
+<string name="choose_days">انتخاب روزها</string>
+<string name="mo_to_fr">دوشنبه تا جمعه</string>
+<string name="daily">روزانه</string>
+<string name="new_timer">زمان جدید</string>
+<string name="locations">مکان</string>
+<string name="gui_version">نسخه GUI</string>
+<string name="image_version">نسخه ایمیج</string>
+<string name="interface_version">ورژن واسط</string>
+<string name="front_processor_version">ورژن پردازنده جلویی</string>
+<string name="device_name">نام دستگاه</string>
+<string name="nics">واسط شبکه</string>
+<string name="hdds">هارد دیسک</string>
+<string name="hdd_capacity">%1$s (%2$s خالی)</string>
+<string name="not_implemented">این کار هنور تمام نشده است</string>
+<string name="current_event">رخداد فعلی</string>
+<string name="timeout">بازه زمانی</string>
+<string name="message">پیام</string>
+<string name="message_text_hint">پیام خود را بنویسید</string>
+<string name="send">ارسال</string>
+<string name="type">نوع</string>
+<string-array name="message_types">
+<item>بله خیر</item>
+<item>اخطار</item>
+<item>اطلاعات</item>
+<item>خطا</item>
+</string-array>
+<string name="virtual_remote">دسترسی از راه دور مجازی</string>
+<string name="login_enabled">فعال سازی ورود به سیستم</string>
+<string name="wait_request_finished">لطفا تا زمانی که درخواست  ارسالی در حال اجرا است صبر کنید</string>
+<string name="current_service">کنونی</string>
+<string name="provider">تهیه کننده</string>
+<string name="now">اکنون</string>
+<string name="next">بعدی</string>
+<string name="epg_search"> EPG جستجوی</string>
+<string name="epg_search_hint"> EPG جستجوی</string>
+<string name="standard">طرح بندی استاندارد</string>
+<string name="no_epg_available">در حال حاضر اطلاعاتی از برنامه راهنمای الکترونی برای این کانال موجود نیست</string>
+<string name="ok">تایید شد</string>
+<string name="activate">فعال کردن</string>
+<string name="confirm_delete_profile">آیا واقعا می خواهید پروفایل را پاک کنید ؟</string>
+<string name="profile_activated">نمایه فعال شد</string>
+<string name="profile_not_activated">خطا در فعال سازی نمایه</string>
+<string name="profile_not_deleted">خطا درحذف نمایه</string>
+<string name="profile_deleted">نمایه حذف شد</string>
+<string name="profile">نمایه</string>
+<string name="profile_updated">نمایه به روز رسانی شد</string>
+<string name="profile_added">نمایه اضافه شد</string>
+<string name="profile_add">افزودن نمایه</string>
+<string name="profile_not_added">نمایه افزوده نشد</string>
+<string name="profile_not_updated">نمایه بروزرسانی نشد</string>
+<string name="no_list_item">هیج جیزی برای نشان دادن وجود ندارد</string>
+<string name="locations_default_fallback">خطا در بارگذاری مکان و برگشت به حالت پیش فرض</string>
+<string name="tags">برچسب</string>
+<string name="screenshot">صفحه نمایش</string>
+<string name="host_empty">نام هاست نمی تواند خالی باشد</string>
+<string name="standby">خاموشی موقت</string>
+<string name="powerup">روشن کردن</string>
+<string name="restart_gui">راه اندازی مجدد GUI</string>
+<string name="reboot">راه اندازی مجدد</string>
+<string name="shutdown">خاموش کردن</string>
+<string name="powercontrol">کنترل توان</string>
+<string name="choose_tags">انتخاب برچسب</string>
+<string name="choose_location">انتخاب مکان</string>
+<string name="bouquet_overview">نمایش دسته بندی</string>
+<string name="set_default">انتخاب به عنوان پیش فرض</string>
+<string name="default_bouquet_set_to">دسته بندی پیش فرض اعمال شد</string>
+<string name="default_bouquet_not_set">دسته بندی پیش فرض نمی تواند اعمال شود</string>
+<string name="loading">در حال بارگذاری</string>
+<string name="about">درباره</string>
+<string name="source_code_link"> http://github.com/sreichholf/dreamDroid سورس کد در این آدرس موجود است </string>
+<string name="active_profile">نمایه فعال</string>
+<string name="not_available">در دسترس نیست</string>
+<string name="checking">در حال بررسی</string>
+<string name="error">خطا</string>
+<string name="check_connectivity">بررسی اتصال</string>
+<string name="connection_error">خطای ارتباط</string>
+<string name="port_out_of_range">پورت بین ۱ تا ۶۵۵۳۵ نیست</string>
+<string name="illegal_host">هاست غیر مجاز</string>
+<string name="edit_timer">ویرایش زمان</string>
+<string name="cleaning_timerlist">پاک سازی لیست زمان</string>
+<string name="cleanup">پاک سازی</string>
+<string name="in_standby">دستگاه در مد استندبای است</string>
+<string name="is_running">دستگاه در حال کار است</string>
+<string name="similar">رویداد های مشابه</string>
+<string-array name="timer_state">
+<item></item>
+<item>صبرکنید ...</item>
+<item>تهیه گردید</item>
+<item>به اتمام رسید</item>
+<item>غیر فعال گردید</item>
+</string-array>
+<string-array name="timer_action">
+<item>ذخیره سازی</item>
+<item>جابجایی کانال</item>
+</string-array>
+<string name="sleeptimer">تایمر خواب</string>
+<string name="current_volume">حجم صدا اکنون %s است</string>
+<string name="muted">بی صدا</string>
+<string name="enable_volume_control">فعال کردن کنترل صدا</string>
+<string name="download">دانلود</string>
+<string name="main_menu">اصلی</string>
+<string name="profiles">نمایه</string>
+<string name="mediaplayer">مدیاپلیر</string>
+</resources>
