@@ -1,5 +1,8 @@
+.classpath
+.project
+.settings/
+.gradle
 .idea/
-.gradle/
 gradle/
 bin/
 gen/
