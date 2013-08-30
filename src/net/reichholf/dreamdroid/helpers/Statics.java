@@ -74,6 +74,8 @@ public class Statics {
 	public static final int ITEM_HOME = 0x6039;
 	public static final int ITEM_DETECT_DEVICES = R.id.menu_detect_devices;
 	public static final int ITEM_SIGNAL = 0x6040;
+	public static final int ITEM_ZAP = 0x6041;
+
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
 	public static final int REQUEST_PICK_SERVICE = 0x5001;

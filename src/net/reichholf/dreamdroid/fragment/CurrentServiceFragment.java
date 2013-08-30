@@ -15,7 +15,6 @@ import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ImageLoader;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -75,7 +74,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	private ExtendedHashMap mNext;
 	private ExtendedHashMap mCurrentItem;
 	private boolean mCurrentServiceReady;
-	private ImageLoader mImageLoader;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -93,9 +91,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 					.getParcelable("currentItem");
 			mCurrentItem = new ExtendedHashMap(currentItem);
 		}
-
-		mImageLoader = new ImageLoader();
-		mImageLoader.setMode(ImageLoader.Mode.NO_ASYNC_TASK);
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -247,7 +242,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 
 			ImageView piconView = (ImageView) getView().findViewById(R.id.picon);
-			Picon.setPiconForView(getActionBarActivity(), piconView, mImageLoader, mService);
+			Picon.setPiconForView(getActionBarActivity(), piconView, mService);
 		} else {
 			showToast(getText(R.string.not_available));
 		}

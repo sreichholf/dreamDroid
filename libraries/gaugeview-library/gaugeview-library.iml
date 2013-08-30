@@ -10,7 +10,6 @@
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
         <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/res" />
         <option name="LIBRARY_PROJECT" value="true" />
-        <option name="UPDATE_PROPERTY_FILES" value="true" />
       </configuration>
     </facet>
     <facet type="android-gradle" name="Android-Gradle">
@@ -66,8 +65,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Android 4.3 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="android-logging-log4j-1.0.3" level="project" />
-    <orderEntry type="library" name="log4j-1.2.17" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="android-logging-log4j-1.0.3" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="log4j-1.2.17" level="project" />
   </component>
 </module>
 

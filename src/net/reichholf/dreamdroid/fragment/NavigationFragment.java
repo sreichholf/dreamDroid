@@ -71,6 +71,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
             { Statics.ITEM_CURRENT, R.string.current_service, R.attr.ic_menu_event, 1, 0 },
             { Statics.ITEM_POWERSTATE_DIALOG, R.string.powercontrol, R.attr.ic_menu_power_off, 1, 1 },
             { Statics.ITEM_MEDIA_PLAYER, R.string.mediaplayer, R.attr.ic_menu_music, 1, 0 },
+			{ Statics.ITEM_ZAP, R.string.zap, R.attr.ic_media_play, 1, 0 },
             { Statics.ITEM_SLEEPTIMER, R.string.sleeptimer, R.attr.ic_menu_sleeptimer,
                     DreamDroid.featureSleepTimer() ? 1 : 0, 1 },
             { Statics.ITEM_SCREENSHOT, R.string.screenshot, R.attr.ic_menu_picture, 1, 0 },
@@ -419,7 +420,9 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			clearBackStack();
 			getMainActivity().showDetails(SignalFragment.class);
 			break;
-
+		case Statics.ITEM_ZAP:
+			clearBackStack();
+			getMainActivity().showDetails(ZapFragment.class);
 		default:
 			return super.onItemClicked(id);
 		}

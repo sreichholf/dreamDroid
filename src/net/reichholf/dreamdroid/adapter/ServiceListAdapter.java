@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ImageLoader;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
@@ -34,18 +33,15 @@ import android.widget.TextView;
 public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	@SuppressWarnings("unused")
 	private static String LOG_TAG = "ServiceListAdapter";
-	private ImageLoader mImageLoader;
 	private LayoutInflater mInflater;
 
 	/**
 	 * @param context
-	 * @param textViewResourceId
 	 * @param services
 	 */
 	public ServiceListAdapter(Context context, ArrayList<ExtendedHashMap> services) {
 		super(context, 0, services);
-		mImageLoader = new ImageLoader();
-		mImageLoader.setMode(ImageLoader.Mode.CORRECT);
+		DreamDroid.initImageLoader(getContext().getApplicationContext());
 		mInflater = LayoutInflater.from(context);
 	}
 
@@ -110,7 +106,7 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			viewHolder = (ServiceViewHolder) view.getTag();
 		}
 
-		Picon.setPiconForView(getContext(), viewHolder.picon, mImageLoader, service);
+		Picon.setPiconForView(getContext(), viewHolder.picon, service);
 
 		if (service != null) {
 			if (!hasNow) {
@@ -172,7 +168,6 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		TextView eventNextTitle;
 		TextView eventNextStart;
 		TextView eventNextDuration;
-		TextView eventTitle;
 	}
 
 }

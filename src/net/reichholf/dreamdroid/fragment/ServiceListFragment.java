@@ -60,6 +60,9 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
+
 /**
  * Handles ServiceLists of (based on service references).
  * 
@@ -106,8 +109,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 		protected ListRequestInterface mListRequestHandler;
 		protected boolean mRequireLocsAndTags;
-		protected ArrayList<String> mLocations;
-		protected ArrayList<String> mTags;
 
 		public AsyncListUpdateTask(String baseTitle) {
 			mListRequestHandler = null;
@@ -352,6 +353,10 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 		mNavList.setFastScrollEnabled(true);
 		mDetailList.setFastScrollEnabled(true);
+
+		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), false, true);
+		mDetailList.setOnScrollListener(listener);
+
 		setAdapter();
 		return v;
 	}

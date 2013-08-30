@@ -10,18 +10,22 @@ import java.io.File;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ImageLoader;
 import android.content.Context;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+
 /**
  * @author sre
  * 
  */
 public class Picon {
+	private static DisplayImageOptions sDisplayOptions = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).build();
+
 	public static String getPiconFileName(ExtendedHashMap service) {
 		String root = Environment.getExternalStorageDirectory().getAbsolutePath();
 		String fileName = service.getString(Event.KEY_SERVICE_REFERENCE);
@@ -40,7 +44,7 @@ public class Picon {
 		return fileName;
 	}
 
-	public static void setPiconForView(Context context, ImageView piconView, ImageLoader imageLoader,
+	public static void setPiconForView(Context context, ImageView piconView,
 			ExtendedHashMap service) {
 		if (piconView == null) {
 			return;
@@ -58,6 +62,6 @@ public class Picon {
 		if (piconView.getVisibility() != View.VISIBLE)
 			piconView.setVisibility(View.VISIBLE);
 
-		imageLoader.load(fileName, piconView);
+		ImageLoader.getInstance().displayImage("file://"+fileName, piconView, sDisplayOptions);
 	}
 }

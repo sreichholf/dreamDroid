@@ -288,7 +288,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 			LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
-
 		mMapList.clear();
 		if (result.isError()) {
 			setEmptyText(result.getErrorText());
