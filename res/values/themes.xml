@@ -4,7 +4,7 @@
     <style name="Theme.DreamDroid" parent="Theme.AppCompat">
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#333</item>
-        <item name="cardBackground">@android:color/transparent</item>
+        <item name="cardBackground">@drawable/card_list_item_selector_holo_dark</item>
         <item name="cardListView">@style/CardListView</item>
         <item name="ic_media_play">@drawable/ic_media_play_holo_dark</item>
         <item name="ic_media_pause">@drawable/ic_media_pause_holo_dark</item>
@@ -39,7 +39,7 @@
     <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#DDD</item>
-        <item name="cardBackground">@drawable/card_list_item_selector</item>
+        <item name="cardBackground">@drawable/card_list_item_selector_holo_light</item>
         <item name="cardListView">@style/CardListView.Light</item>
         <item name="ic_media_play">@drawable/ic_media_play_holo_light</item>
         <item name="ic_media_pause">@drawable/ic_media_pause_holo_light</item>
