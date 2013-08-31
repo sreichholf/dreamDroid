@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -21,12 +22,6 @@ public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		if (sp.getBoolean("light_theme", false))
-			setTheme(R.style.Theme_AppCompat_Light);
-
-		mThemeSet = true;
 		super.onCreate(savedInstanceState);
-
 	}
 }

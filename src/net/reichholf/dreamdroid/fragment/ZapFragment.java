@@ -1,15 +1,13 @@
 package net.reichholf.dreamdroid.fragment;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
@@ -19,7 +17,9 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.ZapListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
@@ -34,17 +34,71 @@ import java.util.ArrayList;
  * This fragment is actually based on a GridView, it uses some small hacks to trick the ListFragment into working anyways
  * As a GridView is also using a ListAdapter, this avoids having to copy existing code
  */
-public class ZapFragment extends AbstractHttpListFragment{
+public class ZapFragment extends AbstractHttpListFragment {
+	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
+	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
+
 	private GridView mGridView;
+	private GetBouquetListTask mGetBouquetListTask;
+	private ArrayList<ExtendedHashMap> mBouquetList;
+	private ArrayAdapter<String> mBouquetListAdapter;
+	private ExtendedHashMap mCurrentBouquet;
+	private int mSelectedBouquetPosition;
+
+	/**
+	 * @author sreichholf Fetches a service list async. Does all the
+	 *         error-handling, refreshing and title-setting
+	 */
+	private class GetBouquetListTask extends AsyncTask<Void, String, Boolean> {
+		private ArrayList<ExtendedHashMap> mTaskList;
+
+		@Override
+		protected Boolean doInBackground(Void... unused) {
+			mTaskList = new ArrayList<ExtendedHashMap>();
+			if (isCancelled())
+				return false;
+
+			AbstractListRequestHandler handler = new ServiceListRequestHandler();
+			String ref = getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
+			addBouquets(handler, ref);
+			ref = getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
+			addBouquets(handler, ref);
+
+			return true;
+		}
+
+		private boolean addBouquets(AbstractListRequestHandler handler, String ref){
+			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair("sRef", ref));
+			String xml = handler.getList(getHttpClient(), params);
+			if (xml != null && !isCancelled()) {
+				return handler.parseList(xml, mTaskList);
+			}
+			return false;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if (result) {
+				if (getHttpClient().hasError()) {
+					showToast(getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText());
+				}
+			}
+			onBouquetListReady(result, mTaskList);
+		}
+	}
+
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		if (savedInstanceState == null) {
-			reload();
-		}
-		initTitle(getString(R.string.zap));
+		initTitle("");
+
+		mBouquetList = new ArrayList<ExtendedHashMap>();
+		mCurrentBouquet = new ExtendedHashMap();
+		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
+		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
 	}
 
 	@Override
@@ -58,9 +112,15 @@ public class ZapFragment extends AbstractHttpListFragment{
 				onListItemClick(null, view, position, id);
 			}
 		});
-
 		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true);
 		mGridView.setOnScrollListener(listener);
+
+		if(savedInstanceState == null)
+			reload();
+		else {
+			mCurrentBouquet = savedInstanceState.getParcelable(BUNDLE_KEY_CURRENT_BOUQUET);
+			mBouquetList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_BOUQUETLIST);
+		}
 
 		return view;
 	}
@@ -70,6 +130,25 @@ public class ZapFragment extends AbstractHttpListFragment{
 		super.onActivityCreated(savedInstanceState);
 		mAdapter = new ZapListAdapter(getActionBarActivity(), R.layout.zap_grid_item, mMapList);
 		setListAdapter(mAdapter);
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putParcelable(BUNDLE_KEY_CURRENT_BOUQUET, mCurrentBouquet);
+		outState.putSerializable(BUNDLE_KEY_BOUQUETLIST, mBouquetList);
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onResume() {
+		setupListNavigation();
+		super.onResume();
+	}
+
+	@Override
+	public void onPause(){
+		getActionBarActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		super.onPause();
 	}
 
 	/***
@@ -94,9 +173,8 @@ public class ZapFragment extends AbstractHttpListFragment{
 
 	@Override
 	protected ArrayList<NameValuePair> getHttpParams() {
-		String ref = DreamDroid.getCurrentProfile().getDefaultRef();
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("sRef", ref));
+		params.add(new BasicNameValuePair("sRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
 
 		return params;
 	}
@@ -115,13 +193,17 @@ public class ZapFragment extends AbstractHttpListFragment{
 		setCurrentTitle(getLoadFinishedTitle());
 		getActionBarActivity().setTitle(getCurrentTitle());
 
-		if (list.size() == 0)
+		if (list.size() == 0) {
 			setEmptyText(getText(R.string.no_list_item));
-		else {
+		} else {
 			for(ExtendedHashMap service : list){
 				if(!Service.isMarker(service.getString(Service.KEY_REFERENCE)))
 					mMapList.add(service);
 			}
+		}
+		if(mGetBouquetListTask == null){
+			mGetBouquetListTask = new GetBouquetListTask();
+			mGetBouquetListTask.execute();
 		}
 		mAdapter.notifyDataSetChanged();
 	}
@@ -133,5 +215,69 @@ public class ZapFragment extends AbstractHttpListFragment{
 			emptyView.setText(text);
 			emptyView.setVisibility(View.GONE);
 		}
+	}
+
+	public void setupListNavigation() {
+		ActionBar actionBar = getActionBarActivity().getSupportActionBar();
+		if (actionBar.getNavigationMode() == ActionBar.NAVIGATION_MODE_LIST)
+			return;
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+		mBouquetListAdapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
+				R.layout.support_simple_spinner_dropdown_item);
+
+		actionBar.setListNavigationCallbacks(mBouquetListAdapter, new ActionBar.OnNavigationListener() {
+			@Override
+			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+				mSelectedBouquetPosition = itemPosition;
+				if (mBouquetList.size() > itemPosition) {
+					String selectedBouquet = mBouquetListAdapter.getItem(itemPosition);
+					if (!selectedBouquet.equals(mCurrentBouquet.getString(Service.KEY_NAME))) {
+						mCurrentBouquet = mBouquetList.get(itemPosition);
+						reload();
+					}
+				}
+				return true;
+			}
+		});
+		ArrayList<ExtendedHashMap> list = new ArrayList<ExtendedHashMap>(mBouquetList);
+		applyBouquetList(list);
+		mBouquetListAdapter.notifyDataSetChanged();
+	}
+
+	public void onBouquetListReady(boolean result, ArrayList<ExtendedHashMap> list){
+		applyBouquetList(list);
+	}
+
+	private void applyBouquetList(ArrayList<ExtendedHashMap> list){
+		mBouquetList.clear();
+		mBouquetListAdapter.clear();
+
+		String defaultRef = DreamDroid.getCurrentProfile().getDefaultRef();
+		boolean isDefaultMissing = true;
+
+		int position = mSelectedBouquetPosition = 0;
+		for( ExtendedHashMap service : list){
+			mBouquetList.add(service);
+			mBouquetListAdapter.add(service.getString(Service.KEY_NAME));
+			if(!defaultRef.equals("") && service.getString(Service.KEY_REFERENCE).equals(defaultRef))
+				isDefaultMissing = false;
+			if(service.getString(Service.KEY_REFERENCE).equals(mCurrentBouquet.getString(Service.KEY_REFERENCE)))
+				mSelectedBouquetPosition = position;
+			position++;
+		}
+		if(isDefaultMissing){
+			addDefaultBouquetToList();
+		}
+		getActionBarActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedBouquetPosition);
+		mBouquetListAdapter.notifyDataSetChanged();
+	}
+
+	private void addDefaultBouquetToList(){
+		ExtendedHashMap defaultBouquet = new ExtendedHashMap();
+		defaultBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
+		defaultBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
+		mBouquetList.add(0, defaultBouquet);
+		mBouquetListAdapter.insert(defaultBouquet.getString(Service.KEY_NAME), 0);
 	}
 }

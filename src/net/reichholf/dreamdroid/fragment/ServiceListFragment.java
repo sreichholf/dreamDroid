@@ -104,80 +104,17 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	private ArrayList<ExtendedHashMap> mDetailItems;
 	private ExtendedHashMap mCurrentService;
 
-	protected abstract class AsyncListUpdateTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
-		protected ArrayList<ExtendedHashMap> mTaskList;
-
-		protected ListRequestInterface mListRequestHandler;
-		protected boolean mRequireLocsAndTags;
-
-		public AsyncListUpdateTask(String baseTitle) {
-			mListRequestHandler = null;
-		}
-
-		public AsyncListUpdateTask(String baseTitle, ListRequestInterface listRequestHandler, boolean requireLocsAndTags) {
-			mListRequestHandler = listRequestHandler;
-			mRequireLocsAndTags = requireLocsAndTags;
-		}
-
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if (mListRequestHandler == null) {
-				throw new UnsupportedOperationException(
-						"Method doInBackground not re-implemented while no ListRequestHandler has been given");
-			}
-
-			mTaskList = new ArrayList<ExtendedHashMap>();
-			if (isCancelled())
-				return false;
-			publishProgress(getString(R.string.fetching_data));
-
-			String xml = mListRequestHandler.getList(getHttpClient(), params[0]);
-			if (xml != null) {
-				if (isCancelled())
-					return false;
-				publishProgress(getString(R.string.parsing));
-
-				mTaskList.clear();
-
-				if (mListRequestHandler.parseList(xml, mTaskList)) {
-					if (mRequireLocsAndTags) {
-						if (DreamDroid.getLocations().size() == 0) {
-							if (isCancelled())
-								return false;
-							publishProgress(getString(R.string.fetching_data));
-
-							if (!DreamDroid.loadLocations(getHttpClient())) {
-								// TODO Add Error-Msg when loadLocations fails
-							}
-						}
-
-						if (DreamDroid.getTags().size() == 0) {
-							if (isCancelled())
-								return false;
-							publishProgress(getString(R.string.fetching_data));
-
-							if (!DreamDroid.loadTags(getHttpClient())) {
-								// TODO Add Error-Msg when loadTags fails
-							}
-						}
-					}
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-
 	/**
 	 * @author sreichholf Fetches a service list async. Does all the
 	 *         error-handling, refreshing and title-setting
 	 */
-	private class GetServiceListTask extends AsyncListUpdateTask {
+	private class GetServiceListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
 		ArrayList<NameValuePair> mParams;
+		private ArrayList<ExtendedHashMap> mTaskList;
 		private boolean mIsBouquetList;
 
 		public GetServiceListTask() {
-			super(getString(R.string.services));
+			super();
 			mParams = null;
 		}
 
@@ -215,10 +152,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 			if (xml != null && !isCancelled()) {
 				publishProgress(getString(R.string.parsing));
-				boolean result = false;
-				result = handler.parseList(xml, mTaskList);
+				boolean result = handler.parseList(xml, mTaskList);
 				return result;
-
 			}
 			return false;
 		}
@@ -246,10 +181,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				}
 			}
 
-			if (mRequireLocsAndTags) {
-				// TODO setDefaultLocation();
-				// setDefaultLocation();
-			}
 			finishListProgress(title, mTaskList, mIsBouquetList);
 		}
 	}
@@ -335,7 +266,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_view, null, false);
 
-		mEmpty = (View) v.findViewById(android.R.id.empty);
+		mEmpty = v.findViewById(android.R.id.empty);
 
 		mNavList = (ListView) v.findViewById(R.id.listView1);
 		mDetailList = (ListView) v.findViewById(R.id.listView2);
@@ -568,7 +499,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	}
 
 	/**
-	 * @param a
+	 * @param l
 	 * @param v
 	 * @param position
 	 * @param id
