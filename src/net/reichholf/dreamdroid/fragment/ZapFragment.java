@@ -182,7 +182,13 @@ public class ZapFragment extends AbstractHttpListFragment {
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+
 		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		if(mGetBouquetListTask == null){
+			mGetBouquetListTask = new GetBouquetListTask();
+			mGetBouquetListTask.execute();
+		}
+
 		mMapList.clear();
 		if (result.isError()) {
 			setEmptyText(result.getErrorText());
@@ -200,10 +206,6 @@ public class ZapFragment extends AbstractHttpListFragment {
 				if(!Service.isMarker(service.getString(Service.KEY_REFERENCE)))
 					mMapList.add(service);
 			}
-		}
-		if(mGetBouquetListTask == null){
-			mGetBouquetListTask = new GetBouquetListTask();
-			mGetBouquetListTask.execute();
 		}
 		mAdapter.notifyDataSetChanged();
 	}
@@ -275,7 +277,10 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 	private void addDefaultBouquetToList(){
 		ExtendedHashMap defaultBouquet = new ExtendedHashMap();
-		defaultBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
+		String defaultRef = DreamDroid.getCurrentProfile().getDefaultRef();
+		if("".equals(defaultRef))
+			return;
+		defaultBouquet.put(Service.KEY_REFERENCE, defaultRef);
 		defaultBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
 		mBouquetList.add(0, defaultBouquet);
 		mBouquetListAdapter.insert(defaultBouquet.getString(Service.KEY_NAME), 0);

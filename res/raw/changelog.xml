@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 24" versioncode="204">
-        <change>Small layout fixes</change>
+    <release version="1.0 beta 25" versioncode="206">
+		<change>Add "Zap" menu, showing picons/channel-names in a Grid for quick zapping</change>
+        <change>Layout fixes and improvements</change>
 		<change>Replaced/renewed most of the icons with nicer/better fitting ones</change>
         <change>Add experimental MediaPlayer control</change>
     </release>
