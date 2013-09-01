@@ -79,6 +79,8 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			if (result) {
 				if (getHttpClient().hasError()) {
 					showToast(getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText());
@@ -99,6 +101,8 @@ public class ZapFragment extends AbstractHttpListFragment {
 		mCurrentBouquet = new ExtendedHashMap();
 		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
 		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
+
+		restoreState(savedInstanceState);
 	}
 
 	@Override
@@ -115,14 +119,17 @@ public class ZapFragment extends AbstractHttpListFragment {
 		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true);
 		mGridView.setOnScrollListener(listener);
 
-		if(savedInstanceState == null)
+		restoreState(savedInstanceState);
+		return view;
+	}
+
+	private void restoreState(Bundle savedInstanceState){
+		if(savedInstanceState == null){
 			reload();
-		else {
+		} else {
 			mCurrentBouquet = savedInstanceState.getParcelable(BUNDLE_KEY_CURRENT_BOUQUET);
 			mBouquetList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_BOUQUETLIST);
 		}
-
-		return view;
 	}
 
 	@Override
