@@ -13,3 +13,4 @@ libraries/numberpicker/gen/
 libraries/numberpicker/bin/
 libraries/gaugeview-library/gen/
 libraries/numberpicker/gen/
+*.iml
