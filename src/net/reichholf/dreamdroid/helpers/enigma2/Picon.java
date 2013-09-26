@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 import java.io.File;
 
 import android.graphics.Bitmap;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import net.reichholf.dreamdroid.DreamDroid;
@@ -28,11 +29,13 @@ import com.nostra13.universalimageloader.core.ImageLoader;
  */
 public class Picon {
 	private static DisplayImageOptions sDisplayOptions = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).cacheInMemory(true).build();
-	private static AnimateImageDisplayListener animateImageDisplayListener = new AnimateImageDisplayListener();
+	private static AnimateImageDisplayListener sAnimateImageDisplayListener = new AnimateImageDisplayListener();
 
-	private static class AnimateImageDisplayListener extends SimpleImageLoadingListener {
+	public static class AnimateImageDisplayListener extends SimpleImageLoadingListener {
 		@Override
 		public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+			if(!PreferenceManager.getDefaultSharedPreferences(view.getContext()).getBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
+				return;
 			if (loadedImage != null) {
 				ImageView imageView = (ImageView) view;
 				FadeInBitmapDisplayer.animate(imageView, 200);
@@ -59,7 +62,12 @@ public class Picon {
 	}
 
 	public static void setPiconForView(Context context, ImageView piconView,
-			ExtendedHashMap service) {
+									   ExtendedHashMap service) {
+		setPiconForView(context, piconView, service, sAnimateImageDisplayListener);
+	}
+
+	public static void setPiconForView(Context context, ImageView piconView,
+			ExtendedHashMap service, AnimateImageDisplayListener animateImageDisplayListener) {
 		if (piconView == null) {
 			return;
 		}
@@ -76,9 +84,6 @@ public class Picon {
 		if (piconView.getVisibility() != View.VISIBLE)
 			piconView.setVisibility(View.VISIBLE);
 
-		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			ImageLoader.getInstance().displayImage("file://"+fileName, piconView, sDisplayOptions, animateImageDisplayListener);
-		else
-			ImageLoader.getInstance().displayImage("file://"+fileName, piconView, sDisplayOptions);
+		ImageLoader.getInstance().displayImage("file://"+fileName, piconView, sDisplayOptions, animateImageDisplayListener);
 	}
 }

@@ -115,7 +115,6 @@ public class DreamDroid extends Application {
 		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
 				.threadPoolSize(java.lang.Runtime.getRuntime().availableProcessors())
 				.threadPriority(Thread.NORM_PRIORITY - 2)
-				.denyCacheImageMultipleSizesInMemory()
 				.discCacheFileNameGenerator(new Md5FileNameGenerator())
 				.tasksProcessingOrder(QueueProcessingType.FIFO)
 				.build();

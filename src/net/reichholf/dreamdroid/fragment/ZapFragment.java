@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.fragment;
 
+import android.content.ActivityNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
@@ -21,6 +22,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
+import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
@@ -116,6 +118,13 @@ public class ZapFragment extends AbstractHttpListFragment {
 				onListItemClick(null, view, position, id);
 			}
 		});
+		mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+				onListItemLongClick(null, view, position, id);
+				return true;
+			}
+		});
 		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true);
 		mGridView.setOnScrollListener(listener);
 
@@ -171,6 +180,16 @@ public class ZapFragment extends AbstractHttpListFragment {
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
 		zapTo(ref);
+	}
+
+	public void onListItemLongClick(ListView l, View v, int position, long id) {
+		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
+		String name = mMapList.get(position).getString(Service.KEY_NAME);
+		try {
+			startActivity(IntentFactory.getStreamServiceIntent(ref, name));
+		} catch (ActivityNotFoundException e) {
+			showToast(getText(R.string.missing_stream_player));
+		}
 	}
 
 	@Override
