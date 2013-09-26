@@ -136,7 +136,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 		if(savedInstanceState == null){
 			reload();
 		} else {
-			mCurrentBouquet = savedInstanceState.getParcelable(BUNDLE_KEY_CURRENT_BOUQUET);
+			mCurrentBouquet = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_BOUQUET);
 			mBouquetList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_BOUQUETLIST);
 		}
 	}

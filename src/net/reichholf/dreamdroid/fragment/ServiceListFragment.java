@@ -78,6 +78,14 @@ import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
  */
 public class ServiceListFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener {
 	public static final String SERVICE_REF_ROOT = "root";
+	public static final String BUNDLE_KEY_CURRENT_SERVICE = "currentService";
+	public static final String BUNDLE_KEY_NAVNAME = "navname";
+	public static final String BUNDLE_KEY_NAVREFERENCE = "navreference";
+	public static final String BUNDLE_KEY_DETAILNAME = "detailname";
+	public static final String BUNDLE_KEY_DETAILREFERENCE = "detailreference";
+	public static final String BUNDLE_KEY_HISTORY = "history";
+	public static final String BUNDLE_KEY_NAVITEMS = "navitems";
+	public static final String BUNDLE_KEY_DETAILITEMS = "detailitems";
 
 	private boolean mPickMode;
 	private boolean mReload;
@@ -205,16 +213,16 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 
 		if (savedInstanceState != null && !mPickMode) {
-			mNavName = savedInstanceState.getString("navname");
-			mNavReference = savedInstanceState.getString("navreference");
-			mDetailName = savedInstanceState.getString("detailname");
-			mDetailReference = savedInstanceState.getString("detailreference");
+			mNavName = savedInstanceState.getString(BUNDLE_KEY_NAVNAME);
+			mNavReference = savedInstanceState.getString(BUNDLE_KEY_NAVREFERENCE);
+			mDetailName = savedInstanceState.getString(BUNDLE_KEY_DETAILNAME);
+			mDetailReference = savedInstanceState.getString(BUNDLE_KEY_DETAILREFERENCE);
 
-			mHistory = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, "history");
-			mNavItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, "navitems");
-			mDetailItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, "detailitems");
+			mHistory = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_HISTORY);
+			mNavItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_NAVITEMS);
+			mDetailItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_DETAILITEMS);
 
-			mCurrentService = (ExtendedHashMap) savedInstanceState.getParcelable("currentService");
+			mCurrentService = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_SERVICE);
 
 			mReload = false;
 		} else {
@@ -386,14 +394,14 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putString("navname", mNavName);
-		outState.putString("navreference", mNavReference);
-		outState.putString("detailname", mDetailName);
-		outState.putString("detailreference", mDetailReference);
-		outState.putSerializable("history", mHistory);
-		outState.putSerializable("navitems", mNavItems);
-		outState.putSerializable("detailitems", mDetailItems);
-		outState.putParcelable("currentService", mCurrentService);
+		outState.putString(BUNDLE_KEY_NAVNAME, mNavName);
+		outState.putString(BUNDLE_KEY_NAVREFERENCE, mNavReference);
+		outState.putString(BUNDLE_KEY_DETAILNAME, mDetailName);
+		outState.putString(BUNDLE_KEY_DETAILREFERENCE, mDetailReference);
+		outState.putSerializable(BUNDLE_KEY_HISTORY, mHistory);
+		outState.putSerializable(BUNDLE_KEY_NAVITEMS, mNavItems);
+		outState.putSerializable(BUNDLE_KEY_DETAILITEMS, mDetailItems);
+		outState.putParcelable(BUNDLE_KEY_CURRENT_SERVICE, mCurrentService);
 
 		for (GetServiceListTask task : mListTasks) {
 			if (task != null) {

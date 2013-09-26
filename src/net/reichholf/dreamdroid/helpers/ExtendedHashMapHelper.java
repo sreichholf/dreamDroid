@@ -17,7 +17,11 @@ import android.os.Bundle;
  *
  */
 public class ExtendedHashMapHelper {
-	
+
+	public static ExtendedHashMap restoreFromBundle(Bundle bundle, String key){
+		return (ExtendedHashMap) bundle.getParcelable(key);
+	}
+
 	public static ArrayList<ExtendedHashMap> restoreListFromBundle(Bundle bundle, String key){
 		ArrayList<ExtendedHashMap> l = new ArrayList<ExtendedHashMap>();
 		
