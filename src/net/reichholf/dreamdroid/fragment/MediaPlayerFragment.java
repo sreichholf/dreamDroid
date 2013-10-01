@@ -31,7 +31,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.view.LayoutInflater;
@@ -59,6 +58,11 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public static final String STATE_MEDIA_INDEX = "media_index";
 	public static int LOADER_PLAYLIST_ID = 1;
 	public static String PLAYLIST_AS_ROOT = "playlist";
+
+    public static String COMMAND_NEXT = "next";
+    public static String COMMAND_PLAY = "play";
+    public static String COMMAND_PREVIOUS = "previous";
+
 
 	private ExtendedHashMap mMedia;
 	private int mMediaIndex;
@@ -194,7 +198,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
 
 		// only navigate into a directory
-		if (isDirectory.equals("True")) {
+		if (Python.TRUE.equals(isDirectory)) {
 			String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
 			setArgs("path", mediaPath);
 			reload();
@@ -217,8 +221,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		Bundle args = new Bundle();
 		args.putSerializable("params", params);
 
-		getLoaderManager().restartLoader(LOADER_PLAYLIST_ID, args,
-				(LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>) this);
+		getLoaderManager().restartLoader(LOADER_PLAYLIST_ID, args, this);
 	}
 
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
@@ -276,7 +279,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 			// create current title and remove first item from result list if
 			// not a root item
-			if (!root.equals("None")) {
+			if (!Python.NONE.equals(root)) {
 				path = " - " + root;
 				list.remove(0);
 			}
@@ -287,11 +290,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
         getActionBarActivity().setTitle(getCurrentTitle());
 		mAdapter.notifyDataSetChanged();
 	}
-
-	// @Override
-	// public void setEmptyText(CharSequence text) {
-	// showToast(text);
-	// }
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -339,7 +337,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		case (Statics.ITEM_MEDIA_BACK):
 			String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
 			// if root path then clear args
-			if (mediaPath.equals("None")) {
+			if (Python.NONE.equals(mediaPath)) {
 				if (mArgs != null) {
 					mArgs.clear();
 				}
@@ -416,7 +414,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		}
 	}
 
-	public void deleteMediaInfo() {
+	public void clearMediaInfo() {
 		TextView artist = (TextView) getView().findViewById(R.id.artist);
 		// TextView album = (TextView) getView().findViewById(R.id.album);
 		// TextView year = (TextView) getView().findViewById(R.id.year);
@@ -531,7 +529,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 
-		deleteMediaInfo();
+		clearMediaInfo();
 		ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
 		imageView.setImageResource(R.drawable.no_cover_art);
 	}
@@ -604,20 +602,20 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	private String getCommandFromKeyState(String keyStateText) {
 		String command = "";
 
-		if (keyStateText.contains("next")) {
-			command = "next";
+		if (keyStateText.contains(COMMAND_NEXT)) {
+			command = COMMAND_NEXT;
 		}
 
-		if (keyStateText.contains("play")) {
-			command = "play";
+		if (keyStateText.contains(COMMAND_PLAY)) {
+			command = COMMAND_PLAY;
 		}
 
-		if (keyStateText.contains("previous")) {
-			command = "previous";
+		if (keyStateText.contains(COMMAND_PREVIOUS)) {
+			command = COMMAND_PREVIOUS;
 		}
 
 		if (keyStateText.startsWith("Playback")) {
-			command = "play";
+			command = COMMAND_PLAY;
 		}
 
 		return command;
@@ -625,13 +623,10 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	@Override
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-		if (!success)
-			super.onSimpleResult(success, result);
+		super.onSimpleResult(success, result);
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
-
 			String command = getCommandFromKeyState(result.getString(SimpleResult.KEY_STATE_TEXT));
-			if (command.equals("next") || command.equals("play") || command.equals("previous")) {
-
+			if (command.equals(COMMAND_NEXT) || command.equals(COMMAND_PLAY) || command.equals(COMMAND_PREVIOUS)) {
 				// add image to detail view
 				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
 
@@ -651,8 +646,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new MediaplayerListRequestHandler(),
-				false, args);
+		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new MediaplayerListRequestHandler(), false, args);
 		return loader;
 	}
 

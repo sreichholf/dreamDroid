@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.adapter;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Mediaplayer;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -25,8 +26,7 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 
 	/**
 	 * @param context
-	 * @param textViewResourceId
-	 * @param objects
+     * @param items
 	 */
 	public MediaListAdapter(Context context, ArrayList<ExtendedHashMap> items) {
 		super(context, 0, items);
@@ -43,29 +43,24 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 
 		ExtendedHashMap media = getItem(position);
 		if (media != null) {
-			TextView mediaName = (TextView) view.findViewById(android.R.id.text1);
-
+			TextView textView = (TextView) view.findViewById(android.R.id.text1);
 			String root = media.getString(Mediaplayer.KEY_ROOT);
 			String isDirectory = media.getString(Mediaplayer.KEY_IS_DIRECTORY);
 			String reference = media.getString(Mediaplayer.KEY_SERVICE_REFERENCE);
 
-			if (root.equals("None")) {
-				mediaName.setText(media.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
-			} else if (root.equals("playlist")) {
-				mediaName.setText(media.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
-			} else if (isDirectory.equals("False")) {
-				int pos = reference.lastIndexOf("/");
-				mediaName.setText(reference.substring(pos + 1));
+			if (Python.NONE.equals(root)) {
+				textView.setText(reference);
+			} else if (Python.TRUE.equals(isDirectory)){
+				textView.setText(getShortName(reference) + "/");
 			} else {
-				String path = media.getString(Mediaplayer.KEY_SERVICE_REFERENCE);
-				path = path.substring(0, path.length() - 1);
-				int pos = path.lastIndexOf("/");
-				path = path.substring(pos + 1);
-				mediaName.setText(path + "/");
-			}
+                textView.setText(getShortName(reference));
+            }
 		}
-
 		return view;
 	}
 
+    public String getShortName(String path){
+        String[] split = path.split("/");
+        return split[split.length - 1];
+    }
 }
