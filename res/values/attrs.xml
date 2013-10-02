@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="simpleHeaderBackground" format="color" />
+    <attr name="lightBackgroundColor" format="color" />
+    <attr name="darkBackgroundColor" format="color" />
     <attr name="navListPreferredItemHeight" format="dimension" />
     <attr name="cardBackground" format="reference" />
     <attr name="cardListView" format="reference" />
@@ -32,4 +34,6 @@
 	<attr name="ic_btn_movie" format="reference" />
 	<attr name="ic_btn_save" format="reference" />
 	<attr name="ic_btn_send" format="reference" />
+	<attr name="text_color" format="color"/>
+	<attr name="title_color" format="color"/>
 </resources>

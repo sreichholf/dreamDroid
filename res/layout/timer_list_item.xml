@@ -2,10 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/cardBackground"
-    android:minHeight="44dip"
     android:orientation="horizontal"
-    android:paddingRight="5dip" >
+    style="@style/CardStyle" >
 
     <TextView
         android:id="@+id/timer_state_indicator"
@@ -18,6 +16,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:layout_marginLeft="3dp"
         android:orientation="vertical" >
 
         <LinearLayout
@@ -36,8 +35,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:textAppearance="@android:style/TextAppearance.Medium"
-                    android:textStyle="bold" />
+                    style="@style/CardTitle" />
 
                 <TextView
                     android:id="@+id/timer_action"
@@ -46,7 +44,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textAppearance="@android:style/TextAppearance.Small" />
+                    style="@style/CardText" />
             </LinearLayout>
 
             <LinearLayout
@@ -60,8 +58,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:textAppearance="@android:style/TextAppearance.Small"
-                    android:textStyle="bold" />
+                    style="@style/CardText" />
 
                 <TextView
                     android:id="@+id/timer_state"
@@ -70,7 +67,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textAppearance="@android:style/TextAppearance.Small" />
+                    style="@style/CardText" />
             </LinearLayout>
         </LinearLayout>
 
@@ -84,14 +81,14 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textAppearance="@android:style/TextAppearance.Small" />
+                style="@style/CardTextSmall" />
 
             <TextView
                 android:layout_width="15dp"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:text="-"
-                android:textAppearance="@android:style/TextAppearance.Small" />
+                style="@style/CardTextSmall" />
 
             <TextView
                 android:id="@+id/timer_end"
@@ -99,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="right"
-                android:textAppearance="@android:style/TextAppearance.Small" />
+                style="@style/CardTextSmall" />
         </LinearLayout>
     </LinearLayout>
 

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.DreamDroid.Dialog" parent="android:Theme.Holo.Light.Dialog"></style>
+	<style name="Theme.DreamDroid.Dialog" parent="android:Theme.Holo.Light.Dialog"></style>
 
 	<style name="Theme.DreamDroid" parent="Theme.AppCompat">
 		<item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
-		<item name="simpleHeaderBackground">#333</item>
+		<item name="simpleHeaderBackground">@android:color/transparent</item>
+		<item name="lightBackgroundColor">#333</item>
+		<item name="darkBackgroundColor">#111</item>
 		<item name="cardBackground">@drawable/card_list_item_selector_holo_dark</item>
 		<item name="cardListView">@style/CardListView</item>
 		<item name="ic_media_play">@drawable/ic_media_play_holo_dark</item>
@@ -36,11 +38,15 @@
 		<item name="ic_btn_movie">@drawable/ic_menu_movie_holo_dark</item>
 		<item name="ic_btn_save">@drawable/ic_menu_save_holo_dark</item>
 		<item name="ic_btn_send">@drawable/ic_menu_send_holo_dark</item>
+		<item name="text_color">#ffb0b0b0</item>
+		<item name="title_color">#ffd6d6d6</item>
 	</style>
 
 	<style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
 		<item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
 		<item name="simpleHeaderBackground">#DDD</item>
+		<item name="lightBackgroundColor">#FFF</item>
+		<item name="darkBackgroundColor">#DDD</item>
 		<item name="cardBackground">@drawable/card_list_item_selector_holo_light</item>
 		<item name="cardListView">@style/CardListView.Light</item>
 		<item name="ic_media_play">@drawable/ic_media_play_holo_light</item>
@@ -71,6 +77,8 @@
 		<item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
 		<item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
 		<item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
+		<item name="text_color">#ff838383</item>
+		<item name="title_color">#ff737373</item>
 	</style>
 
 </resources>

@@ -1,13 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <style name="CardText">
+        <item name="android:textSize">14sp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">?attr/text_color</item>
+    </style>
+
+    <style name="CardTitle" parent="@style/CardText">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">?attr/title_color</item>
+    </style>
+
+    <style name="CardTextSmall" parent="@style/CardText">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?attr/text_color</item>
+    </style>
+
+    <style name="CardStyle">
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">9dp</item>
+        <item name="android:paddingRight">9dp</item>
+        <item name="android:paddingLeft">9dp</item>
+        <item name="android:background">?attr/cardBackground</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 
     <style name="CardListView">
-		<item name="android:divider">@null</item>
-		<item name="android:dividerHeight">5dp</item>
-		<item name="android:drawSelectorOnTop">false</item>
-		<item name="android:listSelector">@android:color/transparent</item>
-		<item name="android:background">?attr/simpleHeaderBackground</item>
-		<item name="android:padding">3dp</item>
+        <item name="android:divider">@null</item>
+        <item name="android:dividerHeight">6dp</item>
+        <item name="android:drawSelectorOnTop">false</item>
+        <item name="android:listSelector">@android:color/transparent</item>
+        <item name="android:background">?attr/simpleHeaderBackground</item>
+        <item name="android:paddingTop">11dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:paddingLeft">11dp</item>
+        <item name="android:paddingRight">11dp</item>
     </style>
 
     <style name="CardListView.Light" parent="CardListView"></style>

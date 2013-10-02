@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/LinearLayoutMain"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/cardBackground"
+    style="@style/CardStyle"
     android:minHeight="?android:attr/listPreferredItemHeight"
-    android:orientation="vertical"
-    android:paddingRight="5dip" >
+    android:orientation="vertical" >
 
     <LinearLayout
         android:id="@+id/LinearLayout2"
@@ -19,7 +16,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:textAppearance="@android:style/TextAppearance.Medium"
+            style="@style/CardTitle"
             android:textStyle="bold" />
 
         <LinearLayout
@@ -33,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                android:textAppearance="@android:style/TextAppearance.Medium" />
+                style="@style/CardText" />
 
             <TextView
                 android:id="@+id/file_size"
@@ -42,7 +39,7 @@
                 android:layout_gravity="bottom"
                 android:layout_weight="1"
                 android:gravity="right"
-                android:textAppearance="@android:style/TextAppearance.Small" />
+                style="@style/CardText" />
         </LinearLayout>
     </LinearLayout>
 
@@ -57,7 +54,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            style="@style/CardText" />
 
         <TextView
             android:id="@+id/event_duration"
@@ -65,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="right"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            style="@style/CardText" />
     </LinearLayout>
 
 </LinearLayout>

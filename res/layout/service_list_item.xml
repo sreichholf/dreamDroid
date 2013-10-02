@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/service_list_item"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/cardBackground"
+    style="@style/CardStyle"
     android:orientation="vertical" >
 
     <ImageView
@@ -29,8 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="56dp"
             android:layout_weight="1"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:textStyle="bold" />
+            style="@style/CardTitle" />
 
         <ProgressBar
             android:id="@+id/service_progress"
@@ -47,6 +44,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/service"
+        android:paddingTop="2dp"
         android:layout_toRightOf="@id/picon"
         android:orientation="horizontal" >
 
@@ -55,7 +53,7 @@
             android:layout_width="45dip"
             android:layout_height="wrap_content"
             android:layout_marginRight="-45dip"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            style="@style/CardText" />
 
         <TextView
             android:id="@+id/event_now_title"
@@ -63,9 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="45dip"
             android:layout_marginRight="55dip"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            style="@style/CardText" />
 
         <TextView
             android:id="@+id/event_now_duration"
@@ -74,7 +70,6 @@
             android:layout_marginLeft="-55dip"
             android:gravity="right"
             android:minHeight="0dip"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            style="@style/CardText" />
     </LinearLayout>
-
 </RelativeLayout>

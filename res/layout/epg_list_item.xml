@@ -3,10 +3,9 @@
     android:id="@+id/LinearLayoutMain"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/cardBackground"
     android:minHeight="45dip"
     android:orientation="vertical"
-    android:paddingRight="5dip" >
+	style="@style/CardStyle">
 
     <LinearLayout
         android:id="@+id/LinearLayout2"
@@ -19,8 +18,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:textAppearance="@android:style/TextAppearance.Medium"
-            android:textStyle="bold" />
+            style="@style/CardTitle" />
     </LinearLayout>
 
     <LinearLayout
@@ -34,7 +32,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+			style="@style/CardText" />
 
         <TextView
             android:id="@+id/event_duration"
@@ -43,7 +41,7 @@
             android:layout_marginRight="5dip"
             android:layout_weight="1"
             android:gravity="right"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            style="@style/CardText" />
     </LinearLayout>
 
     <TextView
@@ -51,9 +49,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textAppearance="@android:style/TextAppearance.Small"
-        android:textStyle="bold" />
+        android:paddingTop="2dp"
+        style="@style/CardTextSmall" />
 
 </LinearLayout>
