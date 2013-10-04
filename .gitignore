@@ -7,11 +7,5 @@ gradle/
 bin/
 gen/
 build/
-libraries/gaugeview-library/gen/
-libraries/gaugeview-library/bin/
-libraries/numberpicker/gen/
-libraries/numberpicker/bin/
-libraries/gaugeview-library/gen/
-libraries/numberpicker/gen/
 *.iml
 local.properties
