@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 25" versioncode="206">
+    <release version="1.0 beta 26" versioncode="210">
+        <change>Add !!EXPERIMENTAL!! MediaPlayer control</change>
 		<change>Add "Zap" menu, showing picons/channel-names in a Grid for quick zapping</change>
-        <change>Layout fixes and improvements</change>
+        <change>Visual improvements (thx to M. Gianfelici for improving the "card style")</change>
 		<change>Replaced/renewed most of the icons with nicer/better fitting ones</change>
-        <change>Add experimental MediaPlayer control</change>
     </release>
     <release version="1.0 beta 23.2" versioncode="202">
         <change>FIX: Crash in "Current" when picons are enabled and box is in standby</change>

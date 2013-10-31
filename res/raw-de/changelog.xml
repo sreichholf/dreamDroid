@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 25" versioncode="206">
-		<change>Neue Funktion "Umschalten" zum schnellen zappen, basierenden auf einem Grid-Layout</change>
-        <change>Optische Verbesserungen und Fehlerbehebungen</change>
+    <release version="1.0 beta 26" versioncode="210">
+        <change> !!EXPERIMENTELLE!! MediaPlayer Unterstützung (</change>
+        <change>Neue Funktion "Umschalten" zum schnellen zappen, basierenden auf einem Grid-Layout</change>
+        <change>Viele optische Verbesserungen und Fehlerbehebungen (vielen Dank an M. Gianfelici für die verbesserten "Karten")</change>
 		<change>Die meisten Icons wurden erneuert / durch schönere/passendere ersetzt</change>
-        <change>Experimentelle MediaPlayer Unterstützung (</change>
     </release>
     <release version="1.0 beta 23.2" versioncode="202">
         <change>FIX: Crash in "Es läuft" wenn Picons aktiviert sind und die Box sich im Standby befindet</change>

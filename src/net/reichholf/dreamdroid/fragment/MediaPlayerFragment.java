@@ -59,11 +59,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public static int LOADER_PLAYLIST_ID = 1;
 	public static String PLAYLIST_AS_ROOT = "playlist";
 
-    public static String COMMAND_NEXT = "next";
-    public static String COMMAND_PLAY = "play";
-    public static String COMMAND_PREVIOUS = "previous";
-
-
 	private ExtendedHashMap mMedia;
 	private int mMediaIndex;
 	private SimpleChoiceDialog mChoice;
@@ -94,6 +89,15 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 					playFile(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE), PLAYLIST_AS_ROOT);
 				}
 			});
+
+            playList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                    ExtendedHashMap item = mPlaylist.get(position);
+                    deleteFromPlaylist(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
+                    return true;
+                }
+            });
 
 			togglePlaylistButton.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -552,6 +556,12 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 	}
 
+    private void clearPlaylist() {
+        ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
+                MediaplayerCommandRequestHandler.CMD_CLEAR));
+    }
+
 	// exit Mediaplayer
 	private void exit() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -602,20 +612,20 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	private String getCommandFromKeyState(String keyStateText) {
 		String command = "";
 
-		if (keyStateText.contains(COMMAND_NEXT)) {
-			command = COMMAND_NEXT;
+		if (keyStateText.contains(MediaplayerCommandRequestHandler.CMD_NEXT)) {
+			command = MediaplayerCommandRequestHandler.CMD_NEXT;
 		}
 
-		if (keyStateText.contains(COMMAND_PLAY)) {
-			command = COMMAND_PLAY;
+		if (keyStateText.contains(MediaplayerCommandRequestHandler.CMD_PLAY)) {
+			command = MediaplayerCommandRequestHandler.CMD_PLAY;
 		}
 
-		if (keyStateText.contains(COMMAND_PREVIOUS)) {
-			command = COMMAND_PREVIOUS;
+		if (keyStateText.contains(MediaplayerCommandRequestHandler.CMD_PREVIOUS)) {
+			command = MediaplayerCommandRequestHandler.CMD_PREVIOUS;
 		}
 
 		if (keyStateText.startsWith("Playback")) {
-			command = COMMAND_PLAY;
+			command = MediaplayerCommandRequestHandler.CMD_PLAY;
 		}
 
 		return command;
@@ -626,7 +636,9 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		super.onSimpleResult(success, result);
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			String command = getCommandFromKeyState(result.getString(SimpleResult.KEY_STATE_TEXT));
-			if (command.equals(COMMAND_NEXT) || command.equals(COMMAND_PLAY) || command.equals(COMMAND_PREVIOUS)) {
+			if (command.equals(MediaplayerCommandRequestHandler.CMD_NEXT)
+                    || command.equals(MediaplayerCommandRequestHandler.CMD_PLAY)
+                    || command.equals(MediaplayerCommandRequestHandler.CMD_PREVIOUS)) {
 				// add image to detail view
 				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
 
