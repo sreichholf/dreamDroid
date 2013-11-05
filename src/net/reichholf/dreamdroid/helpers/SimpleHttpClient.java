@@ -35,6 +35,9 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.ByteArrayBuffer;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+import android.util.Base64;
 import android.util.Log;
 
 /**
@@ -167,6 +170,15 @@ public class SimpleHttpClient {
 		return fetchPageContent(uri, new ArrayList<NameValuePair>());
 	}
 
+	@TargetApi(11)
+	private void setAuth(HttpURLConnection connection){
+		if(mLogin){
+			byte[] auth = (mUser + ":" + mPass).getBytes();
+			String basic = Base64.encodeToString(auth, Base64.NO_WRAP);
+			connection.setRequestProperty("Authorization", "Basic " + basic);
+		}
+	}
+
 	/**
 	 * @param uri
 	 * @param parameters
@@ -190,7 +202,8 @@ public class SimpleHttpClient {
 			conn.setConnectTimeout(10000);
 			if (DreamDroid.featurePostRequest())
 				conn.setRequestMethod("POST");
-
+			if(Build.VERSION.SDK_INT >= 11)
+				setAuth(conn);
 			if (conn.getResponseCode() != 200) {
 				if (conn.getResponseCode() == 405 && !mIsLoopProtected) {
 					// Method not allowed, the target device either can't handle
@@ -292,7 +305,8 @@ public class SimpleHttpClient {
 		if (mLogin) {
 			mUser = p.getUser();
 			mPass = p.getPass();
-			setCredentials(mUser, mPass);
+			if(Build.VERSION.SDK_INT < 11)
+				setCredentials(mUser, mPass);
 		}
 
 		if (mFileSsl) {
