@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
-    compile "com.android.support:support-v4:18.0.+"
-    compile 'com.android.support:appcompat-v7:18.0.+'
+    compile "com.android.support:support-v4:19.0.+"
+    compile 'com.android.support:appcompat-v7:19.0.+'
 
     compile files('libs/ftp4j-1.7.2.jar')
     compile files('libs/jmdns-3.4.1.jar')
@@ -27,8 +27,8 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.0.1"
+    compileSdkVersion 19
+    buildToolsVersion "19"
 
     sourceSets {
         main {
