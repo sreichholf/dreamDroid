@@ -437,14 +437,14 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		mDescription.setHint(R.string.description);
 
 		// Enabled
-		int disabled = Integer.valueOf(mTimer.getString(Timer.KEY_DISABLED));
+		int disabled = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_DISABLED));
 		if (disabled == 0) {
 			mEnabled.setChecked(true);
 		} else {
 			mEnabled.setChecked(false);
 		}
 
-		int zap = Integer.valueOf(mTimer.getString(Timer.KEY_JUST_PLAY));
+		int zap = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_JUST_PLAY));
 		if (zap == 1) {
 			mZap.setChecked(true);
 		} else {
@@ -459,7 +459,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
 
-		int aeValue = Integer.valueOf(mTimer.getString(Timer.KEY_AFTER_EVENT)).intValue();
+
+		int aeValue = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_AFTER_EVENT));
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
@@ -480,8 +481,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		}
 
 		// Start and Endtime
-		int begin = Integer.valueOf(mTimer.getString(Timer.KEY_BEGIN));
-		int end = Integer.valueOf(mTimer.getString(Timer.KEY_END));
+		int begin = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_BEGIN));
+		int end = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_END));
 		long b = ((long) begin) * 1000;
 		long e = ((long) end) * 1000;
 		Date dateBegin = new Date(b);
@@ -494,7 +495,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		// Repeatings
 		int repeatedValue = 0;
 		try {
-			repeatedValue = Integer.valueOf(mTimer.getString(Timer.KEY_REPEATED));
+			repeatedValue = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_REPEATED));
 		} catch (NumberFormatException ex) {
 		}
 

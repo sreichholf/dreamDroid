@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.TimerEditFragment;
+import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 
@@ -82,7 +83,7 @@ public class Timer {
 		}
 
 		public int intValue() {
-			return Integer.valueOf(value);
+			return value;
 		}
 
 		public String getText(Activity ac) {
@@ -126,8 +127,8 @@ public class Timer {
 		ExtendedHashMap timer = getInitialTimer();
 
 		String start = event.getString(Event.KEY_EVENT_START);
-		int duration = Integer.valueOf(event.getString(Event.KEY_EVENT_DURATION));
-		int end = duration + Integer.valueOf(start);
+		int duration = DateTime.parseTimestamp(event.getString(Event.KEY_EVENT_DURATION));
+		int end = duration + DateTime.parseTimestamp(start);
 
 		timer.put(Timer.KEY_BEGIN, start);
 		timer.put(Timer.KEY_END, String.valueOf(end));
