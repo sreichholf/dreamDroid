@@ -42,7 +42,6 @@ import android.util.Log;
 
 /**
  * @author sreichholf
- * 
  */
 public class SimpleHttpClient {
 	public static String LOG_TAG = "SimpleHttpClient";
@@ -69,10 +68,6 @@ public class SimpleHttpClient {
 	private boolean mError;
 	private boolean mIsLoopProtected;
 
-	/**
-	 * @param sp
-	 *            SharedPreferences of the Base-Context
-	 */
 	public SimpleHttpClient() {
 		mProfile = null;
 		init();
@@ -86,7 +81,7 @@ public class SimpleHttpClient {
 	private void init() {
 		try {
 			SSLContext context = SSLContext.getInstance("TLS");
-			context.init(null, new TrustManager[] { new EasyX509TrustManager(null) }, null);
+			context.init(null, new TrustManager[]{new EasyX509TrustManager(null)}, null);
 			HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
 		} catch (KeyManagementException e) {
 		} catch (NoSuchAlgorithmException e) {
@@ -103,12 +98,10 @@ public class SimpleHttpClient {
 	}
 
 	/**
-	 * @param user
-	 *            Username for http-auth
-	 * @param pass
-	 *            Password for http-auth
+	 * @param user Username for http-auth
+	 * @param pass Password for http-auth
 	 */
-	public void setCredentials(final String user, final String pass) {
+	private void setCredentials(final String user, final String pass) {
 		Authenticator.setDefault(new Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication(user, pass.toCharArray());
@@ -116,8 +109,12 @@ public class SimpleHttpClient {
 		});
 	}
 
+	private void clearCredentials() {
+		Authenticator.setDefault(null);
+	}
+
 	/**
-	 * 
+	 *
 	 */
 	public void unsetCrendentials() {
 		// mDhc.getCredentialsProvider().setCredentials(AuthScope.ANY, null);
@@ -171,8 +168,8 @@ public class SimpleHttpClient {
 	}
 
 	@TargetApi(11)
-	private void setAuth(HttpURLConnection connection){
-		if(mLogin){
+	private void setAuth(HttpURLConnection connection) {
+		if (mLogin) {
 			byte[] auth = (mUser + ":" + mPass).getBytes();
 			String basic = Base64.encodeToString(auth, Base64.NO_WRAP);
 			connection.setRequestProperty("Authorization", "Basic " + basic);
@@ -202,7 +199,7 @@ public class SimpleHttpClient {
 			conn.setConnectTimeout(10000);
 			if (DreamDroid.featurePostRequest())
 				conn.setRequestMethod("POST");
-			if(Build.VERSION.SDK_INT >= 11)
+			if (Build.VERSION.SDK_INT >= 11)
 				setAuth(conn);
 			if (conn.getResponseCode() != 200) {
 				if (conn.getResponseCode() == 405 && !mIsLoopProtected) {
@@ -278,7 +275,7 @@ public class SimpleHttpClient {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void applyConfig() {
 		Profile p = mProfile;
@@ -305,8 +302,10 @@ public class SimpleHttpClient {
 		if (mLogin) {
 			mUser = p.getUser();
 			mPass = p.getPass();
-			if(Build.VERSION.SDK_INT < 11)
+			if (Build.VERSION.SDK_INT < 11)
 				setCredentials(mUser, mPass);
+		} else {
+			clearCredentials();
 		}
 
 		if (mFileSsl) {
@@ -317,7 +316,6 @@ public class SimpleHttpClient {
 	}
 
 	/**
-	 * @param sp
 	 * @return
 	 */
 	public static SimpleHttpClient getInstance() {
