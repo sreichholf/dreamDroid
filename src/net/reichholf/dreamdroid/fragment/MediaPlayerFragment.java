@@ -50,9 +50,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
  * Activity to show a list of all existing media files of the target device
- * 
+ *
  * @author asc
- * 
  */
 public class MediaPlayerFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
 	public static final String STATE_MEDIA_INDEX = "media_index";
@@ -92,14 +91,14 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				}
 			});
 
-            playList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-                @Override
-                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                    ExtendedHashMap item = mPlaylist.get(position);
-                    deleteFromPlaylist(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
-                    return true;
-                }
-            });
+			playList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+				@Override
+				public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+					ExtendedHashMap item = mPlaylist.get(position);
+					deleteFromPlaylist(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
+					return true;
+				}
+			});
 
 			togglePlaylistButton.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -142,25 +141,25 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		}
 
 		SlidingPaneLayout spl = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
-		if (spl != null){
-            spl.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
-                @Override
-                public void onPanelSlide(View view, float v) {
-                    return;
-                }
+		if (spl != null) {
+			spl.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+				@Override
+				public void onPanelSlide(View view, float v) {
+					return;
+				}
 
-                @Override
-                public void onPanelOpened(View view) {
-                    getActionBarActivity().supportInvalidateOptionsMenu();
-                }
+				@Override
+				public void onPanelOpened(View view) {
+					getActionBarActivity().supportInvalidateOptionsMenu();
+				}
 
-                @Override
-                public void onPanelClosed(View view) {
-                    getActionBarActivity().supportInvalidateOptionsMenu();
-                }
-            });
+				@Override
+				public void onPanelClosed(View view) {
+					getActionBarActivity().supportInvalidateOptionsMenu();
+				}
+			});
 			spl.openPane();
-        }
+		}
 
 		reloadPlaylist();
 		reload();
@@ -178,7 +177,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		mPlaylist = new ArrayList<ExtendedHashMap>();
 		if (savedInstanceState != null) {
 			mMediaIndex = savedInstanceState.getInt(STATE_MEDIA_INDEX, -1);
-			if(mMediaIndex < 0)
+			if (mMediaIndex < 0)
 				return;
 			mMedia = mMapList.get(mMediaIndex);
 			String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
@@ -197,13 +196,13 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	@Override
-	public void onPause()
-	{
-		if( mGetCurrentMediaInfoTask != null){
-			if(mGetCurrentMediaInfoTask.getStatus() == GetCurrentMediaInfoTask.Status.RUNNING)
+	public void onPause() {
+		if (mGetCurrentMediaInfoTask != null) {
+			if (mGetCurrentMediaInfoTask.getStatus() == GetCurrentMediaInfoTask.Status.RUNNING)
 				mGetCurrentMediaInfoTask.cancel(true);
 			mGetCurrentMediaInfoTask = null;
 		}
+		super.onPause();
 	}
 
 	@Override
@@ -219,8 +218,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			setArgs("path", mediaPath);
 			reload();
 		} else {
-			CharSequence[] actions = { getText(R.string.play), getText(R.string.add_to_playlist) };
-			int[] actionIds = { Statics.ACTION_PLAY_MEDIA, Statics.ACTION_ADD_TO_PLAYLIST };
+			CharSequence[] actions = {getText(R.string.play), getText(R.string.add_to_playlist)};
+			int[] actionIds = {Statics.ACTION_PLAY_MEDIA, Statics.ACTION_ADD_TO_PLAYLIST};
 
 			mChoice = SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds);
 			getMultiPaneHandler().showDialogFragment(mChoice, "dialog_play_media");
@@ -241,12 +240,12 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-			LoaderResult<ArrayList<ExtendedHashMap>> result) {
+							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
 		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
 
 		if (loader.getId() == LOADER_PLAYLIST_ID) {
-            setCurrentTitle(getLoadFinishedTitle());
+			setCurrentTitle(getLoadFinishedTitle());
 			mPlaylist.clear();
 			if (result.isError()) {
 				showToast(result.getErrorText());
@@ -303,7 +302,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			setCurrentTitle(getLoadFinishedTitle() + path);
 			mMapList.addAll(list);
 		}
-        getActionBarActivity().setTitle(getCurrentTitle());
+		getActionBarActivity().setTitle(getCurrentTitle());
 		mAdapter.notifyDataSetChanged();
 	}
 
@@ -313,9 +312,9 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		inflater.inflate(R.menu.mediaplayer, menu);
 	}
 
-    private SlidingPaneLayout getSlidingPaneLayout(){
-        return (SlidingPaneLayout) getView().findViewById(R.id.sliding_pane);
-    }
+	private SlidingPaneLayout getSlidingPaneLayout() {
+		return (SlidingPaneLayout) getView().findViewById(R.id.sliding_pane);
+	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
@@ -324,55 +323,55 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			MenuItem homeMenuItem = menu.findItem(Statics.ITEM_MEDIA_HOME);
 			MenuItem backMenuItem = menu.findItem(Statics.ITEM_MEDIA_BACK);
 
-            boolean isPaneOpen = true;
-            SlidingPaneLayout spl = getSlidingPaneLayout();
-            if(spl != null)
-                isPaneOpen = spl.isOpen();
+			boolean isPaneOpen = true;
+			SlidingPaneLayout spl = getSlidingPaneLayout();
+			if (spl != null)
+				isPaneOpen = spl.isOpen();
 
-            if (!isPaneOpen || rootPath.equals("None")) {
+			if (!isPaneOpen || rootPath.equals("None")) {
 				homeMenuItem.setVisible(false);
 				backMenuItem.setVisible(false);
 			} else {
-                homeMenuItem.setVisible(true);
-                backMenuItem.setVisible(true);
+				homeMenuItem.setVisible(true);
+				backMenuItem.setVisible(true);
 			}
 		}
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if(mMedia == null) //TODO why does this even happen?
+		if (mMedia == null) //TODO why does this even happen?
 			return super.onOptionsItemSelected(item);
 
 		switch (item.getItemId()) {
-		case (Statics.ITEM_MEDIA_HOME):
-			if (mArgs != null) {
-				mArgs.clear();
-			}
-			// loads media files without path parameter
-			reload();
-			return true;
-
-		case (Statics.ITEM_MEDIA_BACK):
-			String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
-			// if root path then clear args
-			if (Python.NONE.equals(mediaPath)) {
+			case (Statics.ITEM_MEDIA_HOME):
 				if (mArgs != null) {
 					mArgs.clear();
 				}
-			} else {
-				setArgs("path", mediaPath);
-			}
+				// loads media files without path parameter
+				reload();
+				return true;
 
-			reload();
-			return true;
+			case (Statics.ITEM_MEDIA_BACK):
+				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
+				// if root path then clear args
+				if (Python.NONE.equals(mediaPath)) {
+					if (mArgs != null) {
+						mArgs.clear();
+					}
+				} else {
+					setArgs("path", mediaPath);
+				}
 
-		case (Statics.ITEM_MEDIA_CLOSE):
-			exit();
-			return true;
+				reload();
+				return true;
 
-		default:
-			return super.onOptionsItemSelected(item);
+			case (Statics.ITEM_MEDIA_CLOSE):
+				exit();
+				return true;
+
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
 
@@ -479,7 +478,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	/**
 	 * add to playlist
-	 * 
+	 *
 	 * @param filePath
 	 */
 	private void addToPlaylist(String filePath) {
@@ -491,7 +490,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	/**
 	 * delete from playlist
-	 * 
+	 *
 	 * @param filePath
 	 */
 	private void deleteFromPlaylist(String filePath) {
@@ -503,7 +502,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	/**
 	 * play media file
-	 * 
+	 *
 	 * @param filePath
 	 */
 	private void playFile(String filePath, String root) {
@@ -570,11 +569,11 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 	}
 
-    private void clearPlaylist() {
-        ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
-                MediaplayerCommandRequestHandler.CMD_CLEAR));
-    }
+	private void clearPlaylist() {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
+				MediaplayerCommandRequestHandler.CMD_CLEAR));
+	}
 
 	// exit Mediaplayer
 	private void exit() {
@@ -651,8 +650,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			String command = getCommandFromKeyState(result.getString(SimpleResult.KEY_STATE_TEXT));
 			if (command.equals(MediaplayerCommandRequestHandler.CMD_NEXT)
-                    || command.equals(MediaplayerCommandRequestHandler.CMD_PLAY)
-                    || command.equals(MediaplayerCommandRequestHandler.CMD_PREVIOUS)) {
+					|| command.equals(MediaplayerCommandRequestHandler.CMD_PLAY)
+					|| command.equals(MediaplayerCommandRequestHandler.CMD_PREVIOUS)) {
 				// add image to detail view
 				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
 
@@ -680,23 +679,23 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		String filePath = mMedia.getString(Mediaplayer.KEY_SERVICE_REFERENCE);
 
 		switch (action) {
-		case Statics.ACTION_ADD_TO_PLAYLIST:
-			addToPlaylist(filePath);
-			break;
+			case Statics.ACTION_ADD_TO_PLAYLIST:
+				addToPlaylist(filePath);
+				break;
 
-		case Statics.ACTION_DELETE_FROM_PLAYLIST:
-			deleteFromPlaylist(filePath);
-			break;
+			case Statics.ACTION_DELETE_FROM_PLAYLIST:
+				deleteFromPlaylist(filePath);
+				break;
 
-		default:
-			break;
+			default:
+				break;
 		}
 	}
 
-	private void getCurrentMediaInfo(){
+	private void getCurrentMediaInfo() {
 		// add media info to detail view
-		if(mGetCurrentMediaInfoTask != null){
-			if(mGetCurrentMediaInfoTask.getStatus() == GetCurrentMediaInfoTask.Status.RUNNING)
+		if (mGetCurrentMediaInfoTask != null) {
+			if (mGetCurrentMediaInfoTask.getStatus() == GetCurrentMediaInfoTask.Status.RUNNING)
 				mGetCurrentMediaInfoTask.cancel(true);
 			mGetCurrentMediaInfoTask = null;
 		}
