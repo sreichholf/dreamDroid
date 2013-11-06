@@ -72,6 +72,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	private MediaListAdapter mPlaylistAdapter;
 	private ArrayList<ExtendedHashMap> mPlaylist;
 
+	private GetCurrentMediaInfoTask mGetCurrentMediaInfoTask;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_media_view, null, false);
@@ -192,6 +194,16 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putInt(STATE_MEDIA_INDEX, mMediaIndex);
 		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onPause()
+	{
+		if( mGetCurrentMediaInfoTask != null){
+			if(mGetCurrentMediaInfoTask.getStatus() == GetCurrentMediaInfoTask.Status.RUNNING)
+				mGetCurrentMediaInfoTask.cancel(true);
+			mGetCurrentMediaInfoTask = null;
+		}
 	}
 
 	@Override
@@ -329,6 +341,9 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if(mMedia == null) //TODO why does this even happen?
+			return super.onOptionsItemSelected(item);
+
 		switch (item.getItemId()) {
 		case (Statics.ITEM_MEDIA_HOME):
 			if (mArgs != null) {
@@ -369,7 +384,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		@Override
 		protected Boolean doInBackground(String... params) {
-
 			mMediaInfo = new ExtendedHashMap();
 
 			if (isCancelled())
@@ -648,8 +662,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
 				mImageLoader.displayImage(imageUrl, imageView);
 
-				// add media info to detail view
-				new GetCurrentMediaInfoTask().execute("");
+				getCurrentMediaInfo();
 			}
 			reload();
 			reloadPlaylist();
@@ -678,6 +691,17 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		default:
 			break;
 		}
+	}
+
+	private void getCurrentMediaInfo(){
+		// add media info to detail view
+		if(mGetCurrentMediaInfoTask != null){
+			if(mGetCurrentMediaInfoTask.getStatus() == GetCurrentMediaInfoTask.Status.RUNNING)
+				mGetCurrentMediaInfoTask.cancel(true);
+			mGetCurrentMediaInfoTask = null;
+		}
+		mGetCurrentMediaInfoTask = new GetCurrentMediaInfoTask();
+		mGetCurrentMediaInfoTask.execute();
 	}
 
 }

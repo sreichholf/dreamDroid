@@ -17,22 +17,22 @@ import android.os.Bundle;
  */
 public class ExtendedHashMapHelper {
 
-    public static ExtendedHashMap restoreFromBundle(Bundle bundle, String key) {
-        return (ExtendedHashMap) bundle.getParcelable(key);
-    }
+	public static ExtendedHashMap restoreFromBundle(Bundle bundle, String key) {
+		return (ExtendedHashMap) bundle.getParcelable(key);
+	}
 
-    public static ArrayList<ExtendedHashMap> restoreListFromBundle(Bundle bundle, String key) {
-        ArrayList<ExtendedHashMap> l = new ArrayList<ExtendedHashMap>();
+	public static ArrayList<ExtendedHashMap> restoreListFromBundle(Bundle bundle, String key) {
+		ArrayList<ExtendedHashMap> l = new ArrayList<ExtendedHashMap>();
 
-        @SuppressWarnings("unchecked")
-        ArrayList<HashMap<String, Object>> list = (ArrayList<HashMap<String, Object>>) bundle
-                .getSerializable(key);
+		@SuppressWarnings("unchecked")
+		ArrayList<HashMap<String, Object>> list = (ArrayList<HashMap<String, Object>>) bundle
+				.getSerializable(key);
 
-        Iterator<HashMap<String, Object>> iter = list.iterator();
-        while (iter.hasNext()) {
-            l.add(new ExtendedHashMap(iter.next()));
-        }
+		Iterator<HashMap<String, Object>> iter = list.iterator();
+		while (iter.hasNext()) {
+			l.add(new ExtendedHashMap(iter.next()));
+		}
 
-        return l;
-    }
+		return l;
+	}
 }
