@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.activities;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
@@ -30,7 +31,7 @@ import android.view.Window;
  * @author sre
  * 
  */
-public class SimpleFragmentActivity extends ActionBarActivity implements MultiPaneHandler,
+public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHandler,
 		ActionDialog.DialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener {
 	public static final int MENU_HOME = 89283794;
 

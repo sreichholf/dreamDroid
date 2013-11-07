@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.ProfileChangedListener;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
@@ -42,7 +43,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -58,7 +58,7 @@ import de.cketti.library.changelog.ChangeLog;
  * @author sre
  * 
  */
-public class MainActivity extends ActionBarActivity implements MultiPaneHandler, ProfileChangedListener,
+public class MainActivity extends BaseActivity implements MultiPaneHandler, ProfileChangedListener,
 		ActionDialog.DialogActionListener, SleepTimerDialog.SleepTimerDialogActionListener,
 		SendMessageDialog.SendMessageDialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener,
 		SearchView.OnQueryTextListener {

@@ -32,10 +32,10 @@ Officially supported are the following devices:
 * The target dreamboxes should be running a WebInterface with Version 1.6.8 or later.
 * dreamDroid requires at least Android 2.1 (which is the minimum SDK Version required by android-support-v7-appcompat) to work properly.
 
-# Developing / building dreamDroid (with eclipse)
+# Developing / building dreamDroid with AndroidStudio
 
-Before you can build dreamDroid you usually have to import some android library projects into your eclise workspace.
-All required libraries can be found in the "libraries" folder of this git repository.
+Simply import dreamDroid as gradle project and you should be fine.
+
 
 ## Required Libraries
 
@@ -44,8 +44,9 @@ All required libraries can be found in the "libraries" folder of this git reposi
 * gaugeview-library - CodeAndMagic's GaugeView: https://github.com/CodeAndMagic/GaugeView
 * ckChangeLog - ckettis ckChangeLog library: https://github.com/cketti/ckChangeLog
 * PhotoView - Chris Banes PhotoView library: https://github.com/chrisbanes/PhotoView
+* MemorizingTrustManager as seen in owncloud's News App: https://github.com/owncloud/News-Android-App/
 
 The following SDK versions have to be installed for a clean build:
 
-* API V16 (4.1.2) for android-support-v7-appcompat, gaugeview-library and PhotoView
-* API v17 (4.2.2) for ckChangelog, numberpicker and dreamDroid itself
+* API v18 (4.3) for the android libraries
+* API v19 (4.4) for dreamDroid itself

@@ -79,15 +79,7 @@ public class SimpleHttpClient {
 	}
 
 	private void init() {
-		try {
-			SSLContext context = SSLContext.getInstance("TLS");
-			context.init(null, new TrustManager[]{new EasyX509TrustManager(null)}, null);
-			HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
-		} catch (KeyManagementException e) {
-		} catch (NoSuchAlgorithmException e) {
-		} catch (KeyStoreException e) {
-		}
-
+		//TODO Do not trust all hosts without asking the user
 		HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
 			public boolean verify(String hostname, SSLSession session) {
 				return true;
