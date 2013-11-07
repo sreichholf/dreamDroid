@@ -29,6 +29,7 @@ import javax.net.ssl.TrustManager;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.util.Base64;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -37,14 +38,13 @@ import org.apache.http.util.ByteArrayBuffer;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.util.Base64;
 import android.util.Log;
 
 /**
  * @author sreichholf
  */
 public class SimpleHttpClient {
-	public static String LOG_TAG = "SimpleHttpClient";
+	public static String LOG_TAG = SimpleHttpClient.class.getSimpleName();
 
 	private Profile mProfile;
 
@@ -87,18 +87,6 @@ public class SimpleHttpClient {
 		});
 
 		applyConfig();
-	}
-
-	/**
-	 * @param user Username for http-auth
-	 * @param pass Password for http-auth
-	 */
-	private void setCredentials(final String user, final String pass) {
-		Authenticator.setDefault(new Authenticator() {
-			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(user, pass.toCharArray());
-			}
-		});
 	}
 
 	private void clearCredentials() {
@@ -159,7 +147,6 @@ public class SimpleHttpClient {
 		return fetchPageContent(uri, new ArrayList<NameValuePair>());
 	}
 
-	@TargetApi(11)
 	private void setAuth(HttpURLConnection connection) {
 		if (mLogin) {
 			byte[] auth = (mUser + ":" + mPass).getBytes();
@@ -191,8 +178,7 @@ public class SimpleHttpClient {
 			conn.setConnectTimeout(10000);
 			if (DreamDroid.featurePostRequest())
 				conn.setRequestMethod("POST");
-			if (Build.VERSION.SDK_INT >= 11)
-				setAuth(conn);
+			setAuth(conn);
 			if (conn.getResponseCode() != 200) {
 				if (conn.getResponseCode() == 405 && !mIsLoopProtected) {
 					// Method not allowed, the target device either can't handle
@@ -294,8 +280,6 @@ public class SimpleHttpClient {
 		if (mLogin) {
 			mUser = p.getUser();
 			mPass = p.getPass();
-			if (Build.VERSION.SDK_INT < 11)
-				setCredentials(mUser, mPass);
 		} else {
 			clearCredentials();
 		}
