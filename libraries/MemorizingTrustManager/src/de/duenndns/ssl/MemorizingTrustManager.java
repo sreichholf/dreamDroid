@@ -124,7 +124,6 @@ public class MemorizingTrustManager implements X509TrustManager {
 		keyStoreFile = new File(dir + File.separator + KEYSTORE_FILE);
 
 		appKeyStore = loadAppKeyStore();
-		clearKeyStore();
 		defaultTrustManager = getTrustManager(null);
 		appTrustManager = getTrustManager(appKeyStore);
 	}
