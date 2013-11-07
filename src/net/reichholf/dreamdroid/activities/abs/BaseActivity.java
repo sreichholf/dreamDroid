@@ -8,12 +8,14 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 
-import net.reichholf.dreamdroid.ssl.MemorizingTrustManager;
+import de.duenndns.ssl.MemorizingTrustManager;
 
 /**
  * Created by Stephan on 06.11.13.
  */
 public class BaseActivity extends ActionBarActivity {
+	private MemorizingTrustManager mTrustManager;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		try {
@@ -21,7 +23,8 @@ public class BaseActivity extends ActionBarActivity {
 			MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
 			// register MemorizingTrustManager for HTTPS
 			SSLContext sc = SSLContext.getInstance("TLS");
-			sc.init(null, MemorizingTrustManager.getInstanceList(this),
+			mTrustManager = new MemorizingTrustManager(this);
+			sc.init(null, new X509TrustManager[] { mTrustManager },
 					new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		} catch (Exception e) {
@@ -31,10 +34,12 @@ public class BaseActivity extends ActionBarActivity {
 	}
 
 	public void onPause(){
+		mTrustManager.unbindDisplayActivity(this);
 		super.onPause();
 	}
 
 	public void onResume(){
+		mTrustManager.bindDisplayActivity(this);
 		super.onResume();
 	}
 }
