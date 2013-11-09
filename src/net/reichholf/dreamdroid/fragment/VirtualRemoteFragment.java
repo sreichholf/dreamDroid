@@ -138,8 +138,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			View v = view.findViewById(buttonmap[i][0]);
 			if(v == null)
 				continue;
-			Button btn = (Button) v;
-			registerOnClickListener(btn, buttonmap[i][1]);
+			registerOnClickListener(v, buttonmap[i][1]);
 		}
 	}
 
