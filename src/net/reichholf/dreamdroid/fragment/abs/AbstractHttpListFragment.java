@@ -61,7 +61,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		if (mHttpHelper == null)
 			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
 		else
@@ -155,7 +155,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	/**
 	 * Register an <code>OnClickListener</code> for a view and a specific item
 	 * ID (<code>ITEM_*</code> statics)
-	 * 
+	 *
 	 * @param v
 	 *            The view an OnClickListener should be registered for
 	 * @param id
@@ -258,7 +258,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	/**
 	 * If a targetFragment has been set using setTargetFragement() return to it.
-	 * 
+	 *
 	 * @param resultCode
 	 */
 	protected void finish(int resultCode) {
@@ -287,7 +287,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 			LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		mMapList.clear();
 		if (result.isError()) {
 			setEmptyText(result.getErrorText());

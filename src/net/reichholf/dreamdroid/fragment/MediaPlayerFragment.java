@@ -170,7 +170,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.mediaplayer));
 
@@ -242,7 +242,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 
 		if (loader.getId() == LOADER_PLAYLIST_ID) {
 			setCurrentTitle(getLoadFinishedTitle());

@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -49,7 +50,10 @@ public class DreamDroidFragmentHelper {
 	}
 
 	public void onAttach(Activity activity) {
-		activity.setProgressBarIndeterminateVisibility(false);
+		if(activity.getClass().equals(ActionBarActivity.class))
+			((ActionBarActivity) activity).setSupportProgressBarIndeterminateVisibility(false);
+		else
+			activity.setProgressBarIndeterminateVisibility(false);
 	}
 
 	public void onResume() {

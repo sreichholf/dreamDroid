@@ -158,11 +158,14 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		DreamDroid.setTheme(this);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
+
+		supportRequestWindowFeature(Window.FEATURE_PROGRESS);
+		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
 		getSupportActionBar().setDisplayShowTitleEnabled(true);
 		getSupportActionBar().setDisplayUseLogoEnabled(true);
-		setProgressBarIndeterminateVisibility(false);
+		setSupportProgressBarIndeterminateVisibility(false);
 
 		if (savedInstanceState != null) {
 			mNavigationFragment = (NavigationFragment) getSupportFragmentManager().getFragment(savedInstanceState,
@@ -401,7 +404,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	private void setConnectionState(String state, boolean finished) {
 		mConnectionState.setText(state);
 		if (finished)
-			setProgressBarIndeterminateVisibility(false);
+			setSupportProgressBarIndeterminateVisibility(false);
 	}
 
 	/*

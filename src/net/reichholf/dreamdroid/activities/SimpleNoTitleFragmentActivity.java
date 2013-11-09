@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.R;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.Window;
 import android.view.WindowManager;
 
 /**
@@ -21,6 +22,7 @@ public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		super.onCreate(savedInstanceState);
 	}

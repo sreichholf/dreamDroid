@@ -66,7 +66,7 @@ public class DreamDroidHttpFragmentHelper {
 		mShc = SimpleHttpClient.getInstance();
 	}
 
-	public ActionBarActivity getSherlockActivity() {
+	public ActionBarActivity getActionBarActivity() {
 		return (ActionBarActivity) mFragment.getActivity();
 	}
 
@@ -109,11 +109,11 @@ public class DreamDroidHttpFragmentHelper {
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			if (!isCancelled())
-				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+				getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		}
 
 		protected void onPostExecute(Boolean result) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -152,11 +152,11 @@ public class DreamDroidHttpFragmentHelper {
 		@Override
 		protected void onProgressUpdate(Void... progress) {
 			if (!isCancelled())
-				getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+				getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		}
 
 		protected void onPostExecute(Boolean result) {
-			getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 
 			if (!result || mVolume == null) {
 				mVolume = new ExtendedHashMap();
@@ -167,7 +167,7 @@ public class DreamDroidHttpFragmentHelper {
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean("volume_control", false)) {
+		if (PreferenceManager.getDefaultSharedPreferences(getActionBarActivity()).getBoolean("volume_control", false)) {
 			switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				onVolumeButtonClicked(Volume.CMD_UP);
@@ -269,7 +269,7 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param toastText
 	 */
 	public void showToast(String toastText) {
-		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -277,7 +277,7 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param toastText
 	 */
 	public void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getSherlockActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -289,8 +289,8 @@ public class DreamDroidHttpFragmentHelper {
 
 	public void updateProgress(String progress) {
 		getBaseFragment().setCurrentTitle(progress);
-		getSherlockActivity().setTitle(progress);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+		getActionBarActivity().setTitle(progress);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 	}
 
 	/**
@@ -298,8 +298,8 @@ public class DreamDroidHttpFragmentHelper {
 	 */
 	public void finishProgress(String title) {
 		getBaseFragment().setCurrentTitle(title);
-		getSherlockActivity().setTitle(title);
-		getSherlockActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setTitle(title);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 
 	/**
@@ -311,18 +311,18 @@ public class DreamDroidHttpFragmentHelper {
 		args.putString(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
 		f.setArguments(args);
 
-		MultiPaneHandler m = (MultiPaneHandler) getSherlockActivity();
+		MultiPaneHandler m = (MultiPaneHandler) getActionBarActivity();
 		m.showDetails(f, true);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void reload() {
-		getSherlockActivity().setProgressBarIndeterminateVisibility(true);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		if (!"".equals(getBaseFragment().getBaseTitle().trim()))
 			getBaseFragment().setCurrentTitle(
 					getBaseFragment().getBaseTitle() + " - " + mFragment.getString(R.string.loading));
 
-		getSherlockActivity().setTitle(getBaseFragment().getCurrentTitle());
+		getActionBarActivity().setTitle(getBaseFragment().getCurrentTitle());
 		mFragment.getLoaderManager().restartLoader(LOADER_DEFAULT_ID, getBaseFragment().getLoaderBundle(),
 				(LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
 	}

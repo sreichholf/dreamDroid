@@ -805,7 +805,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		if (mDetailHeader != null)
 			finishProgress(getString(R.string.services));
 		else
-			getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		if (isBouquetList) {
 			mNavItems.clear();
 			mNavItems.addAll(list);

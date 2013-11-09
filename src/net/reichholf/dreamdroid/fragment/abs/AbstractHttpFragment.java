@@ -164,7 +164,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		setCurrentTitle(getLoadFinishedTitle());
 		getActionBarActivity().setTitle(getCurrentTitle());
 		if (result.isError()) {

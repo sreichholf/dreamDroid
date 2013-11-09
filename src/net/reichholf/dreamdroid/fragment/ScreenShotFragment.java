@@ -183,7 +183,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		mAttacher.update();
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 
 	protected void reload() {
@@ -278,14 +278,14 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
-		getActionBarActivity().setProgressBarIndeterminateVisibility(true);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		AsyncByteLoader loader = new AsyncByteLoader(getActionBarActivity(), args);
 		return loader;
 	}
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<byte[]>> loader, LoaderResult<byte[]> result) {
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		if (!result.isError()) {
 			if (result.getResult().length > 0)
 				onScreenshotAvailable(result.getResult());
@@ -298,7 +298,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public void onLoaderReset(Loader<LoaderResult<byte[]>> loader) {
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 
 	protected void showToast(String toastText) {

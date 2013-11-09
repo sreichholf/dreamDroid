@@ -209,7 +209,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
-		getActionBarActivity().setProgressBarIndeterminateVisibility(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		if(mGetBouquetListTask == null){
 			mGetBouquetListTask = new GetBouquetListTask();
 			mGetBouquetListTask.execute();
