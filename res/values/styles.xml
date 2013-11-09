@@ -63,9 +63,16 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAppearance">@android:style/TextAppearance.Small</item>
+		<item name="android:layout_margin">2dp</item>
     </style>
 
-    <style name="RemoteButton.Medium" parent="RemoteButton">
+	<style name="RemoteButton.Big" parent="RemoteButton">
+		<item name="android:layout_margin">5dp</item>
+		<item name="android:padding">5dp</item>
+	</style>
+
+
+	<style name="RemoteButton.Medium" parent="RemoteButton">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>

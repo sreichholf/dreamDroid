@@ -39,15 +39,15 @@ import android.widget.Button;
 
 /**
  * A Virtual dreambox remote control using http-requests to send key-strokes
- * 
+ *
  * @author sreichholf
- * 
+ *
  */
 public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 	private Vibrator mVibrator;
 
-	private final int[][] mButtonsCommon = { { R.id.ButtonPower, Remote.KEY_POWER },
+	private final int[][] mButtons = { { R.id.ButtonPower, Remote.KEY_POWER },
 			{ R.id.ButtonExit, Remote.KEY_EXIT }, { R.id.ButtonVolP, Remote.KEY_VOLP },
 			{ R.id.ButtonVolM, Remote.KEY_VOLM }, { R.id.ButtonMute, Remote.KEY_MUTE },
 			{ R.id.ButtonBouP, Remote.KEY_BOUP }, { R.id.ButtonBouM, Remote.KEY_BOUM },
@@ -57,15 +57,10 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			{ R.id.ButtonMenu, Remote.KEY_MENU }, { R.id.ButtonHelp, Remote.KEY_HELP },
 			{ R.id.ButtonPvr, Remote.KEY_PVR }, { R.id.ButtonRed, Remote.KEY_RED },
 			{ R.id.ButtonGreen, Remote.KEY_GREEN }, { R.id.ButtonYellow, Remote.KEY_YELLOW },
-			{ R.id.ButtonBlue, Remote.KEY_BLUE } };
-
-	private final int[][] mButtonsExtended = { { R.id.ButtonRwd, Remote.KEY_REWIND },
+			{ R.id.ButtonBlue, Remote.KEY_BLUE }, { R.id.ButtonRwd, Remote.KEY_REWIND },
 			{ R.id.ButtonPlay, Remote.KEY_PLAY }, { R.id.ButtonStop, Remote.KEY_STOP },
-			{ R.id.ButtonFwd, Remote.KEY_FORWARD }, { R.id.ButtonRec, Remote.KEY_RECORD } };
-
-	private final int[][] mButtonsSimple = { { R.id.ButtonAudio, Remote.KEY_AUDIO } };
-
-	private final int[][] mButtonsStandard = { { R.id.Button1, Remote.KEY_1 }, { R.id.Button2, Remote.KEY_2 },
+			{ R.id.ButtonFwd, Remote.KEY_FORWARD }, { R.id.ButtonRec, Remote.KEY_RECORD },
+			{ R.id.ButtonAudio, Remote.KEY_AUDIO }, { R.id.Button1, Remote.KEY_1 }, { R.id.Button2, Remote.KEY_2 },
 			{ R.id.Button3, Remote.KEY_3 }, { R.id.Button4, Remote.KEY_4 }, { R.id.Button5, Remote.KEY_5 },
 			{ R.id.Button6, Remote.KEY_6 }, { R.id.Button7, Remote.KEY_7 }, { R.id.Button8, Remote.KEY_8 },
 			{ R.id.Button9, Remote.KEY_9 }, { R.id.Button0, Remote.KEY_0 }, { R.id.ButtonLeftArrow, Remote.KEY_PREV },
@@ -89,6 +84,12 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		mSimpleRemote = DreamDroid.getCurrentProfile().isSimpleRemote();
 		mVibrator = (Vibrator) getActionBarActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		mEditor.commit();
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState){
+		super.onActivityCreated(savedInstanceState);
+		//getActionBarActivity().getSupportActionBar().hide();
 	}
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -140,7 +141,10 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	 */
 	private void registerButtons(View view, int[][] buttonmap) {
 		for (int i = 0; i < buttonmap.length; i++) {
-			Button btn = (Button) view.findViewById(buttonmap[i][0]);
+			View v = view.findViewById(buttonmap[i][0]);
+			if(v == null)
+				continue;
+			Button btn = (Button) v;
 			registerOnClickListener(btn, buttonmap[i][1]);
 		}
 	}
@@ -162,17 +166,13 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			view = inflater.inflate(R.layout.virtual_remote_quick_zap, null, false);
 			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.quickzap);
 		} else {
-			if (mSimpleRemote) {
+			if (mSimpleRemote)
 				view = inflater.inflate(R.layout.virtual_remote_simple, null, false);
-				registerButtons(view, mButtonsSimple);
-			} else {
+			else
 				view = inflater.inflate(R.layout.virtual_remote, null, false);
-				registerButtons(view, mButtonsExtended);
-			}
-			registerButtons(view, mButtonsStandard);
 			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.virtual_remote);
 		}
-		registerButtons(view, mButtonsCommon);
+		registerButtons(view, mButtons);
 		getActionBarActivity().setTitle(mBaseTitle);
 
 		return view;
@@ -181,7 +181,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	/**
 	 * Registers an OnClickListener for a specific GUI Element. OnClick the
 	 * function <code>onButtonClicked</code> will be called with the given id
-	 * 
+	 *
 	 * @param v
 	 *            The view to register an OnClickListener for
 	 * @param id
@@ -208,7 +208,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 	/**
 	 * Called after a Button has been clicked
-	 * 
+	 *
 	 * @param id
 	 *            The id of the item
 	 * @param longClick
