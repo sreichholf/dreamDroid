@@ -346,11 +346,11 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		case Statics.ITEM_REMOTE:
 			if (!isTablet()) {
 				intent = new Intent(getMainActivity(), SimpleNoTitleFragmentActivity.class);
-				intent.putExtra("fragmentClass", VirtualRemoteFragment.class);
+				intent.putExtra("fragmentClass", VirtualRemotePagerFragment.class);
 				startActivity(intent);
 			} else {
 				clearBackStack();
-				getMainActivity().showDetails(VirtualRemoteFragment.class);
+				getMainActivity().showDetails(VirtualRemotePagerFragment.class);
 			}
 			break;
 

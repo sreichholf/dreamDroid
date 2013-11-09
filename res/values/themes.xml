@@ -81,4 +81,14 @@
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light" />
 
+	<style name="Theme.DreamDroid.NoTitle" parent="Theme.DreamDroid">
+		<item name="windowActionBar">false</item>
+		<item name="android:windowNoTitle">true</item>
+	</style>
+
+	<style name="Theme.DreamDroid.Light.NoTitle" parent="Theme.DreamDroid.Light">
+		<item name="windowActionBar">false</item>
+		<item name="android:windowNoTitle">true</item>
+	</style>
+
 </resources>

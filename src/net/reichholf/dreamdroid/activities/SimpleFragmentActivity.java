@@ -49,9 +49,10 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 		supportRequestWindowFeature(Window.FEATURE_PROGRESS);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-		setSupportProgressBarIndeterminateVisibility(false);
-		if (getSupportActionBar() != null)
+		if (getSupportActionBar() != null){
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			setSupportProgressBarIndeterminateVisibility(false);
+		}
 
 		mFragment = null;
 		boolean initFragment = true;

@@ -25,6 +25,7 @@ import android.support.v7.app.ActionBarActivity;
  */
 public abstract class DreamDroidFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
 	private DreamDroidFragmentHelper mHelper = null;
+	protected boolean mShouldRetainInstance = true;
 
 	public DreamDroidFragment() {
 		super();
@@ -45,7 +46,8 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
-		setRetainInstance(true);
+		if(mShouldRetainInstance)
+			setRetainInstance(true);
 	}
 
 	@Override

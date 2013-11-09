@@ -75,15 +75,14 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mShouldRetainInstance = false;
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.virtual_remote));
 
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
-		mEditor = mPrefs.edit();
-		mQuickZap = mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
+		mQuickZap = getArguments().getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false) );
 		mSimpleRemote = DreamDroid.getCurrentProfile().isSimpleRemote();
 		mVibrator = (Vibrator) getActionBarActivity().getSystemService(Context.VIBRATOR_SERVICE);
-		mEditor.commit();
 	}
 
 	@Override
@@ -94,12 +93,12 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		inflater.inflate(R.menu.remote, menu);
+		//inflater.inflate(R.menu.remote, menu);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(Statics.ITEM_LAYOUT).setTitle(mQuickZap ? R.string.standard : R.string.quickzap);
+		//menu.findItem(Statics.ITEM_LAYOUT).setTitle(mQuickZap ? R.string.standard : R.string.quickzap);
 	}
 
 	@Override

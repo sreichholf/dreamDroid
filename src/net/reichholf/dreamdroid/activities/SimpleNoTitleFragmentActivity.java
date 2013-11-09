@@ -19,11 +19,12 @@ import android.view.WindowManager;
  * 
  */
 public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		if (!DreamDroid.isLightTheme(this))
+			setTheme(R.style.Theme_DreamDroid_NoTitle);
+		mThemeSet = true;
 		super.onCreate(savedInstanceState);
 	}
 }

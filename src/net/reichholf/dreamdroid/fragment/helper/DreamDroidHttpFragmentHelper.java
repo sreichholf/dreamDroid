@@ -108,12 +108,13 @@ public class DreamDroidHttpFragmentHelper {
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			if (!isCancelled())
+			if (!isCancelled() && getActionBarActivity().getSupportActionBar() != null)
 				getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		}
 
 		protected void onPostExecute(Boolean result) {
-			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+			if(getActionBarActivity().getSupportActionBar() != null)
+				getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();

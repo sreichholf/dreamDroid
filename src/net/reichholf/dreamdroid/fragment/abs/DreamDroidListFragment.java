@@ -28,6 +28,7 @@ import android.widget.TextView;
  */
 public abstract class DreamDroidListFragment extends ListFragment implements ActivityCallbackHandler, MutliPaneContent {
 	private DreamDroidFragmentHelper mHelper;
+	protected boolean mShouldRetainInstance = true;
 
 	protected boolean mCardListStyle = false;
 
@@ -50,7 +51,8 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
-		setRetainInstance(true);
+		if(mShouldRetainInstance)
+			setRetainInstance(true);
 	}
 
 	@Override
