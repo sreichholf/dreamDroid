@@ -87,11 +87,6 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState){
-		super.onActivityCreated(savedInstanceState);
-		//getActionBarActivity().getSupportActionBar().hide();
-	}
-
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return getRemoteView();
 	}
