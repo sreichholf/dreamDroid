@@ -19,18 +19,19 @@
 			android:padding="5dp">
 
 			<Button
-				android:id="@+id/Button1Spacer"
-				style="@style/RemoteButton.Medium"
+				android:id="@+id/ButtonHelp"
+				style="@style/RemoteButton"
 				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:background="@android:color/transparent"/>
+				android:layout_height="30dp"
+				android:background="@drawable/button_key_dark"
+				android:text="Help"/>
 
 			<Button
 				android:id="@+id/Button1"
 				style="@style/RemoteButton.Medium"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:layout_toRightOf="@id/Button1Spacer"
+				android:layout_toRightOf="@id/ButtonHelp"
 				android:background="@drawable/button_key_dark"
 				android:text="1"/>
 
@@ -68,7 +69,7 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_below="@id/Button1"
-				android:layout_toRightOf="@id/Button1Spacer"
+				android:layout_toRightOf="@id/ButtonHelp"
 				android:background="@drawable/button_key_dark"
 				android:text="4"/>
 
