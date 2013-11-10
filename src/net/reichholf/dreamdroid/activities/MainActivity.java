@@ -159,8 +159,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	public void onCreate(Bundle savedInstanceState) {
 		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
-
-		supportRequestWindowFeature(Window.FEATURE_PROGRESS);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
 		getSupportActionBar().setDisplayShowTitleEnabled(true);

@@ -45,8 +45,6 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 		if (!mThemeSet)
 			DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
-
-		supportRequestWindowFeature(Window.FEATURE_PROGRESS);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
 		if (getSupportActionBar() != null){
