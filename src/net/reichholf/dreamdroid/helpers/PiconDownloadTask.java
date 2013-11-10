@@ -10,6 +10,7 @@ import it.sauronsoftware.ftp4j.FTPClient;
 import it.sauronsoftware.ftp4j.FTPFile;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -23,7 +24,7 @@ import android.util.Log;
  * 
  */
 public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
-	private static String LOG_TAG = "PiconDownloadTask";
+	private static String TAG = "PiconDownloadTask";
 
 	private DownloadProgress progress;
 	private WeakReference<PiconDownloadProgressListener> progressListener;
@@ -58,10 +59,12 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 			publishProgress(DownloadProgress.EVENT_ID_CONNECTED);
 			client.login(p.getUser(), p.getPass());
 			publishProgress(DownloadProgress.EVENT_ID_LOGIN_SUCCEEDED);
-			client.setType(FTPClient.TYPE_BINARY);
 
+			client.setType(FTPClient.TYPE_BINARY);
+			Log.i(TAG, String.format("Changing to %s", remotePath));
 			client.changeDirectory(remotePath);
 			publishProgress(DownloadProgress.EVENT_ID_LISTING);
+
 			FTPFile[] fileList = client.list("*.png");
 			progress.totalFiles = fileList.length;
 			publishProgress(DownloadProgress.EVENT_ID_LISTING_READY);
@@ -82,7 +85,7 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 					client.download(fileName, localFile);
 				} catch (Exception e) {
 					e.printStackTrace();
-					Log.e(LOG_TAG, "Failed to download picon with filename " + fileName);
+					Log.e(TAG, "Failed to download picon with filename " + fileName);
 				}
 				progress.downloadedFiles++;
 			}
@@ -141,5 +144,4 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 			errorText = "";
 		}
 	}
-
 }

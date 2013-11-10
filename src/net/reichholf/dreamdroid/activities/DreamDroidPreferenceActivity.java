@@ -134,11 +134,13 @@ public class DreamDroidPreferenceActivity extends PreferenceActivity implements
 				message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
 			} else {
 				message = progress.errorText;
+				if(message == null) //TODO I am not happy about this, imo this shouldn't even happen!
+					message = progress.currentFile;
 			}
 			break;
 		}
 
-		if (message.isEmpty())
+		if (message == null || "".equals(message.trim())) //TODO I am not happy about this, imo this shouldn't even happen!
 			message = "-";
 		Log.i(LOG_TAG, message);
 		if (mProgressDialog != null && mProgressDialog.isShowing()) {

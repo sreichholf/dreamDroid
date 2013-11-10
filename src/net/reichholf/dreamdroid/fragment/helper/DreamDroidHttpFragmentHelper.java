@@ -196,10 +196,8 @@ public class DreamDroidHttpFragmentHelper {
 	/**
 	 * Called after a Button has been clicked
 	 * 
-	 * @param id
-	 *            The id of the item
-	 * @param longClick
-	 *            If true the item has been long-clicked
+	 * @param set
+	 *            value to set
 	 */
 	@SuppressWarnings("unchecked")
 	private void onVolumeButtonClicked(String set) {
