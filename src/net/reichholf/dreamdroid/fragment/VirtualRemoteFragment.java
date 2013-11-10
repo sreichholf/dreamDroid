@@ -7,13 +7,14 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
@@ -24,18 +25,17 @@ import org.apache.http.message.BasicNameValuePair;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 /**
  * A Virtual dreambox remote control using http-requests to send key-strokes
@@ -44,8 +44,7 @@ import android.widget.Button;
  *
  */
 public class VirtualRemoteFragment extends AbstractHttpFragment {
-
-	private Vibrator mVibrator;
+	private static String TAG = VirtualRemoteFragment.class.getSimpleName();
 
 	private final int[][] mButtons = { { R.id.ButtonPower, Remote.KEY_POWER },
 			{ R.id.ButtonExit, Remote.KEY_EXIT }, { R.id.ButtonVolP, Remote.KEY_VOLP },
@@ -71,7 +70,11 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	private boolean mSimpleRemote;
 	private String mBaseTitle;
 	private SharedPreferences mPrefs;
+	private ScreenShotFragment mScreenshotFragment;
 	private SharedPreferences.Editor mEditor;
+	private Vibrator mVibrator;
+	private Handler mHandler;
+	private Runnable mScreenShotCallback;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -83,49 +86,31 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		mQuickZap = getArguments().getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false) );
 		mSimpleRemote = DreamDroid.getCurrentProfile().isSimpleRemote();
 		mVibrator = (Vibrator) getActionBarActivity().getSystemService(Context.VIBRATOR_SERVICE);
+		mHandler = new Handler();
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return getRemoteView();
-	}
+		View view = getRemoteView();
 
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		super.onCreateOptionsMenu(menu, inflater);
-		//inflater.inflate(R.menu.remote, menu);
-	}
+		if(view.findViewById(R.id.screenshot_frame) != null){
+			mScreenshotFragment = new ScreenShotFragment(false);
 
-	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
-		//menu.findItem(Statics.ITEM_LAYOUT).setTitle(mQuickZap ? R.string.standard : R.string.quickzap);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case Statics.ITEM_LAYOUT:
-			setLayout(!mQuickZap);
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+			FragmentManager fm = getChildFragmentManager();
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.replace(R.id.screenshot_frame, mScreenshotFragment);
+			ft.commit();
+		} else {
+			mScreenshotFragment = null;
 		}
 
+		return view;
 	}
 
-	/**
-	 * @param b
-	 *            if true QuickZap Layout will be applied. False = Standard
-	 *            Layout
-	 */
-	private void setLayout(boolean b) {
-		if (mQuickZap != b) {
-			mQuickZap = b;
-			mEditor.putBoolean(DreamDroid.PREFS_KEY_QUICKZAP, mQuickZap);
-			mEditor.commit();
-
-			reinit();
-		}
+	@Override
+	public void onPause(){
+		abortScreenshotReload();
+		super.onPause();
 	}
 
 	/**
@@ -140,12 +125,6 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 				continue;
 			registerOnClickListener(v, buttonmap[i][1]);
 		}
-	}
-
-	private void reinit() {
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		ft.replace(getId(), new VirtualRemoteFragment());
-		ft.commit();
 	}
 
 	/**
@@ -228,6 +207,27 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		execSimpleResultTask(new RemoteCommandRequestHandler(), params);
 	}
 
+	private void abortScreenshotReload(){
+		if(mScreenShotCallback != null)
+			mHandler.removeCallbacks(mScreenShotCallback);
+	}
+
+	public void reloadScreenhot(){
+		Log.w(TAG, "Scheduling screenshot reload");
+		abortScreenshotReload();
+		if(mScreenshotFragment == null || !mScreenshotFragment.isVisible())
+			return;
+
+		mScreenShotCallback = new Runnable() {
+			@Override
+			public void run() {
+				Log.w(TAG, "Reloading screenshot");
+				mScreenshotFragment.reload();
+			}
+		};
+		mHandler.postDelayed(mScreenShotCallback, 700);
+	}
+
 	@Override
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
 		boolean hasError = false;
@@ -249,6 +249,8 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 		if (hasError) {
 			showToast(toastText);
+		} else {
+			reloadScreenhot();
 		}
 	}
 }

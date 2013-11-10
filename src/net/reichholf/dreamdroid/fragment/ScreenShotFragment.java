@@ -64,6 +64,8 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	public static final String KEY_SIZE = "size";
 	public static final String KEY_FILENAME = "filename";
 
+	private static final String BUNDLE_KEY_RETAIN = "retain";
+
 	private ImageView mImageView;
 	private int mType;
 	private int mFormat;
@@ -86,8 +88,25 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	}
 
+	public ScreenShotFragment(){
+		super();
+		shouldRetain(true);
+	}
+
+	public ScreenShotFragment(boolean retainInstance){
+		super();
+		shouldRetain(retainInstance);
+	}
+
+	private void shouldRetain(boolean retainInstance){
+		Bundle args = new Bundle();
+		args.putBoolean(BUNDLE_KEY_RETAIN, retainInstance);
+		setArguments(args);
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mShouldRetainInstance = getArguments().getBoolean(BUNDLE_KEY_RETAIN);
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitles(getString(R.string.screenshot));
