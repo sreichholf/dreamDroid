@@ -6,15 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
-import java.io.File;
-
-import android.graphics.Bitmap;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -22,10 +15,16 @@ import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+
+import java.io.File;
 
 /**
  * @author sre
- * 
  */
 public class Picon {
 	private static DisplayImageOptions sDisplayOptions = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).cacheInMemory(true).build();
@@ -34,7 +33,7 @@ public class Picon {
 	public static class AnimateImageDisplayListener extends SimpleImageLoadingListener {
 		@Override
 		public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-			if(!PreferenceManager.getDefaultSharedPreferences(view.getContext()).getBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
+			if (!PreferenceManager.getDefaultSharedPreferences(view.getContext()).getBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
 				return;
 			if (loadedImage != null) {
 				ImageView imageView = (ImageView) view;
@@ -43,18 +42,22 @@ public class Picon {
 		}
 	}
 
-	public static String getPiconFileName(ExtendedHashMap service) {
+	public static String getPiconFileName(ExtendedHashMap service, boolean useName) {
 		String root = Environment.getExternalStorageDirectory().getAbsolutePath();
-		String fileName = service.getString(Event.KEY_SERVICE_REFERENCE);
-		if (fileName == null || !fileName.contains(":"))
-			return fileName;
+		String fileName;
+		if(useName){
+			fileName = service.getString(Event.KEY_SERVICE_NAME);
+		} else {
+			fileName = service.getString(Event.KEY_SERVICE_REFERENCE);
+			if (fileName == null || !fileName.contains(":"))
+				return fileName;
 
-		fileName = fileName.substring(0, fileName.lastIndexOf(':'));
-		fileName = fileName.replace(":", "_");
+			fileName = fileName.substring(0, fileName.lastIndexOf(':'));
+			fileName = fileName.replace(":", "_");
 
-		if (fileName.endsWith("_"))
-			fileName = fileName.substring(0, fileName.length() - 1);
-
+			if (fileName.endsWith("_"))
+				fileName = fileName.substring(0, fileName.length() - 1);
+		}
 		fileName = String.format("%s%sdreamDroid%spicons%s%s.png", root, File.separator, File.separator,
 				File.separator, fileName);
 
@@ -67,7 +70,7 @@ public class Picon {
 	}
 
 	public static void setPiconForView(Context context, ImageView piconView,
-			ExtendedHashMap service, AnimateImageDisplayListener animateImageDisplayListener) {
+									   ExtendedHashMap service, AnimateImageDisplayListener animateImageDisplayListener) {
 		if (piconView == null) {
 			return;
 		}
@@ -76,7 +79,8 @@ public class Picon {
 			piconView.setVisibility(View.GONE);
 			return;
 		}
-		String fileName = getPiconFileName(service);
+		boolean useName = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false);
+		String fileName = getPiconFileName(service, useName);
 		if (fileName == null) {
 			piconView.setVisibility(View.GONE);
 			return;
@@ -84,6 +88,6 @@ public class Picon {
 		if (piconView.getVisibility() != View.VISIBLE)
 			piconView.setVisibility(View.VISIBLE);
 
-		ImageLoader.getInstance().displayImage("file://"+fileName, piconView, sDisplayOptions, animateImageDisplayListener);
+		ImageLoader.getInstance().displayImage("file://" + fileName, piconView, sDisplayOptions, animateImageDisplayListener);
 	}
 }

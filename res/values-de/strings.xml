@@ -263,4 +263,6 @@
     <string name="drawer_close">Navigationsmenü schließen</string>
     <string name="enable_animations_long">Zusätzliche Animationen für diverse Aktionen aktivieren</string>
     <string name="enable_animations">Animationen aktivieren</string>
+    <string name="use_name_as_picon_filename_long">Sendernamen als Dateinamen für Picons verwenden</string>
+    <string name="use_name_as_picon_filename">Picons mit Kanalnamen</string>
 </resources>

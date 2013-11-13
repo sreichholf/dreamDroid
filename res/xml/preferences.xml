@@ -37,11 +37,20 @@
             android:key="enable_animations"
             android:summary="@string/enable_animations_long"
             android:title="@string/enable_animations" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="appearance"
+        android:title="@string/picons" >
         <CheckBoxPreference
             android:key="picons"
             android:summary="@string/use_picons_long"
             android:title="@string/use_picons" />
-
+        <CheckBoxPreference
+            android:dependency="picons"
+            android:defaultValue="false"
+            android:key="use_name_as_picon_filename"
+            android:summary="@string/use_name_as_picon_filename_long"
+            android:title="@string/use_name_as_picon_filename" />
         <Preference
             android:dependency="picons"
             android:key="sync_picons"
