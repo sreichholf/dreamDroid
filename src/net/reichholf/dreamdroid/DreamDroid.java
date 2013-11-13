@@ -48,6 +48,7 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_FIRST_START = "first_start";
 	public static final String PREFS_KEY_SYNC_PICONS_PATH = "sync_picons_path";
 	public static final String PREFS_KEY_PICONS_ENABLED = "picons";
+    public static final String PREFS_KEY_PICONS_USE_NAME = "use_name_as_picon_filename";
 
 	public static boolean DATE_LOCALE_WO;
 

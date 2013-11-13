@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.activities.DreamDroidPreferenceActivity;
+import net.reichholf.dreamdroid.activities.MyPreferenceActivity;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
@@ -355,7 +355,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			break;
 
 		case Statics.ITEM_PREFERENCES:
-			intent = new Intent(getMainActivity(), DreamDroidPreferenceActivity.class);
+			intent = new Intent(getMainActivity(), MyPreferenceActivity.class);
 			startActivityForResult(intent, Statics.REQUEST_ANY);
 			break;
 

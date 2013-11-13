@@ -13,6 +13,7 @@
 package net.reichholf.dreamdroid.activities;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.helpers.PiconDownloadTask;
 import net.reichholf.dreamdroid.helpers.PiconDownloadTask.DownloadProgress;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -34,10 +36,10 @@ import net.reichholf.dreamdroid.helpers.Statics;
  * @author sreichholf
  * 
  */
-public class PreferenceActivity extends android.preference.PreferenceActivity implements
+public class MyPreferenceActivity extends android.preference.PreferenceActivity implements
 		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener {
 
-	private static final String LOG_TAG = "PreferenceActivity";
+	private static final String LOG_TAG = "MyPreferenceActivity";
 
 	private ProgressDialog mProgressDialog;
 	private PiconDownloadTask mSyncPiconTask;
@@ -45,7 +47,7 @@ public class PreferenceActivity extends android.preference.PreferenceActivity im
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see android.preference.PreferenceActivity#onCreate(android.os.Bundle)
+	 * @see android.preference.MyPreferenceActivity#onCreate(android.os.Bundle)
 	 */
 	@SuppressWarnings("deprecation")
 	@Override
@@ -65,6 +67,15 @@ public class PreferenceActivity extends android.preference.PreferenceActivity im
 				startPiconSync();
 				return true;
 			}
+		});
+
+		Preference profilesPref = findPreference("profiles");
+		profilesPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				openProfileConfig();
+				return true;
+			};
 		});
 	}
 
@@ -94,6 +105,12 @@ public class PreferenceActivity extends android.preference.PreferenceActivity im
 		if ("light_theme".equals(key)) {
 			setResult(Statics.RESULT_THEME_CHANGED);
 		}
+	}
+
+	public void openProfileConfig(){
+		Intent i = new Intent(MyPreferenceActivity.this, SimpleFragmentActivity.class);
+		i.putExtra("fragmentClass", ProfileListFragment.class);
+		startActivity(i);
 	}
 
 	/*

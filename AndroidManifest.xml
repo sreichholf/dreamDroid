@@ -44,7 +44,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.DreamDroidPreferenceActivity" >
+        <activity android:name=".activities.MyPreferenceActivity" >
         </activity>
         <activity android:name=".activities.SimpleFragmentActivity" >
             <meta-data
@@ -70,7 +70,7 @@
         </meta-data>
 
         <activity
-            android:name=".activities.DreamDroidShareActivity"
+            android:name=".activities.ShareActivity"
             android:theme="@style/Theme.DreamDroid.Dialog" >
             <intent-filter android:label="@string/watch_on_dream" >
                 <action android:name="android.intent.action.VIEW" />
