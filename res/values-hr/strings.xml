@@ -1,205 +1,205 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-<string name="description">Opis</string>
-<string name="title">Naslov</string>
-<string name="mo">Mo</string>
-<string name="app_name">DreamDroid</string>
-<string-array name="servicelist">
-<item>Buketi (TV)</item>
-<item>Provideri (TV)</item>
-<item>Svi Servisi (TV)</item>
-<item>Buketi (Radio)</item>
-<item>Provideri (Radio)</item>
-<item>Sve (Radio)</item>
-</string-array>
-<string name="timer">Timer</string>
-<string name="service">Servis</string>
-<string name="afterevent">Afterevent</string>
-<string name="location">Lokacija</string>
-<string-array name="afterevents">
-<item>Ništa</item>
-<item>Stanby</item>
-<item>Deep Standby</item>
-<item>Automatski</item>
-</string-array>
-<string name="begin_time">Početno vrijeme</string>
-<string name="repeatings">Ponavljanje</string>
-<string name="end_time">Krajno vrijeme</string>
-<string name="services">Servisi</string>
-<string name="movies">Filmovi</string>
-<string name="device_info">Informacija uređaja</string>
-<string name="send_message">Pošalji Poruku</string>
+    <string name="description">Opis</string>
+    <string name="title">Naslov</string>
+    <string name="mo">Mo</string>
+    <string name="app_name">DreamDroid</string>
+    <string-array name="servicelist">
+        <item>Buketi (TV)</item>
+        <item>Provideri (TV)</item>
+        <item>Svi Servisi (TV)</item>
+        <item>Buketi (Radio)</item>
+        <item>Provideri (Radio)</item>
+        <item>Sve (Radio)</item>
+    </string-array>
+    <string name="timer">Timer</string>
+    <string name="service">Servis</string>
+    <string name="afterevent">Afterevent</string>
+    <string name="location">Lokacija</string>
+    <string-array name="afterevents">
+        <item>Ništa</item>
+        <item>Stanby</item>
+        <item>Deep Standby</item>
+        <item>Automatski</item>
+    </string-array>
+    <string name="begin_time">Početno vrijeme</string>
+    <string name="repeatings">Ponavljanje</string>
+    <string name="end_time">Krajno vrijeme</string>
+    <string name="services">Servisi</string>
+    <string name="movies">Filmovi</string>
+    <string name="device_info">Informacija uređaja</string>
+    <string name="send_message">Pošalji Poruku</string>
 
-<string name="save">Čuvanje</string>
-<string name="cancel">Otkazati</string>
-<string name="fetching_data">Dohvaćanje podataka</string>
-<string name="parsing">Parsing...</string>
-<string name="get_content_error">Pogreška dobivanje sadržaja</string>
-<string name="zap">Zap</string>
-<string name="browse_epg">Gledati EPG</string>
-<string name="edit">UređIvanje</string>
-<string name="delete">Izbrisati</string>
-<string name="epg">EPG</string>
-<string name="ssl_enabled">Omogućiti SSL</string>
-<string name="host">Ime od Hosta/IP</string>
-<string name="port">Port</string>
-<string name="settings">Postavke</string>
-<string name="host_long">Ime od Hosta ili IP</string>
+    <string name="save">Čuvanje</string>
+    <string name="cancel">Otkazati</string>
+    <string name="fetching_data">Dohvaćanje podataka</string>
+    <string name="parsing">Parsing...</string>
+    <string name="get_content_error">Pogreška dobivanje sadržaja</string>
+    <string name="zap">Zap</string>
+    <string name="browse_epg">Gledati EPG</string>
+    <string name="edit">UređIvanje</string>
+    <string name="delete">Izbrisati</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">Omogućiti SSL</string>
+    <string name="host">Ime od Hosta/IP</string>
+    <string name="port">Port</string>
+    <string name="settings">Postavke</string>
+    <string name="host_long">Ime od Hosta ili IP</string>
 <string name="port_long">Listening Port
 </string>
-<string name="close">Zatvori</string>
-<string name="minutes_short">min.</string>
-<string name="user">Korisnik</string>
-<string name="user_long">Korisničko ime za login</string>
-<string name="pass">Lozinka</string>
-<string name="pass_long">Lozinka za login</string>
-<string name="saving">Čuvam. Molimo pričekajte</string>
-<string name="deleting">Brišem. Molimo pričekajte</string>
-<string name="delete_confirm">Stvarno brisati?</string>
-<string name="set_timer">Postaviti timer</string>
-<string name="home">Glavni meni</string>
-<string name="pick_action">Podižite akciju</string>
-<string name="set_time_begin">Početni datum i vrijeme</string>
-<string name="set_time_end">Krajni datum i vrijeme</string>
-<string name="apply">Primijeniti</string>
-<string name="reload">Ponovo</string>
-<string-array name="weekdays_short">
-<item>Pon</item>
-<item>Uto</item>
-<item>Sri</item>
-<item>Čet</item>
-<item>Pet</item>
-<item>Sub</item>
-<item>Ned</item>
-</string-array>
-<string-array name="weekdays">
-<item>Ponedjeljak</item>
-<item>Utorak</item>
-<item>Srijeda</item>
-<item>Četvrtak</item>
-<item>Petak</item>
-<item>Subota</item>
-<item>Nedjelja</item>
-</string-array>
-<string name="none">Nijedno</string>
-<string name="choose_days">Briajte dane</string>
-<string name="mo_to_fr">Ponedjeljak do Petak</string>
-<string name="daily">Dnevno</string>
-<string name="new_timer">Novi timer</string>
-<string name="locations">Lokacije</string>
-<string name="gui_version">GUI verzija</string>
-<string name="image_version">Image verzija</string>
-<string name="interface_version">Interface verzija</string>
-<string name="front_processor_version">Verzija frontprozesora</string>
-<string name="device_name">Naziv uređaja</string>
-<string name="frontends">Frontends</string>
-<string name="nics">Mrežne interface</string>
-<string name="hdds">Harddisk</string>
-<string name="not_implemented">Ova funkcije još ne valja, zasad</string>
-<string name="current_event">Trenutni događaj</string>
-<string name="timeout">Tajm-out</string>
-<string name="message">Poruka</string>
-<string name="message_text_hint">Unesite tekst poruke</string>
-<string name="send">Poslati</string>
-<string name="type">Type</string>
-<string-array name="message_types">
-<item>DaNe</item>
-<item>Upozorenje</item>
-<item>Informacija</item>
-<item>Pogreška</item>
-</string-array>
-<string name="virtual_remote">Virtualni daljinski</string>
-<string name="login_enabled">Omoguči login</string>
-<string name="wait_request_finished">Molimo pričekajte dok se izvodni zahtjev završen!</string>
-<string name="current_service">Sadašnji</string>
-<string name="provider">Provider</string>
-<string name="now">Sada</string>
-<string name="next">Sljedeći</string>
-<string name="epg_search">EPG-traženje</string>
-<string name="epg_search_hint">Traži u EPG-u</string>
-<string name="standard">Standardni raspored</string>
-<string name="quickzap">QuickZap raspored</string>
-<string name="no_epg_available">Trenutno nisu EPG-Informacije dostupne za ovaj kanal!</string>
-<string name="ok">U redu</string>
-<string name="activate">Aktivirati</string>
-<string name="confirm_delete_profile">Da li stvarno želite izbrisati ovaj profil?</string>
-<string name="profile_activated">Aktivirani profil</string>
-<string name="profile_not_activated">Pogreška u aktiviranju profila</string>
-<string name="profile_not_deleted">Pogreška u brisanjem profila</string>
-<string name="profile_deleted">Profil je izbrisan</string>
-<string name="profile">Profil</string>
-<string name="profile_updated">Ažuriran je profil</string>
-<string name="profile_added">Dodat je profil</string>
-<string name="profile_add">Dodati profil</string>
-<string name="profile_not_added">Ne mogu dodati profil</string>
-<string name="profile_not_updated">Ne mogu ažurirati profil</string>
-<string name="no_list_item">Nema podatka za prikaz</string>
-<string name="locations_default_fallback">Pogreška u učitavanju lokacija, pada natrag u zadanom</string>
-<string name="tags">Tagovi</string>
-<string name="screenshot">Slika</string>
-<string name="host_empty">Ime od host imena ne smije biti prazan!</string>
-<string name="standby">Standby</string>
-<string name="powerup">Upaliti</string>
-<string name="restart_gui">Ponovo upaliti GUI</string>
-<string name="reboot">Ponovo upaliti</string>
-<string name="shutdown">Ugasiti</string>
-<string name="powercontrol">Kontrola snage</string>
-<string name="choose_tags">Birajte tag</string>
-<string name="choose_location">Birajte lokaciju</string>
-<string name="bouquet_overview">Pregled buketa</string>
-<string name="set_default">Postaviti kao zadani</string>
-<string name="default_bouquet_set_to">Zadani buket metnut je u:</string>
-<string name="default_bouquet_not_set">Zadani buket ne može se postaviti</string>
-<string name="loading">Loading...</string>
-<string name="about">O</string>
-<string name="license">LIZENCIJA:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0	 </string>
-<string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
-<string name="active_profile">Aktiviran profil</string>
-<string name="connection_state">Stanje veze</string>
-<string name="not_available">Nije dostupno</string>
-<string name="checking">Provjeravanje...</string>
-<string name="error">POGREŠKA!</string>
-<string name="check_connectivity">Provjeravanje veze</string>
-<string name="version_too_low">Version &lt; 1.6.5</string>
-<string name="connection_error">Pogreška u vezi</string>
-<string name="port_out_of_range">Port nije izmedžu 1 i 65535</string>
-<string name="illegal_host">Nezakoniti host</string>
-<string name="edit_timer">Uređi timer</string>
-<string name="cleaning_timerlist">Čišćenje lista od timera</string>
-<string name="cleanup">Čišćenje</string>
-<string name="in_standby">Uređaj je sada u Standby modusu</string>
-<string name="is_running">Uređaj sada radi </string>
-<string name="stream">Streamaj</string>
+    <string name="close">Zatvori</string>
+    <string name="minutes_short">min.</string>
+    <string name="user">Korisnik</string>
+    <string name="user_long">Korisničko ime za login</string>
+    <string name="pass">Lozinka</string>
+    <string name="pass_long">Lozinka za login</string>
+    <string name="saving">Čuvam. Molimo pričekajte</string>
+    <string name="deleting">Brišem. Molimo pričekajte</string>
+    <string name="delete_confirm">Stvarno brisati?</string>
+    <string name="set_timer">Postaviti timer</string>
+    <string name="home">Glavni meni</string>
+    <string name="pick_action">Podižite akciju</string>
+    <string name="set_time_begin">Početni datum i vrijeme</string>
+    <string name="set_time_end">Krajni datum i vrijeme</string>
+    <string name="apply">Primijeniti</string>
+    <string name="reload">Ponovo</string>
+    <string-array name="weekdays_short">
+        <item>Pon</item>
+        <item>Uto</item>
+        <item>Sri</item>
+        <item>Čet</item>
+        <item>Pet</item>
+        <item>Sub</item>
+        <item>Ned</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Ponedjeljak</item>
+        <item>Utorak</item>
+        <item>Srijeda</item>
+        <item>Četvrtak</item>
+        <item>Petak</item>
+        <item>Subota</item>
+        <item>Nedjelja</item>
+    </string-array>
+    <string name="none">Nijedno</string>
+    <string name="choose_days">Briajte dane</string>
+    <string name="mo_to_fr">Ponedjeljak do Petak</string>
+    <string name="daily">Dnevno</string>
+    <string name="new_timer">Novi timer</string>
+    <string name="locations">Lokacije</string>
+    <string name="gui_version">GUI verzija</string>
+    <string name="image_version">Image verzija</string>
+    <string name="interface_version">Interface verzija</string>
+    <string name="front_processor_version">Verzija frontprozesora</string>
+    <string name="device_name">Naziv uređaja</string>
+    <string name="frontends">Frontends</string>
+    <string name="nics">Mrežne interface</string>
+    <string name="hdds">Harddisk</string>
+    <string name="not_implemented">Ova funkcije još ne valja, zasad</string>
+    <string name="current_event">Trenutni događaj</string>
+    <string name="timeout">Tajm-out</string>
+    <string name="message">Poruka</string>
+    <string name="message_text_hint">Unesite tekst poruke</string>
+    <string name="send">Poslati</string>
+    <string name="type">Type</string>
+    <string-array name="message_types">
+        <item>DaNe</item>
+        <item>Upozorenje</item>
+        <item>Informacija</item>
+        <item>Pogreška</item>
+    </string-array>
+    <string name="virtual_remote">Virtualni daljinski</string>
+    <string name="login_enabled">Omoguči login</string>
+    <string name="wait_request_finished">Molimo pričekajte dok se izvodni zahtjev završen!</string>
+    <string name="current_service">Sadašnji</string>
+    <string name="provider">Provider</string>
+    <string name="now">Sada</string>
+    <string name="next">Sljedeći</string>
+    <string name="epg_search">EPG-traženje</string>
+    <string name="epg_search_hint">Traži u EPG-u</string>
+    <string name="standard">Standardni raspored</string>
+    <string name="quickzap">QuickZap raspored</string>
+    <string name="no_epg_available">Trenutno nisu EPG-Informacije dostupne za ovaj kanal!</string>
+    <string name="ok">U redu</string>
+    <string name="activate">Aktivirati</string>
+    <string name="confirm_delete_profile">Da li stvarno želite izbrisati ovaj profil?</string>
+    <string name="profile_activated">Aktivirani profil</string>
+    <string name="profile_not_activated">Pogreška u aktiviranju profila</string>
+    <string name="profile_not_deleted">Pogreška u brisanjem profila</string>
+    <string name="profile_deleted">Profil je izbrisan</string>
+    <string name="profile">Profil</string>
+    <string name="profile_updated">Ažuriran je profil</string>
+    <string name="profile_added">Dodat je profil</string>
+    <string name="profile_add">Dodati profil</string>
+    <string name="profile_not_added">Ne mogu dodati profil</string>
+    <string name="profile_not_updated">Ne mogu ažurirati profil</string>
+    <string name="no_list_item">Nema podatka za prikaz</string>
+    <string name="locations_default_fallback">Pogreška u učitavanju lokacija, pada natrag u zadanom</string>
+    <string name="tags">Tagovi</string>
+    <string name="screenshot">Slika</string>
+    <string name="host_empty">Ime od host imena ne smije biti prazan!</string>
+    <string name="standby">Standby</string>
+    <string name="powerup">Upaliti</string>
+    <string name="restart_gui">Ponovo upaliti GUI</string>
+    <string name="reboot">Ponovo upaliti</string>
+    <string name="shutdown">Ugasiti</string>
+    <string name="powercontrol">Kontrola snage</string>
+    <string name="choose_tags">Birajte tag</string>
+    <string name="choose_location">Birajte lokaciju</string>
+    <string name="bouquet_overview">Pregled buketa</string>
+    <string name="set_default">Postaviti kao zadani</string>
+    <string name="default_bouquet_set_to">Zadani buket metnut je u:</string>
+    <string name="default_bouquet_not_set">Zadani buket ne može se postaviti</string>
+    <string name="loading">Loading...</string>
+    <string name="about">O</string>
+    <string name="license">LIZENCIJA:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0	 </string>
+    <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Aktiviran profil</string>
+    <string name="connection_state">Stanje veze</string>
+    <string name="not_available">Nije dostupno</string>
+    <string name="checking">Provjeravanje...</string>
+    <string name="error">POGREŠKA!</string>
+    <string name="check_connectivity">Provjeravanje veze</string>
+    <string name="version_too_low">Version &lt; 1.6.5</string>
+    <string name="connection_error">Pogreška u vezi</string>
+    <string name="port_out_of_range">Port nije izmedžu 1 i 65535</string>
+    <string name="illegal_host">Nezakoniti host</string>
+    <string name="edit_timer">Uređi timer</string>
+    <string name="cleaning_timerlist">Čišćenje lista od timera</string>
+    <string name="cleanup">Čišćenje</string>
+    <string name="in_standby">Uređaj je sada u Standby modusu</string>
+    <string name="is_running">Uređaj sada radi </string>
+    <string name="stream">Streamaj</string>
 
-<string name="stream_host">Streaming Hostname/IP</string>
-<string name="stream_host_long">Host/IP za streamanje (opcijonalno)</string>
-<string name="stream_current">Streamaj sadašnji</string>
-<string name="similar">Slični događaj</string>
-<string-array name="timer_state">
-<item>Čekaj...</item>
-<item>Priprijemljen...</item>
-<item>Radi...</item>
-<item>Završen</item>
-<item>Isključen</item>
-</string-array>
-<string-array name="timer_action">
-<item>Snimaj</item>
-<item>Zap</item>
-</string-array>
-<string name="sleeptimer">Sleep timer</string>
-<string name="current_volume">Jačina je sada na %s</string>
-<string name="muted">Prigušen</string>
-<string name="enable_volume_control">Aktiviraj kontrolu jačine</string>
-<string name="enable_volume_control_long">Omoguči direktno pojačanje pomoću P/S dugme</string>
-<string name="download">Skinuti</string>
-<string name="extras">Ekstras</string>
-<string name="main_menu">Glavni</string>
-<string name="profiles">Profili</string>
-<string name="enable_instant_zap">Instant zap</string>
-<string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
-<string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
-<string name="simple_remote">Jednostavni raspored daljinskog</string>
-<string name="screenshot_saved">Slika spremljena u \'%s\'</string>
-<string name="imdb">IMDb</string>
-<string name="missing_stream_player">Nijedan Player za streamove instaliran na vašem mobilnom</string>
+    <string name="stream_host">Streaming Hostname/IP</string>
+    <string name="stream_host_long">Host/IP za streamanje (opcijonalno)</string>
+    <string name="stream_current">Streamaj sadašnji</string>
+    <string name="similar">Slični događaj</string>
+    <string-array name="timer_state">
+        <item>Čekaj...</item>
+        <item>Priprijemljen...</item>
+        <item>Radi...</item>
+        <item>Završen</item>
+        <item>Isključen</item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>Snimaj</item>
+        <item>Zap</item>
+    </string-array>
+    <string name="sleeptimer">Sleep timer</string>
+    <string name="current_volume">Jačina je sada na %s</string>
+    <string name="muted">Prigušen</string>
+    <string name="enable_volume_control">Aktiviraj kontrolu jačine</string>
+    <string name="enable_volume_control_long">Omoguči direktno pojačanje pomoću P/S dugme</string>
+    <string name="download">Skinuti</string>
+    <string name="extras">Ekstras</string>
+    <string name="main_menu">Glavni</string>
+    <string name="profiles">Profili</string>
+    <string name="enable_instant_zap">Instant zap</string>
+    <string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
+    <string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
+    <string name="simple_remote">Jednostavni raspored daljinskog</string>
+    <string name="screenshot_saved">Slika spremljena u \'%s\'</string>
+    <string name="imdb">IMDb</string>
+    <string name="missing_stream_player">Nijedan Player za streamove instaliran na vašem mobilnom</string>
 </resources>

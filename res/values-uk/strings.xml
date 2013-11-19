@@ -1,226 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-<string name="description">Опис</string>
-<string name="title">Заголовок</string>
-<string name="mo">Mo</string>
-<string name="app_name">DreamDroid</string>
+    <string name="description">Опис</string>
+    <string name="title">Заголовок</string>
+    <string name="mo">Mo</string>
+    <string name="app_name">DreamDroid</string>
 
-<string-array name="servicelist">
-<item>Фаворити (TV)</item>
-<item>Провайдер (TV)</item>
-<item>Всі сервіси (TV)</item>
-<item>Фаворити (Radio)</item>
-<item>Провайдер (Radio)</item>
-<item>Всі (Radio)</item>
-</string-array>
+    <string-array name="servicelist">
+        <item>Фаворити (TV)</item>
+        <item>Провайдер (TV)</item>
+        <item>Всі сервіси (TV)</item>
+        <item>Фаворити (Radio)</item>
+        <item>Провайдер (Radio)</item>
+        <item>Всі (Radio)</item>
+    </string-array>
 
-<string name="timer">Таймери</string>
-<string name="service">Сервіс</string>
-<string name="afterevent">Наступна подія</string>
-<string name="location">Позиція</string>
+    <string name="timer">Таймери</string>
+    <string name="service">Сервіс</string>
+    <string name="afterevent">Наступна подія</string>
+    <string name="location">Позиція</string>
 
-<string-array name="afterevents">
-<item>Нічого</item>
-<item>Очікування</item>
-<item>Повне вимкнення</item>
-<item>Автовибір</item>
-</string-array>
+    <string-array name="afterevents">
+        <item>Нічого</item>
+        <item>Очікування</item>
+        <item>Повне вимкнення</item>
+        <item>Автовибір</item>
+    </string-array>
 
-<string name="begin_time">Час початку</string>
-<string name="repeatings">Повтори</string>
-<string name="end_time">Час завершення</string>
-<string name="services">Сервіси</string>
-<string name="movies">Записи</string>
-<string name="device_info">Інфо про пристрій</string>
-<string name="send_message">Надіслати повідомлення</string>
-<string name="save">Зберегти</string>
-<string name="cancel">Скасувати</string>
-<string name="fetching_data">Отримую дані&#8230;</string>
-<string name="parsing">Обробляю&#8230;</string>
-<string name="get_content_error">Помилка прийому даних!</string>
-<string name="zap">Перехід</string>
-<string name="browse_epg">Огляд телегіду</string>
-<string name="edit">Змінити</string>
-<string name="delete">Видалити</string>
-<string name="epg">Телегід</string>
-<string name="ssl_enabled">Використовувати шифрування SSL</string>
-<string name="host">Хост/IP</string>
-<string name="port">Порт</string>
-<string name="port_stream_live">Порт (живе мовлення)</string>
-<string name="port_stream_file">Порт (фільми)</string>
-<string name="settings">Налаштування</string>
-<string name="host_long">Ім\'я хосту або IP-адреса</string>
-<string name="close">Закрити</string>
-<string name="minutes_short">хв.</string>
-<string name="user">Користувач</string>
-<string name="user_long">Ім\'я користувача</string>
-<string name="pass">Пароль</string>
-<string name="pass_long">Пароль для авторизації</string>
-<string name="saving">Зберігаю. Зачекайте&#8230;</string>
-<string name="deleting">Видаляю. Зачекайте&#8230;</string>
-<string name="delete_confirm">Дійсно видалити?</string>
-<string name="set_timer">Встановити таймер</string>
-<string name="home">Додому</string>
-<string name="pick_action">Оберіть дію</string>
-<string name="set_time_begin">Дата і час початку</string>
-<string name="set_time_end">Дата і час завершення</string>
-<string name="apply">Застосувати</string>
-<string name="reload">Оновити</string>
+    <string name="begin_time">Час початку</string>
+    <string name="repeatings">Повтори</string>
+    <string name="end_time">Час завершення</string>
+    <string name="services">Сервіси</string>
+    <string name="movies">Записи</string>
+    <string name="device_info">Інфо про пристрій</string>
+    <string name="send_message">Надіслати повідомлення</string>
+    <string name="save">Зберегти</string>
+    <string name="cancel">Скасувати</string>
+    <string name="fetching_data">Отримую дані&#8230;</string>
+    <string name="parsing">Обробляю&#8230;</string>
+    <string name="get_content_error">Помилка прийому даних!</string>
+    <string name="zap">Перехід</string>
+    <string name="browse_epg">Огляд телегіду</string>
+    <string name="edit">Змінити</string>
+    <string name="delete">Видалити</string>
+    <string name="epg">Телегід</string>
+    <string name="ssl_enabled">Використовувати шифрування SSL</string>
+    <string name="host">Хост/IP</string>
+    <string name="port">Порт</string>
+    <string name="port_stream_live">Порт (живе мовлення)</string>
+    <string name="port_stream_file">Порт (фільми)</string>
+    <string name="settings">Налаштування</string>
+    <string name="host_long">Ім\'я хосту або IP-адреса</string>
+    <string name="close">Закрити</string>
+    <string name="minutes_short">хв.</string>
+    <string name="user">Користувач</string>
+    <string name="user_long">Ім\'я користувача</string>
+    <string name="pass">Пароль</string>
+    <string name="pass_long">Пароль для авторизації</string>
+    <string name="saving">Зберігаю. Зачекайте&#8230;</string>
+    <string name="deleting">Видаляю. Зачекайте&#8230;</string>
+    <string name="delete_confirm">Дійсно видалити?</string>
+    <string name="set_timer">Встановити таймер</string>
+    <string name="home">Додому</string>
+    <string name="pick_action">Оберіть дію</string>
+    <string name="set_time_begin">Дата і час початку</string>
+    <string name="set_time_end">Дата і час завершення</string>
+    <string name="apply">Застосувати</string>
+    <string name="reload">Оновити</string>
 
-<string-array name="weekdays_short">
-<item>Пн</item>
-<item>Вт</item>
-<item>Ср</item>
-<item>Чт</item>
-<item>Пт</item>
-<item>Сб</item>
-<item>Нд</item>
-</string-array>
-<string-array name="weekdays">
-<item>Понеділок</item>
-<item>Вівторок</item>
-<item>Середа</item>
-<item>Четвер</item>
-<item>П\'ятниця</item>
-<item>Субота</item>
-<item>Неділя</item>
-</string-array>
+    <string-array name="weekdays_short">
+        <item>Пн</item>
+        <item>Вт</item>
+        <item>Ср</item>
+        <item>Чт</item>
+        <item>Пт</item>
+        <item>Сб</item>
+        <item>Нд</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Понеділок</item>
+        <item>Вівторок</item>
+        <item>Середа</item>
+        <item>Четвер</item>
+        <item>П\'ятниця</item>
+        <item>Субота</item>
+        <item>Неділя</item>
+    </string-array>
 
-<string name="none">Пусто</string>
-<string name="choose_days">Выбрать дни</string>
-<string name="mo_to_fr">Понеділок - п\'ятниця</string>
-<string name="daily">Щоденно</string>
-<string name="new_timer">Новий таймер</string>
-<string name="locations">Положення</string>
-<string name="gui_version">Версія оболонки</string>
-<string name="image_version">Версія образу (image)</string>
-<string name="interface_version">Версія інтерфейсу</string>
-<string name="front_processor_version">Версія процесора</string>
-<string name="device_name">Ім\'я пристрою</string>
-<string name="frontends">Вхідні пристрої</string>
-<string name="nics">Мережеві інтерфейси</string>
-<string name="hdds">Накопичувачі</string>
-<string name="not_implemented">Функція не реалізована</string>
-<string name="current_event">Поточна подія</string>
-<string name="timeout">Таймаут</string>
-<string name="message">Повідомлення</string>
-<string name="message_text_hint">Введіть текст вашого повідомлення</string>
-<string name="send">Надіслати</string>
-<string name="type">Тип</string>
+    <string name="none">Пусто</string>
+    <string name="choose_days">Выбрать дни</string>
+    <string name="mo_to_fr">Понеділок - п\'ятниця</string>
+    <string name="daily">Щоденно</string>
+    <string name="new_timer">Новий таймер</string>
+    <string name="locations">Положення</string>
+    <string name="gui_version">Версія оболонки</string>
+    <string name="image_version">Версія образу (image)</string>
+    <string name="interface_version">Версія інтерфейсу</string>
+    <string name="front_processor_version">Версія процесора</string>
+    <string name="device_name">Ім\'я пристрою</string>
+    <string name="frontends">Вхідні пристрої</string>
+    <string name="nics">Мережеві інтерфейси</string>
+    <string name="hdds">Накопичувачі</string>
+    <string name="not_implemented">Функція не реалізована</string>
+    <string name="current_event">Поточна подія</string>
+    <string name="timeout">Таймаут</string>
+    <string name="message">Повідомлення</string>
+    <string name="message_text_hint">Введіть текст вашого повідомлення</string>
+    <string name="send">Надіслати</string>
+    <string name="type">Тип</string>
 
-<string-array name="message_types">
-<item>Так/Ні</item>
-<item>Попередження</item>
-<item>Інформація</item>
-<item>Помилка</item>
-</string-array>
+    <string-array name="message_types">
+        <item>Так/Ні</item>
+        <item>Попередження</item>
+        <item>Інформація</item>
+        <item>Помилка</item>
+    </string-array>
 
-<string name="virtual_remote">Віртуальний пульт</string>
-<string name="login_enabled">Дозволити вхід</string>
-<string name="wait_request_finished">Будь-ласка почекайте завершення обробки запиту!</string>
-<string name="current_service">Поточний сервіс</string>
-<string name="provider">Провайдер</string>
-<string name="now">Зараз</string>
-<string name="next">Далі</string>
-<string name="epg_search">Пошук по телегіду</string>
-<string name="epg_search_hint">Пошук по телегіду&#8230;</string>
-<string name="standard">Стандартне розкладка кнопок</string>
-<string name="quickzap">Розкладка для швидкого переходу</string>
-<string name="no_epg_available">Інформація телегіду для каналу недоступна!</string>
-<string name="ok">OK</string>
-<string name="activate">Увімкнути</string>
-<string name="confirm_delete_profile">Ви впевнені, що хочете видалити цей профіль?</string>
-<string name="profile_activated">Активовано профіль</string>
-<string name="profile_not_activated">Помилка активації профілю</string>
-<string name="profile_not_deleted">Помилка видалення профілю</string>
-<string name="profile_deleted">Видалено профіль</string>
-<string name="profile">Профіль</string>
-<string name="profile_updated">Оновлено профіль</string>
-<string name="profile_added">Додано профіль</string>
-<string name="profile_add">Додати профіль</string>
-<string name="profile_not_added">Не можу додати профіль</string>
-<string name="profile_not_updated">Не можу оновити профіль</string>
-<string name="no_list_item">Список порожній&#8230;</string>
-<string name="locations_default_fallback">Помилка завантаження позицій, відновлюю вихідні:</string>
-<string name="tags">Мітки</string>
-<string name="screenshot">Знімок екрану</string>
-<string name="host_empty">Ім\'я хосту не може бути порожнім!</string>
-<string name="standby">Очікування</string>
-<string name="powerup">Уввімкнення</string>
-<string name="restart_gui">Перезавантажити оболонку</string>
-<string name="reboot">Перезавантажити</string>
-<string name="shutdown">Вимкнути</string>
-<string name="powercontrol">Живлення</string>
-<string name="choose_tags">Оберіть мітки</string>
-<string name="choose_location">Оберіть позицію</string>
-<string name="bouquet_overview">Огляд фаворитів</string>
-<string name="set_default">Встановити за замовчуванням</string>
-<string name="default_bouquet_set_to">Фаворит за замовчуванням встановлено на:</string>
-<string name="default_bouquet_not_set">Фаворит за замовчуванням НЕ встановлено!</string>
-<string name="loading">Завантаження&#8230;</string>
-<string name="about">Про програму</string>
-<string name="license">ЛІЦЕНЗІЯ:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-<string name="source_code_link">Вихідний код доступний на: http://github.com/sreichholf/dreamDroid</string>
-<string name="active_profile">Активний профіль</string>
-<string name="connection_state">Стан з\'єднання</string>
-<string name="not_available">Недоступно</string>
-<string name="checking">перевіряю&#8230;</string>
-<string name="error">ПОМИЛКА!</string>
-<string name="check_connectivity">Перевірити з\'єднання</string>
-<string name="version_too_low">Версія &lt; 1.6.5</string>
-<string name="connection_error">Помилка з\'єднання</string>
-<string name="port_out_of_range">Порт поза діапазоном 1 і 65535</string>
-<string name="illegal_host">Неприпустиме ім\'я хосту</string>
-<string name="edit_timer">Редарувати таймер</string>
-<string name="cleaning_timerlist">Очищення списку таймерів</string>
-<string name="cleanup">Очистити</string>
-<string name="in_standby">Пристрій в режимі очікування</string>
-<string name="is_running">Пристрій увімкнено</string>
-<string name="stream">Передати потоком</string>
-<string name="stream_host">Ім\'я / IP-адреса потокового хосту</string>
-<string name="stream_host_long">Хост/IP для потокового мовлення (не обов\'язково)</string>
-<string name="stream_current">Передати потоком</string>
-<string name="similar">Подібні події</string>
+    <string name="virtual_remote">Віртуальний пульт</string>
+    <string name="login_enabled">Дозволити вхід</string>
+    <string name="wait_request_finished">Будь-ласка почекайте завершення обробки запиту!</string>
+    <string name="current_service">Поточний сервіс</string>
+    <string name="provider">Провайдер</string>
+    <string name="now">Зараз</string>
+    <string name="next">Далі</string>
+    <string name="epg_search">Пошук по телегіду</string>
+    <string name="epg_search_hint">Пошук по телегіду&#8230;</string>
+    <string name="standard">Стандартне розкладка кнопок</string>
+    <string name="quickzap">Розкладка для швидкого переходу</string>
+    <string name="no_epg_available">Інформація телегіду для каналу недоступна!</string>
+    <string name="ok">OK</string>
+    <string name="activate">Увімкнути</string>
+    <string name="confirm_delete_profile">Ви впевнені, що хочете видалити цей профіль?</string>
+    <string name="profile_activated">Активовано профіль</string>
+    <string name="profile_not_activated">Помилка активації профілю</string>
+    <string name="profile_not_deleted">Помилка видалення профілю</string>
+    <string name="profile_deleted">Видалено профіль</string>
+    <string name="profile">Профіль</string>
+    <string name="profile_updated">Оновлено профіль</string>
+    <string name="profile_added">Додано профіль</string>
+    <string name="profile_add">Додати профіль</string>
+    <string name="profile_not_added">Не можу додати профіль</string>
+    <string name="profile_not_updated">Не можу оновити профіль</string>
+    <string name="no_list_item">Список порожній&#8230;</string>
+    <string name="locations_default_fallback">Помилка завантаження позицій, відновлюю вихідні:</string>
+    <string name="tags">Мітки</string>
+    <string name="screenshot">Знімок екрану</string>
+    <string name="host_empty">Ім\'я хосту не може бути порожнім!</string>
+    <string name="standby">Очікування</string>
+    <string name="powerup">Уввімкнення</string>
+    <string name="restart_gui">Перезавантажити оболонку</string>
+    <string name="reboot">Перезавантажити</string>
+    <string name="shutdown">Вимкнути</string>
+    <string name="powercontrol">Живлення</string>
+    <string name="choose_tags">Оберіть мітки</string>
+    <string name="choose_location">Оберіть позицію</string>
+    <string name="bouquet_overview">Огляд фаворитів</string>
+    <string name="set_default">Встановити за замовчуванням</string>
+    <string name="default_bouquet_set_to">Фаворит за замовчуванням встановлено на:</string>
+    <string name="default_bouquet_not_set">Фаворит за замовчуванням НЕ встановлено!</string>
+    <string name="loading">Завантаження&#8230;</string>
+    <string name="about">Про програму</string>
+    <string name="license">ЛІЦЕНЗІЯ:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="source_code_link">Вихідний код доступний на: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Активний профіль</string>
+    <string name="connection_state">Стан з\'єднання</string>
+    <string name="not_available">Недоступно</string>
+    <string name="checking">перевіряю&#8230;</string>
+    <string name="error">ПОМИЛКА!</string>
+    <string name="check_connectivity">Перевірити з\'єднання</string>
+    <string name="version_too_low">Версія &lt; 1.6.5</string>
+    <string name="connection_error">Помилка з\'єднання</string>
+    <string name="port_out_of_range">Порт поза діапазоном 1 і 65535</string>
+    <string name="illegal_host">Неприпустиме ім\'я хосту</string>
+    <string name="edit_timer">Редарувати таймер</string>
+    <string name="cleaning_timerlist">Очищення списку таймерів</string>
+    <string name="cleanup">Очистити</string>
+    <string name="in_standby">Пристрій в режимі очікування</string>
+    <string name="is_running">Пристрій увімкнено</string>
+    <string name="stream">Передати потоком</string>
+    <string name="stream_host">Ім\'я / IP-адреса потокового хосту</string>
+    <string name="stream_host_long">Хост/IP для потокового мовлення (не обов\'язково)</string>
+    <string name="stream_current">Передати потоком</string>
+    <string name="similar">Подібні події</string>
 
-<string-array name="timer_state">
-<item>очікую&#8230;</item>
-<item>підготовка&#8230;</item>
-<item>виконання&#8230;</item>
-<item>завершено</item>
-<item>вимкнено</item>
-</string-array>
-<string-array name="timer_action">
-<item>запис</item>
-<item>перехід</item>
-</string-array>
+    <string-array name="timer_state">
+        <item>очікую&#8230;</item>
+        <item>підготовка&#8230;</item>
+        <item>виконання&#8230;</item>
+        <item>завершено</item>
+        <item>вимкнено</item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>запис</item>
+        <item>перехід</item>
+    </string-array>
 
-<string name="sleeptimer">Таймер сну</string>
-<string name="current_volume">Рівень гучності %s</string>
-<string name="muted">ВИМКНЕНО</string>
-<string name="enable_volume_control">Увімкнути керування гучністю</string>
-<string name="enable_volume_control_long">Увімкнути пряме керування гучністю апаратними кнопками</string>
-<string name="download">Завантажити</string>
-<string name="extras">Додаткове</string>
-<string name="main_menu">Основне</string>
-<string name="profiles">Профілі</string>
-<string name="enable_instant_zap">Швидкий перехід</string>
-<string name="enable_instant_zap_long">Швидкий перехід при короткому натисканні на сервіс</string>
-<string name="wrong_activity">Невірна дія! Створіть заново усі посилання на dreamDroid!</string>
-<string name="simple_remote">Спрощена розкладка кнопок пульта</string>
-<string name="screenshot_saved">Знімок екрану збережено до  \'%s\'</string>
-<string name="imdb">IMDb</string>
-<string name="missing_stream_player">Програвач потокового відео не встановлено на вашому пристрої!</string>
-<string name="mediaplayer">Програвач</string>
-<string name="edit_profile">Редагувати профіль</string>
-<string name="force_tablet_layout_long">Компонування оптимізоване для планшетів</string>
-<string name="force_tablet_layout">Вигляд як на планшеті</string>
-<string name="mobile_imdb">Використовувати мобільну версію imdb.com</string>
-<string name="mobile_imdb_long">Використовувати m.imdb.com замість imdb.com</string>
-<string name="searching">Шукаю&#8230;</string>
-<string name="searching_known_devices">Здійснюється пошук Dreambox\'ів у вашій локальній мережі. Це може зайняти кілька хвилин &#8230;</string>
-<string name="autodiscover_dreamboxes">Автопошук Dreambox\'ів</string>
-<string name="autodiscovery_failed">Не знайдено жодного Dreambox\'у у вашій мережі!</string>
-<string name="add_all">Додати всі</string>
-
+    <string name="sleeptimer">Таймер сну</string>
+    <string name="current_volume">Рівень гучності %s</string>
+    <string name="muted">ВИМКНЕНО</string>
+    <string name="enable_volume_control">Увімкнути керування гучністю</string>
+    <string name="enable_volume_control_long">Увімкнути пряме керування гучністю апаратними кнопками</string>
+    <string name="download">Завантажити</string>
+    <string name="extras">Додаткове</string>
+    <string name="main_menu">Основне</string>
+    <string name="profiles">Профілі</string>
+    <string name="enable_instant_zap">Швидкий перехід</string>
+    <string name="enable_instant_zap_long">Швидкий перехід при короткому натисканні на сервіс</string>
+    <string name="wrong_activity">Невірна дія! Створіть заново усі посилання на dreamDroid!</string>
+    <string name="simple_remote">Спрощена розкладка кнопок пульта</string>
+    <string name="screenshot_saved">Знімок екрану збережено до  \'%s\'</string>
+    <string name="imdb">IMDb</string>
+    <string name="missing_stream_player">Програвач потокового відео не встановлено на вашому пристрої!</string>
+    <string name="mediaplayer">Програвач</string>
+    <string name="edit_profile">Редагувати профіль</string>
+    <string name="force_tablet_layout_long">Компонування оптимізоване для планшетів</string>
+    <string name="force_tablet_layout">Вигляд як на планшеті</string>
+    <string name="mobile_imdb">Використовувати мобільну версію imdb.com</string>
+    <string name="mobile_imdb_long">Використовувати m.imdb.com замість imdb.com</string>
+    <string name="searching">Шукаю&#8230;</string>
+    <string name="searching_known_devices">Здійснюється пошук Dreambox\'ів у вашій локальній мережі. Це може зайняти кілька хвилин &#8230;</string>
+    <string name="autodiscover_dreamboxes">Автопошук Dreambox\'ів</string>
+    <string name="autodiscovery_failed">Не знайдено жодного Dreambox\'у у вашій мережі!</string>
+    <string name="add_all">Додати всі</string>
+    <string name="signal_meter">Рівень сигналу</string>
+    <string name="use_light_theme_long">Використовувати світлу тему замість темної</string>
+    <string name="use_light_theme">Світла тема</string>
+    <string name="leave_confirm">Схаменіться!</string>
+    <string name="leave_confirm_long">Ви дійсно хочете вийти з dreamDroid?</string>
+    <string name="watch_on_dream">Переглянути на Dreambox</string>
+    <string name="sent_from_dreamdroid">Надіслано з dreamDroid на %s</string>
+    <string name="confirm_app_close">Підтвердження перед виходом</string>
+    <string name="confirm_app_close_long">Запитувати підтвердження перед виходом з програми після натискання кнопки &quot;назад&quot;</string>
 </resources>

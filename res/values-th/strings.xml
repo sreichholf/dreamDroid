@@ -1,109 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-<string name="description">ลักษณะ</string>
-<string name="title">หัวข้อ</string>
-<string name="mo">Mo</string>
-<string name="app_name">DreamDroid</string>
-<string-array name="servicelist">
-<item>Bouquets (TV)</item>
-<item>Provider (TV)</item>
-<item>All Services (TV)</item>
-<item>Bouquets (Radio)</item>
-<item>Provider (Radio)</item>
-<item>All (Radio)</item>
-</string-array>
-<string name="timer">ตัวนับเวลา</string>
-<string name="service">บริการ</string>
-<string name="location">สถานที่</string>
-<string-array name="afterevents">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string name="begin_time">เวลาเริ่ม</string>
-<string name="repeatings">ทำซ้ำ</string>
-<string name="end_time">เวลาจบ</string>
-<string name="services">บริการ</string>
-<string name="movies">ภาพยนต์</string>
-<string name="device_info">รายละเอียดของอุปกรณ์</string>
-<string name="send_message">ส่งข้อความ</string>
+    <string name="description">ลักษณะ</string>
+    <string name="title">หัวข้อ</string>
+    <string name="mo">Mo</string>
+    <string name="app_name">DreamDroid</string>
+    <string-array name="servicelist">
+        <item>Bouquets (TV)</item>
+        <item>Provider (TV)</item>
+        <item>All Services (TV)</item>
+        <item>Bouquets (Radio)</item>
+        <item>Provider (Radio)</item>
+        <item>All (Radio)</item>
+    </string-array>
+    <string name="timer">ตัวนับเวลา</string>
+    <string name="service">บริการ</string>
+    <string name="location">สถานที่</string>
+    <string name="begin_time">เวลาเริ่ม</string>
+    <string name="repeatings">ทำซ้ำ</string>
+    <string name="end_time">เวลาจบ</string>
+    <string name="services">บริการ</string>
+    <string name="movies">ภาพยนต์</string>
+    <string name="device_info">รายละเอียดของอุปกรณ์</string>
+    <string name="send_message">ส่งข้อความ</string>
 
-<string name="save">จัดเก็บ</string>
-<string name="cancel">ยกเลิก</string>
-<string name="fetching_data">กำลังเรียกข้อมูล...</string>
-<string name="parsing">กำลังวิเคราะห์</string>
-<string name="get_content_error">เกิดข้อผิดพลาดของเนื้อหา</string>
-<string name="edit">แก้ไข</string>
-<string name="delete">ลบ</string>
-<string name="settings">ตั้งค่า</string>
+    <string name="save">จัดเก็บ</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="fetching_data">กำลังเรียกข้อมูล...</string>
+    <string name="parsing">กำลังวิเคราะห์</string>
+    <string name="get_content_error">เกิดข้อผิดพลาดของเนื้อหา</string>
+    <string name="edit">แก้ไข</string>
+    <string name="delete">ลบ</string>
+    <string name="settings">ตั้งค่า</string>
 <string name="port_long">Listening Port
 </string>
-<string name="close">ปิด</string>
-<string name="minutes_short">นาที</string>
-<string name="user">ผู้ใช้</string>
-<string name="user_long">ลงชื่อเพื่อเข้าใช้งาน</string>
-<string name="pass">รหัส</string>
-<string name="pass_long">รหัสเพื่อเข้าใช้งาน</string>
-<string name="saving">กำลังบันทึก กรุณารอซักครู่...</string>
-<string name="deleting">กำลังลบ กรุณารอซักครู่...</string>
-<string name="delete_confirm">ต้องการลบ จริงหรือไม่ ?</string>
-<string name="set_timer">ตั้งค่า ตัวนับเวลา</string>
-<string name="apply">ยอมรับ</string>
-<string name="reload">เริ่มใหม่</string>
-<string-array name="weekdays_short">
-<item>จ.</item>
-<item>อ.</item>
-<item>พ.</item>
-<item>พฤ.</item>
-<item>ศ.</item>
-<item>ส.</item>
-<item>อา.</item>
-</string-array>
-<string-array name="weekdays">
-<item>จันทร์</item>
-<item>อังคาร</item>
-<item>พุทธ</item>
-<item>พฤหัสบดี</item>
-<item>ศุกร์</item>
-<item>เสาร์</item>
-<item>อาทิตย์</item>
-</string-array>
-<string name="none">ไม่</string>
-<string name="choose_days">เลือกวัน</string>
-<string name="mo_to_fr">จันทร์ ถึง ศุกร์</string>
-<string name="daily">ทุกวัน</string>
-<string name="new_timer">เวลาใหม่</string>
-<string name="locations">สถานที่</string>
-<string name="device_name">ชื่ออุปกรณ์</string>
-<string name="timeout">หมดเวลา</string>
-<string name="message">ข้อความ</string>
-<string name="message_text_hint">ใส่ข้อความของคุณ</string>
-<string name="send">ส่ง</string>
-<string name="type">ชนิด</string>
-<string-array name="message_types">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string name="wait_request_finished">กรุณารอจนกว่าการร้องขอสำเร็จ</string>
-<string name="provider">ผู้ให้บริการ</string>
-<string name="next">ต่อไป</string>
-<string name="epg_search_hint">ค้าหา EPG</string>
-<string name="about">เกี่ยวกับ</string>
-<string name="checking">กำลังตรวจสอบ...</string>
-
-<string-array name="timer_state">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="timer_action">
-<item></item>
-<item></item>
-</string-array>
-<string name="muted">ปิดเสียง</string>
+    <string name="close">ปิด</string>
+    <string name="minutes_short">นาที</string>
+    <string name="user">ผู้ใช้</string>
+    <string name="user_long">ลงชื่อเพื่อเข้าใช้งาน</string>
+    <string name="pass">รหัส</string>
+    <string name="pass_long">รหัสเพื่อเข้าใช้งาน</string>
+    <string name="saving">กำลังบันทึก กรุณารอซักครู่...</string>
+    <string name="deleting">กำลังลบ กรุณารอซักครู่...</string>
+    <string name="delete_confirm">ต้องการลบ จริงหรือไม่ ?</string>
+    <string name="set_timer">ตั้งค่า ตัวนับเวลา</string>
+    <string name="apply">ยอมรับ</string>
+    <string name="reload">เริ่มใหม่</string>
+    <string-array name="weekdays_short">
+        <item>จ.</item>
+        <item>อ.</item>
+        <item>พ.</item>
+        <item>พฤ.</item>
+        <item>ศ.</item>
+        <item>ส.</item>
+        <item>อา.</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>จันทร์</item>
+        <item>อังคาร</item>
+        <item>พุทธ</item>
+        <item>พฤหัสบดี</item>
+        <item>ศุกร์</item>
+        <item>เสาร์</item>
+        <item>อาทิตย์</item>
+    </string-array>
+    <string name="none">ไม่</string>
+    <string name="choose_days">เลือกวัน</string>
+    <string name="mo_to_fr">จันทร์ ถึง ศุกร์</string>
+    <string name="daily">ทุกวัน</string>
+    <string name="new_timer">เวลาใหม่</string>
+    <string name="locations">สถานที่</string>
+    <string name="device_name">ชื่ออุปกรณ์</string>
+    <string name="timeout">หมดเวลา</string>
+    <string name="message">ข้อความ</string>
+    <string name="message_text_hint">ใส่ข้อความของคุณ</string>
+    <string name="send">ส่ง</string>
+    <string name="type">ชนิด</string>
+    <string name="wait_request_finished">กรุณารอจนกว่าการร้องขอสำเร็จ</string>
+    <string name="provider">ผู้ให้บริการ</string>
+    <string name="next">ต่อไป</string>
+    <string name="epg_search_hint">ค้าหา EPG</string>
+    <string name="about">เกี่ยวกับ</string>
+    <string name="checking">กำลังตรวจสอบ...</string>
+    <string name="muted">ปิดเสียง</string>
 </resources>

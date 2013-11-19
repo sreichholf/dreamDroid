@@ -1,106 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-<string name="description">Përshkrimi</string>
-<string name="title">Titull</string>
-<string name="mo">DreamDroid</string>
-<string name="app_name">DreamDroid</string>
-<string-array name="servicelist">
-<item>Buketat (TV)</item>
-<item>Provider (TV)</item>
-<item>Gjitha shërbimet (TV)</item>
-<item>Bouquets (Radio)</item>
-<item>Provider (Radio)</item>
-<item>All (Radio)</item>
-</string-array>
-<string name="timer">kohëmatës</string>
-<string name="service">Sherbimet</string>
-<string name="afterevent">PasNgajrjes</string>
-<string name="location">Vendndodhja</string>
-<string-array name="afterevents">
-<item>Nothing</item>
-<item>Standby</item>
-<item>Deep Standby</item>
-<item>Automatic</item>
-</string-array>
-<string name="begin_time">Fillo Koha</string>
-<string name="repeatings">Përsëritje</string>
-<string name="end_time">Fund Koha</string>
-<string name="services">Sherbimet</string>
-<string name="movies">Filmat</string>
-<string name="device_info">Informacion per aparat</string>
-<string name="send_message">Dërgo Mesazh</string>
 
-<string name="save">Ruaj</string>
-<string name="cancel">Anulo</string>
-<string name="fetching_data">Miren te dhënat</string>
-<string name="parsing">analizon</string>
-<string name="get_content_error">Error ne marjen e dhenave</string>
-<string name="edit">Përpuno</string>
-<string name="epg">EPG</string>
-<string name="host">Hostname/IP</string>
-<string name="port">Port</string>
-<string name="host_long">Hostname ose IP</string>
-<string name="port_long">Listening Port
-</string>
-<string name="close">Mbyll</string>
-<string name="minutes_short">min.</string>
-<string name="user">Perdorues</string>
-<string name="user_long">Emer perdoruesi per logim</string>
-<string name="pass">Fjalekalim</string>
-<string name="pass_long">Fjalekalimi per logim</string>
-<string name="delete_confirm">Konfirmo fshirjen?</string>
-<string name="pick_action">Zgjidh nje veprim</string>
-<string-array name="weekdays_short">
-<item>Hë</item>
-<item>Ma</item>
-<item>Më</item>
-<item>Ej</item>
-<item>Pr</item>
-<item>Sht</item>
-<item>Di</item>
-</string-array>
-<string-array name="weekdays">
-<item>e Hëne</item>
-<item>e Martë</item>
-<item>e Mërkur</item>
-<item> e Enjëte</item>
-<item>e Premte</item>
-<item>e Shtunë</item>
-<item>e Diel</item>
-</string-array>
-<string name="none">zbrazët</string>
-<string name="choose_days">Zgjidhë ditët</string>
-<string name="mo_to_fr">e Hëne deri të Premtën</string>
-<string name="daily">çdo ditë</string>
-<string name="new_timer">V</string>
-<string name="gui_version">Versioni i GUI</string>
-<string name="image_version">Versioni i Image</string>
-<string name="interface_version">Versioni i Interface </string>
-<string name="front_processor_version">Versioni i Frontprocessor </string>
-<string name="device_name">Emri i aparatit</string>
-<string name="hdds">Hard Disku</string>
-<string name="timeout">Mbaroi Koha</string>
-<string name="message">Mesazhë</string>
-<string name="message_text_hint">Shkruaj mesazhin</string>
-<string name="send">Dërgo</string>
-<string name="type">Tipi</string>
-<string-array name="message_types">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
+    <string name="description">Përshkrimi</string>
+    <string name="title">Titull</string>
+    <string name="mo">DreamDroid</string>
+    <string name="app_name">DreamDroid</string>
 
-<string-array name="timer_state">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="timer_action">
-<item></item>
-<item></item>
-</string-array>
-<string name="imdb">IMDB</string>
+    <string-array name="servicelist">
+        <item>Paketat (TV)</item>
+        <item>Provider (TV)</item>
+        <item>Gjithë shërbimet (TV)</item>
+        <item>Paketat (Radio)</item>
+        <item>Provider (Radio)</item>
+        <item>All (Radio)</item>
+    </string-array>
+
+    <string name="timer">Rezervimet</string>
+    <string name="service">Shërbimet</string>
+    <string name="afterevent">Pas eventit</string>
+    <string name="location">Vendndodhja</string>
+
+    <string-array name="afterevents">
+        <item>Nothing</item>
+        <item>Standby</item>
+        <item>Deep Standby</item>
+        <item>Automatic</item>
+    </string-array>
+
+    <string name="begin_time">Koha e fillimit</string>
+    <string name="repeatings">Përsëritje</string>
+    <string name="end_time">Koha e mbarimit</string>
+    <string name="services">Shërbimet</string>
+    <string name="movies">Filmat</string>
+    <string name="device_info">Informacion për aparat</string>
+    <string name="send_message">Dërgo Mesazh</string>
+    <string name="save">Ruaj</string>
+    <string name="cancel">Anullo</string>
+    <string name="fetching_data">Duke marrë të dhënat&#8230;</string>
+    <string name="parsing">Parsing&#8230;</string>
+    <string name="get_content_error">Error në marrjen e të dhënave</string>
+    <string name="zap">Nderro Kanal</string>
+    <string name="browse_epg">Shfleto EPG</string>
+    <string name="edit">Përpuno</string>
+    <string name="delete">Fshij</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">https</string>
+    <string name="host">Hostname/IP</string>
+    <string name="port">Port</string>
+    <string name="settings">Rregullimet</string>
+    <string name="host_long">Hostname ose IP</string>
+    <string name="close">Mbyll</string>
+    <string name="minutes_short">min.</string>
+    <string name="user">Perdorues</string>
+    <string name="user_long">Emer perdoruesi per login</string>
+    <string name="pass">Fjalekalim</string>
+    <string name="pass_long">Fjalekalimi per login</string>
+    <string name="saving">Duke ruajtur. Ju lutemi prisni&#8230;</string>
+    <string name="deleting">Duke fshirë. Ju lutemi prisni&#8230;</string>
+    <string name="delete_confirm">Konfirmo fshirjen?</string>
+    <string name="set_timer">Rregullo rezervimin</string>
+    <string name="home">Fillim</string>
+    <string name="pick_action">Zgjidh nje veprim</string>
+    <string name="apply">Apliko</string>
+    <string name="reload">Ngarko</string>
+
+    <string-array name="weekdays_short">
+        <item>Hë</item>
+        <item>Ma</item>
+        <item>Më</item>
+        <item>Ej</item>
+        <item>Pr</item>
+        <item>Sht</item>
+        <item>Di</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>e Hënë</item>
+        <item>e Martë</item>
+        <item>e Mërkurë</item>
+        <item>e Enjëte</item>
+        <item>e Premte</item>
+        <item>e Shtunë</item>
+        <item>e Diel</item>
+    </string-array>
+
+    <string name="none">Asnjë</string>
+    <string name="choose_days">Zgjidh ditët</string>
+    <string name="mo_to_fr">e Hëne deri të Premtën</string>
+    <string name="daily">çdo ditë</string>
+    <string name="new_timer">Rezervim i ri</string>
+    <string name="gui_version">Versioni i GUI</string>
+    <string name="image_version">Versioni i Image</string>
+    <string name="interface_version">Versioni i Interface </string>
+    <string name="front_processor_version">Versioni i Frontprocessor </string>
+    <string name="device_name">Emri i aparatit</string>
+    <string name="hdds">Hard Disku</string>
+    <string name="not_implemented">Ky funksion nuk eshte gati akoma</string>
+    <string name="timeout">Mbaroi Koha</string>
+    <string name="message">Mesazhë</string>
+    <string name="message_text_hint">Shkruaj mesazhin</string>
+    <string name="send">Dërgo</string>
+    <string name="type">Tipi</string>
+
+    <string-array name="message_types">
+        <item>Po Jo</item>
+        <item>Lajmerim</item>
+        <item>Info</item>
+        <item>Gabim</item>
+    </string-array>
+
+    <string name="virtual_remote">Telekomande Virtuale</string>
+    <string name="login_enabled">Aktivizo Logimin</string>
+    <string name="profile">Profil</string>
+    <string name="profile_updated">Perditso profilin</string>
+    <string name="profile_added">Profilet e shtuara</string>
+    <string name="profile_add">Shto profil</string>
+    <string name="profile_not_added">Nuk mund te shtoni profilin</string>
+    <string name="profile_not_updated">Nuk mund te perditsoni profilin</string>
+    <string name="no_list_item">Asgje per tu shfaqur</string>
+    <string name="tags">Etiketat</string>
+    <string name="screenshot">Pamje momentale</string>
+    <string name="about">Rreth</string>
+    <string name="active_profile">Profili</string>
+    <string name="connection_state">Statusi</string>
+    <string name="checking">kontrolluar</string>
+    <string name="error">GABIM!</string>
+    <string name="check_connectivity">Kontrollo lidhjen</string>
+    <string name="version_too_low">Versioni &lt; 1.6.5</string>
+    <string name="connection_error">Probleme ne lidhje</string>
+    <string name="port_out_of_range">Porta jo midis 1 dhe 65535</string>
+    <string name="cleanup">Pastro</string>
+
+    <string name="imdb">IMDB</string>
+    <string name="enabled">Aktivizuar</string>
+    <string name="leave_confirm">Je i sigurte te largohesh</string>
+    <string name="sent_as">Derguar si %s</string>
+    <string name="watch_on_dream">Shiko ne Dreambox</string>
+    <string name="sent_from_dreamdroid">Derguar nga dreamDroid ne %s</string>
+    <string name="connecting">Duke u lidhur</string>
+    <string name="connected">I lidhur</string>
+    <string name="getting_list_of_files">Duke marre skedaret</string>
+    <string name="enable_animations">Aktivizo animacionet</string>
 </resources>

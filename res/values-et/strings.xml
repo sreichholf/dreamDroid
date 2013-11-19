@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <string name="description">Kirjeldus</string>
+    <string name="title">Pealkiri</string>
+    <string name="mo">Mo</string>
+    <string name="app_name">Dreamdroid</string>
+
+    <string-array name="servicelist">
+        <item>Lemmikud</item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+
+    <string name="timer">Taimer</string>
+    <string name="service">Teenus</string>
+    <string name="location">Asukoht</string>
+
+    <string-array name="afterevents">
+        <item>Ära tee midagi</item>
+        <item>Ooterežiim</item>
+        <item>Sügav ooterežiim</item>
+        <item>Automaatne</item>
+    </string-array>
+
+    <string name="begin_time">Algusaeg</string>
+    <string name="repeatings">Kordused</string>
+    <string name="end_time">Lõpuaeg</string>
+    <string name="services">Kanalid</string>
+    <string name="movies">Filimid</string>
+    <string name="device_info">Seadme informatsioon</string>
+    <string name="send_message">Saada teade</string>
+    <string name="save">Salvesta</string>
+    <string name="cancel">Tühista</string>
+    <string name="zap">Kanalivahetus</string>
+    <string name="browse_epg">Sela EPG</string>
+    <string name="edit">Muuda</string>
+    <string name="delete">Kustuta</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">https (ssl lubatud)</string>
+    <string name="port">Port</string>
+    <string name="port_stream_live">Port (Live)</string>
+    <string name="port_stream_file">Port (</string>
+    <string name="settings">Sätted</string>
+    <string name="close">Sulge</string>
+    <string name="minutes_short">min.</string>
+    <string name="user">Kasutaja</string>
+    <string name="user_long">Kasutajanimi</string>
+    <string name="pass">Salasõna</string>
+    <string name="pass_long">Salasõna</string>
+    <string name="saving">Salvesta</string>
+    <string name="deleting">Kustuta</string>
+    <string name="delete_confirm">Soovid kindlasti kustutada?</string>
+    <string name="set_timer">Sea taimer</string>
+    <string name="pick_action">Vali tegevus</string>
+    <string name="set_time_begin">Alguskuupäev ja aeg</string>
+    <string name="set_time_end">Lõpukuupäev ja aeg</string>
+
+    <string-array name="weekdays_short">
+        <item>E</item>
+        <item>T</item>
+        <item>K</item>
+        <item>N</item>
+        <item>R</item>
+        <item>L</item>
+        <item>P</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Esmaspäev</item>
+        <item>Teisipäev</item>
+        <item>Kolmapäev</item>
+        <item>Neljapäev</item>
+        <item>Reede</item>
+        <item>Laupäev</item>
+        <item>Pühapäev</item>
+    </string-array>
+
+    <string name="choose_days">Vali päevad</string>
+    <string name="mo_to_fr">Esmaspäevast Reedeni</string>
+    <string name="daily">Igapäevaselt</string>
+    <string name="new_timer">Uus taimer</string>
+    <string name="locations">Asukohad</string>
+    <string name="gui_version">GUI versioon</string>
+    <string name="image_version">Image versioon</string>
+    <string name="hdds">Kõvakettad</string>
+    <string name="not_implemented">See funktsioon veel ei tööta!</string>
+    <string name="current_event">Käesolev saade</string>
+    <string name="message">Sõnum</string>
+    <string name="message_text_hint">Sisesta tekst siia</string>
+    <string name="send">Saada</string>
+    <string name="type">Trüki</string>
+
+    <string-array name="message_types">
+        <item>JahEi</item>
+        <item>Ettevaatust</item>
+        <item>Info</item>
+        <item>Viga</item>
+    </string-array>
+
+    <string name="login_enabled">Luba sisselogimine</string>
+    <string name="wait_request_finished">Palun oodake kuni </string>
+    <string name="provider">Teenusepakkuja</string>
+    <string name="now">Käimasolev</string>
+    <string name="next">Järgmine</string>
+    <string name="epg_search">EPG-otsing</string>
+    <string name="epg_search_hint">Otsi EPG</string>
+    <string name="standard">Standartne välimus</string>
+    <string name="quickzap">Lihtne välimus</string>
+    <string name="no_epg_available">Hetkel puudub EPG-info antud kanalil!</string>
+    <string name="ok">OK</string>
+    <string name="activate">Aktiveeri</string>
+    <string name="confirm_delete_profile">Soovid tõesti kustutada antud profiili?</string>
+    <string name="profile_activated">Aktiveeritud profiil</string>
+    <string name="profile_not_activated">Viga profiili aktiveerimisel</string>
+    <string name="profile_not_deleted">Viga profiili kustutamisel</string>
+    <string name="profile_deleted">Kustutatud profiil</string>
+    <string name="profile">Profiil</string>
+    <string name="profile_updated">Uuendatud profiil</string>
+    <string name="profile_added">Lisatud profiil</string>
+    <string name="profile_add">Lisa profiil</string>
+    <string name="profile_not_added">Ei saa profiili lisada</string>
+    <string name="profile_not_updated">Ei saa profiili uuendada</string>
+    <string name="locations_default_fallback">Ei suuda asukohta laadida, pöördun tagasi vaikimisi asukoha juurde</string>
+    <string name="tags">Ülesanded</string>
+    <string name="screenshot">Ekraanitõmmis</string>
+
+    <string-array name="timer_state">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string-array name="timer_action">
+        <item></item>
+        <item></item>
+    </string-array>
+
+    <string name="main_menu">Peamenüü</string>
+    <string name="profiles">Profiilid</string>
+    <string name="sync_picons_path">Piconid</string>
+    <string name="sync_picons_path_long">Kaust kus asuvad piconid dreamboxis</string>
+    <string name="connecting">Ühendan</string>
+    <string name="connected">Ühendatud</string>
+    <string name="logged_in">Sisselogitud</string>
+    <string name="enable_animations">Luba animatsioonid</string>
+</resources>

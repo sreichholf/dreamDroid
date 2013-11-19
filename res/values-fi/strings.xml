@@ -1,185 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-<string name="description">Kuvaus</string>
-<string name="title">Otsikko</string>
-<string name="mo">Maa</string>
+    <string name="description">Kuvaus</string>
+    <string name="title">Otsikko</string>
+    <string name="mo">Maa</string>
 
-<string-array name="servicelist">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
+    <string name="timer">Ajastin</string>
+    <string name="service">Palvelu</string>
+    <string name="location">Sijainti</string>
 
-<string name="timer">Ajastin</string>
-<string name="service">Palvelu</string>
-<string name="location">Sijainti</string>
+    <string name="begin_time">Aloitusaika</string>
+    <string name="repeatings">Toistot</string>
+    <string name="end_time">Loppumisaika</string>
+    <string name="services">Palvelut</string>
+    <string name="movies">Elokuvat</string>
+    <string name="device_info">Laitetiedot</string>
+    <string name="send_message">Lähetä viesti</string>
+    <string name="save">Tallenna</string>
+    <string name="cancel">Peruuta</string>
+    <string name="fetching_data">Noutaa tietoja</string>
+    <string name="parsing">Parsii</string>
+    <string name="get_content_error">Virhe tietoja noudettaessa</string>
+    <string name="zap">Vaihda</string>
+    <string name="browse_epg">Selaa EPG:tä</string>
+    <string name="edit">Muuta</string>
+    <string name="delete">Poista</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">Käytä SSL</string>
+    <string name="host">Verkkonimi tai IP</string>
+    <string name="port">Portti</string>
+    <string name="settings">Asetukset</string>
+    <string name="host_long">Verkkonimi tai IP</string>
+    <string name="close">Sulje</string>
+    <string name="user">Käyttäjä</string>
+    <string name="user_long">Käyttäjänimi</string>
+    <string name="pass">Salasana</string>
+    <string name="pass_long">Kirjautumis salasana</string>
+    <string name="saving">Tallentaa</string>
+    <string name="deleting">Poistaa</string>
+    <string name="delete_confirm">Haluatko Poistaa?</string>
+    <string name="set_timer">Aseta ajastin</string>
+    <string name="pick_action">Valitse toiminto</string>
+    <string name="set_time_begin">Aseta aloitusaika</string>
+    <string name="set_time_end">Aseta loppumisaika</string>
+    <string name="apply">Hyväksy</string>
+    <string name="reload">Uudelleenlataus</string>
 
-<string-array name="afterevents">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
+    <string-array name="weekdays_short">
+        <item>Ma</item>
+        <item>Ti</item>
+        <item>Ke</item>
+        <item>To</item>
+        <item>Pe</item>
+        <item>La</item>
+        <item>Su</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Maanantai</item>
+        <item>Tiistai</item>
+        <item>Keskiviikko</item>
+        <item>Torstai</item>
+        <item>Perjantai</item>
+        <item>Lauantai</item>
+        <item>Sunnuntai</item>
+    </string-array>
 
-<string name="begin_time">Aloitusaika</string>
-<string name="repeatings">Toistot</string>
-<string name="end_time">Loppumisaika</string>
-<string name="services">Palvelut</string>
-<string name="movies">Elokuvat</string>
-<string name="device_info">Laitetiedot</string>
-<string name="send_message">Lähetä viesti</string>
-<string name="save">Tallenna</string>
-<string name="cancel">Peruuta</string>
-<string name="fetching_data">Noutaa tietoja</string>
-<string name="parsing">Parsii</string>
-<string name="get_content_error">Virhe tietoja noudettaessa</string>
-<string name="zap">Vaihda</string>
-<string name="browse_epg">Selaa EPG:tä</string>
-<string name="edit">Muuta</string>
-<string name="delete">Poista</string>
-<string name="epg">EPG</string>
-<string name="ssl_enabled">Käytä SSL</string>
-<string name="host">Verkkonimi tai IP</string>
-<string name="port">Portti</string>
-<string name="settings">Asetukset</string>
-<string name="host_long">Verkkonimi tai IP</string>
-<string name="close">Sulje</string>
-<string name="user">Käyttäjä</string>
-<string name="user_long">Käyttäjänimi</string>
-<string name="pass">Salasana</string>
-<string name="pass_long">Kirjautumis salasana</string>
-<string name="saving">Tallentaa</string>
-<string name="deleting">Poistaa</string>
-<string name="delete_confirm">Haluatko Poistaa?</string>
-<string name="set_timer">Aseta ajastin</string>
-<string name="pick_action">Valitse toiminto</string>
-<string name="set_time_begin">Aseta aloitusaika</string>
-<string name="set_time_end">Aseta loppumisaika</string>
-<string name="apply">Hyväksy</string>
-<string name="reload">Uudelleenlataus</string>
+    <string name="none">tyhjä</string>
+    <string name="choose_days">Valitse päivät</string>
+    <string name="mo_to_fr">Maanantaista Perjantaihin</string>
+    <string name="daily">Päivittäin</string>
+    <string name="new_timer">Uusi ajastin</string>
+    <string name="locations">Sijainnit</string>
+    <string name="gui_version">GUI versio</string>
+    <string name="image_version">Image versio</string>
+    <string name="interface_version">Interface versio</string>
+    <string name="front_processor_version">Frontprocessor versio</string>
+    <string name="device_name">Laitenimi</string>
+    <string name="nics">Verkkoadapterit</string>
+    <string name="hdds">Kovalevyt</string>
+    <string name="not_implemented">Tämä funktio ei ole vielä käytössä!</string>
+    <string name="current_event">Nykyinen tapahtuma</string>
+    <string name="timeout">Aikakatkaisu</string>
+    <string name="message">Viesti</string>
+    <string name="message_text_hint">Kirjoita viesti</string>
+    <string name="send">Lähetä</string>
+    <string name="type">Kirjoita</string>
 
-<string-array name="weekdays_short">
-<item>Ma</item>
-<item>Ti</item>
-<item>Ke</item>
-<item>To</item>
-<item>Pe</item>
-<item>La</item>
-<item>Su</item>
-</string-array>
-<string-array name="weekdays">
-<item>Maanantai</item>
-<item>Tiistai</item>
-<item>Keskiviikko</item>
-<item>Torstai</item>
-<item>Perjantai</item>
-<item>Lauantai</item>
-<item>Sunnuntai </item>
-</string-array>
+    <string-array name="message_types">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
 
-<string name="none">tyhjä</string>
-<string name="choose_days">Valitse päivät</string>
-<string name="mo_to_fr">Maanantaista Perjantaihin</string>
-<string name="daily">Päivittäin</string>
-<string name="new_timer">Uusi ajastin</string>
-<string name="locations">Sijainnit</string>
-<string name="gui_version">GUI versio</string>
-<string name="image_version">Image versio</string>
-<string name="interface_version">Interface versio</string>
-<string name="front_processor_version">Frontprocessor versio</string>
-<string name="device_name">Laitenimi</string>
-<string name="nics">Verkkoadapterit</string>
-<string name="hdds">Kovalevyt</string>
-<string name="not_implemented">Tämä funktio ei ole vielä käytössä!</string>
-<string name="current_event">Nykyinen tapahtuma</string>
-<string name="timeout">Aikakatkaisu</string>
-<string name="message">Viesti</string>
-<string name="message_text_hint">Kirjoita viesti</string>
-<string name="send">Lähetä</string>
-<string name="type">Kirjoita</string>
+    <string name="virtual_remote">Virtuaali kaukosäädin</string>
+    <string name="login_enabled">Salli kirjautuminen</string>
+    <string name="wait_request_finished">Odota kunnes nykyinen pyyntö on suoritettu!</string>
+    <string name="current_service">Nykyinen palvelu</string>
+    <string name="provider">Toimittaja</string>
+    <string name="now">Nyt</string>
+    <string name="next">Seuraava</string>
+    <string name="epg_search">EPG-haku</string>
+    <string name="standard">normaali</string>
+    <string name="no_epg_available">Ei EPG:tä saatavilla</string>
+    <string name="ok">OK</string>
+    <string name="activate">Ota käyttöön</string>
+    <string name="confirm_delete_profile">Haluatko varmasti poistaa profiilin?</string>
+    <string name="profile_activated">Käytössä oleva profiili</string>
+    <string name="profile_not_activated">Profiilin aktivointi epäonnistui</string>
+    <string name="profile_not_deleted">Profiilin poisto epäonnistui</string>
+    <string name="profile_deleted">Profiili poistettu</string>
+    <string name="profile">Profiili</string>
+    <string name="profile_updated">Profiili päivitetty</string>
+    <string name="profile_added">Profiili lisätty</string>
+    <string name="profile_add">Lisää profiili</string>
+    <string name="profile_not_added">Profiilin lisäys epäonnistui</string>
+    <string name="profile_not_updated">Profiilin päivitys epäonnistui</string>
+    <string name="tags">Tagit</string>
+    <string name="screenshot">Ruudunkaappaus</string>
+    <string name="standby">Valmiustila</string>
+    <string name="powerup">Käynnistä</string>
+    <string name="restart_gui">Uudelleenkäynnistä GUI</string>
+    <string name="reboot">Uudelleenkäynnistys</string>
+    <string name="shutdown">Sammuta</string>
+    <string name="powercontrol">Virranhallinta</string>
+    <string name="choose_tags">Valitse Tagit</string>
+    <string name="choose_location">Valitse sijainti</string>
+    <string name="set_default">Aseta oletukseksi</string>
+    <string name="loading">Lataa</string>
+    <string name="about">lisätietoja</string>
+    <string name="source_code_link">Lähdekoodi saatavilla http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Aktivoitu profiili</string>
+    <string name="connection_state">Yhteyden tila</string>
+    <string name="not_available">ei saatavilla</string>
+    <string name="checking">tarkistaa</string>
+    <string name="error">Virhe</string>
+    <string name="check_connectivity">Tarkista yhteys</string>
+    <string name="connection_error">Yhteysvirhe</string>
+    <string name="port_out_of_range">Portti pitää olla 1-65535 väliltä</string>
+    <string name="edit_timer">Muokkaa ajastinta</string>
 
-<string-array name="message_types">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-
-<string name="virtual_remote">Virtuaali kaukosäädin</string>
-<string name="login_enabled">Salli kirjautuminen</string>
-<string name="wait_request_finished">Odota kunnes nykyinen pyyntö on suoritettu!</string>
-<string name="current_service">Nykyinen palvelu</string>
-<string name="provider">Toimittaja</string>
-<string name="now">Nyt</string>
-<string name="next">Seuraava</string>
-<string name="epg_search">EPG-haku</string>
-<string name="standard">normaali</string>
-<string name="no_epg_available">Ei EPG:tä saatavilla</string>
-<string name="ok">OK</string>
-<string name="activate">Ota käyttöön</string>
-<string name="confirm_delete_profile">Haluatko varmasti poistaa profiilin?</string>
-<string name="profile_activated">Käytössä oleva profiili</string>
-<string name="profile_not_activated">Profiilin aktivointi epäonnistui</string>
-<string name="profile_not_deleted">Profiilin poisto epäonnistui</string>
-<string name="profile_deleted">Profiili poistettu</string>
-<string name="profile">Profiili</string>
-<string name="profile_updated">Profiili päivitetty</string>
-<string name="profile_added">Profiili lisätty</string>
-<string name="profile_add">Lisää profiili</string>
-<string name="profile_not_added">Profiilin lisäys epäonnistui</string>
-<string name="profile_not_updated">Profiilin päivitys epäonnistui</string>
-<string name="tags">Tagit</string>
-<string name="screenshot">Ruudunkaappaus</string>
-<string name="standby">Valmiustila</string>
-<string name="powerup">Käynnistä</string>
-<string name="restart_gui">Uudelleenkäynnistä GUI</string>
-<string name="reboot">Uudelleenkäynnistys</string>
-<string name="shutdown">Sammuta</string>
-<string name="powercontrol">Virranhallinta</string>
-<string name="choose_tags">Valitse Tagit</string>
-<string name="choose_location">Valitse sijainti</string>
-<string name="set_default">Aseta oletukseksi</string>
-<string name="loading">Lataa</string>
-<string name="about">lisätietoja</string>
-<string name="source_code_link">Lähdekoodi saatavilla http://github.com/sreichholf/dreamDroid</string>
-<string name="active_profile">Aktivoitu profiili</string>
-<string name="connection_state">Yhteyden tila</string>
-<string name="not_available">ei saatavilla</string>
-<string name="checking">tarkistaa</string>
-<string name="error">Virhe</string>
-<string name="check_connectivity">Tarkista yhteys</string>
-<string name="connection_error">Yhteysvirhe</string>
-<string name="port_out_of_range">Portti pitää olla 1-65535 väliltä</string>
-<string name="edit_timer">Muokkaa ajastinta</string>
-
-<string-array name="timer_state">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="timer_action">
-<item></item>
-<item></item>
-</string-array>
-
-<string name="sleeptimer">Uniajastin</string>
-<string name="enable_volume_control">Salli äänenvoimakkuuden säätö</string>
-<string name="enable_volume_control_long">Salli suora äänenvoimakkuuden säätö käyttäen H/W-näppäimiä</string>
-<string name="download">Lataa</string>
-<string name="extras">Extrat</string>
-<string name="main_menu">Päävalikko</string>
-<string name="profiles">Profiilit</string>
-<string name="wrong_activity">Väärä aktiviteetti</string>
-<string name="simple_remote">yksinkertainen säädin</string>
-<string name="screenshot_saved">Ruudunkaappaus tallennettu \'%s\'</string>
-<string name="missing_stream_player">Ei asennettua ohjelmaa videotoistoon !</string>
-<string name="mediaplayer">Mediasoitin</string>
-<string name="edit_profile">Muokkaa Profiilia</string>
+    <string name="sleeptimer">Uniajastin</string>
+    <string name="enable_volume_control">Salli äänenvoimakkuuden säätö</string>
+    <string name="enable_volume_control_long">Salli suora äänenvoimakkuuden säätö käyttäen H/W-näppäimiä</string>
+    <string name="download">Lataa</string>
+    <string name="extras">Extrat</string>
+    <string name="main_menu">Päävalikko</string>
+    <string name="profiles">Profiilit</string>
+    <string name="wrong_activity">Väärä aktiviteetti</string>
+    <string name="simple_remote">yksinkertainen säädin</string>
+    <string name="screenshot_saved">Ruudunkaappaus tallennettu \'%s\'</string>
+    <string name="missing_stream_player">Ei asennettua ohjelmaa videotoistoon !</string>
+    <string name="mediaplayer">Mediasoitin</string>
+    <string name="edit_profile">Muokkaa Profiilia</string>
 
 </resources>

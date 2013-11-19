@@ -1,205 +1,239 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-<string name="description">Descrição</string>
-<string name="title">Titulo</string>
-<string name="mo">Mo</string>
-<string name="app_name">DreamDroid</string>
+    <string name="description">Descrição</string>
+    <string name="title">Titulo</string>
+    <string name="mo">Mo</string>
+    <string name="app_name">DreamDroid</string>
 
-<string-array name="servicelist">
-<item>Pacotes TV</item>
-<item>Fornecedor TV</item>
-<item>Todos Canais</item>
-<item>Pacotes Radio</item>
-<item>Fornecedor Radio</item>
-<item>Todas Radios</item>
-</string-array>
+    <string-array name="servicelist">
+        <item>Pacotes TV</item>
+        <item>Fornecedor TV</item>
+        <item>Todos Canais</item>
+        <item>Pacotes Radio</item>
+        <item>Fornecedor Radio</item>
+        <item>Todas Radios</item>
+    </string-array>
 
-<string name="timer">Temporizador</string>
-<string name="service">Serviço</string>
-<string name="afterevent">Depois do evento</string>
-<string name="location">Localização</string>
+    <string name="timer">Temporizador</string>
+    <string name="service">Serviço</string>
+    <string name="afterevent">Depois do evento</string>
+    <string name="location">Localização</string>
 
-<string-array name="afterevents">
-<item>Nada</item>
-<item></item>
-<item></item>
-<item>Automatico</item>
-</string-array>
+    <string-array name="afterevents">
+        <item>Nada</item>
+        <item>Suspender</item>
+        <item>Suspensão Forçada</item>
+        <item>Automático</item>
+    </string-array>
 
-<string name="begin_time">Hora de inicio</string>
-<string name="repeatings">Repetições</string>
-<string name="end_time">Hora de fecho</string>
-<string name="services">Serviços</string>
-<string name="movies">Filmes</string>
-<string name="device_info">Informação do aparelho</string>
-<string name="send_message">Enviar mensagem</string>
-<string name="save">Guardar</string>
-<string name="cancel">Cancelar</string>
-<string name="fetching_data">Importando dados</string>
-<string name="parsing">Interpertando</string>
-<string name="get_content_error">Erro ao obter conteudos</string>
-<string name="zap">Mudar de canal</string>
-<string name="browse_epg">Procura epg</string>
-<string name="edit">Editar</string>
-<string name="delete">Apagar</string>
-<string name="epg">EPG</string>
-<string name="ssl_enabled">Activar SSL</string>
-<string name="host">Hostname/IP</string>
-<string name="port">Porta</string>
-<string name="settings">Defnições</string>
-<string name="host_long">Hostname ou IP</string>
-<string name="close">Fechar</string>
-<string name="minutes_short">min</string>
-<string name="user">Utilizador</string>
-<string name="user_long">Nome para login</string>
-<string name="pass">Password</string>
-<string name="pass_long">Password para login</string>
-<string name="saving">A salvar. aguarde...</string>
-<string name="deleting">A apagar. aguarde...</string>
-<string name="delete_confirm">Apagar. Confirma?</string>
-<string name="set_timer">Programar temporizador</string>
-<string name="home">Casa</string>
-<string name="pick_action">Escolha uma acção</string>
-<string name="set_time_begin">Data e hora de inicio</string>
-<string name="set_time_end">Data e hora de fim</string>
-<string name="apply">Aplicar</string>
-<string name="reload">Actualizar</string>
+    <string name="begin_time">Hora de inicio</string>
+    <string name="repeatings">Repetições</string>
+    <string name="end_time">Hora de fim</string>
+    <string name="services">Serviços</string>
+    <string name="movies">Filmes</string>
+    <string name="device_info">Informação do aparelho</string>
+    <string name="send_message">Enviar mensagem</string>
+    <string name="save">Salvar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="fetching_data">Importando dados</string>
+    <string name="parsing">Interpertando</string>
+    <string name="get_content_error">Erro ao obter conteúdos</string>
+    <string name="zap">Mudar de canal</string>
+    <string name="browse_epg">Procura epg</string>
+    <string name="edit">Editar</string>
+    <string name="delete">Apagar</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">Activar SSL</string>
+    <string name="host">Hostname/IP</string>
+    <string name="port">Porta</string>
+    <string name="settings">Configuração</string>
+    <string name="host_long">Hostname ou IP</string>
+    <string name="close">Fechar</string>
+    <string name="minutes_short">min</string>
+    <string name="user">Usuário</string>
+    <string name="user_long">Nome para login</string>
+    <string name="pass">Password</string>
+    <string name="pass_long">Password para login</string>
+    <string name="saving">Salvando. aguarde...</string>
+    <string name="deleting">Excluindo. aguarde...</string>
+    <string name="delete_confirm">Apagar. Confirma?</string>
+    <string name="set_timer">Programar temporizador</string>
+    <string name="home">Início</string>
+    <string name="pick_action">Escolha uma ação</string>
+    <string name="set_time_begin">Data e hora de início</string>
+    <string name="set_time_end">Data e hora de fim</string>
+    <string name="apply">Aplicar</string>
+    <string name="reload">Atualizar</string>
 
-<string-array name="weekdays_short">
-<item>Seg.</item>
-<item>Ter.</item>
-<item>Qua.</item>
-<item>Qui.</item>
-<item>Sex.</item>
-<item>Sab.</item>
-<item>Dom.</item>
-</string-array>
-<string-array name="weekdays">
-<item>Segunda</item>
-<item>Terça</item>
-<item>Quarta</item>
-<item>Quinta</item>
-<item>Sexta</item>
-<item>Sábado</item>
-<item>Domingo</item>
-</string-array>
+    <string-array name="weekdays_short">
+        <item>Seg.</item>
+        <item>Ter.</item>
+        <item>Qua.</item>
+        <item>Qui.</item>
+        <item>Sex.</item>
+        <item>Sab.</item>
+        <item>Dom.</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Segunda</item>
+        <item>Terça</item>
+        <item>Quarta</item>
+        <item>Quinta</item>
+        <item>Sexta</item>
+        <item>Sábado</item>
+        <item>Domingo</item>
+    </string-array>
 
-<string name="none">Vazio</string>
-<string name="choose_days">Escolha de dias</string>
-<string name="mo_to_fr">de Segunda a Sábado</string>
-<string name="daily">Diáriamente</string>
-<string name="new_timer">Novo temporizador</string>
-<string name="locations">Localização</string>
-<string name="gui_version">GUI versao</string>
-<string name="image_version">Verção da imagem</string>
-<string name="interface_version">Versão do interface</string>
-<string name="front_processor_version">Versão do frontprocessor</string>
-<string name="device_name">Nome do aparelho</string>
-<string name="frontends">Frontends</string>
-<string name="nics">Interfaces de rede</string>
-<string name="hdds">Discos duro</string>
-<string name="not_implemented">Esta funcionalidade ainda não está implementada</string>
-<string name="current_event">Evento actual</string>
-<string name="timeout">Fim do tempo</string>
-<string name="message">Mensagem</string>
-<string name="message_text_hint">Insira a sua mensagem</string>
-<string name="send">enviar</string>
-<string name="type">Escrever</string>
+    <string name="none">Vazio</string>
+    <string name="choose_days">Escolha de dias</string>
+    <string name="mo_to_fr">de Segunda a Sábado</string>
+    <string name="daily">Diáriamente</string>
+    <string name="new_timer">Novo temporizador</string>
+    <string name="locations">Localização</string>
+    <string name="gui_version">GUI versao</string>
+    <string name="image_version">Verção da imagem</string>
+    <string name="interface_version">Versão do interface</string>
+    <string name="front_processor_version">Versão do frontprocessor</string>
+    <string name="device_name">Nome do aparelho</string>
+    <string name="frontends">Frontends</string>
+    <string name="nics">Interfaces de rede</string>
+    <string name="hdds">Discos duro</string>
+    <string name="not_implemented">Esta funcionalidade ainda não está implementada</string>
+    <string name="current_event">Evento actual</string>
+    <string name="timeout">Fim do tempo</string>
+    <string name="message">Mensagem</string>
+    <string name="message_text_hint">Insira a sua mensagem</string>
+    <string name="send">Enviar</string>
+    <string name="type">Escrever</string>
 
-<string-array name="message_types">
-<item>Sim Não</item>
-<item>Atenção</item>
-<item>Informação</item>
-<item>Erro</item>
-</string-array>
+    <string-array name="message_types">
+        <item>Sim Não</item>
+        <item>Atenção</item>
+        <item>Informação</item>
+        <item>Erro</item>
+    </string-array>
 
-<string name="virtual_remote">Controlo Remoto Virtual</string>
-<string name="login_enabled">Activar Login</string>
-<string name="wait_request_finished">Por favor espere até o pedido estar finalizado</string>
-<string name="current_service">Actual</string>
-<string name="provider">Fornecedor</string>
-<string name="now">Agora</string>
-<string name="next">Proximo</string>
-<string name="epg_search">EPG-Busca</string>
-<string name="epg_search_hint">Procura EGP</string>
-<string name="standard">Template por defeito</string>
-<string name="quickzap">Template de zapping</string>
-<string name="no_epg_available">Actualmente não existe informação de EPG Disponivel para este canal!</string>
-<string name="ok">OK</string>
-<string name="activate">Activar</string>
-<string name="confirm_delete_profile">Quer realmente apagar este perfil?</string>
-<string name="profile_activated">Perfil activado</string>
-<string name="profile_not_activated">Erro ao ativar perfil</string>
-<string name="profile_not_deleted">Erro ao apagar perfil</string>
-<string name="profile_deleted">Apagar Perfil</string>
-<string name="profile">Perfil</string>
-<string name="profile_updated">Atualizar Perfil</string>
-<string name="profile_added">Perfil Adicionado</string>
-<string name="profile_add">Adicionar Perfil</string>
-<string name="profile_not_added">Não foi possivel adicionar perfil</string>
-<string name="profile_not_updated">Não foi possivel atualizar perfil</string>
-<string name="no_list_item">Sem itens para mostrar</string>
-<string name="tags">Separadores</string>
-<string name="screenshot">Foto Ecra</string>
-<string name="host_empty">O endereço não pode estar vazio!</string>
-<string name="powerup">Ligar</string>
-<string name="restart_gui">Reiniciar GUI</string>
-<string name="reboot">Reiniciar</string>
-<string name="shutdown">Desligar</string>
-<string name="powercontrol">Ligar/Desligar</string>
-<string name="choose_tags">Escolher Separadores</string>
-<string name="choose_location">Escolher Localização</string>
-<string name="bouquet_overview">Pré-Visualização dos pacotes</string>
-<string name="set_default">Predefenir</string>
-<string name="default_bouquet_set_to">O pacote predefenido é:</string>
-<string name="default_bouquet_not_set">O pacote predefenido não pode ser feito!</string>
-<string name="about">Sobre</string>
-<string name="active_profile">Perfil</string>
-<string name="connection_state">Estado</string>
-<string name="not_available">Não disponivel</string>
-<string name="checking">Verificando</string>
-<string name="error">Erro</string>
-<string name="check_connectivity">Verificar conetividade</string>
-<string name="version_too_low">Versão</string>
-<string name="connection_error">Erro conexão</string>
-<string name="port_out_of_range">Porta tem de ser de 1 a 65535</string>
-<string name="illegal_host">Dominio ilegal</string>
-<string name="edit_timer">Editar tempo</string>
-<string name="cleaning_timerlist">Limpar lista</string>
-<string name="cleanup">Apagar</string>
-<string name="in_standby">O aparelho esta em Standby</string>
-<string name="is_running">O aparelho esta ligado</string>
-<string name="stream_current">Stream actual</string>
+    <string name="virtual_remote">Controlo Remoto Virtual</string>
+    <string name="login_enabled">Activar Login</string>
+    <string name="wait_request_finished">Por favor espere até o pedido estar finalizado</string>
+    <string name="current_service">Actual</string>
+    <string name="provider">Fornecedor</string>
+    <string name="now">Agora</string>
+    <string name="next">Proximo</string>
+    <string name="epg_search">EPG-Busca</string>
+    <string name="epg_search_hint">Procura EGP</string>
+    <string name="standard">Template por defeito</string>
+    <string name="quickzap">Template de zapping</string>
+    <string name="no_epg_available">Actualmente não existe informação de EPG Disponivel para este canal!</string>
+    <string name="ok">OK</string>
+    <string name="activate">Activar</string>
+    <string name="confirm_delete_profile">Quer realmente apagar este perfil?</string>
+    <string name="profile_activated">Perfil activado</string>
+    <string name="profile_not_activated">Erro ao ativar perfil</string>
+    <string name="profile_not_deleted">Erro ao apagar perfil</string>
+    <string name="profile_deleted">Apagar Perfil</string>
+    <string name="profile">Perfil</string>
+    <string name="profile_updated">Atualizar Perfil</string>
+    <string name="profile_added">Perfil Adicionado</string>
+    <string name="profile_add">Adicionar Perfil</string>
+    <string name="profile_not_added">Não foi possivel adicionar perfil</string>
+    <string name="profile_not_updated">Não foi possivel atualizar perfil</string>
+    <string name="no_list_item">Sem itens para mostrar</string>
+    <string name="locations_default_fallback">Erro ao carregar localização, voltando valores padrão:</string>
+    <string name="tags">Separadores</string>
+    <string name="screenshot">Foto da cena</string>
+    <string name="host_empty">O endereço não pode estar vazio!</string>
+    <string name="standby">Suspender</string>
+    <string name="powerup">Ligar</string>
+    <string name="restart_gui">Reiniciar GUI</string>
+    <string name="reboot">Reiniciar</string>
+    <string name="shutdown">Desligar</string>
+    <string name="powercontrol">Ligar/Desligar</string>
+    <string name="choose_tags">Escolher Separadores</string>
+    <string name="choose_location">Escolher Localização</string>
+    <string name="bouquet_overview">Pré-Visualização dos pacotes</string>
+    <string name="set_default">Predefenir</string>
+    <string name="default_bouquet_set_to">O pacote predefenido é:</string>
+    <string name="default_bouquet_not_set">O pacote predefenido não pode ser feito!</string>
+    <string name="loading">Carregando</string>
+    <string name="about">Sobre</string>
+    <string name="source_code_link">Código fonte disponível em http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Perfil</string>
+    <string name="connection_state">Estado</string>
+    <string name="not_available">Não disponivel</string>
+    <string name="checking">Verificando</string>
+    <string name="error">Erro</string>
+    <string name="check_connectivity">Verificar conetividade</string>
+    <string name="version_too_low">Versão</string>
+    <string name="connection_error">Erro conexão</string>
+    <string name="port_out_of_range">Porta tem de ser de 1 a 65535</string>
+    <string name="illegal_host">Dominio ilegal</string>
+    <string name="edit_timer">Editar tempo</string>
+    <string name="cleaning_timerlist">Limpar lista</string>
+    <string name="cleanup">Apagar</string>
+    <string name="in_standby">O aparelho esta em Standby</string>
+    <string name="is_running">O aparelho esta ligado</string>
+    <string name="stream">Stream</string>
+    <string name="stream_current">Stream actual</string>
+    <string name="similar">Similar</string>
 
-<string-array name="timer_state">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="timer_action">
-<item>Gravar</item>
-<item>Mudar</item>
-</string-array>
+    <string-array name="timer_state">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>Gravar</item>
+        <item>Mudar</item>
+    </string-array>
 
-<string name="sleeptimer">Tempo para desligar</string>
-<string name="current_volume">Volume é %s</string>
-<string name="muted">Sem Som</string>
-<string name="enable_volume_control">Ativar controlo volume</string>
-<string name="enable_volume_control_long">Ativar controlo volume com as teclas</string>
-<string name="main_menu">Principal</string>
-<string name="profiles">Perfiles</string>
-<string name="enable_instant_zap">Mudar agora</string>
-<string name="simple_remote">Comando simples</string>
-<string name="missing_stream_player">Não tem programa de video instalado</string>
-<string name="edit_profile">Editar perfil</string>
-<string name="searching">A procurar</string>
-<string name="searching_known_devices">A procurar receptores na rede. Pode demorar alguns minutos</string>
-<string name="autodiscover_dreamboxes">Auto detetar Dreambox</string>
-<string name="autodiscovery_failed">Nao conseguiu auto detetar Dreambox</string>
-<string name="add_all">Adicionar todos</string>
-<string name="enabled">Ativado</string>
-
+    <string name="sleeptimer">Tempo para desligar</string>
+    <string name="current_volume">Volume é %s</string>
+    <string name="muted">Sem Som</string>
+    <string name="enable_volume_control">Ativar controlo volume</string>
+    <string name="enable_volume_control_long">Ativar controlo volume com as teclas</string>
+    <string name="download">Download</string>
+    <string name="extras">Extras</string>
+    <string name="main_menu">Principal</string>
+    <string name="profiles">Perfiles</string>
+    <string name="enable_instant_zap">Mudar agora</string>
+    <string name="enable_instant_zap_long">Zap instantâneo ao clicar um serviço</string>
+    <string name="simple_remote">Comando simples</string>
+    <string name="imdb">IMDb</string>
+    <string name="missing_stream_player">Não tem programa de video instalado</string>
+    <string name="edit_profile">Editar perfil</string>
+    <string name="force_tablet_layout_long">Forçar layout otimizado para tablet</string>
+    <string name="force_tablet_layout">Forçar layout para tablet</string>
+    <string name="mobile_imdb">Usar versão mobile de IMDb.com</string>
+    <string name="mobile_imdb_long">Usar m.IMDb.com ao invés de www.IMDb.com</string>
+    <string name="searching">Procurando</string>
+    <string name="searching_known_devices">A procurar receptores na rede. Pode demorar alguns minutos</string>
+    <string name="autodiscover_dreamboxes">Auto detetar Dreambox</string>
+    <string name="autodiscovery_failed">Nao conseguiu auto detetar Dreambox</string>
+    <string name="add_all">Adicionar todos</string>
+    <string name="error_parsing">Um erro ocorreu ao tratar os dados!</string>
+    <string name="enabled">Ativado</string>
+    <string name="signal_meter">Medidor de sinal</string>
+    <string name="accoustic_feedback">Retorno sonoro</string>
+    <string name="use_light_theme_long">Usar um tema claro ao invés do tema escuro padrão</string>
+    <string name="use_light_theme">Usar tema claro</string>
+    <string name="leave_confirm">Confirma a saída?</string>
+    <string name="leave_confirm_long">Confirma a saída do dreamDroid?</string>
+    <string name="sent_as">Enviar como %s</string>
+    <string name="watch_on_dream">Assistir no Receptor</string>
+    <string name="sent_from_dreamdroid">Enviado do dreamDroid em %s</string>
+    <string name="no_profile_available">Conexão do perfil não encontrada! Por favor ao menos um perfil usando a aplicação principal!</string>
+    <string name="confirm_app_close">Pergunte pela confirmação antes de sair do aplicativo</string>
+    <string name="confirm_app_close_long">Pergunte pela confirmação antes da aplicação estar sendo fechada  precisando "back"</string>
+    <string name="appearance">Aparência</string>
+    <string name="usability">Usabilidade</string>
+    <string name="connecting">Ligando</string>
+    <string name="connected">Ligado</string>
+    <string name="logged_in">Registado</string>
+    <string name="getting_list_of_files">Pegando lista de arquivos</string>
+    <string name="enable_animations_long">Ativar visualização de animações adicionais</string>
+    <string name="enable_animations">Ativar animações</string>
 </resources>

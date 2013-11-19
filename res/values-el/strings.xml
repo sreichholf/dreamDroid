@@ -1,208 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-<string name="description">Περιγραφή</string>
-<string name="title">Τίτλος</string>
-<string name="mo">μο</string>
-<string name="app_name">DreamDroid</string>
+    <string name="description">Περιγραφή</string>
+    <string name="title">Τίτλος</string>
+    <string name="mo">μο</string>
+    <string name="app_name">DreamDroid</string>
 
-<string-array name="servicelist">
-<item>Μπουκέτα (TV) </item>
-<item> Πάροχος (TV) </item>
-<item> Όλες οι Υπηρεσίες (TV) </item>
-<item> Μπουκέτα (Radio) </item>
-<item> Πάροχος (Radio) </item>
-<item> Όλα (Radio)</item>
-</string-array>
+    <string-array name="servicelist">
+        <item>Μπουκέτα (TV)</item>
+        <item>Πάροχος (TV)</item>
+        <item>Όλες οι Υπηρεσίες (TV)</item>
+        <item>Μπουκέτα (Radio)</item>
+        <item>Πάροχος (Radio)</item>
+        <item>Όλα (Radio)</item>
+    </string-array>
 
-<string name="timer">Χρονόμετρο</string>
-<string name="service">Υπηρεσίες</string>
-<string name="afterevent">Μετά</string>
-<string name="location">Τοποθεσία</string>
+    <string name="timer">Χρονόμετρο</string>
+    <string name="service">Υπηρεσίες</string>
+    <string name="afterevent">Μετά</string>
+    <string name="location">Τοποθεσία</string>
 
-<string-array name="afterevents">
-<item>Τίποτα</item>
-<item>Σε αναμονή</item>
-<item>Βαθιά αναμονή</item>
-<item>Αυτόματο</item>
-</string-array>
+    <string-array name="afterevents">
+        <item>Τίποτα</item>
+        <item>Σε αναμονή</item>
+        <item>Βαθιά αναμονή</item>
+        <item>Αυτόματο</item>
+    </string-array>
 
-<string name="begin_time">Ώρα έναρξης</string>
-<string name="repeatings">Επαναλείψεις</string>
-<string name="end_time">Ώρα Λήξης</string>
-<string name="services">Υπηρεσίες</string>
-<string name="movies">Ταινίες</string>
-<string name="device_info">Πληροφορίες Συσκευής</string>
-<string name="send_message">Αποστολή Μηνύματος</string>
-<string name="save">Αποθήκευση</string>
-<string name="cancel">Ακύρωση</string>
-<string name="fetching_data">Ανάκτηση Δεδομένων&#8230;</string>
-<string name="parsing">Ανάγνωση&#8230;</string>
-<string name="get_content_error">Σφάλμα κατά τη λήψη περιεχομένου!</string>
-<string name="zap">Ζap</string>
-<string name="browse_epg">Περιήγηση EPG</string>
-<string name="edit">Επεξεργασία</string>
-<string name="delete">Διαγραφή</string>
-<string name="epg">EPG</string>
-<string name="ssl_enabled">https</string>
-<string name="host">Hostname/IP</string>
-<string name="port">Θύρα</string>
-<string name="port_stream_live">Θύρα (live)</string>
-<string name="port_stream_file">Θύρα (εγγραφές)</string>
-<string name="settings">Ρυθμίσεις</string>
-<string name="host_long">Hostname or IP</string>
-<string name="port_long">Θύρα απόκρισης</string>
-<string name="close">Κλείσιμο</string>
-<string name="minutes_short">λεπτά</string>
-<string name="user">Χρήστης</string>
-<string name="user_long">Όνομα χρήστη για τη σύνδεση</string>
-<string name="pass">Κωδικός</string>
-<string name="pass_long">Κωδικός πρόσβασης για τη σύνδεση</string>
-<string name="saving">Αποθήκευση. Παρακαλώ περιμένετε&#8230;</string>
-<string name="deleting">Διαγραφή. Παρακαλώ περιμένετε&#8230;</string>
-<string name="delete_confirm">Επιβεβαίωση διαγραφής ;</string>
-<string name="set_timer">Ρυθμίσεις χρονοδιακόπτη</string>
-<string name="home">Αρχική Σελίδα</string>
-<string name="pick_action">Επιλογή Ενέργειας</string>
-<string name="set_time_begin">Ημερομηνία και ώρα έναρξης</string>
-<string name="set_time_end">Ημερομηνία και ώρα λήξης</string>
-<string name="apply">Εφαρμογή</string>
-<string name="reload">Επαναφόρτιση</string>
+    <string name="begin_time">Ώρα έναρξης</string>
+    <string name="repeatings">Επαναλείψεις</string>
+    <string name="end_time">Ώρα Λήξης</string>
+    <string name="services">Υπηρεσίες</string>
+    <string name="movies">Ταινίες</string>
+    <string name="device_info">Πληροφορίες Συσκευής</string>
+    <string name="send_message">Αποστολή Μηνύματος</string>
+    <string name="save">Αποθήκευση</string>
+    <string name="cancel">Ακύρωση</string>
+    <string name="fetching_data">Ανάκτηση Δεδομένων&#8230;</string>
+    <string name="parsing">Ανάγνωση&#8230;</string>
+    <string name="get_content_error">Σφάλμα κατά τη λήψη περιεχομένου!</string>
+    <string name="zap">Ζap</string>
+    <string name="browse_epg">Περιήγηση EPG</string>
+    <string name="edit">Επεξεργασία</string>
+    <string name="delete">Διαγραφή</string>
+    <string name="epg">Ηλεκτρονικος Οδηγος Προγραμματος</string>
+    <string name="ssl_enabled">https</string>
+    <string name="host">Hostname/IP</string>
+    <string name="port">Θύρα</string>
+    <string name="port_stream_live">Θύρα (live)</string>
+    <string name="port_stream_file">Θύρα (εγγραφές)</string>
+    <string name="settings">Ρυθμίσεις</string>
+    <string name="host_long">Hostname or IP</string>
+    <string name="port_long">Θύρα απόκρισης</string>
+    <string name="close">Κλείσιμο</string>
+    <string name="minutes_short">λεπτά</string>
+    <string name="user">Χρήστης</string>
+    <string name="user_long">Όνομα χρήστη για τη σύνδεση</string>
+    <string name="pass">Κωδικός</string>
+    <string name="pass_long">Κωδικός πρόσβασης για τη σύνδεση</string>
+    <string name="saving">Αποθήκευση. Παρακαλώ περιμένετε&#8230;</string>
+    <string name="deleting">Διαγραφή. Παρακαλώ περιμένετε&#8230;</string>
+    <string name="delete_confirm">Επιβεβαίωση διαγραφής ;</string>
+    <string name="set_timer">Ρυθμίσεις χρονοδιακόπτη</string>
+    <string name="home">Αρχική Σελίδα</string>
+    <string name="pick_action">Επιλογή Ενέργειας</string>
+    <string name="set_time_begin">Ημερομηνία και ώρα έναρξης</string>
+    <string name="set_time_end">Ημερομηνία και ώρα λήξης</string>
+    <string name="apply">Εφαρμογή</string>
+    <string name="reload">Επαναφόρτιση</string>
 
-<string-array name="weekdays_short">
-<item>Δε</item>
-<item>Τρ</item>
-<item>Τε</item>
-<item>Πε</item>
-<item>Πα</item>
-<item>Σα</item>
-<item>Κυ</item>
-</string-array>
-<string-array name="weekdays">
-<item>Δευτερα</item>
-<item>Τρίτη</item>
-<item>Τετάρτη</item>
-<item>Πέμπτη</item>
-<item>Παρασκευή</item>
-<item>Σάββατο</item>
-<item>Κυριακή</item>
-</string-array>
+    <string-array name="weekdays_short">
+        <item>Δε</item>
+        <item>Τρ</item>
+        <item>Τε</item>
+        <item>Πε</item>
+        <item>Πα</item>
+        <item>Σα</item>
+        <item>Κυ</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Δευτερα</item>
+        <item>Τρίτη</item>
+        <item>Τετάρτη</item>
+        <item>Πέμπτη</item>
+        <item>Παρασκευή</item>
+        <item>Σάββατο</item>
+        <item>Κυριακή</item>
+    </string-array>
 
-<string name="none">Κανένα/Καμία</string>
-<string name="choose_days">Επιλογή μέρας</string>
-<string name="mo_to_fr">Δευτέρα έως Παρασκευή</string>
-<string name="daily">Ημερήσια</string>
-<string name="new_timer">Καινoύργιος χρονοδιακόπτης</string>
-<string name="locations">Τοποθεσίες</string>
-<string name="gui_version">GUI Έκδοση</string>
-<string name="image_version">Image Έκδοση</string>
-<string name="interface_version">Interface Έκδοση</string>
-<string name="front_processor_version">Έκδοση Επεξεργαστή</string>
-<string name="device_name">Όνομα Συσκευής</string>
-<string name="frontends">Διεπαφές</string>
-<string name="nics">Διασυνδέσεις Δικτύου</string>
-<string name="hdds">Σκληροί Δίσκοι</string>
-<string name="not_implemented">Αυτή η Λειτουργία δεν έχει Υλοποιηθεί, Ακόμα!</string>
-<string name="current_event">Tρέχουσα Eκδήλωση</string>
-<string name="timeout">Τέλος Χρόνου</string>
-<string name="message">Μήνυμα</string>
-<string name="message_text_hint">Εισάγετε το Μήνυμα σας εδω</string>
-<string name="send">Αποστολή</string>
-<string name="type">Τύπος</string>
+    <string name="none">Κανένα/Καμία</string>
+    <string name="choose_days">Επιλογή μέρας</string>
+    <string name="mo_to_fr">Δευτέρα έως Παρασκευή</string>
+    <string name="daily">Ημερήσια</string>
+    <string name="new_timer">Καινoύργιος χρονοδιακόπτης</string>
+    <string name="locations">Τοποθεσίες</string>
+    <string name="gui_version">GUI Έκδοση</string>
+    <string name="image_version">Image Έκδοση</string>
+    <string name="interface_version">Interface Έκδοση</string>
+    <string name="front_processor_version">Έκδοση Επεξεργαστή</string>
+    <string name="device_name">Όνομα Συσκευής</string>
+    <string name="frontends">Διεπαφές</string>
+    <string name="nics">Διασυνδέσεις Δικτύου</string>
+    <string name="hdds">Σκληροί Δίσκοι</string>
+    <string name="not_implemented">Αυτή η Λειτουργία δεν έχει Υλοποιηθεί, Ακόμα!</string>
+    <string name="current_event">Tρέχουσα Eκδήλωση</string>
+    <string name="timeout">Τέλος Χρόνου</string>
+    <string name="message">Μήνυμα</string>
+    <string name="message_text_hint">Εισάγετε το Μήνυμα σας εδω</string>
+    <string name="send">Αποστολή</string>
+    <string name="type">Τύπος</string>
 
-<string-array name="message_types">
-<item>ΝαιΟχι</item>
-<item>Προιδοποίηση</item>
-<item>Πληροφορίες</item>
-<item>Σφάλμα</item>
-</string-array>
+    <string-array name="message_types">
+        <item>ΝαιΟχι</item>
+        <item>Προιδοποίηση</item>
+        <item>Πληροφορίες</item>
+        <item>Σφάλμα</item>
+    </string-array>
 
-<string name="virtual_remote">Εικονικό Τηλεκοντρόλ</string>
-<string name="login_enabled">Ενεργοποίηση Εισόδου</string>
-<string name="wait_request_finished">Παρακαλώ Περιμένετε να Τελειώσει η Τρέχουσα Εκτέλεση !</string>
-<string name="current_service">Τρέχον</string>
-<string name="provider">Παροχέας</string>
-<string name="now">Τώρα</string>
-<string name="next">Επόμενο</string>
-<string name="epg_search">EPG - Αναζήτηση</string>
-<string name="epg_search_hint">Αναζήτηση - EPG </string>
-<string name="standard">Τυπική Διάταξη</string>
-<string name="quickzap">QuickZap Διάταξη</string>
-<string name="no_epg_available">Προσωρινά δεν υπάρχει EPG πληροφορία για αυτο το κανάλι</string>
-<string name="ok">OK</string>
-<string name="activate">Ενεργό</string>
-<string name="confirm_delete_profile">Θέλετε σίγουρα να διαγράψετε το προφίλ ?</string>
-<string name="profile_activated">Ενεργοποίηση προφίλ</string>
-<string name="profile_not_activated">Λάθος ενεργοποίησης προφίλ</string>
-<string name="profile_not_deleted">Λάθος διαγραφής προφίλ</string>
-<string name="profile_deleted">Το προφίλ διαγράφτηκε</string>
-<string name="profile">Προφίλ</string>
-<string name="profile_updated">Ενημέρωση προφίλ</string>
-<string name="profile_added">Δημιουργήθηκε προφίλ</string>
-<string name="profile_add">Εισαγωγή προφίλ</string>
-<string name="profile_not_added">Δεν Μπορεί να Προσθέσει το Προφίλ</string>
-<string name="profile_not_updated">Δεν ήταν Δυνατή η Ενημέρωση Προφίλ</string>
-<string name="no_list_item">Δεν Υπάρχουν Αντικείμενα για Εμφάνιση</string>
-<string name="locations_default_fallback">Σφάλμα κατά τη φόρτωση θέσεων, Επαναφορά προεπιλογών</string>
-<string name="tags">Ετικέτες</string>
-<string name="screenshot">Στιγμιότυπο Οθόνης</string>
-<string name="host_empty">Το Όνομα του Κεντρικού Υπολογιστή Δεν Μπορεί να είναι Κενό</string>
-<string name="standby">Αναμονή</string>
-<string name="powerup">Εκκίνηση</string>
-<string name="restart_gui">Επανεκκίνηση GUI</string>
-<string name="reboot">Επανεκκίνηση</string>
-<string name="shutdown">Τερματισμός</string>
-<string name="loading">Παρακαλώ περιμένετε &#8230;</string>
-<string name="about">Περί</string>
-<string name="license">¨Αδεια :\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-<string name="source_code_link">Ο πηγαίος κώδικας είναι διαθέσιμος στο: http://github.com/sreichholf/dreamDroid</string>
-<string name="active_profile">Ενεργό προφίλ</string>
-<string name="connection_state">Κατάσταση σύνδεσης</string>
-<string name="not_available">Μη διαθέσιμο</string>
-<string name="checking">Έλεγχος....</string>
-<string name="error">ΛΑΘΟΣ!!!</string>
-<string name="check_connectivity">Έλεγχος σύνδεσης</string>
-<string name="connection_error">Λάθος σύνδεσης</string>
-<string name="in_standby">Η συσκευή ειναι σε αναμονή</string>
-<string name="is_running">Η συσκευή ειναι ενεργή</string>
-<string name="similar">παρόμοιο</string>
+    <string name="virtual_remote">Εικονικό Τηλεκοντρόλ</string>
+    <string name="login_enabled">Ενεργοποίηση Εισόδου</string>
+    <string name="wait_request_finished">Παρακαλώ Περιμένετε να Τελειώσει η Τρέχουσα Εκτέλεση !</string>
+    <string name="current_service">Τρέχον</string>
+    <string name="provider">Παροχέας</string>
+    <string name="now">Τώρα</string>
+    <string name="next">Επόμενο</string>
+    <string name="epg_search">Ηλεκτρονικος Οδηγος Προγραμματος - Αναζήτηση</string>
+    <string name="epg_search_hint">Αναζήτηση - Ηλεκτρονικος Οδηγος Προγραμματος</string>
+    <string name="standard">Τυπική Διάταξη</string>
+    <string name="quickzap">QuickZap Διάταξη</string>
+    <string name="no_epg_available">Προσωρινά δεν υπάρχουν πληροφοριες Ηλεκτρονικου Οδηγου Προγραμματος για αυτο το κανάλι</string>
+    <string name="ok">OK</string>
+    <string name="activate">Ενεργό</string>
+    <string name="confirm_delete_profile">Θέλετε σίγουρα να διαγράψετε το προφίλ ?</string>
+    <string name="profile_activated">Ενεργοποίηση προφίλ</string>
+    <string name="profile_not_activated">Λάθος ενεργοποίησης προφίλ</string>
+    <string name="profile_not_deleted">Λάθος διαγραφής προφίλ</string>
+    <string name="profile_deleted">Το προφίλ διαγράφτηκε</string>
+    <string name="profile">Προφίλ</string>
+    <string name="profile_updated">Ενημέρωση προφίλ</string>
+    <string name="profile_added">Δημιουργήθηκε προφίλ</string>
+    <string name="profile_add">Εισαγωγή προφίλ</string>
+    <string name="profile_not_added">Δεν Μπορεί να Προσθέσει το Προφίλ</string>
+    <string name="profile_not_updated">Δεν ήταν Δυνατή η Ενημέρωση Προφίλ</string>
+    <string name="no_list_item">Δεν Υπάρχουν Αντικείμενα για Εμφάνιση</string>
+    <string name="locations_default_fallback">Σφάλμα κατά τη φόρτωση θέσεων, Επαναφορά προεπιλογών</string>
+    <string name="tags">Ετικέτες</string>
+    <string name="screenshot">Στιγμιότυπο Οθόνης</string>
+    <string name="host_empty">Το Όνομα του Κεντρικού Υπολογιστή Δεν Μπορεί να είναι Κενό</string>
+    <string name="standby">Αναμονή</string>
+    <string name="powerup">Εκκίνηση</string>
+    <string name="restart_gui">Επανεκκίνηση GUI</string>
+    <string name="reboot">Επανεκκίνηση</string>
+    <string name="shutdown">Τερματισμός</string>
+    <string name="loading">Παρακαλώ περιμένετε &#8230;</string>
+    <string name="about">Περί</string>
+    <string name="license">¨Αδεια :\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="source_code_link">Ο πηγαίος κώδικας είναι διαθέσιμος στο: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Ενεργό προφίλ</string>
+    <string name="connection_state">Κατάσταση σύνδεσης</string>
+    <string name="not_available">Μη διαθέσιμο</string>
+    <string name="checking">Έλεγχος....</string>
+    <string name="error">ΛΑΘΟΣ!!!</string>
+    <string name="check_connectivity">Έλεγχος σύνδεσης</string>
+    <string name="connection_error">Λάθος σύνδεσης</string>
+    <string name="in_standby">Η συσκευή ειναι σε αναμονή</string>
+    <string name="is_running">Η συσκευή ειναι ενεργή</string>
+    <string name="similar">παρόμοιο</string>
 
-<string-array name="timer_state">
-<item>Περιμένετε&#8230;</item>
-<item>Προετοιμάζετε&#8230;</item>
-<item>Τρέχει&#8230;</item>
-<item>Έληξε</item>
-<item>Απενεργοποιήθηκε</item>
-</string-array>
-<string-array name="timer_action">
-<item>Εγγραφή</item>
-<item>ζαπ</item>
-</string-array>
+    <string-array name="timer_state">
+        <item>Περιμένετε&#8230;</item>
+        <item>Προετοιμάζετε&#8230;</item>
+        <item>Τρέχει&#8230;</item>
+        <item>Έληξε</item>
+        <item>Απενεργοποιήθηκε</item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>Εγγραφή</item>
+        <item>ζαπ</item>
+    </string-array>
 
-<string name="sleeptimer">Χρονοδιακόπτης Ύπνου</string>
-<string name="current_volume">Ένταση τώρα</string>
-<string name="muted">Σίγαση</string>
-<string name="enable_volume_control">Ενεργοποίηση ρύθμισης ήχου</string>
-<string name="enable_volume_control_long">Ενεργοποίηση άμεσου ελέγχου έντασης ήχου, με τα Κουμπιά H / W</string>
-<string name="download">Κατέβασε</string>
-<string name="extras">Περισσότερα</string>
-<string name="main_menu">Κυρίως μενού</string>
-<string name="profiles">Προφίλ</string>
-<string name="enable_instant_zap">Άμεση εναλλαγή καναλιού</string>
-<string name="enable_instant_zap_long">Άμεση εναλλαγή καναλιού με το άγγιγμα υπηρεσίας</string>
-<string name="wrong_activity">Λάθος δραστηριότητα! Παρακαλούμε δημιουργήσετε ξανά τις συντομεύσεις που έχετε δημιουργήσει για dreamDroid!</string>
-<string name="simple_remote">Απλή εμφάνιση</string>
-<string name="screenshot_saved">Η εικόνα σώθηκε σε \'%s\'</string>
-<string name="imdb">IMDb</string>
-<string name="missing_stream_player">Δεν έχει εγκατασταθεί Videostreamer στην συσκευή</string>
-<string name="mediaplayer">Mediaplayer</string>
-<string name="edit_profile">Επεξεργασία Προφίλ</string>
-<string name="mobile_imdb">Χρησιμοποιήστε mobile έκδοση του imdb.com</string>
-<string name="mobile_imdb_long">Χρησιμοποιήστε m.imdb.com αντί του www.imdb.com</string>
-<string name="searching">Αναζήτηση &#8230;</string>
-<string name="searching_known_devices">Αναζήτηση για Dreamboxes στο τοπικό σας δίκτυο. Αυτό μπορεί να διαρκέσει μερικά λεπτά&#8230;</string>
-<string name="autodiscover_dreamboxes">Αυτόματη Αναζήτηση Dreambox</string>
-<string name="autodiscovery_failed">Δεν βρέθηκε καμία συσκευή DreamBox στο τοπικό σας δίκτυο!</string>
-<string name="add_all">Προσθήκη όλων</string>
+    <string name="sleeptimer">Χρονοδιακόπτης Ύπνου</string>
+    <string name="current_volume">Ένταση τώρα</string>
+    <string name="muted">Σίγαση</string>
+    <string name="enable_volume_control">Ενεργοποίηση ρύθμισης ήχου</string>
+    <string name="enable_volume_control_long">Ενεργοποίηση άμεσου ελέγχου έντασης ήχου, με τα Κουμπιά H / W</string>
+    <string name="download">Κατέβασε</string>
+    <string name="extras">Περισσότερα</string>
+    <string name="main_menu">Κυρίως μενού</string>
+    <string name="profiles">Προφίλ</string>
+    <string name="enable_instant_zap">Άμεση εναλλαγή καναλιού</string>
+    <string name="enable_instant_zap_long">Άμεση εναλλαγή καναλιού με το άγγιγμα υπηρεσίας</string>
+    <string name="wrong_activity">Λάθος δραστηριότητα! Παρακαλούμε δημιουργήσετε ξανά τις συντομεύσεις που έχετε δημιουργήσει για dreamDroid!</string>
+    <string name="simple_remote">Απλή εμφάνιση</string>
+    <string name="screenshot_saved">Η εικόνα σώθηκε σε \'%s\'</string>
+    <string name="imdb">IMDb</string>
+    <string name="missing_stream_player">Δεν έχει εγκατασταθεί Videostreamer στην συσκευή</string>
+    <string name="mediaplayer">Mediaplayer</string>
+    <string name="edit_profile">Επεξεργασία Προφίλ</string>
+    <string name="mobile_imdb">Χρησιμοποιήστε mobile έκδοση του imdb.com</string>
+    <string name="mobile_imdb_long">Χρησιμοποιήστε m.imdb.com αντί του www.imdb.com</string>
+    <string name="searching">Αναζήτηση &#8230;</string>
+    <string name="searching_known_devices">Αναζήτηση για Dreamboxes στο τοπικό σας δίκτυο. Αυτό μπορεί να διαρκέσει μερικά λεπτά&#8230;</string>
+    <string name="autodiscover_dreamboxes">Αυτόματη Αναζήτηση Dreambox</string>
+    <string name="autodiscovery_failed">Δεν βρέθηκε καμία συσκευή DreamBox στο τοπικό σας δίκτυο!</string>
+    <string name="add_all">Προσθήκη όλων</string>
 
 </resources>

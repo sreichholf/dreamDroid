@@ -1,116 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-<string name="description">opis</string>
-<string name="title">natpis</string>
-<string name="mo">mo</string>
-<string name="app_name">DreamDroid</string>
-<string-array name="servicelist">
-<item>Bouquets (TV)</item>
-<item>Provider (TV)</item>
-<item>All Services (TV)</item>
-<item>Bouquets (Radio)</item>
-<item>Provider (Radio)</item>
-<item>All (Radio)</item>
-</string-array>
-<string name="timer">tajmer</string>
-<string name="service">servis</string>
-<string name="afterevent">Afterevent</string>
-<string name="location">lokacija</string>
-<string-array name="afterevents">
-<item>Nothing</item>
-<item>Standby</item>
-<item>Deep Standby</item>
-<item>Automatic</item>
-</string-array>
-<string name="begin_time">pocetno vreme</string>
-<string name="repeatings">ponavljanje</string>
-<string name="end_time">krajnje vreme</string>
-<string name="services">servisi</string>
-<string name="movies">film</string>
-<string name="device_info">infomacija o uredjaju</string>
-<string name="send_message">slati poruku</string>
+    <string name="description">opis</string>
+    <string name="title">natpis</string>
+    <string name="mo">mo</string>
+    <string name="app_name">DreamDroid</string>
+    <string-array name="servicelist">
+        <item>Bouquets (TV)</item>
+        <item>Provider (TV)</item>
+        <item>All Services (TV)</item>
+        <item>Bouquets (Radio)</item>
+        <item>Provider (Radio)</item>
+        <item>All (Radio)</item>
+    </string-array>
+    <string name="timer">tajmer</string>
+    <string name="service">servis</string>
+    <string name="afterevent">Afterevent</string>
+    <string name="location">lokacija</string>
+    <string-array name="afterevents">
+        <item>Nothing</item>
+        <item>Standby</item>
+        <item>Deep Standby</item>
+        <item>Automatic</item>
+    </string-array>
+    <string name="begin_time">pocetno vreme</string>
+    <string name="repeatings">ponavljanje</string>
+    <string name="end_time">krajnje vreme</string>
+    <string name="services">servisi</string>
+    <string name="movies">film</string>
+    <string name="device_info">infomacija o uredjaju</string>
+    <string name="send_message">slati poruku</string>
 
-<string name="save">sacuvati</string>
-<string name="cancel">obustaviti</string>
-<string name="fetching_data">Fetching data...</string>
-<string name="parsing">raščlanjavanje...</string>
-<string name="get_content_error">greska pri dobijanja sadrzaja</string>
-<string name="zap">Zap</string>
-<string name="browse_epg">pregledanje EPG</string>
-<string name="edit">vrsiti izmene</string>
-<string name="delete">brisati</string>
-<string name="epg">EPG</string>
-<string name="ssl_enabled">omogućiti SSL</string>
-<string name="host">Hostname/IP</string>
-<string name="port">Port</string>
-<string name="settings">podesavanja</string>
-<string name="host_long">Hostname or IP</string>
+    <string name="save">sacuvati</string>
+    <string name="cancel">obustaviti</string>
+    <string name="fetching_data">Fetching data...</string>
+    <string name="parsing">raščlanjavanje...</string>
+    <string name="get_content_error">greska pri dobijanja sadrzaja</string>
+    <string name="zap">Zap</string>
+    <string name="browse_epg">pregledanje EPG</string>
+    <string name="edit">vrsiti izmene</string>
+    <string name="delete">brisati</string>
+    <string name="epg">EPG</string>
+    <string name="ssl_enabled">omogućiti SSL</string>
+    <string name="host">Hostname/IP</string>
+    <string name="port">Port</string>
+    <string name="settings">podesavanja</string>
+    <string name="host_long">Hostname or IP</string>
 <string name="port_long">Listening Port
 </string>
-<string name="close">zatvoriti</string>
-<string name="minutes_short">minimum</string>
-<string name="user">korisnik</string>
-<string name="user_long">korisnicko ime kod prijave</string>
-<string name="pass">lozinka</string>
-<string name="pass_long">lozinka kod prijave</string>
-<string name="home">kuci</string>
-<string name="pick_action">izaberi akciju</string>
-<string name="set_time_begin">pocetak dan i vreme</string>
-<string name="set_time_end">kraj dan i vreme</string>
-<string name="apply">prihvati</string>
-<string name="reload">opet učitati</string>
-<string-array name="weekdays_short">
-<item>po</item>
-<item>ut</item>
-<item>sr</item>
-<item>ce</item>
-<item>pr</item>
-<item>su</item>
-<item>ne</item>
-</string-array>
-<string-array name="weekdays">
-<item>ponedeljak</item>
-<item>utorak</item>
-<item>sreda</item>
-<item>cetvrtak</item>
-<item>petak</item>
-<item>subota</item>
-<item>nedelja</item>
-</string-array>
-<string name="choose_days">birati dan</string>
-<string name="mo_to_fr">ponedeljak do petak</string>
-<string name="daily">dnevno</string>
-<string name="new_timer">novi tajmer</string>
-<string name="locations">lokacija</string>
-<string name="gui_version">GUI verzija</string>
-<string name="nics">Network Interfaces</string>
-<string name="message">poruka</string>
-<string name="message_text_hint">uneti tekst poruke</string>
-<string name="send">slati</string>
-<string-array name="message_types">
-<item>DaNe</item>
-<item>upozorenje</item>
-<item>informacija</item>
-<item>greska</item>
-</string-array>
-<string name="login_enabled">omoguciti prijavu</string>
-<string name="provider">Provider</string>
-<string name="now">sada</string>
-<string name="next">sledece</string>
-<string name="epg_search">EPG pretraga</string>
-<string name="epg_search_hint">pretraga EPG</string>
-<string name="activate">aktivirati</string>
-<string name="shutdown">ugasiti</string>
+    <string name="close">zatvoriti</string>
+    <string name="minutes_short">minimum</string>
+    <string name="user">korisnik</string>
+    <string name="user_long">korisnicko ime kod prijave</string>
+    <string name="pass">lozinka</string>
+    <string name="pass_long">lozinka kod prijave</string>
+    <string name="home">kuci</string>
+    <string name="pick_action">izaberi akciju</string>
+    <string name="set_time_begin">pocetak dan i vreme</string>
+    <string name="set_time_end">kraj dan i vreme</string>
+    <string name="apply">prihvati</string>
+    <string name="reload">opet učitati</string>
+    <string-array name="weekdays_short">
+        <item>po</item>
+        <item>ut</item>
+        <item>sr</item>
+        <item>ce</item>
+        <item>pr</item>
+        <item>su</item>
+        <item>ne</item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>ponedeljak</item>
+        <item>utorak</item>
+        <item>sreda</item>
+        <item>cetvrtak</item>
+        <item>petak</item>
+        <item>subota</item>
+        <item>nedelja</item>
+    </string-array>
+    <string name="choose_days">birati dan</string>
+    <string name="mo_to_fr">ponedeljak do petak</string>
+    <string name="daily">dnevno</string>
+    <string name="new_timer">novi tajmer</string>
+    <string name="locations">lokacija</string>
+    <string name="gui_version">GUI verzija</string>
+    <string name="nics">Network Interfaces</string>
+    <string name="message">poruka</string>
+    <string name="message_text_hint">uneti tekst poruke</string>
+    <string name="send">slati</string>
+    <string-array name="message_types">
+        <item>DaNe</item>
+        <item>upozorenje</item>
+        <item>informacija</item>
+        <item>greska</item>
+    </string-array>
+    <string name="login_enabled">omoguciti prijavu</string>
+    <string name="provider">Provider</string>
+    <string name="now">sada</string>
+    <string name="next">sledece</string>
+    <string name="epg_search">EPG pretraga</string>
+    <string name="epg_search_hint">pretraga EPG</string>
+    <string name="activate">aktivirati</string>
+    <string name="shutdown">ugasiti</string>
 
-<string-array name="timer_state">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="timer_action">
-<item>snimati</item>
-<item>zap</item>
-</string-array>
+    <string-array name="timer_state">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string-array name="timer_action">
+        <item>snimati</item>
+        <item>zap</item>
+    </string-array>
 </resources>

@@ -1,193 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-<string name="description">описание</string>
-<string name="title">заглавие</string>
-<string name="app_name">ДримДроид</string>
-<string-array name="servicelist">
-<item>Букети(ТВ)Провайдер(ТВ)Всички Канали(ТВ)Букети(радио)Провайдер(радио)Всички канали(радио)</item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string name="timer">таймер</string>
-<string name="service">канали</string>
-<string name="location">местоположение</string>
-<string-array name="afterevents">
-<item>нищо/заспиване/дълбоко заспиване/автоматично</item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string name="begin_time">начало</string>
-<string name="repeatings">повторение</string>
-<string name="end_time">край</string>
-<string name="services">канали</string>
-<string name="movies">филми</string>
-<string name="device_info">информация за устройството</string>
-<string name="send_message">изпращане на съобщение</string>
+    <string name="description">описание</string>
+    <string name="title">заглавие</string>
+    <string name="app_name">ДримДроид</string>
+    <string-array name="servicelist">
+        <item>Букети(ТВ)Провайдер(ТВ)Всички Канали(ТВ)Букети(радио)Провайдер(радио)Всички канали(радио)</item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string name="timer">таймер</string>
+    <string name="service">канали</string>
+    <string name="location">местоположение</string>
+    <string-array name="afterevents">
+        <item>нищо/заспиване/дълбоко заспиване/автоматично</item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string name="begin_time">начало</string>
+    <string name="repeatings">повторение</string>
+    <string name="end_time">край</string>
+    <string name="services">канали</string>
+    <string name="movies">филми</string>
+    <string name="device_info">информация за устройството</string>
+    <string name="send_message">изпращане на съобщение</string>
 
-<string name="save">запази</string>
-<string name="cancel">отказ</string>
-<string name="fetching_data">извличане на данни</string>
-<string name="parsing">разбор</string>
-<string name="get_content_error">грешка при получаване на информация</string>
-<string name="browse_epg">разлисавне</string>
-<string name="edit">редакция</string>
-<string name="delete">изтриване</string>
-<string name="ssl_enabled">разрешаване на SSL</string>
-<string name="host">име на хост/IP</string>
-<string name="port">порт</string>
-<string name="settings">настройки</string>
-<string name="host_long">имена хост или IP</string>
+    <string name="save">запази</string>
+    <string name="cancel">отказ</string>
+    <string name="fetching_data">извличане на данни</string>
+    <string name="parsing">разбор</string>
+    <string name="get_content_error">грешка при получаване на информация</string>
+    <string name="browse_epg">разлисавне</string>
+    <string name="edit">редакция</string>
+    <string name="delete">изтриване</string>
+    <string name="ssl_enabled">разрешаване на SSL</string>
+    <string name="host">име на хост/IP</string>
+    <string name="port">порт</string>
+    <string name="settings">настройки</string>
+    <string name="host_long">имена хост или IP</string>
 <string name="port_long">Listening Port
 </string>
-<string name="close">затваряне</string>
-<string name="minutes_short">минути</string>
-<string name="user">потребител</string>
-<string name="user_long">потребител за достъп</string>
-<string name="pass">парола</string>
-<string name="pass_long">парола за достъп</string>
-<string name="saving">Запазване. Моля почакайте...</string>
-<string name="deleting">Изтриване. Моля почакайте...</string>
-<string name="delete_confirm">Наистина ли да се изтрие?</string>
-<string name="set_timer">Сверяване на час</string>
-<string name="home">Начало</string>
-<string name="pick_action">Изберете действие</string>
-<string name="set_time_begin">Начална дата и час</string>
-<string name="set_time_end">Крайне дата и час</string>
-<string name="apply">Въведете</string>
-<string name="reload">Презареди</string>
-<string-array name="weekdays_short">
-<item>По/Вт/Ср/Чет/Пет/Съб/Нед</item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="weekdays">
-<item>Понеделник/Вторник/Сряда/Четвъртък/Петък/Събота/Неделя</item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string name="none">Никой</string>
-<string name="choose_days">Избери ден</string>
-<string name="mo_to_fr">От Понеделник до Петък</string>
-<string name="daily">ежедневно</string>
-<string name="new_timer">Нов час</string>
-<string name="locations">Местоположение</string>
-<string name="gui_version">Версия на софт</string>
-<string name="image_version">Версия на имиджа</string>
-<string name="interface_version">Версия на интерфейса</string>
-<string name="front_processor_version">Версия на процесора</string>
-<string name="device_name">Име на устройството</string>
-<string name="nics">Мрежов интерфейс</string>
-<string name="hdds">Хард диск</string>
-<string name="not_implemented">Тази функция е още недостъпна</string>
-<string name="current_event">Актуални събитие</string>
-<string name="timeout">Времето изтече</string>
-<string name="message">Съобщение</string>
-<string name="message_text_hint">Въведете вашето текстово съобщение</string>
-<string name="send">Изпрати</string>
-<string name="type">Пиши</string>
-<string-array name="message_types">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string name="virtual_remote">Виртуално дистанционно</string>
-<string name="login_enabled">Влизането разрешено</string>
-<string name="wait_request_finished">Моля изчакайте докато процеса приключи</string>
-<string name="current_service">Реално предаване</string>
-<string name="provider">провайдер</string>
-<string name="now">Сега</string>
-<string name="next">Следващо</string>
-<string name="epg_search">Търсене на информация</string>
-<string name="epg_search_hint">Търсене на информация/скрита/</string>
-<string name="standard">Стандартен изглед</string>
-<string name="no_epg_available">В момента не е налична информация за този канал</string>
-<string name="ok">ОК</string>
-<string name="activate">Активно</string>
-<string name="confirm_delete_profile">Наистина ли желаете да изтриете този профил</string>
-<string name="profile_activated">Активен профил</string>
-<string name="profile_not_activated">Грешка при ативиране</string>
-<string name="profile_not_deleted">Грешка при изтриване на профила</string>
-<string name="profile_deleted">Изтриване на профила</string>
-<string name="profile">Профил</string>
-<string name="profile_updated">Обновяване на профила</string>
-<string name="profile_added">Създаден профил</string>
-<string name="profile_add">Създаване на профил</string>
-<string name="profile_not_added">Не може да се създаде профил</string>
-<string name="profile_not_updated">Не може да се обнови профила</string>
-<string name="no_list_item">Няма информация</string>
-<string name="locations_default_fallback">Грешка при зареждане, връщане по подразбиране</string>
-<string name="tags">Етикети</string>
-<string name="screenshot">Снимка на екрана</string>
-<string name="host_empty">Името на хоста не може да е празно</string>
-<string name="standby">Готовност</string>
-<string name="powerup">Включване</string>
-<string name="restart_gui">Рестарт на системата</string>
-<string name="reboot">рестарт</string>
-<string name="shutdown">Изключване</string>
-<string name="powercontrol">Управление на мощността</string>
-<string name="choose_tags">Избери етикет</string>
-<string name="choose_location">Избери местоположение</string>
-<string name="bouquet_overview">Преглеждане на букети</string>
-<string name="set_default">Запазване по подразбиране</string>
-<string name="default_bouquet_set_to">Букета е поставен по подразбиране:</string>
-<string name="default_bouquet_not_set">Букета не е поставен по подразбиране</string>
-<string name="loading">Зареждане...</string>
-<string name="about">За</string>
-<string name="source_code_link">Сорс кода е достъпен от: http://github.com/sreichholf/dreamDroid</string>
-<string name="active_profile">Активен профил</string>
-<string name="connection_state">Състояние на връзката</string>
-<string name="not_available">Не е налично</string>
-<string name="checking">Проверка..</string>
-<string name="error">ГРЕШКА!</string>
-<string name="check_connectivity">Проверете връзката</string>
-<string name="version_too_low">Версия $Ит; 1.6.5</string>
-<string name="connection_error">Грешка във връзката</string>
-<string name="port_out_of_range">Порта не е между 1 и 65535</string>
-<string name="illegal_host">нелегален хост</string>
-<string name="edit_timer">Редактиране на времето</string>
-<string name="cleaning_timerlist">Изчистване на времевия лист</string>
-<string name="cleanup">Изчиствне</string>
-<string name="in_standby">Устройството не е в режим изчакване</string>
-<string name="is_running">Устройството не работи</string>
-<string name="stream">Стрим</string>
+    <string name="close">затваряне</string>
+    <string name="minutes_short">минути</string>
+    <string name="user">потребител</string>
+    <string name="user_long">потребител за достъп</string>
+    <string name="pass">парола</string>
+    <string name="pass_long">парола за достъп</string>
+    <string name="saving">Запазване. Моля почакайте...</string>
+    <string name="deleting">Изтриване. Моля почакайте...</string>
+    <string name="delete_confirm">Наистина ли да се изтрие?</string>
+    <string name="set_timer">Сверяване на час</string>
+    <string name="home">Начало</string>
+    <string name="pick_action">Изберете действие</string>
+    <string name="set_time_begin">Начална дата и час</string>
+    <string name="set_time_end">Крайне дата и час</string>
+    <string name="apply">Въведете</string>
+    <string name="reload">Презареди</string>
+    <string-array name="weekdays_short">
+        <item>По/Вт/Ср/Чет/Пет/Съб/Нед</item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string-array name="weekdays">
+        <item>Понеделник/Вторник/Сряда/Четвъртък/Петък/Събота/Неделя</item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string name="none">Никой</string>
+    <string name="choose_days">Избери ден</string>
+    <string name="mo_to_fr">От Понеделник до Петък</string>
+    <string name="daily">ежедневно</string>
+    <string name="new_timer">Нов час</string>
+    <string name="locations">Местоположение</string>
+    <string name="gui_version">Версия на софт</string>
+    <string name="image_version">Версия на имиджа</string>
+    <string name="interface_version">Версия на интерфейса</string>
+    <string name="front_processor_version">Версия на процесора</string>
+    <string name="device_name">Име на устройството</string>
+    <string name="nics">Мрежов интерфейс</string>
+    <string name="hdds">Хард диск</string>
+    <string name="not_implemented">Тази функция е още недостъпна</string>
+    <string name="current_event">Актуални събитие</string>
+    <string name="timeout">Времето изтече</string>
+    <string name="message">Съобщение</string>
+    <string name="message_text_hint">Въведете вашето текстово съобщение</string>
+    <string name="send">Изпрати</string>
+    <string name="type">Пиши</string>
+    <string-array name="message_types">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string name="virtual_remote">Виртуално дистанционно</string>
+    <string name="login_enabled">Влизането разрешено</string>
+    <string name="wait_request_finished">Моля изчакайте докато процеса приключи</string>
+    <string name="current_service">Реално предаване</string>
+    <string name="provider">провайдер</string>
+    <string name="now">Сега</string>
+    <string name="next">Следващо</string>
+    <string name="epg_search">Търсене на информация</string>
+    <string name="epg_search_hint">Търсене на информация/скрита/</string>
+    <string name="standard">Стандартен изглед</string>
+    <string name="no_epg_available">В момента не е налична информация за този канал</string>
+    <string name="ok">ОК</string>
+    <string name="activate">Активно</string>
+    <string name="confirm_delete_profile">Наистина ли желаете да изтриете този профил</string>
+    <string name="profile_activated">Активен профил</string>
+    <string name="profile_not_activated">Грешка при ативиране</string>
+    <string name="profile_not_deleted">Грешка при изтриване на профила</string>
+    <string name="profile_deleted">Изтриване на профила</string>
+    <string name="profile">Профил</string>
+    <string name="profile_updated">Обновяване на профила</string>
+    <string name="profile_added">Създаден профил</string>
+    <string name="profile_add">Създаване на профил</string>
+    <string name="profile_not_added">Не може да се създаде профил</string>
+    <string name="profile_not_updated">Не може да се обнови профила</string>
+    <string name="no_list_item">Няма информация</string>
+    <string name="locations_default_fallback">Грешка при зареждане, връщане по подразбиране</string>
+    <string name="tags">Етикети</string>
+    <string name="screenshot">Снимка на екрана</string>
+    <string name="host_empty">Името на хоста не може да е празно</string>
+    <string name="standby">Готовност</string>
+    <string name="powerup">Включване</string>
+    <string name="restart_gui">Рестарт на системата</string>
+    <string name="reboot">рестарт</string>
+    <string name="shutdown">Изключване</string>
+    <string name="powercontrol">Управление на мощността</string>
+    <string name="choose_tags">Избери етикет</string>
+    <string name="choose_location">Избери местоположение</string>
+    <string name="bouquet_overview">Преглеждане на букети</string>
+    <string name="set_default">Запазване по подразбиране</string>
+    <string name="default_bouquet_set_to">Букета е поставен по подразбиране:</string>
+    <string name="default_bouquet_not_set">Букета не е поставен по подразбиране</string>
+    <string name="loading">Зареждане...</string>
+    <string name="about">За</string>
+    <string name="source_code_link">Сорс кода е достъпен от: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Активен профил</string>
+    <string name="connection_state">Състояние на връзката</string>
+    <string name="not_available">Не е налично</string>
+    <string name="checking">Проверка..</string>
+    <string name="error">ГРЕШКА!</string>
+    <string name="check_connectivity">Проверете връзката</string>
+    <string name="version_too_low">Версия $Ит; 1.6.5</string>
+    <string name="connection_error">Грешка във връзката</string>
+    <string name="port_out_of_range">Порта не е между 1 и 65535</string>
+    <string name="illegal_host">нелегален хост</string>
+    <string name="edit_timer">Редактиране на времето</string>
+    <string name="cleaning_timerlist">Изчистване на времевия лист</string>
+    <string name="cleanup">Изчиствне</string>
+    <string name="in_standby">Устройството не е в режим изчакване</string>
+    <string name="is_running">Устройството не работи</string>
+    <string name="stream">Стрим</string>
 
-<string name="stream_host">Име на стриминг хост/IP</string>
-<string name="stream_host_long">Хост/ IP за стриминг (опция)</string>
-<string name="stream_current">Настоящ стрим</string>
-<string name="similar">Подобни събития</string>
-<string-array name="timer_state">
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-<item></item>
-</string-array>
-<string-array name="timer_action">
-<item></item>
-<item></item>
-</string-array>
-<string name="sleeptimer">Заспиване</string>
-<string name="current_volume">Усилването на звука е %s</string>
-<string name="muted">Без звук</string>
-<string name="enable_volume_control">Звуков контрол възможен</string>
-<string name="enable_volume_control_long">Възможност за директен контрол на звука с помощта на H / W-бутони</string>
-<string name="download">Изтегляне</string>
-<string name="extras">Екстри</string>
-<string name="main_menu">Основно меню</string>
-<string name="profiles">Профили</string>
-<string name="enable_instant_zap">Позволи бърз запинг</string>
-<string name="missing_stream_player">Няма инсталирана програма за видео стриминг</string>
+    <string name="stream_host">Име на стриминг хост/IP</string>
+    <string name="stream_host_long">Хост/ IP за стриминг (опция)</string>
+    <string name="stream_current">Настоящ стрим</string>
+    <string name="similar">Подобни събития</string>
+    <string-array name="timer_state">
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+    </string-array>
+    <string-array name="timer_action">
+        <item></item>
+        <item></item>
+    </string-array>
+    <string name="sleeptimer">Заспиване</string>
+    <string name="current_volume">Усилването на звука е %s</string>
+    <string name="muted">Без звук</string>
+    <string name="enable_volume_control">Звуков контрол възможен</string>
+    <string name="enable_volume_control_long">Възможност за директен контрол на звука с помощта на H / W-бутони</string>
+    <string name="download">Изтегляне</string>
+    <string name="extras">Екстри</string>
+    <string name="main_menu">Основно меню</string>
+    <string name="profiles">Профили</string>
+    <string name="enable_instant_zap">Позволи бърз запинг</string>
+    <string name="missing_stream_player">Няма инсталирана програма за видео стриминг</string>
 </resources>

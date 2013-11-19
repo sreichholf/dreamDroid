@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <string name="description">Beschreibung</string>
+    <string name="description">Dreambox</string>
     <string name="title">Titel</string>
     <string name="mo">Mo</string>
     <string name="app_name">DreamDroid</string>
@@ -47,7 +47,6 @@
     <string name="ssl_enabled">https</string>
     <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
-    <string name="live">Live</string>
     <string name="port_stream_live">Port (Live)</string>
     <string name="port_stream_file">Port (Filme)</string>
     <string name="settings">Einstellungen</string>
@@ -95,19 +94,17 @@
     <string name="daily">Täglich</string>
     <string name="new_timer">Neuer Timer</string>
     <string name="locations">Orte</string>
-    <string name="gui_version">GUI-Version</string>
-    <string name="image_version">Image-Version</string>
-    <string name="interface_version">Interface-Version</string>
-    <string name="front_processor_version">Frontprozessor-Version</string>
+    <string name="gui_version">GUI Version</string>
+    <string name="image_version">Image Version</string>
+    <string name="interface_version">Interface Version</string>
+    <string name="front_processor_version">Frontprozessor Version</string>
     <string name="device_name">Gerätename</string>
     <string name="frontends">Tuner</string>
     <string name="nics">Netzwerkschnittstellen</string>
     <string name="hdds">Festplatten</string>
-    <string name="hdd_capacity">%1$s (%2$s frei)</string>
     <string name="not_implemented">Funktion ist noch nicht implementiert!</string>
     <string name="current_event">Aktuelle Sendung</string>
     <string name="timeout">Anzeigedauer</string>
-    <string name="seconds">Sekunden</string>
     <string name="message">Nachricht</string>
     <string name="message_text_hint">Nachricht eingeben</string>
     <string name="send">Senden</string>
@@ -120,8 +117,7 @@
         <item>Fehler</item>
     </string-array>
 
-    <string name="virtual_remote">Virt. Fern-\nbedienung</string>
-    <string name="login">Login</string>
+    <string name="virtual_remote">Virt. Fern-\bedienung</string>
     <string name="login_enabled">Login aktivieren</string>
     <string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
     <string name="current_service">Es läuft</string>
@@ -141,7 +137,6 @@
     <string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
     <string name="profile_deleted">Profil gelöscht</string>
     <string name="profile">Profil</string>
-    <string name="profile_name">Profilname</string>
     <string name="profile_updated">Profil aktualisiert</string>
     <string name="profile_added">Profil hinzugefügt</string>
     <string name="profile_add">Profil hinzufügen</string>
@@ -166,10 +161,10 @@
     <string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
     <string name="loading">Lade&#8230;</string>
     <string name="about">Über</string>
-    <string name="license">Lizenz:\nLizenziert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">Lizenz:
+\nLizensiert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktives Profil</string>
-    <string name="connection">Verbindung</string>
     <string name="connection_state">Verbindungsstatus</string>
     <string name="not_available">Nicht verfügbar</string>
     <string name="checking">prüfe&#8230;</string>
@@ -211,7 +206,6 @@
     <string name="extras">Extras</string>
     <string name="main_menu">Main</string>
     <string name="profiles">Profile</string>
-    <string name="profiles_long">Verbindungsprofile konfigurieren</string>
     <string name="enable_instant_zap">Direkt umschalten</string>
     <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
     <string name="wrong_activity">Falsche Aktion aufgerufen. Bitte erstellen Sie die Verknüpfungen zu dreamDroid neu!</string>
@@ -233,7 +227,7 @@
     <string name="error_parsing">Beim Lesen der Daten ist ein Fehler aufgetreten!</string>
     <string name="enabled">Ein</string>
     <string name="signal_meter">Signal Meter</string>
-    <string name="accoustic_feedback">Akkustische Rückmeldung</string>
+    <string name="accoustic_feedback">Akustische Rückmeldung</string>
     <string name="use_light_theme_long">Statt des dunklen ein helles Motiv nutzen</string>
     <string name="use_light_theme">Helles Motiv nutzen</string>
     <string name="leave_confirm">Wirklich verlassen?</string>
@@ -243,14 +237,15 @@
     <string name="sent_from_dreamdroid">Von dreamDroid gesendet (%s)</string>
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
     <string name="confirm_app_close">Verlassen der App bestätigen</string>
-    <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen, bevor die App durch Drücken der &#x201E;Zurück&#x201C;-Taste beendet wird</string>
+    <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen bevor die App durch drücken von &quot;zurück&quot; beendet wird.</string>
     <string name="login_movies">Login (Filme)</string>
     <string name="ssl_movies">https (Filme)</string>
     <string name="login_live">Login (Live)</string>
     <string name="appearance">Erscheinungsbild</string>
     <string name="usability">Usability</string>
     <string name="use_picons">Picons benutzen</string>
-    <string name="use_picons_long">Wo möglich werden Picons angezeigt.\nErfordert Picons in /{Speicher}/dreamDroid/picons</string>
+<string name="use_picons_long">Wo möglich werden Picons angezeigt.
+\nErfordert Picons in /{Speicher}/dreamDroid/picons</string>
     <string name="sync_picons">Picons synchronisieren</string>
     <string name="sync_picons_long">Picons auf Basis des aktiven Verbindungsprofiles nach /{Speicher}/dreamDroid/picons synchronisieren</string>
     <string name="sync_picons_path">Picons - Entfernter Pfad</string>
@@ -264,6 +259,4 @@
     <string name="drawer_close">Navigationsmenü schließen</string>
     <string name="enable_animations_long">Zusätzliche Animationen für diverse Aktionen aktivieren</string>
     <string name="enable_animations">Animationen aktivieren</string>
-    <string name="use_name_as_picon_filename_long">Sendernamen als Dateinamen für Picons verwenden</string>
-    <string name="use_name_as_picon_filename">Sendernamen für Picons</string>
 </resources>
