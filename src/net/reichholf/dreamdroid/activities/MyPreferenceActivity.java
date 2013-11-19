@@ -36,7 +36,7 @@ import net.reichholf.dreamdroid.helpers.Statics;
  * @author sreichholf
  * 
  */
-public class MyPreferenceActivity extends android.preference.PreferenceActivity implements
+public class MyPreferenceActivity extends PreferenceActivity implements
 		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener {
 
 	private static final String LOG_TAG = "MyPreferenceActivity";

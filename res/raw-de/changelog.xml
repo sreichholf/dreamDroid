@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 27" versioncode="213">
+        <change>Übersetzungen aktualisiert</change>
+    </release>
     <release version="1.0 beta 26" versioncode="210">
         <change> !!EXPERIMENTELLE!! MediaPlayer Unterstützung (</change>
         <change>Neue Funktion "Umschalten" zum schnellen zappen, basierenden auf einem Grid-Layout</change>

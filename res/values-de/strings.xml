@@ -225,7 +225,7 @@
     <string name="extras">Extras</string>
     <string name="main_menu">Main</string>
     <string name="profiles">Profile</string>
-    <string name="profiles_long">Prifle für Verbindungen konfigurieren</string>
+    <string name="profiles_long">Profile für Verbindungen konfigurieren</string>
     <string name="enable_instant_zap">Direkt umschalten</string>
     <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
     <string name="wrong_activity">Falsche Aktion aufgerufen. Bitte erstellen Sie die Verknüpfungen zu dreamDroid neu!</string>

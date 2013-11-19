@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 27" versioncode="213">
+        <change>Update translations</change>
+    </release>
     <release version="1.0 beta 26" versioncode="210">
         <change>Add !!EXPERIMENTAL!! MediaPlayer control</change>
 		<change>Add "Zap" menu, showing picons/channel-names in a Grid for quick zapping</change>
