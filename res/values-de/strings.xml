@@ -16,6 +16,19 @@
     </string-array>
 
     <string name="timer">Timer</string>
+    <string name="mediaplayer">Mediaplayer</string>
+    <string name="play">Play</string>
+    <string name="add_to_playlist">Zur Playlist hinzufügen</string>
+    <string name="navigation_back_media">Zurück</string>
+    <string name="home_media">Home</string>
+    <string name="close_media">Mediaplayer schließen</string>
+    <string name="next_media">Next</string>
+    <string name="play_media">Play</string>
+    <string name="previous_media">Previous</string>
+    <string name="stop_media">Stop</string>
+    <string name="playlist">Playlist</string>
+    <string name="filebrowser">Dateibrowser</string>
+    <string name="delete_from_playlist">Aus Playlist löschen</string>
     <string name="service">Kanal</string>
     <string name="afterevent">Anschlussereignis</string>
     <string name="location">Ort</string>
@@ -47,6 +60,7 @@
     <string name="ssl_enabled">https</string>
     <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
+    <string name="live">Live</string>
     <string name="port_stream_live">Port (Live)</string>
     <string name="port_stream_file">Port (Filme)</string>
     <string name="settings">Einstellungen</string>
@@ -102,9 +116,11 @@
     <string name="frontends">Tuner</string>
     <string name="nics">Netzwerkschnittstellen</string>
     <string name="hdds">Festplatten</string>
+    <string name="hdd_capacity">%1$s (%2$s frei)</string>
     <string name="not_implemented">Funktion ist noch nicht implementiert!</string>
     <string name="current_event">Aktuelle Sendung</string>
     <string name="timeout">Anzeigedauer</string>
+    <string name="seconds">Sekunden</string>
     <string name="message">Nachricht</string>
     <string name="message_text_hint">Nachricht eingeben</string>
     <string name="send">Senden</string>
@@ -118,6 +134,7 @@
     </string-array>
 
     <string name="virtual_remote">Virt. Fern-\bedienung</string>
+    <string name="login">Login</string>
     <string name="login_enabled">Login aktivieren</string>
     <string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
     <string name="current_service">Es läuft</string>
@@ -137,6 +154,7 @@
     <string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
     <string name="profile_deleted">Profil gelöscht</string>
     <string name="profile">Profil</string>
+    <string name="profile_name">Profilname</string>
     <string name="profile_updated">Profil aktualisiert</string>
     <string name="profile_added">Profil hinzugefügt</string>
     <string name="profile_add">Profil hinzufügen</string>
@@ -165,6 +183,7 @@
 \nLizensiert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktives Profil</string>
+    <string name="connection">Verbindung</string>
     <string name="connection_state">Verbindungsstatus</string>
     <string name="not_available">Nicht verfügbar</string>
     <string name="checking">prüfe&#8230;</string>
@@ -206,6 +225,7 @@
     <string name="extras">Extras</string>
     <string name="main_menu">Main</string>
     <string name="profiles">Profile</string>
+    <string name="profiles_long">Prifle für Verbindungen konfigurieren</string>
     <string name="enable_instant_zap">Direkt umschalten</string>
     <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
     <string name="wrong_activity">Falsche Aktion aufgerufen. Bitte erstellen Sie die Verknüpfungen zu dreamDroid neu!</string>
@@ -213,7 +233,6 @@
     <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
-    <string name="mediaplayer">Mediaplayer</string>
     <string name="edit_profile">Profil bearbeiten</string>
     <string name="force_tablet_layout_long">Tablet-optimiertes Layout erzwingen</string>
     <string name="force_tablet_layout">Tablet Layout erzwingen</string>
@@ -259,4 +278,7 @@
     <string name="drawer_close">Navigationsmenü schließen</string>
     <string name="enable_animations_long">Zusätzliche Animationen für diverse Aktionen aktivieren</string>
     <string name="enable_animations">Animationen aktivieren</string>
+    <string name="use_name_as_picon_filename_long">Kanalnamen als Dateinamen für Picons verwenden</string>
+    <string name="use_name_as_picon_filename">Picons über Kanalnamen</string>
+    <string name="picons">Picons</string>
 </resources>
