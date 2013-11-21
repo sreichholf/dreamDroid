@@ -402,6 +402,10 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			getMainActivity().onProfileChanged(DreamDroid.getCurrentProfile());
 			break;
 
+		case Statics.ITEM_CHANGELOG:
+			getMainActivity().showChangeLogIfNeeded(false);
+			break;
+
 		case Statics.ITEM_SLEEPTIMER:
 			getSleepTimer(true);
 			break;
@@ -513,7 +517,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	}
 
 	/**
-	 * @param textviewprofile
+	 * @param id
 	 * @return
 	 */
 	public View findViewById(int id) {

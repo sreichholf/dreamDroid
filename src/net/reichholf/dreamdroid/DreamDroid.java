@@ -54,6 +54,7 @@ public class DreamDroid extends Application {
 
 	private static boolean sFeatureSleeptimer = false;
 	private static boolean sFeatureNowNext = false;
+	private static boolean sDumpXml = false;
 
 	private static Profile sProfile;
 	private static ArrayList<String> sLocations;
@@ -197,11 +198,17 @@ public class DreamDroid extends Application {
 		return setCurrentProfile(context, id, false);
 	}
 
+	public static boolean dumpXml(){
+		return sDumpXml;
+	}
+
 	/**
 	 * @param id
 	 * @return
 	 */
 	public static boolean setCurrentProfile(Context context, int id, boolean forceEvent) {
+		sDumpXml = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("xml_debug", false);
+
 		Profile oldProfile = sProfile;
 		if (oldProfile == null)
 			oldProfile = new Profile();

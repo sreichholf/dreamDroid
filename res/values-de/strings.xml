@@ -64,6 +64,7 @@
     <string name="port_stream_live">Port (Live)</string>
     <string name="port_stream_file">Port (Filme)</string>
     <string name="settings">Einstellungen</string>
+    <string name="changelog">Änderungen</string>
     <string name="host_long">Hostname oder IP</string>
     <string name="port_long">Listening Port</string>
     <string name="close">Schließen</string>

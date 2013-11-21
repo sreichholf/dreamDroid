@@ -11,8 +11,14 @@
     <item
         android:id="@+id/menu_preferences"
         android:icon="@drawable/ic_action_settings"
-        android:title="@string/settings"
-        dreamDroid:showAsAction="never"/>
+        dreamDroid:showAsAction="never"
+        android:title="@string/settings"/>
+
+    <item
+        android:id="@+id/menu_changelog"
+        android:icon="@drawable/ic_action_about"
+        dreamDroid:showAsAction="never"
+        android:title="@string/changelog"/>
 
     <item
         android:id="@+id/menu_about"

@@ -179,6 +179,7 @@
     <string name="default_bouquet_not_set">Default bouquet could not be set!</string>
     <string name="loading">Loading&#8230;</string>
     <string name="about">About</string>
+    <string name="changelog">Changelog</string>
     <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Profile</string>
@@ -279,4 +280,7 @@
     <string name="use_name_as_picon_filename_long">Use service name as file name for picons</string>
     <string name="use_name_as_picon_filename">Picons by service name</string>
     <string name="picons">Picons</string>
+    <string name="developer_settings">Developer settings</string>
+    <string name="dump_xml">Dump xml content</string>
+    <string name="dump_xml_long">Dump xml content to external memory</string>
 </resources>

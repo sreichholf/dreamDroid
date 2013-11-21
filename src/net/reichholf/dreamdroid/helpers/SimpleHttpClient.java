@@ -7,12 +7,17 @@
 package net.reichholf.dreamdroid.helpers;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
@@ -38,6 +43,7 @@ import org.apache.http.util.ByteArrayBuffer;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 
 /**
@@ -204,6 +210,8 @@ public class SimpleHttpClient {
 			}
 
 			mBytes = baf.toByteArray();
+			if(DreamDroid.dumpXml())
+				dumpToFile(url);
 			return true;
 
 		} catch (MalformedURLException e) {
@@ -225,6 +233,35 @@ public class SimpleHttpClient {
 		}
 
 		return false;
+	}
+
+	private void dumpToFile(URL url){
+		File externalStorage = Environment.getExternalStorageDirectory();
+		if(!externalStorage.canWrite())
+			return;
+
+		String fn = null;
+
+		String[] f = url.toString().split("/");
+		fn = f[f.length-1].split("\\?")[0];
+		Log.w("--------------", fn);
+
+		String base = String.format("%s/dreamDroid/xml", externalStorage);
+		File file = new File( String.format("%s/%s", base, fn) );
+		BufferedOutputStream bos = null;
+		try {
+			(new File(base)).mkdirs();
+			file.createNewFile();
+			bos = new BufferedOutputStream(new FileOutputStream(file));
+			bos.write(mBytes);
+			bos.flush();
+			bos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	/**

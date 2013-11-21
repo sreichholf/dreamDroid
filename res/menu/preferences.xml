@@ -15,6 +15,12 @@
         android:title="@string/settings"/>
 
     <item
+        android:id="@+id/menu_changelog"
+        android:icon="@drawable/ic_action_about"
+        dreamDroid:showAsAction="never"
+        android:title="@string/changelog"/>
+
+    <item
         android:id="@+id/menu_about"
         android:icon="@drawable/ic_action_about"
         dreamDroid:showAsAction="never"

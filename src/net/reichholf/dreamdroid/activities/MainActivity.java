@@ -56,7 +56,6 @@ import de.cketti.library.changelog.ChangeLog;
 
 /**
  * @author sre
- * 
  */
 public class MainActivity extends BaseActivity implements MultiPaneHandler, ProfileChangedListener,
 		ActionDialog.DialogActionListener, SleepTimerDialog.SleepTimerDialogActionListener,
@@ -175,11 +174,23 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		initViews();
 		mNavigationFragment.setHighlightCurrent(true);
 
+		showChangeLogIfNeeded(true);
+	}
+
+	/**
+	 * open the change log dialog
+	 *
+	 * @param onlyOnFirstTime if this is true, the change log will only displayed if it is the first time.
+	 */
+	public void showChangeLogIfNeeded(boolean onlyOnFirstTime) {
 		ChangeLog cl = new ChangeLog(this);
-		if (cl.isFirstRun()) {
+		if (onlyOnFirstTime) {
+			if (cl.isFirstRun()) {
+				cl.getFullLogDialog().show();
+			}
+		} else {
 			cl.getFullLogDialog().show();
 		}
-		// DreamDroid.registerEpgSearchListener(this);
 	}
 
 	@Override

@@ -1,72 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orderingFromXml="true" >
+    android:orderingFromXml="true">
 
     <Preference
         android:key="profiles"
         android:summary="@string/profiles_long"
-        android:title="@string/profiles" />
+        android:title="@string/profiles"/>
     <PreferenceCategory
         android:key="usability"
-        android:title="@string/usability" >
+        android:title="@string/usability">
         <CheckBoxPreference
             android:key="volume_control"
             android:summary="@string/enable_volume_control_long"
-            android:title="@string/enable_volume_control" />
+            android:title="@string/enable_volume_control"/>
         <CheckBoxPreference
             android:key="instant_zap"
             android:summary="@string/enable_instant_zap_long"
-            android:title="@string/enable_instant_zap" />
+            android:title="@string/enable_instant_zap"/>
         <CheckBoxPreference
             android:key="mobile_imdb"
             android:summary="@string/mobile_imdb_long"
-            android:title="@string/mobile_imdb" />
+            android:title="@string/mobile_imdb"/>
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="confirm_app_close"
             android:summary="@string/confirm_app_close_long"
-            android:title="@string/confirm_app_close" />
+            android:title="@string/confirm_app_close"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="appearance"
-        android:title="@string/appearance" >
+        android:title="@string/appearance">
         <CheckBoxPreference
             android:defaultValue="true"
             android:enabled="true"
             android:key="light_theme"
             android:summary="@string/use_light_theme_long"
-            android:title="@string/use_light_theme" />
+            android:title="@string/use_light_theme"/>
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="enable_animations"
             android:summary="@string/enable_animations_long"
-            android:title="@string/enable_animations" />
+            android:title="@string/enable_animations"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="appearance"
-        android:title="@string/picons" >
+        android:title="@string/picons">
         <CheckBoxPreference
             android:key="picons"
             android:summary="@string/use_picons_long"
-            android:title="@string/use_picons" />
+            android:title="@string/use_picons"/>
         <CheckBoxPreference
             android:dependency="picons"
             android:defaultValue="false"
             android:key="use_name_as_picon_filename"
             android:summary="@string/use_name_as_picon_filename_long"
-            android:title="@string/use_name_as_picon_filename" />
+            android:title="@string/use_name_as_picon_filename"/>
         <Preference
             android:dependency="picons"
             android:key="sync_picons"
             android:summary="@string/sync_picons_long"
-            android:title="@string/sync_picons" />
+            android:title="@string/sync_picons"/>
 
         <EditTextPreference
             android:defaultValue="/usr/share/enigma2/picon"
             android:dependency="picons"
             android:key="sync_picons_path"
             android:summary="@string/sync_picons_path_long"
-            android:title="@string/sync_picons_path" />
+            android:title="@string/sync_picons_path"/>
     </PreferenceCategory>
-
+    <!--
+    <PreferenceCategory
+        android:key="developer"
+        android:title="@string/developer_settings">
+        <CheckBoxPreference
+            android:key="xml_debug"
+            android:summary="@string/dump_xml_long"
+            android:title="@string/dump_xml"/>
+    </PreferenceCategory>
+    -->
 </PreferenceScreen>
