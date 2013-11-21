@@ -84,7 +84,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
 			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
 			if (mCurrentProfile == null)
-				mCurrentProfile = new Profile();
+				mCurrentProfile = Profile.DEFAULT;
 			assignProfile();
 		}
 		onIsLoginChanged(mLogin.isChecked());

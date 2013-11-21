@@ -33,7 +33,7 @@ public class TimerListAdapter extends ArrayAdapter<ExtendedHashMap> {
 	/**
 	 * @param context
 	 * @param textViewResourceId
-	 * @param objects
+	 * @param items
 	 */
 	public TimerListAdapter(Context context, int textViewResourceId, ArrayList<ExtendedHashMap> items) {
 		super(context, textViewResourceId, items);

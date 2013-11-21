@@ -100,7 +100,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		mFrontendsList.removeAllViews();
 
 		for (int i=0; i<mFrontends.size(); i++) {
-			View item = mInflater.inflate(R.layout.two_line_list_item, null);
+			View item = mInflater.inflate(R.layout.two_line_card_list_item, null);
 			
 			TextView title = (TextView) item.findViewById(R.id.text1);
 			title.setText((String) mFrontends.get(i).get(DeviceInfo.KEY_FRONTEND_NAME));
@@ -117,7 +117,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		mNicsList.removeAllViews();
 
 		for (int i=0; i<mNics.size(); i++) {
-			View item = mInflater.inflate(R.layout.two_line_list_item, null);
+			View item = mInflater.inflate(R.layout.two_line_card_list_item, null);
 			
 			TextView title = (TextView) item.findViewById(R.id.text1);
 			title.setText((String) mNics.get(i).get(DeviceInfo.KEY_NIC_NAME));
@@ -134,7 +134,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		mHddsList.removeAllViews();
 
 		for (int i=0; i<mHdds.size(); i++) {
-			View item = mInflater.inflate(R.layout.two_line_list_item, null);
+			View item = mInflater.inflate(R.layout.two_line_card_list_item, null);
 			
 			TextView title = (TextView) item.findViewById(R.id.text1);
 			title.setText((String) mHdds.get(i).get(DeviceInfo.KEY_HDD_MODEL));

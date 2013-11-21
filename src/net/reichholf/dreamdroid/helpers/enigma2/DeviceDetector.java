@@ -40,7 +40,7 @@ public class DeviceDetector {
 
 				String ip = host.getHostAddress();
 
-				Profile p = new Profile();
+				Profile p = Profile.DEFAULT;
 				p.setName(hostname);
 				p.setHost(ip);
 				p.setStreamHost(ip);
@@ -70,7 +70,7 @@ public class DeviceDetector {
 						simpleRemote = true;
 					}
 
-					Profile p = new Profile();
+					Profile p = Profile.DEFAULT;
 					p.setName(s.getName());
 					p.setHost(address);
 					p.setStreamHost(address);

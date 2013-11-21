@@ -8,20 +8,18 @@ package net.reichholf.dreamdroid;
 
 import java.io.Serializable;
 
-import android.database.Cursor;
 import android.util.Log;
+
 
 /**
  * @author sre
- * 
  */
 public class Profile implements Serializable {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 8176949133234868302L;
 
-	private String mName;
+    private final int mId;
+    private String mName;
 	private String mHost;
 	private String mStreamHost;
 	private String mUser;
@@ -32,7 +30,6 @@ public class Profile implements Serializable {
 	private boolean mFileLogin;
 	private boolean mFileSsl;
 	private boolean mSimpleRemote;
-	private int mId;
 	private int mPort;
 	private int mStreamPort;
 	private int mFilePort;
@@ -41,251 +38,68 @@ public class Profile implements Serializable {
 	private String mDefaultRef2;
 	private String mDefaultRef2Name;
 
-	public Profile(Cursor c) {
-		set(c);
-	}
 
-	public Profile() {
-		setId(-1);
-		setName("");
-		setHost(null);
-		setStreamHost(null);
-		setPort(80);
-		setStreamPort(8001);
-		setFilePort(80);
-		setLogin(false);
-		setStreamLogin(false);
-		setFileLogin(false);
-		setFileSsl(false);
-		setSimpleRemote(false);
-		setUser("root");
-		setPass("dreambox");
-		setDefaultRefValues("", "");
-		setDefaultRef2Values("", "");
-	}
+    public static final Profile DEFAULT = new Profile(-1, "", "", "", 80, 8001, 80, false,"root", "dreambox", false, false, false, false, false, "", "", "", "");
 
-	/**
-	 * @param name
-	 * @param host
-	 * @param streamHost
-	 * @param port
-	 * @param login
-	 * @param user
-	 * @param pass
-	 * @param ssl
-	 * @param simpleRemote
-	 */
-	public Profile(String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 			String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
-			boolean simpleRemote) {
-		set(name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, streamLogin, fileLogin,
-				fileSsl, simpleRemote);
+			boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
+
+        mId = id;
+        setName(name);
+        setHost(host);
+        setStreamHost(streamHost);
+        setPort(port);
+        setStreamPort(streamPort);
+        setFilePort(filePort);
+        setLogin(login);
+        setStreamLogin(streamLogin);
+        setFileLogin(fileLogin);
+        setFileSsl(fileSsl);
+        setUser(user);
+        setPass(pass);
+        setSsl(ssl);
+        setSimpleRemote(simpleRemote);
+        setDefaultRefValues(defaultRef, defaultRefName);
+        setDefaultRef2Values(defaultRef2, defaultRef2Name);
 	}
 
-	/**
-	 * @param id
-	 * @param name
-	 * @param host
-	 * @param streamHost
-	 * @param port
-	 * @param login
-	 * @param user
-	 * @param pass
-	 * @param ssl
-	 * @param simpleRemote
-	 */
-	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort,
-			boolean login, String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin,
-			boolean fileSsl, boolean simpleRemote) {
-		set(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, streamLogin, fileLogin,
-				fileSsl, simpleRemote);
-	}
-
-	/**
-	 * @param name
-	 * @param host
-	 * @param streamHost
-	 * @param port
-	 * @param login
-	 * @param user
-	 * @param pass
-	 * @param ssl
-	 * @param simpleRemote
-	 */
-	public void set(String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
-			String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
-			boolean simpleRemote) {
-		set(-1, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, streamLogin, fileLogin,
-				fileSsl, simpleRemote);
-	}
-
-	/**
-	 * @param id
-	 * @param name
-	 * @param host
-	 * @param streamHost
-	 * @param port
-	 * @param login
-	 * @param user
-	 * @param pass
-	 * @param ssl
-	 * @param simpleRemote
-	 */
-	public void set(int id, String name, String host, String streamHost, int port, int streamPort, int filePort,
-			boolean login, String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin,
-			boolean fileSsl, boolean simpleRemote) {
-		setId(id);
-		setName(name);
-		setHost(host);
-		setStreamHost(streamHost);
-		setPort(port);
-		setStreamPort(streamPort);
-		setFilePort(filePort);
-		setLogin(login);
-		setStreamLogin(streamLogin);
-		setFileLogin(fileLogin);
-		setFileSsl(fileSsl);
-		setUser(user);
-		setPass(pass);
-		setSsl(ssl);
-		setSimpleRemote(simpleRemote);
-		setDefaultRefValues("", "");
-		setDefaultRef2Values("", "");
-	}
-
-	public void set(Cursor c) {
-		setName(c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE)));
-		setHost(c.getString(c.getColumnIndex(DatabaseHelper.KEY_HOST)));
-		setStreamHost(c.getString(c.getColumnIndex(DatabaseHelper.KEY_STREAM_HOST)));
-		setUser(c.getString(c.getColumnIndex(DatabaseHelper.KEY_USER)));
-		setPass(c.getString(c.getColumnIndex(DatabaseHelper.KEY_PASS)));
-
-		setId(c.getInt(c.getColumnIndex(DatabaseHelper.KEY_ID)));
-		setPort(c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PORT)));
-
-		int streamPort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_STREAM_PORT));
-		if (streamPort <= 0)
-			streamPort = 8001;
-		setStreamPort(streamPort);
-
-		int filePort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_PORT));
-		if (filePort <= 0)
-			filePort = 80;
-		setFilePort(filePort);
-
-		int login = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_LOGIN));
-		if (login == 1) {
-			setLogin(true);
-		} else {
-			setLogin(false);
-		}
-
-		int ssl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SSL));
-		if (ssl == 1) {
-			setSsl(true);
-		} else {
-			setSsl(false);
-		}
-
-		int streamLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_STREAM_LOGIN));
-		if (streamLogin == 1) {
-			setStreamLogin(true);
-		} else {
-			setStreamLogin(false);
-		}
-
-		int fileLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_LOGIN));
-		if (fileLogin == 1) {
-			setFileLogin(true);
-		} else {
-			setFileLogin(false);
-		}
-
-		int fileSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_SSL));
-		if (fileSsl == 1) {
-			setFileSsl(true);
-		} else {
-			setFileSsl(false);
-		}
-
-		int simpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SIMPLE_REMOTE));
-		if (simpleRemote == 1) {
-			setSimpleRemote(true);
-		} else {
-			setSimpleRemote(false);
-		}
-
-		String defaultRef = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF));
-		String defaultRefName = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_NAME));
-		setDefaultRefValues(defaultRef, defaultRefName);
-
-		String defaultRef2 = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_2));
-		String defaultRef2Name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_2_NAME));
-		setDefaultRef2Values(defaultRef2, defaultRef2Name);
-	}
-
-	/**
-	 * @param mName
-	 *            the Profile to set
-	 */
 	public void setName(String name) {
-		if (name == null)
-			name = "";
+		if (name == null) {
+            name = "";
+        }
 		mName = name;
 	}
 
-	/**
-	 * @param mHost
-	 *            the Host to set
-	 */
 	public void setHost(String host) {
-		if (host == null)
-			host = "";
+		if (host == null) {
+            host = "";
+        }
 		mHost = host.replace("http://", "").replace("https://", "");
 	}
 
-	/**
-	 * @param streamHost
-	 *            the streaming host to set
-	 */
 	public void setStreamHost(String streamHost) {
 		if (streamHost == null)
 			streamHost = "";
 		mStreamHost = streamHost.replace("http://", "").replace("https://", "");
 	}
 
-	/**
-	 * @param mUser
-	 *            the User to set
-	 */
 	public void setUser(String user) {
 		if (user == null)
 			user = "";
 		mUser = user;
 	}
 
-	/**
-	 * @param mPass
-	 *            the Pass to set
-	 */
 	public void setPass(String pass) {
 		if (pass == null)
 			pass = "";
 		mPass = pass;
 	}
 
-	/**
-	 * @param mLogin
-	 *            the Login to set
-	 */
 	public void setLogin(boolean login) {
 		mLogin = login;
 	}
 
-	/**
-	 * @param mSsl
-	 *            SSL yes/no
-	 */
 	public void setSsl(boolean ssl) {
 		mSsl = ssl;
 	}
@@ -298,33 +112,14 @@ public class Profile implements Serializable {
 		mFileSsl = ssl;
 	}
 
-	/**
-	 * @param simpleRemote
-	 *            yes/no
-	 */
 	public void setSimpleRemote(boolean simpleRemote) {
 		mSimpleRemote = simpleRemote;
 	}
 
-	/**
-	 * @param mId
-	 *            the Id to set
-	 */
-	public void setId(int id) {
-		mId = id;
-	}
-
-	/**
-	 * @param mPort
-	 *            the Port to set
-	 */
 	public void setPort(int port) {
 		mPort = port;
 	}
 
-	/**
-	 * @param port
-	 */
 	public void setPort(String port) {
 		try {
 			mPort = Integer.valueOf(port);
@@ -338,25 +133,15 @@ public class Profile implements Serializable {
 		}
 	}
 
-	/**
-	 * @param port
-	 * @param ssl
-	 */
 	public void setPort(String port, boolean ssl) {
 		mSsl = ssl;
 		setPort(port);
 	}
 
-	/**
-	 * @param streamPort
-	 */
 	public void setStreamPort(int streamPort) {
 		mStreamPort = streamPort;
 	}
 
-	/**
-	 * @param streamPort
-	 */
 	public void setStreamPort(String streamPort) {
 		try {
 			mStreamPort = Integer.valueOf(streamPort);
@@ -366,16 +151,10 @@ public class Profile implements Serializable {
 		}
 	}
 
-	/**
-	 * @param streamPort
-	 */
 	public void setFilePort(int filePort) {
 		mFilePort = filePort;
 	}
 
-	/**
-	 * @param streamPort
-	 */
 	public void setFilePort(String filePort) {
 		try {
 			mFilePort = Integer.valueOf(filePort);
@@ -385,23 +164,14 @@ public class Profile implements Serializable {
 		}
 	}
 
-	/**
-	 * @return the Profile
-	 */
 	public String getName() {
 		return mName;
 	}
 
-	/**
-	 * @return the Host
-	 */
 	public String getHost() {
 		return mHost;
 	}
 
-	/**
-	 * @return the host for streaming
-	 */
 	public String getStreamHost() {
 		if ("".equals(mStreamHost) || mStreamHost == null) {
 			return mHost;
@@ -410,37 +180,23 @@ public class Profile implements Serializable {
 		}
 	}
 
-	/**
-	 * @return
-	 */
+
 	public String getStreamHostValue() {
 		return mStreamHost;
 	}
 
-	/**
-	 * @return the User
-	 */
 	public String getUser() {
 		return mUser;
 	}
 
-	/**
-	 * @return the Pass
-	 */
 	public String getPass() {
 		return mPass;
 	}
 
-	/**
-	 * @return the Login
-	 */
 	public boolean isLogin() {
 		return mLogin;
 	}
 
-	/**
-	 * @return SSL yes/no
-	 */
 	public boolean isSsl() {
 		return mSsl;
 	}
@@ -457,16 +213,10 @@ public class Profile implements Serializable {
 		return mSimpleRemote;
 	}
 
-	/**
-	 * @return the Id
-	 */
 	public int getId() {
 		return mId;
 	}
 
-	/**
-	 * @return the Port
-	 */
 	public int getPort() {
 		return mPort;
 	}
@@ -549,4 +299,5 @@ public class Profile implements Serializable {
 				&& isStreamLogin() == p.isStreamLogin() && isFileSsl() == p.isFileSsl()
 				&& isFileLogin() == p.isFileLogin();
 	}
+
 }

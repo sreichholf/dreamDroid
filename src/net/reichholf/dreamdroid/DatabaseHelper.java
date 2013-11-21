@@ -22,7 +22,7 @@ import android.util.Log;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String LOG_TAG = DatabaseHelper.class.getSimpleName();
-	
+
 	public static final String KEY_ID = "_id";
 	public static final String KEY_PROFILE = "profile";
 	public static final String KEY_HOST = "host";
@@ -47,21 +47,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 9;
 	private static final String PROFILES_TABLE_NAME = "profiles";
 
-	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " + 
+	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
 				PROFILES_TABLE_NAME + " (" +
-				KEY_ID + " INTEGER PRIMARY KEY, " + 
+				KEY_ID + " INTEGER PRIMARY KEY, " +
 				KEY_PROFILE + " TEXT, " +
 				KEY_HOST + " TEXT, " +
-				KEY_STREAM_HOST + " TEXT, " + 
-				KEY_PORT + " INTEGER, " + 
-				KEY_STREAM_PORT + " INTEGER, " + 
+				KEY_STREAM_HOST + " TEXT, " +
+				KEY_PORT + " INTEGER, " +
+				KEY_STREAM_PORT + " INTEGER, " +
 				KEY_FILE_PORT + " INTEGER, " +
-				KEY_LOGIN + " BOOLEAN, " + 
-				KEY_USER + " TEXT, " + 
-				KEY_PASS + " TEXT, " + 
-				KEY_SSL + " BOOLEAN, " + 
+				KEY_LOGIN + " BOOLEAN, " +
+				KEY_USER + " TEXT, " +
+				KEY_PASS + " TEXT, " +
+				KEY_SSL + " BOOLEAN, " +
 				KEY_SIMPLE_REMOTE + " BOOLEAN, " +
-				KEY_DEFAULT_REF + " TEXT, " + 
+				KEY_DEFAULT_REF + " TEXT, " +
 				KEY_DEFAULT_REF_NAME + " TEXT, " +
 				KEY_DEFAULT_REF_2 + " TEXT, " +
 				KEY_DEFAULT_REF_2_NAME + " TEXT, " +
@@ -77,10 +77,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String PROFILES_TABLE_UPGRADE_4_5 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_STREAM_PORT + " INTEGER;";
-	
+
 	private static final String PROFILES_TABLE_UPGRADE_5_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_FILE_PORT + " INTEGER;";
-	
+
 	private static final String PROFILES_TABLE_UPGRADE_6_7_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF + " TEXT;";
 	private static final String PROFILES_TABLE_UPGRADE_6_7_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF_NAME + " TEXT;";
 	private static final String PROFILES_TABLE_UPGRADE_6_7_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF_2 + " TEXT;";
@@ -88,15 +88,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String PROFILES_TABLE_UPGRADE_7_8_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_LOGIN + " BOOLEAN;";
 	private static final String PROFILES_TABLE_UPGRADE_7_8_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_SSL + " BOOLEAN;";
-	
+
 	private static final String PROFILES_TABLE_UPGRADE_8_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_STREAM_LOGIN + " BOOLEAN;";
 	private Context mContext;
-	/**
-	 * @param context
-	 * @param name
-	 * @param factory
-	 * @param version
-	 */
+
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 		mContext = context;
@@ -109,19 +104,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_CREATE);
 	}
-	
+
 	private void upgrade6to7(SQLiteDatabase db){
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_2);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_3);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_4);
 	}
-	
+
 	private void upgrade7to8(SQLiteDatabase db){
 		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_2);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see android.database.sqlite.SQLiteOpenHelper#onUpgrade(android.database.sqlite.SQLiteDatabase, int, int)
 	 */
@@ -159,8 +154,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			if (oldVersion != 8){
 				emergencyRecovery(db);
 			}
-			
-			
+
+
 		} catch (SQLiteException e) {
 			Log.e(LOG_TAG, "onUpgrade: SQLiteException, recreating db. ", e);
 			Log.e(LOG_TAG, "(oldVersion was " + oldVersion + ")");
@@ -170,12 +165,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if(scheduleBackup)
 			DreamDroid.scheduleBackup(mContext);
 	}
-	
+
 	private void emergencyRecovery(SQLiteDatabase db){
 		db.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME + ";");
 		db.execSQL(PROFILES_TABLE_CREATE);
 	}
-	
+
 	private ContentValues p2cv(Profile p){
 		ContentValues values = new ContentValues();
 		values.put(KEY_PROFILE, p.getName());
@@ -198,7 +193,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		values.put(KEY_DEFAULT_REF_2_NAME, p.getDefaultRef2Name());
 		return values;
 	}
-	
+
 	/**
 	 * @param p
 	 */
@@ -227,7 +222,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * @param p
 	 */
@@ -244,7 +239,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	/**
-	 * @return Cursor for all Settings
+	 * @return Profile for all Settings
 	 */
 	public ArrayList<Profile> getProfiles() {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
@@ -252,38 +247,93 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		SQLiteDatabase db = getReadableDatabase();
 
 		ArrayList<Profile> list = new ArrayList<Profile>();
-		
+
 		Cursor c = db.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE);
 		if(c.getCount() == 0){
 			db.close();
 			c.close();
 			return list;
 		}
-		
+
 		while(!c.isLast()){
 			c.moveToNext();
-			list.add(new Profile(c));
+			list.add(getProfileFrom(c));
 		}
 		c.close();
 		db.close();
 		return list;
 	}
 
+	/**
+	 *
+	 * @param id
+	 * @return the profile for the given id, or null if no such profile was found
+	 */
 	public Profile getProfile(int id) {
 		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
 				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_STREAM_LOGIN, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor c = db.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null, null, null, KEY_PROFILE);
 
-		Profile p = new Profile();
-		if(c.getCount() == 1 && c.moveToFirst())
-			p.set(c);
+		Profile p = null;
+		if(c.getCount() == 1 && c.moveToFirst()) {
+			p = getProfileFrom(c);
+		}
 		c.close();
 		db.close();
 		return p;
 	}
 
-	
+	private Profile getProfileFrom(Cursor c) {
+
+		int id = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_ID));
+		String name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE));
+		String host = c.getString(c.getColumnIndex(DatabaseHelper.KEY_HOST));
+		String streamHost = c.getString(c.getColumnIndex(DatabaseHelper.KEY_STREAM_HOST));
+		int port = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PORT));
+
+		int streamPort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_STREAM_PORT));
+		if (streamPort <= 0) {
+			streamPort = 8001;
+		}
+
+		int filePort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_PORT));
+		if (filePort <= 0) {
+			filePort = 80;
+		}
+
+		int login = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_LOGIN));
+		boolean ynLogin = login == 1;
+
+		int ssl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SSL));
+		boolean ynSsl = ssl == 1;
+
+
+		int streamLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_STREAM_LOGIN));
+		boolean ynStreamLogin = streamLogin == 1;
+
+		int fileLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_LOGIN));
+		boolean ynFileLogin = fileLogin == 1;
+
+		int fileSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_SSL));
+		boolean ynFileSsl = fileSsl == 1;
+
+		int simpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SIMPLE_REMOTE));
+		boolean ynSimpleRemote = simpleRemote == 1;
+
+		String user = c.getString(c.getColumnIndex(DatabaseHelper.KEY_USER));
+		String pass = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PASS));
+
+		String defaultRef = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF));
+		String defaultRefName = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_NAME));
+
+		String defaultRef2 = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_2));
+		String defaultRef2Name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_2_NAME));
+
+		return new Profile(id, name, host, streamHost, port, streamPort, filePort, ynLogin, user, pass, ynSsl, ynStreamLogin, ynFileLogin, ynFileSsl, ynSimpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name);
+	}
+
+
 	public static DatabaseHelper getInstance(Context ctx){
 		return new DatabaseHelper(ctx);
 	}

@@ -40,15 +40,14 @@ public class DreamDroid extends Application {
 	public static final String LOG_TAG = "net.reichholf.dreamdroid";
 
 	public static final String PREFS_KEY_QUICKZAP = "quickzap";
-	public static final String PREFS_KEY_DEFAULT_BOUQUET_REF = "default_bouquet_ref";
-	public static final String PREFS_KEY_DEFAULT_BOUQUET_NAME = "default_bouquet_name";
-	public static final String PREFS_KEY_DEFAULT_BOUQUET_IS_LIST = "default_bouquet_is_bouquet_list";
 	public static final String PREFS_KEY_CONFIRM_APP_CLOSE = "confirm_app_close";
 	public static final String PREFS_KEY_ENABLE_ANIMATIONS = "enable_animations";
 	public static final String PREFS_KEY_FIRST_START = "first_start";
 	public static final String PREFS_KEY_SYNC_PICONS_PATH = "sync_picons_path";
 	public static final String PREFS_KEY_PICONS_ENABLED = "picons";
-    public static final String PREFS_KEY_PICONS_USE_NAME = "use_name_as_picon_filename";
+	public static final String PREFS_KEY_PICONS_USE_NAME = "use_name_as_picon_filename";
+
+	public static final String CURRENT_PROFILE = "currentProfile";
 
 	public static boolean DATE_LOCALE_WO;
 
@@ -177,20 +176,20 @@ public class DreamDroid extends Application {
 			boolean login = sp.getBoolean("login", false);
 			boolean ssl = sp.getBoolean("ssl", false);
 
-			Profile p = new Profile("Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
-					false, false);
+			Profile p = new Profile(-1, "Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
+					false, false, "", "","","");
 			dbh.addProfile(p);
 			SharedPreferences.Editor editor = sp.edit();
-			editor.remove("currentProfile");
+			editor.remove(CURRENT_PROFILE);
 			editor.commit();
 		}
 
-		int profileId = sp.getInt("currentProfile", 1);
+		int profileId = sp.getInt(CURRENT_PROFILE, 1);
 		if (!setCurrentProfile(context, profileId)) {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
-			sProfile = new Profile("Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false, false, false,
-					false);
+			sProfile = new Profile(-1, "Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false, false, false,
+					false, "", "","","");
 		}
 	}
 
@@ -211,13 +210,13 @@ public class DreamDroid extends Application {
 
 		Profile oldProfile = sProfile;
 		if (oldProfile == null)
-			oldProfile = new Profile();
+			oldProfile = Profile.DEFAULT;
 
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		sProfile = dbh.getProfile(id);
-		if (sProfile.getId() == id) {
+		if (sProfile != null) {
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
-			editor.putInt("currentProfile", id);
+			editor.putInt(CURRENT_PROFILE, id);
 			editor.commit();
 			if (!sProfile.equals(oldProfile) || forceEvent) {
 				//reset locations and tags, they will be reloaded when needed the next time
@@ -226,6 +225,8 @@ public class DreamDroid extends Application {
 				activeProfileChanged();
 			}
 			return true;
+		} else {
+			Log.w(DreamDroid.LOG_TAG, "no profile with given id [" + id + "] found");
 		}
 		return false;
 	}

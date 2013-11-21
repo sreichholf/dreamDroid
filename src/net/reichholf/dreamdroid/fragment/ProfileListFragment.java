@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.adapter.ProfileListSimpleAdapter;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
@@ -24,8 +25,10 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -54,6 +57,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	private DetectDevicesTask mDetectDevicesTask;
 
 	private ProgressDialog mProgress;
+
+	public static final String KEY_ACTIVE_PROFILE = "active_profile";
 
 	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>> {
 
@@ -113,7 +118,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	/**
-	 * @param hosts
+	 * @param profiles
 	 *            A list of profiles for auto-discovered dreamboxes
 	 */
 	private void onDevicesDetected(ArrayList<Profile> profiles) {
@@ -169,17 +174,17 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	public void onCreate(Bundle savedInstanceState) {
+		mCardListStyle = true;
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.profiles));
 
 		mProfiles = new ArrayList<Profile>();
 		mProfileMapList = new ArrayList<ExtendedHashMap>();
-		mProfile = new Profile();
+		mProfile = Profile.DEFAULT;
 
-		mAdapter = new SimpleAdapter(getActionBarActivity(), mProfileMapList, R.layout.two_line_list_item,
-				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST }, new int[] { R.id.text1,
-						R.id.text2 });
+		mAdapter = new ProfileListSimpleAdapter(getActionBarActivity(), mProfileMapList, R.layout.two_line_card_list_item,
+				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST}, new int[] { R.id.text1, R.id.text2});
 		setListAdapter(mAdapter);
 	}
 
@@ -216,10 +221,19 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfiles.clear();
 		mProfileMapList.clear();
 		mProfiles.addAll(dbh.getProfiles());
+
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+
 		for (Profile m : mProfiles) {
+			boolean isActive = false;
+			int activeProfileId = sp.getInt(DreamDroid.CURRENT_PROFILE, -1);
+			if (activeProfileId > -1 && activeProfileId == m.getId()) {
+				isActive = true;
+			}
 			ExtendedHashMap map = new ExtendedHashMap();
 			map.put(DatabaseHelper.KEY_PROFILE, m.getName());
 			map.put(DatabaseHelper.KEY_HOST, m.getHost());
+			map.put(KEY_ACTIVE_PROFILE, isActive);
 			mProfileMapList.add(map);
 		}
 		mAdapter.notifyDataSetChanged();
@@ -278,6 +292,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
 		}
+		reloadProfiles();
 	}
 
 	/**
@@ -352,7 +367,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			}
 			// TODO Add error handling
 			reloadProfiles();
-			mProfile = new Profile();
+			mProfile = Profile.DEFAULT;
 			mAdapter.notifyDataSetChanged();
 			break;
 		}
