@@ -367,7 +367,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				return true;
 
 			case (Statics.ITEM_MEDIA_CLOSE):
-				exit();
+				closePlayer();
 				return true;
 
 			default:
@@ -575,8 +575,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				MediaplayerCommandRequestHandler.CMD_CLEAR));
 	}
 
-	// exit Mediaplayer
-	private void exit() {
+	// close Mediaplayer
+	private void closePlayer() {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
 				MediaplayerCommandRequestHandler.CMD_EXIT));
@@ -641,6 +641,10 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			command = MediaplayerCommandRequestHandler.CMD_PLAY;
 		}
 
+		if (keyStateText.contains(MediaplayerCommandRequestHandler.CMD_EXIT)) {
+			command = MediaplayerCommandRequestHandler.CMD_EXIT;
+		}
+
 		return command;
 	}
 
@@ -663,6 +667,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 				getCurrentMediaInfo();
 			}
+			if(command.equals(MediaplayerCommandRequestHandler.CMD_EXIT))
+				return;
 			reload();
 			reloadPlaylist();
 		}
