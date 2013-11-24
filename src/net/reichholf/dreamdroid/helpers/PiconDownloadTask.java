@@ -54,6 +54,10 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 			if (!tmpFile.exists())
 				tmpFile.mkdirs();
 
+			tmpFile = new File(String.format("%s.nomedia", basePath));
+			if(!tmpFile.exists())
+				tmpFile.createNewFile();
+
 			publishProgress(DownloadProgress.EVENT_ID_CONNECTING);
 			client.connect(p.getHost());
 			publishProgress(DownloadProgress.EVENT_ID_CONNECTED);
