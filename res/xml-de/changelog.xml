@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 27" versioncode="213">
+    <release version="1.0 beta 27" versioncode="214">
+        <change>FIX: Erneutes öffnen des Mediaplayers direkt nachdem er über die App geschlossen wurde</change>
+        <change>FIX: Picons werden vom Media Scanner indiziert</change>
+        <change>FIX: Diverse force-closes</change>
         <change>Übersetzungen aktualisiert</change>
+        <change>Optische Verbesserungen an der Profilliste</change>
+        <change>"Änderungen" zum globalen Menü hinzugefügt</change>
+        <change>Diverse kleinere Fehlerbehebungen</change>
     </release>
     <release version="1.0 beta 26" versioncode="210">
         <change> !!EXPERIMENTELLE!! MediaPlayer Unterstützung (</change>
