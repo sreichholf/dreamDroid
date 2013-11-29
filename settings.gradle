@@ -1,4 +1,3 @@
-include ':libraries:appcompat'
 include ':libraries:numberpicker'
 include ':'
 include ':libraries:gaugeview-library'
