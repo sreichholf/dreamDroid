@@ -92,7 +92,6 @@ public class ZapFragment extends AbstractHttpListFragment {
 		}
 	}
 
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -176,6 +175,9 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 	@Override
 	public void onPause(){
+		if(mGetBouquetListTask != null)
+			mGetBouquetListTask.cancel(true);
+		mGetBouquetListTask = null;
 		getActionBarActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		super.onPause();
 	}
@@ -223,10 +225,12 @@ public class ZapFragment extends AbstractHttpListFragment {
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
 		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
-		if(mGetBouquetListTask == null){
-			mGetBouquetListTask = new GetBouquetListTask();
-			mGetBouquetListTask.execute();
+		if(mGetBouquetListTask != null){
+			mGetBouquetListTask.cancel(true);
+			mGetBouquetListTask = null;
 		}
+		mGetBouquetListTask = new GetBouquetListTask();
+		mGetBouquetListTask.execute();
 
 		mMapList.clear();
 		if (result.isError()) {
