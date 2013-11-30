@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Mediaplayer;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,13 +21,12 @@ import android.widget.TextView;
 
 /**
  * @author asc
- * 
  */
 public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 
 	/**
 	 * @param context
-     * @param items
+	 * @param items
 	 */
 	public MediaListAdapter(Context context, ArrayList<ExtendedHashMap> items) {
 		super(context, 0, items);
@@ -50,17 +50,17 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 
 			if (Python.NONE.equals(root)) {
 				textView.setText(reference);
-			} else if (Python.TRUE.equals(isDirectory)){
+			} else if (Python.TRUE.equals(isDirectory)) {
 				textView.setText(getShortName(reference) + "/");
 			} else {
-                textView.setText(getShortName(reference));
-            }
+				textView.setText(getShortName(reference));
+			}
 		}
 		return view;
 	}
 
-    public String getShortName(String path){
-        String[] split = path.split("/");
-        return split[split.length - 1];
-    }
+	public String getShortName(String path) {
+		String[] split = path.split("/");
+		return split[split.length - 1];
+	}
 }

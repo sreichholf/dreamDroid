@@ -184,7 +184,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfile = Profile.DEFAULT;
 
 		mAdapter = new ProfileListSimpleAdapter(getActionBarActivity(), mProfileMapList, R.layout.two_line_card_list_item,
-				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST}, new int[] { R.id.text1, R.id.text2});
+				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST}, new int[] { android.R.id.text1, android.R.id.text2});
 		setListAdapter(mAdapter);
 	}
 
