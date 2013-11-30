@@ -13,5 +13,9 @@
     <color name="grey">#FF888888</color>
     <color name="black">#FF000000</color>
     <color name="active_profile_color">#77AD2B</color>
+    <color name="card_background_selected_holo_light">#7E0099CC</color>
+    <color name="card_background_selected_holo_dark">#7E0099CC</color>
+    <color name="card_background_light">#FFFFFF</color>
+    <color name="card_background_dark">#333333</color>
 
 </resources>
