@@ -171,21 +171,23 @@
     <string name="reboot">Reiniciar</string>
     <string name="shutdown">Apagar</string>
     <string name="powercontrol">Panel encendido</string>
-    <string name="choose_tags">Elegir tags</string>
-    <string name="choose_location">Elegir localización</string>
-    <string name="bouquet_overview">Visión de bouquets</string>
+    <string name="choose_tags">Seleccionar tags</string>
+    <string name="choose_location">Seleccionar localización</string>
+    <string name="bouquet_overview">Vista de bouquets</string>
     <string name="set_default">Marcar por defecto</string>
     <string name="default_bouquet_set_to">Bouquet por defecto:</string>
-    <string name="default_bouquet_not_set">No se pudo cargar el bouquet por defecto!</string>
+    <string name="default_bouquet_not_set">¡No se pudo cargar el bouquet por defecto!</string>
     <string name="loading">Cargando&#8230;</string>
     <string name="about">Acerca de</string>
+    <string name="changelog">Changelog</string>
     <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
-    <string name="source_code_link">Código fuente disponible en : http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Perfil activo</string>
-    <string name="connection_state">Estado de la conexión</string>
+    <string name="source_code_link">Código fuente disponible en: http://github.com/sreichholf/dreamDroid</string>
+    <string name="active_profile">Perfil</string>
+	<string name="connection">Conexión</string>
+    <string name="connection_state">Estado</string>
     <string name="not_available">No disponible</string>
     <string name="checking">comprobando&#8230;</string>
-    <string name="error">ERROR!</string>
+    <string name="error">¡ERROR!</string>
     <string name="check_connectivity">Comprobar conectividad</string>
     <string name="version_too_low">Versión &lt; 1.6.5</string>
     <string name="connection_error">Error de conexión</string>
@@ -215,7 +217,7 @@
     </string-array>
 
     <string name="sleeptimer">Temporizador desconexión</string>
-    <string name="current_volume">Volumen a %s</string>
+    <string name="current_volume">Volumen actual %s</string>
     <string name="muted">Silenciado</string>
     <string name="enable_volume_control">Habilitar control volumen</string>
     <string name="enable_volume_control_long">Habilitar control directo de volumen usando botones H/W</string>
@@ -223,6 +225,7 @@
     <string name="extras">Extras</string>
     <string name="main_menu">Menú principal</string>
     <string name="profiles">Perfil</string>
+    <string name="profiles_long">Configurar perfiles de conexión</string>
     <string name="enable_instant_zap">Zapeo instantáneo</string>
     <string name="enable_instant_zap_long">Zapeo instantáneo en presión corta sobre el servicio</string>
     <string name="wrong_activity">¡Llamada errónea! Por favor, regenere los accesos directos creados para dreamDroid</string>
@@ -274,5 +277,11 @@
     <string name="drawer_close">Cerrar el cajón de navegación</string>
     <string name="enable_animations_long">Habilitar animaciones adicionales</string>
     <string name="enable_animations">Habilitar animaciones</string>
+    <string name="use_name_as_picon_filename_long">Usar el nombre del servicio como fichero para picons</string>
+    <string name="use_name_as_picon_filename">Picons por nombre de servicio</string>
+    <string name="picons">Picons</string>
+    <string name="developer_settings">Ajustes de desarrollador</string>
+    <string name="dump_xml">Dumpear contenido xml</string>
+    <string name="dump_xml_long">Dumpear contenido xml en memoria externa</string>
 
 </resources>
