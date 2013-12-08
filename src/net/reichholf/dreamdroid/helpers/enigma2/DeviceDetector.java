@@ -24,7 +24,7 @@ import android.util.Log;
  */
 public class DeviceDetector {
 	public static String LOG_TAG = DeviceDetector.class.getName();
-	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000" };
+	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2", "dm500hdsev2", "dm7020hdv2" };
 
 	public static ArrayList<Profile> getAvailableHosts() {
 		ArrayList<Profile> profiles = new ArrayList<Profile>();
