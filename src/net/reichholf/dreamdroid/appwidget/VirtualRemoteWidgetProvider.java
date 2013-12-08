@@ -39,7 +39,7 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
 	public static void updateWidget(Context context, AppWidgetManager appWidgetManager,
 									int appWidgetId, Profile profile) {
 
-		if(profile == null)
+		if (profile == null)
 			return;
 		RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.virtual_remote_appwidget);
 		remoteViews.setTextViewText(R.id.profile_name, profile.getName());
@@ -48,13 +48,14 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
 		appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 	}
 
-	public static void registerButtons(Context context, RemoteViews remoteViews, int appWidgetId){
-		for(int[] btn : VirtualRemoteFragment.REMOTE_BUTTONS){
+	public static void registerButtons(Context context, RemoteViews remoteViews, int appWidgetId) {
+		for (int[] btn : VirtualRemoteFragment.REMOTE_BUTTONS) {
 			Intent intent = new Intent(context, WidgetService.class);
 			intent.putExtra(WidgetService.KEY_WIDGETID, appWidgetId);
 			intent.putExtra(WidgetService.KEY_KEYID, Integer.toString(btn[1]));
 
-			PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+			int requestId = Integer.parseInt(Integer.toString(appWidgetId) + Integer.toString(btn[1]));
+			PendingIntent pendingIntent = PendingIntent.getService(context, appWidgetId * btn[1], intent, PendingIntent.FLAG_UPDATE_CURRENT);
 			remoteViews.setOnClickPendingIntent(btn[0], pendingIntent);
 		}
 	}
