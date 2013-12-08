@@ -49,10 +49,6 @@ public class IntentFactory {
 		}
 	}
 
-	/**
-	 * @param ref
-	 *            A ServiceReference
-	 */
 	public static Intent getStreamServiceIntent(String ref, String title) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = SimpleHttpClient.getInstance().buildServiceStreamUrl(ref, title);
@@ -63,10 +59,6 @@ public class IntentFactory {
 		return intent;
 	}
 
-	/**
-	 * @param ref
-	 *            A ServiceReference
-	 */
 	public static Intent getStreamFileIntent(String fileName, String title) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
