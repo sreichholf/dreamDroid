@@ -27,6 +27,9 @@ public class WidgetService extends IntentService {
 	public static final String KEY_KEYID = "key_id";
 	public static final String KEY_WIDGETID = "widget_id";
 
+	public static final String ACTION_ZAP = "action_zap";
+	public static final String ACTION_RCU = "action_rcu";
+
 	private Handler mHandler;
 
 	public WidgetService() {
@@ -41,6 +44,14 @@ public class WidgetService extends IntentService {
 
 	@Override
 	public void onHandleIntent(Intent intent) {
+		String action = intent.getAction();
+		if(ACTION_RCU.equals(action))
+			doRemoteRequest(intent);
+		else if(ACTION_ZAP.equals(action))
+			doZapRequest();
+	}
+
+	private void doRemoteRequest(Intent intent) {
 		Profile profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(getApplicationContext(), intent.getIntExtra(KEY_WIDGETID, -1));
 
 		SimpleHttpClient shc = SimpleHttpClient.getInstance(profile);
@@ -65,8 +76,12 @@ public class WidgetService extends IntentService {
 		}
 	}
 
+	private void doZapRequest(){
+
+	}
+
 	/*
-	 * show a toast. Takes care of calling it on the UI Thread
+	 * show a toast and take care of calling it on the UI Thread
 	 */
 	private void showToast(final String text) {
 		mHandler.post(new Runnable() {

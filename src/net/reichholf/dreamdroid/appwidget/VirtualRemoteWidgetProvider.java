@@ -53,6 +53,7 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
 			Intent intent = new Intent(context, WidgetService.class);
 			intent.putExtra(WidgetService.KEY_WIDGETID, appWidgetId);
 			intent.putExtra(WidgetService.KEY_KEYID, Integer.toString(btn[1]));
+			intent.setAction(WidgetService.ACTION_RCU);
 
 			int requestId = Integer.parseInt(Integer.toString(appWidgetId) + Integer.toString(btn[1]));
 			PendingIntent pendingIntent = PendingIntent.getService(context, requestId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
