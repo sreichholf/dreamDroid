@@ -74,6 +74,8 @@ public class SimpleHttpClient {
 	private boolean mError;
 	private boolean mIsLoopProtected;
 
+	private int mConnectionTimeoutMillis = 3000;
+
 	public SimpleHttpClient() {
 		mProfile = null;
 		init();
@@ -181,7 +183,7 @@ public class SimpleHttpClient {
 		try {
 			URL url = new URL(buildUrl(uri, parameters));
 			conn = (HttpURLConnection) url.openConnection();
-			conn.setConnectTimeout(10000);
+			conn.setConnectTimeout(mConnectionTimeoutMillis);
 			if (DreamDroid.featurePostRequest())
 				conn.setRequestMethod("POST");
 			setAuth(conn);
@@ -326,6 +328,10 @@ public class SimpleHttpClient {
 		} else {
 			mFilePrefix = "http://";
 		}
+	}
+
+	public void setConnectionTimeoutMillis(int millis){
+		mConnectionTimeoutMillis = millis;
 	}
 
 	/**
