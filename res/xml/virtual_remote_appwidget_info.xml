@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:minWidth="120dp"
+                    android:minHeight="120dp"
+                    android:updatePeriodMillis="86400000"
+                    android:previewImage="@drawable/ic_launcher_dreamdroid"
+                    android:initialLayout="@layout/virtual_remote_appwidget"
+                    android:configure="net.reichholf.dreamdroid.appwidget.VirtualRemoteWidgetConfiguration"
+                    android:resizeMode="horizontal|vertical"
+                    android:widgetCategory="home_screen">
+</appwidget-provider>

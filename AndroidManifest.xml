@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="214"
-    android:versionName="1.0 beta 27" >
+    android:versionCode="216"
+    android:versionName="1.0 beta 27.2" >
 
     <uses-sdk
         android:minSdkVersion="7"
@@ -90,6 +90,23 @@
                 android:name="android.support.UI_OPTIONS"
                 android:value="splitActionBarWhenNarrow" />
         </activity>
+
+        <activity android:name=".appwidget.VirtualRemoteWidgetConfiguration">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".appwidget.VirtualRemoteWidgetProvider" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                       android:resource="@xml/virtual_remote_appwidget_info" />
+        </receiver>
+
+        <service android:name=".appwidget.WidgetService" android:enabled="true" />
+
     </application>
 
 </manifest>

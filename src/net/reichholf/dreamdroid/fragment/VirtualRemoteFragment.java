@@ -7,8 +7,6 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -46,7 +44,7 @@ import android.view.ViewGroup;
 public class VirtualRemoteFragment extends AbstractHttpFragment {
 	private static String TAG = VirtualRemoteFragment.class.getSimpleName();
 
-	private final int[][] mButtons = { { R.id.ButtonPower, Remote.KEY_POWER },
+	public static final int[][] REMOTE_BUTTONS = { { R.id.ButtonPower, Remote.KEY_POWER },
 			{ R.id.ButtonExit, Remote.KEY_EXIT }, { R.id.ButtonVolP, Remote.KEY_VOLP },
 			{ R.id.ButtonVolM, Remote.KEY_VOLM }, { R.id.ButtonMute, Remote.KEY_MUTE },
 			{ R.id.ButtonBouP, Remote.KEY_BOUP }, { R.id.ButtonBouM, Remote.KEY_BOUM },
@@ -144,7 +142,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 				view = inflater.inflate(R.layout.virtual_remote, null, false);
 			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.virtual_remote);
 		}
-		registerButtons(view, mButtons);
+		registerButtons(view, REMOTE_BUTTONS);
 		getActionBarActivity().setTitle(mBaseTitle);
 
 		return view;
