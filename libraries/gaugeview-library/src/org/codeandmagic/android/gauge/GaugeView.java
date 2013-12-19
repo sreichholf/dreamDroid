@@ -32,9 +32,11 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 public class GaugeView extends View {
+	public static final String LOG_TAG = GaugeView.class.getSimpleName();
 
 	public static final int SIZE = 300;
 	public static final float TOP = 0.0f;
@@ -619,7 +621,7 @@ public class GaugeView extends View {
 
 	private void drawBackground(final Canvas canvas) {
 		if (null == mBackground) {
-			Logger.log.error("Background not created.");
+			Log.e(LOG_TAG, "Background not created.");
 		}
 		else {
 			canvas.drawBitmap(mBackground, 0, 0, mBackgroundPaint);
