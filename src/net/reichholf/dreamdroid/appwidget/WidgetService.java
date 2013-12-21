@@ -19,6 +19,12 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+
+import de.duenndns.ssl.MemorizingTrustManager;
+
 /**
  * Created by Stephan on 08.12.13.
  */
@@ -31,6 +37,7 @@ public class WidgetService extends IntentService {
 	public static final String ACTION_RCU = "action_rcu";
 
 	private Handler mHandler;
+	private MemorizingTrustManager mTrustManager;
 
 	public WidgetService() {
 		super(WidgetService.class.getCanonicalName());
@@ -39,6 +46,18 @@ public class WidgetService extends IntentService {
 	@Override
 	public void onCreate() {
 		mHandler = new Handler();
+		try {
+			// set location of the keystore
+			MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
+			// register MemorizingTrustManager for HTTPS
+			SSLContext sc = SSLContext.getInstance("TLS");
+			mTrustManager = new MemorizingTrustManager(getApplicationContext());
+			sc.init(null, new X509TrustManager[] { mTrustManager },
+					new java.security.SecureRandom());
+			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		super.onCreate();
 	}
 
