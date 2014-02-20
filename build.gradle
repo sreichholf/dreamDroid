@@ -17,7 +17,7 @@ task wrapper(type: Wrapper) {
 }
 
 dependencies {
-	compile "com.android.support:support-v4:19.0.+"
+	compile 'com.android.support:support-v4:19.0.+'
 	compile 'com.android.support:appcompat-v7:19.0.+'
 	compile 'de.cketti.library.changelog:ckchangelog:1.2.0'
 	compile 'com.github.chrisbanes.photoview:library:1.2.2'
@@ -27,15 +27,15 @@ dependencies {
 	compile files('libs/signpost-core-1.2.1.1.jar')
 	compile files('libs/universal-image-loader-1.8.6.jar')
 
-	compile project(":libraries:gaugeview-library")
-	compile project(":libraries:numberpicker")
-	compile project(":libraries:MemorizingTrustManager")
-	compile project(":libraries:ViewPagerIndicator")
+	compile project(':libraries:gaugeview-library')
+	compile project(':libraries:numberpicker')
+	compile project(':libraries:MemorizingTrustManager')
+	compile project(':libraries:ViewPagerIndicator')
 }
 
 android {
 	compileSdkVersion 19
-	buildToolsVersion "19"
+	buildToolsVersion '19'
 
 	sourceSets {
 		main {
