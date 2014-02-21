@@ -1,3 +1,4 @@
+[![Build Status](https://drone.io/github.com/sreichholf/dreamDroid/status.png)](https://drone.io/github.com/sreichholf/dreamDroid/latest)
 
 # LICENSE
 >© Stephan Reichholf (stephan at reichholf dot net)
