@@ -327,22 +327,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		return dfault;
 	}
 
-	/**
-	 * @param key
-	 * @param dfault
-	 * @return
-	 */
-	public boolean getDataForKey(String key, boolean dfault) {
-		if (mData != null) {
-			Boolean b = (Boolean) mData.get(key);
-			if (b != null) {
-				return b.booleanValue();
-			}
-		}
-
-		return dfault;
-	}
-
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -728,6 +712,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			params.add(new BasicNameValuePair("sRef", ref));
 		} else {
 			params.add(new BasicNameValuePair("bRef", ref));
+			mHttpHelper.onLoadStarted();
 		}
 
 		GetServiceListTask task = new GetServiceListTask();
@@ -805,7 +790,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		if (mDetailHeader != null)
 			finishProgress(getString(R.string.services));
 		else
-			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+			mHttpHelper.onLoadFinished();
 		if (isBouquetList) {
 			mNavItems.clear();
 			mNavItems.addAll(list);

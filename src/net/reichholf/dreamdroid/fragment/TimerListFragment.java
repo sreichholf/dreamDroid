@@ -62,7 +62,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		if (savedInstanceState != null) {
 			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
 		} else {
-			reload();
+			mReload = true;
 		}
 	}
 

@@ -15,6 +15,7 @@ import java.util.GregorianCalendar;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
+import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.loader.AsyncByteLoader;
@@ -23,6 +24,8 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 import uk.co.senab.photoview.PhotoViewAttacher;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -31,7 +34,6 @@ import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.Loader;
 import android.util.Log;
@@ -52,7 +54,7 @@ import android.widget.Toast;
  * 
  */
 public class ScreenShotFragment extends DreamDroidFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<byte[]>> {
+		LoaderCallbacks<LoaderResult<byte[]>>, OnRefreshListener {
 	public static final int TYPE_OSD = 0;
 	public static final int TYPE_VIDEO = 1;
 	public static final int TYPE_ALL = 2;
@@ -74,6 +76,12 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	private byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
 	private PhotoViewAttacher mAttacher;
+	private DreamDroidHttpFragmentHelper mHttpHelper;
+
+	@Override
+	public void onRefreshStarted(View view) {
+		reload();
+	}
 
 	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {
 		@Override
@@ -91,6 +99,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	public ScreenShotFragment(){
 		super();
 		shouldRetain(true);
+		mHttpHelper = new DreamDroidHttpFragmentHelper();
 	}
 
 	public ScreenShotFragment(boolean retainInstance){
@@ -108,6 +117,11 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	public void onCreate(Bundle savedInstanceState) {
 		mShouldRetainInstance = getArguments().getBoolean(BUNDLE_KEY_RETAIN);
 		super.onCreate(savedInstanceState);
+		if (mHttpHelper == null)
+			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
+		else
+			mHttpHelper.bindToFragment(this);
+
 		setHasOptionsMenu(true);
 		initTitles(getString(R.string.screenshot));
 	}
@@ -120,7 +134,9 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mImageView = new ImageView(getActionBarActivity());
+		View view = inflater.inflate(R.layout.screenshot, null);
+
+		mImageView = (ImageView) view.findViewById(R.id.screenshoot);
 		mImageView.setBackgroundColor(Color.BLACK);
 
 		Bundle extras = getArguments();
@@ -140,7 +156,15 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 			mRawImage = new byte[0];
 		}
 		mAttacher = new PhotoViewAttacher(mImageView);
-		return mImageView;
+		return view;
+	}
+
+	public void onViewCreated(View view, Bundle savedInstanceState)
+	{
+		super.onViewCreated(view, savedInstanceState);
+		mHttpHelper.onViewCreated(view, savedInstanceState);
+		PullToRefreshLayout pullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
+		pullToRefreshLayout.setEnabled(false);
 	}
 
 	@Override
@@ -161,9 +185,9 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		mScannerConn.disconnect();
 		super.onPause();
 	}
-	
+
 	@Override
-	public void onDestroy(){
+	public void onDestroy() {
 		super.onDestroy();
 		mAttacher.cleanup();
 	}
@@ -183,29 +207,29 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case Statics.ITEM_RELOAD:
-			reload();
-			break;
-		case Statics.ITEM_SAVE:
-			saveToFile();
+			case Statics.ITEM_RELOAD:
+				reload();
+				break;
+			case Statics.ITEM_SAVE:
+				saveToFile();
 		}
 
 		return true;
 	}
 
-	/**
-	 * @param bytes
-	 */
+		/**
+		 * @param bytes
+		 */
 	private void onScreenshotAvailable(byte[] bytes) {
 		if (this.isDetached())
 			return;
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		mAttacher.update();
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 
 	protected void reload() {
+		mHttpHelper.onLoadStarted();
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		switch (mType) {
@@ -297,14 +321,13 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		AsyncByteLoader loader = new AsyncByteLoader(getActionBarActivity(), args);
 		return loader;
 	}
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<byte[]>> loader, LoaderResult<byte[]> result) {
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+		mHttpHelper.onLoadFinished();
 		if (!result.isError()) {
 			if (result.getResult().length > 0)
 				onScreenshotAvailable(result.getResult());
@@ -317,7 +340,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public void onLoaderReset(Loader<LoaderResult<byte[]>> loader) {
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+		mHttpHelper.onLoadFinished();
 	}
 
 	protected void showToast(String toastText) {

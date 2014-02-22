@@ -33,16 +33,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
 
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
+
 /**
  * @author sreichholf
  * 
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, OnRefreshListener {
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
+	protected boolean mReload;
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
@@ -90,12 +93,20 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		getListView().setFastScrollEnabled(true);
+
 		try {
 			setEmptyText(getText(R.string.loading));
 		} catch (IllegalStateException e) {
 		}
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState){
+		super.onViewCreated(view, savedInstanceState);
+		mHttpHelper.onViewCreated(view, savedInstanceState);
+		if(mReload)
+			reload();
 	}
 
 	@Override
@@ -287,7 +298,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 			LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {
 			setEmptyText(result.getErrorText());
@@ -312,4 +323,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public SimpleHttpClient getHttpClient() {
 		return mHttpHelper.getHttpClient();
 	}
+
+    @Override
+    public void onRefreshStarted(View view) {
+        reload();
+    }
 }

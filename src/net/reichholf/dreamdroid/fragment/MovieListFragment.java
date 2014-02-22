@@ -86,7 +86,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		if (savedInstanceState == null) {
 			mSelectedTags = new ArrayList<String>();
 			mOldTags = new ArrayList<String>();
-			reload();
+			mReload = true;
 		} else {
 			mMovie = (ExtendedHashMap) savedInstanceState.getParcelable("movie");
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));

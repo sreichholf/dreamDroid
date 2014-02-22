@@ -76,7 +76,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		mHddsList = (LinearLayout) view.findViewById(R.id.HddsList);
 
 		if (mInfo == null || mInfo.isEmpty()) {
-			reload();
+			mReload = true;
 		} else {
 			onInfoReady();
 		}
