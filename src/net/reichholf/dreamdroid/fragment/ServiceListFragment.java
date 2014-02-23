@@ -44,6 +44,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -111,6 +112,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	private ArrayList<ExtendedHashMap> mNavItems;
 	private ArrayList<ExtendedHashMap> mDetailItems;
 	private ExtendedHashMap mCurrentService;
+	private SlidingPaneLayout mSlidingPane;
 
 	/**
 	 * @author sreichholf Fetches a service list async. Does all the
@@ -295,6 +297,25 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), false, true);
 		mDetailList.setOnScrollListener(listener);
+
+		mSlidingPane = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
+		if (mSlidingPane != null) {
+			mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+				@Override
+				public void onPanelSlide(View panel, float slideOffset) {
+				}
+
+				@Override
+				public void onPanelOpened(View panel) {
+					mNavList.setEnabled(true);
+				}
+
+				@Override
+				public void onPanelClosed(View panel) {
+					mNavList.setEnabled(false);
+				}
+			});
+		}
 
 		setAdapter();
 		return v;
@@ -705,12 +726,16 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		if (isBouquetList || mPickMode) {
+			if(mSlidingPane != null)
+				mSlidingPane.openPane();
 			if (ref.equals(SERVICE_REF_ROOT)) {
 				loadNavRoot();
 				return;
 			}
 			params.add(new BasicNameValuePair("sRef", ref));
 		} else {
+			if(mSlidingPane != null)
+				mSlidingPane.closePane();
 			params.add(new BasicNameValuePair("bRef", ref));
 			mHttpHelper.onLoadStarted();
 		}
