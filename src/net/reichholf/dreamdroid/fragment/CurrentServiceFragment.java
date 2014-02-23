@@ -118,13 +118,13 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		if (mCurrent == null || mCurrent.isEmpty()) {
-			reload();
-		} else {
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		if (mCurrent == null || mCurrent.isEmpty())
+			mReload = true;
+
+		super.onViewCreated(view, savedInstanceState);
+		if(!mReload)
 			applyData(0, mCurrent);
-		}
 	}
 
 	@Override

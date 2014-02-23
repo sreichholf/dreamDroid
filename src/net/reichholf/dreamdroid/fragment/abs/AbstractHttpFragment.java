@@ -27,17 +27,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
+
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  * @author sreichholf
- * 
  */
 public abstract class AbstractHttpFragment extends DreamDroidFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment {
+		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment, OnRefreshListener {
 
 	protected final String sData = "data";
 	protected DreamDroidHttpFragmentHelper mHttpHelper;
+	protected boolean mReload = false;
 
 	public AbstractHttpFragment() {
 		mHttpHelper = new DreamDroidHttpFragmentHelper();
@@ -53,6 +54,14 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 		setHasOptionsMenu(true);
 		// CustomExceptionHandler.register(this);
 		DreamDroid.loadCurrentProfile(getActionBarActivity());
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		mHttpHelper.onViewCreated(view, savedInstanceState);
+		if(mReload)
+			reload();
 	}
 
 	@Override
@@ -74,12 +83,10 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	/**
 	 * Register an <code>OnClickListener</code> for a view and a specific item
 	 * ID (<code>ITEM_*</code> statics)
-	 * 
-	 * @param v
-	 *            The view an OnClickListener should be registered for
-	 * @param id
-	 *            The id used to identify the item clicked (<code>ITEM_*</code>
-	 *            statics)
+	 *
+	 * @param v  The view an OnClickListener should be registered for
+	 * @param id The id used to identify the item clicked (<code>ITEM_*</code>
+	 *           statics)
 	 */
 	protected void registerOnClickListener(View v, final int id) {
 		if (v != null) {
@@ -120,21 +127,6 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 		mHttpHelper.finishProgress(title);
 	}
 
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
-		toast.show();
-	}
-
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(CharSequence toastText) {
-		mHttpHelper.showToast(toastText);
-	}
-
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		return mHttpHelper.onKeyDown(keyCode, event);
 	}
@@ -164,7 +156,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+		mHttpHelper.onLoadFinished();
 		setCurrentTitle(getLoadFinishedTitle());
 		getActionBarActivity().setTitle(getCurrentTitle());
 		if (result.isError()) {
@@ -212,5 +204,10 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 	public void zapTo(String ref) {
 		mHttpHelper.zapTo(ref);
+	}
+
+	@Override
+	public void onRefreshStarted(View view) {
+		reload();
 	}
 }

@@ -15,10 +15,13 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
+import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -29,10 +32,13 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
 import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.loader.AsyncListLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -44,6 +50,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -76,7 +85,9 @@ import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
  * @author sreichholf
  * 
  */
-public class ServiceListFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener {
+public class ServiceListFragment extends AbstractHttpEventListFragment implements ActionDialog.DialogActionListener {
+	private static final int LOADER_BOUQUETLIST_ID = 1;
+
 	public static final String SERVICE_REF_ROOT = "root";
 	public static final String BUNDLE_KEY_CURRENT_SERVICE = "currentService";
 	public static final String BUNDLE_KEY_NAVNAME = "navname";
@@ -92,7 +103,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 
 	private ListView mNavList;
 	private ListView mDetailList;
-	private TextView mDetailHeader;
 	private View mEmpty;
 	private ProgressDialog mProgress;
 
@@ -104,94 +114,14 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	private String mDetailName;
 
 	private ArrayList<ExtendedHashMap> mHistory;
-	private GetServiceListTask mListTask;
-	private ArrayList<GetServiceListTask> mListTasks;
 	private Bundle mExtras;
 	private ExtendedHashMap mData;
 	private ArrayList<ExtendedHashMap> mNavItems;
 	private ArrayList<ExtendedHashMap> mDetailItems;
 	private ExtendedHashMap mCurrentService;
-
-	/**
-	 * @author sreichholf Fetches a service list async. Does all the
-	 *         error-handling, refreshing and title-setting
-	 */
-	private class GetServiceListTask extends AsyncTask<ArrayList<NameValuePair>, String, Boolean> {
-		ArrayList<NameValuePair> mParams;
-		private ArrayList<ExtendedHashMap> mTaskList;
-		private boolean mIsBouquetList;
-
-		public GetServiceListTask() {
-			super();
-			mParams = null;
-		}
-
-		public void setParams(ArrayList<NameValuePair> params, boolean isBouquetList) {
-			mIsBouquetList = isBouquetList;
-			mParams = params;
-		}
-
-		public ArrayList<NameValuePair> getParams() {
-			if (mParams != null) {
-				return mParams;
-			} else {
-				return new ArrayList<NameValuePair>();
-			}
-		}
-
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			mTaskList = new ArrayList<ExtendedHashMap>();
-			if (isCancelled())
-				return false;
-			publishProgress(getString(R.string.fetching_data));
-
-			String xml;
-			AbstractListRequestHandler handler;
-			if (mIsBouquetList || mPickMode) {
-				handler = new ServiceListRequestHandler();
-			} else {
-				if (DreamDroid.featureNowNext())
-					handler = new EpgNowNextListRequestHandler();
-				else
-					handler = new EventListRequestHandler(URIStore.EPG_NOW);
-			}
-			xml = handler.getList(getHttpClient(), params[0]);
-
-			if (xml != null && !isCancelled()) {
-				publishProgress(getString(R.string.parsing));
-				boolean result = handler.parseList(xml, mTaskList);
-				return result;
-			}
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			if (!isCancelled())
-				updateProgress(progress[0]);
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			String title = mDetailName == null ? mBaseTitle : mDetailName;
-
-			if (result) {
-				if (!mIsBouquetList && mDetailName != null)
-					title = mDetailName;
-				else if (mDetailHeader == null)
-					title = mNavName;
-			} else {
-				title = getString(R.string.get_content_error);
-
-				if (getHttpClient().hasError()) {
-					showToast(getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText());
-				}
-			}
-
-			finishListProgress(title, mTaskList, mIsBouquetList);
-		}
-	}
+	private SlidingPaneLayout mSlidingPane;
+	private ArrayList<NameValuePair> mNavHttpParams;
+	private ArrayList<NameValuePair> mDetailHttpParams;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -240,8 +170,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			}
 		}
 
-		mListTasks = new ArrayList<GetServiceListTask>();
-
 		if (mDetailReference == null) {
 			mDetailReference = DreamDroid.getCurrentProfile().getDefaultRef();
 			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
@@ -264,20 +192,13 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mListTask != null)
-			mListTask.cancel(true);
-		super.onDestroy();
-	}
-
-	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_view, null, false);
 
 		mEmpty = v.findViewById(android.R.id.empty);
 
-		mNavList = (ListView) v.findViewById(R.id.listView1);
-		mDetailList = (ListView) v.findViewById(R.id.listView2);
+		mNavList = (ListView) v.findViewById(android.R.id.list);
+		mDetailList = (ListView) v.findViewById(R.id.list2);
 
 		// Some may call this a Hack, but I think it a proper solution
 		// On devices with resolutions other than xlarge, there is no second
@@ -288,13 +209,31 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			mDetailList = mNavList;
 			mDetailItems = mNavItems;
 		}
-		mDetailHeader = (TextView) v.findViewById(R.id.listView2Header);
 
 		mNavList.setFastScrollEnabled(true);
 		mDetailList.setFastScrollEnabled(true);
 
 		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), false, true);
 		mDetailList.setOnScrollListener(listener);
+
+		mSlidingPane = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
+		if (mSlidingPane != null) {
+			mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+				@Override
+				public void onPanelSlide(View panel, float slideOffset) {
+				}
+
+				@Override
+				public void onPanelOpened(View panel) {
+					mNavList.setEnabled(true);
+				}
+
+				@Override
+				public void onPanelClosed(View panel) {
+					mNavList.setEnabled(false);
+				}
+			});
+		}
 
 		setAdapter();
 		return v;
@@ -324,22 +263,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 				return str;
 			}
 		}
-		return dfault;
-	}
-
-	/**
-	 * @param key
-	 * @param dfault
-	 * @return
-	 */
-	public boolean getDataForKey(String key, boolean dfault) {
-		if (mData != null) {
-			Boolean b = (Boolean) mData.get(key);
-			if (b != null) {
-				return b.booleanValue();
-			}
-		}
-
 		return dfault;
 	}
 
@@ -381,15 +304,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			loadNavRoot();
 			reloadDetail(false);
 		} else {
-			setDetailHeader(mDetailName);
+			getActionBarActivity().setTitle(mDetailName);
 		}
-	}
-
-	public void setDetailHeader(String title) {
-		if (mDetailHeader != null)
-			mDetailHeader.setText(mDetailName);
-		else
-			getActivity().setTitle(title);
 	}
 
 	@Override
@@ -403,29 +319,12 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		outState.putSerializable(BUNDLE_KEY_DETAILITEMS, mDetailItems);
 		outState.putParcelable(BUNDLE_KEY_CURRENT_SERVICE, mCurrentService);
 
-		for (GetServiceListTask task : mListTasks) {
-			if (task != null) {
-				task.cancel(true);
-				task = null;
-			}
-		}
-		mListTasks.clear();
-
 		super.onSaveInstanceState(outState);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		if (mListTask != null) {
-			mListTask.cancel(true);
-		}
-
-		super.onPause();
 	}
 
 	public String genWindowTitle(String title) {
@@ -444,20 +343,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 		adapter = new ServiceListAdapter(getActionBarActivity(), mDetailItems);
 		mDetailList.setAdapter(adapter);
-	}
-
-	/**
-	 * @return
-	 */
-	private boolean isListTaskRunning() {
-
-		if (mListTask != null) {
-			if (mListTask.getStatus().equals(AsyncTask.Status.RUNNING)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	@Override
@@ -480,19 +365,10 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 						String oldname = map.getString(Event.KEY_SERVICE_NAME);
 
 						if (!mNavReference.equals(oldref) && oldref != null) {
-							// there is a download Task running, the list may
-							// have already been altered so we let that request
-							// finish
-							if (!isListTaskRunning()) {
-								mNavReference = oldref;
-								mNavName = oldname;
-								mHistory.remove(idx);
-
-								reloadNav();
-
-							} else {
-								showToast(getText(R.string.wait_request_finished));
-							}
+							mNavReference = oldref;
+							mNavName = oldname;
+							mHistory.remove(idx);
+							reloadNav();
 							return true;
 						}
 					}
@@ -588,6 +464,55 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 	}
 
+	@Override
+	protected ArrayList<NameValuePair> getHttpParams(int loader) {
+		switch(loader){
+			case DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID:
+				return mDetailHttpParams;
+			case LOADER_BOUQUETLIST_ID:
+				return mNavHttpParams;
+			default:
+				return super.getHttpParams(loader);
+		}
+	}
+
+	@Override
+	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
+		AbstractListRequestHandler handler;
+		if(id == LOADER_BOUQUETLIST_ID){
+			handler = new ServiceListRequestHandler();
+		}  else {
+			if (DreamDroid.featureNowNext())
+				handler = new EpgNowNextListRequestHandler();
+			else
+				handler = new EventListRequestHandler(URIStore.EPG_NOW);
+		}
+		return new AsyncListLoader(getActionBarActivity(), handler, true, args);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		String title = mNavName;
+		if(isDetailAvail())
+			title = mDetailName;
+
+		mHttpHelper.finishProgress(title);
+		ArrayList<ExtendedHashMap> list = result.getResult();
+		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
+			mNavItems.clear();
+			mNavItems.addAll(list);
+			((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
+		} else {
+			mEmpty.setVisibility(View.GONE);
+			mDetailList.setVisibility(View.VISIBLE);
+			mDetailItems.clear();
+			mDetailItems.addAll(list);
+			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
+		}
+		getActionBarActivity().supportInvalidateOptionsMenu();
+	}
+
 	/**
 	 * @param ref
 	 *            The ServiceReference to catch the EPG for
@@ -667,27 +592,6 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		}
 	}
 
-	/**
-	 * @param event
-	 */
-	private void setTimerById(ExtendedHashMap event) {
-		if (mProgress != null) {
-			if (mProgress.isShowing()) {
-				mProgress.dismiss();
-			}
-		}
-
-		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.saving), true);
-		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
-	}
-
-	/**
-	 * @param event
-	 */
-	private void setTimerByEventData(ExtendedHashMap event) {
-		Timer.editUsingEvent(getMultiPaneHandler(), event, this);
-	}
-
 	public void reloadNav() {
 		reload(mNavReference, true);
 	}
@@ -698,20 +602,21 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			if (!keepCurrent) {
 				mEmpty.setVisibility(View.VISIBLE);
 				mDetailList.setVisibility(View.GONE);
-				setDetailHeader(mDetailName);
+				getActionBarActivity().setTitle(mDetailName);
 			}
 			reload(mDetailReference, false);
 		}
 	}
 
-	/**
-	 * 
-	 */
+	@Override
+	public void reload(){
+		if(mDetailReference != null && !mDetailReference.isEmpty())
+			reloadDetail(true);
+	}
+
 	public void reload(String ref, boolean isBouquetList) {
 		mReload = false;
-		if (mListTask != null) {
-			mListTask.cancel(true);
-		}
+		mHttpHelper.onLoadStarted();
 
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
@@ -721,52 +626,31 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		if (isBouquetList || mPickMode) {
+			if(mSlidingPane != null)
+				mSlidingPane.openPane();
 			if (ref.equals(SERVICE_REF_ROOT)) {
 				loadNavRoot();
+				mHttpHelper.onLoadFinished();
 				return;
 			}
 			params.add(new BasicNameValuePair("sRef", ref));
 		} else {
+			if(mSlidingPane != null)
+				mSlidingPane.closePane();
 			params.add(new BasicNameValuePair("bRef", ref));
 		}
 
-		GetServiceListTask task = new GetServiceListTask();
-		task.setParams(params, isBouquetList);
-		enqueueListTask(task);
-	}
-
-	/**
-	 * @param task
-	 */
-	public void enqueueListTask(GetServiceListTask task) {
-		mListTasks.add(task);
-		if (mListTasks.size() > 0) {
-			nextListTaskPlease();
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public void nextListTaskPlease() {
-		if (mListTasks.size() > 0) {
-			GetServiceListTask task = mListTasks.get(0);
-
-			if (task.equals(mListTask)) {
-				mListTasks.remove(0);
-				if (mListTasks.size() > 0) {
-					mListTask = mListTasks.get(0);
-					mListTask.execute(mListTask.getParams());
-				}
-			} else {
-				mListTask = task;
-				mListTask.execute(mListTask.getParams());
-			}
+		if(isBouquetList){
+			mNavHttpParams = params;
+			mHttpHelper.reload(LOADER_BOUQUETLIST_ID);
+		} else {
+			mDetailHttpParams = params;
+			mHttpHelper.reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
 		}
 	}
 
 	public void loadNavRoot() {
-		if (mDetailHeader == null) {
-			getActionBarActivity().setTitle(getString(R.string.services));
-		}
+		getActionBarActivity().setTitle(getString(R.string.services));
 
 		mNavItems.clear();
 
@@ -796,29 +680,8 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 		super.onSimpleResult(success, result);
 	}
 
-	/**
-	 * @param title
-	 * @param list
-	 */
-	protected void finishListProgress(String title, ArrayList<ExtendedHashMap> list, boolean isBouquetList) {
-		setDetailHeader(title);
-		if (mDetailHeader != null)
-			finishProgress(getString(R.string.services));
-		else
-			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
-		if (isBouquetList) {
-			mNavItems.clear();
-			mNavItems.addAll(list);
-			((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
-		} else {
-			mEmpty.setVisibility(View.GONE);
-			mDetailList.setVisibility(View.VISIBLE);
-			mDetailItems.clear();
-			mDetailItems.addAll(list);
-			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
-		}
-		getActionBarActivity().supportInvalidateOptionsMenu();
-		nextListTaskPlease();
+	protected boolean isDetailAvail(){
+		return !(mDetailReference == null) && !"".equals(mDetailReference.trim());
 	}
 
 	/*
@@ -864,7 +727,7 @@ public class ServiceListFragment extends AbstractHttpFragment implements ActionD
 			break;
 
 		case Statics.ACTION_FIND_SIMILAR:
-			findSimilarEvents(mCurrentService);
+			mHttpHelper.findSimilarEvents(mCurrentService);
 			break;
 
 		case Statics.ACTION_IMDB:

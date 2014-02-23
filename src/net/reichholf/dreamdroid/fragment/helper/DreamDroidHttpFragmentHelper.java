@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
+import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -28,24 +29,32 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.app.SearchManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v7.app.ActionBarActivity;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Toast;
+
+import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  * @author sre
  * 
  */
 public class DreamDroidHttpFragmentHelper {
-	public static int LOADER_DEFAULT_ID = 0;
+	public static final int LOADER_DEFAULT_ID = 0;
 	private Fragment mFragment;
+	private PullToRefreshLayout mPullToRefreshLayout;
 
 	protected final String sData = "data";
 	protected SimpleHttpClient mShc;
+	protected boolean mIsReloading = false;
 
 	public DreamDroidHttpFragmentHelper() {
 		setClient();
@@ -57,9 +66,25 @@ public class DreamDroidHttpFragmentHelper {
 	}
 
 	public void bindToFragment(Fragment fragment) {
-		if (!(fragment instanceof HttpBaseFragment))
+		if (!(fragment instanceof HttpBaseFragment) && !(fragment instanceof ScreenShotFragment))
 			throw new IllegalStateException(getClass().getSimpleName() + " must be attached to a HttpBaseFragment.");
-		mFragment = fragment;
+		if(!fragment.equals(mFragment)){
+			mFragment = fragment;
+		}
+		mPullToRefreshLayout = null;
+	}
+
+	public void onViewCreated(View view, Bundle savedInstanceState){
+		mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
+		if (mPullToRefreshLayout != null) {
+			// Now setup the PullToRefreshLayout
+			ActionBarPullToRefresh.from(this.getActionBarActivity())
+					.allChildrenArePullable()
+					.listener((OnRefreshListener) mFragment)
+					.setup(mPullToRefreshLayout);
+
+			mPullToRefreshLayout.setRefreshing(mIsReloading);
+		}
 	}
 
 	protected void setClient() {
@@ -267,7 +292,7 @@ public class DreamDroidHttpFragmentHelper {
 	/**
 	 * @param toastText
 	 */
-	public void showToast(String toastText) {
+	private void showToast(String toastText) {
 		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
@@ -275,7 +300,7 @@ public class DreamDroidHttpFragmentHelper {
 	/**
 	 * @param toastText
 	 */
-	public void showToast(CharSequence toastText) {
+	private void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
@@ -289,7 +314,7 @@ public class DreamDroidHttpFragmentHelper {
 	public void updateProgress(String progress) {
 		getBaseFragment().setCurrentTitle(progress);
 		getActionBarActivity().setTitle(progress);
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
+		onLoadStarted();
 	}
 
 	/**
@@ -299,6 +324,7 @@ public class DreamDroidHttpFragmentHelper {
 		getBaseFragment().setCurrentTitle(title);
 		getActionBarActivity().setTitle(title);
 		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+		onLoadFinished();
 	}
 
 	/**
@@ -314,19 +340,40 @@ public class DreamDroidHttpFragmentHelper {
 		m.showDetails(f, true);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void reload() {
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
+		reload(LOADER_DEFAULT_ID);
+	}
+
+	public void reload(int loader) {
+		onLoadStarted();
 		if (!"".equals(getBaseFragment().getBaseTitle().trim()))
 			getBaseFragment().setCurrentTitle(
 					getBaseFragment().getBaseTitle() + " - " + mFragment.getString(R.string.loading));
 
 		getActionBarActivity().setTitle(getBaseFragment().getCurrentTitle());
-		mFragment.getLoaderManager().restartLoader(LOADER_DEFAULT_ID, getBaseFragment().getLoaderBundle(),
+		mFragment.getLoaderManager().restartLoader(loader, getBaseFragment().getLoaderBundle(),
 				(LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
 	}
 
 	public SimpleHttpClient getHttpClient() {
 		return mShc;
+	}
+
+	public void onLoadStarted(){
+		mIsReloading = true;
+		//The SDK check is a workaround for broken pull-to-refresh with ActionBarCompat
+		if (mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14) {
+			mPullToRefreshLayout.setRefreshing(true);
+		} else {
+			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
+		}
+	}
+
+	public void onLoadFinished()
+	{
+		mIsReloading = false;
+		if(mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14)
+			mPullToRefreshLayout.setRefreshing(false);
+		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 }

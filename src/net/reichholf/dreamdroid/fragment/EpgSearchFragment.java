@@ -43,7 +43,7 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 		if (needle != null) {
 			mNeedle = needle;
 			if (mMapList.size() == 0)
-				reload();
+				mReload = true;
 		}
 	}
 

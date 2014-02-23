@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 27" versioncode="214">
+    <release version="1.0 beta 28" versioncode="221">
+        <change>NEU: Vereinheitlichung des Verhaltens der Kanalliste für alle Gerätetypen. Wische den content nach rechts weg um das Bouquet zu wechseln.</change>
+        <change>NEU: "Pull-To-Refresh"</change>
+        <change>FIX: Größere Änderungen an der technischen implementierung der Kanalliste</change>
+        <change>FIX: Unterstützung für rtmp und https video URLS für "Auf Dreambox abspielen"</change>
         <change>FIX: Erneutes öffnen des Mediaplayers direkt nachdem er über die App geschlossen wurde</change>
         <change>FIX: Picons werden vom Media Scanner indiziert</change>
         <change>FIX: Diverse force-closes</change>

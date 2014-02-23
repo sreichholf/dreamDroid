@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 27" versioncode="214">
+    <release version="1.0 beta 28" versioncode="221">
+        <change>NEW: Unify the Servicelist behaviour for all screen sizes. Slide the content to the right to change the selected bouquet.</change>
+        <change>NEW: Implement "Pull-To-Refresh" for all screens</change>
+        <change>FIX: Support https und rtmp based streams in "Play on Dreambox"</change>
         <change>FIX: MP reopening right after it closed because th user pressed "exit" in the MP Fragment</change>
         <change>FIX: Picons are indexed by the media scanner</change>
         <change>FIX: Several force closes</change>

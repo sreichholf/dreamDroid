@@ -134,23 +134,23 @@ public class ZapFragment extends AbstractHttpListFragment {
 	private void restoreState(Bundle savedInstanceState){
 		boolean reload = false;
 		if(savedInstanceState == null){
-			reload = true;
+			mReload = true;
 		} else {
 			ExtendedHashMap currentBouquet = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_BOUQUET);
 			if(currentBouquet != null)
 				mCurrentBouquet = currentBouquet;
 			else
-				reload = true;
+				mReload = true;
 
 			ArrayList<ExtendedHashMap> bouquetList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_BOUQUETLIST);
 			if(bouquetList != null)
 				mBouquetList = bouquetList;
 			else
-				reload = true;
+				mReload = true;
 		}
 
 		if(reload)
-			reload();
+			mReload = true;
 	}
 
 	@Override
@@ -251,6 +251,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 			}
 		}
 		mAdapter.notifyDataSetChanged();
+		mHttpHelper.onLoadFinished();
 	}
 
 	@Override

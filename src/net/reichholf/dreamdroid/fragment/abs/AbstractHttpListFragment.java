@@ -33,16 +33,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.BaseAdapter;
 
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
+
 /**
  * @author sreichholf
  * 
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, OnRefreshListener {
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
+	protected boolean mReload;
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
@@ -66,6 +69,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
 		else
 			mHttpHelper.bindToFragment(this);
+		setHasOptionsMenu(true);
 		mExtras = getArguments();
 		mMapList = null;
 
@@ -90,12 +94,20 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		getListView().setFastScrollEnabled(true);
+
 		try {
 			setEmptyText(getText(R.string.loading));
 		} catch (IllegalStateException e) {
 		}
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState){
+		super.onViewCreated(view, savedInstanceState);
+		mHttpHelper.onViewCreated(view, savedInstanceState);
+		if(mReload)
+			reload();
 	}
 
 	@Override
@@ -213,32 +225,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		mHttpHelper.onSimpleResult(success, result);
 	}
 
-	/**
-	 * @param title
-	 * @param list
-	 */
-	public void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
-		mHttpHelper.finishProgress(title);
-		setEmptyText(getText(R.string.no_list_item));
-		mMapList.clear();
-		mMapList.addAll(list);
-		mAdapter.notifyDataSetChanged();
-	}
-
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(String toastText) {
-		mHttpHelper.showToast(toastText);
-	}
-
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(CharSequence toastText) {
-		mHttpHelper.showToast(toastText);
-	}
-
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		return mHttpHelper.onKeyDown(keyCode, event);
@@ -266,11 +252,19 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	protected ArrayList<NameValuePair> getHttpParams() {
+		return getHttpParams(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
+	}
+
+	protected ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		return params;
 	}
 
 	public Bundle getLoaderBundle() {
+		return getLoaderBundle(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
+	}
+
+	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
 		args.putSerializable("params", getHttpParams());
 		return args;
@@ -287,7 +281,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 			LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {
 			setEmptyText(result.getErrorText());
@@ -311,5 +305,17 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	public SimpleHttpClient getHttpClient() {
 		return mHttpHelper.getHttpClient();
+	}
+
+    @Override
+    public void onRefreshStarted(View view) {
+        reload();
+    }
+
+	/**
+	 * @param progress
+	 */
+	protected void updateProgress(String progress) {
+		mHttpHelper.updateProgress(progress);
 	}
 }
