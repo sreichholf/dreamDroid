@@ -29,6 +29,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.app.SearchManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -360,16 +361,18 @@ public class DreamDroidHttpFragmentHelper {
 
 	public void onLoadStarted(){
 		mIsReloading = true;
-		if(mPullToRefreshLayout != null)
+		//The SDK check is a workaround for broken pull-to-refresh with ActionBarCompat
+		if (mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14) {
 			mPullToRefreshLayout.setRefreshing(true);
-		else
+		} else {
 			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
+		}
 	}
 
 	public void onLoadFinished()
 	{
 		mIsReloading = false;
-		if(mPullToRefreshLayout != null)
+		if(mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14)
 			mPullToRefreshLayout.setRefreshing(false);
 		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}

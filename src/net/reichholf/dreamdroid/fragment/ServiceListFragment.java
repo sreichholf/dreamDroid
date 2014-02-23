@@ -681,7 +681,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	protected boolean isDetailAvail(){
-		return !(mDetailReference == null) && !mDetailReference.isEmpty();
+		return !(mDetailReference == null) && !"".equals(mDetailReference.trim());
 	}
 
 	/*
