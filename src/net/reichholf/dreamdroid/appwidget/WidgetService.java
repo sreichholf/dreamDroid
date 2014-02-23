@@ -46,18 +46,6 @@ public class WidgetService extends IntentService {
 	@Override
 	public void onCreate() {
 		mHandler = new Handler();
-		try {
-			// set location of the keystore
-			MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
-			// register MemorizingTrustManager for HTTPS
-			SSLContext sc = SSLContext.getInstance("TLS");
-			mTrustManager = new MemorizingTrustManager(getApplicationContext());
-			sc.init(null, new X509TrustManager[] { mTrustManager },
-					new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		super.onCreate();
 	}
 
@@ -71,6 +59,21 @@ public class WidgetService extends IntentService {
 	}
 
 	private void doRemoteRequest(Intent intent) {
+		if(!HttpsURLConnection.getDefaultSSLSocketFactory().getClass().equals(MemorizingTrustManager.class)){
+			try {
+				// set location of the keystore
+				MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
+				// register MemorizingTrustManager for HTTPS
+				SSLContext sc = SSLContext.getInstance("TLS");
+				mTrustManager = new MemorizingTrustManager(getApplicationContext());
+				sc.init(null, new X509TrustManager[] { mTrustManager },
+						new java.security.SecureRandom());
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 		Profile profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(getApplicationContext(), intent.getIntExtra(KEY_WIDGETID, -1));
 
 		SimpleHttpClient shc = SimpleHttpClient.getInstance(profile);
