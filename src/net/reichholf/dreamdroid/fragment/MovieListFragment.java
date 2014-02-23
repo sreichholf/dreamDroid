@@ -264,21 +264,6 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
 	}
 
-	@Override
-	public void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
-		super.finishListProgress(title, list);
-
-		if (mCurrentLocation == null) {
-			setDefaultLocation();
-		}
-	}
-
-	/**
-	 * @param v
-	 * @param position
-	 * @param id
-	 * @param isLong
-	 */
 	private void onListItemClick(View v, int position, long id, boolean isLong) {
 		mMovie = mMapList.get(position);
 		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity()).getBoolean(

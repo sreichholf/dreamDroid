@@ -27,7 +27,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Toast;
 
 import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
@@ -126,21 +125,6 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	 */
 	protected void finishProgress(String title) {
 		mHttpHelper.finishProgress(title);
-	}
-
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
-		toast.show();
-	}
-
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(CharSequence toastText) {
-		mHttpHelper.showToast(toastText);
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {

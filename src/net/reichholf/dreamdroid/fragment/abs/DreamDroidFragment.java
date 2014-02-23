@@ -16,7 +16,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
-
+import android.widget.Toast;
 
 
 /**
@@ -113,5 +113,15 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	
 	protected ActionBarActivity getActionBarActivity() {
 		return (ActionBarActivity) getActivity();
+	}
+
+	protected void showToast(String toastText) {
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		toast.show();
+	}
+
+	protected void showToast(CharSequence toastText) {
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		toast.show();
 	}
 }

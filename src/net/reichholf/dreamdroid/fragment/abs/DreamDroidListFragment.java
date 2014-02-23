@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author sre
@@ -136,5 +137,15 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 
 	protected ActionBarActivity getActionBarActivity() {
 		return (ActionBarActivity) getActivity();
+	}
+
+	protected void showToast(String toastText) {
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		toast.show();
+	}
+
+	protected void showToast(CharSequence toastText) {
+		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		toast.show();
 	}
 }

@@ -69,6 +69,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
 		else
 			mHttpHelper.bindToFragment(this);
+		setHasOptionsMenu(true);
 		mExtras = getArguments();
 		mMapList = null;
 
@@ -224,32 +225,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		mHttpHelper.onSimpleResult(success, result);
 	}
 
-	/**
-	 * @param title
-	 * @param list
-	 */
-	public void finishListProgress(String title, ArrayList<ExtendedHashMap> list) {
-		mHttpHelper.finishProgress(title);
-		setEmptyText(getText(R.string.no_list_item));
-		mMapList.clear();
-		mMapList.addAll(list);
-		mAdapter.notifyDataSetChanged();
-	}
-
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(String toastText) {
-		mHttpHelper.showToast(toastText);
-	}
-
-	/**
-	 * @param toastText
-	 */
-	protected void showToast(CharSequence toastText) {
-		mHttpHelper.showToast(toastText);
-	}
-
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		return mHttpHelper.onKeyDown(keyCode, event);
@@ -277,11 +252,19 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	protected ArrayList<NameValuePair> getHttpParams() {
+		return getHttpParams(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
+	}
+
+	protected ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		return params;
 	}
 
 	public Bundle getLoaderBundle() {
+		return getLoaderBundle(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
+	}
+
+	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
 		args.putSerializable("params", getHttpParams());
 		return args;
@@ -328,4 +311,11 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
     public void onRefreshStarted(View view) {
         reload();
     }
+
+	/**
+	 * @param progress
+	 */
+	protected void updateProgress(String progress) {
+		mHttpHelper.updateProgress(progress);
+	}
 }

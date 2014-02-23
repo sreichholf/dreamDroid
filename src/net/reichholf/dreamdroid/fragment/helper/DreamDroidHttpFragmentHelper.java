@@ -47,7 +47,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
  * 
  */
 public class DreamDroidHttpFragmentHelper {
-	public static int LOADER_DEFAULT_ID = 0;
+	public static final int LOADER_DEFAULT_ID = 0;
 	private Fragment mFragment;
 	private PullToRefreshLayout mPullToRefreshLayout;
 
@@ -291,7 +291,7 @@ public class DreamDroidHttpFragmentHelper {
 	/**
 	 * @param toastText
 	 */
-	public void showToast(String toastText) {
+	private void showToast(String toastText) {
 		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
@@ -299,7 +299,7 @@ public class DreamDroidHttpFragmentHelper {
 	/**
 	 * @param toastText
 	 */
-	public void showToast(CharSequence toastText) {
+	private void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
@@ -339,15 +339,18 @@ public class DreamDroidHttpFragmentHelper {
 		m.showDetails(f, true);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void reload() {
+		reload(LOADER_DEFAULT_ID);
+	}
+
+	public void reload(int loader) {
 		onLoadStarted();
 		if (!"".equals(getBaseFragment().getBaseTitle().trim()))
 			getBaseFragment().setCurrentTitle(
 					getBaseFragment().getBaseTitle() + " - " + mFragment.getString(R.string.loading));
 
 		getActionBarActivity().setTitle(getBaseFragment().getCurrentTitle());
-		mFragment.getLoaderManager().restartLoader(LOADER_DEFAULT_ID, getBaseFragment().getLoaderBundle(),
+		mFragment.getLoaderManager().restartLoader(loader, getBaseFragment().getLoaderBundle(),
 				(LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
 	}
 
