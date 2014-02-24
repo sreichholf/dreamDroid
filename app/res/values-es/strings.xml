@@ -97,9 +97,9 @@
         <item>Martes</item>
         <item>Miércoles</item>
         <item>Jueves</item>
+        <item>Viernes</item>
         <item>Sábado</item>
         <item>Domingo</item>
-        <item></item>
     </string-array>
 
     <string name="none">Ninguno</string>
@@ -110,7 +110,7 @@
     <string name="locations">Sitios</string>
     <string name="gui_version">Versión GUI</string>
     <string name="image_version">Versión de la imagen</string>
-    <string name="interface_version">Versión del interfaz</string>
+    <string name="interface_version">Versión de la interfaz</string>
     <string name="front_processor_version">Versión procesador frontal</string>
     <string name="device_name">Nombre del dispositivo</string>
     <string name="frontends">Frontend</string>
@@ -119,7 +119,7 @@
     <string name="hdd_capacity">%1$s (%2$s libre)</string>
     <string name="not_implemented">¡Esta función no esta implementada todavía!</string>
     <string name="current_event">Evento actual</string>
-    <string name="timeout">Timeout</string>
+    <string name="timeout">Tiempo espera</string>
     <string name="seconds">segundos</string>
     <string name="message">Mensaje</string>
     <string name="message_text_hint">Introduce el texto del mensaje</string>
@@ -127,15 +127,15 @@
     <string name="type">Tipo</string>
 
     <string-array name="message_types">
-        <item>SiNo</item>
-        <item>Atención</item>
-        <item>Info</item>
+        <item>Sí / No</item>
+        <item>Aviso</item>
+        <item>Informativo</item>
         <item>Error</item>
     </string-array>
 
     <string name="virtual_remote">Control remoto virtual</string>
-    <string name="login">Inicio sesión</string>
-    <string name="login_enabled">Habilitar inicio sesión</string>
+    <string name="login">Autentificación</string>
+    <string name="login_enabled">Usar autentificación</string>
     <string name="wait_request_finished">¡Espera a que finalice la petición actual!</string>
     <string name="current_service">Actual</string>
     <string name="provider">Proveedor</string>
@@ -144,7 +144,7 @@
     <string name="epg_search">Buscando EPG</string>
     <string name="epg_search_hint">Buscar EPG</string>
     <string name="standard">Configuración estándard</string>
-    <string name="quickzap">Configuración Zap rápido</string>
+    <string name="quickzap">Configuración Zapeo</string>
     <string name="no_epg_available">¡Actualmente no hay información EPG de este canal!</string>
     <string name="ok">OK</string>
     <string name="activate">Activar</string>
@@ -179,11 +179,11 @@
     <string name="default_bouquet_not_set">¡No se pudo cargar el bouquet por defecto!</string>
     <string name="loading">Cargando&#8230;</string>
     <string name="about">Acerca de</string>
-    <string name="changelog">Changelog</string>
+    <string name="changelog">Registro de cambios</string>
     <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Código fuente disponible en: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Perfil</string>
-	<string name="connection">Conexión</string>
+    <string name="connection">Conexión</string>
     <string name="connection_state">Estado</string>
     <string name="not_available">No disponible</string>
     <string name="checking">comprobando&#8230;</string>
@@ -196,11 +196,11 @@
     <string name="edit_timer">Editar temporizador</string>
     <string name="cleaning_timerlist">Limpiando lista de temporizadores</string>
     <string name="cleanup">Limpieza</string>
-    <string name="in_standby">Dispositivo en modo Espera</string>
+    <string name="in_standby">Dispositivo en modo espera</string>
     <string name="is_running">Dispositivo en funcionamiento</string>
     <string name="stream">Stream</string>
     <string name="stream_host">Nombre del host o IP del stream</string>
-    <string name="stream_host_long">Host/ip para el streaming (opcional)</string>
+    <string name="stream_host_long">Host/ip para streaming (opcional)</string>
     <string name="stream_current">Stream actual</string>
     <string name="similar">Eventos similares</string>
 
@@ -236,7 +236,7 @@
     <string name="edit_profile">Editar perfil</string>
     <string name="force_tablet_layout_long">Forzar diseño optimizado para tablets</string>
     <string name="force_tablet_layout">Forzar diseño tablets</string>
-    <string name="mobile_imdb">Usar versión móvil de imdb.com</string>
+    <string name="mobile_imdb">Versión móvil de imdb.com</string>
     <string name="mobile_imdb_long">Usar m.imdb.com en lugar de www.imdb.com</string>
     <string name="searching">Buscando&#8230;</string>
     <string name="searching_known_devices">Buscando Dreamboxes en tu red local. Esto puede tardar varios minutos&#8230;</string>
@@ -249,13 +249,13 @@
     <string name="accoustic_feedback">Feedback Acústico</string>
     <string name="use_light_theme_long">Usar un tema claro en lugar del oscuro por defecto</string>
     <string name="use_light_theme">Usar tema claro</string>
-    <string name="leave_confirm">¿Desea salir?</string>
-    <string name="leave_confirm_long">¿Está seguro de querer salir de dreamDroid?</string>
+    <string name="leave_confirm">¿Salir?</string>
+    <string name="leave_confirm_long">¿Quiere salir de dreamDroid?</string>
     <string name="sent_as">Enviado como %s</string>
-    <string name="watch_on_dream">Mirar en la Dreambox</string>
+    <string name="watch_on_dream">Ver en la Dreambox</string>
     <string name="sent_from_dreamdroid">Enviado de dreamDroid en %s</string>
     <string name="no_profile_available">¡No se ha encontrado ningún perfil de conexión! Por favor, configure al menos uno usando la aplicación principal</string>
-    <string name="confirm_app_close">Pedir confirmación al salir</string>
+    <string name="confirm_app_close">Confirmar al salir</string>
     <string name="confirm_app_close_long">Pedir confirmación antes de cerrar la aplicación al pulsar &quot;atrás&quot;</string>
     <string name="login_movies">Login (Películas)</string>
     <string name="ssl_movies">https (Películas)</string>
@@ -281,7 +281,7 @@
     <string name="use_name_as_picon_filename">Picons por nombre de servicio</string>
     <string name="picons">Picons</string>
     <string name="developer_settings">Ajustes de desarrollador</string>
-    <string name="dump_xml">Dumpear contenido xml</string>
-    <string name="dump_xml_long">Dumpear contenido xml en memoria externa</string>
+    <string name="dump_xml">Volcar contenido xml</string>
+    <string name="dump_xml_long">Volcar contenido xml en memoria externa</string>
 
 </resources>
