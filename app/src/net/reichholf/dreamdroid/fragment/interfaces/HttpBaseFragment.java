@@ -23,7 +23,7 @@ public interface HttpBaseFragment {
 
 	public void setCurrentTitle(String currentTitle);
 
-	public Bundle getLoaderBundle();
+	public Bundle getLoaderBundle(int loader);
 
 	public String getLoadFinishedTitle();
 

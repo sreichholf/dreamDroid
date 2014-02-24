@@ -260,13 +260,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return params;
 	}
 
-	public Bundle getLoaderBundle() {
-		return getLoaderBundle(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
-	}
-
 	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
-		args.putSerializable("params", getHttpParams());
+		args.putSerializable("params", getHttpParams(loader));
 		return args;
 	}
 

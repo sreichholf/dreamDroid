@@ -351,7 +351,7 @@ public class DreamDroidHttpFragmentHelper {
 					getBaseFragment().getBaseTitle() + " - " + mFragment.getString(R.string.loading));
 
 		getActionBarActivity().setTitle(getBaseFragment().getCurrentTitle());
-		mFragment.getLoaderManager().restartLoader(loader, getBaseFragment().getLoaderBundle(),
+		mFragment.getLoaderManager().restartLoader(loader, getBaseFragment().getLoaderBundle(loader),
 				(LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
 	}
 

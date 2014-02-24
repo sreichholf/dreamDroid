@@ -140,7 +140,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 		return params;
 	}
 
-	public Bundle getLoaderBundle() {
+	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
 		args.putSerializable("params", getHttpParams());
 		return args;

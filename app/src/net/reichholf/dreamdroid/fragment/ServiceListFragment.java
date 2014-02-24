@@ -175,10 +175,10 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
 		}
 
-		// if( mNavReference == null ){
-		// mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
-		// mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
-		// }
+//		if( mNavReference == null ){
+//			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
+//			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
+//		}
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -217,23 +217,24 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mDetailList.setOnScrollListener(listener);
 
 		mSlidingPane = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
-		if (mSlidingPane != null) {
-			mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
-				@Override
-				public void onPanelSlide(View panel, float slideOffset) {
-				}
+		mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+			@Override
+			public void onPanelSlide(View panel, float slideOffset) {
+			}
 
-				@Override
-				public void onPanelOpened(View panel) {
-					mNavList.setEnabled(true);
-				}
+			@Override
+			public void onPanelOpened(View panel) {
+				mNavList.setEnabled(true);
+			}
 
-				@Override
-				public void onPanelClosed(View panel) {
-					mNavList.setEnabled(false);
-				}
-			});
-		}
+			@Override
+			public void onPanelClosed(View panel) {
+				mNavList.setEnabled(false);
+			}
+		});
+
+		if(mDetailReference == null || "".equals(mDetailReference))
+			mSlidingPane.openPane();
 
 		setAdapter();
 		return v;
@@ -497,13 +498,10 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
 			mNavItems.clear();
+			((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 		} else {
 			mDetailItems.clear();
-		}
-
-		if (result.isError()) {
-			setEmptyText(result.getErrorText());
-			return;
+			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
 
 		String title = mNavName;
@@ -511,6 +509,12 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			title = mDetailName;
 
 		mHttpHelper.finishProgress(title);
+
+		if (result.isError()) {
+			setEmptyText(result.getErrorText());
+			return;
+		}
+
 		ArrayList<ExtendedHashMap> list = result.getResult();
 		if(list == null){
 			showToast(getString(R.string.error));
@@ -616,18 +620,20 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		if (mDetailReference != null && !"".equals(mDetailReference)) {
 			// Hide ListView show empty/progress
 			if (!keepCurrent) {
+				setEmptyText(getString(R.string.loading));
 				mEmpty.setVisibility(View.VISIBLE);
 				mDetailList.setVisibility(View.GONE);
 				getActionBarActivity().setTitle(mDetailName);
 			}
 			reload(mDetailReference, false);
+		} else {
+			setEmptyText(getString(R.string.no_list_item));
 		}
 	}
 
 	@Override
 	public void reload(){
-		if(mDetailReference != null && !mDetailReference.isEmpty())
-			reloadDetail(true);
+		reloadDetail(true);
 	}
 
 	public void reload(String ref, boolean isBouquetList) {
@@ -642,24 +648,18 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		if (isBouquetList || mPickMode) {
-			if(mSlidingPane != null)
-				mSlidingPane.openPane();
+			mSlidingPane.openPane();
 			if (ref.equals(SERVICE_REF_ROOT)) {
 				loadNavRoot();
 				mHttpHelper.onLoadFinished();
 				return;
 			}
 			params.add(new BasicNameValuePair("sRef", ref));
-		} else {
-			if(mSlidingPane != null)
-				mSlidingPane.closePane();
-			params.add(new BasicNameValuePair("bRef", ref));
-		}
-
-		if(isBouquetList){
 			mNavHttpParams = params;
 			mHttpHelper.reload(LOADER_BOUQUETLIST_ID);
 		} else {
+			mSlidingPane.closePane();
+			params.add(new BasicNameValuePair("bRef", ref));
 			mDetailHttpParams = params;
 			mHttpHelper.reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
 		}
