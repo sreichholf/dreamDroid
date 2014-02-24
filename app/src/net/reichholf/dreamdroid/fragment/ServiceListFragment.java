@@ -346,39 +346,6 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mDetailList.setAdapter(adapter);
 	}
 
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// back to standard back-button-behaviour when we're already at root
-		// level
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			if (!SERVICE_REF_ROOT.equals(mNavReference) && mHistory != null) {
-				int idx = mHistory.size() - 1;
-				if (idx >= 0) {
-					ExtendedHashMap map = null;
-
-					try {
-						map = (mHistory.get(idx));
-					} catch (ClassCastException ex) {
-						return super.onKeyDown(keyCode, event);
-					}
-					if (map != null) {
-						String oldref = map.getString(Event.KEY_SERVICE_REFERENCE);
-						String oldname = map.getString(Event.KEY_SERVICE_NAME);
-
-						if (!mNavReference.equals(oldref) && oldref != null) {
-							mNavReference = oldref;
-							mNavName = oldname;
-							mHistory.remove(idx);
-							reloadNav();
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return super.onKeyDown(keyCode, event);
-	}
-
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		onListItemClick(l, v, position, id, false);
 	}
