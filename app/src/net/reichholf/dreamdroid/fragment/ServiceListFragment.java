@@ -493,25 +493,41 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		getActionBarActivity().supportInvalidateOptionsMenu();
+
+		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
+			mNavItems.clear();
+		} else {
+			mDetailItems.clear();
+		}
+
+		if (result.isError()) {
+			setEmptyText(result.getErrorText());
+			return;
+		}
+
 		String title = mNavName;
 		if(isDetailAvail())
 			title = mDetailName;
 
 		mHttpHelper.finishProgress(title);
 		ArrayList<ExtendedHashMap> list = result.getResult();
+		if(list == null){
+			showToast(getString(R.string.error));
+			return;
+		}
+
 		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
-			mNavItems.clear();
 			mNavItems.addAll(list);
 			((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 		} else {
 			mEmpty.setVisibility(View.GONE);
 			mDetailList.setVisibility(View.VISIBLE);
-			mDetailItems.clear();
 			mDetailItems.addAll(list);
 			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
 		}
-		getActionBarActivity().supportInvalidateOptionsMenu();
 	}
+
 
 	/**
 	 * @param ref
