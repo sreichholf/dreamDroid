@@ -1,4 +1,4 @@
-include ':'
+include ':app'
 include ':libraries:numberpicker'
 include ':libraries:gaugeview-library'
 include ':libraries:MemorizingTrustManager'

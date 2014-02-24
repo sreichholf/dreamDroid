@@ -1,48 +1,4 @@
-buildscript {
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath 'com.android.tools.build:gradle:0.8.+'
-	}
-}
-apply plugin: 'android'
-
-repositories {
-	mavenCentral()
-}
-
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.10'
+	gradleVersion = '1.10'
 }
 
-dependencies {
-	compile 'com.android.support:support-v4:19.0.+'
-	compile 'com.android.support:appcompat-v7:19.0.+'
-	compile 'de.cketti.library.changelog:ckchangelog:1.2.0'
-	compile 'com.github.chrisbanes.photoview:library:1.2.2'
-	compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abc:+'
-
-	compile files('libs/ftp4j-1.7.2.jar')
-	compile files('libs/jmdns-3.4.1.jar')
-	compile files('libs/signpost-core-1.2.1.1.jar')
-	compile files('libs/universal-image-loader-1.8.6.jar')
-
-	compile project(':libraries:gaugeview-library')
-	compile project(':libraries:numberpicker')
-	compile project(':libraries:MemorizingTrustManager')
-	compile project(':libraries:ViewPagerIndicator')
-}
-
-android {
-	compileSdkVersion 19
-	buildToolsVersion '19.0.1'
-
-	sourceSets {
-		main {
-			manifest.srcFile 'AndroidManifest.xml'
-			java.srcDirs = ['src']
-			res.srcDirs = ['res']
-		}
-	}
-}
