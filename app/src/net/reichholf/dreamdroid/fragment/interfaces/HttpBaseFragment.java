@@ -10,6 +10,10 @@ import android.os.Bundle;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 
+import org.apache.http.NameValuePair;
+
+import java.util.ArrayList;
+
 /**
  * @author sre
  * 
@@ -22,6 +26,8 @@ public interface HttpBaseFragment {
 	public String getCurrentTitle();
 
 	public void setCurrentTitle(String currentTitle);
+
+	public ArrayList<NameValuePair> getHttpParams(int loader);
 
 	public Bundle getLoaderBundle(int loader);
 

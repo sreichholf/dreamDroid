@@ -213,7 +213,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 	}
 
 	@Override
-	protected ArrayList<NameValuePair> getHttpParams() {
+	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("sRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
 

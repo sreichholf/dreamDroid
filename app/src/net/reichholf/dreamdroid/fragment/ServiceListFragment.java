@@ -433,7 +433,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	@Override
-	protected ArrayList<NameValuePair> getHttpParams(int loader) {
+	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		switch(loader){
 			case DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID:
 				return mDetailHttpParams;

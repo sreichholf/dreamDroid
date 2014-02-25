@@ -315,7 +315,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	protected ArrayList<NameValuePair> getHttpParams() {
+	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		if (mCurrentLocation != null) {
 			params.add(new BasicNameValuePair("dirname", mCurrentLocation));

@@ -65,7 +65,7 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	}
 
 	@Override
-	protected ArrayList<NameValuePair> getHttpParams() {
+	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("sRef", mReference));
 		return params;

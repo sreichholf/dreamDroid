@@ -135,14 +135,16 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 		return mHttpHelper.onKeyUp(keyCode, event);
 	}
 
-	protected ArrayList<NameValuePair> getHttpParams() {
+	@Override
+	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		return params;
 	}
 
+	@Override
 	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
-		args.putSerializable("params", getHttpParams());
+		args.putSerializable("params", getHttpParams(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID));
 		return args;
 	}
 
