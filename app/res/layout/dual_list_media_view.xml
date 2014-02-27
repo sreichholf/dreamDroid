@@ -10,6 +10,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:gravity="center"
+        android:background="@drawable/simple_right_line"
         android:orientation="horizontal" >
 
         <ListView
@@ -30,8 +31,6 @@
         android:id="@+id/detailView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginLeft="20dp"
-        android:background="@drawable/simple_left_line"
         android:orientation="vertical" >
 
         <include layout="@layout/audio_player" />

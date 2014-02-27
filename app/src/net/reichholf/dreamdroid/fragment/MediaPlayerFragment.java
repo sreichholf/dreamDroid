@@ -61,7 +61,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	private ExtendedHashMap mMedia;
 	private int mMediaIndex;
 	private SimpleChoiceDialog mChoice;
-	private Bundle mArgs;
+	private ArrayList<NameValuePair> mFileListParams;
 	protected ImageLoader mImageLoader = ImageLoader.getInstance();
 	static int PLAY_MODE = 0;
 	static int STOP_MODE = 1;
@@ -150,11 +150,13 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 				@Override
 				public void onPanelOpened(View view) {
+					getListView().setEnabled(true);
 					getActionBarActivity().supportInvalidateOptionsMenu();
 				}
 
 				@Override
 				public void onPanelClosed(View view) {
+					getListView().setEnabled(false);
 					getActionBarActivity().supportInvalidateOptionsMenu();
 				}
 			});
@@ -226,17 +228,21 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		}
 	}
 
-	public Bundle getLoaderBundle() {
-		return mArgs;
+	@Override
+	public ArrayList<NameValuePair> getHttpParams(int loader) {
+		if(loader == LOADER_PLAYLIST_ID) {
+			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair("path", PLAYLIST_AS_ROOT));
+			return params;
+		} else { //LOADER_DEFAULT_ID
+			if(mFileListParams == null)
+				mFileListParams = new ArrayList<NameValuePair>();
+			return mFileListParams;
+		}
 	}
 
 	public void reloadPlaylist() {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("path", PLAYLIST_AS_ROOT));
-		Bundle args = new Bundle();
-		args.putSerializable("params", params);
-
-		getLoaderManager().restartLoader(LOADER_PLAYLIST_ID, args, this);
+		reload(LOADER_PLAYLIST_ID);
 	}
 
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
@@ -345,8 +351,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		switch (item.getItemId()) {
 			case (Statics.ITEM_MEDIA_HOME):
-				if (mArgs != null) {
-					mArgs.clear();
+				if (mFileListParams != null) {
+					mFileListParams.clear();
 				}
 				// loads media files without path parameter
 				reload();
@@ -356,8 +362,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				String mediaPath = (String) mMedia.get(Mediaplayer.KEY_SERVICE_REFERENCE);
 				// if root path then clear args
 				if (Python.NONE.equals(mediaPath)) {
-					if (mArgs != null) {
-						mArgs.clear();
+					if (mFileListParams != null) {
+						mFileListParams.clear();
 					}
 				} else {
 					setArgs("path", mediaPath);
@@ -587,14 +593,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	private void setArgs(String name, String value) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair(name, value));
-
-		if (mArgs != null) {
-			mArgs.clear();
-			mArgs.putSerializable("params", params);
-		} else {
-			mArgs = new Bundle();
-			mArgs.putSerializable("params", params);
-		}
+		mFileListParams = params;
 	}
 
 	/**

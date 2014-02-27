@@ -148,6 +148,10 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 		return args;
 	}
 
+	protected void reload(int loader){
+		mHttpHelper.reload(loader);
+	}
+
 	protected void reload() {
 		mHttpHelper.reload();
 	}

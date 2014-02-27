@@ -264,6 +264,10 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return args;
 	}
 
+	protected void reload(int loader){
+		mHttpHelper.reload(loader);
+	}
+
 	protected void reload() {
 		mHttpHelper.reload();
 	}
