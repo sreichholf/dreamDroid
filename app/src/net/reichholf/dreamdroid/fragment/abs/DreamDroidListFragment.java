@@ -18,6 +18,8 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -98,6 +100,19 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 			super.setEmptyText(text);
 	}
 
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+		super.onCreateOptionsMenu(menu, inflater);
+		if(!getMultiPaneHandler().isDrawerOpen())
+			createOptionsMenu(menu, inflater);
+	}
+
+	@Override
+	public void createOptionsMenu(Menu menu, MenuInflater inflater)
+	{
+	}
+
+	@Override
 	public MultiPaneHandler getMultiPaneHandler() {
 		return mHelper.getMultiPaneHandler();
 	}

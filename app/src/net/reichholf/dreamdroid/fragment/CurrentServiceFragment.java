@@ -135,7 +135,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.reload, menu);
 	}
 

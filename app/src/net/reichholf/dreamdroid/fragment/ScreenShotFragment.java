@@ -193,7 +193,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.reload, menu);
 		inflater.inflate(R.menu.save, menu);
 	}

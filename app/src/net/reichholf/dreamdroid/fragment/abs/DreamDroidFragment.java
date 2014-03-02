@@ -16,7 +16,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.widget.Toast;
+
+import java.util.zip.Inflater;
 
 
 /**
@@ -72,6 +77,18 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	public void onSaveInstanceState(Bundle outState) {
 		mHelper.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+		super.onCreateOptionsMenu(menu, inflater);
+		if(!getMultiPaneHandler().isDrawerOpen())
+			createOptionsMenu(menu, inflater);
+	}
+
+	@Override
+	public void createOptionsMenu(Menu menu, MenuInflater inflater)
+	{
 	}
 
 	public String getBaseTitle() {

@@ -523,6 +523,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		return true;
 	}
 
+	@Override
+	public boolean isDrawerOpen() {
+		return isNavigationDrawerVisible();
+	}
+
 	public boolean isSlidingMenu() {
 		return mSlider;
 	}

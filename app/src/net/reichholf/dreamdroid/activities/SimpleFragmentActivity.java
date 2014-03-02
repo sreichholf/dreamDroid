@@ -175,6 +175,11 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	}
 
 	@Override
+	public boolean isDrawerOpen() {
+		return false;
+	}
+
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		mFragment.onActivityResult(requestCode, resultCode, data);
 	}

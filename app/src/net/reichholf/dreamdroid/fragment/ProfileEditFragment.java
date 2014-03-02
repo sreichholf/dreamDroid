@@ -107,10 +107,9 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.save, menu);
 		inflater.inflate(R.menu.cancel, menu);
-		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {

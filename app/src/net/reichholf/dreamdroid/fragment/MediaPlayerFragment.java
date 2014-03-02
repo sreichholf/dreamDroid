@@ -313,8 +313,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		super.onCreateOptionsMenu(menu, inflater);
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.mediaplayer, menu);
 	}
 
@@ -324,6 +323,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
+		if(getMultiPaneHandler().isDrawerOpen())
+			return;
 		if (mMedia != null) {
 			String rootPath = (String) mMedia.get(Mediaplayer.KEY_ROOT);
 			MenuItem homeMenuItem = menu.findItem(Statics.ITEM_MEDIA_HOME);

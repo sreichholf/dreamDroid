@@ -31,5 +31,7 @@ public interface MultiPaneHandler {
 
 	public boolean isMultiPane();
 
+	public boolean isDrawerOpen();
+
 	public void finish();
 }

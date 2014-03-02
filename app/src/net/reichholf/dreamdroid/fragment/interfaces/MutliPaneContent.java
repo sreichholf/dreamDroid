@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.fragment.interfaces;
 
+import android.view.Menu;
+import android.view.MenuInflater;
+
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 
 /**
@@ -14,4 +17,5 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
  */
 public interface MutliPaneContent {
 	public MultiPaneHandler getMultiPaneHandler();
+	public void createOptionsMenu(Menu menu, MenuInflater inflater);
 }

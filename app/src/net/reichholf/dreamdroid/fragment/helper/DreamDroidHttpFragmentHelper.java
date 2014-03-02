@@ -373,7 +373,7 @@ public class DreamDroidHttpFragmentHelper {
 	{
 		mIsReloading = false;
 		if(mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14)
-			mPullToRefreshLayout.setRefreshing(false);
+			mPullToRefreshLayout.setRefreshComplete();
 		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 }

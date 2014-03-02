@@ -364,13 +364,15 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.reload, menu);
 		inflater.inflate(R.menu.servicelist, menu);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
+		if(getMultiPaneHandler().isDrawerOpen())
+			return;
 		MenuItem overview = menu.findItem(R.id.menu_overview);
 		if (!SERVICE_REF_ROOT.equals(mNavReference) || mNavList.equals(mDetailList)) {
 			overview.setVisible(true);
