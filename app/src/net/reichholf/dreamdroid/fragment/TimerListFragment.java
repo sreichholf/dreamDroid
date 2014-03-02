@@ -6,7 +6,19 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.content.Loader;
+import android.support.v7.view.ActionMode;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -14,7 +26,6 @@ import net.reichholf.dreamdroid.adapter.TimerListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -28,42 +39,92 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.content.Loader;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ListView;
+import java.util.ArrayList;
 
 /**
  * Activity to show a List of all existing timers of the target device
- * 
+ *
  * @author sreichholf
- * 
  */
 public class TimerListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
+	protected boolean mIsActionMode;
+	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+
+		// Called when the action mode is created; startActionMode() was called
+		@Override
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			// Inflate a menu resource providing context menu items
+			MenuInflater inflater = mode.getMenuInflater();
+			inflater.inflate(R.menu.timerlist_context, menu);
+			mIsActionMode = true;
+			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			return true;
+		}
+
+		// Called each time the action mode is shown. Always called after onCreateActionMode, but
+		// may be called multiple times if the mode is invalidated.
+		@Override
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			return false; // Return false if nothing is done
+		}
+
+		// Called when the user selects a contextual menu item
+		@Override
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			switch (item.getItemId()) {
+				case R.id.menu_delete:
+					deleteTimerConfirm();
+					mode.finish(); // Action picked, so close the CAB
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		// Called when the user exits the action mode
+		@Override
+		public void onDestroyActionMode(ActionMode mode) {
+			final ListView lv = getListView();
+			lv.setItemChecked(lv.getCheckedItemPosition(), false);
+			getListView().post(new Runnable() {
+				@Override
+				public void run() {
+					lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+				}
+			});
+			mIsActionMode = false;
+		}
+	};
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
-
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.timer));
 		setAdapter();
-
+		mIsActionMode = false;
 		if (savedInstanceState != null) {
 			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
 		} else {
 			mReload = true;
 		}
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+				getActionBarActivity().startSupportActionMode(mActionModeCallback);
+				mTimer = mMapList.get(position);
+				getListView().setItemChecked(position, true);
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -74,12 +135,12 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		mTimer = mMapList.get((int) id);
-		CharSequence[] actions = { getText(R.string.edit), getText(R.string.delete) };
-		int[] actionIds = { Statics.ACTION_EDIT, Statics.ACTION_DELETE };
-
-		SimpleChoiceDialog dia = SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds);
-		getMultiPaneHandler().showDialogFragment(dia, "dialog_timer_selected");
+		mTimer = mMapList.get(position);
+		if (mIsActionMode) {
+			getListView().setItemChecked(position, true);
+			return;
+		}
+		editTimer(mTimer, false);
 	}
 
 	/*
@@ -108,26 +169,25 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case (Statics.ITEM_RELOAD):
-			reload();
-			return true;
-		case (Statics.ITEM_NEW_TIMER):
-			mTimer = Timer.getInitialTimer();
-			editTimer(mTimer, true);
-			return true;
-		case (Statics.ITEM_CLEANUP):
-			cleanupTimerList();
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+			case (Statics.ITEM_RELOAD):
+				reload();
+				return true;
+			case (Statics.ITEM_NEW_TIMER):
+				mTimer = Timer.getInitialTimer();
+				editTimer(mTimer, true);
+				return true;
+			case (Statics.ITEM_CLEANUP):
+				cleanupTimerList();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
 	}
 
 	/**
 	 * Open a <code>TimerEditActivity</code> for timer editing
-	 * 
-	 * @param timer
-	 *            The timer to be edited
+	 *
+	 * @param timer The timer to be edited
 	 */
 	private void editTimer(ExtendedHashMap timer, boolean create) {
 		Timer.edit(getMultiPaneHandler(), timer, this, create);
@@ -154,9 +214,8 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	/**
 	 * Delete a timer by creating an <code>DeleteTimerTask</code>
-	 * 
-	 * @param timer
-	 *            The Timer to delete as <code>ExtendedHashMap</code>
+	 *
+	 * @param timer The Timer to delete as <code>ExtendedHashMap</code>
 	 */
 	private void deleteTimer(ExtendedHashMap timer) {
 		if (mProgress != null) {
@@ -165,7 +224,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			}
 		}
 		ArrayList<NameValuePair> params = Timer.getDeleteParams(timer);
-		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.cleaning_timerlist), true);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.deleting), true);
 		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
 
@@ -205,17 +264,17 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
-		case Statics.ACTION_EDIT:
-			editTimer(mTimer, false);
-			break;
-		case Statics.ACTION_DELETE:
-			deleteTimerConfirm();
-			break;
-		case Statics.ACTION_DELETE_CONFIRMED:
-			deleteTimer(mTimer);
-			break;
-		default:
-			break;
+			case Statics.ACTION_EDIT:
+				editTimer(mTimer, false);
+				break;
+			case Statics.ACTION_DELETE:
+				deleteTimerConfirm();
+				break;
+			case Statics.ACTION_DELETE_CONFIRMED:
+				deleteTimer(mTimer);
+				break;
+			default:
+				break;
 		}
 	}
 }

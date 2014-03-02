@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<net.reichholf.dreamdroid.widget.CheckableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/LinearLayoutMain"
     style="@style/CardStyle"
     android:minHeight="?android:attr/listPreferredItemHeight"
@@ -64,4 +64,4 @@
             style="@style/CardText" />
     </LinearLayout>
 
-</LinearLayout>
+</net.reichholf.dreamdroid.widget.CheckableLinearLayout>
