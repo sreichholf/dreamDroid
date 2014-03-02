@@ -41,4 +41,13 @@ android {
 			res.srcDirs = ['res']
 		}
 	}
+
+	buildTypes {
+		debug {
+			versionNameSuffix "-DEBUG"
+		}
+		release {
+			debuggable false
+		}
+	}
 }
