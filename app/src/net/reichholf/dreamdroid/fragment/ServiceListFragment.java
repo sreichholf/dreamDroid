@@ -52,7 +52,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.PopupMenuCompat;
 import android.support.v4.widget.SlidingPaneLayout;
+import android.support.v7.widget.PopupMenu;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -567,18 +569,47 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
-
-					CharSequence[] actions = { getText(R.string.current_event), getText(R.string.browse_epg),
-							getText(R.string.zap), getText(R.string.stream) };
-					int[] actionIds = { Statics.ACTION_CURRENT, Statics.ACTION_EPG, Statics.ACTION_ZAP,
-							Statics.ACTION_STREAM };
-
-					getMultiPaneHandler().showDialogFragment(
-							SimpleChoiceDialog.newInstance(mCurrentService.getString(Event.KEY_SERVICE_NAME), actions,
-									actionIds), "service_action_dialog");
+					showPopupMenu(v);
 				}
 			}
 		}
+	}
+
+	public void showPopupMenu(View v){
+		PopupMenu menu = new PopupMenu(getActionBarActivity(), v);
+		menu.getMenuInflater().inflate(R.menu.popup_menu_servicelist, menu.getMenu());
+
+		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem menuItem) {
+				String ref = mCurrentService.getString(Service.KEY_REFERENCE);
+				String name = mCurrentService.getString(Service.KEY_NAME);
+				switch(menuItem.getItemId()){
+					case R.id.menu_current_event:
+						Bundle args = new Bundle();
+						args.putParcelable("currentItem", mCurrentService);
+						getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
+						break;
+					case R.id.menu_browse_epg:
+						openEpg(ref, name);
+						break;
+					case R.id.menu_zap:
+						zapTo(ref);
+						break;
+					case R.id.menu_stream:
+						try {
+							startActivity(IntentFactory.getStreamServiceIntent(ref, name));
+						} catch (ActivityNotFoundException e) {
+							showToast(getText(R.string.missing_stream_player));
+						}
+						break;
+					default:
+						return false;
+				}
+				return true;
+			}
+		});
+		menu.show();
 	}
 
 	public void reloadNav() {
@@ -677,32 +708,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		String ref = mCurrentService.getString(Service.KEY_REFERENCE);
-		String name = mCurrentService.getString(Service.KEY_NAME);
-
 		switch (action) {
-		case Statics.ACTION_CURRENT:
-			Bundle args = new Bundle();
-			args.putParcelable("currentItem", mCurrentService);
-			getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
-			break;
-
-		case Statics.ACTION_EPG:
-			openEpg(ref, name);
-			break;
-
-		case Statics.ACTION_ZAP:
-			zapTo(ref);
-			break;
-
-		case Statics.ACTION_STREAM:
-			try {
-				startActivity(IntentFactory.getStreamServiceIntent(ref, name));
-			} catch (ActivityNotFoundException e) {
-				showToast(getText(R.string.missing_stream_player));
-			}
-			break;
-
 		case Statics.ACTION_SET_TIMER:
 			setTimerById(mCurrentService);
 			break;
