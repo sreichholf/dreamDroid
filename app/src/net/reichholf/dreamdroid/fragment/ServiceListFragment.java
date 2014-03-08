@@ -16,26 +16,19 @@ import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
@@ -47,15 +40,11 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.PopupMenuCompat;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.widget.PopupMenu;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -69,7 +58,6 @@ import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
@@ -400,7 +388,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	@Override
-	protected boolean onItemClicked(int id) {
+	protected boolean onItemSelected(int id) {
 		switch (id) {
 		case Statics.ITEM_OVERVIEW:
 			mNavReference = SERVICE_REF_ROOT;
@@ -426,13 +414,8 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			}
 			getActionBarActivity().supportInvalidateOptionsMenu();
 			return true;
-		case Statics.ITEM_RELOAD:
-			if (!mNavList.equals(mDetailList))
-				reloadNav();
-			reloadDetail(true);
-			return true;
 		default:
-			return super.onItemClicked(id);
+			return super.onItemSelected(id);
 		}
 	}
 
@@ -632,7 +615,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	@Override
-	public void reload(){
+	protected void reload() {
 		reloadDetail(true);
 	}
 

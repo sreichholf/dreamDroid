@@ -78,7 +78,6 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		mCardListStyle = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
-		setHasOptionsMenu(true);
 
 		mCurrentLocation = "/hdd/movie/";
 		mSelectedLocationPosition = 0;
@@ -218,21 +217,14 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		super.onSaveInstanceState(outState);
 	}
 
-	/**
-	 * @param id
-	 *            The id of the selected menu item (<code>MENU_*</code> statics)
-	 * @return
-	 */
-	protected boolean onItemClicked(int id) {
+	@Override
+	protected boolean onItemSelected(int id) {
 		switch (id) {
-		case Statics.ITEM_RELOAD:
-			reload();
-			return true;
 		case Statics.ITEM_TAGS:
 			pickTags();
 			return true;
 		default:
-			return super.onItemClicked(id);
+			return super.onItemSelected(id);
 		}
 	}
 

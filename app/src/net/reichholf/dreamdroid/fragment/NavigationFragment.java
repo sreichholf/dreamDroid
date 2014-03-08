@@ -238,7 +238,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		mCurrentListItem = -1;
 
-		setHasOptionsMenu(true);
 		setAdapter();
 	}
 
@@ -294,7 +293,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			l.setItemChecked(position, false);
 		}
 
-		onItemClicked(mCurrent[0]);
+		onItemSelected(mCurrent[0]);
 		getMainActivity().showContent();
 	}
 
@@ -315,7 +314,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 *            The id used to identify the item clicked (<code>ITEM_*</code>
 	 *            statics)
 	 */
-	protected boolean onItemClicked(int id) {
+	protected boolean onItemSelected(int id) {
 		Intent intent;
 		switch (id) {
 		case Statics.ITEM_TIMER:
@@ -427,8 +426,11 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		case Statics.ITEM_ZAP:
 			clearBackStack();
 			getMainActivity().showDetails(ZapFragment.class);
+			break;
+		case Statics.ITEM_RELOAD:
+			return false;
 		default:
-			return super.onItemClicked(id);
+			return super.onItemSelected(id);
 		}
 
 		return true;
@@ -541,6 +543,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		onItemClicked(action);
+		onItemSelected(action);
 	}
 }

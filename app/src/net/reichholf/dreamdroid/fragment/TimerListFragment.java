@@ -102,7 +102,6 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
 		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
 		initTitle(getString(R.string.timer));
 		setAdapter();
 		mIsActionMode = false;
@@ -167,11 +166,8 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case (Statics.ITEM_RELOAD):
-				reload();
-				return true;
+	public boolean onItemSelected(int id) {
+		switch (id) {
 			case (Statics.ITEM_NEW_TIMER):
 				mTimer = Timer.getInitialTimer();
 				editTimer(mTimer, true);
@@ -180,7 +176,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 				cleanupTimerList();
 				return true;
 			default:
-				return super.onOptionsItemSelected(item);
+				return super.onItemSelected(id);
 		}
 	}
 

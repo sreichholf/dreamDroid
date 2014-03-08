@@ -95,7 +95,6 @@ public class ZapFragment extends AbstractHttpListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
 		initTitle("");
 
 		mBouquetList = new ArrayList<ExtendedHashMap>();

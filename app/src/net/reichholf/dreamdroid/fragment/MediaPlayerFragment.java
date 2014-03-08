@@ -173,7 +173,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
-		setHasOptionsMenu(true);
 		initTitle(getString(R.string.mediaplayer));
 
 		mPlaylist = new ArrayList<ExtendedHashMap>();
@@ -346,11 +345,11 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onItemSelected(int id) {
 		if (mMedia == null) //TODO why does this even happen?
-			return super.onOptionsItemSelected(item);
+			return super.onItemSelected(id);
 
-		switch (item.getItemId()) {
+		switch (id) {
 			case (Statics.ITEM_MEDIA_HOME):
 				if (mFileListParams != null) {
 					mFileListParams.clear();
@@ -378,7 +377,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				return true;
 
 			default:
-				return super.onOptionsItemSelected(item);
+				return super.onItemSelected(id);
 		}
 	}
 
