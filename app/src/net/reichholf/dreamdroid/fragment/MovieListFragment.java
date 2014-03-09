@@ -6,8 +6,27 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.OnNavigationListener;
+import android.support.v7.widget.PopupMenu;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -15,7 +34,6 @@ import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -32,25 +50,8 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBar.OnNavigationListener;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations
@@ -262,16 +263,20 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
-			CharSequence[] actions = { getText(R.string.zap), getText(R.string.delete), getText(R.string.download),
-					getText(R.string.stream) };
-
-			int[] actionIds = { Statics.ACTION_ZAP, Statics.ACTION_DELETE, Statics.ACTION_DOWNLOAD,
-					Statics.ACTION_STREAM };
-
-			getMultiPaneHandler().showDialogFragment(
-					SimpleChoiceDialog.newInstance(getString(R.string.pick_action), actions, actionIds),
-					"dialog_movie_selected");
+			showPopupMenu(v);
 		}
+	}
+
+	public void showPopupMenu(View v){
+		PopupMenu menu = new PopupMenu(getActionBarActivity(), v);
+		menu.getMenuInflater().inflate(R.menu.popup_movielist, menu.getMenu());
+		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem menuItem) {
+				return onMovieAction(menuItem.getItemId());
+			}
+		});
+		menu.show();
 	}
 
 	/**
@@ -345,14 +350,17 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		getActionBarActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedLocationPosition);
 	}
 
-	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		onMovieAction(action);
+	}
+
+	public boolean onMovieAction(int action) {
 		switch (action) {
-		case Statics.ACTION_ZAP:
+		case R.id.menu_zap:
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 			break;
 
-		case Statics.ACTION_DELETE:
+		case R.id.menu_delete:
 			getMultiPaneHandler().showDialogFragment(
 					PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE), R.string.delete_confirm,
 							android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
@@ -363,7 +371,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 			deleteMovie();
 			break;
 
-		case Statics.ACTION_DOWNLOAD:
+		case R.id.menu_download:
 			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 			params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
 			String url = getHttpClient().buildUrl(URIStore.FILE, params);
@@ -372,7 +380,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 			startActivity(intent);
 			break;
 
-		case Statics.ACTION_STREAM:
+		case R.id.menu_stream:
 			try {
 				startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME),
 						mMovie.getString(Movie.KEY_TITLE)));
@@ -381,8 +389,9 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 			}
 			break;
 		default:
-			return;
+			return false;
 		}
+		return true;
 	}
 
 	@Override

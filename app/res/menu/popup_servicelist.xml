@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_current_event"
+        dreamDroid:showAsAction="never"
+        android:title="@string/current_event"/>
+    <item
+        android:id="@+id/menu_browse_epg"
+        dreamDroid:showAsAction="never"
+        android:title="@string/browse_epg"/>
+    <item
+        android:id="@+id/menu_zap"
+        dreamDroid:showAsAction="never"
+        android:title="@string/zap"/>
+    <item
+        android:id="@+id/menu_stream"
+        dreamDroid:showAsAction="never"
+        android:title="@string/stream"/>
+</menu>

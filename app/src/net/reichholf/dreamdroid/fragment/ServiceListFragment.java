@@ -560,7 +560,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 	public void showPopupMenu(View v){
 		PopupMenu menu = new PopupMenu(getActionBarActivity(), v);
-		menu.getMenuInflater().inflate(R.menu.popup_menu_servicelist, menu.getMenu());
+		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
 
 		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 			@Override
