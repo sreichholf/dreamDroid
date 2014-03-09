@@ -72,10 +72,12 @@ public class Statics {
 	public static final int ITEM_NEW_TIMER = R.id.menu_create_timer;
 	public static final int ITEM_CLEANUP = R.id.menu_cleanup;
 	public static final int ITEM_LAYOUT = R.id.menu_remote_toggle;
+	public static final int ITEM_TOGGLE_ENABLED = R.id.menu_toggle_enabled;
 	public static final int ITEM_HOME = 0x6039;
 	public static final int ITEM_DETECT_DEVICES = R.id.menu_detect_devices;
 	public static final int ITEM_SIGNAL = 0x6040;
 	public static final int ITEM_ZAP = 0x6041;
+	public static final int ITEM_DELETE = R.id.menu_delete;
 
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;

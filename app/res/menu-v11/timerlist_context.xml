@@ -6,5 +6,9 @@
         android:icon="@android:drawable/ic_menu_delete"
         dreamDroid:showAsAction="ifRoom|withText"
         android:title="@string/delete"/>
-
+    <item
+        android:id="@+id/menu_toggle_enabled"
+        android:icon="@android:drawable/ic_menu_set_as"
+        dreamDroid:showAsAction="ifRoom|withText"
+        android:title="@string/disable"/>
 </menu>

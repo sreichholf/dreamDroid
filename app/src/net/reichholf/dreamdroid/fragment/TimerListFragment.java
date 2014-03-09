@@ -31,6 +31,7 @@ import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
@@ -65,20 +66,19 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		// may be called multiple times if the mode is invalidated.
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-			return false; // Return false if nothing is done
+			MenuItem toggle = menu.findItem(R.id.menu_toggle_enabled);
+			if(mTimer.getString(Timer.KEY_DISABLED).equals("1"))
+				toggle.setTitle(R.string.disable);
+			else
+				toggle.setTitle(R.string.enable);
+			return true;
 		}
 
 		// Called when the user selects a contextual menu item
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			switch (item.getItemId()) {
-				case R.id.menu_delete:
-					deleteTimerConfirm();
-					mode.finish(); // Action picked, so close the CAB
-					return true;
-				default:
-					return false;
-			}
+			mode.finish(); // Action picked, so close the CAB
+			return onItemSelected(item.getItemId());
 		}
 
 		// Called when the user exits the action mode
@@ -118,8 +118,8 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				getActionBarActivity().startSupportActionMode(mActionModeCallback);
 				mTimer = mMapList.get(position);
+				getActionBarActivity().startSupportActionMode(mActionModeCallback);
 				getListView().setItemChecked(position, true);
 				return true;
 			}
@@ -175,6 +175,12 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			case (Statics.ITEM_CLEANUP):
 				cleanupTimerList();
 				return true;
+			case Statics.ITEM_TOGGLE_ENABLED:
+				toggleTimerEnabled(mTimer);
+				return true;
+			case Statics.ITEM_DELETE:
+				deleteTimerConfirm();
+				return true;
 			default:
 				return super.onItemSelected(id);
 		}
@@ -224,6 +230,19 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
 
+	private void toggleTimerEnabled(ExtendedHashMap timer) {
+		ExtendedHashMap timerNew = timer.clone();
+
+		if(timerNew.getString(Timer.KEY_DISABLED).equals("1"))
+			timerNew.put(Timer.KEY_DISABLED, "0");
+		else
+			timerNew.put(Timer.KEY_DISABLED, "1");
+
+		ArrayList<NameValuePair> params = Timer.getSaveParams(timerNew, timer);
+		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.saving), true);
+		execSimpleResultTask(new TimerChangeRequestHandler(), params);
+	}
+
 	/**
 	 * CleanUp timer list by creating an <code>CleanupTimerListTask</code>
 	 */
@@ -246,9 +265,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		}
 		super.onSimpleResult(success, result);
 
-		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
-			reload();
-		}
+		reload();
 	}
 
 	@Override
