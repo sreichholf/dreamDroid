@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/SelectableItem"
+    android:clickable="true"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_margin="5dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@android:id/text1"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:textAppearance="@android:style/TextAppearance.Large"
+        android:ellipsize="end"
+        android:maxLines="3"/>
+</LinearLayout>

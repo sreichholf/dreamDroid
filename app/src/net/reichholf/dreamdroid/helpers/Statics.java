@@ -78,6 +78,7 @@ public class Statics {
 	public static final int ITEM_SIGNAL = 0x6040;
 	public static final int ITEM_ZAP = 0x6041;
 	public static final int ITEM_DELETE = R.id.menu_delete;
+	public static final int ITEM_MULTIEPG = 0x6042;
 
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
