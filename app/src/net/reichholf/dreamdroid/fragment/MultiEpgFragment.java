@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
-import android.text.format.Time;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.view.EnhancedHorizontalScrollView;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -27,9 +28,25 @@ public class MultiEpgFragment extends AbstractHttpFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.multiepg, null);
-		LinearLayout content = (LinearLayout) v.findViewById(R.id.content);
-		content.addView(createTimeLine(inflater));
 
+		final EnhancedHorizontalScrollView headerScroll = (EnhancedHorizontalScrollView) v.findViewById(R.id.scrollview_header);
+		final EnhancedHorizontalScrollView contentScroll = (EnhancedHorizontalScrollView) v.findViewById(R.id.scrollview_content);
+		headerScroll.addScrollChangedListener(new EnhancedHorizontalScrollView.OnScrollChangedListener() {
+			@Override
+			public void onScrollChanged(int x, int y) {
+				contentScroll.scrollTo(x, y);
+			}
+		});
+		contentScroll.addScrollChangedListener(new EnhancedHorizontalScrollView.OnScrollChangedListener() {
+			@Override
+			public void onScrollChanged(int x, int y) {
+				headerScroll.scrollTo(x, y);
+			}
+		});
+
+		LinearLayout header = (LinearLayout) v.findViewById(R.id.header);
+		header.addView(createTimeLine(inflater));
+		LinearLayout content = (LinearLayout) v.findViewById(R.id.content);
 		for (int i = 0; i < 48; ++i) {
 			LinearLayout row = (LinearLayout) inflater.inflate(R.layout.multiepg_row, null);
 			for (int j = 0; j < 10; ++j) {
@@ -44,6 +61,7 @@ public class MultiEpgFragment extends AbstractHttpFragment {
 
 	public LinearLayout createTimeLine(LayoutInflater inflater) {
 		LinearLayout row = (LinearLayout) inflater.inflate(R.layout.multiepg_row, null);
+
 		Date now = new Date();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(now);
@@ -75,8 +93,6 @@ public class MultiEpgFragment extends AbstractHttpFragment {
 		ViewGroup.LayoutParams params = tv.getLayoutParams();
 		params.width = width;
 		tv.setLayoutParams(params);
-
-		item.setClickable(!header);
 
 		return item;
 	}

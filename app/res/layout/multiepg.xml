@@ -1,11 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+
+    <net.reichholf.dreamdroid.view.EnhancedHorizontalScrollView
+        android:id="@+id/scrollview_header"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:fillViewport="true"
+        android:background="@drawable/abc_ab_solid_light_holo"
+        android:paddingLeft="50dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/header"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            android:layout_gravity="bottom">
+
+        </LinearLayout>
+    </net.reichholf.dreamdroid.view.EnhancedHorizontalScrollView>
+
+
     <ScrollView
+        android:id="@+id/sticky_scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -21,10 +45,12 @@
 
             </LinearLayout>
 
-            <HorizontalScrollView
+            <net.reichholf.dreamdroid.view.EnhancedHorizontalScrollView
+                android:id="@+id/scrollview_content"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:fillViewport="true">
+                android:fillViewport="true"
+                android:scrollbars="none">
 
                 <LinearLayout
                     android:id="@+id/content"
@@ -34,7 +60,8 @@
                     style="?attr/cardListView">
 
                 </LinearLayout>
-            </HorizontalScrollView>
+            </net.reichholf.dreamdroid.view.EnhancedHorizontalScrollView>
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
