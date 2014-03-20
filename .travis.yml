@@ -5,12 +5,10 @@ env:
     - ANDROID_TARGET=android-19 ANDROID_ABI=armeabi-v7a
 before_install:
   # Install base Android SDK
-  - export SDK_VERSION=22.6.2
-  - export BUILD_TOOLS_VERSION=19.1.0
   - sudo apt-get update -qq
   - if [ `uname -m` = x86_64 ]; then sudo apt-get install -qq --force-yes libgd2-xpm ia32-libs ia32-libs-multiarch > /dev/null; fi
-  - wget http://dl.google.com/android/android-sdk_r$SDK_VERSION-linux.tgz
-  - tar xzf android-sdk_r$SDK_VERSION-linux.tgz
+  - wget http://dl.google.com/android/android-sdk_r22.3-linux.tgz
+  - tar xzf android-sdk_r22.3-linux.tgz
   - export ANDROID_HOME=$PWD/android-sdk-linux
   - export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
 
@@ -18,12 +16,9 @@ before_install:
   # For a full list, run `android list sdk -a --extended`
   # Note that sysimg-19 downloads only ARM, because only the first license query is accepted.
   - echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
-  - echo yes | android update sdk --all --filter build-tools-$BUILD_TOOLS_VERSION --no-ui --force > /dev/null
+  - echo yes | android update sdk --all --filter build-tools-19.0.0 --no-ui --force > /dev/null
   - echo yes | android update sdk --filter android-19 --no-ui --force > /dev/null
 #  - echo yes | android update sdk --filter sysimg-19 --no-ui --force > /dev/null
   - echo yes | android update sdk --filter extra-android-support --no-ui --force > /dev/null
   - echo yes | android update sdk --filter extra-android-m2repository --no-ui --force > /dev/null
-install:
-  - true
-script:
-  - TERM=dumb ./gradlew assembleDebug
+
