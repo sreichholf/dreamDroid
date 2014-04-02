@@ -16,10 +16,10 @@ import android.util.Log;
  */
 public class Profile implements Serializable {
 
+	public static final Profile DEFAULT = new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
 	private static final long serialVersionUID = 8176949133234868302L;
-
-    private final int mId;
-    private String mName;
+	private final int mId;
+	private String mName;
 	private String mHost;
 	private String mStreamHost;
 	private String mUser;
@@ -37,45 +37,77 @@ public class Profile implements Serializable {
 	private String mDefaultRefName;
 	private String mDefaultRef2;
 	private String mDefaultRef2Name;
-
-
-    public static final Profile DEFAULT = new Profile(-1, "", "", "", 80, 8001, 80, false,"root", "dreambox", false, false, false, false, false, "", "", "", "");
+	private String mSessionId;
 
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
-			String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
-			boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
+				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
+				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
 
-        mId = id;
-        setName(name);
-        setHost(host);
-        setStreamHost(streamHost);
-        setPort(port);
-        setStreamPort(streamPort);
-        setFilePort(filePort);
-        setLogin(login);
-        setStreamLogin(streamLogin);
-        setFileLogin(fileLogin);
-        setFileSsl(fileSsl);
-        setUser(user);
-        setPass(pass);
-        setSsl(ssl);
-        setSimpleRemote(simpleRemote);
-        setDefaultRefValues(defaultRef, defaultRefName);
-        setDefaultRef2Values(defaultRef2, defaultRef2Name);
+		mId = id;
+		mSessionId = null;
+		setName(name);
+		setHost(host);
+		setStreamHost(streamHost);
+		setPort(port);
+		setStreamPort(streamPort);
+		setFilePort(filePort);
+		setLogin(login);
+		setStreamLogin(streamLogin);
+		setFileLogin(fileLogin);
+		setFileSsl(fileSsl);
+		setUser(user);
+		setPass(pass);
+		setSsl(ssl);
+		setSimpleRemote(simpleRemote);
+		setDefaultRefValues(defaultRef, defaultRefName);
+		setDefaultRef2Values(defaultRef2, defaultRef2Name);
+	}
+
+	public void setPort(int port) {
+		mPort = port;
+	}
+
+	public void setPort(String port, boolean ssl) {
+		mSsl = ssl;
+		setPort(port);
+	}
+
+	public void setStreamPort(int streamPort) {
+		mStreamPort = streamPort;
+	}
+
+	public void setFilePort(int filePort) {
+		mFilePort = filePort;
+	}
+
+	public String getName() {
+		return mName;
 	}
 
 	public void setName(String name) {
 		if (name == null) {
-            name = "";
-        }
+			name = "";
+		}
 		mName = name;
+	}
+
+	public String getHost() {
+		return mHost;
 	}
 
 	public void setHost(String host) {
 		if (host == null) {
-            host = "";
-        }
+			host = "";
+		}
 		mHost = host.replace("http://", "").replace("https://", "");
+	}
+
+	public String getStreamHost() {
+		if ("".equals(mStreamHost) || mStreamHost == null) {
+			return mHost;
+		} else {
+			return mStreamHost;
+		}
 	}
 
 	public void setStreamHost(String streamHost) {
@@ -84,10 +116,22 @@ public class Profile implements Serializable {
 		mStreamHost = streamHost.replace("http://", "").replace("https://", "");
 	}
 
+	public String getStreamHostValue() {
+		return mStreamHost;
+	}
+
+	public String getUser() {
+		return mUser;
+	}
+
 	public void setUser(String user) {
 		if (user == null)
 			user = "";
 		mUser = user;
+	}
+
+	public String getPass() {
+		return mPass;
 	}
 
 	public void setPass(String pass) {
@@ -96,28 +140,52 @@ public class Profile implements Serializable {
 		mPass = pass;
 	}
 
+	public boolean isLogin() {
+		return mLogin;
+	}
+
 	public void setLogin(boolean login) {
 		mLogin = login;
+	}
+
+	public boolean isSsl() {
+		return mSsl;
 	}
 
 	public void setSsl(boolean ssl) {
 		mSsl = ssl;
 	}
 
+	public boolean isFileLogin() {
+		return mFileLogin;
+	}
+
 	public void setFileLogin(boolean login) {
 		mFileLogin = login;
+	}
+
+	public boolean isFileSsl() {
+		return mFileSsl;
 	}
 
 	public void setFileSsl(boolean ssl) {
 		mFileSsl = ssl;
 	}
 
+	public boolean isSimpleRemote() {
+		return mSimpleRemote;
+	}
+
 	public void setSimpleRemote(boolean simpleRemote) {
 		mSimpleRemote = simpleRemote;
 	}
 
-	public void setPort(int port) {
-		mPort = port;
+	public int getId() {
+		return mId;
+	}
+
+	public int getPort() {
+		return mPort;
 	}
 
 	public void setPort(String port) {
@@ -133,13 +201,12 @@ public class Profile implements Serializable {
 		}
 	}
 
-	public void setPort(String port, boolean ssl) {
-		mSsl = ssl;
-		setPort(port);
+	public String getPortString() {
+		return String.valueOf(mPort);
 	}
 
-	public void setStreamPort(int streamPort) {
-		mStreamPort = streamPort;
+	public int getStreamPort() {
+		return mStreamPort;
 	}
 
 	public void setStreamPort(String streamPort) {
@@ -151,8 +218,12 @@ public class Profile implements Serializable {
 		}
 	}
 
-	public void setFilePort(int filePort) {
-		mFilePort = filePort;
+	public String getStreamPortString() {
+		return String.valueOf(mStreamPort);
+	}
+
+	public int getFilePort() {
+		return mFilePort;
 	}
 
 	public void setFilePort(String filePort) {
@@ -162,79 +233,6 @@ public class Profile implements Serializable {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
 			mFilePort = 80;
 		}
-	}
-
-	public String getName() {
-		return mName;
-	}
-
-	public String getHost() {
-		return mHost;
-	}
-
-	public String getStreamHost() {
-		if ("".equals(mStreamHost) || mStreamHost == null) {
-			return mHost;
-		} else {
-			return mStreamHost;
-		}
-	}
-
-
-	public String getStreamHostValue() {
-		return mStreamHost;
-	}
-
-	public String getUser() {
-		return mUser;
-	}
-
-	public String getPass() {
-		return mPass;
-	}
-
-	public boolean isLogin() {
-		return mLogin;
-	}
-
-	public boolean isSsl() {
-		return mSsl;
-	}
-
-	public boolean isFileLogin() {
-		return mFileLogin;
-	}
-
-	public boolean isFileSsl() {
-		return mFileSsl;
-	}
-
-	public boolean isSimpleRemote() {
-		return mSimpleRemote;
-	}
-
-	public int getId() {
-		return mId;
-	}
-
-	public int getPort() {
-		return mPort;
-	}
-
-	public String getPortString() {
-		return String.valueOf(mPort);
-	}
-
-	public int getStreamPort() {
-		return mStreamPort;
-	}
-
-	public String getStreamPortString() {
-		return String.valueOf(mStreamPort);
-	}
-
-	public int getFilePort() {
-		return mFilePort;
 	}
 
 	public String getFilePortString() {
@@ -289,6 +287,14 @@ public class Profile implements Serializable {
 
 	public void setStreamLogin(boolean streamLogin) {
 		mStreamLogin = streamLogin;
+	}
+
+	public void setSessionId(String sessionId){
+		mSessionId = sessionId;
+	}
+
+	public String getSessionId(){
+		return mSessionId;
 	}
 
 	public boolean equals(Profile p) {

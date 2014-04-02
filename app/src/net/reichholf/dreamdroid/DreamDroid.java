@@ -31,7 +31,7 @@ import android.util.Log;
 
 /**
  * @author sre
- * 
+ *
  */
 public class DreamDroid extends Application {
 	public static String VERSION_STRING;
@@ -79,7 +79,7 @@ public class DreamDroid extends Application {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see android.app.Application#onCreate()
 	 */
 	@Override
@@ -102,9 +102,9 @@ public class DreamDroid extends Application {
 		sLocations = new ArrayList<String>();
 		sTags = new ArrayList<String>();
 		loadCurrentProfile(this);
-		
+
 		initImageLoader(getApplicationContext());
-		
+
 	}
 	public static void initImageLoader(Context context) {
 		if(ImageLoader.getInstance().isInited())
@@ -223,6 +223,8 @@ public class DreamDroid extends Application {
 				sLocations.clear();
 				sTags.clear();
 				activeProfileChanged();
+			} else if (sProfile.getId() == oldProfile.getId()) {
+				sProfile.setSessionId(oldProfile.getSessionId());
 			}
 			return true;
 		} else {
@@ -329,12 +331,12 @@ public class DreamDroid extends Application {
 			t.printStackTrace();
 		}
 	}
-	
+
 	public static boolean isLightTheme(Context context) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		return sp.getBoolean("light_theme", true);
 	}
-	
+
 	public static void setTheme(Context context) {
 		if (!isLightTheme(context))
 			context.setTheme(R.style.Theme_DreamDroid);

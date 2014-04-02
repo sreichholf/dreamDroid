@@ -50,6 +50,7 @@ public class URIStore {
 	public static final String TIMER_DELETE				= "/web/timerdelete?";
 	public static final String MESSAGE					= "/web/message?";
 	public static final String SCREENSHOT				= "/grab?";
+	public static final String SESSION					= "/web/session";
 	public static final String SLEEPTIMER				= "/web/sleeptimer?";
 	public static final String FILE						= "/file?";
 	public static final String ZAP						= "/web/zap?";

@@ -6,6 +6,20 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import android.os.Environment;
+import android.util.Log;
+
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.util.Base64;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.ByteArrayBuffer;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -16,35 +30,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.Profile;
-import net.reichholf.dreamdroid.util.Base64;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.ByteArrayBuffer;
-
-import android.annotation.TargetApi;
-import android.os.Build;
-import android.os.Environment;
-import android.util.Log;
 
 /**
  * @author sreichholf
@@ -56,23 +49,11 @@ public class SimpleHttpClient {
 
 	private String mPrefix;
 	private String mFilePrefix;
-	private String mHostname;
-	private String mStreamHostname;
-	private String mPort;
-	private String mStreamPort;
-	private String mFilePort;
-	private String mUser;
-	private String mPass;
 	private byte[] mBytes;
 	private String mErrorText;
 
-	private boolean mLogin;
-	private boolean mSsl;
-	private boolean mStreamLogin;
-	private boolean mFileLogin;
-	private boolean mFileSsl;
 	private boolean mError;
-	private boolean mIsLoopProtected;
+	private int mRememberedReturnCode;
 
 	private int mConnectionTimeoutMillis = 3000;
 
@@ -84,6 +65,17 @@ public class SimpleHttpClient {
 	public SimpleHttpClient(Profile p) {
 		mProfile = p;
 		init();
+	}
+
+	/**
+	 * @return
+	 */
+	public static SimpleHttpClient getInstance() {
+		return new SimpleHttpClient();
+	}
+
+	public static SimpleHttpClient getInstance(Profile p) {
+		return new SimpleHttpClient(p);
 	}
 
 	private void init() {
@@ -102,20 +94,15 @@ public class SimpleHttpClient {
 	}
 
 	/**
-	 *
-	 */
-	public void unsetCrendentials() {
-		// mDhc.getCredentialsProvider().setCredentials(AuthScope.ANY, null);
-	}
-
-	/**
 	 * @param uri
 	 * @param parameters
 	 * @return
 	 */
 	public String buildUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
-		return mPrefix + mHostname + ":" + mPort + uri + parms;
+		if(!uri.contains("?"))
+			uri += "?";
+		return mPrefix + mProfile.getHost() + ":" + mProfile.getPortString() + uri + parms;
 	}
 
 	/**
@@ -129,10 +116,10 @@ public class SimpleHttpClient {
 		} catch (UnsupportedEncodingException e) {
 		}
 		String streamLoginString = "";
-		if (mStreamLogin)
-			streamLoginString = mUser + ":" + mPass + "@";
+		if (mProfile.isStreamLogin())
+			streamLoginString = mProfile.getUser() + ":" + mProfile.getPass() + "@";
 
-		String url = "http://" + streamLoginString + mStreamHostname + ":" + mStreamPort + "/" + ref;
+		String url = "http://" + streamLoginString + mProfile.getStreamHost() + ":" + mProfile.getStreamPortString() + "/" + ref;
 		return url;
 	}
 
@@ -144,10 +131,10 @@ public class SimpleHttpClient {
 	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
 		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
 		String fileAuthString = "";
-		if (mFileLogin)
-			fileAuthString = mUser + ":" + mPass + "@";
+		if (mProfile.isFileLogin())
+			fileAuthString = mProfile.getUser() + ":" + mProfile.getPass() + "@";
 
-		String url = mFilePrefix + fileAuthString + mStreamHostname + ":" + mFilePort + uri + parms;
+		String url = mFilePrefix + fileAuthString + mProfile.getStreamHost() + ":" + mProfile.getFilePortString() + uri + parms;
 		return url;
 	}
 
@@ -156,8 +143,8 @@ public class SimpleHttpClient {
 	}
 
 	private void setAuth(HttpURLConnection connection) {
-		if (mLogin) {
-			byte[] auth = (mUser + ":" + mPass).getBytes();
+		if (mProfile.isLogin()) {
+			byte[] auth = (mProfile.getUser() + ":" + mProfile.getPass()).getBytes();
 			String basic = Base64.encodeToString(auth, Base64.NO_WRAP);
 			connection.setRequestProperty("Authorization", "Basic " + basic);
 		}
@@ -181,6 +168,8 @@ public class SimpleHttpClient {
 
 		HttpURLConnection conn = null;
 		try {
+			if(mProfile.getSessionId() != null)
+				parameters.add(new BasicNameValuePair("sessionid", mProfile.getSessionId()));
 			URL url = new URL(buildUrl(uri, parameters));
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setConnectTimeout(mConnectionTimeoutMillis);
@@ -188,15 +177,21 @@ public class SimpleHttpClient {
 				conn.setRequestMethod("POST");
 			setAuth(conn);
 			if (conn.getResponseCode() != 200) {
-				if (conn.getResponseCode() == 405 && !mIsLoopProtected) {
+				if (conn.getResponseCode() == HttpURLConnection.HTTP_BAD_METHOD && mRememberedReturnCode != HttpURLConnection.HTTP_BAD_METHOD) {
 					// Method not allowed, the target device either can't handle
 					// POST or GET requests (old device or Anti-Hijack enabled)
 					DreamDroid.setFeaturePostRequest(!DreamDroid.featurePostRequest());
 					conn.disconnect();
-					mIsLoopProtected = true;
+					mRememberedReturnCode = HttpURLConnection.HTTP_BAD_METHOD;
 					return fetchPageContent(uri, parameters);
 				}
-				mIsLoopProtected = false;
+				if (conn.getResponseCode() == HttpURLConnection.HTTP_PRECON_FAILED && mRememberedReturnCode != HttpURLConnection.HTTP_PRECON_FAILED) {
+					createSession();
+					conn.disconnect();
+					mRememberedReturnCode = HttpURLConnection.HTTP_PRECON_FAILED;
+					return fetchPageContent(uri, parameters);
+				}
+				mRememberedReturnCode = 0;
 				mErrorText = conn.getResponseMessage();
 				mError = true;
 				return false;
@@ -212,7 +207,7 @@ public class SimpleHttpClient {
 			}
 
 			mBytes = baf.toByteArray();
-			if(DreamDroid.dumpXml())
+			if (DreamDroid.dumpXml())
 				dumpToFile(url);
 			return true;
 
@@ -237,19 +232,31 @@ public class SimpleHttpClient {
 		return false;
 	}
 
-	private void dumpToFile(URL url){
+	private void createSession() {
+		SimpleHttpClient shc = SimpleHttpClient.getInstance(mProfile);
+		shc.fetchPageContent(URIStore.SESSION);
+		if(!shc.hasError()) {
+			String content = shc.getPageContentString();
+			content = content.replaceAll("\\<.*?\\>", "").trim();
+			mProfile.setSessionId(content);
+		} else {
+			mProfile.setSessionId(null);
+		}
+	}
+
+	private void dumpToFile(URL url) {
 		File externalStorage = Environment.getExternalStorageDirectory();
-		if(!externalStorage.canWrite())
+		if (!externalStorage.canWrite())
 			return;
 
 		String fn = null;
 
 		String[] f = url.toString().split("/");
-		fn = f[f.length-1].split("\\?")[0];
+		fn = f[f.length - 1].split("\\?")[0];
 		Log.w("--------------", fn);
 
 		String base = String.format("%s/dreamDroid/xml", externalStorage);
-		File file = new File( String.format("%s/%s", base, fn) );
+		File file = new File(String.format("%s/%s", base, fn));
 		BufferedOutputStream bos = null;
 		try {
 			(new File(base)).mkdirs();
@@ -295,53 +302,27 @@ public class SimpleHttpClient {
 	 *
 	 */
 	public void applyConfig() {
-		Profile p = mProfile;
-		if (p == null)
-			p = DreamDroid.getCurrentProfile();
+		if (mProfile == null)
+			mProfile = DreamDroid.getCurrentProfile();
 
-		mHostname = p.getHost().trim();
-		mStreamHostname = p.getStreamHost().trim();
-		mPort = p.getPortString();
-		mStreamPort = p.getStreamPortString();
-		mFilePort = p.getFilePortString();
-		mLogin = p.isLogin();
-		mSsl = p.isSsl();
-		mStreamLogin = p.isStreamLogin();
-		mFileLogin = p.isFileLogin();
-		mFileSsl = p.isFileSsl();
-
-		if (mSsl) {
+		if (mProfile.isSsl()) {
 			mPrefix = "https://";
 		} else {
 			mPrefix = "http://";
 		}
 
-		if (mLogin) {
-			mUser = p.getUser();
-			mPass = p.getPass();
-		} else {
+		if (!mProfile.isLogin()) {
 			clearCredentials();
 		}
 
-		if (mFileSsl) {
+		if (mProfile.isFileSsl()) {
 			mFilePrefix = "https://";
 		} else {
 			mFilePrefix = "http://";
 		}
 	}
 
-	public void setConnectionTimeoutMillis(int millis){
+	public void setConnectionTimeoutMillis(int millis) {
 		mConnectionTimeoutMillis = millis;
-	}
-
-	/**
-	 * @return
-	 */
-	public static SimpleHttpClient getInstance() {
-		return new SimpleHttpClient();
-	}
-
-	public static SimpleHttpClient getInstance(Profile p) {
-		return new SimpleHttpClient(p);
 	}
 }
