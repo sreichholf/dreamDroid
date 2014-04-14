@@ -67,7 +67,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
 			MenuItem toggle = menu.findItem(R.id.menu_toggle_enabled);
-			if(mTimer.getString(Timer.KEY_DISABLED).equals("1"))
+			if(mTimer.getString(Timer.KEY_DISABLED).equals("0"))
 				toggle.setTitle(R.string.disable);
 			else
 				toggle.setTitle(R.string.enable);

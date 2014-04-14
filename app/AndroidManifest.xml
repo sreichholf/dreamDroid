@@ -3,7 +3,7 @@
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
     android:versionCode="226"
-    android:versionName="1.0 beta 28.4" >
+    android:versionName="1.0 beta 28.5" >
 
     <uses-sdk
         android:minSdkVersion="7"
