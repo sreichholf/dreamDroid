@@ -24,8 +24,12 @@
     <dimen name="abs__alert_dialog_title_height">64dip</dimen>
     <dimen name="content_horz_padding">6dp</dimen>
     <dimen name="content_vert_padding">3dp</dimen>
-	<dimen name="remote_key_width">56dp</dimen>
-	<dimen name="remote_key_width_big">70dp</dimen>
-	<dimen name="remote_key_height">45dp</dimen>
-	<dimen name="remote_key_height_big">70dp</dimen>
+    <dimen name="remote_key_width">56dp</dimen>
+    <dimen name="remote_key_width_big">70dp</dimen>
+    <dimen name="remote_key_height">45dp</dimen>
+    <dimen name="remote_key_height_big">70dp</dimen>
+    <dimen name="app_defaultsize_w">632.0dip</dimen>
+    <dimen name="app_defaultsize_h">598.0dip</dimen>
+    <dimen name="app_minimumsize_w">632.0dip</dimen>
+    <dimen name="app_minimumsize_h">598.0dip</dimen>
 </resources>
