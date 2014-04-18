@@ -20,6 +20,7 @@ public class URIStore {
 	public static final String EPG_SERVICE_NEXT			= "/web/epgservicenext?";
 	public static final String EPG_SEARCH				= "/web/epgsearch?";
 	public static final String EPG_BOUQUET				= "/web/epgbouquet?";
+	public static final String EPG_MULTI				= "/web/epgmulti?";
 	public static final String DEVICE_INFO 				= "/web/deviceinfo";
 	public static final String SETTINGS					= "/web/settings";
 	public static final String SIGNAL					= "/web/signal";

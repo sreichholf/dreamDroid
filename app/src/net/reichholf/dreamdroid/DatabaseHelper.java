@@ -6,6 +6,11 @@
 
 package net.reichholf.dreamdroid;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 import android.content.ContentValues;
@@ -14,7 +19,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * @author sre
@@ -23,73 +30,101 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String LOG_TAG = DatabaseHelper.class.getSimpleName();
 
-	public static final String KEY_ID = "_id";
-	public static final String KEY_PROFILE = "profile";
-	public static final String KEY_HOST = "host";
-	public static final String KEY_STREAM_HOST = "streamhost";
-	public static final String KEY_STREAM_PORT = "streamport";
-	public static final String KEY_STREAM_LOGIN = "streamlogin";
-	public static final String KEY_FILE_PORT = "fileport";
-	public static final String KEY_PORT = "port";
-	public static final String KEY_LOGIN = "login";
-	public static final String KEY_USER = "user";
-	public static final String KEY_PASS = "pass";
-	public static final String KEY_SSL = "ssl";
-	public static final String KEY_FILE_SSL = "file_ssl";
-	public static final String KEY_FILE_LOGIN = "file_login";
-	public static final String KEY_SIMPLE_REMOTE = "simpleremote";
-	public static final String KEY_DEFAULT_REF = "default_ref";
-	public static final String KEY_DEFAULT_REF_NAME = "default_ref_name";
-	public static final String KEY_DEFAULT_REF_2 = "default_ref_2";
-	public static final String KEY_DEFAULT_REF_2_NAME = "default_ref_2_name";
+	public static final String KEY_PROFILE_ID = "_id";
+	public static final String KEY_PROFILE_PROFILE = "profile";
+	public static final String KEY_PROFILE_HOST = "host";
+	public static final String KEY_PROFILE_STREAM_HOST = "streamhost";
+	public static final String KEY_PROFILE_STREAM_PORT = "streamport";
+	public static final String KEY_PROFILE_STREAM_LOGIN = "streamlogin";
+	public static final String KEY_PROFILE_FILE_PORT = "fileport";
+	public static final String KEY_PROFILE_PORT = "port";
+	public static final String KEY_PROFILE_LOGIN = "login";
+	public static final String KEY_PROFILE_USER = "user";
+	public static final String KEY_PROFILE_PASS = "pass";
+	public static final String KEY_PROFILE_SSL = "ssl";
+	public static final String KEY_PROFILE_FILE_SSL = "file_ssl";
+	public static final String KEY_PROFILE_FILE_LOGIN = "file_login";
+	public static final String KEY_PROFILE_SIMPLE_REMOTE = "simpleremote";
+	public static final String KEY_PROFILE_DEFAULT_REF = "default_ref";
+	public static final String KEY_PROFILE_DEFAULT_REF_NAME = "default_ref_name";
+	public static final String KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2";
+	public static final String KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name";
+
+	public static final String KEY_EPG_ID = "id";
+	public static final String KEY_EPG_START = "start";
+	public static final String KEY_EPG_DURATION = "duration";
+	public static final String KEY_EPG_TITLE = "title";
+	public static final String KEY_EPG_DESCRIPTION = "description";
+	public static final String KEY_EPG_DESCRIPTION_EXTENDED = "description_ext";
+	public static final String KEY_EPG_SERVICE_ID = "sid";
+	public static final String KEY_SERVICES_REFERENCE = "ref";
+	public static final String KEY_SERVICES_NAME = "name";
 
 	public static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 9;
+	private static final int DATABASE_VERSION = 10;
 	private static final String PROFILES_TABLE_NAME = "profiles";
+	private static final String EPG_TABLE_NAME = "epg";
+	private static final String SERVICES_TABLE_NAME = "services";
 
 	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
 				PROFILES_TABLE_NAME + " (" +
-				KEY_ID + " INTEGER PRIMARY KEY, " +
-				KEY_PROFILE + " TEXT, " +
-				KEY_HOST + " TEXT, " +
-				KEY_STREAM_HOST + " TEXT, " +
-				KEY_PORT + " INTEGER, " +
-				KEY_STREAM_PORT + " INTEGER, " +
-				KEY_FILE_PORT + " INTEGER, " +
-				KEY_LOGIN + " BOOLEAN, " +
-				KEY_USER + " TEXT, " +
-				KEY_PASS + " TEXT, " +
-				KEY_SSL + " BOOLEAN, " +
-				KEY_SIMPLE_REMOTE + " BOOLEAN, " +
-				KEY_DEFAULT_REF + " TEXT, " +
-				KEY_DEFAULT_REF_NAME + " TEXT, " +
-				KEY_DEFAULT_REF_2 + " TEXT, " +
-				KEY_DEFAULT_REF_2_NAME + " TEXT, " +
-				KEY_FILE_LOGIN + " BOOLEAN, " +
-				KEY_FILE_SSL + " BOOLEAN, " +
-				KEY_STREAM_LOGIN + " BOOLEAN);";
+			KEY_PROFILE_ID + " INTEGER PRIMARY KEY, " +
+			KEY_PROFILE_PROFILE + " TEXT, " +
+			KEY_PROFILE_HOST + " TEXT, " +
+			KEY_PROFILE_STREAM_HOST + " TEXT, " +
+			KEY_PROFILE_PORT + " INTEGER, " +
+			KEY_PROFILE_STREAM_PORT + " INTEGER, " +
+			KEY_PROFILE_FILE_PORT + " INTEGER, " +
+			KEY_PROFILE_LOGIN + " BOOLEAN, " +
+			KEY_PROFILE_USER + " TEXT, " +
+			KEY_PROFILE_PASS + " TEXT, " +
+			KEY_PROFILE_SSL + " BOOLEAN, " +
+			KEY_PROFILE_SIMPLE_REMOTE + " BOOLEAN, " +
+			KEY_PROFILE_DEFAULT_REF + " TEXT, " +
+			KEY_PROFILE_DEFAULT_REF_NAME + " TEXT, " +
+			KEY_PROFILE_DEFAULT_REF_2 + " TEXT, " +
+			KEY_PROFILE_DEFAULT_REF_2_NAME + " TEXT, " +
+			KEY_PROFILE_FILE_LOGIN + " BOOLEAN, " +
+			KEY_PROFILE_FILE_SSL + " BOOLEAN, " +
+			KEY_PROFILE_STREAM_LOGIN + " BOOLEAN);";
 
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_STREAM_HOST + " TEXT;";
+			+ KEY_PROFILE_STREAM_HOST + " TEXT;";
 
 	private static final String PROFILES_TABLE_UPGRADE_3_4 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_SIMPLE_REMOTE + " BOOLEAN;";
+			+ KEY_PROFILE_SIMPLE_REMOTE + " BOOLEAN;";
 
 	private static final String PROFILES_TABLE_UPGRADE_4_5 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_STREAM_PORT + " INTEGER;";
+			+ KEY_PROFILE_STREAM_PORT + " INTEGER;";
 
 	private static final String PROFILES_TABLE_UPGRADE_5_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
-			+ KEY_FILE_PORT + " INTEGER;";
+			+ KEY_PROFILE_FILE_PORT + " INTEGER;";
 
-	private static final String PROFILES_TABLE_UPGRADE_6_7_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF + " TEXT;";
-	private static final String PROFILES_TABLE_UPGRADE_6_7_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF_NAME + " TEXT;";
-	private static final String PROFILES_TABLE_UPGRADE_6_7_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF_2 + " TEXT;";
-	private static final String PROFILES_TABLE_UPGRADE_6_7_4 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_REF_2_NAME + " TEXT;";
+	private static final String PROFILES_TABLE_UPGRADE_6_7_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_DEFAULT_REF + " TEXT;";
+	private static final String PROFILES_TABLE_UPGRADE_6_7_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_DEFAULT_REF_NAME + " TEXT;";
+	private static final String PROFILES_TABLE_UPGRADE_6_7_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_DEFAULT_REF_2 + " TEXT;";
+	private static final String PROFILES_TABLE_UPGRADE_6_7_4 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_DEFAULT_REF_2_NAME + " TEXT;";
 
-	private static final String PROFILES_TABLE_UPGRADE_7_8_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_LOGIN + " BOOLEAN;";
-	private static final String PROFILES_TABLE_UPGRADE_7_8_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_FILE_SSL + " BOOLEAN;";
+	private static final String PROFILES_TABLE_UPGRADE_7_8_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_FILE_LOGIN + " BOOLEAN;";
+	private static final String PROFILES_TABLE_UPGRADE_7_8_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_FILE_SSL + " BOOLEAN;";
 
-	private static final String PROFILES_TABLE_UPGRADE_8_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_STREAM_LOGIN + " BOOLEAN;";
+	private static final String PROFILES_TABLE_UPGRADE_8_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_STREAM_LOGIN + " BOOLEAN;";
+
+	private static final String EPG_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
+			EPG_TABLE_NAME + " (" +
+			KEY_EPG_ID + " INTEGER PRIMARY KEY, " +
+			KEY_EPG_START + " INTEGER, " +
+			KEY_EPG_DURATION + " INTEGER, " +
+			KEY_EPG_TITLE + " TEXT, " +
+			KEY_EPG_DESCRIPTION + " TEXT, " +
+			KEY_EPG_DESCRIPTION_EXTENDED + " TEXT, " +
+			KEY_EPG_SERVICE_ID + " INTEGER);";
+
+	private static final String SERVICES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
+			SERVICES_TABLE_NAME + " (" +
+			KEY_SERVICES_REFERENCE + " TEXT PRIMARY KEY, " +
+			KEY_SERVICES_NAME + " TEXT);";
+
 	private Context mContext;
 
 	public DatabaseHelper(Context context) {
@@ -103,6 +138,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_CREATE);
+		db.execSQL(EPG_TABLE_CREATE);
+		db.execSQL(SERVICES_TABLE_CREATE);
 	}
 
 	private void upgrade6to7(SQLiteDatabase db){
@@ -150,8 +187,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			}
 			if (oldVersion == 8){
 				db.execSQL(PROFILES_TABLE_UPGRADE_8_9);
+				oldVersion++;
 			}
-			if (oldVersion != 8){
+			if (oldVersion == 9){
+				db.execSQL(EPG_TABLE_CREATE);
+				db.execSQL(SERVICES_TABLE_CREATE);
+				oldVersion++;
+			}
+			if (oldVersion != DATABASE_VERSION){ //this should never happen...
 				emergencyRecovery(db);
 			}
 
@@ -173,24 +216,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private ContentValues p2cv(Profile p){
 		ContentValues values = new ContentValues();
-		values.put(KEY_PROFILE, p.getName());
-		values.put(KEY_HOST, p.getHost());
-		values.put(KEY_STREAM_HOST, p.getStreamHostValue());
-		values.put(KEY_PORT, p.getPort());
-		values.put(KEY_STREAM_PORT, p.getStreamPort());
-		values.put(KEY_FILE_PORT, p.getFilePort());
-		values.put(KEY_LOGIN, p.isLogin());
-		values.put(KEY_USER, p.getUser());
-		values.put(KEY_PASS, p.getPass());
-		values.put(KEY_SSL, p.isSsl());
-		values.put(KEY_STREAM_LOGIN, p.isStreamLogin());
-		values.put(KEY_FILE_LOGIN, p.isFileLogin());
-		values.put(KEY_FILE_SSL, p.isFileSsl());
-		values.put(KEY_SIMPLE_REMOTE, p.isSimpleRemote());
-		values.put(KEY_DEFAULT_REF, p.getDefaultRef());
-		values.put(KEY_DEFAULT_REF_NAME, p.getDefaultRefName());
-		values.put(KEY_DEFAULT_REF_2, p.getDefaultRef2());
-		values.put(KEY_DEFAULT_REF_2_NAME, p.getDefaultRef2Name());
+		values.put(KEY_PROFILE_PROFILE, p.getName());
+		values.put(KEY_PROFILE_HOST, p.getHost());
+		values.put(KEY_PROFILE_STREAM_HOST, p.getStreamHostValue());
+		values.put(KEY_PROFILE_PORT, p.getPort());
+		values.put(KEY_PROFILE_STREAM_PORT, p.getStreamPort());
+		values.put(KEY_PROFILE_FILE_PORT, p.getFilePort());
+		values.put(KEY_PROFILE_LOGIN, p.isLogin());
+		values.put(KEY_PROFILE_USER, p.getUser());
+		values.put(KEY_PROFILE_PASS, p.getPass());
+		values.put(KEY_PROFILE_SSL, p.isSsl());
+		values.put(KEY_PROFILE_STREAM_LOGIN, p.isStreamLogin());
+		values.put(KEY_PROFILE_FILE_LOGIN, p.isFileLogin());
+		values.put(KEY_PROFILE_FILE_SSL, p.isFileSsl());
+		values.put(KEY_PROFILE_SIMPLE_REMOTE, p.isSimpleRemote());
+		values.put(KEY_PROFILE_DEFAULT_REF, p.getDefaultRef());
+		values.put(KEY_PROFILE_DEFAULT_REF_NAME, p.getDefaultRefName());
+		values.put(KEY_PROFILE_DEFAULT_REF_2, p.getDefaultRef2());
+		values.put(KEY_PROFILE_DEFAULT_REF_2_NAME, p.getDefaultRef2Name());
 		return values;
 	}
 
@@ -213,7 +256,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public boolean updateProfile(Profile p) {
 		SQLiteDatabase db = getWritableDatabase();
-		int numRows = db.update(PROFILES_TABLE_NAME, p2cv(p), KEY_ID + "=" + p.getId(), null);
+		int numRows = db.update(PROFILES_TABLE_NAME, p2cv(p), KEY_PROFILE_ID + "=" + p.getId(), null);
 		db.close();
 		if (numRows == 1) {
 			DreamDroid.scheduleBackup(mContext);
@@ -228,7 +271,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public boolean deleteProfile(Profile p) {
 		SQLiteDatabase db = getWritableDatabase();
-		int numRows = db.delete(PROFILES_TABLE_NAME, KEY_ID + "=" + p.getId(), null);
+		int numRows = db.delete(PROFILES_TABLE_NAME, KEY_PROFILE_ID + "=" + p.getId(), null);
 		db.close();
 		if (numRows == 1) {
 			DreamDroid.scheduleBackup(mContext);
@@ -242,13 +285,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @return Profile for all Settings
 	 */
 	public ArrayList<Profile> getProfiles() {
-		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_STREAM_LOGIN, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
+		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
+				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME};
 		SQLiteDatabase db = getReadableDatabase();
 
 		ArrayList<Profile> list = new ArrayList<Profile>();
 
-		Cursor c = db.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE);
+		Cursor c = db.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE_PROFILE);
 		if(c.getCount() == 0){
 			db.close();
 			c.close();
@@ -270,10 +313,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @return the profile for the given id, or null if no such profile was found
 	 */
 	public Profile getProfile(int id) {
-		String[] columns = { KEY_ID, KEY_PROFILE, KEY_HOST, KEY_STREAM_HOST, KEY_PORT, KEY_STREAM_PORT, KEY_FILE_PORT, KEY_LOGIN, KEY_USER, KEY_PASS,
-				KEY_SSL, KEY_SIMPLE_REMOTE, KEY_STREAM_LOGIN, KEY_FILE_LOGIN, KEY_FILE_SSL, KEY_DEFAULT_REF, KEY_DEFAULT_REF_NAME, KEY_DEFAULT_REF_2, KEY_DEFAULT_REF_2_NAME };
+		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
+				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME};
 		SQLiteDatabase db = getReadableDatabase();
-		Cursor c = db.query(PROFILES_TABLE_NAME, columns, KEY_ID + "=" + id, null, null, null, KEY_PROFILE);
+		Cursor c = db.query(PROFILES_TABLE_NAME, columns, KEY_PROFILE_ID + "=" + id, null, null, null, KEY_PROFILE_PROFILE);
 
 		Profile p = null;
 		if(c.getCount() == 1 && c.moveToFirst()) {
@@ -286,49 +329,49 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private Profile getProfileFrom(Cursor c) {
 
-		int id = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_ID));
-		String name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE));
-		String host = c.getString(c.getColumnIndex(DatabaseHelper.KEY_HOST));
-		String streamHost = c.getString(c.getColumnIndex(DatabaseHelper.KEY_STREAM_HOST));
-		int port = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PORT));
+		int id = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ID));
+		String name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_PROFILE));
+		String host = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_HOST));
+		String streamHost = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_STREAM_HOST));
+		int port = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_PORT));
 
-		int streamPort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_STREAM_PORT));
+		int streamPort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_STREAM_PORT));
 		if (streamPort <= 0) {
 			streamPort = 8001;
 		}
 
-		int filePort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_PORT));
+		int filePort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_FILE_PORT));
 		if (filePort <= 0) {
 			filePort = 80;
 		}
 
-		int login = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_LOGIN));
+		int login = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_LOGIN));
 		boolean ynLogin = login == 1;
 
-		int ssl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SSL));
+		int ssl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_SSL));
 		boolean ynSsl = ssl == 1;
 
 
-		int streamLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_STREAM_LOGIN));
+		int streamLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_STREAM_LOGIN));
 		boolean ynStreamLogin = streamLogin == 1;
 
-		int fileLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_LOGIN));
+		int fileLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_FILE_LOGIN));
 		boolean ynFileLogin = fileLogin == 1;
 
-		int fileSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_FILE_SSL));
+		int fileSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_FILE_SSL));
 		boolean ynFileSsl = fileSsl == 1;
 
-		int simpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_SIMPLE_REMOTE));
+		int simpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_SIMPLE_REMOTE));
 		boolean ynSimpleRemote = simpleRemote == 1;
 
-		String user = c.getString(c.getColumnIndex(DatabaseHelper.KEY_USER));
-		String pass = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PASS));
+		String user = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_USER));
+		String pass = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_PASS));
 
-		String defaultRef = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF));
-		String defaultRefName = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_NAME));
+		String defaultRef = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_DEFAULT_REF));
+		String defaultRefName = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_DEFAULT_REF_NAME));
 
-		String defaultRef2 = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_2));
-		String defaultRef2Name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_REF_2_NAME));
+		String defaultRef2 = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_DEFAULT_REF_2));
+		String defaultRef2Name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_DEFAULT_REF_2_NAME));
 
 		return new Profile(id, name, host, streamHost, port, streamPort, filePort, ynLogin, user, pass, ynSsl, ynStreamLogin, ynFileLogin, ynFileSsl, ynSimpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name);
 	}
@@ -336,5 +379,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public static DatabaseHelper getInstance(Context ctx){
 		return new DatabaseHelper(ctx);
+	}
+
+	public boolean exportDB(){
+		File sd = Environment.getExternalStorageDirectory();
+		File data = Environment.getDataDirectory();
+		FileChannel source=null;
+		FileChannel destination=null;
+		String currentDBPath = "/data/net.reichholf.dreamdroid" +"/databases/" + DATABASE_NAME;
+		String backupDBPath = DATABASE_NAME + ".sqlite";
+		File currentDB = new File(data, currentDBPath);
+		File backupDB = new File(sd, backupDBPath);
+		try {
+			source = new FileInputStream(currentDB).getChannel();
+			destination = new FileOutputStream(backupDB).getChannel();
+			destination.transferFrom(source, 0, source.size());
+			source.close();
+			destination.close();
+			return true;
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

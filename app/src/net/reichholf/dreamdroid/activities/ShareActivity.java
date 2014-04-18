@@ -174,13 +174,13 @@ public class ShareActivity extends ListActivity {
 		if (mProfiles.size() > 1) {
 			for (Profile m : mProfiles) {
 				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(DatabaseHelper.KEY_PROFILE, m.getName());
-				map.put(DatabaseHelper.KEY_HOST, m.getHost());
+				map.put(DatabaseHelper.KEY_PROFILE_PROFILE, m.getName());
+				map.put(DatabaseHelper.KEY_PROFILE_HOST, m.getHost());
 				mProfileMapList.add(map);
 			}
 
 			mAdapter = new SimpleAdapter(this, mProfileMapList, android.R.layout.two_line_list_item, new String[] {
-					DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST }, new int[] { android.R.id.text1,
+					DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[] { android.R.id.text1,
 					android.R.id.text2 });
 			setListAdapter(mAdapter);
 			mAdapter.notifyDataSetChanged();

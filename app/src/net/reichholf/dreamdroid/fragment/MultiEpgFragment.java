@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -10,16 +11,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
+import net.reichholf.dreamdroid.loader.AsyncListLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.view.EnhancedHorizontalScrollView;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
 /**
  * Created by Stephan on 09.03.14.
  */
-public class MultiEpgFragment extends AbstractHttpFragment {
+public class MultiEpgFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -57,6 +69,12 @@ public class MultiEpgFragment extends AbstractHttpFragment {
 			content.addView(row);
 		}
 		return v;
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		reload();
 	}
 
 	public LinearLayout createTimeLine(LayoutInflater inflater) {
@@ -112,4 +130,23 @@ public class MultiEpgFragment extends AbstractHttpFragment {
 	}
 
 
+	@Override
+	public ArrayList<NameValuePair> getHttpParams(int loader) {
+		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("bRef", "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"));
+		return params;
+	}
+
+	@Override
+	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
+		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(
+				URIStore.EPG_MULTI), false, args);
+		return loader;
+	}
+
+	@Override
+	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		super.onLoadFinished(loader, result);
+	}
 }

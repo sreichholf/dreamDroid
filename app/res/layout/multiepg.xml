@@ -7,6 +7,12 @@
     android:orientation="vertical">
 
 
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"/>
+
     <net.reichholf.dreamdroid.view.EnhancedHorizontalScrollView
         android:id="@+id/scrollview_header"
         android:layout_width="match_parent"

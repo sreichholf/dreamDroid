@@ -164,6 +164,7 @@ public class DreamDroid extends Application {
 		// default Profile
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
+//		dbh.exportDB();
 		ArrayList<Profile> profiles = dbh.getProfiles();
 		if (profiles.isEmpty()) {
 			String host = sp.getString("host", "dm8000");

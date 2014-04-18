@@ -184,7 +184,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfile = Profile.DEFAULT;
 
 		mAdapter = new ProfileListSimpleAdapter(getActionBarActivity(), mProfileMapList, R.layout.two_line_card_list_item,
-				new String[] { DatabaseHelper.KEY_PROFILE, DatabaseHelper.KEY_HOST}, new int[] { android.R.id.text1, android.R.id.text2});
+				new String[] { DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[] { android.R.id.text1, android.R.id.text2});
 		setListAdapter(mAdapter);
 	}
 
@@ -231,8 +231,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 				isActive = true;
 			}
 			ExtendedHashMap map = new ExtendedHashMap();
-			map.put(DatabaseHelper.KEY_PROFILE, m.getName());
-			map.put(DatabaseHelper.KEY_HOST, m.getHost());
+			map.put(DatabaseHelper.KEY_PROFILE_PROFILE, m.getName());
+			map.put(DatabaseHelper.KEY_PROFILE_HOST, m.getHost());
 			map.put(KEY_ACTIVE_PROFILE, isActive);
 			mProfileMapList.add(map);
 		}
