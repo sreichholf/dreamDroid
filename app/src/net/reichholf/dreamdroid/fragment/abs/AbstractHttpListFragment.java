@@ -118,7 +118,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return onItemClicked(item.getItemId());
+		return onItemSelected(item.getItemId());
 	}
 
 	/**
@@ -178,7 +178,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		v.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				onItemClicked(id);
+				onItemSelected(id);
 			}
 		});
 	}
@@ -186,15 +186,18 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	/**
 	 * @param id
 	 */
-	protected boolean onItemClicked(int id) {
+	protected boolean onItemSelected(int id) {
 		Intent intent;
 		switch (id) {
-		case Statics.ITEM_HOME:
-			intent = new Intent(getActionBarActivity(), TabbedNavigationActivity.class);
-			startActivity(intent);
-			return true;
-		default:
-			return false;
+			case Statics.ITEM_RELOAD:
+				reload();
+				return true;
+			case Statics.ITEM_HOME:
+				intent = new Intent(getActionBarActivity(), TabbedNavigationActivity.class);
+				startActivity(intent);
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -269,7 +272,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	protected void reload() {
-		mHttpHelper.reload();
+		reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
 	}
 
 	public String getLoadFinishedTitle() {

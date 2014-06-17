@@ -283,4 +283,6 @@
     <string name="developer_settings">Developer settings</string>
     <string name="dump_xml">Dump xml content</string>
     <string name="dump_xml_long">Dump xml content to external memory</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
 </resources>

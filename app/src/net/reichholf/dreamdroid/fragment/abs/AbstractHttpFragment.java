@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
@@ -77,7 +78,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return onItemClicked(item.getItemId());
+		return onItemSelected(item.getItemId());
 	}
 
 	/**
@@ -93,7 +94,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 			v.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					onItemClicked(id);
+					onItemSelected(id);
 				}
 			});
 		}
@@ -102,8 +103,14 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	/**
 	 * @param id
 	 */
-	protected boolean onItemClicked(int id) {
-		return false;
+	protected boolean onItemSelected(int id) {
+		switch (id) {
+			case Statics.ITEM_RELOAD:
+				reload();
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	/**

@@ -139,17 +139,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		inflater.inflate(R.menu.reload, menu);
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case (Statics.ITEM_RELOAD):
-			reload();
-			return true;
-		default:
-			return false;
-		}
-	}
-
 	/**
 	 * Register an <code>OnClickListener</code> for a view and a specific item
 	 * ID (<code>ITEM_*</code> statics)
@@ -164,7 +153,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		v.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				onItemClicked(id);
+				onItemSelected(id);
 			}
 		});
 	}
@@ -173,32 +162,31 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	 * @param id
 	 */
 	@Override
-	protected boolean onItemClicked(int id) {
-		String ref;
-
-		if (mCurrentServiceReady) {
-			switch (id) {
-			case Statics.ITEM_NOW:
-				showEpgDetail(mNow);
-				return true;
-			case Statics.ITEM_NEXT:
-				showEpgDetail(mNext);
-				return true;
-			case Statics.ITEM_STREAM:
-				ref = mService.getString(Service.KEY_REFERENCE);
-				String name = mService.getString(Service.KEY_NAME);
-				if (!"".equals(ref) && ref != null) {
-					streamService(ref, name);
-				} else {
-					showToast(getText(R.string.not_available));
-				}
-				return true;
-			default:
-				return false;
-			}
-		} else {
+	protected boolean onItemSelected(int id) {
+		if(!mCurrentServiceReady){
 			showToast(getText(R.string.not_available));
 			return true;
+		}
+
+		String ref;
+		switch (id) {
+		case Statics.ITEM_NOW:
+			showEpgDetail(mNow);
+			return true;
+		case Statics.ITEM_NEXT:
+			showEpgDetail(mNext);
+			return true;
+		case Statics.ITEM_STREAM:
+			ref = mService.getString(Service.KEY_REFERENCE);
+			String name = mService.getString(Service.KEY_NAME);
+			if (!"".equals(ref) && ref != null) {
+				streamService(ref, name);
+			} else {
+				showToast(getText(R.string.not_available));
+			}
+			return true;
+		default:
+			return super.onItemSelected(id);
 		}
 	}
 

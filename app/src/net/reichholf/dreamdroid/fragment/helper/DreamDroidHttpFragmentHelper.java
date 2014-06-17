@@ -323,7 +323,6 @@ public class DreamDroidHttpFragmentHelper {
 	public void finishProgress(String title) {
 		getBaseFragment().setCurrentTitle(title);
 		getActionBarActivity().setTitle(title);
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		onLoadFinished();
 	}
 
@@ -360,6 +359,8 @@ public class DreamDroidHttpFragmentHelper {
 	}
 
 	public void onLoadStarted(){
+		if(mIsReloading)
+			return;
 		mIsReloading = true;
 		//The SDK check is a workaround for broken pull-to-refresh with ActionBarCompat
 		if (mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14) {
@@ -369,8 +370,7 @@ public class DreamDroidHttpFragmentHelper {
 		}
 	}
 
-	public void onLoadFinished()
-	{
+	public void onLoadFinished(){
 		mIsReloading = false;
 		if(mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14)
 			mPullToRefreshLayout.setRefreshComplete();

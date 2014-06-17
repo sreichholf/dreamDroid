@@ -142,7 +142,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
 		initTitles(getString(R.string.timer));
 	}
 
@@ -337,7 +336,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		v.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				onItemClicked(id);
+				onItemSelected(id);
 			}
 		});
 	}
@@ -345,7 +344,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	/**
 	 * @param id
 	 */
-	protected boolean onItemClicked(int id) {
+	protected boolean onItemSelected(int id) {
 		Bundle args;
 		boolean consume = false;
 		switch (id) {
@@ -399,7 +398,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			break;
 
 		default:
-			consume = super.onItemClicked(id);
+			consume = super.onItemSelected(id);
 			break;
 		}
 
