@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="226"
-    android:versionName="1.0 beta 28.5" >
+    android:versionCode="227"
+    android:versionName="1.0 beta 29" >
 
     <uses-sdk
         android:minSdkVersion="7"
@@ -110,7 +110,7 @@
 
         <service android:name=".appwidget.WidgetService" android:enabled="true" />
 
-        <uses-library required="false" name="com.sec.android.app.multiwindow"> </uses-library>
+        <uses-library android:name="com.sec.android.app.multiwindow" android:required="false"  />
         <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
         <meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_W" android:resource="@dimen/app_defaultsize_w" />
         <meta-data android:name="com.sec.android.multiwindow.DEFAULT_SIZE_H" android:resource="@dimen/app_defaultsize_h" />

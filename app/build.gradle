@@ -16,7 +16,7 @@ dependencies {
 	compile 'com.android.support:support-v4:19.1.+'
 	compile 'com.android.support:appcompat-v7:19.1.+'
 	compile 'de.cketti.library.changelog:ckchangelog:1.2.0'
-	compile 'com.github.chrisbanes.photoview:library:1.2.2'
+	compile 'com.github.chrisbanes.photoview:library:1.2.3'
 	compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abc:+'
 
 	compile files('libs/ftp4j-1.7.2.jar')
