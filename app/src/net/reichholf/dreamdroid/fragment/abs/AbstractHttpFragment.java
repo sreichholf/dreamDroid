@@ -6,7 +6,16 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
-import java.util.ArrayList;
+import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
@@ -19,23 +28,14 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 
-import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
+import java.util.ArrayList;
 
-import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 /**
  * @author sreichholf
  */
 public abstract class AbstractHttpFragment extends DreamDroidFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment, OnRefreshListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
 
 	protected final String sData = "data";
 	protected DreamDroidHttpFragmentHelper mHttpHelper;
@@ -220,7 +220,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	}
 
 	@Override
-	public void onRefreshStarted(View view) {
+	public void onRefresh() {
 		reload();
 	}
 }

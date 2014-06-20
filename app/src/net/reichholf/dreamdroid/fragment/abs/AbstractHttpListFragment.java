@@ -6,8 +6,16 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.view.KeyEvent;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.BaseAdapter;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -23,17 +31,8 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import org.apache.http.NameValuePair;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.view.KeyEvent;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.BaseAdapter;
-
-import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author sreichholf
@@ -41,7 +40,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, OnRefreshListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
@@ -309,7 +308,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
     @Override
-    public void onRefreshStarted(View view) {
+    public void onRefresh() {
         reload();
     }
 

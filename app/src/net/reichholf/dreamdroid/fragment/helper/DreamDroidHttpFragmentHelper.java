@@ -6,7 +6,17 @@
 
 package net.reichholf.dreamdroid.fragment.helper;
 
-import java.util.ArrayList;
+import android.app.SearchManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarActivity;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.Toast;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
@@ -27,22 +37,7 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import android.app.SearchManager;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v7.app.ActionBarActivity;
-import android.view.KeyEvent;
-import android.view.View;
-import android.widget.Toast;
-
-import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
-import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
-import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
-
+import java.util.ArrayList;
 /**
  * @author sre
  * 
@@ -50,7 +45,7 @@ import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 public class DreamDroidHttpFragmentHelper {
 	public static final int LOADER_DEFAULT_ID = 0;
 	private Fragment mFragment;
-	private PullToRefreshLayout mPullToRefreshLayout;
+	private SwipeRefreshLayout mSwipeRefreshLayout;
 
 	protected final String sData = "data";
 	protected SimpleHttpClient mShc;
@@ -71,19 +66,16 @@ public class DreamDroidHttpFragmentHelper {
 		if(!fragment.equals(mFragment)){
 			mFragment = fragment;
 		}
-		mPullToRefreshLayout = null;
+		mSwipeRefreshLayout = null;
 	}
 
 	public void onViewCreated(View view, Bundle savedInstanceState){
-		mPullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
-		if (mPullToRefreshLayout != null) {
-			// Now setup the PullToRefreshLayout
-			ActionBarPullToRefresh.from(this.getActionBarActivity())
-					.allChildrenArePullable()
-					.listener((OnRefreshListener) mFragment)
-					.setup(mPullToRefreshLayout);
-
-			mPullToRefreshLayout.setRefreshing(mIsReloading);
+		mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
+		if (mSwipeRefreshLayout != null) {
+			// Now setup the SwipeRefreshLayout
+			mSwipeRefreshLayout.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) mFragment);
+			mSwipeRefreshLayout.setRefreshing(mIsReloading);
+			mSwipeRefreshLayout.setColorScheme(R.color.swipe_refresh_color_1, R.color.swipe_refresh_color_2, R.color.swipe_refresh_color_3, R.color.swipe_refresh_color_4);
 		}
 	}
 
@@ -363,8 +355,8 @@ public class DreamDroidHttpFragmentHelper {
 			return;
 		mIsReloading = true;
 		//The SDK check is a workaround for broken pull-to-refresh with ActionBarCompat
-		if (mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14) {
-			mPullToRefreshLayout.setRefreshing(true);
+		if (mSwipeRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14) {
+			mSwipeRefreshLayout.setRefreshing(true);
 		} else {
 			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		}
@@ -372,8 +364,8 @@ public class DreamDroidHttpFragmentHelper {
 
 	public void onLoadFinished(){
 		mIsReloading = false;
-		if(mPullToRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14)
-			mPullToRefreshLayout.setRefreshComplete();
+		if(mSwipeRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14)
+			mSwipeRefreshLayout.setRefreshing(false);
 		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 }

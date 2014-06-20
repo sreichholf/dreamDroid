@@ -6,11 +6,26 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.media.MediaScannerConnection;
+import android.media.MediaScannerConnection.MediaScannerConnectionClient;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -24,28 +39,13 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
-import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.GregorianCalendar;
+
 import uk.co.senab.photoview.PhotoViewAttacher;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.media.MediaScannerConnection;
-import android.media.MediaScannerConnection.MediaScannerConnectionClient;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.Loader;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 /**
  * Allows fetching and showing the actual TV-Screen content
@@ -54,7 +54,7 @@ import android.widget.Toast;
  * 
  */
 public class ScreenShotFragment extends DreamDroidFragment implements
-		LoaderCallbacks<LoaderResult<byte[]>>, OnRefreshListener {
+		LoaderCallbacks<LoaderResult<byte[]>>, SwipeRefreshLayout.OnRefreshListener {
 	public static final int TYPE_OSD = 0;
 	public static final int TYPE_VIDEO = 1;
 	public static final int TYPE_ALL = 2;
@@ -79,7 +79,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	private DreamDroidHttpFragmentHelper mHttpHelper;
 
 	@Override
-	public void onRefreshStarted(View view) {
+	public void onRefresh() {
 		reload();
 	}
 
@@ -163,8 +163,8 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	{
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
-		PullToRefreshLayout pullToRefreshLayout = (PullToRefreshLayout) view.findViewById(R.id.ptr_layout);
-		pullToRefreshLayout.setEnabled(false);
+		SwipeRefreshLayout SwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
+		SwipeRefreshLayout.setEnabled(false);
 	}
 
 	@Override
