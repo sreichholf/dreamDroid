@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
+import net.reichholf.dreamdroid.service.HttpIntentService;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -28,7 +29,7 @@ import de.duenndns.ssl.MemorizingTrustManager;
 /**
  * Created by Stephan on 08.12.13.
  */
-public class WidgetService extends IntentService {
+public class WidgetService extends HttpIntentService {
 	public static String TAG = WidgetService.class.getSimpleName();
 	public static final String KEY_KEYID = "key_id";
 	public static final String KEY_WIDGETID = "widget_id";
@@ -36,17 +37,8 @@ public class WidgetService extends IntentService {
 	public static final String ACTION_ZAP = "action_zap";
 	public static final String ACTION_RCU = "action_rcu";
 
-	private Handler mHandler;
-	private MemorizingTrustManager mTrustManager;
-
 	public WidgetService() {
 		super(WidgetService.class.getCanonicalName());
-	}
-
-	@Override
-	public void onCreate() {
-		mHandler = new Handler();
-		super.onCreate();
 	}
 
 	@Override
@@ -59,20 +51,7 @@ public class WidgetService extends IntentService {
 	}
 
 	private void doRemoteRequest(Intent intent) {
-		if(!HttpsURLConnection.getDefaultSSLSocketFactory().getClass().equals(MemorizingTrustManager.class)){
-			try {
-				// set location of the keystore
-				MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
-				// register MemorizingTrustManager for HTTPS
-				SSLContext sc = SSLContext.getInstance("TLS");
-				mTrustManager = new MemorizingTrustManager(getApplicationContext());
-				sc.init(null, new X509TrustManager[] { mTrustManager },
-						new java.security.SecureRandom());
-				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		setupSSL();
 
 		Profile profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(getApplicationContext(), intent.getIntExtra(KEY_WIDGETID, -1));
 
@@ -100,17 +79,5 @@ public class WidgetService extends IntentService {
 
 	private void doZapRequest(){
 
-	}
-
-	/*
-	 * show a toast and take care of calling it on the UI Thread
-	 */
-	private void showToast(final String text) {
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-			}
-		});
 	}
 }
