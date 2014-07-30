@@ -6,36 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import net.reichholf.dreamdroid.DatabaseHelper;
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.Profile;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
-import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
-import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
@@ -61,6 +31,37 @@ import android.widget.SimpleAdapter;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.PauseOnScrollListener;
+
+import net.reichholf.dreamdroid.DatabaseHelper;
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
+import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
+import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.helpers.SyncService;
+import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Service;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
+import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.loader.AsyncListLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Handles ServiceLists of (based on service references).
@@ -414,10 +415,19 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			}
 			getActionBarActivity().supportInvalidateOptionsMenu();
 			return true;
+            case Statics.ITEM_SYNC_EPG:
+                syncEpg();
+                return true;
 		default:
 			return super.onItemSelected(id);
 		}
 	}
+
+    private void syncEpg(){
+        Intent intent = new Intent(getActivity().getApplicationContext(), SyncService.class);
+        intent.putExtra(Event.KEY_SERVICE_REFERENCE, mDetailReference);
+        getActivity().startService(intent);
+    }
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {

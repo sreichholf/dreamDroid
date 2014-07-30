@@ -285,4 +285,6 @@
     <string name="dump_xml_long">Dump xml content to external memory</string>
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
+    <string name="epg_sync">Synchronizing EPG</string>
+    <string name="epg_sync_finished">EPG has been synchronized</string>
 </resources>

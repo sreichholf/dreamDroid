@@ -6,13 +6,6 @@
 
 package net.reichholf.dreamdroid;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -21,7 +14,16 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
+
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.enigma2.Event;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 
 /**
  * @author sre
@@ -50,20 +52,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2";
 	public static final String KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name";
 
-	public static final String KEY_EPG_ID = "id";
-	public static final String KEY_EPG_START = "start";
-	public static final String KEY_EPG_DURATION = "duration";
-	public static final String KEY_EPG_TITLE = "title";
-	public static final String KEY_EPG_DESCRIPTION = "description";
-	public static final String KEY_EPG_DESCRIPTION_EXTENDED = "description_ext";
-	public static final String KEY_EPG_SERVICE_ID = "sid";
+	public static final String KEY_EVENT_ID = "id";
+	public static final String KEY_EVENT_START = "start";
+	public static final String KEY_EVENT_DURATION = "duration";
+	public static final String KEY_EVENT_TITLE = "title";
+	public static final String KEY_EVENT_DESCRIPTION = "description";
+	public static final String KEY_EVENT_DESCRIPTION_EXTENDED = "description_ext";
+	public static final String KEY_EVENT_SERVICE_REFERENCE = "sid";
 	public static final String KEY_SERVICES_REFERENCE = "ref";
 	public static final String KEY_SERVICES_NAME = "name";
 
 	public static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 10;
+	private static final int DATABASE_VERSION = 11;
 	private static final String PROFILES_TABLE_NAME = "profiles";
-	private static final String EPG_TABLE_NAME = "epg";
+	private static final String EVENT_TABLE_NAME = "events";
 	private static final String SERVICES_TABLE_NAME = "services";
 
 	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
@@ -110,15 +112,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String PROFILES_TABLE_UPGRADE_8_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_STREAM_LOGIN + " BOOLEAN;";
 
-	private static final String EPG_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
-			EPG_TABLE_NAME + " (" +
-			KEY_EPG_ID + " INTEGER PRIMARY KEY, " +
-			KEY_EPG_START + " INTEGER, " +
-			KEY_EPG_DURATION + " INTEGER, " +
-			KEY_EPG_TITLE + " TEXT, " +
-			KEY_EPG_DESCRIPTION + " TEXT, " +
-			KEY_EPG_DESCRIPTION_EXTENDED + " TEXT, " +
-			KEY_EPG_SERVICE_ID + " INTEGER);";
+	private static final String EVENT_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
+			EVENT_TABLE_NAME + " (" +
+			KEY_EVENT_ID + " INTEGER PRIMARY KEY, " +
+			KEY_EVENT_START + " INTEGER, " +
+			KEY_EVENT_DURATION + " INTEGER, " +
+			KEY_EVENT_TITLE + " TEXT, " +
+			KEY_EVENT_DESCRIPTION + " TEXT, " +
+			KEY_EVENT_DESCRIPTION_EXTENDED + " TEXT, " +
+            KEY_EVENT_SERVICE_REFERENCE + " TEXT);";
 
 	private static final String SERVICES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
 			SERVICES_TABLE_NAME + " (" +
@@ -138,7 +140,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_CREATE);
-		db.execSQL(EPG_TABLE_CREATE);
+		db.execSQL(EVENT_TABLE_CREATE);
 		db.execSQL(SERVICES_TABLE_CREATE);
 	}
 
@@ -190,10 +192,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				oldVersion++;
 			}
 			if (oldVersion == 9){
-				db.execSQL(EPG_TABLE_CREATE);
+				db.execSQL(EVENT_TABLE_CREATE);
 				db.execSQL(SERVICES_TABLE_CREATE);
 				oldVersion++;
 			}
+            if( oldVersion == 10){ //DEVELOPMENT VERSIONS ONLY
+                db.execSQL("DROP TABLE EPG;");
+                db.execSQL(EVENT_TABLE_CREATE);
+            }
 			if (oldVersion != DATABASE_VERSION){ //this should never happen...
 				emergencyRecovery(db);
 			}
@@ -376,30 +382,77 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return new Profile(id, name, host, streamHost, port, streamPort, filePort, ynLogin, user, pass, ynSsl, ynStreamLogin, ynFileLogin, ynFileSsl, ynSimpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name);
 	}
 
+    public int setEvents(ArrayList<ExtendedHashMap> events){
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        int success = 0;
+        for(ExtendedHashMap event: events){
+            if(setEvent(event, db))
+                success++;
+        }
+        db.endTransaction();
+        db.close();
+        return success;
+    }
 
-	public static DatabaseHelper getInstance(Context ctx){
-		return new DatabaseHelper(ctx);
-	}
+    public boolean setEvent(ExtendedHashMap event, SQLiteDatabase db){
+        ContentValues values = eventToCv(event);
+        if(values == null) {
+            return false;
+        }
 
-	public boolean exportDB(){
-		File sd = Environment.getExternalStorageDirectory();
-		File data = Environment.getDataDirectory();
-		FileChannel source=null;
-		FileChannel destination=null;
-		String currentDBPath = "/data/net.reichholf.dreamdroid" +"/databases/" + DATABASE_NAME;
-		String backupDBPath = DATABASE_NAME + ".sqlite";
-		File currentDB = new File(data, currentDBPath);
-		File backupDB = new File(sd, backupDBPath);
-		try {
-			source = new FileInputStream(currentDB).getChannel();
-			destination = new FileOutputStream(backupDB).getChannel();
-			destination.transferFrom(source, 0, source.size());
-			source.close();
-			destination.close();
-			return true;
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
+        String id = values.getAsString(KEY_EVENT_ID);
+        db.delete(EVENT_TABLE_NAME, KEY_EVENT_ID + "=?;", new String[]{id,});
+        if (db.insert(EVENT_TABLE_NAME, null, values) > -1) {
+            return true;
+        }
+        return false;
+    }
+
+    public ContentValues eventToCv(ExtendedHashMap event){
+        ContentValues values = new ContentValues();
+        int _id, _start, _duration;
+        try {
+            _id = Integer.parseInt(event.getString(Event.KEY_EVENT_ID));
+            _start = Integer.parseInt(event.getString(Event.KEY_EVENT_START));
+            _duration = Integer.parseInt(event.getString(Event.KEY_EVENT_DURATION));
+        } catch(NumberFormatException nex){
+            return null;
+        }
+
+        values.put(KEY_EVENT_ID, _id);
+        values.put(KEY_EVENT_START, _start);
+        values.put(KEY_EVENT_DURATION, _duration);
+        values.put(KEY_EVENT_TITLE, event.getString(Event.KEY_EVENT_TITLE));
+        values.put(KEY_EVENT_DESCRIPTION,event.getString(Event.KEY_EVENT_DESCRIPTION));
+        values.put(KEY_EVENT_DESCRIPTION_EXTENDED,event.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED));
+        values.put(KEY_EVENT_SERVICE_REFERENCE, event.getString(Event.KEY_SERVICE_REFERENCE));
+        return values;
+    }
+
+    public static DatabaseHelper getInstance(Context ctx){
+        return new DatabaseHelper(ctx);
+    }
+
+    public boolean exportDB(){
+        File sd = Environment.getExternalStorageDirectory();
+        File data = Environment.getDataDirectory();
+        FileChannel source=null;
+        FileChannel destination=null;
+        String currentDBPath = "/data/net.reichholf.dreamdroid" +"/databases/" + DATABASE_NAME;
+        String backupDBPath = DATABASE_NAME + ".sqlite";
+        File currentDB = new File(data, currentDBPath);
+        File backupDB = new File(sd, backupDBPath);
+        try {
+            source = new FileInputStream(currentDB).getChannel();
+            destination = new FileOutputStream(backupDB).getChannel();
+            destination.transferFrom(source, 0, source.size());
+            source.close();
+            destination.close();
+            return true;
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

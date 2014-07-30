@@ -1,8 +1,9 @@
 package net.reichholf.dreamdroid.helpers;
 
 import android.content.Intent;
-import android.os.Handler;
 
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.epgsync.EpgDatabase;
 import net.reichholf.dreamdroid.service.HttpIntentService;
 
@@ -15,15 +16,13 @@ public class SyncService extends HttpIntentService {
 
 	}
 
-	@Override
-	public void onCreate() {
-		mHandler = new Handler();
-		super.onCreate();
-	}
-
-	@Override
-	protected void onHandleIntent(Intent intent) {
-		setupSSL();
-		EpgDatabase epgDatabase = new EpgDatabase();
-	}
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        setupSSL();
+        EpgDatabase epgDatabase = new EpgDatabase();
+        DreamDroid.loadCurrentProfile(getApplicationContext());
+        String bouquet = intent.getStringExtra(Event.KEY_SERVICE_REFERENCE);
+        if(bouquet != null)
+            epgDatabase.syncBouquet(getApplicationContext(), bouquet);
+    }
 }
