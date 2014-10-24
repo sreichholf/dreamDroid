@@ -160,9 +160,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		super.onCreate(savedInstanceState);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-		//getSupportActionBar().setDisplayShowTitleEnabled(true);
-		//getSupportActionBar().setDisplayUseLogoEnabled(true);
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		setSupportProgressBarIndeterminateVisibility(false);
 
@@ -278,7 +275,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
 
-		if (mNavigationFragment == null || !mNavigationFragment.getClass().equals(NavigationFragment.class)) {
+		if (mNavigationFragment == null || !((Object)mNavigationFragment).getClass().equals(NavigationFragment.class)) {
 			mNavigationFragment = new NavigationFragment();
 		}
 
@@ -302,14 +299,14 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
 		if (fragment.isAdded()) {
-			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " already added, showing");
+			Log.i(DreamDroid.LOG_TAG, "Fragment " + ((Object)fragment).getClass().getSimpleName() + " already added, showing");
 			if (mDetailFragment != null && !fragment.isVisible()) {
 				ft.hide(mDetailFragment);
 			}
 			ft.show(fragment);
 		} else {
-			Log.i(DreamDroid.LOG_TAG, "Fragment " + fragment.getClass().getSimpleName() + " not added, adding");
-			ft.replace(viewId, fragment, fragment.getClass().getSimpleName());
+			Log.i(DreamDroid.LOG_TAG, "Fragment " + ((Object)fragment).getClass().getSimpleName() + " not added, adding");
+			ft.replace(viewId, fragment, ((Object)fragment).getClass().getSimpleName());
 		}
 	}
 
