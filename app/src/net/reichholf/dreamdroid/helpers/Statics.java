@@ -43,7 +43,7 @@ public class Statics {
 	public static final int ITEM_INFO = 0x6006;
 	public static final int ITEM_MESSAGE = 0x6007;
 	public static final int ITEM_REMOTE = 0x6008;
-	public static final int ITEM_PREFERENCES = R.id.menu_preferences;
+	public static final int ITEM_PREFERENCES = R.id.buttonSettings;
 	public static final int ITEM_CURRENT = 0x6010;
 	public static final int ITEM_SCREENSHOT = 0x6012;
 	public static final int ITEM_TOGGLE_STANDBY = 0x6013;
@@ -51,9 +51,9 @@ public class Statics {
 	public static final int ITEM_REBOOT = 0x6015;
 	public static final int ITEM_SHUTDOWN = 0x6016;
 	public static final int ITEM_POWERSTATE_DIALOG = 0x6017;
-	public static final int ITEM_ABOUT = R.id.menu_about;
+	public static final int ITEM_ABOUT = R.id.buttonAbout;
 	public static final int ITEM_CHECK_CONN = R.id.menu_check_connectivity;
-    public static final int ITEM_CHANGELOG = R.id.menu_changelog;
+    public static final int ITEM_CHANGELOG = R.id.buttonChangeLog;
 	public static final int ITEM_SLEEPTIMER = 0x6020;
 	public static final int ITEM_MEDIA_PLAYER = 0x6021;
 	public static final int ITEM_PROFILES = 0x6022;

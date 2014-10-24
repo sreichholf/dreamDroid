@@ -355,17 +355,14 @@ public class DreamDroidHttpFragmentHelper {
 			return;
 		mIsReloading = true;
 		//The SDK check is a workaround for broken pull-to-refresh with ActionBarCompat
-		if (mSwipeRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14) {
+		if (mSwipeRefreshLayout != null) {
 			mSwipeRefreshLayout.setRefreshing(true);
-		} else {
-			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		}
 	}
 
 	public void onLoadFinished(){
 		mIsReloading = false;
-		if(mSwipeRefreshLayout != null && android.os.Build.VERSION.SDK_INT >= 14)
+		if(mSwipeRefreshLayout != null)
 			mSwipeRefreshLayout.setRefreshing(false);
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 	}
 }

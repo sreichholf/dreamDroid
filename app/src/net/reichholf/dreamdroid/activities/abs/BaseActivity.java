@@ -42,4 +42,7 @@ public class BaseActivity extends ActionBarActivity {
 		mTrustManager.bindDisplayActivity(this);
 		super.onResume();
 	}
+
+    public void setSupportProgressBarIndeterminateVisibility(boolean visible){
+    }
 }

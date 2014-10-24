@@ -23,16 +23,12 @@ import org.apache.http.NameValuePair;
  * 
  */
 public class Request {
+    public static String get(SimpleHttpClient shc, String uri){
+        return get(shc, uri, new ArrayList<NameValuePair>());
+    }
+
 	public static String get(SimpleHttpClient shc, String uri, ArrayList<NameValuePair> params) {
 		if (shc.fetchPageContent(uri, params)) {
-			return shc.getPageContentString();
-		}
-
-		return null;
-	}
-
-	public static String get(SimpleHttpClient shc, String uri) {
-		if (shc.fetchPageContent(uri)) {
 			return shc.getPageContentString();
 		}
 

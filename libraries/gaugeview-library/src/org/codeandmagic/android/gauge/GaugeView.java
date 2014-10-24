@@ -190,7 +190,7 @@ public class GaugeView extends View {
 		mShowNeedle = a.getBoolean(R.styleable.GaugeView_showNeedle, SHOW_NEEDLE);
 		mShowScale = a.getBoolean(R.styleable.GaugeView_showScale, SHOW_SCALE);
 		mShowRanges = a.getBoolean(R.styleable.GaugeView_showRanges, SHOW_RANGES);
-		mShowText = a.getBoolean(R.styleable.GaugeView_showText, SHOW_TEXT);
+		mShowText = a.getBoolean(R.styleable.GaugeView_showLabel, SHOW_TEXT);
 
 		mOuterShadowWidth = mShowOuterShadow ? a.getFloat(R.styleable.GaugeView_outerShadowWidth, OUTER_SHADOW_WIDTH) : 0.0f;
 		mOuterBorderWidth = mShowOuterBorder ? a.getFloat(R.styleable.GaugeView_outerBorderWidth, OUTER_BORDER_WIDTH) : 0.0f;

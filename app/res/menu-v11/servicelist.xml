@@ -17,6 +17,7 @@
         android:id="@+id/menu_sync_epg"
         android:icon="@drawable/ic_action_refresh"
         android:title="@string/epg_sync"
-        dreamDroid:showAsAction="ifRoom|withText"/>
+        dreamDroid:showAsAction="ifRoom|withText"
+        android:visible="false" />
 
 </menu>

@@ -24,7 +24,8 @@
             <DatePicker
                 android:id="@+id/DatePicker"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:calendarViewShown="false" />
 
             <TimePicker
                 android:id="@+id/TimePicker"

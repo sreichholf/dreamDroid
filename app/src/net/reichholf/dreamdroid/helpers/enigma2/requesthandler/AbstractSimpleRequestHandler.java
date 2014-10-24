@@ -42,7 +42,7 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 	 * java.util.ArrayList)
 	 */
 	public String get(SimpleHttpClient shc) {
-		return Request.get(shc, mUri);
+		return get(shc, new ArrayList<NameValuePair>());
 	}
 
 	/*

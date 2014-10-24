@@ -42,9 +42,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 /**
@@ -79,8 +82,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		{ Statics.ITEM_MESSAGE, R.string.send_message, R.attr.ic_menu_mail, 1, 1 },
 		{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.attr.ic_menu_info, 1, 0 },
 		{ Statics.ITEM_PROFILES, R.string.profiles, R.attr.ic_menu_list, 1, 0 },
-		{ Statics.ITEM_MULTIEPG, R.string.epg, R.attr.ic_menu_event, 1, 0 },};
-
+    };
+//	{ Statics.ITEM_MULTIEPG, R.string.epg, R.attr.ic_menu_event, 1, 0 },
 	private int[] mCurrent;
 	private int mCurrentListItem;
 	private boolean mHighlightCurrent;
@@ -251,7 +254,27 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		super.onDestroy();
 	}
 
-	public void setHighlightCurrent(boolean highlight) {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.navigation_layout, container, false);
+        registerImageButtonListener(view, R.id.buttonSettings);
+        registerImageButtonListener(view, R.id.buttonAbout);
+        registerImageButtonListener(view, R.id.buttonChangeLog);
+
+        return view;
+    }
+
+    private void registerImageButtonListener(View view, int buttonId) {
+        ImageButton b = (ImageButton) view.findViewById(buttonId);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onItemSelected(v.getId());
+            }
+        });
+    }
+
+    public void setHighlightCurrent(boolean highlight) {
 		mHighlightCurrent = highlight;
 	}
 
