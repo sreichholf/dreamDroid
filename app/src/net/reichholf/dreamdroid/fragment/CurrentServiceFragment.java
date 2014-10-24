@@ -134,11 +134,6 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		super.onSaveInstanceState(outState);
 	}
 
-	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.reload, menu);
-	}
-
 	/**
 	 * Register an <code>OnClickListener</code> for a view and a specific item
 	 * ID (<code>ITEM_*</code> statics)

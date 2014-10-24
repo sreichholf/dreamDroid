@@ -356,7 +356,6 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.reload, menu);
 		inflater.inflate(R.menu.servicelist, menu);
 	}
 
@@ -378,13 +377,6 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			if (defaultReference.equals(mDetailReference)) {
 				setDefault.setVisible(false);
 			}
-		}
-
-		MenuItem reload = menu.findItem(R.id.menu_reload);
-		if (!mPickMode) {
-			reload.setVisible(true);
-		} else {
-			reload.setVisible(false);
 		}
 	}
 

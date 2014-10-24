@@ -161,7 +161,6 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.reload, menu);
 		inflater.inflate(R.menu.timerlist, menu);
 	}
 
