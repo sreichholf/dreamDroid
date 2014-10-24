@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_menu_paste_holo_light" />
+            android:src="@drawable/ic_menu_changelog" />
 
         <ImageButton
             android:id="@+id/buttonAbout"
@@ -43,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_menu_info_holo_light" />
+            android:src="@drawable/ic_menu_about" />
 
         <FrameLayout
             android:layout_width="match_parent"
