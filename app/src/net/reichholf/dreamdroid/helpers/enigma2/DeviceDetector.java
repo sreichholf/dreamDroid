@@ -24,7 +24,7 @@ import android.util.Log;
  */
 public class DeviceDetector {
 	public static String LOG_TAG = DeviceDetector.class.getName();
-	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2", "dm500hdsev2", "dm7020hdv2" };
+	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2", "dm500hdsev2", "dm7020hdv2", "dm7080" };
 
 	public static ArrayList<Profile> getAvailableHosts() {
 		ArrayList<Profile> profiles = new ArrayList<Profile>();
@@ -34,10 +34,6 @@ public class DeviceDetector {
 				if (!host.isReachable(1500))
 					continue;
 				boolean simpleRemote = false;
-				if (!hostname.equals("dm8000") && !hostname.equals("dm7020hd")) {
-					simpleRemote = true;
-				}
-
 				String ip = host.getHostAddress();
 
 				Profile p = Profile.DEFAULT;
@@ -65,11 +61,6 @@ public class DeviceDetector {
 					String address = s.getHostAddresses()[0];
 					int port = s.getPort();
 					boolean simpleRemote = false;
-					if (!s.getName().toLowerCase(Locale.US).contains("dm8000")
-							&& !s.getName().toLowerCase(Locale.US).contains("dm7020hd")) {
-						simpleRemote = true;
-					}
-
 					Profile p = Profile.DEFAULT;
 					p.setName(s.getName());
 					p.setHost(address);
