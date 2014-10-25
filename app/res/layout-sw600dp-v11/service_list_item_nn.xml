@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/service_list_item_nn"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/cardBackground"
+    android:paddingTop="6dp"
+    android:paddingBottom="9dp"
+    android:paddingRight="9dp"
+    android:paddingLeft="9dp"
+    android:orientation="vertical" >
+    <ImageView
+        android:id="@+id/picon"
+        android:layout_width="90dp"
+        android:layout_height="50dp"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="3dp"
+        android:layout_weight="1"
+        android:layout_marginTop="5dp" />
+    <LinearLayout
+        android:id="@+id/service"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/picon"
+        android:layout_weight="1"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/service_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="56dp"
+            android:layout_weight="1"
+            style="@style/CardTitle" />
+
+        <ProgressBar
+            android:id="@+id/service_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="50dp"
+            android:layout_height="8dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="-54dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/event_now"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/service"
+        android:layout_toRightOf="@id/picon"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/event_now_start"
+            android:layout_width="45dip"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="-45dip"
+            style="@style/CardText" />
+
+        <TextView
+            android:id="@+id/event_now_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dip"
+            android:layout_marginRight="55dip"
+            android:ellipsize="end"
+            android:maxLines="1"
+            style="@style/CardText" />
+
+        <TextView
+            android:id="@+id/event_now_duration"
+            android:layout_width="50dip"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-55dip"
+            android:gravity="right"
+            android:minHeight="0dip"
+            style="@style/CardText" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/event_next"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/event_now"
+        android:layout_toRightOf="@id/picon"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/event_next_start"
+            android:layout_width="45dip"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="-45dip"
+            style="@style/CardText" />
+
+        <TextView
+            android:id="@+id/event_next_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dip"
+            android:layout_marginRight="55dip"
+            android:ellipsize="end"
+            android:maxLines="1"
+            style="@style/CardText" />
+
+        <TextView
+            android:id="@+id/event_next_duration"
+            android:layout_width="50dip"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-55dip"
+            android:gravity="right"
+            android:minHeight="0dip"
+            style="@style/CardText" />
+    </LinearLayout>
+
+</RelativeLayout>
