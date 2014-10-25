@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
 
-    <item
+<!--    <item
         android:id="@+id/menu_create_timer"
         android:icon="@drawable/ic_action_add"
         dreamDroid:showAsAction="ifRoom"
-        android:title="@string/new_timer"/>
+        android:title="@string/new_timer"/>-->
     <item
         android:id="@+id/menu_cleanup"
         android:icon="@drawable/ic_menu_clear_playlist_holo_light"

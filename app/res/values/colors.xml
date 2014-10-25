@@ -21,5 +21,6 @@
     <color name="swipe_refresh_color_2">#77AD2B</color>
     <color name="swipe_refresh_color_3">#0099CC</color>
     <color name="swipe_refresh_color_4">#77AD2B</color>
+    <color name="fab_blue">#33B5E5</color>
 
 </resources>

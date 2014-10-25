@@ -70,7 +70,7 @@ public class Statics {
 	public static final int ITEM_SET_DEFAULT = R.id.menu_default;
     public static final int ITEM_SYNC_EPG = R.id.menu_sync_epg;
 	public static final int ITEM_TAGS = R.id.menu_tags;
-	public static final int ITEM_NEW_TIMER = R.id.menu_create_timer;
+	public static final int ITEM_NEW_TIMER = 0x6032;
 	public static final int ITEM_CLEANUP = R.id.menu_cleanup;
 	public static final int ITEM_LAYOUT = R.id.menu_remote_toggle;
 	public static final int ITEM_TOGGLE_ENABLED = R.id.menu_toggle_enabled;

@@ -44,6 +44,7 @@
         <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
 		<item name="text_color">#ffb0b0b0</item>
 		<item name="title_color">#ffd6d6d6</item>
+        <item name="floatingActionButtonStyle">@style/AppTheme.Fab</item>
 	</style>
 
 	<style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -87,6 +88,7 @@
         <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
 		<item name="text_color">#ff838383</item>
 		<item name="title_color">#ff737373</item>
+        <item name="floatingActionButtonStyle">@style/AppTheme.Fab</item>
 	</style>
 
 </resources>

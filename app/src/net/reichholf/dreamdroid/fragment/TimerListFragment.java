@@ -13,12 +13,18 @@ import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v7.view.ActionMode;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.shamanland.fab.FloatingActionButton;
+import com.shamanland.fab.ShowHideOnScroll;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -27,9 +33,7 @@ import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
@@ -112,9 +116,34 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		}
 	}
 
+    @Override
+    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+        View view = inflater.inflate(R.layout.timer_list_content, container, false);
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_add);
+
+        ListView listView = (ListView) view.findViewById(android.R.id.list);
+        listView.setOnTouchListener(new ShowHideOnScroll(fab));
+        return view;
+    }
+
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+        view.findViewById(R.id.fab_add).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onItemSelected(Statics.ITEM_NEW_TIMER);
+            }
+        });
+
+        view.findViewById(R.id.fab_add).setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
 		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -124,7 +153,9 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 				return true;
 			}
 		});
-	}
+
+
+    }
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
