@@ -75,7 +75,6 @@ public class DreamDroidHttpFragmentHelper {
 			// Now setup the SwipeRefreshLayout
 			mSwipeRefreshLayout.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) mFragment);
 			mSwipeRefreshLayout.setRefreshing(mIsReloading);
-			mSwipeRefreshLayout.setColorScheme(R.color.swipe_refresh_color_1, R.color.swipe_refresh_color_2, R.color.swipe_refresh_color_3, R.color.swipe_refresh_color_4);
 		}
 	}
 

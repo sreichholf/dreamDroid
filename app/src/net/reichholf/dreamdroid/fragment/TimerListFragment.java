@@ -23,9 +23,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.shamanland.fab.FloatingActionButton;
-import com.shamanland.fab.ShowHideOnScroll;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.TimerListAdapter;
@@ -41,6 +38,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteReques
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import org.apache.http.NameValuePair;
 
@@ -119,10 +117,9 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.timer_list_content, container, false);
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_add);
-
+        EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
         ListView listView = (ListView) view.findViewById(android.R.id.list);
-        listView.setOnTouchListener(new ShowHideOnScroll(fab));
+        fab.attachToListView(listView);
         return view;
     }
 
