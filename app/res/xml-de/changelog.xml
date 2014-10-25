@@ -2,6 +2,8 @@
 <changelog>
     <release version="1.0 beta 30" versioncode="228">
         <change>Support für Android Lollipop (5.0)</change>
+        <change>Komplett neue Icons</change>
+        <change>UI Verbesserungen</change>
     </release>
     <release version="1.0 beta 28" versioncode="221">
         <change>NEU: Vereinheitlichung des Verhaltens der Kanalliste für alle Gerätetypen. Wische den content nach rechts weg um das Bouquet zu wechseln.</change>
