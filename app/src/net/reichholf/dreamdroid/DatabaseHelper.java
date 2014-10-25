@@ -194,11 +194,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			if (oldVersion == 9){
 				db.execSQL(EVENT_TABLE_CREATE);
 				db.execSQL(SERVICES_TABLE_CREATE);
-				oldVersion++;
+				oldVersion += 2;
 			}
             if( oldVersion == 10){ //DEVELOPMENT VERSIONS ONLY
                 db.execSQL("DROP TABLE EPG;");
                 db.execSQL(EVENT_TABLE_CREATE);
+                oldVersion++;
             }
 			if (oldVersion != DATABASE_VERSION){ //this should never happen...
 				emergencyRecovery(db);
