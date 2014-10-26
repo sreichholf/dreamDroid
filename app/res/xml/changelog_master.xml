@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.3" versioncode="234">
+        <change>TRYFIX: Try to fix crashes some people encounter in the servicelist. The reason is yet unkown so this is a try to work around the root issue</change>
+        <change>FIX: Saving of Screenshots</change>
+    </release>
     <release version="1.0 beta 30.2" versioncode="233">
         <change>New App-Icon</change>
         <change>FIX: crashes in the virtual remote on tablets</change>
     </release>
-
     <release version="1.0 beta 30" versioncode="228">
         <change>Support for Android Lollipop (5.0)</change>#
         <change>Reworked all icons</change>
