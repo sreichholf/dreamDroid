@@ -226,7 +226,7 @@
     <string name="error_parsing">Si è verificato un errore durante l\'elaborazione dei dati!</string>
     <string name="enabled">Abilitato</string>
     <string name="signal_meter">Misuratore segnale</string>
-    <string name="accoustic_feedback">Segnale accustico</string>
+    <string name="accoustic_feedback">Segnale acustico</string>
     <string name="use_light_theme_long">Usa un tema leggero invece del tema oscuro predefinito</string>
     <string name="use_light_theme">Usa un tema leggero</string>
     <string name="leave_confirm">Uscire?</string>
