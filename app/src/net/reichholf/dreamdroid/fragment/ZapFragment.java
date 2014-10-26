@@ -107,7 +107,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_grid_view, container, false);
+		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
 		mGridView = (GridView) view.findViewById(R.id.grid);
 		mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

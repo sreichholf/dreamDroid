@@ -103,6 +103,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
+		mEnableReload = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.timer));
 		setAdapter();
@@ -119,7 +120,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
         View view = inflater.inflate(R.layout.timer_list_content, container, false);
         EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
         ListView listView = (ListView) view.findViewById(android.R.id.list);
-        fab.attachToListView(listView);
+        fab.attachToListView(listView, false);
         return view;
     }
 

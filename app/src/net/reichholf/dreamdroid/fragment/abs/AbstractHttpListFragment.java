@@ -28,6 +28,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import org.apache.http.NameValuePair;
 
@@ -45,6 +46,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	protected final String sData = "data";
 	protected boolean mReload;
+    protected boolean mEnableReload;
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
@@ -105,6 +107,19 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
+		if(mEnableReload){
+			EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_reload);
+			if(fab != null) {
+				fab.attachToListView(getListView(), true);
+				fab.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						reload();
+					}
+				});
+			}
+		}
+
 		if(mReload)
 			reload();
 	}

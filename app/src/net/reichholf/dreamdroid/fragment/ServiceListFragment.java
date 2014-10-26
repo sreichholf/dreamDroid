@@ -55,6 +55,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -226,6 +227,15 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 		if(mDetailReference == null || "".equals(mDetailReference))
 			mSlidingPane.openPane();
+
+		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) v.findViewById(R.id.fab_reload);
+		fab.attachToListView(mDetailList, true);
+		fab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				reload();
+			}
+		});
 
 		setAdapter();
 		return v;

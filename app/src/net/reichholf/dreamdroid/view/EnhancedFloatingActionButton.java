@@ -18,8 +18,9 @@ import net.reichholf.dreamdroid.R;
 public class EnhancedFloatingActionButton extends FloatingActionButton implements Animation.AnimationListener {
     private FabOnScrollListener mOnScrollListener;
     protected AbsListView mListView;
-    private final int mShow;
-    private final int mHide;
+    private boolean mStickWhenScrolled;
+    private int mShow;
+    private int mHide;
 
 
     public EnhancedFloatingActionButton(Context context) {
@@ -40,6 +41,16 @@ public class EnhancedFloatingActionButton extends FloatingActionButton implement
         mHide = R.anim.floating_action_button_hide;
     }
 
+    public void setAnimations(int show, int hide){
+        mShow = show;
+        mHide = hide;
+    }
+
+    private void invertAnimations(){
+        mShow = R.anim.slide_in_top;
+        mHide = R.anim.slide_out_top;
+    }
+
     public void show(){
         if (getVisibility() != View.VISIBLE) {
             setVisibility(View.VISIBLE);
@@ -48,7 +59,11 @@ public class EnhancedFloatingActionButton extends FloatingActionButton implement
     }
 
     public void hide(){
-        if (getVisibility() == View.VISIBLE) {
+        boolean isSticky = false;
+        if(mListView != null)
+            isSticky = mStickWhenScrolled && mListView.getFirstVisiblePosition() != 0;
+
+        if (getVisibility() == View.VISIBLE && !isSticky) {
             setVisibility(View.GONE);
             animate(mHide);
         }
@@ -62,15 +77,19 @@ public class EnhancedFloatingActionButton extends FloatingActionButton implement
         }
     }
 
-    public void attachToListView(@NonNull AbsListView listView) {
-        attachToListView(listView, new FabOnScrollListener());
+    public void attachToListView(@NonNull AbsListView listView, boolean inverted) {
+        attachToListView(listView, new FabOnScrollListener(inverted), inverted);
     }
-    public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener) {
+    public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener, boolean inverted) {
         mListView = listView;
         mOnScrollListener = onScrollListener;
         onScrollListener.setFloatingActionButton(this);
         onScrollListener.setListView(listView);
         mListView.setOnScrollListener(onScrollListener);
+        if(inverted) {
+            mStickWhenScrolled = true;
+            invertAnimations();
+        }
     }
 
     @Override
@@ -90,13 +109,21 @@ public class EnhancedFloatingActionButton extends FloatingActionButton implement
 
     public static class FabOnScrollListener extends ScrollDirectionDetector {
         private EnhancedFloatingActionButton mFloatingActionButton;
-        public FabOnScrollListener() {
+        private boolean mInverted;
+        public FabOnScrollListener(boolean inverted) {
+            mInverted = inverted;
             setScrollDirectionListener(new ScrollDirectionListener() {
                 @Override public void onScrollDown() {
-                    mFloatingActionButton.show();
+                    if(mInverted)
+                        mFloatingActionButton.hide();
+                    else
+                        mFloatingActionButton.show();
                 }
                 @Override public void onScrollUp() {
-                    mFloatingActionButton.hide();
+                    if(mInverted)
+                        mFloatingActionButton.show();
+                    else
+                        mFloatingActionButton.hide();
                 }
             });
         }

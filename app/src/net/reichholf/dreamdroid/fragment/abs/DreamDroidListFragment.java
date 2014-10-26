@@ -61,7 +61,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		if (mCardListStyle) {
-			View view = inflater.inflate(R.layout.card_list_view, container, false);
+			View view = inflater.inflate(R.layout.card_list_content, container, false);
 			return view;
 		}
 		return super.onCreateView(inflater, container, savedInstanceState);
