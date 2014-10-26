@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.2" versioncode="233">
+        <change>New App-Icon</change>
+        <change>FIX: crashes in the virtual remote on tablets</change>
+    </release>
+
     <release version="1.0 beta 30" versioncode="228">
         <change>Support for Android Lollipop (5.0)</change>#
         <change>Reworked all icons</change>
