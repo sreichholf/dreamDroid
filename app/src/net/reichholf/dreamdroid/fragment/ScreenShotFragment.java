@@ -64,6 +64,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	private static final String BUNDLE_KEY_RETAIN = "retain";
 
+    private boolean mActionsEnabled;
 	private ImageView mImageView;
 	private int mType;
 	private int mFormat;
@@ -96,17 +97,20 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		super();
 		shouldRetain(true);
 		mHttpHelper = new DreamDroidHttpFragmentHelper();
+        mActionsEnabled = true;
 	}
 
-	public ScreenShotFragment(boolean retainInstance){
+	public ScreenShotFragment(boolean retainInstance, boolean actionsEnabled){
 		super();
 		shouldRetain(retainInstance);
+        mActionsEnabled = actionsEnabled;
 	}
 
 	private void shouldRetain(boolean retainInstance){
 		Bundle args = new Bundle();
 		args.putBoolean(BUNDLE_KEY_RETAIN, retainInstance);
 		setArguments(args);
+
 	}
 
 	@Override
@@ -190,8 +194,10 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.reload, menu);
-		inflater.inflate(R.menu.save, menu);
+        if(menu.findItem(R.id.menu_reload) == null && mActionsEnabled) {
+            inflater.inflate(R.menu.reload, menu);
+            inflater.inflate(R.menu.save, menu);
+        }
 	}
 
 	@Override

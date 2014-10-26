@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
@@ -30,6 +31,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -92,7 +94,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		View view = getRemoteView();
 
 		if(view.findViewById(R.id.screenshot_frame) != null){
-			mScreenshotFragment = new ScreenShotFragment(false);
+			mScreenshotFragment = new ScreenShotFragment(false, false);
 
 			FragmentManager fm = getChildFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
@@ -104,6 +106,13 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 		return view;
 	}
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(mScreenshotFragment != null)
+            return mScreenshotFragment.onOptionsItemSelected(item);
+        return false;
+    }
 
 	@Override
 	public void onPause(){
@@ -213,7 +222,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	public void reloadScreenhot(){
 		Log.w(TAG, "Scheduling screenshot reload");
 		abortScreenshotReload();
-		if(mScreenshotFragment == null || !mScreenshotFragment.isVisible())
+		if(mScreenshotFragment == null || !mScreenshotFragment.isVisible() || mScreenShotCallback != null)
 			return;
 
 		mScreenShotCallback = new Runnable() {
@@ -221,6 +230,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			public void run() {
 				Log.w(TAG, "Reloading screenshot");
 				mScreenshotFragment.reload();
+                mScreenShotCallback = null;
 			}
 		};
 		mHandler.postDelayed(mScreenShotCallback, 700);
