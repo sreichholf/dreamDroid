@@ -14,9 +14,11 @@ import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
@@ -38,6 +41,9 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
@@ -270,28 +276,17 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	}
 
 
-	public void performFileSearch() {
+/*	public void performFileSearch() {
 
-		// ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-		// browser.
 		Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-
-		// Filter to only show results that can be "opened", such as a
-		// file (as opposed to a list of contacts or timezones)
 		intent.addCategory(Intent.CATEGORY_OPENABLE);
-
-		// Filter to show only images, using the image MIME data type.
-		// If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
-		// To search for all documents available via installed storage providers,
-		// it would be "*/*".
-		intent.setType("image/*");
-
+		intent.setType("image*//*");
 		startActivity(intent);
-	}
+	}*/
 
 	private void saveToFile() {
-		performFileSearch();
-		/*
+//		performFileSearch();
+
 		if (mRawImage != null) {
 			long timestamp = GregorianCalendar.getInstance().getTimeInMillis();
 
@@ -326,7 +321,6 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 				showToast(e.toString());
 			}
 		}
-		*/
 	}
 
 	@Override
