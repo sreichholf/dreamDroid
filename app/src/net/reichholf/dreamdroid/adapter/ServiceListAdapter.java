@@ -132,6 +132,20 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 				}
 			}
 
+			if(viewHolder.progress == null){ //TODO WHY?? WE HAVE TO FIX THIS!
+				viewHolder.picon = (ImageView) view.findViewById(R.id.picon);
+				viewHolder.progress = (ProgressBar) view.findViewById(R.id.service_progress);
+				viewHolder.serviceName = (TextView) view.findViewById(R.id.service_name);
+				viewHolder.eventNowTitle = (TextView) view.findViewById(R.id.event_now_title);
+				viewHolder.eventNowStart = (TextView) view.findViewById(R.id.event_now_start);
+				viewHolder.eventNowDuration = (TextView) view.findViewById(R.id.event_now_duration);
+				if (hasNext) {
+					viewHolder.eventNextTitle = (TextView) view.findViewById(R.id.event_next_title);
+					viewHolder.eventNextStart = (TextView) view.findViewById(R.id.event_next_start);
+					viewHolder.eventNextDuration = (TextView) view.findViewById(R.id.event_next_duration);
+				}
+			}
+
 			if (max > 0 && cur >= 0) {
 				viewHolder.progress.setVisibility(View.VISIBLE);
 				viewHolder.progress.setMax((int) max);
