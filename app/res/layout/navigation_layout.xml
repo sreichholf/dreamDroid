@@ -26,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dip"
         android:layout_marginTop="-60dip"
-        android:background="@drawable/navigation_footer">
+        android:background="?attr/navigation_footer">
 
 
         <ImageButton
@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_menu_changelog" />
+            android:src="?attr/ic_menu_changelog" />
 
         <ImageButton
             android:id="@+id/buttonAbout"
@@ -43,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_menu_about" />
+            android:src="?attr/ic_menu_about" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -56,7 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/ic_menu_settings_holo_light" />
+            android:src="?attr/ic_menu_settings" />
 
     </LinearLayout>
 
