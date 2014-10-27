@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.DreamDroid" parent="Theme.AppCompat">
+    <style name="Theme.DreamDroid.Base" parent="Theme.AppCompat">
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">@android:color/transparent</item>
         <item name="lightBackgroundColor">#333</item>
@@ -37,16 +37,19 @@
         <item name="ic_menu_sleeptimer">@drawable/ic_menu_sleeptimer_holo_dark</item>
         <item name="ic_menu_timer">@drawable/ic_menu_timer_holo_dark</item>
         <item name="ic_menu_zap">@drawable/ic_menu_zap_holo_dark</item>
-		<item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
-		<item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
-		<item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
-		<item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
-		<item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
-        <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
-		<item name="text_color">#ffb0b0b0</item>
-		<item name="title_color">#ffd6d6d6</item>
+        <item name="text_color">#ffb0b0b0</item>
+        <item name="title_color">#ffd6d6d6</item>
         <item name="floatingActionButtonStyle">@style/AppTheme.Fab</item>
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
+    </style>
+
+    <style name="Theme.DreamDroid" parent="Theme.DreamDroid.Base" >
+        <item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
+        <item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
+        <item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
+        <item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
+        <item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
+        <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
     </style>
 
     <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -60,7 +63,7 @@
         <item name="ic_media_pause">@drawable/ic_media_pause_holo_light</item>
         <item name="ic_media_stop">@drawable/ic_media_stop_holo_light</item>
         <item name="ic_media_previous">@drawable/ic_media_previous_holo_light</item>
-		<item name="ic_media_next">@drawable/ic_media_next_holo_light</item>
+        <item name="ic_media_next">@drawable/ic_media_next_holo_light</item>
         <item name="ic_menu_about">@drawable/ic_menu_about_holo_light</item>
         <item name="ic_menu_changelog">@drawable/ic_menu_changelog_holo_light</item>
         <item name="ic_menu_clear_playlist">@drawable/ic_menu_clear_playlist_holo_light</item>
@@ -85,28 +88,28 @@
         <item name="ic_menu_sleeptimer">@drawable/ic_menu_sleeptimer_holo_light</item>
         <item name="ic_menu_timer">@drawable/ic_menu_timer_holo_light</item>
         <item name="ic_menu_zap">@drawable/ic_menu_zap_holo_light</item>
-		<item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
-		<item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
-		<item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
-		<item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
-		<item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
+        <item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
+        <item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
+        <item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
+        <item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
+        <item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
         <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
-		<item name="text_color">#ff838383</item>
-		<item name="title_color">#ff737373</item>
+        <item name="text_color">#ff838383</item>
+        <item name="title_color">#ff737373</item>
         <item name="floatingActionButtonStyle">@style/AppTheme.Fab</item>
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light" />
 
-	<style name="Theme.DreamDroid.NoTitle" parent="Theme.DreamDroid">
-		<item name="windowActionBar">false</item>
-		<item name="android:windowNoTitle">true</item>
-	</style>
+    <style name="Theme.DreamDroid.NoTitle" parent="Theme.DreamDroid">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
 
-	<style name="Theme.DreamDroid.Light.NoTitle" parent="Theme.DreamDroid.Light">
-		<item name="windowActionBar">false</item>
-		<item name="android:windowNoTitle">true</item>
-	</style>
+    <style name="Theme.DreamDroid.Light.NoTitle" parent="Theme.DreamDroid.Light">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
 
 </resources>
