@@ -540,10 +540,12 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 					mHistory.add(map);
 					mNavReference = ref;
 					mNavName = nam;
+					mNavList.setSelectionAfterHeaderView();
 					reloadNav();
 				} else {
 					mDetailReference = ref;
 					mDetailName = nam;
+					mDetailList.setSelectionAfterHeaderView();
 					reloadDetail(false);
 				}
 			}
