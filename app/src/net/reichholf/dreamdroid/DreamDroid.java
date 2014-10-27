@@ -34,6 +34,9 @@ import android.util.Log;
  *
  */
 public class DreamDroid extends Application {
+	public static final int INITIAL_SERVICELIST_PANE = 1;
+	public static final int INITIAL_VIRTUAL_REMOTE = 2 ;
+
 	public static String VERSION_STRING;
 
 	public static final String ACTION_CREATE = "dreamdroid.intent.action.NEW";
@@ -46,6 +49,7 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_SYNC_PICONS_PATH = "sync_picons_path";
 	public static final String PREFS_KEY_PICONS_ENABLED = "picons";
 	public static final String PREFS_KEY_PICONS_USE_NAME = "use_name_as_picon_filename";
+	public static final String PREFS_KEY_INITIALBITS = "initial_bits";
 
 	public static final String CURRENT_PROFILE = "currentProfile";
 
@@ -341,5 +345,22 @@ public class DreamDroid extends Application {
 	public static void setTheme(Context context) {
 		if (!isLightTheme(context))
 			context.setTheme(R.style.Theme_DreamDroid);
+	}
+
+	public static boolean checkInitial(Context context, int which) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+		int mask = sp.getInt(PREFS_KEY_INITIALBITS, 0);
+
+		return ( mask & which ) != which;
+	}
+
+	public static void setNotInitial(Context context, int which) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+		int mask = sp.getInt(PREFS_KEY_INITIALBITS, 0);
+		mask |= which;
+
+		SharedPreferences.Editor editor = sp.edit();
+		editor.putInt(PREFS_KEY_INITIALBITS, mask);
+		editor.commit();
 	}
 }

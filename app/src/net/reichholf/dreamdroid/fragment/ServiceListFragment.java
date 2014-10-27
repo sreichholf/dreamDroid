@@ -655,7 +655,12 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mNavHttpParams = params;
 			mHttpHelper.reload(LOADER_BOUQUETLIST_ID);
 		} else {
-			mSlidingPane.closePane();
+			if(DreamDroid.checkInitial(getActionBarActivity(), DreamDroid.INITIAL_SERVICELIST_PANE)){
+				mSlidingPane.openPane();
+				DreamDroid.setNotInitial(getActionBarActivity(), DreamDroid.INITIAL_SERVICELIST_PANE);
+			} else {
+				mSlidingPane.closePane();
+			}
 			params.add(new BasicNameValuePair("bRef", ref));
 			mDetailHttpParams = params;
 			mHttpHelper.reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
