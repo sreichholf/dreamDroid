@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.4" versioncode="235">
+        <change>FIX: Some inconsistencies in the dark style</change>
+        <change>FIX: Servicelist now scrolls to top of the list when navigating</change>
+    </release>
     <release version="1.0 beta 30.3" versioncode="234">
         <change>TRYFIX: Try to fix crashes some people encounter in the servicelist. The reason is yet unkown so this is a try to work around the root issue</change>
         <change>FIX: Saving of Screenshots</change>

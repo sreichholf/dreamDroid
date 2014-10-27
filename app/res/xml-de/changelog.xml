@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.4" versioncode="235">
+        <change>FIX: Einige Unstimmigkeiten im Dunklen Stil</change>
+        <change>FIX: Kanalliste scrollt nun zum Anfang beim Boquetwechsel</change>
+    </release>
     <release version="1.0 beta 30.3" versioncode="234">
         <change>TRYFIX: Versuch die Crashes in der Kanalliste zu beheben, da sie aktuell lokal nicht nachvollziehbar sind ist es schwer das Tats. Problem zu beheben</change>
         <change>FIX: Speichern von Screenshots</change>
