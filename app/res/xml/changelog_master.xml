@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.5" versioncode="236">
+        <change>NEW: Implemented special "First Time" behaviour in servicelist (Bouquetlist will be opened, even if there already is a favorite set).</change>
+        <change>NEW: More Material Design</change>
+        <change>NEW: Allow fallback to old ActionBar based reload button via Preferences</change>
+    </release>
     <release version="1.0 beta 30.4" versioncode="235">
         <change>FIX: Some inconsistencies in the dark style</change>
         <change>FIX: Servicelist now scrolls to top of the list when navigating</change>

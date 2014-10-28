@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.5" versioncode="236">
+        <change>NEU: Verhalten für "Das erste Mal" in der Kanalliste implementiert. In diesem Fall werden die Bouquets angezeigt</change>
+        <change>NEU: Mehr Material Design</change>
+        <change>NEU: Der "Schwebende Reload Button" kann über die Einstellungen deaktiviert werden (Option "Alter Reload Button")</change>
+    </release>
     <release version="1.0 beta 30.4" versioncode="235">
         <change>FIX: Einige Unstimmigkeiten im Dunklen Stil</change>
         <change>FIX: Kanalliste scrollt nun zum Anfang beim Boquetwechsel</change>
