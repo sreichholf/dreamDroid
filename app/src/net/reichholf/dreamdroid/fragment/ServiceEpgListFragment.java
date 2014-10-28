@@ -21,6 +21,8 @@ import org.apache.http.message.BasicNameValuePair;
 
 import android.os.Bundle;
 import android.support.v4.content.Loader;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.widget.SimpleAdapter;
 
 /**
@@ -52,6 +54,11 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 		} else {
 			finish();
 		}
+	}
+
+	@Override
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+		checkMenuReload(menu, inflater);
 	}
 
 	/**

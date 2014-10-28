@@ -7,15 +7,22 @@
 package net.reichholf.dreamdroid.fragment.abs;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -107,18 +114,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void onViewCreated(View view, Bundle savedInstanceState){
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
-		if(mEnableReload){
-			EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_reload);
-			if(fab != null) {
-				fab.attachToListView(getListView(), true);
-				fab.setOnClickListener(new OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						reload();
-					}
-				});
-			}
-		}
 
 		if(mReload)
 			reload();
@@ -133,6 +128,49 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemSelected(item.getItemId());
+	}
+
+	public void connectFabReload(View view, AbsListView listView){
+		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_reload);
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		if(fab != null && !sp.getBoolean("disable_fab_reload", false)) {
+			fab.attachToListView(listView, true);
+			fab.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					reload();
+				}
+			});
+			fab.setOnLongClickListener(new View.OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					Toast t = Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT);
+					t.setGravity(Gravity.TOP, 0, 0);
+					t.show();
+					return true;
+				}
+			});
+		}
+	}
+
+	public void detachFabReload(){
+		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) getView().findViewById(R.id.fab_reload);
+		if(fab != null) {
+			fab.detachFromListView();
+		}
+	}
+
+	public void checkMenuReload(Menu menu, MenuInflater inflater){
+		if(!mEnableReload)
+			return;
+
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		if(sp.getBoolean("disable_fab_reload", false)) {
+			detachFabReload();
+			inflater.inflate(R.menu.reload, menu);
+		} else {
+			connectFabReload(getView(), getListView());
+		}
 	}
 
 	/**

@@ -16,7 +16,6 @@ import net.reichholf.dreamdroid.R;
  * Created by Stephan on 25.10.2014.
  */
 public class EnhancedFloatingActionButton extends FloatingActionButton implements Animation.AnimationListener {
-    private FabOnScrollListener mOnScrollListener;
     protected AbsListView mListView;
     private boolean mStickWhenScrolled;
     private int mShow;
@@ -80,9 +79,9 @@ public class EnhancedFloatingActionButton extends FloatingActionButton implement
     public void attachToListView(@NonNull AbsListView listView, boolean inverted) {
         attachToListView(listView, new FabOnScrollListener(inverted), inverted);
     }
+
     public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener, boolean inverted) {
         mListView = listView;
-        mOnScrollListener = onScrollListener;
         onScrollListener.setFloatingActionButton(this);
         onScrollListener.setListView(listView);
         mListView.setOnScrollListener(onScrollListener);
@@ -90,6 +89,15 @@ public class EnhancedFloatingActionButton extends FloatingActionButton implement
             mStickWhenScrolled = true;
             invertAnimations();
         }
+    }
+
+    public void detachFromListView() {
+        hide();
+        if(mListView == null)
+            return;
+        mListView.setOnScrollListener(null);
+        mListView = null;
+        mStickWhenScrolled = false;
     }
 
     @Override

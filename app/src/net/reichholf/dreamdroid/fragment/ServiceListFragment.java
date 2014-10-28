@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
@@ -55,7 +56,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -228,15 +228,6 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		if(mDetailReference == null || "".equals(mDetailReference))
 			mSlidingPane.openPane();
 
-		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) v.findViewById(R.id.fab_reload);
-		fab.attachToListView(mDetailList, true);
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				reload();
-			}
-		});
-
 		setAdapter();
 		return v;
 	}
@@ -364,8 +355,19 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		return true;
 	}
 
+	public void checkMenuReload(Menu menu, MenuInflater inflater){
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		if(sp.getBoolean("disable_fab_reload", false)) {
+			detachFabReload();
+			inflater.inflate(R.menu.reload, menu);
+		} else {
+			connectFabReload(getView(), mDetailList);
+		}
+	}
+
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+		checkMenuReload(menu, inflater);
 		inflater.inflate(R.menu.servicelist, menu);
 	}
 

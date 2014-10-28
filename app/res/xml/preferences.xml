@@ -37,6 +37,11 @@
             android:summary="@string/use_light_theme_long"
             android:title="@string/use_light_theme"/>
         <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="disable_fab_reload"
+            android:summary="@string/disable_fab_reload_long"
+            android:title="@string/disable_fab_reload"/>
+        <CheckBoxPreference
             android:defaultValue="true"
             android:key="enable_animations"
             android:summary="@string/enable_animations_long"

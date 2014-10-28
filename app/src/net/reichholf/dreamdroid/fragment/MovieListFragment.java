@@ -188,6 +188,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+		checkMenuReload(menu, inflater);
 		inflater.inflate(R.menu.locactions_and_tags, menu);
 	}
 
