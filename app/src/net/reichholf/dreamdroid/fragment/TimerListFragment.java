@@ -117,31 +117,29 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        View view = inflater.inflate(R.layout.timer_list_content, container, false);
+        View view = inflater.inflate(R.layout.fab_list_content, container, false);
         EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
         ListView listView = (ListView) view.findViewById(android.R.id.list);
         fab.attachToListView(listView, false);
-        return view;
-    }
-
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-        view.findViewById(R.id.fab_add).setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onItemSelected(Statics.ITEM_NEW_TIMER);
             }
         });
-
-        view.findViewById(R.id.fab_add).setOnLongClickListener(new View.OnLongClickListener() {
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
+        return view;
+    }
 
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {

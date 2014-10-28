@@ -20,6 +20,8 @@ import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
+import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
+
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -32,10 +34,12 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
@@ -189,6 +193,29 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		setListAdapter(mAdapter);
 	}
 
+    @Override
+    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+        View view = inflater.inflate(R.layout.fab_list_content, container, false);
+        EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
+        ListView listView = (ListView) view.findViewById(android.R.id.list);
+        fab.attachToListView(listView, false);
+        fab.setContentDescription(getString(R.string.profile_add));
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createProfile();
+            }
+        });
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+        return view;
+    }
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -321,7 +348,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		Fragment f = new ProfileEditFragment();
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
-		getMultiPaneHandler().showDetails(f);
+		getMultiPaneHandler().showDetails(f, true);
 	}
 
 	/**

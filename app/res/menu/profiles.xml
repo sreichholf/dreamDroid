@@ -2,11 +2,6 @@
     xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
 
     <item
-        android:id="@+id/menu_add_profile"
-        android:icon="@drawable/ic_action_add"
-        dreamDroid:showAsAction="ifRoom"
-        android:title="@string/profile_add"/>
-    <item
         android:id="@+id/menu_detect_devices"
         android:icon="@drawable/ic_action_devices"
         dreamDroid:showAsAction="ifRoom"
