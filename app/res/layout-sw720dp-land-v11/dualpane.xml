@@ -3,15 +3,8 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_marginLeft="0dp"
-    android:layout_marginRight="15dp"
+    android:layout_marginRight="0dp"
     android:orientation="vertical" >
-
-    <TextView
-        android:id="@+id/detail_title"
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
-        android:layout_marginLeft="170dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <FrameLayout
         android:id="@+id/navigation_view"
@@ -25,11 +18,17 @@
         android:id="@+id/container_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/detail_title"
         android:layout_toRightOf="@id/navigation_view"
         android:background="?android:attr/detailsElementBackground"
         android:orientation="vertical"
-        android:padding="8dip">
+        android:layout_margin="8dip"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/detail_title"
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <FrameLayout
             android:id="@+id/detail_view"

@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<net.reichholf.dreamdroid.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<net.reichholf.dreamdroid.widget.DrawerLayout
     android:id="@+id/drawer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
-
-    <TextView
-        android:id="@+id/detail_title"
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
-        android:layout_marginBottom="-30dp"
-        android:layout_marginLeft="10dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/detail_title"
-        android:layout_marginTop="30dp"
+        android:layout_margin="8dp"
         android:background="?android:attr/detailsElementBackground"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/detail_title"
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
         <FrameLayout
             android:id="@+id/detail_view"
@@ -27,9 +26,9 @@
             android:layout_marginBottom="25dp"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="3dp"
-            android:layout_marginTop="3dp" />
+            android:layout_marginTop="3dp"/>
 
-        <include layout="@layout/dualpane_connection_state" />
+        <include layout="@layout/dualpane_connection_state"/>
     </LinearLayout>
 
     <FrameLayout
@@ -37,6 +36,6 @@
         style="@style/NavigationDrawer"
         android:layout_width="320dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start" />
+        android:layout_gravity="start"/>
 
 </net.reichholf.dreamdroid.widget.DrawerLayout>

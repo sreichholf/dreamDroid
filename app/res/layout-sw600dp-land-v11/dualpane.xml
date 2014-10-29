@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:layout_marginLeft="0dp"
-    android:layout_marginRight="3dp"
-    android:orientation="vertical" >
-
-    <TextView
-        android:id="@+id/detail_title"
-        android:layout_width="fill_parent"
-        android:layout_height="30dp"
-        android:layout_marginLeft="170dp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="3dp"
+                android:orientation="vertical">
 
     <FrameLayout
         android:id="@+id/navigation_view"
@@ -19,17 +12,22 @@
         android:layout_height="fill_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignTop="@+id/container_view"
-        android:layout_marginTop="3dp" />
+        android:layout_marginTop="3dp"/>
 
     <LinearLayout
         android:id="@+id/container_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@id/detail_title"
         android:layout_toRightOf="@id/navigation_view"
         android:background="?android:attr/detailsElementBackground"
-        android:padding="8dip"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:padding="8dip">
+
+        <TextView
+            android:id="@+id/detail_title"
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
         <FrameLayout
             android:id="@+id/detail_view"
@@ -38,9 +36,9 @@
             android:layout_marginBottom="25dp"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:layout_marginTop="5dp" />
+            android:layout_marginTop="5dp"/>
 
-        <include layout="@layout/dualpane_connection_state" />
+        <include layout="@layout/dualpane_connection_state"/>
     </LinearLayout>
 
 </RelativeLayout>
