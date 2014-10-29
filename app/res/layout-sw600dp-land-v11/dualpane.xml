@@ -28,6 +28,7 @@
         android:layout_below="@id/detail_title"
         android:layout_toRightOf="@id/navigation_view"
         android:background="?android:attr/detailsElementBackground"
+        android:padding="8dip"
         android:orientation="vertical" >
 
         <FrameLayout

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="keyline1">24dip</dimen>
+    <dimen name="keyline2">80dip</dimen>
+
+</resources>

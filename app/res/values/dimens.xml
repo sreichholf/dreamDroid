@@ -36,5 +36,8 @@
     <dimen name="multiepg_row_height">100dp</dimen>
     <dimen name="single_dp">1dp</dimen>
     <dimen name="fab_min_significant_scroll">8dp</dimen>
+    <dimen name="keyline1">16dip</dimen>
+    <dimen name="keyline2">72dip</dimen>
+    <dimen name="keyline2from1">48dip</dimen>
 
 </resources>

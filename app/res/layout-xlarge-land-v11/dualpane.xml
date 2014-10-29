@@ -25,10 +25,10 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_below="@id/detail_title"
-        android:layout_marginLeft="-3dp"
         android:layout_toRightOf="@id/navigation_view"
         android:background="?android:attr/detailsElementBackground"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:padding="8dip">
 
         <FrameLayout
             android:id="@+id/detail_view"

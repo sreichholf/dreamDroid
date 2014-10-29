@@ -44,4 +44,7 @@
 	<attr name="text_color" format="color"/>
 	<attr name="title_color" format="color"/>
     <attr name="navigation_footer" format="reference"/>
+    <attr name="keyline1" format="dimension"/>
+    <attr name="keyline2" format="dimension"/>
+    <attr name="keyline2from1" format="dimension"/>
 </resources>
