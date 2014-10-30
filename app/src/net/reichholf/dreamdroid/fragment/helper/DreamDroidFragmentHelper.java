@@ -37,7 +37,7 @@ public class DreamDroidFragmentHelper {
 		mFragment = fragment;
 	}
 
-	public ActionBarActivity getSherlockActivity() {
+	public ActionBarActivity getActionBarActivity() {
 		return (ActionBarActivity) mFragment.getActivity();
 	}
 
@@ -46,7 +46,7 @@ public class DreamDroidFragmentHelper {
 	}
 
 	public void onActivityCreated(Bundle savedInstanceState) {
-		getSherlockActivity().setTitle(mCurrentTitle);
+		getActionBarActivity().setTitle(mCurrentTitle);
 	}
 
 	public void onAttach(Activity activity) {
@@ -71,7 +71,7 @@ public class DreamDroidFragmentHelper {
 	}
 
 	public MultiPaneHandler getMultiPaneHandler() {
-		return (MultiPaneHandler) getSherlockActivity();
+		return (MultiPaneHandler) getActionBarActivity();
 	}
 
 	public String getBaseTitle() {
@@ -94,7 +94,7 @@ public class DreamDroidFragmentHelper {
 		MultiPaneHandler mph = ((MutliPaneContent) mFragment).getMultiPaneHandler();
 		if (mph.isMultiPane()) {
 			boolean explicitShow = false;
-			FragmentManager fm = getSherlockActivity().getSupportFragmentManager();
+			FragmentManager fm = getActionBarActivity().getSupportFragmentManager();
 			if (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
 			} else {
@@ -105,7 +105,7 @@ public class DreamDroidFragmentHelper {
 			if (target != null) {
 				if (resultCode != Statics.RESULT_NONE || data != null) {
 					if (explicitShow) {
-						FragmentTransaction ft = getSherlockActivity().getSupportFragmentManager().beginTransaction();
+						FragmentTransaction ft = getActionBarActivity().getSupportFragmentManager().beginTransaction();
 						ft.remove(mFragment);
 						ft.commit();
 
@@ -115,8 +115,8 @@ public class DreamDroidFragmentHelper {
 				}
 			}
 		} else {
-			getSherlockActivity().setResult(resultCode, data);
-			getSherlockActivity().finish();
+			getActionBarActivity().setResult(resultCode, data);
+			getActionBarActivity().finish();
 		}
 	}
 }
