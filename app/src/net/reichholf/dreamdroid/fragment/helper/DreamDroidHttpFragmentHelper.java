@@ -14,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -74,8 +75,15 @@ public class DreamDroidHttpFragmentHelper {
 		if (mSwipeRefreshLayout != null) {
 			// Now setup the SwipeRefreshLayout
 			mSwipeRefreshLayout.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) mFragment);
-			mSwipeRefreshLayout.setRefreshing(mIsReloading);
 		}
+	}
+
+	public void onActivityCreated(){
+		if(mSwipeRefreshLayout == null)
+			return;
+		TypedValue typed_value = new TypedValue();
+		getActionBarActivity().getTheme().resolveAttribute(android.support.v7.appcompat.R.attr.actionBarSize, typed_value, true);
+		mSwipeRefreshLayout.setProgressViewOffset(false, 0, getActionBarActivity().getResources().getDimensionPixelSize(typed_value.resourceId));
 	}
 
 	protected void setClient() {
@@ -355,13 +363,15 @@ public class DreamDroidHttpFragmentHelper {
 		mIsReloading = true;
 		//The SDK check is a workaround for broken pull-to-refresh with ActionBarCompat
 		if (mSwipeRefreshLayout != null) {
-			mSwipeRefreshLayout.setRefreshing(true);
+			if(!mSwipeRefreshLayout.isRefreshing())
+				mSwipeRefreshLayout.setRefreshing(true);
 		}
 	}
 
 	public void onLoadFinished(){
 		mIsReloading = false;
 		if(mSwipeRefreshLayout != null)
-			mSwipeRefreshLayout.setRefreshing(false);
+			if(mSwipeRefreshLayout.isRefreshing())
+				mSwipeRefreshLayout.setRefreshing(false);
 	}
 }

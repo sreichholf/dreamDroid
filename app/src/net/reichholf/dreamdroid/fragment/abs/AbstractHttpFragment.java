@@ -66,6 +66,12 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	}
 
 	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		mHttpHelper.onActivityCreated();
+	}
+
+	@Override
 	public void onDestroy() {
 		mHttpHelper.onDestroy();
 		super.onDestroy();

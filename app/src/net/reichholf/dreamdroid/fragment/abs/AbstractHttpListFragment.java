@@ -100,20 +100,20 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState){
+		super.onViewCreated(view, savedInstanceState);
+		mHttpHelper.onViewCreated(view, savedInstanceState);
+	}
+
+	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		mHttpHelper.onActivityCreated();
 		getListView().setFastScrollEnabled(true);
-
 		try {
 			setEmptyText(getText(R.string.loading));
 		} catch (IllegalStateException e) {
 		}
-	}
-
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState){
-		super.onViewCreated(view, savedInstanceState);
-		mHttpHelper.onViewCreated(view, savedInstanceState);
 
 		if(mReload)
 			reload();
