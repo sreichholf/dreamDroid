@@ -12,6 +12,8 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -162,5 +165,26 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	protected void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
+	}
+
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener){
+		registerFab(id, view, onClickListener, null, false);
+	}
+
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean inverted) {
+		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(id);
+		if (fab == null)
+			return;
+		if (listView != null)
+			fab.attachToListView(listView, inverted);
+
+		fab.setOnClickListener(onClickListener);
+		fab.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+				return true;
+			}
+		});
 	}
 }

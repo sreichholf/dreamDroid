@@ -69,7 +69,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
 			MenuItem toggle = menu.findItem(R.id.menu_toggle_enabled);
-			if(mTimer.getString(Timer.KEY_DISABLED).equals("0"))
+			if (mTimer.getString(Timer.KEY_DISABLED).equals("0"))
 				toggle.setTitle(R.string.disable);
 			else
 				toggle.setTitle(R.string.enable);
@@ -115,27 +115,18 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		}
 	}
 
-    @Override
-    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        View view = inflater.inflate(R.layout.fab_list_content, container, false);
-        EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
-        ListView listView = (ListView) view.findViewById(android.R.id.list);
-        fab.attachToListView(listView, false);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onItemSelected(Statics.ITEM_NEW_TIMER);
-            }
-        });
-        fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-        return view;
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.fab_list_content, container, false);
+		ListView listView = (ListView) view.findViewById(android.R.id.list);
+		registerFab(R.id.fab_add, view, new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onItemSelected(Statics.ITEM_NEW_TIMER);
+			}
+		}, listView, false);
+		return view;
+	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -151,7 +142,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		});
 
 
-    }
+	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
@@ -260,7 +251,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	private void toggleTimerEnabled(ExtendedHashMap timer) {
 		ExtendedHashMap timerNew = timer.clone();
 
-		if(timerNew.getString(Timer.KEY_DISABLED).equals("1"))
+		if (timerNew.getString(Timer.KEY_DISABLED).equals("1"))
 			timerNew.put(Timer.KEY_DISABLED, "0");
 		else
 			timerNew.put(Timer.KEY_DISABLED, "1");

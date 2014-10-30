@@ -131,25 +131,14 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	public void connectFabReload(View view, AbsListView listView){
-		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_reload);
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
-		if(fab != null && !sp.getBoolean("disable_fab_reload", false)) {
-			fab.attachToListView(listView, true);
-			fab.setOnClickListener(new View.OnClickListener() {
+		if(!sp.getBoolean("disable_fab_reload", false)) {
+			registerFab(R.id.fab_reload, view, new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					reload();
 				}
-			});
-			fab.setOnLongClickListener(new View.OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					Toast t = Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT);
-					t.setGravity(Gravity.TOP, 0, 0);
-					t.show();
-					return true;
-				}
-			});
+			}, listView, true);
 		}
 	}
 

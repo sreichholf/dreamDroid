@@ -48,9 +48,8 @@ import android.widget.Toast;
 
 /**
  * Shows a list of all connection profiles
- * 
+ *
  * @author sre
- * 
  */
 public class ProfileListFragment extends DreamDroidListFragment implements ActionDialog.DialogActionListener {
 	private Profile mProfile;
@@ -80,7 +79,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void detectDevices() {
 		if (mDetectedProfiles == null) {
@@ -108,7 +107,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void addAllDetectedDevices() {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
@@ -123,8 +122,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	/**
-	 * @param profiles
-	 *            A list of profiles for auto-discovered dreamboxes
+	 * @param profiles A list of profiles for auto-discovered dreamboxes
 	 */
 	private void onDevicesDetected(ArrayList<Profile> profiles) {
 		mProgress.dismiss();
@@ -189,32 +187,26 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfile = Profile.DEFAULT;
 
 		mAdapter = new ProfileListSimpleAdapter(getActionBarActivity(), mProfileMapList, R.layout.two_line_card_list_item,
-				new String[] { DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[] { android.R.id.text1, android.R.id.text2});
+				new String[]{DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1, android.R.id.text2});
 		setListAdapter(mAdapter);
 	}
 
-    @Override
-    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        View view = inflater.inflate(R.layout.fab_list_content, container, false);
-        EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
-        ListView listView = (ListView) view.findViewById(android.R.id.list);
-        fab.attachToListView(listView, false);
-        fab.setContentDescription(getString(R.string.profile_add));
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createProfile();
-            }
-        });
-        fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-        return view;
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.fab_list_content, container, false);
+
+		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
+		fab.setContentDescription(getString(R.string.profile_add));
+		ListView listView = (ListView) view.findViewById(android.R.id.list);
+		registerFab(R.id.fab_add, view, new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				createProfile();
+			}
+		}, listView, false);
+
+		return view;
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -240,8 +232,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mProfile = mProfiles.get(position);
 
-		CharSequence[] actions = { getText(R.string.activate), getText(R.string.edit), getText(R.string.delete) };
-		int[] actionIds = { Statics.ACTION_ACTIVATE, Statics.ACTION_EDIT, Statics.ACTION_DELETE };
+		CharSequence[] actions = {getText(R.string.activate), getText(R.string.edit), getText(R.string.delete)};
+		int[] actionIds = {Statics.ACTION_ACTIVATE, Statics.ACTION_EDIT, Statics.ACTION_DELETE};
 		getMultiPaneHandler().showDialogFragment(
 				SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds), "dialog_profile_selected");
 	}
@@ -293,20 +285,19 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	/**
-	 * @param id
-	 *            The id of the selected menu item (<code>MENU_*</code> statics)
+	 * @param id The id of the selected menu item (<code>MENU_*</code> statics)
 	 * @return
 	 */
 	protected boolean onItemClicked(int id) {
 		switch (id) {
-		case (Statics.ITEM_ADD_PROFILE):
-			createProfile();
-			break;
-		case Statics.ITEM_DETECT_DEVICES:
-			detectDevices();
-			break;
-		default:
-			return false;
+			case (Statics.ITEM_ADD_PROFILE):
+				createProfile();
+				break;
+			case Statics.ITEM_DETECT_DEVICES:
+				detectDevices();
+				break;
+			default:
+				return false;
 		}
 
 		return true;
@@ -353,9 +344,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	/**
 	 * Shows a toast
-	 * 
-	 * @param text
-	 *            The text to show as toast
+	 *
+	 * @param text The text to show as toast
 	 */
 	protected void showToast(String text) {
 		Toast toast = Toast.makeText(getActionBarActivity(), text, Toast.LENGTH_LONG);
@@ -375,30 +365,30 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
-		case Statics.ACTION_ACTIVATE:
-			activateProfile();
-			break;
-		case Statics.ACTION_EDIT:
-			editProfile();
-			break;
-		case Statics.ACTION_DELETE:
-			getMultiPaneHandler().showDialogFragment(
-					PositiveNegativeDialog.newInstance(mProfile.getName(), R.string.confirm_delete_profile,
-							android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
-							Statics.ACTION_NONE), "dialog_delete_profile_confirm");
-			break;
-		case Statics.ACTION_DELETE_CONFIRMED:
-			DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
-			if (dbh.deleteProfile(mProfile)) {
-				showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
-			} else {
-				showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
-			}
-			// TODO Add error handling
-			reloadProfiles();
-			mProfile = Profile.DEFAULT;
-			mAdapter.notifyDataSetChanged();
-			break;
+			case Statics.ACTION_ACTIVATE:
+				activateProfile();
+				break;
+			case Statics.ACTION_EDIT:
+				editProfile();
+				break;
+			case Statics.ACTION_DELETE:
+				getMultiPaneHandler().showDialogFragment(
+						PositiveNegativeDialog.newInstance(mProfile.getName(), R.string.confirm_delete_profile,
+								android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
+								Statics.ACTION_NONE), "dialog_delete_profile_confirm");
+				break;
+			case Statics.ACTION_DELETE_CONFIRMED:
+				DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
+				if (dbh.deleteProfile(mProfile)) {
+					showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
+				} else {
+					showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
+				}
+				// TODO Add error handling
+				reloadProfiles();
+				mProfile = Profile.DEFAULT;
+				mAdapter.notifyDataSetChanged();
+				break;
 		}
 	}
 }
