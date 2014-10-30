@@ -8,9 +8,7 @@
         android:id="@+id/navigation_view"
         android:layout_width="230dp"
         android:layout_height="fill_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_alignTop="@+id/container_view"
-        android:layout_marginTop="3dp"/>
+        android:background="@drawable/simple_right_line"/>
 
     <LinearLayout
         android:id="@+id/container_view"
