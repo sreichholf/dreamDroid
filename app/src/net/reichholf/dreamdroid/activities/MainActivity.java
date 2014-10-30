@@ -462,8 +462,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 						DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			ft.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right, R.anim.slide_in_right,
-					R.anim.slide_out_left);
+			ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale,
+					R.anim.activity_close_translate);
 
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {

@@ -3,7 +3,7 @@
 <set xmlns:android="http://schemas.android.com/apk/res/android">
 
     <scale
-        android:duration="@android:integer/config_mediumAnimTime"
+        android:duration="@android:integer/config_shortAnimTime"
         android:fromXScale="80%p"
         android:fromYScale="80%p"
         android:pivotX="50%p"
@@ -12,7 +12,7 @@
         android:toYScale="100%p"/>
 
     <alpha
-        android:duration="@android:integer/config_mediumAnimTime"
+        android:duration="@android:integer/config_shortAnimTime"
         android:fromAlpha="0.5"
         android:toAlpha="1.0"/>
 
