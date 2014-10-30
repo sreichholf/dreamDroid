@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
+import net.reichholf.dreamdroid.R;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -31,11 +33,13 @@ public class BaseActivity extends ActionBarActivity {
 			e.printStackTrace();
 		}
 		super.onCreate(savedInstanceState);
+		overridePendingTransition(R.anim.activity_open_translate,R.anim.activity_close_scale);
 	}
 
 	public void onPause(){
 		mTrustManager.unbindDisplayActivity(this);
 		super.onPause();
+		overridePendingTransition(R.anim.activity_open_scale,R.anim.activity_close_translate);
 	}
 
 	public void onResume(){
