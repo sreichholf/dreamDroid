@@ -52,11 +52,14 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		DreamDroid.setTheme(this);
+		//DreamDroid.setTheme(this);
 		int currentOrientation = getResources().getConfiguration().orientation;
 		setRequestedOrientation(currentOrientation);
 
 		super.onCreate(savedInstanceState);
+		if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
+			overridePendingTransition(R.anim.activity_open_translate,R.anim.activity_close_scale);
 		addPreferencesFromResource(R.xml.preferences);
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 
@@ -90,6 +93,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 			mSyncPiconTask = null;
 		}
 		super.onPause();
+		if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
+			overridePendingTransition(R.anim.activity_open_scale,R.anim.activity_close_translate);
 	}
 
 	/*
