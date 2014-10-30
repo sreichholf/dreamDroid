@@ -1,195 +1,216 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:paddingBottom="@dimen/content_vert_padding"
-    android:paddingLeft="@dimen/content_horz_padding"
-    android:paddingRight="@dimen/content_horz_padding"
-    android:paddingTop="@dimen/content_vert_padding" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
-
-        <EditText
-            android:id="@+id/EditTextTitle"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/title" />
+        android:layout_height="fill_parent"
+        android:paddingBottom="@dimen/content_vert_padding"
+        android:paddingLeft="@dimen/content_horz_padding"
+        android:paddingRight="@dimen/content_horz_padding"
+        android:paddingTop="@dimen/content_vert_padding">
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:orientation="horizontal" >
+            android:orientation="vertical">
 
-            <CheckBox
-                android:id="@+id/CheckBoxEnabled"
-                android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/EditTextTitle"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/enabled" />
+                android:hint="@string/title"/>
 
-            <CheckBox
-                android:id="@+id/CheckBoxZap"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="30dp"
-                android:text="@string/zap" />
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/CheckBoxEnabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/enabled"/>
+
+                <CheckBox
+                    android:id="@+id/CheckBoxZap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:text="@string/zap"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/TextViewDescription"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/description"/>
+
+            <EditText
+                android:id="@+id/EditTextDescription"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:hint="@string/description"
+                android:singleLine="false"/>
+
+            <TextView
+                android:id="@+id/TextViewBeginTitle"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/begin_time"/>
+
+            <TextView
+                android:id="@+id/TextViewBegin"
+                style="@style/SelectableItem"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:paddingBottom="8dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingTop="8dp"
+                android:text="@+id/TextViewBegin"
+                android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+            <TextView
+                android:id="@+id/TextViewTime"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/end_time"/>
+
+            <TextView
+                android:id="@+id/TextViewEnd"
+                style="@style/SelectableItem"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:paddingBottom="8dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingTop="8dp"
+                android:text="@+id/TextViewEnd"
+                android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+            <TextView
+                android:id="@+id/TextViewRepeatedTitle"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/repeatings"/>
+
+            <TextView
+                android:id="@+id/TextViewRepeated"
+                style="@style/SelectableItem"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:paddingBottom="8dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingTop="8dp"
+                android:text="@+id/TextViewRepeated"
+                android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+            <TextView
+                android:id="@+id/TextViewServiceTitle"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/service"/>
+
+            <TextView
+                android:id="@+id/TextViewService"
+                style="@style/SelectableItem"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:paddingBottom="8dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingTop="8dp"
+                android:text="@+id/TextViewService"
+                android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+            <TextView
+                android:id="@+id/TextViewAfterEvent"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/afterevent"/>
+
+            <Spinner
+                android:id="@+id/SpinnerAfterEvent"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:paddingBottom="8dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingTop="8dp"/>
+
+            <TextView
+                android:id="@+id/TextViewLocation"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/location"/>
+
+            <Spinner
+                android:id="@+id/SpinnerLocation"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:paddingBottom="8dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingTop="8dp"/>
+
+            <TextView
+                android:id="@+id/TextViewTagsTitle"
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tags"/>
+
+            <TextView
+                android:id="@+id/TextViewTags"
+                style="@style/SelectableItem"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:paddingBottom="8dp"
+                android:paddingLeft="3dp"
+                android:paddingRight="3dp"
+                android:paddingTop="8dp"
+                android:text="@+id/TextViewTags"
+                android:textAppearance="@android:style/TextAppearance.Medium"/>
+
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/TextViewDescription"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/description" />
+    </ScrollView>
 
-        <EditText
-            android:id="@+id/EditTextDescription"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:hint="@string/description"
-            android:singleLine="false" />
 
-        <TextView
-            android:id="@+id/TextViewBeginTitle"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/begin_time" />
+    <net.reichholf.dreamdroid.view.EnhancedFloatingActionButton
+        android:id="@+id/fab_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="@string/reload"
+        android:src="@drawable/ic_action_save"/>
 
-        <TextView
-            android:id="@+id/TextViewBegin"
-            style="@style/SelectableItem"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:paddingBottom="8dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="8dp"
-            android:text="@+id/TextViewBegin"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
-
-        <TextView
-            android:id="@+id/TextViewTime"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/end_time" />
-
-        <TextView
-            android:id="@+id/TextViewEnd"
-            style="@style/SelectableItem"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:paddingBottom="8dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="8dp"
-            android:text="@+id/TextViewEnd"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
-
-        <TextView
-            android:id="@+id/TextViewRepeatedTitle"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/repeatings" />
-
-        <TextView
-            android:id="@+id/TextViewRepeated"
-            style="@style/SelectableItem"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:paddingBottom="8dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="8dp"
-            android:text="@+id/TextViewRepeated"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
-
-        <TextView
-            android:id="@+id/TextViewServiceTitle"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/service" />
-
-        <TextView
-            android:id="@+id/TextViewService"
-            style="@style/SelectableItem"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:clickable="true"
-            android:paddingBottom="8dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="8dp"
-            android:text="@+id/TextViewService"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
-
-        <TextView
-            android:id="@+id/TextViewAfterEvent"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/afterevent" />
-
-        <Spinner
-            android:id="@+id/SpinnerAfterEvent"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:paddingBottom="8dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="8dp" />
-
-        <TextView
-            android:id="@+id/TextViewLocation"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/location" />
-
-        <Spinner
-            android:id="@+id/SpinnerLocation"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:paddingBottom="8dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="8dp" />
-
-        <TextView
-            android:id="@+id/TextViewTagsTitle"
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/tags" />
-
-        <TextView
-            android:id="@+id/TextViewTags"
-            style="@style/SelectableItem"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:paddingBottom="8dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:paddingTop="8dp"
-            android:text="@+id/TextViewTags"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
-    </LinearLayout>
-
-</ScrollView>
+</RelativeLayout>

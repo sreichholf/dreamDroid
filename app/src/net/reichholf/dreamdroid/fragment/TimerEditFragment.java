@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
+import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import org.apache.http.NameValuePair;
 
@@ -52,6 +53,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 //TODO Add Tag Support
 /**
@@ -237,11 +239,16 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			reload();
 		}
 
+		registerFab(R.id.fab_save, view, new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onItemSelected(Statics.ITEM_SAVE);
+			}
+		});
 		return view;
 	}
 
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.save, menu);
 		inflater.inflate(R.menu.cancel, menu);
 	}
 

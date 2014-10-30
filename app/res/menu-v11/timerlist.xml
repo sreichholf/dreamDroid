@@ -2,14 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
 
-<!--    <item
-        android:id="@+id/menu_create_timer"
-        android:icon="@drawable/ic_action_add"
-        android:title="@string/new_timer"
-        dreamDroid:showAsAction="ifRoom|withText"/>-->
     <item
         android:id="@+id/menu_cleanup"
-        android:icon="@drawable/ic_action_close"
+        android:icon="@drawable/ic_action_clean"
         android:title="@string/cleanup"
         dreamDroid:showAsAction="ifRoom|withText"/>
 
