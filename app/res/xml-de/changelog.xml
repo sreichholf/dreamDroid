@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.6" versioncode="236">
+        <change>NEU: Design Updates</change>
+    </release>
     <release version="1.0 beta 30.5" versioncode="236">
         <change>NEU: Verhalten für "Das erste Mal" in der Kanalliste implementiert. In diesem Fall werden die Bouquets angezeigt</change>
         <change>NEU: Mehr Material Design</change>

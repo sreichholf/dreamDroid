@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.6" versioncode="236">
+        <change>NEW: Design updates</change>
+    </release>
     <release version="1.0 beta 30.5" versioncode="236">
         <change>NEW: Implemented special "First Time" behaviour in servicelist (Bouquetlist will be opened, even if there already is a favorite set).</change>
         <change>NEW: More Material Design</change>
