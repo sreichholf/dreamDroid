@@ -289,4 +289,5 @@
     <string name="epg_sync_finished">EPG has been synchronized</string>
     <string name="disable_fab_reload">Disable floating reload button</string>
     <string name="disable_fab_reload_long">Reload will be placed in the ActionBar instead</string>
+    <string name="reset_default">Reset default</string>
 </resources>

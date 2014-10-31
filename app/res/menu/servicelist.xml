@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
+      xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/menu_overview"
         android:icon="@drawable/ic_action_list"
         android:title="@string/bouquet_overview"
-        dreamDroid:showAsAction="always" />
+        dreamDroid:showAsAction="always"/>
     <item
         android:id="@+id/menu_default"
-        android:icon="@drawable/ic_action_fav"
+        android:icon="@drawable/ic_action_nofav"
         android:title="@string/set_default"
-        dreamDroid:showAsAction="ifRoom" />
+        dreamDroid:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/menu_sync_epg"
         android:icon="@drawable/ic_action_refresh"
         android:title="@string/epg_sync"
         android:visible="false"
-        dreamDroid:showAsAction="ifRoom" />
+        dreamDroid:showAsAction="ifRoom"/>
 
 </menu>

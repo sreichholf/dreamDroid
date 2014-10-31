@@ -375,19 +375,17 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	public void onPrepareOptionsMenu(Menu menu) {
 		if(getMultiPaneHandler().isDrawerOpen())
 			return;
-		MenuItem overview = menu.findItem(R.id.menu_overview);
-		if (!SERVICE_REF_ROOT.equals(mNavReference) || mNavList.equals(mDetailList)) {
-			overview.setVisible(true);
-		} else {
-			overview.setVisible(false);
-		}
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
 		String defaultReference = DreamDroid.getCurrentProfile().getDefaultRef();
 		setDefault.setVisible(true);
 		if (defaultReference != null) {
 			if (defaultReference.equals(mDetailReference)) {
-				setDefault.setVisible(false);
+				setDefault.setIcon(R.drawable.ic_action_fav);
+				setDefault.setTitle(R.string.reset_default);
+			} else {
+				setDefault.setIcon(R.drawable.ic_action_nofav);
+				setDefault.setTitle(R.string.set_default);
 			}
 		}
 	}
@@ -403,14 +401,26 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		case Statics.ITEM_SET_DEFAULT:
 			if (mDetailReference != null || mNavReference != null) {
 				Profile p = DreamDroid.getCurrentProfile();
-				if (mDetailReference != null)
-					p.setDefaultRefValues(mDetailReference, mDetailName);
-				if (mNavReference != null)
-					p.setDefaultRef2Values(mNavReference, mNavName);
+				boolean reset = false;
+				if(p.getDefaultRef() != null && p.getDefaultRef().equals(mDetailReference)) {
+					p.setDefaultRef(null);
+					reset = true;
+				}
+				if(p.getDefaultRef2() != null && p.getDefaultRef2().equals(mNavReference)) {
+					p.setDefaultRef2(null);
+					reset = true;
+				}
 
+				if(!reset) {
+					if (mDetailReference != null)
+						p.setDefaultRefValues(mDetailReference, mDetailName);
+					if (mNavReference != null)
+						p.setDefaultRef2Values(mNavReference, mNavName);
+				}
 				DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
 				if (dbh.updateProfile(p)) {
-					showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
+					if(!reset)
+						showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
 				} else {
 					showToast(getText(R.string.default_bouquet_not_set));
 				}
