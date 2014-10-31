@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.7" versioncode="237">
+        <change>NEU: Verbesserungen in der Bedienung der Kanalliste (Standard zurücksetzen, Bouquet Button immer sichtbar)</change>
+        <change>FIX: Lade-Inidikator ist nun auch beim ersten Laden sichtbar</change>
+    </release>
     <release version="1.0 beta 30.6" versioncode="236">
         <change>NEU: Design Updates</change>
     </release>

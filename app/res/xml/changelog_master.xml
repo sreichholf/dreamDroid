@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.7" versioncode="237">
+        <change>NEW: Improved servicelist usability (unsetting the favorite bouquet is now possible, bouquet buttons is always visible now)</change>
+        <change>FIX: Fixed missing loading-indicator on "first load"</change>
+    </release>
     <release version="1.0 beta 30.6" versioncode="236">
         <change>NEW: Design updates</change>
     </release>
