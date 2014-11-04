@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -30,6 +31,17 @@ public class Picon {
 	private static DisplayImageOptions sDisplayOptions = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).cacheInMemory(true).build();
 	private static AnimateImageDisplayListener sAnimateImageDisplayListener = new AnimateImageDisplayListener();
 
+	public static String getBasepath(Context context){
+		String basePath = String.format("%s%sdreamDroid%spicons%s", Environment.getExternalStorageDirectory()
+				.getAbsolutePath(), File.separator, File.separator, File.separator);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			basePath = String.format("%s%spicons%s", context.getFilesDir().getAbsolutePath(), File.separator, File.separator);
+		}
+		return basePath;
+
+	}
+
 	public static class AnimateImageDisplayListener extends SimpleImageLoadingListener {
 		@Override
 		public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
@@ -42,8 +54,8 @@ public class Picon {
 		}
 	}
 
-	public static String getPiconFileName(ExtendedHashMap service, boolean useName) {
-		String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+	public static String getPiconFileName(Context context, ExtendedHashMap service, boolean useName) {
+		String root = getBasepath(context);
 		String fileName;
 		if(useName){
 			fileName = service.getString(Event.KEY_SERVICE_NAME);
@@ -58,8 +70,7 @@ public class Picon {
 			if (fileName.endsWith("_"))
 				fileName = fileName.substring(0, fileName.length() - 1);
 		}
-		fileName = String.format("%s%sdreamDroid%spicons%s%s.png", root, File.separator, File.separator,
-				File.separator, fileName);
+		fileName = String.format("%s%s.png", root, fileName);
 
 		return fileName;
 	}
@@ -80,7 +91,7 @@ public class Picon {
 			return;
 		}
 		boolean useName = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false);
-		String fileName = getPiconFileName(service, useName);
+		String fileName = getPiconFileName(context, service, useName);
 		if (fileName == null) {
 			piconView.setVisibility(View.GONE);
 			return;

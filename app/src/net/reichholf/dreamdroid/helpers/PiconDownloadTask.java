@@ -15,7 +15,10 @@ import java.lang.ref.WeakReference;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
+
+import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
@@ -41,9 +44,7 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 	 */
 	@Override
 	protected Void doInBackground(String... params) {
-		String basePath = String.format("%s%sdreamDroid%spicons%s", Environment.getExternalStorageDirectory()
-				.getAbsolutePath(), File.separator, File.separator, File.separator);
-
+		String basePath = params[1];
 		String remotePath = params[0];
 		FTPClient client = new FTPClient();
 		Profile p = DreamDroid.getCurrentProfile();

@@ -31,6 +31,7 @@ import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.helpers.PiconDownloadTask;
 import net.reichholf.dreamdroid.helpers.PiconDownloadTask.DownloadProgress;
 import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 
 /**
  * @author sreichholf
@@ -182,7 +183,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 
 		mSyncPiconTask = new PiconDownloadTask(this);
 		mSyncPiconTask.execute(PreferenceManager.getDefaultSharedPreferences(this).getString(
-				DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"));
+				DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"), Picon.getBasepath(this));
 	}
 
 	public void checkProgress() {
