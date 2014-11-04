@@ -34,8 +34,8 @@ public class Picon {
 	public static String getBasepath(Context context){
 		String basePath = String.format("%s%sdreamDroid%spicons%s", Environment.getExternalStorageDirectory()
 				.getAbsolutePath(), File.separator, File.separator, File.separator);
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+		File f = new File(basePath);
+		if(!f.canWrite()) {
 			basePath = String.format("%s%spicons%s", context.getFilesDir().getAbsolutePath(), File.separator, File.separator);
 		}
 		return basePath;
