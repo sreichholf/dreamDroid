@@ -305,7 +305,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 		for( ExtendedHashMap service : list){
 			mBouquetList.add(service);
 			mBouquetListAdapter.add(service.getString(Service.KEY_NAME));
-			if(!defaultRef.equals("") && service.getString(Service.KEY_REFERENCE).equals(defaultRef))
+			if(defaultRef != null && !"".equals(defaultRef) && service.getString(Service.KEY_REFERENCE).equals(defaultRef))
 				isDefaultMissing = false;
 			if(service.getString(Service.KEY_REFERENCE).equals(mCurrentBouquet.getString(Service.KEY_REFERENCE)))
 				mSelectedBouquetPosition = position;
