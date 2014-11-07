@@ -277,7 +277,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 				mSelectedBouquetPosition = itemPosition;
 				if (mBouquetList.size() > itemPosition) {
 					String selectedBouquet = mBouquetListAdapter.getItem(itemPosition);
-					if (!selectedBouquet.equals(mCurrentBouquet.getString(Service.KEY_NAME))) {
+					if (mCurrentBouquet == null || !selectedBouquet.equals(mCurrentBouquet.getString(Service.KEY_NAME))) {
 						mCurrentBouquet = mBouquetList.get(itemPosition);
 						reload();
 					}

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.9" versioncode="240">
+        <change>FIX: Crashes in "Zap" Mode</change>
+    </release>
     <release version="1.0 beta 30.8" versioncode="239">
         <change>FIX: Crashes on older android versions</change>
         <change>FIX: Picon sync on android >= 4.4.2</change>

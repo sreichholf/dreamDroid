@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 30.9" versioncode="240">
+        <change>FIX: Abstürze im "Zap" Modus</change>
+    </release>
     <release version="1.0 beta 30.8" versioncode="239">
         <change>FIX: Abstürze auf älteren Android Versionen</change>
         <change>FIX: Probleme bei der Synchronisation von Picons auf Android >= 4.4.2</change>
