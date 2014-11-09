@@ -29,6 +29,9 @@ public class Statics {
 	public static final int ACTION_PICK_TIME_END = 0xc014;
 	public static final int ACTION_LEAVE_CONFIRMED = 0xc015;
 	public static final int ACTION_ACTIVATE = 0xc016;
+	public static final int ACTION_ADD_TO_PLAYLIST = 0xc17;
+	public static final int ACTION_PLAY_MEDIA = 0xc18;
+	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc19;
 	public static final int ACTION_NONE = 0xcfff;
 
 	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
@@ -96,8 +99,8 @@ public class Statics {
 	public static final int ITEM_MEDIA_BACK = R.id.menu_navigation_back_media;
 	public static final int ITEM_MEDIA_CLOSE = R.id.menu_close_media;
 
-	public static final int ACTION_ADD_TO_PLAYLIST = 0xc16;
-	public static final int ACTION_PLAY_MEDIA = 0xc17;
-	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc18;
+
+
+	public static final String INTENT_ACTION_PICK_BOUQUET = "pick_bouquet";
 
 }

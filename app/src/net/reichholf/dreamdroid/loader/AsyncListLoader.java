@@ -29,8 +29,6 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 	protected ArrayList<ExtendedHashMap> mList;
 	protected ListRequestInterface mListRequestHandler;
 	protected boolean mRequireLocsAndTags;
-	protected ArrayList<String> mLocations;
-	protected ArrayList<String> mTags;
 	protected SimpleHttpClient mShc;
 	protected ArrayList<NameValuePair> mParams;
 
