@@ -329,6 +329,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onBackPressed() {
+		if(isNavigationDrawerVisible()){
+			toggle();
+			return;
+		}
+
 		boolean shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true);
 
