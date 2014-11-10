@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
     android:id="@+id/LinearLayoutMain"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="?attr/cardBackground"
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:orientation="vertical"
-    android:paddingRight="5dip" >
+    android:paddingRight="5dip">
 
     <LinearLayout
         android:id="@+id/LinearLayout2"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/event_title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:ellipsize="end"
+            android:singleLine="true"
             android:textAppearance="@android:style/TextAppearance.Medium"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/service_name"
@@ -28,21 +31,21 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:textAppearance="@android:style/TextAppearance.Small"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/LinearLayout1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/event_start"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            android:textAppearance="@android:style/TextAppearance.Small"/>
 
         <TextView
             android:id="@+id/event_duration"
@@ -51,7 +54,7 @@
             android:layout_marginRight="5dip"
             android:layout_weight="1"
             android:gravity="right"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            android:textAppearance="@android:style/TextAppearance.Small"/>
     </LinearLayout>
 
     <TextView
@@ -60,8 +63,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:ellipsize="end"
-        android:singleLine="true"
+        android:maxLines="2"
+        android:singleLine="false"
         android:textAppearance="@android:style/TextAppearance.Small"
-        android:textStyle="bold" />
+        android:textStyle="bold"/>
 
 </LinearLayout>

@@ -138,8 +138,8 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
-		Intent intent = new Intent(this, this.getClass());
-		intent.putExtra("fragmentClass", fragment.getClass());
+		Intent intent = new Intent(this, ((Object)this).getClass());
+		intent.putExtra("fragmentClass", ((Object)fragment).getClass());
 		intent.putExtras(fragment.getArguments());
 
 		if (fragment.getTargetRequestCode() > 0) {

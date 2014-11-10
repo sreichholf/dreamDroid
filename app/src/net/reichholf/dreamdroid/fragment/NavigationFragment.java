@@ -6,35 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
-
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.activities.MyPreferenceActivity;
-import net.reichholf.dreamdroid.activities.MainActivity;
-import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
-import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Message;
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
-import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -49,6 +20,37 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ListView;
+
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.MainActivity;
+import net.reichholf.dreamdroid.activities.MyPreferenceActivity;
+import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
+import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
+import net.reichholf.dreamdroid.helpers.DateTime;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Message;
+import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
+import net.reichholf.dreamdroid.loader.LoaderResult;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.util.ArrayList;
 
 /**
  * This is where all begins. It's the "main menu activity" which acts as central
@@ -68,6 +70,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	// 0=no) ]
     public static final int[][] MENU_ITEMS = {
 		{ Statics.ITEM_SERVICES, R.string.services, R.attr.ic_menu_services, 1, 0 },
+		{ Statics.ITEM_MULTIEPG, R.string.epg, R.attr.ic_menu_epg, 1, 0 },
 		{ Statics.ITEM_MOVIES, R.string.movies, R.attr.ic_menu_movie, 1, 0 },
 		{ Statics.ITEM_TIMER, R.string.timer, R.attr.ic_menu_timer, 1, 0 },
 		{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.attr.ic_menu_remote, 1, 2 },
@@ -83,7 +86,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.attr.ic_menu_signal, 1, 0 },
 		{ Statics.ITEM_PROFILES, R.string.profiles, R.attr.ic_menu_profiles, 1, 0 },
     };
-//	{ Statics.ITEM_MULTIEPG, R.string.epg, R.attr.ic_menu_event, 1, 0 },
+//
 	private int[] mCurrent;
 	private int mCurrentListItem;
 	private boolean mHighlightCurrent;
@@ -455,7 +458,23 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			return false;
 		case Statics.ITEM_MULTIEPG:
 			clearBackStack();
-			getMainActivity().showDetails(MultiEpgFragment.class);
+			Bundle args = new Bundle();
+
+			int prime = DateTime.getPrimeTimestamp();
+			args.putInt(Event.KEY_EVENT_START, prime);
+
+
+			String ref = DreamDroid.getCurrentProfile().getDefaultRef();
+			if(ref == null)
+				ref = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites___dreambox___tv_.tv\" ORDER BY bouquet";
+			args.putString(Event.KEY_SERVICE_REFERENCE, ref);
+			String name = DreamDroid.getCurrentProfile().getDefaultRefName();
+			if(name == null)
+				name = "IPTV";
+			args.putString(Event.KEY_SERVICE_NAME, name);
+			EpgBouquetFragment f = new EpgBouquetFragment();
+			f.setArguments(args);
+			getMainActivity().showDetails(f);
 			break;
 		default:
 			return super.onItemSelected(id);

@@ -20,6 +20,7 @@
         <item name="ic_menu_close">@drawable/ic_menu_close_holo_dark</item>
         <item name="ic_menu_device">@drawable/ic_menu_device_holo_dark</item>
         <item name="ic_menu_current">@drawable/ic_menu_current_holo_dark</item>
+        <item name="ic_menu_epg">@drawable/ic_menu_epg_holo_dark</item>
         <item name="ic_menu_info">@drawable/ic_menu_info_holo_dark</item>
         <item name="ic_menu_list">@drawable/ic_menu_list_holo_dark</item>
         <item name="ic_menu_mail">@drawable/ic_menu_mail_holo_dark</item>
@@ -71,6 +72,7 @@
         <item name="ic_menu_close">@drawable/ic_menu_close_holo_light</item>
         <item name="ic_menu_device">@drawable/ic_menu_device_holo_light</item>
         <item name="ic_menu_current">@drawable/ic_menu_current_holo_light</item>
+        <item name="ic_menu_epg">@drawable/ic_menu_epg_holo_light</item>
         <item name="ic_menu_info">@drawable/ic_menu_info_holo_light</item>
         <item name="ic_menu_list">@drawable/ic_menu_list_holo_light</item>
         <item name="ic_menu_mail">@drawable/ic_menu_mail_holo_light</item>

@@ -345,8 +345,7 @@ public class DreamDroidHttpFragmentHelper {
 	public void reload(int loader) {
 		onLoadStarted();
 		if (!"".equals(getBaseFragment().getBaseTitle().trim()))
-			getBaseFragment().setCurrentTitle(
-					getBaseFragment().getBaseTitle() + " - " + mFragment.getString(R.string.loading));
+			getBaseFragment().setCurrentTitle(mFragment.getString(R.string.loading));
 
 		getActionBarActivity().setTitle(getBaseFragment().getCurrentTitle());
 		mFragment.getLoaderManager().restartLoader(loader, getBaseFragment().getLoaderBundle(loader),

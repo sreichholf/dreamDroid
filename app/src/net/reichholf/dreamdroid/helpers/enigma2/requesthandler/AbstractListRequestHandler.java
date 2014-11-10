@@ -21,8 +21,8 @@ import org.apache.http.NameValuePair;
  *
  */
 public abstract class AbstractListRequestHandler implements ListRequestInterface {
-	private String mUri;
-	private E2ListHandler mHandler;
+	protected String mUri;
+	protected E2ListHandler mHandler;
 	
 	public AbstractListRequestHandler(String uri, E2ListHandler handler){
 		mUri = uri;

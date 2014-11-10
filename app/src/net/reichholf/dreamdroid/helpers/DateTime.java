@@ -8,7 +8,9 @@ package net.reichholf.dreamdroid.helpers;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -146,7 +148,7 @@ public class DateTime {
 		try {
 			long s = Double.valueOf(timestamp).longValue();
 			s = s * 1000;
-			Date date = new Date( (long) s);
+			Date date = new Date(s);
 
 			return date;
 		} catch (NumberFormatException e) {
@@ -171,5 +173,13 @@ public class DateTime {
 
 	public static Integer parseTimestamp(String timestamp){
 		return (new BigDecimal(timestamp)).intValue();
+	}
+
+	public static int getPrimeTimestamp(){
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 20);
+		cal.set(Calendar.MINUTE, 15);
+		cal.set(Calendar.SECOND, 0);
+		return (int) ( cal.getTimeInMillis() / 1000 );
 	}
 }

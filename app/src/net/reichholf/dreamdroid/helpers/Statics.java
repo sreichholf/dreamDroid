@@ -87,7 +87,8 @@ public class Statics {
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
 	public static final int REQUEST_PICK_SERVICE = 0x5001;
-	public static final int REQUEST_EDIT_PROFILE = 0x5002;
+	public static final int REQUEST_PICK_BOUQUET = 0x5002;
+	public static final int REQUEST_EDIT_PROFILE = 0x5003;
 	public static final int REQUEST_ANY = 0x5003;
 
 	public static final int RESULT_THEME_CHANGED = 0x00a1;
