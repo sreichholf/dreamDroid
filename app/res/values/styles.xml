@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <style name="AppTheme.Fab" parent="FloatingActionButton">
-        <item name="floatingActionButtonColor">@color/fab_blue</item>
-    </style>
-
     <style name="CardText">
         <item name="android:textSize">14sp</item>
         <item name="android:ellipsize">end</item>

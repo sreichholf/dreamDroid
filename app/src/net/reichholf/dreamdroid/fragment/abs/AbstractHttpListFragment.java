@@ -24,6 +24,8 @@ import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
 
+import com.melnykov.fab.FloatingActionButton;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
@@ -35,7 +37,6 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import org.apache.http.NameValuePair;
 
@@ -109,7 +110,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mHttpHelper.onActivityCreated();
-		getListView().setFastScrollEnabled(true);
+		getListView().setFastScrollEnabled(false);
 		try {
 			setEmptyText(getText(R.string.loading));
 		} catch (IllegalStateException e) {
@@ -143,9 +144,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	public void detachFabReload(){
-		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) getView().findViewById(R.id.fab_reload);
+		FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
 		if(fab != null) {
-			fab.detachFromListView();
+			//;
 		}
 	}
 

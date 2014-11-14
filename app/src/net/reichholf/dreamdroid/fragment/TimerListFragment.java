@@ -38,7 +38,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteReques
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import org.apache.http.NameValuePair;
 
@@ -124,7 +123,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			public void onClick(View v) {
 				onItemSelected(Statics.ITEM_NEW_TIMER);
 			}
-		}, listView, false);
+		}, listView);
 		return view;
 	}
 

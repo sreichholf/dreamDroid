@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -27,6 +26,8 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.melnykov.fab.FloatingActionButton;
 
 /**
  * @author sre
@@ -171,8 +172,12 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		registerFab(id, view, onClickListener, null, false);
 	}
 
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView) {
+		registerFab(id, view, onClickListener, listView, false);
+	}
+
 	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean inverted) {
-		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(id);
+		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
 		if (fab == null)
 			return;
 		if (listView != null)
@@ -186,5 +191,6 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 				return true;
 			}
 		});
+		fab.show();
 	}
 }

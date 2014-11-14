@@ -71,7 +71,7 @@
 
     </FrameLayout>
 
-    <net.reichholf.dreamdroid.view.EnhancedFloatingActionButton
+    <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fab_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

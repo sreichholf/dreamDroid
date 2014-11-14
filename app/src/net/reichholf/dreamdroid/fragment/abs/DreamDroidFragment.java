@@ -6,26 +6,23 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
-import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.Toast;
 
-import java.util.zip.Inflater;
+import com.melnykov.fab.FloatingActionButton;
+
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
+import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
+import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.helpers.Statics;
 
 
 /**
@@ -147,7 +144,7 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	}
 
 	protected void registerFab(int id, View view, View.OnClickListener onClickListener){
-		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(id);
+		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
 		if (fab == null)
 			return;
 

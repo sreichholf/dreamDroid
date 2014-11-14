@@ -2,6 +2,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Theme.DreamDroid.Base" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/primary_material_dark</item>
+        <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">@android:color/transparent</item>
         <item name="lightBackgroundColor">#333</item>
@@ -40,7 +42,6 @@
         <item name="ic_menu_zap">@drawable/ic_menu_zap_holo_dark</item>
         <item name="text_color">#ffb0b0b0</item>
         <item name="title_color">#ffd6d6d6</item>
-        <item name="floatingActionButtonStyle">@style/AppTheme.Fab</item>
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
     </style>
 
@@ -54,6 +55,8 @@
     </style>
 
     <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/primary_material_dark</item>
+        <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#DDD</item>
         <item name="lightBackgroundColor">#FFF</item>
@@ -98,7 +101,6 @@
         <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
         <item name="text_color">#ff838383</item>
         <item name="title_color">#ff737373</item>
-        <item name="floatingActionButtonStyle">@style/AppTheme.Fab</item>
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
     </style>
 
@@ -113,5 +115,4 @@
         <item name="windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
-
 </resources>

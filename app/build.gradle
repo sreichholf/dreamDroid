@@ -1,55 +1,54 @@
 buildscript {
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath 'com.android.tools.build:gradle:0.14.0'
-	}
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.14.0'
+    }
 }
 apply plugin: 'android'
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	compile 'com.android.support:support-v4:21.+'
-	compile 'com.android.support:appcompat-v7:21.+'
-    compile 'com.android.support:cardview-v7:21.0.+'
+    compile 'com.android.support:support-v4:21.+'
+    compile 'com.android.support:appcompat-v7:21.+'
     compile 'com.android.support:support-annotations:20.0.0'
-	compile 'de.cketti.library.changelog:ckchangelog:1.2.1'
-	compile 'com.github.chrisbanes.photoview:library:1.2.3'
+    compile 'de.cketti.library.changelog:ckchangelog:1.2.1'
+    compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.mcxiaoke.viewpagerindicator:library:2.4.1'
-    compile 'com.shamanland:fab:0.+'
 
-	compile files('libs/ftp4j-1.7.2.jar')
-	compile files('libs/jmdns-3.4.1.jar')
-	compile files('libs/signpost-core-1.2.1.1.jar')
-	compile files('libs/universal-image-loader-1.8.6.jar')
+    compile files('libs/ftp4j-1.7.2.jar')
+    compile files('libs/jmdns-3.4.1.jar')
+    compile files('libs/signpost-core-1.2.1.1.jar')
+    compile files('libs/universal-image-loader-1.8.6.jar')
 
-	compile project(':libraries:gaugeview-library')
-	compile project(':libraries:numberpicker')
-	compile project(':libraries:MemorizingTrustManager')
+    compile project(':libraries:gaugeview-library')
+    compile project(':libraries:numberpicker')
+    compile project(':libraries:MemorizingTrustManager')
+    compile project(':libraries:FloatingActionButton')
 }
 
 android {
-	compileSdkVersion 21
-	buildToolsVersion '21.0.2'
+    compileSdkVersion 21
+    buildToolsVersion '21.0.2'
 
-	sourceSets {
-		main {
-			manifest.srcFile 'AndroidManifest.xml'
-			java.srcDirs = ['src']
-			res.srcDirs = ['res']
-		}
-	}
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+        }
+    }
 
-	buildTypes {
-		debug {
-			versionNameSuffix "-DEBUG"
-		}
-		release {
-			debuggable false
-		}
-	}
+    buildTypes {
+        debug {
+            versionNameSuffix "-DEBUG"
+        }
+        release {
+            debuggable false
+        }
+    }
 }

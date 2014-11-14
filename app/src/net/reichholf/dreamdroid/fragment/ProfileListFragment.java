@@ -20,7 +20,6 @@ import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
-import net.reichholf.dreamdroid.view.EnhancedFloatingActionButton;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -45,6 +44,8 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
+
+import com.melnykov.fab.FloatingActionButton;
 
 /**
  * Shows a list of all connection profiles
@@ -195,7 +196,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fab_list_content, container, false);
 
-		EnhancedFloatingActionButton fab = (EnhancedFloatingActionButton) view.findViewById(R.id.fab_add);
+		FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_add);
 		fab.setContentDescription(getString(R.string.profile_add));
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
 		registerFab(R.id.fab_add, view, new View.OnClickListener() {
@@ -203,7 +204,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			public void onClick(View v) {
 				createProfile();
 			}
-		}, listView, false);
+		}, listView);
 
 		return view;
 	}
