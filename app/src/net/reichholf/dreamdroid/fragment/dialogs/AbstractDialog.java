@@ -8,7 +8,7 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-
+import net.reichholf.dreamdroid.R;
 /**
  * @author sre
  * 
@@ -16,6 +16,7 @@ import android.support.v4.app.DialogFragment;
 public class AbstractDialog extends DialogFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		setStyle(DialogFragment.STYLE_NORMAL, R.style.Base_Theme_AppCompat_Light_Dialog);
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
 	}

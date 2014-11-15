@@ -2,7 +2,7 @@
 <net.reichholf.dreamdroid.widget.CheckableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/LinearLayoutMain"
     style="@style/CardStyle"
-    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:minHeight="?attr/listPreferredItemHeight"
     android:orientation="vertical" >
 
     <LinearLayout

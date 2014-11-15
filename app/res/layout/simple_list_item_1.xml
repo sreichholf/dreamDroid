@@ -24,6 +24,6 @@
     android:layout_height="wrap_content"
     android:background="?attr/cardBackground"
     android:gravity="center_vertical"
-    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:minHeight="?attr/listPreferredItemHeight"
     android:paddingLeft="6dip"
     android:textAppearance="?android:attr/textAppearanceLarge" />

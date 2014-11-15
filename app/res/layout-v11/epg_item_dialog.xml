@@ -54,14 +54,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/dialog_button_bar_height"
         android:layout_marginTop="-96dp"
-        android:divider="?android:attr/dividerHorizontal"
+        android:divider="?attr/dividerHorizontal"
         android:dividerPadding="0dip"
         android:minHeight="48dip"
         android:orientation="vertical"
         android:showDividers="beginning" >
 
         <LinearLayout
-            style="?android:attr/buttonBarStyle"
+            style="?attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:measureWithLargestChild="true"
@@ -69,7 +69,7 @@
 
             <Button
                 android:id="@+id/ButtonSetTimer"
-                style="?android:attr/buttonBarButtonStyle"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -81,7 +81,7 @@
 
             <Button
                 android:id="@+id/ButtonEditTimer"
-                style="?android:attr/buttonBarButtonStyle"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -98,14 +98,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="-48dip"
-        android:divider="?android:attr/dividerHorizontal"
+        android:divider="?attr/dividerHorizontal"
         android:dividerPadding="0dip"
         android:minHeight="@dimen/dialog_button_bar_height"
         android:orientation="vertical"
         android:showDividers="beginning" >
 
         <LinearLayout
-            style="?android:attr/buttonBarStyle"
+            style="?attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:measureWithLargestChild="true"
@@ -113,7 +113,7 @@
 
             <Button
                 android:id="@+id/ButtonImdb"
-                style="?android:attr/buttonBarButtonStyle"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -125,7 +125,7 @@
 
             <Button
                 android:id="@+id/ButtonSimilar"
-                style="?android:attr/buttonBarButtonStyle"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"

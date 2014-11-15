@@ -38,7 +38,7 @@
         android:id="@+id/buttonPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="?android:attr/dividerHorizontal"
+        android:divider="?attr/dividerHorizontal"
         android:dividerPadding="0dip"
         android:minHeight="@dimen/dialog_button_bar_height"
         android:orientation="vertical"
@@ -46,7 +46,7 @@
         android:layout_marginTop="-48dip" >
 
         <LinearLayout
-            style="?android:attr/buttonBarStyle"
+            style="?attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:measureWithLargestChild="true"
@@ -54,7 +54,7 @@
 
             <Button
                 android:id="@+id/ButtonApply"
-                style="?android:attr/buttonBarButtonStyle"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -66,7 +66,7 @@
 
             <Button
                 android:id="@+id/ButtonCancel"
-                style="?android:attr/buttonBarButtonStyle"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"

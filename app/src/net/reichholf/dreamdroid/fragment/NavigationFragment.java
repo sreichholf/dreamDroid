@@ -70,7 +70,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	// 0=no) ]
     public static final int[][] MENU_ITEMS = {
 		{ Statics.ITEM_SERVICES, R.string.services, R.attr.ic_menu_services, 1, 0 },
-		{ Statics.ITEM_MULTIEPG, R.string.epg, R.attr.ic_menu_epg, 1, 0 },
 		{ Statics.ITEM_MOVIES, R.string.movies, R.attr.ic_menu_movie, 1, 0 },
 		{ Statics.ITEM_TIMER, R.string.timer, R.attr.ic_menu_timer, 1, 0 },
 		{ Statics.ITEM_REMOTE, R.string.virtual_remote, R.attr.ic_menu_remote, 1, 2 },
@@ -86,7 +85,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.attr.ic_menu_signal, 1, 0 },
 		{ Statics.ITEM_PROFILES, R.string.profiles, R.attr.ic_menu_profiles, 1, 0 },
     };
-//
+//		{ Statics.ITEM_MULTIEPG, R.string.epg, R.attr.ic_menu_epg, 1, 0 },
 	private int[] mCurrent;
 	private int mCurrentListItem;
 	private boolean mHighlightCurrent;

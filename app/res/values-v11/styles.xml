@@ -2,7 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="ButtonPanel">
-        <item name="android:divider">?android:attr/dividerHorizontal</item>
+        <item name="android:divider">?attr/dividerHorizontal</item>
     </style>
 
     <style name="ButtonBar" parent="@android:style/Holo.Light.ButtonBar.AlertDialog"></style>
