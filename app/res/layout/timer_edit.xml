@@ -200,7 +200,6 @@
 
     </ScrollView>
 
-
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fab_save"
         android:layout_width="wrap_content"

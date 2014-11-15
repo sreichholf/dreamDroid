@@ -16,6 +16,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -53,7 +54,8 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		//DreamDroid.setTheme(this);
+		if(Build.VERSION.SDK_INT >= 21)
+			DreamDroid.setTheme(this);
 		int currentOrientation = getResources().getConfiguration().orientation;
 		setRequestedOrientation(currentOrientation);
 

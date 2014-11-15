@@ -8,7 +8,7 @@
                 android:drawable="@drawable/list_background_checked_dark"
                 android:state_checked="true"/>
             <item
-                android:drawable="@drawable/list_background_activated_light"
+                android:drawable="@drawable/list_background_activated"
                 android:state_activated="true"/>
             <item android:drawable="@drawable/list_background_dark"/>
 
