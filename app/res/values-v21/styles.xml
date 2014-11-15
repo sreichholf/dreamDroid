@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="CardStyle">
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">9dp</item>
+        <item name="android:paddingRight">9dp</item>
+        <item name="android:paddingLeft">9dp</item>
+        <item name="android:background">?attr/cardBackground</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+
+</resources>

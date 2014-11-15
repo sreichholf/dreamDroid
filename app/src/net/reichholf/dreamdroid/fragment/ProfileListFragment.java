@@ -194,7 +194,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fab_list_content, container, false);
+		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
 
 		FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_add);
 		fab.setContentDescription(getString(R.string.profile_add));

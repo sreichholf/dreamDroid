@@ -1,55 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
     android:id="@+id/LinearLayoutMain"
+    style="@style/CardStyle"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:minHeight="45dip"
-    android:orientation="vertical"
-	style="@style/CardStyle">
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/LinearLayout2"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/event_title"
+            style="@style/CardTitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            style="@style/CardTitle" />
+            android:layout_gravity="center_vertical"/>
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/LinearLayout1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/event_start"
+            style="@style/CardText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-			style="@style/CardText" />
+            android:layout_weight="1"/>
 
         <TextView
             android:id="@+id/event_duration"
+            style="@style/CardText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dip"
             android:layout_weight="1"
-            android:gravity="right"
-            style="@style/CardText" />
+            android:gravity="right"/>
     </LinearLayout>
 
     <TextView
         android:id="@+id/event_short"
+        style="@style/CardTextSmall"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:paddingTop="2dp"
-        style="@style/CardTextSmall" />
+        android:paddingTop="2dp"/>
 
 </LinearLayout>

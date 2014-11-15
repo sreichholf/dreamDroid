@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
     <style name="CardText">
         <item name="android:textSize">14sp</item>
         <item name="android:ellipsize">end</item>
@@ -27,6 +28,7 @@
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
+
     <style name="CardStyleMultiEpg">
         <item name="android:padding">2dp</item>
         <item name="android:layout_margin">0dp</item>
@@ -42,7 +44,7 @@
         <item name="android:listSelector">@android:color/transparent</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:paddingTop">4dp</item>
-        <item name="android:paddingBottom">2dp</item>
+        <item name="android:paddingBottom">0dp</item>
         <item name="android:paddingLeft">4dp</item>
         <item name="android:paddingRight">4dp</item>
     </style>
@@ -70,16 +72,16 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAppearance">@android:style/TextAppearance.Small</item>
-		<item name="android:layout_margin">2dp</item>
+        <item name="android:layout_margin">2dp</item>
     </style>
 
-	<style name="RemoteButton.Big" parent="RemoteButton">
-		<item name="android:layout_margin">5dp</item>
-		<item name="android:padding">5dp</item>
-	</style>
+    <style name="RemoteButton.Big" parent="RemoteButton">
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:padding">5dp</item>
+    </style>
 
 
-	<style name="RemoteButton.Medium" parent="RemoteButton">
+    <style name="RemoteButton.Medium" parent="RemoteButton">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>

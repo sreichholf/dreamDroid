@@ -21,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -116,7 +115,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fab_list_content, container, false);
+		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
 		registerFab(R.id.fab_add, view, new View.OnClickListener() {
 			@Override

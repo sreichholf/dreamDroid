@@ -9,12 +9,12 @@
     <item android:bottom="1dp">
         <shape
             android:shape="rectangle">
-            <solid android:color="@color/card_background_selected_holo_light"></solid>
+            <solid android:color="@color/card_background_selected_dark"></solid>
             <padding
+                android:bottom="2dp"
                 android:left="1dp"
-                android:top="1dp"
                 android:right="1dp"
-                android:bottom="2dp"/>
+                android:top="1dp"/>
             <corners android:radius="1dp"/>
         </shape>
     </item>

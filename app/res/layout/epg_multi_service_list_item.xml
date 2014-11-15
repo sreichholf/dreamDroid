@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     android:id="@+id/LinearLayoutMain"
+    style="@style/CardStyle"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/cardBackground"
     android:minHeight="?android:attr/listPreferredItemHeight"
-    android:orientation="vertical"
-    android:paddingRight="5dip">
+    android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/LinearLayout2"

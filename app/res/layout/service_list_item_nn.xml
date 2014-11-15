@@ -1,29 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
     android:id="@+id/service_list_item_nn"
+    style="@style/CardStyle"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/cardBackground"
-    android:paddingTop="6dp"
-    android:paddingBottom="9dp"
-    android:paddingRight="9dp"
-    android:paddingLeft="9dp"
-    android:orientation="vertical" >
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/service"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/service_name"
+            style="@style/CardTitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginRight="56dp"
-            android:layout_weight="1"
-            style="@style/CardTitle" />
+            android:layout_weight="1"/>
 
         <ProgressBar
             android:id="@+id/service_progress"
@@ -32,7 +28,7 @@
             android:layout_height="8dp"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="-54dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
     </LinearLayout>
 
     <ImageView
@@ -42,7 +38,7 @@
         android:layout_below="@id/service"
         android:layout_centerVertical="true"
         android:layout_marginRight="3dp"
-        android:layout_marginTop="5dp" />
+        android:layout_marginTop="5dp"/>
 
     <LinearLayout
         android:id="@+id/event_now"
@@ -50,33 +46,33 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/service"
         android:layout_toRightOf="@id/picon"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/event_now_start"
+            style="@style/CardText"
             android:layout_width="45dip"
             android:layout_height="wrap_content"
-            android:layout_marginRight="-45dip"
-            style="@style/CardText" />
+            android:layout_marginRight="-45dip"/>
 
         <TextView
             android:id="@+id/event_now_title"
+            style="@style/CardText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="45dip"
             android:layout_marginRight="55dip"
             android:ellipsize="end"
-            android:maxLines="1"
-            style="@style/CardText" />
+            android:maxLines="1"/>
 
         <TextView
             android:id="@+id/event_now_duration"
+            style="@style/CardText"
             android:layout_width="50dip"
             android:layout_height="wrap_content"
             android:layout_marginLeft="-55dip"
             android:gravity="right"
-            android:minHeight="0dip"
-            style="@style/CardText" />
+            android:minHeight="0dip"/>
     </LinearLayout>
 
     <LinearLayout
@@ -85,33 +81,33 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/event_now"
         android:layout_toRightOf="@id/picon"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/event_next_start"
+            style="@style/CardText"
             android:layout_width="45dip"
             android:layout_height="wrap_content"
-            android:layout_marginRight="-45dip"
-            style="@style/CardText" />
+            android:layout_marginRight="-45dip"/>
 
         <TextView
             android:id="@+id/event_next_title"
+            style="@style/CardText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="45dip"
             android:layout_marginRight="55dip"
             android:ellipsize="end"
-            android:maxLines="1"
-            style="@style/CardText" />
+            android:maxLines="1"/>
 
         <TextView
             android:id="@+id/event_next_duration"
+            style="@style/CardText"
             android:layout_width="50dip"
             android:layout_height="wrap_content"
             android:layout_marginLeft="-55dip"
             android:gravity="right"
-            android:minHeight="0dip"
-            style="@style/CardText" />
+            android:minHeight="0dip"/>
     </LinearLayout>
 
 </RelativeLayout>

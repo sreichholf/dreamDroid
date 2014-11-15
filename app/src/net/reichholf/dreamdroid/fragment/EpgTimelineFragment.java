@@ -31,7 +31,7 @@ import java.util.Date;
 /**
  * Created by Stephan on 09.03.14.
  */
-public class MultiEpgFragment extends AbstractHttpEventListFragment {
+public class EpgTimelineFragment extends AbstractHttpEventListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
