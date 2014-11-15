@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment.helper;
 
 import android.app.SearchManager;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -81,9 +82,15 @@ public class DreamDroidHttpFragmentHelper {
 	public void onActivityCreated(){
 		if(mSwipeRefreshLayout == null)
 			return;
+
+		Context ctx = getActionBarActivity();
 		TypedValue typed_value = new TypedValue();
-		getActionBarActivity().getTheme().resolveAttribute(android.support.v7.appcompat.R.attr.actionBarSize, typed_value, true);
+		ctx.getTheme().resolveAttribute(android.support.v7.appcompat.R.attr.actionBarSize, typed_value, true);
 		mSwipeRefreshLayout.setProgressViewOffset(false, 0, getActionBarActivity().getResources().getDimensionPixelSize(typed_value.resourceId));
+
+		ctx.getTheme().resolveAttribute(R.attr.colorAccent, typed_value, true);
+		int accent = ctx.getResources().getColor(typed_value.resourceId);
+		mSwipeRefreshLayout.setColorSchemeColors(accent);
 	}
 
 	protected void setClient() {
