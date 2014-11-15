@@ -31,7 +31,6 @@ public abstract class ScrollDirectionDetector implements AbsListView.OnScrollLis
                 mScrollDirectionListener.onScrollDown();
             else if (isScrollUp(firstVisibleItem))
                 mScrollDirectionListener.onScrollUp();
-            mPreviousFirstVisibleItem = firstVisibleItem;
         }
 
     }
@@ -46,7 +45,7 @@ public abstract class ScrollDirectionDetector implements AbsListView.OnScrollLis
 
     /**
      * @return true if scrolled up or false otherwise
-     * @see #isSignificantDelta(int, boolean) which ensures, that events are not fired it there was no scrolling
+     * @see #isSignificantDelta(int, boolean) which is used to determine if there was signifcant scrolling within the same top element
      */
     private boolean isScrollUp(int firstVisibleItem) {
         boolean scrollUp = firstVisibleItem > mPreviousFirstVisibleItem;
@@ -54,6 +53,10 @@ public abstract class ScrollDirectionDetector implements AbsListView.OnScrollLis
         return scrollUp;
     }
 
+	/**
+	 * @return true if scrolled down or false otherwise
+	 * @see #isSignificantDelta(int, boolean) which is used to determine if there was signifcant scrolling within the same top element
+	 */
     private boolean isScrollDown(int firstVisibleItem) {
         boolean scrollDown = firstVisibleItem < mPreviousFirstVisibleItem;
         scrollDown |= isSignificantDelta(firstVisibleItem, false);
@@ -63,16 +66,23 @@ public abstract class ScrollDirectionDetector implements AbsListView.OnScrollLis
     /**
      * Make sure wrong direction method is not called when stopping scrolling
      * and finger moved a little to opposite direction.
+     * Only works if current firstVisibleItem equals last firstVisibleItem
+     *
+     * @param firstVisibleItem the current first visible item
+       @param isUpCheck if true, significant delta will only return true if firstVisibleItem was scrolled up. If false, it checks if firstVisibleItem was scrolled down.
+     * @return true if there is a significant delta for the desired direction
      *
      * @see #isScrollUp(int)
+     * @see #isScrollDown(int)
+     * @see #isSameRow(int)
      */
-    private boolean isSignificantDelta(int firstVisibleItem, boolean isUp) {
+    private boolean isSignificantDelta(int firstVisibleItem, boolean isUpCheck) {
         if(!isSameRow(firstVisibleItem)) {
             return false;
         }
         int newScrollY = getTopItemScrollY();
         boolean isDesiredDirection;
-        if(isUp)
+        if(isUpCheck)
             isDesiredDirection = mLastScrollY > newScrollY;
         else
             isDesiredDirection = mLastScrollY < newScrollY;
@@ -83,16 +93,10 @@ public abstract class ScrollDirectionDetector implements AbsListView.OnScrollLis
     }
 
     /**
-     * <code>newScrollY</code> position might not be correct if:
-     * <ul>
-     * <li><code>firstVisibleItem</code> is different than <code>mPreviousFirstVisibleItem</code></li>
-     * <li>list has rows of different height</li>
-     * </ul>
-     * <p/>
-     * It's necessary to track if row did not change, so events
-     * {@link ScrollDirectionListener#onScrollUp()} or {@link ScrollDirectionListener#onScrollDown()} could be fired with confidence
+     * Used to check if firstVisibleItem equals the last seen first visible item.
+     * @return true if firstVisibleItem did not change since last check, false otherwise
      *
-     * @see #getTopItemScrollY()
+     * @see #isSignificantDelta(int, boolean)
      */
     private boolean isSameRow(int firstVisibleItem) {
         boolean isSame = firstVisibleItem == mPreviousFirstVisibleItem;
@@ -104,10 +108,7 @@ public abstract class ScrollDirectionDetector implements AbsListView.OnScrollLis
     }
 
     /**
-     * Will be incorrect if rows has changed and if list has rows of different heights
-     * <p/>
-     * So when measuring scroll direction, it's necessary to ignore this value
-     * if first visible row is different than previously calculated.
+     * @return top value of first visible item or 0 if there is none
      */
     private int getTopItemScrollY() {
         if (mListView == null || mListView.getChildAt(0) == null) return 0;

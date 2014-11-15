@@ -176,12 +176,16 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		registerFab(id, view, onClickListener, listView, false);
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean inverted) {
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean topAligned){
+		registerFab(id, view, onClickListener, listView, topAligned, false);
+	}
+
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean topAligned, boolean inverted) {
 		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
 		if (fab == null)
 			return;
 		if (listView != null)
-			fab.attachToListView(listView, inverted);
+			fab.attachToListView(listView, topAligned, inverted);
 
 		fab.setOnClickListener(onClickListener);
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
@@ -191,6 +195,5 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 				return true;
 			}
 		});
-		fab.show();
 	}
 }

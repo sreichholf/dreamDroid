@@ -51,6 +51,7 @@ public class FloatingActionButton extends ImageButton {
 
     private boolean mVisible;
     private boolean mTopAligned;
+    private boolean mIsInverted;
 
     private int mColorNormal;
     private int mColorPressed;
@@ -78,7 +79,7 @@ public class FloatingActionButton extends ImageButton {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int size = getDimension(
-            mType == TYPE_NORMAL ? R.dimen.fab_size_normal : R.dimen.fab_size_mini);
+                mType == TYPE_NORMAL ? R.dimen.fab_size_normal : R.dimen.fab_size_mini);
         if (mShadow && !hasLollipopApi()) {
             int shadowSize = getDimension(R.dimen.fab_shadow_size);
             size += shadowSize * 2;
@@ -89,6 +90,7 @@ public class FloatingActionButton extends ImageButton {
     private void init(Context context, AttributeSet attributeSet) {
         mVisible = true;
         mTopAligned = false;
+        mIsInverted = false;
         mColorNormal = getColor(R.color.material_blue_500);
         mColorPressed = getColor(R.color.material_blue_600);
         mColorRipple = getColor(android.R.color.white);
@@ -105,11 +107,11 @@ public class FloatingActionButton extends ImageButton {
         if (attr != null) {
             try {
                 mColorNormal = attr.getColor(R.styleable.FloatingActionButton_fab_colorNormal,
-                    getColor(R.color.material_blue_500));
+                        getColor(R.color.material_blue_500));
                 mColorPressed = attr.getColor(R.styleable.FloatingActionButton_fab_colorPressed,
-                    getColor(R.color.material_blue_600));
+                        getColor(R.color.material_blue_600));
                 mColorRipple = attr.getColor(R.styleable.FloatingActionButton_fab_colorRipple,
-                    getColor(android.R.color.white));
+                        getColor(android.R.color.white));
                 mShadow = attr.getBoolean(R.styleable.FloatingActionButton_fab_shadow, true);
                 mType = attr.getInt(R.styleable.FloatingActionButton_fab_type, TYPE_NORMAL);
             } finally {
@@ -132,10 +134,10 @@ public class FloatingActionButton extends ImageButton {
 
         if (mShadow && !hasLollipopApi()) {
             LayerDrawable layerDrawable = new LayerDrawable(
-                new Drawable[]{getResources().getDrawable(R.drawable.shadow),
-                    shapeDrawable});
+                    new Drawable[]{getResources().getDrawable(R.drawable.shadow),
+                            shapeDrawable});
             int shadowSize = getDimension(
-                mType == TYPE_NORMAL ? R.dimen.fab_shadow_size : R.dimen.fab_mini_shadow_size);
+                    mType == TYPE_NORMAL ? R.dimen.fab_shadow_size : R.dimen.fab_mini_shadow_size);
             layerDrawable.setLayerInset(1, shadowSize, shadowSize, shadowSize, shadowSize);
             return layerDrawable;
         } else {
@@ -161,7 +163,7 @@ public class FloatingActionButton extends ImageButton {
         if (hasLollipopApi()) {
             setElevation(mShadow ? getDimension(R.dimen.fab_elevation_lollipop) : 0.0f);
             RippleDrawable rippleDrawable = new RippleDrawable(new ColorStateList(new int[][]{{}},
-                new int[]{mColorRipple}), drawable, null);
+                    new int[]{mColorRipple}), drawable, null);
             setOutlineProvider(new ViewOutlineProvider() {
                 @Override
                 public void getOutline(View view, Outline outline) {
@@ -186,7 +188,7 @@ public class FloatingActionButton extends ImageButton {
     protected int getListViewScrollY() {
         View topChild = mListView.getChildAt(0);
         return topChild == null ? 0 : mListView.getFirstVisiblePosition() * topChild.getHeight() -
-            topChild.getTop();
+                topChild.getTop();
     }
 
     private int getMarginBottom() {
@@ -283,6 +285,10 @@ public class FloatingActionButton extends ImageButton {
         return mRecyclerViewOnScrollListener;
     }
 
+    public boolean isInverted() {
+        return mIsInverted;
+    }
+
     public void show() {
         show(true);
     }
@@ -323,8 +329,8 @@ public class FloatingActionButton extends ImageButton {
 
             int translationY = visible ? 0 : height + getMarginBottom();
             int from = visible ? height : 0;
-            if(mTopAligned) {
-                translationY = visible ? 0 : 0 - (2 * height + getMarginTop());
+            if (mTopAligned) {
+                translationY = visible ? 0 : -(2 * height + getMarginTop());
                 from = visible ? -(2 * height) : 0;
             }
 
@@ -347,9 +353,13 @@ public class FloatingActionButton extends ImageButton {
         attachToListView(listView, new FabOnScrollListener(), false);
     }
 
-    public void attachToListView(@NonNull AbsListView listView, boolean inverted) {
-        attachToListView(listView, new FabOnScrollListener(), inverted);
-    }
+    public void attachToListView(@NonNull AbsListView listView, boolean isTopAligned) {
+		attachToListView(listView, new FabOnScrollListener(), isTopAligned);
+	}
+
+	public void attachToListView(@NonNull AbsListView listView, boolean isTopAligned, boolean isInverted) {
+		attachToListView(listView, new FabOnScrollListener(), isTopAligned, isInverted);
+	}
 
     /**
      * If need to use custom {@link android.widget.AbsListView.OnScrollListener},
@@ -359,10 +369,19 @@ public class FloatingActionButton extends ImageButton {
         attachToRecyclerView(recyclerView, new FabRecyclerOnViewScrollListener());
     }
 
+	public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener) {
+		attachToListView(listView, onScrollListener, false, false);
+	}
+
     public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener, boolean topAligned) {
+        attachToListView(listView, onScrollListener, topAligned, false);
+    }
+
+    public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener, boolean topAligned, boolean isInverted) {
         mListView = listView;
         mOnScrollListener = onScrollListener;
         mTopAligned = topAligned;
+        mIsInverted = isInverted;
         onScrollListener.setFloatingActionButton(this);
         onScrollListener.setListView(listView);
         mListView.setOnScrollListener(onScrollListener);
@@ -409,7 +428,10 @@ public class FloatingActionButton extends ImageButton {
          */
         @Override
         public void onScrollDown() {
-            mFloatingActionButton.show();
+            if (mFloatingActionButton.isInverted())
+                mFloatingActionButton.hide();
+            else
+                mFloatingActionButton.show();
         }
 
         /**
@@ -421,7 +443,10 @@ public class FloatingActionButton extends ImageButton {
          */
         @Override
         public void onScrollUp() {
-            mFloatingActionButton.hide();
+            if (mFloatingActionButton.isInverted())
+                mFloatingActionButton.show();
+            else
+                mFloatingActionButton.hide();
         }
     }
 

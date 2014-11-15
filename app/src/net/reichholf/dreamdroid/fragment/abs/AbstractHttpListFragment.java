@@ -139,7 +139,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 				public void onClick(View v) {
 					reload();
 				}
-			}, listView, true);
+			}, listView, true, true);
 		}
 	}
 
