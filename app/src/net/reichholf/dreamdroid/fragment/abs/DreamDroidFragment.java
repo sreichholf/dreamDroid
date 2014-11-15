@@ -156,5 +156,6 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 				return true;
 			}
 		});
+		fab.show();
 	}
 }

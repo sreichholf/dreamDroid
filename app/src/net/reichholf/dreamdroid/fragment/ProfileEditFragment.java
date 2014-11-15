@@ -102,13 +102,17 @@ public class ProfileEditFragment extends DreamDroidFragment {
 				onSslChanged(checked);
 			}
 		});
-
+		registerFab(R.id.fab_save, view, new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				save();
+			}
+		});
 		return view;
 	}
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.save, menu);
 		inflater.inflate(R.menu.cancel, menu);
 	}
 

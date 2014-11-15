@@ -156,7 +156,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	@SuppressWarnings("unchecked")
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.timer_edit, null);
+		View view = inflater.inflate(R.layout.timer_edit, container, false);
 
 		mName = (EditText) view.findViewById(R.id.EditTextTitle);
 		mDescription = (EditText) view.findViewById(R.id.EditTextDescription);
