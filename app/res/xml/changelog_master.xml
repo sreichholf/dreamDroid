@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 beta 31" versioncode="241">
+        <change>More Material Design, especially on Android 5.0</change>
+    </release>
     <release version="1.0 beta 30.9" versioncode="240">
         <change>FIX: Crashes in "Zap" Mode</change>
     </release>
