@@ -59,7 +59,7 @@ public class Statics {
     public static final int ITEM_CHANGELOG = R.id.buttonChangeLog;
 	public static final int ITEM_SLEEPTIMER = 0x6020;
 	public static final int ITEM_MEDIA_PLAYER = 0x6021;
-	public static final int ITEM_PROFILES = 0x6022;
+	public static final int ITEM_PROFILES = R.id.buttonProfiles;
 	public static final int ITEM_ADD_PROFILE = 0x6023;
 	public static final int ITEM_RELOAD = R.id.menu_reload;
 	public static final int ITEM_SAVE = R.id.menu_save;

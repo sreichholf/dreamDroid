@@ -73,7 +73,7 @@
         android:showDividers="beginning" >
 
         <LinearLayout
-            style="@style/ButtonBar"
+            style="?attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:measureWithLargestChild="true"
@@ -81,7 +81,7 @@
 
             <Button
                 android:id="@+id/ButtonClose"
-                style="@style/ButtonBarButton"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -92,7 +92,7 @@
 
             <Button
                 android:id="@+id/ButtonSave"
-                style="@style/ButtonBarButton"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"

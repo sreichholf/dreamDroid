@@ -22,11 +22,14 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
 import android.app.Application;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 
 /**
@@ -345,6 +348,19 @@ public class DreamDroid extends Application {
 	public static void setTheme(Context context) {
 		if (!isLightTheme(context))
 			context.setTheme(R.style.Theme_DreamDroid);
+	}
+
+	public static void setDialogTheme(Context context, DialogFragment dialogFragment) {
+		dialogFragment.setStyle(DialogFragment.STYLE_NORMAL, getDialogTheme(context));
+	}
+
+	public static int getDialogTheme(Context context) {
+		if(Build.VERSION.SDK_INT < 11)
+			return android.R.style.Theme_Dialog;
+		if(isLightTheme(context))
+			return R.style.Theme_DreamDroid_Light_Dialog;
+		else
+			return R.style.Theme_DreamDroid_Dialog;
 	}
 
 	public static boolean checkInitial(Context context, int which) {

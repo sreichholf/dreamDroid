@@ -64,9 +64,11 @@
 
     <style name="ButtonPanel"></style>
 
-    <style name="ButtonBar" parent="@android:style/ButtonBar"></style>
+    <style name="NavButtonBar" parent="@android:style/ButtonBar"></style>
 
-    <style name="ButtonBarButton"></style>
+    <style name="NavButtonBarButton">
+        <item name="android:background">?attr/listItemBackground</item>
+    </style>
 
     <style name="RemoteButton">
         <item name="android:textColor">@android:color/white</item>
@@ -100,4 +102,9 @@
         <item name="android:background">@android:drawable/list_selector_background</item>
     </style>
 
+    <style name="buttonBarButtonStyle"></style>
+
+    <style name="buttonBarButtonPositiveStyle"></style>
+
+    <style name="buttonBarButtonNegativeStyle"></style>
 </resources>

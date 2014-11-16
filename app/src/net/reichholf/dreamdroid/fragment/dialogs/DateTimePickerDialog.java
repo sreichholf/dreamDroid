@@ -11,8 +11,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import android.app.Dialog;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
@@ -51,14 +53,13 @@ public class DateTimePickerDialog extends ActionDialog {
 		
 		
 		final Dialog dialog;
-		int currentapiVersion = android.os.Build.VERSION.SDK_INT;
 		Calendar cal = getCalendarFromTimestamp(mTimestamp);
 
-		dialog = new Dialog(getActivity());
+		dialog = new Dialog(getActivity(), DreamDroid.getDialogTheme(getActivity()));
 		dialog.setContentView(R.layout.date_time_picker);
 		dialog.setTitle(mTitle);
 
-		if (currentapiVersion >= 11) {
+		if (Build.VERSION.SDK_INT >= 11) {
 			DatePicker dp = (DatePicker) dialog.findViewById(R.id.DatePicker);
 			try {
 				Method m = dp.getClass().getMethod("setCalendarViewShown", boolean.class);

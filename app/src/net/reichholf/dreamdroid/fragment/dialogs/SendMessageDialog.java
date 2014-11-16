@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import android.app.Dialog;
 import android.os.Bundle;
@@ -30,7 +31,7 @@ public class SendMessageDialog extends AbstractDialog {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		final Dialog dialog = new Dialog(getActivity());
+		final Dialog dialog = new Dialog(getActivity(), DreamDroid.getDialogTheme(getActivity()));
 		dialog.setContentView(R.layout.send_message_dialog);
 		dialog.setTitle(R.string.send_message);
 

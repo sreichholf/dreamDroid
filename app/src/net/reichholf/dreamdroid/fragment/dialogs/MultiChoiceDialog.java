@@ -6,14 +6,17 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.BundleHelper;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.view.ContextThemeWrapper;
 
 /**
  * @author sre
@@ -34,11 +37,27 @@ public class MultiChoiceDialog extends DialogFragment {
 	private int mPositiveStringId;
 	private Dialog.OnClickListener mNegativeListener;
 	private int mNegativeStringId;
+	private boolean mIsThemeSet;
 
 	public interface MultiChoiceDialogListener {
 		public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked);
 
 		public void onMultiChoiceDialogFinish(String dialogTag, int result);
+	}
+
+
+	public MultiChoiceDialog() {
+		super();
+		mIsThemeSet = Build.VERSION.SDK_INT < 21;
+	}
+
+	@Override
+	public void onAttach(Activity activity) {
+		if(!mIsThemeSet) {
+			DreamDroid.setDialogTheme(activity, this);
+			mIsThemeSet = true;
+		}
+		super.onAttach(activity);
 	}
 
 	@Override
@@ -123,7 +142,12 @@ public class MultiChoiceDialog extends DialogFragment {
 			if (checked != null)
 				mCheckedItems = checked;
 		}
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		AlertDialog.Builder builder;
+		if(!mIsThemeSet)
+			builder = new AlertDialog.Builder(getActivity(), DreamDroid.getDialogTheme(getActivity()));
+		else
+			builder = new AlertDialog.Builder(getActivity());
+		mIsThemeSet = true;
 		builder.setTitle(getText(mTitleId));
 		builder.setMultiChoiceItems(mItems, mCheckedItems, mMultiChoiceClickListener);
 

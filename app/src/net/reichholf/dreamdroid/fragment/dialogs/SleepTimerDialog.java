@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import java.util.HashMap;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -54,7 +55,7 @@ public class SleepTimerDialog extends AbstractDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		init();
 
-		final Dialog dialog = new Dialog(getActivity());
+		final Dialog dialog = new Dialog(getActivity(), DreamDroid.getDialogTheme(getActivity()));
 		dialog.setContentView(R.layout.sleeptimer);
 		dialog.setTitle(R.string.sleeptimer);
 		final NumberPicker time = (NumberPicker) dialog.findViewById(R.id.NumberPicker);

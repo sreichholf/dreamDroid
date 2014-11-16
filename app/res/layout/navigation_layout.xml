@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <FrameLayout
         android:id="@+id/listContainer"
@@ -12,14 +12,14 @@
         <ListView
             android:id="@android:id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"/>
 
         <TextView
             android:id="@android:id/empty"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
     </FrameLayout>
 
     <LinearLayout
@@ -29,34 +29,41 @@
         android:background="?attr/navigation_footer">
 
 
-        <ImageButton
+        <net.reichholf.dreamdroid.widget.CheckableImageButton
             android:id="@+id/buttonChangeLog"
-            style="@style/ButtonBarButton"
+            style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="?attr/ic_menu_changelog" />
+            android:contentDescription="@string/changelog"
+            android:src="?attr/ic_menu_changelog"/>
 
-        <ImageButton
+        <net.reichholf.dreamdroid.widget.CheckableImageButton
             android:id="@+id/buttonAbout"
-            style="@style/ButtonBarButton"
+            style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="?attr/ic_menu_about" />
+            android:contentDescription="@string/about"
+            android:src="?attr/ic_menu_about"/>
 
-        <FrameLayout
+        <net.reichholf.dreamdroid.widget.CheckableImageButton
+            android:id="@+id/buttonProfiles"
+            style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:contentDescription="@string/profiles"
+            android:src="?attr/ic_menu_profiles"/>
 
-        <ImageButton
+        <net.reichholf.dreamdroid.widget.CheckableImageButton
             android:id="@+id/buttonSettings"
-            style="@style/ButtonBarButton"
+            style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="?attr/ic_menu_settings" />
+            android:contentDescription="@string/settings"
+            android:src="?attr/ic_menu_settings"/>
 
     </LinearLayout>
 

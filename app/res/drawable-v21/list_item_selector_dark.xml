@@ -5,7 +5,7 @@
         <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
             <item
-                android:drawable="@drawable/list_background_checked_dark"
+                android:drawable="@drawable/list_background_checked"
                 android:state_checked="true"/>
             <item
                 android:drawable="@drawable/list_background_activated"

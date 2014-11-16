@@ -10,6 +10,8 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 
+import net.reichholf.dreamdroid.DreamDroid;
+
 /**
  * @author sre
  * 
@@ -64,7 +66,7 @@ public class SimpleProgressDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-		final ProgressDialog dialog = new ProgressDialog(getActivity());
+		final ProgressDialog dialog = new ProgressDialog(getActivity(), DreamDroid.getDialogTheme(getActivity()));
 		dialog.setTitle(mTitle);
 		dialog.setMessage(mMessage);
 		dialog.setIndeterminate(true);

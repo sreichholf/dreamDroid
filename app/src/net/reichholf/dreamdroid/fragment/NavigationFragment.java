@@ -46,6 +46,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHan
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.widget.CheckableImageButton;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -55,9 +56,9 @@ import java.util.ArrayList;
 /**
  * This is where all begins. It's the "main menu activity" which acts as central
  * navigation instance
- * 
+ *
  * @author sreichholf
- * 
+ *
  */
 public class NavigationFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
@@ -83,9 +84,9 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		{ Statics.ITEM_INFO, R.string.device_info, R.attr.ic_menu_device, 1, 0 },
 		{ Statics.ITEM_MESSAGE, R.string.send_message, R.attr.ic_menu_mail, 1, 1 },
 		{ Statics.ITEM_SIGNAL, R.string.signal_meter, R.attr.ic_menu_signal, 1, 0 },
-		{ Statics.ITEM_PROFILES, R.string.profiles, R.attr.ic_menu_profiles, 1, 0 },
     };
 //		{ Statics.ITEM_MULTIEPG, R.string.epg, R.attr.ic_menu_epg, 1, 0 },
+//		{ Statics.ITEM_PROFILES, R.string.profiles, R.attr.ic_menu_profiles, 1, 0 },
 	private int[] mCurrent;
 	private int mCurrentListItem;
 	private boolean mHighlightCurrent;
@@ -101,9 +102,9 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	/**
 	 * <code>AsyncTask</code> to set the powerstate of the target device
-	 * 
+	 *
 	 * @author sre
-	 * 
+	 *
 	 */
 	private class SetPowerStateTask extends AsyncTask<String, String, Boolean> {
 		private ExtendedHashMap mResult;
@@ -145,7 +146,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	/**
 	 * @author sre
-	 * 
+	 *
 	 */
 	private class SleepTimerTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
 		private ExtendedHashMap mResult;
@@ -217,7 +218,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void getSleepTimer(boolean showDialogOnFinish) {
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -261,16 +262,30 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
         View view = inflater.inflate(R.layout.navigation_layout, container, false);
         registerImageButtonListener(view, R.id.buttonSettings);
         registerImageButtonListener(view, R.id.buttonAbout);
+        registerImageButtonListener(view, R.id.buttonProfiles);
         registerImageButtonListener(view, R.id.buttonChangeLog);
 
         return view;
     }
 
     private void registerImageButtonListener(View view, int buttonId) {
-        ImageButton b = (ImageButton) view.findViewById(buttonId);
+	    CheckableImageButton b = (CheckableImageButton) view.findViewById(buttonId);
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+	            CheckableImageButton cib = (CheckableImageButton) v;
+	            if(cib.getId() == R.id.buttonProfiles) {
+		            getListView().setItemChecked(mCurrentListItem, false);
+		            mCurrentListItem = -1;
+		            if(cib.isChecked()) {
+			            getMainActivity().showContent();
+			            return;
+		            }
+		            cib.setChecked(true);
+	            } else {
+		            CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
+		            btn.setChecked(false);
+	            }
                 onItemSelected(v.getId());
             }
         });
@@ -306,6 +321,9 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		// only mark the entry if it isn't a "dialog-only-item"
 		// TODO find a reliable way to mark the current item...
 		if (mHighlightCurrent) {
+			CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
+			btn.setChecked(false);
+
 			if (mCurrent[4] == 0 || (mCurrent[4] == 2 && isTablet())) {
 				l.setItemChecked(position, true);
 				mCurrentListItem = position;
@@ -320,7 +338,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		}
 
 		onItemSelected(mCurrent[0]);
-		getMainActivity().showContent();
 	}
 
 	private void setAdapter() {
@@ -335,12 +352,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	/**
 	 * Execute the proper action for a item ID (<code>ITEM_*</code> statics)
-	 * 
+	 *
 	 * @param id
 	 *            The id used to identify the item clicked (<code>ITEM_*</code>
 	 *            statics)
 	 */
 	protected boolean onItemSelected(int id) {
+		boolean retVal = true;
 		Intent intent;
 		switch (id) {
 		case Statics.ITEM_TIMER:
@@ -476,10 +494,10 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			getMainActivity().showDetails(f);
 			break;
 		default:
-			return super.onItemSelected(id);
+			retVal = super.onItemSelected(id);
 		}
-
-		return true;
+		getMainActivity().showContent();
+		return retVal;
 	}
 
 	private void clearBackStack() {
@@ -508,7 +526,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	/**
 	 * Shows success/error toasts after power state has been set
-	 * 
+	 *
 	 * @param isRunning
 	 */
 	private void onPowerStateSet(boolean isRunning) {
@@ -521,7 +539,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	/**
 	 * Send a message to the target device which will be shown on TV
-	 * 
+	 *
 	 * @param text
 	 *            The message text
 	 * @param type

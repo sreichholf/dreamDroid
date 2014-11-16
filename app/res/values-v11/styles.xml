@@ -5,12 +5,7 @@
         <item name="android:divider">?attr/dividerHorizontal</item>
     </style>
 
-    <style name="ButtonBar" parent="@android:style/Holo.Light.ButtonBar.AlertDialog"></style>
-
-    <style name="ButtonBarButton" parent="@android:style/Widget.Holo.Button.Borderless">
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-        <item name="android:textSize">14sp</item>
-    </style>
+    <style name="NavButtonBar" parent="@android:style/Holo.Light.ButtonBar.AlertDialog"></style>
 
     <style name="SelectableItem">
         <item name="android:background">?android:attr/selectableItemBackground</item>

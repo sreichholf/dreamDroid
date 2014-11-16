@@ -12,4 +12,20 @@
         <item name="android:elevation">4dp</item>
     </style>
 
+
+<!--
+    <style name="NavButtonBarButton" parent="android:Widget.Material.Button.Borderless.Colored">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+-->
+
+    <style name="buttonBarButtonStyle" parent="android:Widget.Material.Button.Borderless.Colored"></style>
+
+    <style name="buttonBarButtonPositiveStyle" parent="android:Widget.Material.Button.Borderless.Colored"></style>
+
+    <style name="buttonBarButtonNegativeStyle" parent="android:Widget.Material.Button.Borderless.Colored">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
 </resources>

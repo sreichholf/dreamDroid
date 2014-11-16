@@ -28,6 +28,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -129,7 +130,11 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProgress.dismiss();
 		mDetectedProfiles = profiles;
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActionBarActivity());
+		AlertDialog.Builder builder;
+		if(Build.VERSION.SDK_INT >= 11)
+			builder = new AlertDialog.Builder(getActionBarActivity(), DreamDroid.getDialogTheme(getActionBarActivity()));
+		else
+			builder = new AlertDialog.Builder(getActionBarActivity());
 		builder.setTitle(R.string.autodiscover_dreamboxes);
 
 		if (mDetectedProfiles.size() > 0) {

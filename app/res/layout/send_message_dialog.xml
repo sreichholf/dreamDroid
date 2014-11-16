@@ -83,7 +83,7 @@
         android:showDividers="beginning" >
 
         <LinearLayout
-            style="@style/ButtonBar"
+            style="@style/NavButtonBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:measureWithLargestChild="true"
@@ -91,7 +91,7 @@
 
             <Button
                 android:id="@+id/ButtonCancel"
-                style="@style/ButtonBarButton"
+                style="@style/NavButtonBarButton"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -101,7 +101,7 @@
 
             <Button
                 android:id="@+id/ButtonSend"
-                style="@style/ButtonBarButton"
+                style="@style/NavButtonBarButton"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"

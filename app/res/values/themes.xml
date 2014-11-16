@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Theme.DreamDroid.Base" parent="Theme.AppCompat">
+    <style name="Base.Theme.DreamDroid" parent="Theme.AppCompat">
+        <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">?attr/buttonBarButtonStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/buttonBarButtonPositiveStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/buttonBarButtonNegativeStyle</item>
         <item name="colorPrimary">@color/primary_material_dark</item>
         <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="colorAccent">@color/material_blue_500</item>
@@ -47,16 +51,11 @@
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
     </style>
 
-    <style name="Theme.DreamDroid" parent="Theme.DreamDroid.Base" >
-        <item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
-        <item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
-        <item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
-        <item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
-        <item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
-        <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
-    </style>
-
-    <style name="Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Base.Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">?attr/buttonBarButtonStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/buttonBarButtonPositiveStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/buttonBarButtonNegativeStyle</item>
         <item name="colorPrimary">@color/primary_material_dark</item>
         <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="colorAccent">@color/material_blue_600</item>
@@ -108,7 +107,25 @@
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
     </style>
 
-    <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light" />
+    <style name="Theme.DreamDroid" parent="Base.Theme.DreamDroid">
+        <item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
+        <item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
+        <item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
+        <item name="ic_btn_save">@drawable/ic_menu_save_holo_light</item>
+        <item name="ic_btn_send">@drawable/ic_menu_send_holo_light</item>
+        <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_light</item>
+    </style>
+
+    <style name="Theme.DreamDroid.Light" parent="Base.Theme.DreamDroid.Light">
+    </style>
+
+    <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light">
+        <item name="colorAccent">@color/material_blue_600</item>
+    </style>
+
+    <style name="Theme.DreamDroid.Light.Dialog" parent="Theme.DreamDroid.Dialog">
+        <item name="colorAccent">@color/material_blue_600</item>
+    </style>
 
     <style name="Theme.DreamDroid.NoTitle" parent="Theme.DreamDroid">
         <item name="windowActionBar">false</item>
@@ -119,4 +136,6 @@
         <item name="windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
+
+
 </resources>
