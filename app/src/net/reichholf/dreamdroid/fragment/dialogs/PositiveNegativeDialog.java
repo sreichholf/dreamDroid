@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 
@@ -49,12 +48,6 @@ public class PositiveNegativeDialog extends ActionDialog {
 		return fragment;
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		mIsThemeSet = Build.VERSION.SDK_INT < 21 || false; //TODO FIXME PLEASE this is bad!
-	}
-
 	private void init() {
 		Bundle args = getArguments();
 		mMessageId = args.getInt(KEY_MESSAGE_ID);
@@ -70,7 +63,7 @@ public class PositiveNegativeDialog extends ActionDialog {
 		init();
 		AlertDialog.Builder builder;
 		ContextThemeWrapper context = new ContextThemeWrapper(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		if(!mIsThemeSet)
+		if(!mNoTheming)
 			builder = new AlertDialog.Builder(getActivity(), DreamDroid.getDialogTheme(getActivity()));
 		else
 			builder = new AlertDialog.Builder(getActivity());

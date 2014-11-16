@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.helpers.BundleHelper;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
 
 /**
@@ -48,11 +47,11 @@ public class SimpleChoiceDialog extends ActionDialog {
 		setRetainInstance(true);
 		init();
 		AlertDialog.Builder builder;
-		if(!mIsThemeSet)
+		if(!mNoTheming)
 			builder = new AlertDialog.Builder(getActivity(), DreamDroid.getDialogTheme(getActivity()));
 		else
 			builder = new AlertDialog.Builder(getActivity());
-		mIsThemeSet = true;
+		mNoTheming = true;
 		builder.setTitle(getText(R.string.pick_action));
 		builder.setItems(mActions, new DialogInterface.OnClickListener() {
 
