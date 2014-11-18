@@ -394,9 +394,17 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	protected boolean onItemSelected(int id) {
 		switch (id) {
 		case Statics.ITEM_OVERVIEW:
-			mNavReference = SERVICE_REF_ROOT;
-			mNavName = (String) getText(R.string.bouquet_overview);
-			reloadNav();
+			if(!mSlidingPane.isOpen()) {
+				mSlidingPane.openPane();
+				return true;
+			}
+			if ((mSlidingPane.isOpen() || !mSlidingPane.isSlideable()) && mNavReference != SERVICE_REF_ROOT) {
+				mNavReference = SERVICE_REF_ROOT;
+				mNavName = (String) getText(R.string.bouquet_overview);
+				reloadNav();
+				return true;
+			}
+			mSlidingPane.closePane();
 			return true;
 		case Statics.ITEM_SET_DEFAULT:
 			if (mDetailReference != null || mNavReference != null) {
