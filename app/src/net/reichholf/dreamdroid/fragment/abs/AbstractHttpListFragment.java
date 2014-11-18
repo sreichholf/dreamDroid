@@ -45,7 +45,6 @@ import java.util.HashMap;
 
 /**
  * @author sreichholf
- * 
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
@@ -54,7 +53,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	protected final String sData = "data";
 	protected boolean mReload;
-    protected boolean mEnableReload;
+	protected boolean mEnableReload;
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
@@ -101,7 +100,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState){
+	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
 	}
@@ -116,7 +115,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		} catch (IllegalStateException e) {
 		}
 
-		if(mReload)
+		if (mReload)
 			reload();
 	}
 
@@ -131,9 +130,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return onItemSelected(item.getItemId());
 	}
 
-	public void connectFabReload(View view, AbsListView listView){
+	public void connectFabReload(View view, AbsListView listView) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
-		if(!sp.getBoolean("disable_fab_reload", false)) {
+		if (!sp.getBoolean("disable_fab_reload", false)) {
 			registerFab(R.id.fab_reload, view, new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -143,19 +142,19 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		}
 	}
 
-	public void detachFabReload(){
+	public void detachFabReload() {
 		FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
-		if(fab != null) {
+		if (fab != null) {
 			//;
 		}
 	}
 
-	public void checkMenuReload(Menu menu, MenuInflater inflater){
-		if(!mEnableReload)
+	public void checkMenuReload(Menu menu, MenuInflater inflater) {
+		if (!mEnableReload)
 			return;
 
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
-		if(sp.getBoolean("disable_fab_reload", false)) {
+		if (sp.getBoolean("disable_fab_reload", false)) {
 			detachFabReload();
 			inflater.inflate(R.menu.reload, menu);
 		} else {
@@ -210,11 +209,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * Register an <code>OnClickListener</code> for a view and a specific item
 	 * ID (<code>ITEM_*</code> statics)
 	 *
-	 * @param v
-	 *            The view an OnClickListener should be registered for
-	 * @param id
-	 *            The id used to identify the item clicked (<code>ITEM_*</code>
-	 *            statics)
+	 * @param v  The view an OnClickListener should be registered for
+	 * @param id The id used to identify the item clicked (<code>ITEM_*</code>
+	 *           statics)
 	 */
 	protected void registerOnClickListener(View v, final int id) {
 		v.setOnClickListener(new OnClickListener() {
@@ -248,8 +245,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	/**
-	 * @param ref
-	 *            The ServiceReference to zap to
+	 * @param ref The ServiceReference to zap to
 	 */
 	public void zapTo(String ref) {
 		mHttpHelper.zapTo(ref);
@@ -309,7 +305,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return args;
 	}
 
-	protected void reload(int loader){
+	protected void reload(int loader) {
 		mHttpHelper.reload(loader);
 	}
 
@@ -323,7 +319,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-			LoaderResult<ArrayList<ExtendedHashMap>> result) {
+	                           LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {
@@ -350,15 +346,20 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return mHttpHelper.getHttpClient();
 	}
 
-    @Override
-    public void onRefresh() {
-        reload();
-    }
+	@Override
+	public void onRefresh() {
+		reload();
+	}
 
 	/**
 	 * @param progress
 	 */
 	protected void updateProgress(String progress) {
 		mHttpHelper.updateProgress(progress);
+	}
+
+	@Override
+	public void onProfileChanged() {
+		mHttpHelper.onProfileChanged();
 	}
 }

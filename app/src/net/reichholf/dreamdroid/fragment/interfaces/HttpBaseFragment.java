@@ -34,6 +34,8 @@ public interface HttpBaseFragment {
 	public String getLoadFinishedTitle();
 
 	public SimpleHttpClient getHttpClient();
+
+	public void onProfileChanged();
 	
 	public abstract void onSimpleResult(boolean success, ExtendedHashMap result);
 }

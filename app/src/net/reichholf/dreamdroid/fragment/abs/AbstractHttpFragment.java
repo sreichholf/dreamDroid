@@ -61,7 +61,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
-		if(mReload)
+		if (mReload)
 			reload();
 	}
 
@@ -161,7 +161,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 		return args;
 	}
 
-	protected void reload(int loader){
+	protected void reload(int loader) {
 		mHttpHelper.reload(loader);
 	}
 
@@ -228,5 +228,10 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	@Override
 	public void onRefresh() {
 		reload();
+	}
+
+	@Override
+	public void onProfileChanged() {
+		mHttpHelper.onProfileChanged();
 	}
 }

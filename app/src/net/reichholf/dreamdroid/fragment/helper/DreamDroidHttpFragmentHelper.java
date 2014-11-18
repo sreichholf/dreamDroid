@@ -54,12 +54,12 @@ public class DreamDroidHttpFragmentHelper {
 	protected boolean mIsReloading = false;
 
 	public DreamDroidHttpFragmentHelper() {
-		setClient();
+		resetHttpClient();
 	}
 
 	public DreamDroidHttpFragmentHelper(Fragment fragment) {
 		bindToFragment(fragment);
-		setClient();
+		resetHttpClient();
 	}
 
 	public void bindToFragment(Fragment fragment) {
@@ -93,7 +93,7 @@ public class DreamDroidHttpFragmentHelper {
 		mSwipeRefreshLayout.setColorSchemeColors(accent);
 	}
 
-	protected void setClient() {
+	protected void resetHttpClient() {
 		mShc = SimpleHttpClient.getInstance();
 	}
 
@@ -379,5 +379,9 @@ public class DreamDroidHttpFragmentHelper {
 		if(mSwipeRefreshLayout != null)
 			if(mSwipeRefreshLayout.isRefreshing())
 				mSwipeRefreshLayout.setRefreshing(false);
+	}
+
+	public void onProfileChanged(){
+		resetHttpClient();
 	}
 }

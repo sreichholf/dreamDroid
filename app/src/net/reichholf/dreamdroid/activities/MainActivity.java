@@ -24,6 +24,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
+import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
@@ -401,6 +402,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		mCheckProfileTask = new CheckProfileTask(p);
 		mCheckProfileTask.execute();
+
+		if (mNavigationFragment != null)
+			mNavigationFragment.onProfileChanged();
+		if (mDetailFragment != null && mDetailFragment instanceof HttpBaseFragment)
+			((HttpBaseFragment) mDetailFragment).onProfileChanged();
 	}
 
 	/**
