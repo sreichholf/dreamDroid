@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 /**
  * @author sreichholf
@@ -75,12 +76,24 @@ public class E2DeviceInfoHandler extends E2SimpleHandler {
 		mNics = new ArrayList<ExtendedHashMap>();
 	}
 
+	@Override
+	public void endDocument() throws SAXException {
+		if(!mResult.containsKey(DeviceInfo.KEY_FRONTENDS))
+			mResult.put(DeviceInfo.KEY_FRONTENDS, mFrontends);
+		if(!mResult.containsKey(DeviceInfo.KEY_HDDS))
+			mResult.put(DeviceInfo.KEY_HDDS, mHdds);
+		if(!mResult.containsKey(DeviceInfo.KEY_NICS))
+			mResult.put(DeviceInfo.KEY_NICS, mNics);
+		super.endDocument();
+
+	}
+
 	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
-	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+		 * (non-Javadoc)
+		 *
+		 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String,
+		 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
+		 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
 		if (localName.equals(TAG_E2ENIGMAVERSION)) {
