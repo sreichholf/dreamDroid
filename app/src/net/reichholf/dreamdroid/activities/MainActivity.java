@@ -63,7 +63,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		SendMessageDialog.SendMessageDialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener,
 		SearchView.OnQueryTextListener {
 
-	@SuppressWarnings("unused")
 	private static final String TAG = MainActivity.class.getSimpleName();
 
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[] { "about_dialog",
@@ -117,7 +116,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		 */
 		@Override
 		protected void onPostExecute(ExtendedHashMap result) {
-			Log.i(DreamDroid.LOG_TAG, result.toString());
+			Log.i(TAG, result.toString());
 			if (!this.isCancelled())
 				onProfileChecked(result);
 		}
@@ -234,7 +233,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		// there is a bug with NAVIGATION_MODE_LIST and
 		// SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW which makes the
 		// List "invisible" after the search view as expanded, the following
-		// thow lines are a workaround for this bug!
+		// two lines are a workaround for this bug!
 		// SDK < 11 is handled differently... (non-collapsible there)
 		if (Build.VERSION.SDK_INT >= 11) {
 			MenuItemCompat.expandActionView(searchItem);
@@ -242,6 +241,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 
 		SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+		if(searchView == null) { //WAIT, WHAT?
+			Log.w(TAG, "This is just wrong, there is no searchView?!");
+			return true;
+		}
 		searchView.setQueryHint(getString(R.string.epg_search_hint));
 		searchView.setOnQueryTextListener(this);
 
@@ -302,13 +305,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
 		if (fragment.isAdded()) {
-			Log.i(DreamDroid.LOG_TAG, "Fragment " + ((Object)fragment).getClass().getSimpleName() + " already added, showing");
+			Log.i(TAG, "Fragment " + ((Object)fragment).getClass().getSimpleName() + " already added, showing");
 			if (mDetailFragment != null && !fragment.isVisible()) {
 				ft.hide(mDetailFragment);
 			}
 			ft.show(fragment);
 		} else {
-			Log.i(DreamDroid.LOG_TAG, "Fragment " + ((Object)fragment).getClass().getSimpleName() + " not added, adding");
+			Log.i(TAG, "Fragment " + ((Object)fragment).getClass().getSimpleName() + " not added, adding");
 			ft.replace(viewId, fragment, ((Object)fragment).getClass().getSimpleName());
 		}
 	}
@@ -576,9 +579,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			f.setArguments(args);
 			showDialogFragment(f, tag);
 		} catch (InstantiationException e) {
-			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+			Log.e(TAG, e.getMessage());
 		} catch (IllegalAccessException e) {
-			Log.e(DreamDroid.LOG_TAG, e.getMessage());
+			Log.e(TAG, e.getMessage());
 		}
 	}
 
