@@ -70,7 +70,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog" });
 
 	private boolean mSlider;
-
+	private boolean mIsPaused;
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
 
@@ -204,6 +204,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onResume() {
 		super.onResume();
+		mIsPaused = false;
 		onProfileChanged(DreamDroid.getCurrentProfile());
 	}
 
@@ -211,6 +212,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	public void onPause() {
 		if (mCheckProfileTask != null)
 			mCheckProfileTask.cancel(true);
+		mIsPaused = true;
 		super.onPause();
 	}
 
@@ -395,6 +397,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onProfileChanged(Profile p) {
+		if(mIsPaused)
+			return;
 		setProfileName();
 		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
