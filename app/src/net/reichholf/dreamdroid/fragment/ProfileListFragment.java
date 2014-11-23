@@ -141,7 +141,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			CharSequence[] items = new CharSequence[profiles.size()];
 
 			for (int i = 0; i < profiles.size(); i++) {
-				items[i] = profiles.get(i).getName();
+				items[i] = String.format("%s (%s)", profiles.get(i).getName(), profiles.get(i).getHost());
 			}
 
 			builder.setItems(items, new DialogInterface.OnClickListener() {

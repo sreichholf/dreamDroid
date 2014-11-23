@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -16,8 +15,8 @@ import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
