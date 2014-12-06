@@ -114,10 +114,10 @@
     <string name="front_processor_version">Versión procesador frontal</string>
     <string name="device_name">Nombre del dispositivo</string>
     <string name="frontends">Frontend</string>
-    <string name="nics">Adaptador de red</string>
+    <string name="nics">Adaptadores de red</string>
     <string name="hdds">Discos duros</string>
     <string name="hdd_capacity">%1$s (%2$s libre)</string>
-    <string name="not_implemented">¡Esta función no esta implementada todavía!</string>
+    <string name="not_implemented">¡Esta función no está implementada todavía!</string>
     <string name="current_event">Evento actual</string>
     <string name="timeout">Tiempo espera</string>
     <string name="seconds">segundos</string>
@@ -127,14 +127,14 @@
     <string name="type">Tipo</string>
 
     <string-array name="message_types">
-        <item>Sí / No</item>
+        <item>Sí/No</item>
         <item>Aviso</item>
         <item>Informativo</item>
         <item>Error</item>
     </string-array>
 
     <string name="virtual_remote">Control remoto virtual</string>
-    <string name="login">Autentificación</string>
+    <string name="login">Login</string>
     <string name="login_enabled">Usar autentificación</string>
     <string name="wait_request_finished">¡Espera a que finalice la petición actual!</string>
     <string name="current_service">Actual</string>
@@ -143,7 +143,7 @@
     <string name="next">Siguiente</string>
     <string name="epg_search">Buscando EPG</string>
     <string name="epg_search_hint">Buscar EPG</string>
-    <string name="standard">Configuración estándard</string>
+    <string name="standard">Configuración estándar</string>
     <string name="quickzap">Configuración Zapeo</string>
     <string name="no_epg_available">¡Actualmente no hay información EPG de este canal!</string>
     <string name="ok">OK</string>
@@ -283,5 +283,12 @@
     <string name="developer_settings">Ajustes de desarrollador</string>
     <string name="dump_xml">Volcar contenido xml</string>
     <string name="dump_xml_long">Volcar contenido xml en memoria externa</string>
+    <string name="enable">Habilitar</string>
+    <string name="disable">Deshabilitar</string>
+    <string name="epg_sync">Sincronizando EPG</string>
+    <string name="epg_sync_finished">EPG sincronizado</string>
+    <string name="disable_fab_reload">Deshabilitar botón de recarga</string>
+    <string name="disable_fab_reload_long">Mostrar el botón de recarga en el ActionBar</string>
+    <string name="reset_default">Valores predeterminados</string>
 
 </resources>
