@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_pick_bouquet"
+        android:icon="@drawable/ic_action_list"
+        android:title="@string/bouquet_overview"
+        dreamDroid:showAsAction="always|withText"/>
+
+</menu>

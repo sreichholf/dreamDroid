@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     android:id="@+id/LinearLayoutMain"
     style="@style/CardStyle"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:minHeight="?android:attr/listPreferredItemHeight"
-    android:orientation="vertical">
+    android:minHeight="?android:attr/listPreferredItemHeight">
+
+    <ImageView
+        android:id="@+id/picon"
+        android:layout_width="48dp"
+        android:layout_height="36dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="3dp"
+        android:layout_marginTop="5dp"/>
+
 
     <LinearLayout
-        android:id="@+id/LinearLayout2"
+        android:id="@+id/linearLayoutTitle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/picon"
         android:orientation="vertical">
 
         <TextView
@@ -34,9 +45,10 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/LinearLayout1"
+        android:id="@+id/LinearLayoutEventTime"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/linearLayoutTitle"
         android:orientation="horizontal">
 
         <TextView
@@ -60,6 +72,7 @@
         android:id="@+id/event_short"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/LinearLayoutEventTime"
         android:layout_gravity="center_vertical"
         android:ellipsize="end"
         android:maxLines="2"
@@ -67,4 +80,4 @@
         android:textAppearance="@android:style/TextAppearance.Small"
         android:textStyle="bold"/>
 
-</LinearLayout>
+</RelativeLayout>
