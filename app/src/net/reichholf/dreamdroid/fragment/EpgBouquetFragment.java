@@ -100,7 +100,6 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		if (mReference != null) {
 			setAdapter();
 			if (mMapList.size() <= 0)
@@ -166,7 +165,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 	@Override
 	public String getLoadFinishedTitle() {
-		return getBaseTitle() + " - " + mName;
+		return mName;
 	}
 
 	@Override
@@ -209,6 +208,8 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	@Override
 	public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
 		Calendar cal = getCalendar();
+		if(cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day)
+			return;
 		cal.set(year, month, day);
 
 		SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -221,6 +222,8 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	@Override
 	public void onTimeSet(RadialPickerLayout radialPickerLayout, int hourOfDay, int minute) {
 		Calendar cal = getCalendar();
+		if(cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
+			return;
 		cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
 		cal.set(Calendar.MINUTE, minute);
 		cal.set(Calendar.SECOND, 0);

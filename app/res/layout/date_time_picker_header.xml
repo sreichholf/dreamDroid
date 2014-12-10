@@ -1,29 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="horizontal">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:minHeight="?attr/actionBarSize"
+    android:background="?attr/colorAccent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:elevation="4dp">
 
     <TextView
         android:id="@+id/textViewDate"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="2dp"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
+        android:textColor="@color/white"
         android:padding="3dp"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <TextView
         android:id="@+id/textViewTime"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="2dp"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
+        android:textColor="@color/white"
         android:gravity="right"
-        android:padding="3dp"
+        android:padding="5dp"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 </LinearLayout>
