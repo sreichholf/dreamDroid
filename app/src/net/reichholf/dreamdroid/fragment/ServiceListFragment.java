@@ -11,6 +11,7 @@ import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
@@ -27,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -336,7 +338,11 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mNavList.setAdapter(adapter);
 		}
 		adapter = new ServiceListAdapter(getActionBarActivity(), mDetailItems);
-		mDetailList.setAdapter(adapter);
+		if(Build.VERSION.SDK_INT < 11) {
+			((ListView) mDetailList).setAdapter(adapter);
+		} else {
+			mDetailList.setAdapter(adapter);
+		}
 	}
 
 	public void onListItemClick(AbsListView l, View v, int position, long id) {
