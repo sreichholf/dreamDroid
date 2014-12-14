@@ -46,6 +46,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -159,11 +160,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		DreamDroid.setTheme(this);
-		super.onCreate(savedInstanceState);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		setSupportProgressBarIndeterminateVisibility(false);
+		super.onCreate(savedInstanceState);
 
 		if (savedInstanceState != null) {
 			mNavigationFragment = (NavigationFragment) getSupportFragmentManager().getFragment(savedInstanceState,
@@ -259,6 +257,12 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private void initViews() {
 		setContentView(R.layout.dualpane);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		setSupportProgressBarIndeterminateVisibility(false);
+
 		mSlider = findViewById(R.id.drawer_layout) != null;
 		if (mSlider) {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -494,13 +498,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void setTitle(CharSequence title) {
-		TextView t = (TextView) findViewById(R.id.detail_title);
-		if (t != null) {
-			t.setText(title.toString());
-			return;
-		} else {
-			super.setTitle(title);
-		}
+		super.setTitle(title);
 	}
 
 	@Override

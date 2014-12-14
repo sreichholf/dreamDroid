@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Base.Theme.DreamDroid" parent="Theme.AppCompat">
+    <style name="Base.Theme.DreamDroid" parent="Theme.AppCompat.NoActionBar">
         <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">?attr/buttonBarButtonStyle</item>
+        <item name="detailsElementBackground">@color/details_element_background_dark</item>
         <item name="buttonBarPositiveButtonStyle">@style/buttonBarButtonPositiveStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/buttonBarButtonNegativeStyle</item>
         <item name="colorPrimary">@color/primary_material_dark</item>
@@ -51,7 +52,7 @@
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
     </style>
 
-    <style name="Base.Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="Base.Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">?attr/buttonBarButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/buttonBarButtonPositiveStyle</item>
@@ -59,6 +60,7 @@
         <item name="colorPrimary">@color/primary_material_dark</item>
         <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="colorAccent">@color/material_blue_600</item>
+        <item name="detailsElementBackground">@color/details_element_background_light</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#DDD</item>
         <item name="lightBackgroundColor">#FFF</item>

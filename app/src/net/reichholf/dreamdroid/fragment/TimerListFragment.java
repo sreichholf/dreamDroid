@@ -19,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -84,7 +85,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		// Called when the user exits the action mode
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
-			final ListView lv = getListView();
+			final AbsListView lv = getListView();
 			lv.setItemChecked(lv.getCheckedItemPosition(), false);
 			getListView().post(new Runnable() {
 				@Override
@@ -116,7 +117,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
-		ListView listView = (ListView) view.findViewById(android.R.id.list);
+		AbsListView listView = (AbsListView) view.findViewById(android.R.id.list);
 		registerFab(R.id.fab_add, view, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

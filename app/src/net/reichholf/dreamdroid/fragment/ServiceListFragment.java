@@ -22,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -66,16 +67,16 @@ import java.util.HashMap;
 
 /**
  * Handles ServiceLists of (based on service references).
- * 
+ *
  * If called with Intent.ACTION_PICK it can be used for selecting services (e.g.
  * to set a timer).<br/>
  * In Pick-Mode no EPG will be loaded/shown.<br/>
  * For any other action it will be a full-featured ServiceList Browser capable
  * of showing EPG of running events or calling a
  * <code>ServiceEpgListActivity</code> to show the whole EPG of a service
- * 
+ *
  * @author sreichholf
- * 
+ *
  */
 public class ServiceListFragment extends AbstractHttpEventListFragment implements ActionDialog.DialogActionListener {
 	private static final int LOADER_BOUQUETLIST_ID = 1;
@@ -94,7 +95,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	private boolean mReload;
 
 	private ListView mNavList;
-	private ListView mDetailList;
+	private AbsListView mDetailList;
 	private View mEmpty;
 	private ProgressDialog mProgress;
 
@@ -190,7 +191,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mEmpty = v.findViewById(android.R.id.empty);
 
 		mNavList = (ListView) v.findViewById(android.R.id.list);
-		mDetailList = (ListView) v.findViewById(R.id.list2);
+		mDetailList = (AbsListView) v.findViewById(R.id.list2);
 
 		// Some may call this a Hack, but I think it a proper solution
 		// On devices with resolutions other than xlarge, there is no second
@@ -275,7 +276,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mDetailList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-				onListItemClick((ListView) a, v, position, id);
+				onListItemClick((AbsListView) a, v, position, id);
 			}
 		});
 
@@ -289,7 +290,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mDetailList.setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-				return onListItemLongClick((ListView) a, v, position, id);
+				return onListItemLongClick((AbsListView) a, v, position, id);
 			}
 		});
 
@@ -325,7 +326,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void setAdapter() {
 		ListAdapter adapter;
@@ -338,7 +339,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mDetailList.setAdapter(adapter);
 	}
 
-	public void onListItemClick(ListView l, View v, int position, long id) {
+	public void onListItemClick(AbsListView l, View v, int position, long id) {
 		onListItemClick(l, v, position, id, false);
 	}
 
@@ -349,7 +350,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	 * @param id
 	 * @return
 	 */
-	protected boolean onListItemLongClick(ListView l, View v, int position, long id) {
+	protected boolean onListItemLongClick(AbsListView l, View v, int position, long id) {
 		onListItemClick(l, v, position, id, true);
 
 		return true;
@@ -544,7 +545,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	 * @param id
 	 * @param isLong
 	 */
-	private void onListItemClick(ListView l, View v, int position, long id, boolean isLong) {
+	private void onListItemClick(AbsListView l, View v, int position, long id, boolean isLong) {
 		@SuppressWarnings("unchecked")
 		ExtendedHashMap item = new ExtendedHashMap((HashMap<String, Object>) l.getItemAtPosition(position));
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
@@ -552,7 +553,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		if (Service.isBouquet(ref)) {
 			if (l.equals(mNavList)) {
 				// without FROM it's a "all" reference
-				if (SERVICE_REF_ROOT.equals(mNavReference) && ref.toUpperCase().contains("FROM")) { 
+				if (SERVICE_REF_ROOT.equals(mNavReference) && ref.toUpperCase().contains("FROM")) {
 					ExtendedHashMap map = new ExtendedHashMap();
 					map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
 					map.put(Event.KEY_SERVICE_NAME, String.valueOf(nam));
@@ -565,7 +566,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 				} else {
 					mDetailReference = ref;
 					mDetailName = nam;
-					mDetailList.setSelectionAfterHeaderView();
+//					mDetailList.setSelectionAfterHeaderView();
 					reloadDetail(false);
 				}
 			}

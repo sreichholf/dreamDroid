@@ -17,11 +17,13 @@
  */
 
 -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent"
+<FrameLayout
+    style="@style/CardStyle"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-	android:minHeight="?attr/listPreferredItemHeight"
-	android:background="?attr/cardBackground">
+    android:minHeight="?attr/listPreferredItemHeight"
+    android:padding="0dp">
 
     <TextView
         android:id="@android:id/text1"
@@ -37,6 +39,6 @@
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-		android:gravity="center"
+        android:gravity="center"
         android:padding="0dp"/>
 </FrameLayout>

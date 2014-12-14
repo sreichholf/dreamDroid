@@ -146,12 +146,10 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 				}
 			}
 
+			viewHolder.progress.setVisibility(View.VISIBLE);
 			if (max > 0 && cur >= 0) {
-				viewHolder.progress.setVisibility(View.VISIBLE);
 				viewHolder.progress.setMax((int) max);
 				viewHolder.progress.setProgress((int) cur);
-			} else {
-				viewHolder.progress.setVisibility(View.GONE);
 			}
 
 			if (hasNext) {

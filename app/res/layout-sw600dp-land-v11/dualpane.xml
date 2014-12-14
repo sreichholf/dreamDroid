@@ -1,42 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<net.reichholf.dreamdroid.widget.DrawerLayout
+    android:id="@+id/drawer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/darkBackgroundColor">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:layout_marginLeft="75dp"
+            android:layout_marginRight="75dp"
+            android:layout_marginTop="0dp"
+            android:background="?attr/detailsElementBackground"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/detail_view"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_marginLeft="0dp"
+                android:layout_marginBottom="25dp"
+                android:layout_marginLeft="3dp"
                 android:layout_marginRight="3dp"
-                android:orientation="vertical">
+                android:layout_marginTop="0dp"/>
+
+            <include layout="@layout/dualpane_connection_state"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/navigation_view"
-        android:layout_width="220dp"
-        android:layout_height="fill_parent"
-        android:background="@drawable/simple_right_line"/>
+        style="@style/NavigationDrawer"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"/>
 
-    <LinearLayout
-        android:id="@+id/container_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_toRightOf="@id/navigation_view"
-        android:background="?android:attr/detailsElementBackground"
-        android:orientation="vertical"
-        android:padding="8dip">
-
-        <TextView
-            android:id="@+id/detail_title"
-            android:layout_width="fill_parent"
-            android:layout_height="30dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-        <FrameLayout
-            android:id="@+id/detail_view"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_marginBottom="25dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="5dp"/>
-
-        <include layout="@layout/dualpane_connection_state"/>
-    </LinearLayout>
-
-</RelativeLayout>
+</net.reichholf.dreamdroid.widget.DrawerLayout>
