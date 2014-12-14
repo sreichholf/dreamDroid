@@ -6,11 +6,11 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 
@@ -61,27 +61,26 @@ public class PositiveNegativeDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-		AlertDialog.Builder builder;
+		MaterialDialog.Builder builder;
 		ContextThemeWrapper context = new ContextThemeWrapper(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		if(!mNoTheming)
-			builder = new AlertDialog.Builder(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		else
-			builder = new AlertDialog.Builder(getActivity());
+		builder = new MaterialDialog.Builder(context);
 
-		if (mMessageId != -1)
-			builder.setMessage(getString(mMessageId));
-		builder.setTitle(getArguments().getString("title")).setCancelable(false)
-				.setPositiveButton(getText(mPositiveText), new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
+		builder.content(getString(mMessageId))
+				.title(getArguments().getString("title"))
+				.cancelable(false)
+				.positiveText(mPositiveText)
+				.negativeText(mNegativeText)
+				.callback(new MaterialDialog.Callback() {
+					@Override
+					public void onPositive(MaterialDialog materialDialog) {
 						finishDialog(mPositiveId, null);
-						dialog.dismiss();
 					}
-				}).setNegativeButton(getText(mNegativeText), new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.dismiss();
+
+					@Override
+					public void onNegative(MaterialDialog dialog) {
 						finishDialog(mNegativeId, null);
 					}
 				});
-		return builder.create();
+		return builder.build();
 	}
 }

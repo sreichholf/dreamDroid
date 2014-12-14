@@ -12,13 +12,18 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+
+import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 /**
  * @author sre
@@ -48,24 +53,29 @@ public class EpgDetailDialog extends ActionDialog {
 		super.onSaveInstanceState(outState);
 	}
 
-	@SuppressWarnings("unchecked")
+	@NonNull
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		mCurrentItem = new ExtendedHashMap((HashMap<String, Object>) getArguments().get("currentItem"));
 
-		View view = null;
 		String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 		String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);
 		String date = mCurrentItem.getString(Event.KEY_EVENT_START_READABLE);
 
+		MaterialDialog dialog = null;
 		if (!"N/A".equals(title) && date != null) {
 			date = date.concat(" (" + (String) mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
 					+ getText(R.string.minutes_short) + ")");
 			String descShort = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION, "");
 			String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 
-			view = inflater.inflate(R.layout.epg_item_dialog, container);
-			getDialog().setTitle(title);
+			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
+			builder.title(title)
+					.autoDismiss(true)
+					.customView(R.layout.epg_item_dialog);
+
+			dialog = builder.build();
+			View view = dialog.getCustomView();
 
 			TextView textServiceName = (TextView) view.findViewById(R.id.service_name);
 			textServiceName.setText(servicename);
@@ -113,11 +123,14 @@ public class EpgDetailDialog extends ActionDialog {
 				}
 			});
 		} else {
-			view = inflater.inflate(R.layout.simple_dialog_info, container);
-			TextView text = (TextView) view.findViewById(R.id.text);
-			getDialog().setTitle(R.string.not_available);
-			text.setText(R.string.no_epg_available);
+			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
+			builder.title(R.string.not_available)
+					.autoDismiss(true)
+					.positiveText(R.string.close)
+					.content(R.string.no_epg_available);
+
+			dialog = builder.build();
 		}
-		return view;
+		return dialog;
 	}
 }

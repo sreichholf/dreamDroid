@@ -6,13 +6,14 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
-import net.reichholf.dreamdroid.DreamDroid;
+import android.app.Dialog;
+import android.os.Bundle;
+import android.view.View;
+
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.BundleHelper;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.os.Bundle;
 
 /**
  * @author sre
@@ -46,20 +47,17 @@ public class SimpleChoiceDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-		AlertDialog.Builder builder;
-		if(!mNoTheming)
-			builder = new AlertDialog.Builder(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		else
-			builder = new AlertDialog.Builder(getActivity());
-		mNoTheming = true;
-		builder.setTitle(getText(R.string.pick_action));
-		builder.setItems(mActions, new DialogInterface.OnClickListener() {
+		MaterialDialog.Builder builder;
+		builder = new MaterialDialog.Builder(getActivity());
+		builder.title(getText(R.string.pick_action))
+			.items(mActions)
+			.itemsCallback(new MaterialDialog.ListCallback() {
+				@Override
+				public void onSelection(MaterialDialog materialDialog, View view, int i, CharSequence charSequence) {
+					finishDialog(mActionIds[i], null);
+				}
+			});
 
-			public void onClick(DialogInterface dialog, int which) {
-				finishDialog(mActionIds[which], null);
-			}
-		});
-
-		return builder.create();
+		return builder.build();
 	}
 }

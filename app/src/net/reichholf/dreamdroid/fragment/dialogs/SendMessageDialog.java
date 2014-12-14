@@ -6,8 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.view.View;
@@ -16,9 +14,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
+import net.reichholf.dreamdroid.R;
+
 /**
  * @author sre
- * 
  */
 public class SendMessageDialog extends AbstractDialog {
 	public static SendMessageDialog newInstance() {
@@ -31,35 +32,33 @@ public class SendMessageDialog extends AbstractDialog {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		final Dialog dialog = new Dialog(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		dialog.setContentView(R.layout.send_message_dialog);
-		dialog.setTitle(R.string.send_message);
+		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
+		builder.customView(R.layout.send_message_dialog)
+				.title(R.string.send_message)
+				.positiveText(R.string.send)
+				.negativeText(R.string.cancel)
+				.callback(new MaterialDialog.Callback() {
+					@Override
+					public void onNegative(MaterialDialog materialDialog) {
+					}
 
-		Button buttonCancel = (Button) dialog.findViewById(R.id.ButtonCancel);
-		buttonCancel.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				dialog.dismiss();
-			}
-		});
+					@Override
+					public void onPositive(MaterialDialog materialDialog) {
+						View view = materialDialog.getCustomView();
+						EditText text = (EditText) view.findViewById(R.id.EditTextMessage);
+						EditText timeout = (EditText) view.findViewById(R.id.EditTextTimeout);
 
-		Button buttonSend = (Button) dialog.findViewById(R.id.ButtonSend);
-		buttonSend.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				EditText text = (EditText) dialog.findViewById(R.id.EditTextMessage);
-				EditText timeout = (EditText) dialog.findViewById(R.id.EditTextTimeout);
+						Spinner type = (Spinner) view.findViewById(R.id.SpinnerMessageType);
+						String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
 
-				Spinner type = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
-				String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
+						((SendMessageDialogActionListener) getActivity()).onSendMessage(text.getText().toString(), t, timeout.getText().toString());
+					}
+				});
+		final MaterialDialog dialog = builder.build();
 
-				((SendMessageDialogActionListener) getActivity()).onSendMessage(text.getText().toString(), t, timeout.getText().toString());
-			}
-		});
-
-		Spinner spinnerType = (Spinner) dialog.findViewById(R.id.SpinnerMessageType);
+		Spinner spinnerType = (Spinner) dialog.getCustomView().findViewById(R.id.SpinnerMessageType);
 		spinnerType.setSelection(2);
-		
+
 		return dialog;
 	}
 }

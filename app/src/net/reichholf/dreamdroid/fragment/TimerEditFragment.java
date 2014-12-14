@@ -72,7 +72,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 	private boolean mTagsChanged;
 	private ArrayList<String> mSelectedTags;
-	private ArrayList<String> mOldTags;
 
 	private ExtendedHashMap mTimer;
 	private ExtendedHashMap mTimerOld;
@@ -218,7 +217,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			}
 
 			mSelectedTags = new ArrayList<String>();
-			mOldTags = new ArrayList<String>();
 
 			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
 				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask();
@@ -230,7 +228,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
 			mTimerOld = (ExtendedHashMap) savedInstanceState.getParcelable("timerOld");
 			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
-			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 			if (mTimer != null) {
 				reload();
 			}
@@ -285,15 +282,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		}
 		outState.putStringArray("selectedTags", selectedTags);
 
-		String[] oldTags;
-		if (mOldTags != null) {
-			oldTags = new String[mOldTags.size()];
-			mOldTags.toArray(oldTags);
-		} else {
-			oldTags = new String[0];
-		}
-		outState.putStringArray("oldTags", oldTags);
-
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
@@ -325,8 +313,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		}
 
 		mTagsChanged = false;
-		mOldTags = new ArrayList<String>();
-		mOldTags.addAll(mSelectedTags);
 
 		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags, R.string.ok,
 				R.string.cancel);
@@ -335,7 +321,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	}
 
 	/**
-	 * @param b
+	 * @param v
 	 * @param id
 	 */
 	protected void registerOnClickListener(View v, final int id) {
@@ -693,22 +679,22 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	}
 
 	@Override
-	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
+	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
 		if ("dialog_select_tags".equals(dialogTag)) {
-			String tag = DreamDroid.getTags().get(which);
-			mTagsChanged = true;
-			if (isChecked) {
-				if (!mSelectedTags.contains(tag)) {
-					mSelectedTags.add(tag);
-				}
-			} else {
-				int idx = mSelectedTags.indexOf(tag);
-				if (idx >= 0) {
-					mSelectedTags.remove(idx);
-				}
+			ArrayList<String> tags = DreamDroid.getTags();
+			ArrayList<String> selectedTags = new ArrayList<>();
+			for(Integer which : selected) {
+				selectedTags.add(tags.get(which));
 			}
+			mTagsChanged = !selectedTags.equals(mSelectedTags);
+			mSelectedTags = selectedTags;
 		} else if ("dialog_select_repeatings".equals(dialogTag)) {
-			mCheckedDays[which] = isChecked;
+			for(int i = 0; i < mCheckedDays.length; ++i) {
+				mCheckedDays[i] = false;
+			}
+			for(Integer which : selected){
+				mCheckedDays[which] = true;
+			}
 			String text = setRepeated(mCheckedDays, mTimer);
 			mRepeatings.setText(text);
 		}
@@ -716,15 +702,10 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 	@Override
 	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
-		if ("dialog_select_tags".equals(dialogTag)) {
-			if (result == Activity.RESULT_CANCELED) {
-				mSelectedTags.clear();
-				mSelectedTags.addAll(mOldTags);
-			} else if (mTagsChanged) {
-				String tags = Tag.implodeTags(mSelectedTags);
-				mTimer.put(Timer.KEY_TAGS, tags);
-				mTags.setText(tags);
-			}
+		if ("dialog_select_tags".equals(dialogTag) && mTagsChanged) {
+			String tags = Tag.implodeTags(mSelectedTags);
+			mTimer.put(Timer.KEY_TAGS, tags);
+			mTags.setText(tags);
 		}
 	}
 }

@@ -8,9 +8,12 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+
+import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,21 +21,27 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 /**
  * @author sre
- * 
  */
 public class AboutDialog extends AbstractDialog {
 	public static AboutDialog newInstance() {
 		return new AboutDialog();
 	}
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.about, container, false);
-		getDialog().setTitle(R.string.about);
-		TextView aboutText = (TextView) v.findViewById(R.id.TextViewAbout);
 
+	@NonNull
+	@Override
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
+		builder.customView(R.layout.about)
+				.title(R.string.about);
+		MaterialDialog dialog = builder.build();
+		View v = dialog.getCustomView();
+
+		TextView aboutText = (TextView) v.findViewById(R.id.TextViewAbout);
 		String text = String.format("%s\n\n%s\n\n%s", DreamDroid.VERSION_STRING, getString(R.string.license),
 				getString(R.string.source_code_link));
 		aboutText.setText(text);
@@ -47,6 +56,6 @@ public class AboutDialog extends AbstractDialog {
 				startActivity(i);
 			}
 		});
-		return v;
+		return dialog;
 	}
 }

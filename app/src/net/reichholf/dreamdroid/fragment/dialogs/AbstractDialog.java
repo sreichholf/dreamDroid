@@ -6,29 +6,16 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-
-import net.reichholf.dreamdroid.DreamDroid;
 
 /**
  * @author sre
  * 
  */
 public class AbstractDialog extends DialogFragment {
-	protected boolean mNoTheming;
-
-	public AbstractDialog() {
-		super();
-		mNoTheming = Build.VERSION.SDK_INT < 21; //Only for Lollipop
-	}
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		if(!mNoTheming) {
-			DreamDroid.setDialogTheme(getActivity(), this);
-		}
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
 	}

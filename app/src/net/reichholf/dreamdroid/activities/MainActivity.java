@@ -657,13 +657,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
+	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
 		if (isNavigationDialog(dialogTag)) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationFragment).onMultiChoiceDialogChange(dialogTag,
-					dialog, which, isChecked);
+			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationFragment).onMultiChoiceDialogSelection(dialogTag,
+					dialog, selected);
 		} else if (mDetailFragment != null) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment).onMultiChoiceDialogChange(dialogTag,
-					dialog, which, isChecked);
+			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment).onMultiChoiceDialogSelection(dialogTag,
+					dialog, selected);
 		}
 	}
 

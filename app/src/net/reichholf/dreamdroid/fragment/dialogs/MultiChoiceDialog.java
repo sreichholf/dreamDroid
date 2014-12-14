@@ -6,40 +6,35 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.helpers.BundleHelper;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnMultiChoiceClickListener;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.view.ContextThemeWrapper;
+
+import com.afollestad.materialdialogs.MaterialDialog;
+
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.helpers.BundleHelper;
+
+import java.util.ArrayList;
 
 /**
  * @author sre
- * 
  */
 public class MultiChoiceDialog extends DialogFragment {
 	private static final String KEY_TITLE_ID = "titleId";
 	private static final String KEY_ITEMS = "items";
 	private static final String KEY_CHECKED_ITEMS = "checkedItems";
 	private static final String KEY_POSITIVE_STRING_ID = "positiveStringId";
-	private static final String KEY_NEGATIVE_STRING_ID = "negativeStringId";
 
 	private int mTitleId;
 	private CharSequence[] mItems;
 	private boolean[] mCheckedItems;
-	private OnMultiChoiceClickListener mMultiChoiceClickListener;
-	private Dialog.OnClickListener mPositiveListener;
 	private int mPositiveStringId;
-	private Dialog.OnClickListener mNegativeListener;
-	private int mNegativeStringId;
 
 	public interface MultiChoiceDialogListener {
-		public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked);
+		public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected);
 
 		public void onMultiChoiceDialogFinish(String dialogTag, int result);
 	}
@@ -65,11 +60,11 @@ public class MultiChoiceDialog extends DialogFragment {
 	}
 
 	public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems) {
-		return MultiChoiceDialog.newInstance(titleId, items, checkedItems, -1, -1);
+		return MultiChoiceDialog.newInstance(titleId, items, checkedItems, R.string.ok, -1);
 	}
 
 	public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems,
-			int positiveStringId, int negativeStringId) {
+	                                            int positiveStringId, int negativeStringId) {
 
 		MultiChoiceDialog fragment = new MultiChoiceDialog();
 		Bundle args = new Bundle();
@@ -77,7 +72,6 @@ public class MultiChoiceDialog extends DialogFragment {
 		args.putStringArrayList(KEY_ITEMS, BundleHelper.toStringArrayList(items));
 		args.putBooleanArray(KEY_CHECKED_ITEMS, checkedItems);
 		args.putInt(KEY_POSITIVE_STRING_ID, positiveStringId);
-		args.putInt(KEY_NEGATIVE_STRING_ID, negativeStringId);
 		fragment.setArguments(args);
 		return fragment;
 	}
@@ -88,34 +82,6 @@ public class MultiChoiceDialog extends DialogFragment {
 		mItems = BundleHelper.toCharSequenceArray(args.getStringArrayList((KEY_ITEMS)));
 		mCheckedItems = args.getBooleanArray(KEY_CHECKED_ITEMS);
 		mPositiveStringId = args.getInt(KEY_POSITIVE_STRING_ID);
-		mNegativeStringId = args.getInt(KEY_NEGATIVE_STRING_ID);
-
-		if (mPositiveStringId > 0 && mNegativeStringId > 0) {
-			mPositiveListener = new Dialog.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
-					dismiss();
-				}
-			};
-
-			mNegativeListener = new Dialog.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(),
-							Activity.RESULT_CANCELED);
-					dismiss();
-				}
-			};
-		}
-
-		mMultiChoiceClickListener = new OnMultiChoiceClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-				((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogChange(getTag(), dialog, which,
-						isChecked);
-			}
-		};
 	}
 
 	@Override
@@ -126,21 +92,27 @@ public class MultiChoiceDialog extends DialogFragment {
 			if (checked != null)
 				mCheckedItems = checked;
 		}
-		AlertDialog.Builder builder;
-		if(Build.VERSION.SDK_INT >= 21)
-			builder = new AlertDialog.Builder(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		else
-			builder = new AlertDialog.Builder(getActivity());
-		builder.setTitle(getText(mTitleId));
-		builder.setMultiChoiceItems(mItems, mCheckedItems, mMultiChoiceClickListener);
-
-		if (mPositiveListener != null) {
-			builder.setPositiveButton(mPositiveStringId, mPositiveListener);
+		ArrayList<Integer> selectedList = new ArrayList<>();
+		for (int i = 0; i < mCheckedItems.length; ++i) {
+			if (mCheckedItems[i])
+				selectedList.add(i);
 		}
-		if (mNegativeListener != null) {
-			builder.setNegativeButton(mNegativeStringId, mNegativeListener);
-		}
+		Integer[] selected = new Integer[selectedList.size()];
+		selectedList.toArray(selected);
 
-		return builder.create();
+		MaterialDialog.Builder builder;
+		builder = new MaterialDialog.Builder(getActivity());
+		builder.title(mTitleId)
+				.items(mItems)
+				.itemsCallbackMultiChoice(selected, new MaterialDialog.ListCallbackMulti() {
+					@Override
+					public void onSelection(MaterialDialog materialDialog, Integer[] selected, CharSequence[] charSequences) {
+						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogSelection(getTag(), materialDialog, selected);
+						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
+					}
+				})
+				.positiveText(mPositiveStringId);
+
+		return builder.build();
 	}
 }

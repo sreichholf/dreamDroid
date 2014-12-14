@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,7 +21,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -29,7 +29,6 @@ import android.view.Window;
 
 /**
  * @author sre
- * 
  */
 public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHandler,
 		ActionDialog.DialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener {
@@ -47,7 +46,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 		super.onCreate(savedInstanceState);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-		if (getSupportActionBar() != null){
+		if (getSupportActionBar() != null) {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 			setSupportProgressBarIndeterminateVisibility(false);
 		}
@@ -138,8 +137,8 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
-		Intent intent = new Intent(this, ((Object)this).getClass());
-		intent.putExtra("fragmentClass", ((Object)fragment).getClass());
+		Intent intent = new Intent(this, ((Object) this).getClass());
+		intent.putExtra("fragmentClass", ((Object) fragment).getClass());
 		intent.putExtras(fragment.getArguments());
 
 		if (fragment.getTargetRequestCode() > 0) {
@@ -221,10 +220,10 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	}
 
 	@Override
-	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
+	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
 		if (mFragment != null)
-			((MultiChoiceDialog.MultiChoiceDialogListener) mFragment).onMultiChoiceDialogChange(dialogTag, dialog,
-					which, isChecked);
+			((MultiChoiceDialog.MultiChoiceDialogListener) mFragment).onMultiChoiceDialogSelection(dialogTag, dialog,
+					selected);
 	}
 
 	@Override

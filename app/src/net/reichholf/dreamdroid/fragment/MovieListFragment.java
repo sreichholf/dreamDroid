@@ -50,14 +50,14 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations
- * 
+ *
  * @author sreichholf
- * 
  */
 public class MovieListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
 		MultiChoiceDialog.MultiChoiceDialogListener {
@@ -100,10 +100,10 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleAdapter(getActionBarActivity(), mMapList, R.layout.movie_list_item, new String[] {
+		mAdapter = new SimpleAdapter(getActionBarActivity(), mMapList, R.layout.movie_list_item, new String[]{
 				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
-				Movie.KEY_LENGTH }, new int[] { R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
-				R.id.event_duration });
+				Movie.KEY_LENGTH}, new int[]{R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
+				R.id.event_duration});
 
 		setListAdapter(mAdapter);
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -222,11 +222,11 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	protected boolean onItemSelected(int id) {
 		switch (id) {
-		case Statics.ITEM_TAGS:
-			pickTags();
-			return true;
-		default:
-			return super.onItemSelected(id);
+			case Statics.ITEM_TAGS:
+				pickTags();
+				return true;
+			default:
+				return super.onItemSelected(id);
 		}
 	}
 
@@ -268,7 +268,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		}
 	}
 
-	public void showPopupMenu(View v){
+	public void showPopupMenu(View v) {
 		PopupMenu menu = new PopupMenu(getActionBarActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_movielist, menu.getMenu());
 		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -334,7 +334,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-			LoaderResult<ArrayList<ExtendedHashMap>> result) {
+	                           LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		//when popping fromt he backstack (e.g. after epg search) onStart will restore the loader which will in return call onLoadfinished
 		//because this in done twice (in onStart and in onResumed and we are not ready to handle this before onResume, we ignore any onLoadFinished
 		//that happens while we are not in a Resumed state
@@ -357,72 +357,58 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	public boolean onMovieAction(int action) {
 		switch (action) {
-		case R.id.menu_zap:
-			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
-			break;
+			case R.id.menu_zap:
+				zapTo(mMovie.getString(Movie.KEY_REFERENCE));
+				break;
 
-		case R.id.menu_delete:
-			getMultiPaneHandler().showDialogFragment(
-					PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE), R.string.delete_confirm,
-							android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
-							Statics.ACTION_NONE), "dialog_delete_movie_confirm");
-			break;
+			case R.id.menu_delete:
+				getMultiPaneHandler().showDialogFragment(
+						PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE), R.string.delete_confirm,
+								android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
+								Statics.ACTION_NONE), "dialog_delete_movie_confirm");
+				break;
 
-		case Statics.ACTION_DELETE_CONFIRMED:
-			deleteMovie();
-			break;
+			case Statics.ACTION_DELETE_CONFIRMED:
+				deleteMovie();
+				break;
 
-		case R.id.menu_download:
-			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-			params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
-			String url = getHttpClient().buildUrl(URIStore.FILE, params);
+			case R.id.menu_download:
+				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+				params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
+				String url = getHttpClient().buildUrl(URIStore.FILE, params);
 
-			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-			startActivity(intent);
-			break;
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+				startActivity(intent);
+				break;
 
-		case R.id.menu_stream:
-			try {
-				startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME),
-						mMovie.getString(Movie.KEY_TITLE)));
-			} catch (ActivityNotFoundException e) {
-				showToast(getText(R.string.missing_stream_player));
-			}
-			break;
-		default:
-			return false;
+			case R.id.menu_stream:
+				try {
+					startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME),
+							mMovie.getString(Movie.KEY_TITLE)));
+				} catch (ActivityNotFoundException e) {
+					showToast(getText(R.string.missing_stream_player));
+				}
+				break;
+			default:
+				return false;
 		}
 		return true;
 	}
 
 	@Override
-	public void onMultiChoiceDialogChange(String dialogTag, DialogInterface dialog, int which, boolean isChecked) {
-		String tag = DreamDroid.getTags().get(which);
-		mTagsChanged = true;
-		if (isChecked) {
-			if (!mSelectedTags.contains(tag)) {
-				mSelectedTags.add(tag);
-			}
-		} else {
-			int idx = mSelectedTags.indexOf(tag);
-			if (idx >= 0) {
-				mSelectedTags.remove(idx);
-			}
+	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
+		ArrayList<String> tags = DreamDroid.getTags();
+		ArrayList<String> selectedTags = new ArrayList<>();
+		for (Integer which : selected) {
+			selectedTags.add(tags.get(which));
 		}
+		mTagsChanged = !selectedTags.equals(mSelectedTags);
+		mSelectedTags = selectedTags;
 	}
 
 	@Override
 	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
-		if ("dialog_pick_tags".equals(dialogTag)) {
-			if (result == Activity.RESULT_CANCELED) {
-				mSelectedTags.clear();
-				mSelectedTags.addAll(mOldTags);
-			} else if (result == Activity.RESULT_OK) {
-				if (mTagsChanged) {
-					reload();
-				}
-			}
-		}
-
+		if ("dialog_pick_tags".equals(dialogTag) && mTagsChanged)
+			reload();
 	}
 }

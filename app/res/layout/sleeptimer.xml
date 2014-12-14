@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:minWidth="150dip"
-    android:orientation="vertical" >
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:minWidth="150dip"
+              android:orientation="vertical">
 
     <View
         android:id="@+id/divider"
         android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:layout_marginBottom="3dp"
-        android:background="@android:drawable/divider_horizontal_bright" />
+        android:background="@android:drawable/divider_horizontal_bright"/>
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -20,87 +20,45 @@
         android:paddingBottom="@dimen/content_vert_padding"
         android:paddingLeft="@dimen/content_horz_padding"
         android:paddingRight="@dimen/content_horz_padding"
-        android:paddingTop="@dimen/content_vert_padding" >
+        android:paddingTop="@dimen/content_vert_padding">
 
         <com.michaelnovakjr.numberpicker.NumberPicker
             android:id="@+id/NumberPicker"
             android:layout_width="80dp"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
         </com.michaelnovakjr.numberpicker.NumberPicker>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <CheckBox
                 android:id="@+id/CheckBoxEnabled"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="@string/activate" />
+                android:text="@string/activate"/>
 
             <RadioGroup
                 android:id="@+id/RadioGroupAction"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <RadioButton
                     android:id="@+id/RadioButtonStandby"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/standby" />
+                    android:text="@string/standby"/>
 
                 <RadioButton
                     android:id="@+id/RadioButtonShutdown"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/shutdown" />
+                    android:text="@string/shutdown"/>
             </RadioGroup>
         </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/buttonPanel"
-        style="@style/ButtonPanel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:dividerPadding="0dip"
-        android:minHeight="@dimen/dialog_button_bar_height"
-        android:orientation="vertical"
-        android:showDividers="beginning" >
-
-        <LinearLayout
-            style="?attr/buttonBarStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:measureWithLargestChild="true"
-            android:orientation="horizontal" >
-
-            <Button
-                android:id="@+id/ButtonClose"
-                style="?attr/buttonBarButtonStyle"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_weight="1"
-                android:drawableLeft="?attr/ic_btn_close"
-                android:minHeight="@dimen/dialog_button_bar_height"
-                android:text="@string/cancel" />
-
-            <Button
-                android:id="@+id/ButtonSave"
-                style="?attr/buttonBarButtonStyle"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:layout_weight="1"
-                android:drawableLeft="?attr/ic_btn_save"
-                android:minHeight="@dimen/dialog_button_bar_height"
-                android:text="@string/save" />
-        </LinearLayout>
-    </LinearLayout>
-
 </LinearLayout>
