@@ -75,7 +75,6 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 			public void onClick(View v) {
 				Calendar calendar = getCalendar();
 				final DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
-				datePickerDialog.setCloseOnSingleTapDay(true);
 				getMultiPaneHandler().showDialogFragment(datePickerDialog, "epg_bouquet_date_picker");
 			}
 		});
@@ -87,7 +86,6 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 			public void onClick(View v) {
 				Calendar calendar = getCalendar();
 				final TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
-				timePickerDialog.setCloseOnSingleTapMinute(true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialog, "epg_bouquet_time_picker");
 			}
 		});
