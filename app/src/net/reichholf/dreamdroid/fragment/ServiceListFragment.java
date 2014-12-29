@@ -271,7 +271,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mNavList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-				onListItemClick((ListView) a, v, position, id);
+				onListItemClick((AbsListView) a, v, position, id);
 			}
 		});
 
