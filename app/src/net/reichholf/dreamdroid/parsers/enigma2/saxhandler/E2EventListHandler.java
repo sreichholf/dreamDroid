@@ -99,6 +99,7 @@ public class E2EventListHandler extends E2ListHandler {
 		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
 			inDescription = false;
 		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
+			mEvent.put(Event.KEY_EVENT_DESCRIPTION_EXTENDED,  mEvent.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED).replace("\u008A", "\n"));
 			inDescriptionEx = false;
 		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
 			inServiceRef = false;

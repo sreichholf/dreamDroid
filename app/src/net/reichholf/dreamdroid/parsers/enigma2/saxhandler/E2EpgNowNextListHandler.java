@@ -110,6 +110,9 @@ public class E2EpgNowNextListHandler extends E2ListHandler {
 		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
 			inDescription = false;
 		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
+			String descEx = mEvent.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
+			if(descEx != null)
+				mEvent.put(Event.KEY_EVENT_DESCRIPTION_EXTENDED, descEx.replace("\u008a", "\n"));
 			inDescriptionEx = false;
 		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
 			inServiceRef = false;
