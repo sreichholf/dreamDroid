@@ -2,6 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Base.Theme.DreamDroid" parent="Theme.AppCompat.NoActionBar">
+        <item name="md_dark_theme">true</item>
         <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
         <item name="buttonBarNeutralButtonStyle">?attr/buttonBarButtonStyle</item>
         <item name="detailsElementBackground">@color/details_element_background_dark</item>
