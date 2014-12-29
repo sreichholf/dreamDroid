@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout
     android:id="@+id/LinearLayoutMain"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:minWidth="150dip"
-    android:orientation="vertical">
-
-    <View
-        android:id="@+id/divider"
-        android:layout_width="fill_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="3dp"
-        android:background="@android:drawable/divider_horizontal_bright"/>
-
-    <TextView
-        android:id="@+id/service_name"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dip"
-        android:textStyle="bold"/>
-
-    <TextView
-        android:id="@+id/epg_short"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dip"
-        android:textStyle="bold"/>
-
-    <TextView
-        android:id="@+id/epg_time"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dip"
-        android:textStyle="bold"/>
+    android:orientation="vertical"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp">
 
     <ScrollView
         android:id="@+id/ScrollView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginBottom="100dip"
-        android:padding="10dip">
+        android:layout_marginBottom="96dip">
 
-        <TextView
-            android:id="@+id/epg_description_extended"
+        <LinearLayout
+            android:id="@+id/LinearLayoutMain"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="123"/>
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/service_name"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/epg_short"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/epg_time"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/epg_description_extended"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="123"/>
+
+        </LinearLayout>
     </ScrollView>
 
     <LinearLayout

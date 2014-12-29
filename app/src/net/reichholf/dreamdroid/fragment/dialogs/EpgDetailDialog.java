@@ -72,7 +72,7 @@ public class EpgDetailDialog extends ActionDialog {
 			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
 			builder.title(title)
 					.autoDismiss(true)
-					.customView(R.layout.epg_item_dialog);
+					.customView(R.layout.epg_item_dialog, false);
 
 			dialog = builder.build();
 			View view = dialog.getCustomView();

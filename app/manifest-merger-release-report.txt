@@ -15,7 +15,7 @@ ADDED from AndroidManifest.xml:2:1
 		ADDED from AndroidManifest.xml:4:5
 uses-sdk
 ADDED from AndroidManifest.xml:8:5
-MERGED from com.afollestad:material-dialogs:0.4.8:8:5
+MERGED from com.afollestad:material-dialogs:0.5.0:8:5
 MERGED from com.android.support:appcompat-v7:21.0.3:15:5
 MERGED from com.android.support:support-v4:21.0.3:15:5
 MERGED from com.android.support:support-v4:21.0.3:15:5
