@@ -290,4 +290,6 @@
     <string name="disable_fab_reload">Disable floating reload button</string>
     <string name="disable_fab_reload_long">Reload will be placed in the ActionBar instead</string>
     <string name="reset_default">Reset default</string>
+    <string name="max_grid_cols">Max. servicelist columns</string>
+    <string name="max_grid_cols_long">Maximum number of columns in servicelist</string>
 </resources>

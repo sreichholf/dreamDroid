@@ -204,6 +204,17 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mDetailList = mNavList;
 			mDetailItems = mNavItems;
 		}
+		if(GridView.class.isInstance(mDetailList)) {
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+			((GridView) mDetailList).setNumColumns(
+					Integer.parseInt(
+							prefs.getString(
+									DreamDroid.PREFS_KEY_GRID_MAX_COLS,
+									Integer.toString(GridView.AUTO_FIT)
+							)
+					)
+			);
+		}
 
 		mNavList.setFastScrollEnabled(true);
 		mDetailList.setFastScrollEnabled(true);

@@ -36,7 +36,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 
 /**
  * @author sreichholf
- * 
  */
 public class MyPreferenceActivity extends PreferenceActivity implements
 		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener {
@@ -54,16 +53,18 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		if(Build.VERSION.SDK_INT >= 21)
+		if (Build.VERSION.SDK_INT >= 21)
 			DreamDroid.setTheme(this);
 		int currentOrientation = getResources().getConfiguration().orientation;
 		setRequestedOrientation(currentOrientation);
 
 		super.onCreate(savedInstanceState);
-		if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			overridePendingTransition(R.anim.activity_open_translate,R.anim.activity_close_scale);
+			overridePendingTransition(R.anim.activity_open_translate, R.anim.activity_close_scale);
 		addPreferencesFromResource(R.xml.preferences);
+
+		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 
 		Preference syncPref = findPreference("sync_picons");
@@ -81,7 +82,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 			public boolean onPreferenceClick(Preference preference) {
 				openProfileConfig();
 				return true;
-			};
+			}
+
+			;
 		});
 	}
 
@@ -96,9 +99,9 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 			mSyncPiconTask = null;
 		}
 		super.onPause();
-		if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			overridePendingTransition(R.anim.activity_open_scale,R.anim.activity_close_translate);
+			overridePendingTransition(R.anim.activity_open_scale, R.anim.activity_close_translate);
 	}
 
 	/*
@@ -116,7 +119,7 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 		}
 	}
 
-	public void openProfileConfig(){
+	public void openProfileConfig() {
 		Intent i = new Intent(MyPreferenceActivity.this, SimpleFragmentActivity.class);
 		i.putExtra("fragmentClass", ProfileListFragment.class);
 		startActivity(i);
@@ -134,36 +137,36 @@ public class MyPreferenceActivity extends PreferenceActivity implements
 		String message = "-";
 		checkProgress();
 		switch (eventid) {
-		case DownloadProgress.EVENT_ID_CONNECTING:
-			message = getString(R.string.connecting);
-			break;
-		case DownloadProgress.EVENT_ID_CONNECTED:
-			message = getString(R.string.connected);
-			break;
-		case DownloadProgress.EVENT_ID_LOGIN_SUCCEEDED:
-			message = getString(R.string.connected);
-			break;
-		case DownloadProgress.EVENT_ID_LISTING:
-			message = getString(R.string.getting_list_of_files);
-			break;
-		case DownloadProgress.EVENT_ID_LISTING_READY:
-			message = "";
-			mProgressDialog.setMax(progress.totalFiles);
-			break;
-		case DownloadProgress.EVENT_ID_DOWNLOADING_FILE:
-			message = progress.currentFile;
-			break;
-		case DownloadProgress.EVENT_ID_FINISHED:
-			mProgressDialog.setCancelable(true);
-			mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-			if (!progress.error) {
-				message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
-			} else {
-				message = progress.errorText;
-				if(message == null) //TODO I am not happy about this, imo this shouldn't even happen!
-					message = progress.currentFile;
-			}
-			break;
+			case DownloadProgress.EVENT_ID_CONNECTING:
+				message = getString(R.string.connecting);
+				break;
+			case DownloadProgress.EVENT_ID_CONNECTED:
+				message = getString(R.string.connected);
+				break;
+			case DownloadProgress.EVENT_ID_LOGIN_SUCCEEDED:
+				message = getString(R.string.connected);
+				break;
+			case DownloadProgress.EVENT_ID_LISTING:
+				message = getString(R.string.getting_list_of_files);
+				break;
+			case DownloadProgress.EVENT_ID_LISTING_READY:
+				message = "";
+				mProgressDialog.setMax(progress.totalFiles);
+				break;
+			case DownloadProgress.EVENT_ID_DOWNLOADING_FILE:
+				message = progress.currentFile;
+				break;
+			case DownloadProgress.EVENT_ID_FINISHED:
+				mProgressDialog.setCancelable(true);
+				mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+				if (!progress.error) {
+					message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
+				} else {
+					message = progress.errorText;
+					if (message == null) //TODO I am not happy about this, imo this shouldn't even happen!
+						message = progress.currentFile;
+				}
+				break;
 		}
 
 		if (message == null || "".equals(message.trim())) //TODO I am not happy about this, imo this shouldn't even happen!

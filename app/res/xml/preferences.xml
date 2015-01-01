@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orderingFromXml="true">
+                  android:orderingFromXml="true">
 
     <Preference
         android:key="profiles"
@@ -50,13 +50,23 @@
     <PreferenceCategory
         android:key="appearance"
         android:title="@string/picons">
+
+        <ListPreference
+            android:defaultValue="@integer/max_grid_col_default"
+            android:dialogTitle="@string/max_grid_cols"
+            android:entries="@array/max_grid_col_entries"
+            android:entryValues="@array/max_grid_col_values"
+            android:key="grid_max_cols"
+            android:summary="@string/max_grid_cols_long"
+            android:title="@string/max_grid_cols"/>
+
         <CheckBoxPreference
             android:key="picons"
             android:summary="@string/use_picons_long"
             android:title="@string/use_picons"/>
         <CheckBoxPreference
-            android:dependency="picons"
             android:defaultValue="false"
+            android:dependency="picons"
             android:key="use_name_as_picon_filename"
             android:summary="@string/use_name_as_picon_filename_long"
             android:title="@string/use_name_as_picon_filename"/>
