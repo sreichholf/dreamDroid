@@ -46,11 +46,6 @@
             android:key="enable_animations"
             android:summary="@string/enable_animations_long"
             android:title="@string/enable_animations"/>
-    </PreferenceCategory>
-    <PreferenceCategory
-        android:key="appearance"
-        android:title="@string/picons">
-
         <ListPreference
             android:defaultValue="@integer/max_grid_col_default"
             android:dialogTitle="@string/max_grid_cols"
@@ -59,6 +54,10 @@
             android:key="grid_max_cols"
             android:summary="@string/max_grid_cols_long"
             android:title="@string/max_grid_cols"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="appearance"
+        android:title="@string/picons">
 
         <CheckBoxPreference
             android:key="picons"
