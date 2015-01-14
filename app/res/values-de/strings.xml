@@ -285,4 +285,10 @@
     <string name="disable_fab_reload">Alter Reload Button</string>
     <string name="disable_fab_reload_long">Wenn aktiv, wird der Reload-Button in der Actionbar angezeigt</string>
     <string name="reset_default">Standard zurücksetzen</string>
+    <string name="autodiscover_Dreamboxes">Dreamboxen automatisch finden</string>
+    <string name="enable">Aktivieren</string>
+    <string name="epg_sync">Synchronisiere EPG</string>
+    <string name="epg_sync_finished">EPG wurde synchronisiert</string>
+    <string name="max_grid_cols">Max. Spalten in Kanalliste</string>
+    <string name="max_grid_cols_long">Maximale Anzahl an Spalten in der Kanalliste</string>
 </resources>
