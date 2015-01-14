@@ -11,6 +11,7 @@
         <item name="colorPrimary">@color/primary_material_dark</item>
         <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="colorAccent">@color/material_blue_500</item>
+        <item name="android:textColorLink">@color/material_blue_500</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">@android:color/transparent</item>
         <item name="lightBackgroundColor">#333</item>
@@ -61,6 +62,7 @@
         <item name="colorPrimary">@color/primary_material_dark</item>
         <item name="colorPrimaryDark">@color/primary_dark_material_dark</item>
         <item name="colorAccent">@color/material_blue_600</item>
+        <item name="android:textColorLink">@color/material_blue_600</item>
         <item name="detailsElementBackground">@color/details_element_background_light</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#DDD</item>
