@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.afollestad:material-dialogs:0.5.0'
+    compile 'com.afollestad:material-dialogs:0.6.+'
     compile 'com.android.support:support-v4:21.+'
     compile 'com.android.support:appcompat-v7:21.+'
     compile 'com.android.support:support-annotations:20.0.0'
@@ -22,7 +22,7 @@ dependencies {
     compile 'com.mcxiaoke.viewpagerindicator:library:2.4.1'
     compile 'com.nineoldandroids:library:2.4.+'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.3'
-    compile 'de.cketti.library.changelog:ckchangelog:1.2.1'
+    compile 'de.cketti.library.changelog:ckchangelog:1.2.2'
 
     compile files('libs/ftp4j-1.7.2.jar')
     compile files('libs/jmdns-3.4.1.jar')
