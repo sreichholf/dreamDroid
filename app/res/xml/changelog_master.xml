@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
     <release version="1.0 beta 32" versioncode="251">
-        <change>"EPG" added -> EPG of a Bouquet at a specific point in time</change>
-        <change>Multi column service list, configurable via general settings</change>
-        <change>Material Design for dialogs</change>
+        <change>NEW: "EPG" added -> EPG of a Bouquet at a specific point in time</change>
+        <change>NEW: Multi column service list, configurable via general settings</change>
+        <change>IMPROVED: Improve usability of virtual remote, default layout is configurable in global preferences</change>
+        <change>NEW: Material Design for dialogs</change>
     </release>
     <release version="1.0 beta 31.1" versioncode="243">
         <change>Improved Stability</change>
@@ -74,7 +75,7 @@
         <change>FIX: Search issues on android >= 3.0</change>
         <change>FIX: Picons with for renamed services didn't work</change>
         <change>TECH: Replace "ActionBarSherlock" with Googles recently released "ActionBarCompat". Nothing should've really changed for Users, though</change>
-    </release> 
+    </release>
     <release version="1.0 beta 22.1" versioncode="199" >
         <change>On first start: Show the navigation menu. If connecting with the default Profile fails, open the list of Profiles so the user can adjust the settings</change>
         <change>Search results are now shown in the detail view (that's how it was supposed to be like from the very beginning)</change>
