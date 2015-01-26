@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
 
-	<android.support.v4.view.ViewPager
-		android:id="@+id/pager"
-		android:layout_width="fill_parent"
-		android:layout_height="0dp"
-		android:layout_weight="1"
-		/>
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_weight="1"/>
 
-	<com.viewpagerindicator.UnderlinePageIndicator
-		android:id="@+id/indicator"
-		android:layout_height="2dp"
-		android:layout_width="fill_parent"
-		/>
-</LinearLayout>
+    <com.viewpagerindicator.UnderlinePageIndicator
+        android:id="@+id/indicator"
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/pager"
+        android:layout_weight="0"/>
+
+    <ImageButton
+        android:id="@+id/toggle_remote"
+        style="@style/buttonBarButtonStyle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:src="?attr/ic_menu_remote"/>
+
+</RelativeLayout>

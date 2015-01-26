@@ -8,6 +8,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import com.viewpagerindicator.PageIndicator;
 import com.viewpagerindicator.UnderlinePageIndicator;
@@ -75,6 +76,17 @@ public class VirtualRemotePagerFragment extends AbstractHttpFragment{
 
 		mIndicator = (UnderlinePageIndicator) view.findViewById(R.id.indicator);
 		mIndicator.setViewPager(mPager);
+
+		ImageButton toggle = (ImageButton) view.findViewById(R.id.toggle_remote);
+		toggle.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(mPager.getCurrentItem() == 0)
+					mPager.setCurrentItem(1);
+				else
+					mPager.setCurrentItem(0);
+			}
+		});
 
 		return view;
 	}
