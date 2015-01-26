@@ -55,11 +55,11 @@ public class SleepTimerDialog extends AbstractDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		init();
 		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.customView(R.layout.sleeptimer)
+		builder.customView(R.layout.sleeptimer, true)
 				.title(R.string.sleeptimer)
 				.positiveText(R.string.save)
 				.negativeText(R.string.cancel)
-				.callback(new MaterialDialog.Callback() {
+				.callback(new MaterialDialog.ButtonCallback() {
 
 					@Override
 					public void onNegative(MaterialDialog materialDialog) {

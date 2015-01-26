@@ -33,11 +33,11 @@ public class SendMessageDialog extends AbstractDialog {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.customView(R.layout.send_message_dialog)
+		builder.customView(R.layout.send_message_dialog, true)
 				.title(R.string.send_message)
 				.positiveText(R.string.send)
 				.negativeText(R.string.cancel)
-				.callback(new MaterialDialog.Callback() {
+				.callback(new MaterialDialog.ButtonCallback() {
 					@Override
 					public void onNegative(MaterialDialog materialDialog) {
 					}

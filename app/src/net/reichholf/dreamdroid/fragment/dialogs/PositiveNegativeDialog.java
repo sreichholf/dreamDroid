@@ -70,7 +70,7 @@ public class PositiveNegativeDialog extends ActionDialog {
 				.cancelable(false)
 				.positiveText(mPositiveText)
 				.negativeText(mNegativeText)
-				.callback(new MaterialDialog.Callback() {
+				.callback(new MaterialDialog.ButtonCallback() {
 					@Override
 					public void onPositive(MaterialDialog materialDialog) {
 						finishDialog(mPositiveId, null);
