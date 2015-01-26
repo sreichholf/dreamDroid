@@ -18,6 +18,11 @@
             android:summary="@string/enable_instant_zap_long"
             android:title="@string/enable_instant_zap"/>
         <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="simple_vrm"
+            android:summary="@string/default_to_full_vrm_long"
+            android:title="@string/default_to_full_vrm"/>
+        <CheckBoxPreference
             android:key="mobile_imdb"
             android:summary="@string/mobile_imdb_long"
             android:title="@string/mobile_imdb"/>
@@ -56,7 +61,7 @@
             android:title="@string/max_grid_cols"/>
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="appearance"
+        android:key="picons"
         android:title="@string/picons">
 
         <CheckBoxPreference

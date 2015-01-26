@@ -291,4 +291,9 @@
     <string name="epg_sync_finished">EPG wurde synchronisiert</string>
     <string name="max_grid_cols">Max. Spalten in Kanalliste</string>
     <string name="max_grid_cols_long">Maximale Anzahl an Spalten in der Kanalliste</string>
+    <string name="disable">Deaktivieren</string>
+    <string name="developer_settings">Entwickler Einstellungen</string>
+    <string name="default_to_full_vrm">Einfache Fernbedienung als Standard</string>
+    <string name="default_to_full_vrm_long">Die virtuelle Fernbedienung nutzt beim öffnen das einfache Layout</string>
+    <string name="dump_xml"></string>
 </resources>

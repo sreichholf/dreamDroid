@@ -292,4 +292,6 @@
     <string name="reset_default">Reset default</string>
     <string name="max_grid_cols">Max. servicelist columns</string>
     <string name="max_grid_cols_long">Maximum number of columns in servicelist</string>
+    <string name="default_to_full_vrm_long">Use the simple virtual remote layout as default</string>
+    <string name="default_to_full_vrm">Simple remote as default</string>
 </resources>

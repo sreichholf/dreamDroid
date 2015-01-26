@@ -54,6 +54,7 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_PICONS_USE_NAME = "use_name_as_picon_filename";
 	public static final String PREFS_KEY_INITIALBITS = "initial_bits";
 	public static final String PREFS_KEY_GRID_MAX_COLS = "grid_max_cols";
+	public static final String PREFS_KEY_SIMPLE_VRM = "simple_vrm";
 
 	public static final String CURRENT_PROFILE = "currentProfile";
 

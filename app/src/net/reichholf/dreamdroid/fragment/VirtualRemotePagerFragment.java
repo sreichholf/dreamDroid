@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.fragment;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -21,7 +23,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 /**
  * Created by Stephan on 09.11.13.
  */
-public class VirtualRemotePagerFragment extends AbstractHttpFragment{
+public class VirtualRemotePagerFragment extends AbstractHttpFragment {
 
 	PageIndicator mIndicator;
 	ViewPager mPager;
@@ -30,17 +32,17 @@ public class VirtualRemotePagerFragment extends AbstractHttpFragment{
 	private class RemotePagerAdapter extends FragmentStatePagerAdapter {
 		ExtendedHashMap mItems;
 
-		public RemotePagerAdapter (FragmentManager fm){
+		public RemotePagerAdapter(FragmentManager fm) {
 			super(fm);
 			mItems = new ExtendedHashMap();
 
-			Fragment f =  new VirtualRemoteFragment();
+			Fragment f = new VirtualRemoteFragment();
 			Bundle args = new Bundle();
 			args.putBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false);
 			f.setArguments(args);
 			mItems.put(getString(R.string.quickzap), f);
 
-			f =  new VirtualRemoteFragment();
+			f = new VirtualRemoteFragment();
 			args = new Bundle();
 			args.putBoolean(DreamDroid.PREFS_KEY_QUICKZAP, true);
 			f.setArguments(args);
@@ -50,7 +52,7 @@ public class VirtualRemotePagerFragment extends AbstractHttpFragment{
 
 		@Override
 		public Fragment getItem(int i) {
-			return (Fragment) mItems.get( mItems.keySet().toArray()[i] );
+			return (Fragment) mItems.get(mItems.keySet().toArray()[i]);
 		}
 
 		@Override
@@ -67,8 +69,7 @@ public class VirtualRemotePagerFragment extends AbstractHttpFragment{
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = null;
-		view = inflater.inflate(R.layout.virtual_remote_pager, container, false);
+		View view = inflater.inflate(R.layout.virtual_remote_pager, container, false);
 
 		mPager = (ViewPager) view.findViewById(R.id.pager);
 		mPagerAdapter = new RemotePagerAdapter(getChildFragmentManager());
@@ -81,12 +82,16 @@ public class VirtualRemotePagerFragment extends AbstractHttpFragment{
 		toggle.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(mPager.getCurrentItem() == 0)
+				if (mPager.getCurrentItem() == 0)
 					mPager.setCurrentItem(1);
 				else
 					mPager.setCurrentItem(0);
 			}
 		});
+
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		if (!sp.getBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, true))
+			mPager.setCurrentItem(1);
 
 		return view;
 	}
