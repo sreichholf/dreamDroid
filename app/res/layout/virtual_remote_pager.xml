@@ -19,7 +19,7 @@
         android:layout_height="2dp"
         android:layout_alignParentBottom="true"
         android:layout_below="@id/pager"
-        android:layout_weight="0"/>
+        android:layout_weight="1"/>
 
     <ImageButton
         android:id="@+id/toggle_remote"

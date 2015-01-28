@@ -14,7 +14,7 @@
         android:largeScreens="true"
         android:normalScreens="true"
         android:resizeable="true"
-        android:smallScreens="true"to
+        android:smallScreens="true"
         android:xlargeScreens="true"></supports-screens>
 
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>

@@ -32,7 +32,6 @@
 			android:layout_width="@dimen/remote_key_width"
 			android:layout_height="@dimen/remote_key_height"
 			android:layout_toRightOf="@id/Button1"
-
 			android:background="@drawable/button_key_dark"
 			android:text="2"/>
 
