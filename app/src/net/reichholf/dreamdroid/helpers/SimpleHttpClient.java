@@ -145,7 +145,7 @@ public class SimpleHttpClient {
 	private void setAuth(HttpURLConnection connection) {
 		if (mProfile.isLogin()) {
 			byte[] auth = (mProfile.getUser() + ":" + mProfile.getPass()).getBytes();
-			String basic = Base64.encodeToString(auth, Base64.NO_WRAP);
+			String basic = Base64.encode(auth);
 			connection.setRequestProperty("Authorization", "Basic " + basic);
 		}
 	}

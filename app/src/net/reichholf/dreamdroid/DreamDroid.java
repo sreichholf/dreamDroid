@@ -21,6 +21,7 @@ import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
+
 import android.app.Application;
 
 import android.content.ComponentName;
@@ -34,11 +35,10 @@ import android.util.Log;
 
 /**
  * @author sre
- *
  */
 public class DreamDroid extends Application {
 	public static final int INITIAL_SERVICELIST_PANE = 1;
-	public static final int INITIAL_VIRTUAL_REMOTE = 2 ;
+	public static final int INITIAL_VIRTUAL_REMOTE = 2;
 
 	public static String VERSION_STRING;
 
@@ -55,6 +55,19 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_INITIALBITS = "initial_bits";
 	public static final String PREFS_KEY_GRID_MAX_COLS = "grid_max_cols";
 	public static final String PREFS_KEY_SIMPLE_VRM = "simple_vrm";
+
+	public static final String IAB_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wvbGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpnaEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR888CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB";
+
+	public static final String SKU_DONATE_1 = "donate_1";
+	public static final String SKU_DONATE_2 = "donate_2";
+	public static final String SKU_DONATE_3 = "donate_3";
+	public static final String SKU_DONATE_5 = "donate_5";
+	public static final String SKU_DONATE_10 = "donate_10";
+	public static final String SKU_DONATE_15 = "donate_15";
+	public static final String SKU_DONATE_20 = "donate_20";
+	public static final String SKU_DONATE_INSANE = "donate_insane";
+
+	public static final String[] SKU_LIST = {SKU_DONATE_1, SKU_DONATE_2, SKU_DONATE_3, SKU_DONATE_5, SKU_DONATE_10, SKU_DONATE_15, SKU_DONATE_20, SKU_DONATE_INSANE};
 
 	public static final String CURRENT_PROFILE = "currentProfile";
 
@@ -115,8 +128,9 @@ public class DreamDroid extends Application {
 		initImageLoader(getApplicationContext());
 
 	}
+
 	public static void initImageLoader(Context context) {
-		if(ImageLoader.getInstance().isInited())
+		if (ImageLoader.getInstance().isInited())
 			return;
 		// This configuration tuning is custom. You can tune every option, you may tune some of them,
 		// or you can create default configuration by
@@ -187,7 +201,7 @@ public class DreamDroid extends Application {
 			boolean ssl = sp.getBoolean("ssl", false);
 
 			Profile p = new Profile(-1, "Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
-					false, false, "", "","","");
+					false, false, "", "", "", "");
 			dbh.addProfile(p);
 			SharedPreferences.Editor editor = sp.edit();
 			editor.remove(CURRENT_PROFILE);
@@ -199,7 +213,7 @@ public class DreamDroid extends Application {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
 			sProfile = new Profile(-1, "Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false, false, false,
-					false, "", "","","");
+					false, "", "", "", "");
 		}
 	}
 
@@ -207,7 +221,7 @@ public class DreamDroid extends Application {
 		return setCurrentProfile(context, id, false);
 	}
 
-	public static boolean dumpXml(){
+	public static boolean dumpXml() {
 		return sDumpXml;
 	}
 
@@ -324,7 +338,7 @@ public class DreamDroid extends Application {
 		return sTags;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public static void scheduleBackup(Context context) {
 		Log.d(LOG_TAG, "Scheduling backup");
 		try {
@@ -357,9 +371,9 @@ public class DreamDroid extends Application {
 	}
 
 	public static int getDialogTheme(Context context) {
-		if(Build.VERSION.SDK_INT < 11)
+		if (Build.VERSION.SDK_INT < 11)
 			return android.R.style.Theme_Dialog;
-		if(isLightTheme(context))
+		if (isLightTheme(context))
 			return R.style.Theme_DreamDroid_Light_Dialog;
 		else
 			return R.style.Theme_DreamDroid_Dialog;
@@ -369,7 +383,7 @@ public class DreamDroid extends Application {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		int mask = sp.getInt(PREFS_KEY_INITIALBITS, 0);
 
-		return ( mask & which ) != which;
+		return (mask & which) != which;
 	}
 
 	public static void setNotInitial(Context context, int which) {

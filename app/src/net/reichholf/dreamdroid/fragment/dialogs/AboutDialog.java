@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.BaseActivity;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -50,11 +53,28 @@ public class AboutDialog extends AbstractDialog {
 		buttonDonate.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Uri uriUrl = Uri
-						.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=stephan%40reichholf%2enet&item_name=dreamDroid&lc=EN&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted");
-				Intent i = new Intent(Intent.ACTION_VIEW, uriUrl);
-				startActivity(i);
+//				Uri uriUrl = Uri
+//						.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=stephan%40reichholf%2enet&item_name=dreamDroid&lc=EN&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted");
+//				Intent i = new Intent(Intent.ACTION_VIEW, uriUrl);
+//				startActivity(i);
+
+
+				ExtendedHashMap skus = ((BaseActivity) getActivity()).getIabItems();
+				int i = 0;
+				CharSequence[] actions = new CharSequence[skus.size()];
+				int[] actionids = new int[skus.size()];
+				for (String sku : DreamDroid.SKU_LIST) {
+					String price = skus.getString(sku);
+ 					actions[i] = getString(R.string.donate_sum, price);
+					actionids[i] = i;
+					i++;
+				}
+
+				SimpleChoiceDialog d = SimpleChoiceDialog.newInstance(getString(R.string.donate), actions, actionids);
+				((MultiPaneHandler)getActivity()).showDialogFragment(d, "donate_dialog");
 			}
+
+
 		});
 		return dialog;
 	}
