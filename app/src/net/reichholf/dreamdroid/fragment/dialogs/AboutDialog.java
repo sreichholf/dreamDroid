@@ -60,17 +60,7 @@ public class AboutDialog extends AbstractDialog {
 
 
 				ExtendedHashMap skus = ((BaseActivity) getActivity()).getIabItems();
-				int i = 0;
-				CharSequence[] actions = new CharSequence[skus.size()];
-				int[] actionids = new int[skus.size()];
-				for (String sku : DreamDroid.SKU_LIST) {
-					String price = skus.getString(sku);
- 					actions[i] = getString(R.string.donate_sum, price);
-					actionids[i] = i;
-					i++;
-				}
-
-				SimpleChoiceDialog d = SimpleChoiceDialog.newInstance(getString(R.string.donate), actions, actionids);
+				DonationDialog d = DonationDialog.newInstance(skus);
 				((MultiPaneHandler)getActivity()).showDialogFragment(d, "donate_dialog");
 			}
 

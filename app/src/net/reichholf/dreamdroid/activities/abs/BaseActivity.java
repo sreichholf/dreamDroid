@@ -112,11 +112,14 @@ public class BaseActivity extends ActionBarActivity {
 		return result;
 	}
 
-	public void purchase(String sku){
-		mIabHelper.launchPurchaseFlow(this, DreamDroid.SKU_DONATE_1, 10001, mPurchaseFinishedListener);
+	public void purchase(String sku) {
+		try {
+			mIabHelper.launchPurchaseFlow(this, DreamDroid.SKU_DONATE_1, 10001, mPurchaseFinishedListener);
+		} catch (IllegalStateException ex) { //This is a workaround for an ugly hack...
+			mIabHelper.flagEndAsync();
+			mIabHelper.launchPurchaseFlow(this, DreamDroid.SKU_DONATE_1, 10001, mPurchaseFinishedListener);
+		}
 	}
-
-
 
 	@Override
 	public void onPause() {

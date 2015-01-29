@@ -32,6 +32,7 @@ public class Statics {
 	public static final int ACTION_ADD_TO_PLAYLIST = 0xc17;
 	public static final int ACTION_PLAY_MEDIA = 0xc18;
 	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc19;
+	public static final int ACTION_DONATE = 0xc20;
 	public static final int ACTION_NONE = 0xcfff;
 
 	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
