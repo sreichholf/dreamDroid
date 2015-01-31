@@ -42,13 +42,14 @@ public class BaseActivity extends ActionBarActivity {
 		@Override
 		public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
 			String text = null;
-			if (result.isFailure()) {
-				Log.i(TAG, String.format("Purchase FAILED! %s", result.getMessage()));
-				text = getString(R.string.donation_error, result.getMessage());
-			} else {
+			int response = result.getResponse();
+			if (response == IabHelper.BILLING_RESPONSE_RESULT_OK) {
 				Log.i(TAG, String.format("Purchase finished! %s", result.getMessage()));
 				mIabHelper.queryInventoryAsync(true, mQueryInventoryFinishedListener);
 				text = getString(R.string.donation_thanks);
+			} else if (response != IabHelper.BILLING_RESPONSE_RESULT_USER_CANCELED) {
+				Log.i(TAG, String.format("Purchase FAILED! %s", result.getMessage()));
+				text = getString(R.string.donation_error, response);
 			}
 			Toast t = Toast.makeText(BaseActivity.this, text, Toast.LENGTH_LONG);
 			t.show();
