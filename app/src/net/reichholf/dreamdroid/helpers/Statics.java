@@ -91,6 +91,7 @@ public class Statics {
 	public static final int REQUEST_PICK_BOUQUET = 0x5002;
 	public static final int REQUEST_EDIT_PROFILE = 0x5003;
 	public static final int REQUEST_ANY = 0x5003;
+	public static final int REQUEST_DONATE = 0x1337;
 
 	public static final int RESULT_THEME_CHANGED = 0x00a1;
 	public static final int RESULT_NONE = -9999;

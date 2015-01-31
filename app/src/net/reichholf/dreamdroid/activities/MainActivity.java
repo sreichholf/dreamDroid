@@ -653,6 +653,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				Intent intent = new Intent(this, MainActivity.class);
 				startActivity(intent);
 				finish();
+				break;
+			default:
+				super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
 

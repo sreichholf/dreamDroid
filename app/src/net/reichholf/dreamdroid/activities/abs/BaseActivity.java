@@ -5,10 +5,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.util.IabException;
 import net.reichholf.dreamdroid.util.IabHelper;
 import net.reichholf.dreamdroid.util.IabResult;
@@ -17,6 +19,8 @@ import net.reichholf.dreamdroid.util.Purchase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -32,8 +36,41 @@ public class BaseActivity extends ActionBarActivity {
 
 	private MemorizingTrustManager mTrustManager;
 	private IabHelper mIabHelper;
-	private boolean mIabready;
-	private IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener;
+	private boolean mIabReady;
+
+	IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+		@Override
+		public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+			String text = null;
+			if (result.isFailure()) {
+				Log.i(TAG, String.format("Purchase FAILED! %s", result.getMessage()));
+				text = getString(R.string.donation_error, result.getMessage());
+			} else {
+				Log.i(TAG, String.format("Purchase finished! %s", result.getMessage()));
+				mIabHelper.queryInventoryAsync(true, mQueryInventoryFinishedListener);
+				text = getString(R.string.donation_thanks);
+			}
+			Toast t = Toast.makeText(BaseActivity.this, text, Toast.LENGTH_LONG);
+			t.show();
+		}
+	};
+
+	IabHelper.OnConsumeMultiFinishedListener mConsumeMultiFinishedListener = new IabHelper.OnConsumeMultiFinishedListener() {
+		@Override
+		public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results) {
+			Log.w(TAG, "Consuming finished!");
+		}
+	};
+
+	IabHelper.QueryInventoryFinishedListener mQueryInventoryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
+		@Override
+		public void onQueryInventoryFinished(IabResult result, Inventory inv) {
+			if (result.isSuccess()) {
+				consumeAll(inv);
+			}
+		}
+	};
+
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -51,74 +88,83 @@ public class BaseActivity extends ActionBarActivity {
 		}
 		super.onCreate(savedInstanceState);
 		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
+				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true)) {
 			overridePendingTransition(R.anim.activity_open_translate, R.anim.activity_close_scale);
-		//Bind billing service
-		mIabready = false;
+		}
+
+		initIAB();
+	}
+
+	private void initIAB() {
+		mIabReady = false;
 		mIabHelper = new IabHelper(this, DreamDroid.IAB_PUB_KEY);
+		mIabHelper.enableDebugLogging(true);
 		mIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
 			public void onIabSetupFinished(IabResult result) {
 				if (!result.isSuccess()) {
 					// Oh noes, there was a problem.
 					Log.d(TAG, "Problem setting up In-app Billing: " + result);
-					mIabready = true;
+					mIabReady = true;
 				}
 				Log.w(TAG, "In-app Billing is ready!");
-				mIabready = true;
-				getIabItems();
+				mIabReady = true;
+				mIabHelper.queryInventoryAsync(true, mQueryInventoryFinishedListener);
 			}
 		});
-		mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener(){
-			@Override
-			public void onIabPurchaseFinished(IabResult result, Purchase info) {
-				Log.w(TAG, result.getMessage());
-			}
-		};
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Log.w(TAG, "onActivityResult(" + requestCode + "," + resultCode + "," + data);
+		Log.i(TAG, "onActivityResult(" + requestCode + "," + resultCode + "," + data);
 		if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
 			super.onActivityResult(requestCode, resultCode, data);
 		} else {
-			Log.w(TAG, "onActivityResult handled by IABUtil.");
+			Log.i(TAG, "onActivityResult handled by IABUtil.");
 		}
 	}
 
-
-	public ExtendedHashMap getIabItems(){
+	public ExtendedHashMap getIabItems() {
 		ExtendedHashMap result = new ExtendedHashMap();
-		if(!mIabready)
+		if (!mIabReady)
 			return result;
 
-		ArrayList<String> skuList =  new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
+		ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
 		Inventory inventory = null;
 		try {
 			inventory = mIabHelper.queryInventory(true, skuList);
 		} catch (IabException e) {
-			Log.e(TAG, "FAILED TO GET PRICE!");
+			Log.e(TAG, "FAILED TO GET INVENTORY!");
 			e.printStackTrace();
 		}
 
-		if( inventory == null )
+		if (inventory == null)
 			return result;
 
-		for(String sku : skuList){
+		for (String sku : skuList) {
 			String price = inventory.getSkuDetails(sku).getPrice();
 			result.put(sku, price);
-			Log.w(TAG, getString(R.string.donate_sum, price));
+			Log.d(TAG, getString(R.string.donate_sum, price));
 		}
 		return result;
 	}
 
 	public void purchase(String sku) {
-		try {
-			mIabHelper.launchPurchaseFlow(this, DreamDroid.SKU_DONATE_1, 10001, mPurchaseFinishedListener);
-		} catch (IllegalStateException ex) { //This is a workaround for an ugly hack...
-			mIabHelper.flagEndAsync();
-			mIabHelper.launchPurchaseFlow(this, DreamDroid.SKU_DONATE_1, 10001, mPurchaseFinishedListener);
+		mIabHelper.launchPurchaseFlow(this, sku, Statics.REQUEST_DONATE, mPurchaseFinishedListener);
+	}
+
+	public void consumeAll(Inventory inventory) {
+		ArrayList<Purchase> purchases = new ArrayList<>();
+		for (String sku : DreamDroid.SKU_LIST) {
+			if (inventory.hasPurchase(sku)) {
+				purchases.add(inventory.getPurchase(sku));
+				Log.i(TAG, String.format("Consuming %s", sku));
+			}
 		}
+//		if (inventory.hasPurchase("android.test.purchased")) {
+//			purchases.add(inventory.getPurchase("android.test.purchased"));
+//			Log.i(TAG, "Consuming android.test.purchased");
+//		}
+		mIabHelper.consumeAsync(purchases, mConsumeMultiFinishedListener);
 	}
 
 	@Override

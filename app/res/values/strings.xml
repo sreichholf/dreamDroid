@@ -296,4 +296,6 @@
     <string name="default_to_full_vrm">Simple remote as default</string>
     <string name="donate_sum">Donate %s</string>
     <string name="donate">Donate</string>
+    <string name="donation_thanks">Thank you very much for your donation!</string>
+    <string name="donation_error">Your donation failed! Sorry for that! (%s)</string>
 </resources>

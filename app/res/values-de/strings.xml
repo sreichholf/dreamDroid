@@ -296,4 +296,8 @@
     <string name="default_to_full_vrm">Einfache Fernbedienung als Standard</string>
     <string name="default_to_full_vrm_long">Die virtuelle Fernbedienung nutzt beim öffnen das einfache Layout</string>
     <string name="dump_xml"></string>
+    <string name="donate">Spenden</string>
+    <string name="donate_sum">Spende %s</string>
+    <string name="donation_error">Spende fehlgeschlagen! Tut uns leid! (%s)</string>
+    <string name="donation_thanks">Vielen Dank für ihre Spende!</string>
 </resources>

@@ -181,6 +181,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		mFragment.onActivityResult(requestCode, resultCode, data);
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@Override

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.reichholf.dreamdroid"
     android:installLocation="auto"
-    android:versionCode="254"
+    android:versionCode="256"
     android:versionName="1.0 beta 33">
 
     <uses-sdk
