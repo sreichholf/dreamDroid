@@ -36,6 +36,7 @@ public class BaseActivity extends ActionBarActivity {
 
 	private MemorizingTrustManager mTrustManager;
 	private IabHelper mIabHelper;
+	private Inventory mInventory;
 	private boolean mIabReady;
 
 	IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
@@ -67,6 +68,7 @@ public class BaseActivity extends ActionBarActivity {
 		@Override
 		public void onQueryInventoryFinished(IabResult result, Inventory inv) {
 			if (result.isSuccess()) {
+				mInventory = inv;
 				consumeAll(inv);
 			}
 		}
@@ -97,6 +99,7 @@ public class BaseActivity extends ActionBarActivity {
 	}
 
 	private void initIAB() {
+		mInventory = null;
 		mIabReady = false;
 		mIabHelper = new IabHelper(this, DreamDroid.IAB_PUB_KEY);
 		mIabHelper.enableDebugLogging(true);
@@ -109,7 +112,8 @@ public class BaseActivity extends ActionBarActivity {
 				}
 				Log.w(TAG, "In-app Billing is ready!");
 				mIabReady = true;
-				mIabHelper.queryInventoryAsync(true, mQueryInventoryFinishedListener);
+				ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
+				mIabHelper.queryInventoryAsync(true, skuList, mQueryInventoryFinishedListener);
 			}
 		});
 	}
@@ -130,19 +134,19 @@ public class BaseActivity extends ActionBarActivity {
 			return result;
 
 		ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
-		Inventory inventory = null;
-		try {
-			inventory = mIabHelper.queryInventory(true, skuList);
-		} catch (IabException e) {
-			Log.e(TAG, "FAILED TO GET INVENTORY!");
-			e.printStackTrace();
+		if(mInventory == null) {
+			try {
+				mInventory = mIabHelper.queryInventory(true, skuList);
+			} catch (IabException e) {
+				Log.e(TAG, "FAILED TO GET INVENTORY!");
+				e.printStackTrace();
+			}
 		}
-
-		if (inventory == null)
+		if (mInventory == null)
 			return result;
 
 		for (String sku : skuList) {
-			String price = inventory.getSkuDetails(sku).getPrice();
+			String price = mInventory.getSkuDetails(sku).getPrice();
 			result.put(sku, price);
 			Log.d(TAG, getString(R.string.donate_sum, price));
 		}
