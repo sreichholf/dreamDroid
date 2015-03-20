@@ -6,21 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
-
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Remote;
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -36,6 +21,20 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.enigma2.Remote;
+import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.util.ArrayList;
 
 /**
  * A Virtual dreambox remote control using http-requests to send key-strokes
@@ -57,7 +56,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			{ R.id.ButtonPvr, Remote.KEY_PVR }, { R.id.ButtonRed, Remote.KEY_RED },
 			{ R.id.ButtonGreen, Remote.KEY_GREEN }, { R.id.ButtonYellow, Remote.KEY_YELLOW },
 			{ R.id.ButtonBlue, Remote.KEY_BLUE }, { R.id.ButtonRwd, Remote.KEY_REWIND },
-			{ R.id.ButtonPlay, Remote.KEY_PLAY }, { R.id.ButtonStop, Remote.KEY_STOP },
+			{ R.id.ButtonPlay, Remote.KEY_PLAYPAUSE }, { R.id.ButtonStop, Remote.KEY_STOP },
 			{ R.id.ButtonFwd, Remote.KEY_FORWARD }, { R.id.ButtonRec, Remote.KEY_RECORD },
 			{ R.id.ButtonAudio, Remote.KEY_AUDIO }, { R.id.Button1, Remote.KEY_1 }, { R.id.Button2, Remote.KEY_2 },
 			{ R.id.Button3, Remote.KEY_3 }, { R.id.Button4, Remote.KEY_4 }, { R.id.Button5, Remote.KEY_5 },
@@ -69,9 +68,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	private boolean mQuickZap;
 	private boolean mSimpleRemote;
 	private String mBaseTitle;
-	private SharedPreferences mPrefs;
 	private ScreenShotFragment mScreenshotFragment;
-	private SharedPreferences.Editor mEditor;
 	private Vibrator mVibrator;
 	private Handler mHandler;
 	private Runnable mScreenShotCallback;
@@ -82,8 +79,8 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.virtual_remote));
 
-		mPrefs = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
-		mQuickZap = getArguments().getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, mPrefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false) );
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		mQuickZap = getArguments().getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, prefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false) );
 		mSimpleRemote = DreamDroid.getCurrentProfile().isSimpleRemote();
 		mVibrator = (Vibrator) getActionBarActivity().getSystemService(Context.VIBRATOR_SERVICE);
 		mHandler = new Handler();
@@ -140,7 +137,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	 */
 	private View getRemoteView() {
 		LayoutInflater inflater = getActionBarActivity().getLayoutInflater();
-		View view = null;
+		View view;
 		if (mQuickZap) {
 			view = inflater.inflate(R.layout.virtual_remote_quick_zap, null, false);
 			mBaseTitle = getString(R.string.app_name) + "::" + getString(R.string.quickzap);
@@ -201,7 +198,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 
 		mVibrator.vibrate(msec);
 
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("command", String.valueOf(id)));
 		if (mSimpleRemote) {
 			params.add(new BasicNameValuePair("rcu", "standard"));
