@@ -9,3 +9,4 @@ gen/
 build/
 *.iml
 local.properties
+app/manifest-merger-release-report.txt
