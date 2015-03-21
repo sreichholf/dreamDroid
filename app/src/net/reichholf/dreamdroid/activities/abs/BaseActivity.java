@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.util.IabHelper;
 import net.reichholf.dreamdroid.util.IabResult;
 import net.reichholf.dreamdroid.util.Inventory;
 import net.reichholf.dreamdroid.util.Purchase;
+import net.reichholf.dreamdroid.util.SkuDetails;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,7 +147,13 @@ public class BaseActivity extends ActionBarActivity {
 			return result;
 
 		for (String sku : skuList) {
-			String price = mInventory.getSkuDetails(sku).getPrice();
+			SkuDetails details = mInventory.getSkuDetails(sku);
+			if(details == null) {
+				Log.w(TAG, String.format("Missing SKU Details for %s", sku));
+				continue;
+			}
+
+			String price = details.getPrice();
 			result.put(sku, price);
 			Log.d(TAG, getString(R.string.donate_sum, price));
 		}
