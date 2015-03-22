@@ -63,7 +63,7 @@ public class DonationDialog extends ActionDialog {
 						BaseActivity ba = (BaseActivity) getActivity();
 						ba.purchase(DreamDroid.SKU_LIST[i]);
 						//ba.purchase("android.test.purchased");
-						finishDialog(Statics.ACTION_DONATE, null);
+						finishDialog(Statics.ACTION_NONE, null);
 					}
 				});
 
