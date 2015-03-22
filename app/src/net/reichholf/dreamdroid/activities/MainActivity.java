@@ -604,7 +604,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		} else if (action == Statics.ACTION_NONE) {
 			return;
 		} else if (isNavigationDialog(dialogTag)) {
-			((ActionDialog.DialogActionListener) mNavigationFragment).onDialogAction(action, details, dialogTag);
+			mNavigationFragment.onDialogAction(action, details, dialogTag);
 		} else if (mDetailFragment != null) {
 			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
 		}

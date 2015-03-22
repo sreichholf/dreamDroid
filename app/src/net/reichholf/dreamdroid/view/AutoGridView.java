@@ -30,10 +30,6 @@ public class AutoGridView extends GridView {
         super(context);
     }
 
-    /**
-     * Reads the amount of columns from the resource file and
-     * updates the "mNumColumns" variable
-     */
     private void updateColumns() {
         mNumColumns = getNumColumns();
     }
