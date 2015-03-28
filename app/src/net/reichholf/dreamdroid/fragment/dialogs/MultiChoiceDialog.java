@@ -104,11 +104,12 @@ public class MultiChoiceDialog extends DialogFragment {
 		builder = new MaterialDialog.Builder(getActivity());
 		builder.title(mTitleId)
 				.items(mItems)
-				.itemsCallbackMultiChoice(selected, new MaterialDialog.ListCallbackMulti() {
+				.itemsCallbackMultiChoice(selected, new MaterialDialog.ListCallbackMultiChoice() {
 					@Override
-					public void onSelection(MaterialDialog materialDialog, Integer[] selected, CharSequence[] charSequences) {
+					public boolean onSelection(MaterialDialog materialDialog, Integer[] selected, CharSequence[] charSequences) {
 						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogSelection(getTag(), materialDialog, selected);
 						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
+						return true;
 					}
 				})
 				.positiveText(mPositiveStringId);
