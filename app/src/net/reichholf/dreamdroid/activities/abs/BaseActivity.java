@@ -109,7 +109,11 @@ public class BaseActivity extends ActionBarActivity {
 				if (!result.isSuccess()) {
 					// Oh noes, there was a problem.
 					Log.d(TAG, "Problem setting up In-app Billing: " + result);
-					mIabReady = true;
+					String text = result.getMessage();
+					Toast toast = Toast.makeText(BaseActivity.this, text, Toast.LENGTH_LONG);
+					toast.show();
+					mIabReady = false;
+					return;
 				}
 				Log.w(TAG, "In-app Billing is ready!");
 				mIabReady = true;
@@ -131,8 +135,10 @@ public class BaseActivity extends ActionBarActivity {
 
 	public ExtendedHashMap getIabItems() {
 		ExtendedHashMap result = new ExtendedHashMap();
-		if (!mIabReady)
+		if (!mIabReady) {
+			initIAB();
 			return result;
+		}
 
 		ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
 		if(mInventory == null) {
