@@ -43,6 +43,8 @@ public class DonationDialog extends ActionDialog {
 
 		for (String sku : DreamDroid.SKU_LIST) {
 			String price = mItems.getString(sku);
+			if(price == null)
+				continue;
 			mActions[i] = getString(R.string.donate_sum, price);
 			mActionIds[i] = i;
 			i++;
