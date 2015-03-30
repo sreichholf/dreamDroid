@@ -39,7 +39,7 @@ public class AboutDialog extends AbstractDialog {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.customView(R.layout.about)
+		builder.customView(R.layout.about, true)
 				.title(R.string.about);
 		MaterialDialog dialog = builder.build();
 		View v = dialog.getCustomView();

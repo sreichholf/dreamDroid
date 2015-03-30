@@ -57,7 +57,7 @@ public class DateTimePickerDialog extends ActionDialog {
 		final MaterialDialog dialog;
 		Calendar cal = getCalendarFromTimestamp(mTimestamp);
 		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.customView(R.layout.date_time_picker)
+		builder.customView(R.layout.date_time_picker, true)
 				.title(mTitle);
 
 		dialog = builder.build();
