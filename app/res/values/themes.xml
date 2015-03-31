@@ -2,6 +2,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Base.Theme.DreamDroid" parent="Theme.AppCompat.NoActionBar">
+        <item name="actionModeBackground">@color/material_blue_grey_800</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="md_dark_theme">true</item>
         <item name="buttonBarStyle">@style/buttonBarStyle</item>
@@ -57,6 +58,7 @@
     </style>
 
     <style name="Base.Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="actionModeBackground">@color/material_blue_grey_800</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="buttonBarStyle">@style/buttonBarStyle</item>
         <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
@@ -145,6 +147,4 @@
         <item name="windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
-
-
 </resources>

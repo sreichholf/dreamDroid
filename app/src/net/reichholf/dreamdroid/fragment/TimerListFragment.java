@@ -85,7 +85,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		// Called when the user exits the action mode
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
-			final AbsListView lv = getListView();
+			final ListView lv = getListView();
 			lv.setItemChecked(lv.getCheckedItemPosition(), false);
 			getListView().post(new Runnable() {
 				@Override
