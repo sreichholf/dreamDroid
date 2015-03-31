@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 33" versioncode="262">
+    <release version="1.0 beta 33" versioncode="263">
         <change>NEW: Donations via In-App Purchases</change>
         <change>NEW: "EPG" added -> EPG of a Bouquet at a specific point in time</change>
         <change>NEW: Multi column service list, configurable via general settings</change>
