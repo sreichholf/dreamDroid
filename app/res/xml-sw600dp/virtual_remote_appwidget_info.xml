@@ -5,7 +5,7 @@
                     android:minHeight="320dp"
                     android:minResizeWidth="294dp"
                     android:minResizeHeight="320dp"
-                    android:previewImage="@drawable/ic_launcher_dreamdroid"
+                    android:previewImage="@mipmap/ic_launcher"
                     android:initialLayout="@layout/virtual_remote_appwidget"
                     android:configure="net.reichholf.dreamdroid.appwidget.VirtualRemoteWidgetConfiguration"
                     android:resizeMode="horizontal|vertical"

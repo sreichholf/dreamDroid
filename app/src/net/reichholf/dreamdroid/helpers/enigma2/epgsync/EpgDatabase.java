@@ -38,7 +38,7 @@ public class EpgDatabase {
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(context);
 
-        Bitmap bm = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher_dreamdroid);
+        Bitmap bm = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
         mBuilder.setContentTitle(context.getString(R.string.epg_sync))
                 .setLargeIcon(bm)
                 .setSmallIcon(R.drawable.ic_action_refresh);
