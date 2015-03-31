@@ -45,60 +45,95 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="123"/>
-
         </LinearLayout>
     </ScrollView>
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="-100dip"
-        android:orientation="horizontal">
+        android:id="@+id/buttonPanel1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dialog_button_bar_height"
+        android:layout_marginTop="-96dp"
+        android:divider="?attr/dividerHorizontal"
+        android:dividerPadding="0dip"
+        android:minHeight="48dip"
+        android:orientation="vertical"
+        android:showDividers="beginning">
 
-        <Button
-            android:id="@+id/ButtonSetTimer"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            style="?attr/buttonBarStyle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="-25dp"
-            android:layout_weight="1"
-            android:drawableLeft="?attr/ic_btn_timer"
-            android:text="@string/set_timer"/>
+            android:measureWithLargestChild="true"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/ButtonEditTimer"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="-25dp"
-            android:layout_weight="1"
-            android:drawableLeft="?attr/ic_btn_timer"
-            android:text="@string/edit_timer"/>
+            <Button
+                android:id="@+id/ButtonSetTimer"
+                style="?attr/buttonBarButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="1"
+                android:drawableLeft="?attr/ic_btn_timer"
+                android:maxLines="2"
+                android:minHeight="@dimen/dialog_button_bar_height"
+                android:text="@string/set_timer"/>
+
+            <Button
+                android:id="@+id/ButtonEditTimer"
+                style="?attr/buttonBarButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="1"
+                android:drawableLeft="?attr/ic_btn_timer"
+                android:maxLines="2"
+                android:minHeight="@dimen/dialog_button_bar_height"
+                android:text="@string/edit_timer"/>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="-50dip"
-        android:orientation="horizontal">
+        android:id="@+id/buttonPanel2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-48dip"
+        android:divider="?attr/dividerHorizontal"
+        android:dividerPadding="0dip"
+        android:minHeight="@dimen/dialog_button_bar_height"
+        android:orientation="vertical"
+        android:showDividers="beginning">
 
-        <Button
-            android:id="@+id/ButtonImdb"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            style="?attr/buttonBarStyle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:drawableLeft="?attr/ic_btn_movie"
-            android:text="@string/imdb"/>
+            android:measureWithLargestChild="true"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/ButtonSimilar"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:drawableLeft="?attr/ic_btn_movie"
-            android:text="@string/similar"/>
+            <Button
+                android:id="@+id/ButtonImdb"
+                style="?attr/buttonBarButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="1"
+                android:drawableLeft="?attr/ic_btn_movie"
+                android:maxLines="2"
+                android:minHeight="@dimen/dialog_button_bar_height"
+                android:text="@string/imdb"/>
+
+            <Button
+                android:id="@+id/ButtonSimilar"
+                style="?attr/buttonBarButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="1"
+                android:drawableLeft="?attr/ic_btn_movie"
+                android:maxLines="2"
+                android:minHeight="@dimen/dialog_button_bar_height"
+                android:text="@string/similar"/>
+        </LinearLayout>
     </LinearLayout>
-
 </LinearLayout>

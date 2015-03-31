@@ -102,7 +102,11 @@
         <item name="android:background">@android:drawable/list_selector_background</item>
     </style>
 
-    <style name="buttonBarButtonStyle"></style>
+    <style name="buttonBarStyle"></style>
+
+    <style name="buttonBarButtonStyle">
+        <item name="android:textColor">?attr/colorAccent</item>
+    </style>
 
     <style name="buttonBarButtonPositiveStyle"></style>
 
