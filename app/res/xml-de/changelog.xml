@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 beta 33" versioncode="263">
+    <release version="1.0 rc1" versioncode="264">
+        <change>Neues App-Icon!</change>
         <change>MEU: Spenden über In-App Käufe</change>
         <change>NEU: "EPG" hinzugefügt -> EPG eines Bouquets zu einem bestimmten Zeitpunkt</change>
         <change>NEU: Mehrspaltige Kanalliste auf Tablets (konfigurierbar in den allgemeinen Einstellungen</change>
