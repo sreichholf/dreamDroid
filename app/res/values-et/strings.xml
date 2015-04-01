@@ -16,6 +16,16 @@
     </string-array>
 
     <string name="timer">Taimer</string>
+    <string name="mediaplayer">Meediamängija</string>
+    <string name="play">Esita</string>
+    <string name="add_to_playlist">Lisa nimekirja</string>
+    <string name="navigation_back_media">Tagasi</string>
+    <string name="close_media">Sulge meediamängija</string>
+    <string name="next_media">Järgmine</string>
+    <string name="play_media">Esita</string>
+    <string name="previous_media">Eelmine</string>
+    <string name="stop_media">Peata</string>
+    <string name="filebrowser">Faili lehitseja</string>
     <string name="service">Teenus</string>
     <string name="location">Asukoht</string>
 
@@ -44,7 +54,7 @@
     <string name="port">Port</string>
     <string name="port_stream_live">Port (Live)</string>
     <string name="port_stream_file">Port (</string>
-    <string name="settings">Sätted</string>
+    <string name="settings">Seaded</string>
     <string name="close">Sulge</string>
     <string name="minutes_short">min.</string>
     <string name="user">Kasutaja</string>
@@ -58,6 +68,7 @@
     <string name="pick_action">Vali tegevus</string>
     <string name="set_time_begin">Alguskuupäev ja aeg</string>
     <string name="set_time_end">Lõpukuupäev ja aeg</string>
+    <string name="reload">Lae uuesti</string>
 
     <string-array name="weekdays_short">
         <item>E</item>
@@ -85,9 +96,11 @@
     <string name="locations">Asukohad</string>
     <string name="gui_version">GUI versioon</string>
     <string name="image_version">Image versioon</string>
+    <string name="device_name">Seadme nimi</string>
     <string name="hdds">Kõvakettad</string>
     <string name="not_implemented">See funktsioon veel ei tööta!</string>
     <string name="current_event">Käesolev saade</string>
+    <string name="seconds">sekundid</string>
     <string name="message">Sõnum</string>
     <string name="message_text_hint">Sisesta tekst siia</string>
     <string name="send">Saada</string>
@@ -102,6 +115,7 @@
 
     <string name="login_enabled">Luba sisselogimine</string>
     <string name="wait_request_finished">Palun oodake kuni </string>
+    <string name="current_service">Hetkel</string>
     <string name="provider">Teenusepakkuja</string>
     <string name="now">Käimasolev</string>
     <string name="next">Järgmine</string>
@@ -126,6 +140,8 @@
     <string name="locations_default_fallback">Ei suuda asukohta laadida, pöördun tagasi vaikimisi asukoha juurde</string>
     <string name="tags">Ülesanded</string>
     <string name="screenshot">Ekraanitõmmis</string>
+    <string name="reboot">Taaskäivita</string>
+    <string name="shutdown">Lülita välja</string>
 
     <string-array name="timer_state">
         <item></item>
@@ -141,10 +157,13 @@
 
     <string name="main_menu">Peamenüü</string>
     <string name="profiles">Profiilid</string>
+    <string name="enabled">Lubatud</string>
     <string name="sync_picons_path">Piconid</string>
     <string name="sync_picons_path_long">Kaust kus asuvad piconid dreamboxis</string>
     <string name="connecting">Ühendan</string>
     <string name="connected">Ühendatud</string>
     <string name="logged_in">Sisselogitud</string>
     <string name="enable_animations">Luba animatsioonid</string>
+    <string name="enable">Luba</string>
+    <string name="disable">Keela</string>
 </resources>

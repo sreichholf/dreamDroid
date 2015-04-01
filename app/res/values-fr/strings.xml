@@ -16,6 +16,18 @@
     </string-array>
 
     <string name="timer">Programmation</string>
+    <string name="mediaplayer">Lecteur Media</string>
+    <string name="play">Lecture</string>
+    <string name="add_to_playlist">Ajouter a Playlist</string>
+    <string name="navigation_back_media">Retour</string>
+    <string name="home_media">Debut</string>
+    <string name="next_media">Suivant</string>
+    <string name="play_media">Lecture</string>
+    <string name="previous_media">Precedent</string>
+    <string name="stop_media">Stop</string>
+    <string name="playlist">Playlist</string>
+    <string name="filebrowser">Gestionnaire de fichiers</string>
+    <string name="delete_from_playlist">Retirer de la Playlist</string>
     <string name="service">Service</string>
     <string name="afterevent">Après l\'évènement</string>
     <string name="location">Répertoire</string>
@@ -161,7 +173,8 @@
     <string name="default_bouquet_not_set">Bouquet par défaut ne peut pas être réglé!</string>
     <string name="loading">Chargement&#8230;</string>
     <string name="about">A propos</string>
-    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">LICENSE:
+\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Code source disponible: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Profil actif</string>
     <string name="connection_state">Etat de connexion</string>
@@ -212,16 +225,14 @@
     <string name="screenshot_saved">Capture d\'écran sauvé sous \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Pas de programme installé sur cet appareil pour jouer les flux vidéos</string>
-    <string name="mediaplayer">Lecteur Media</string>
     <string name="edit_profile">Modifier le profil</string>
     <string name="force_tablet_layout_long">Forcer le mode Tablette optimisé</string>
     <string name="force_tablet_layout">Forcer le mode Tablette</string>
     <string name="mobile_imdb">Utiliser la version portable de imdb.com</string>
-    <string name="mobile_imdb_long">utilisé m.imdb.com au lieu de www.imdb.com</string>
-    <string name="searching">recherche en cours&#8230;</string>
-    <string name="searching_known_devices">recherche en cour d\'une dreambox dans votre réseaux locale. Cela peut prendre environ une minute </string>
+    <string name="mobile_imdb_long">Utiliser m.imdb.com au lieu de www.imdb.com</string>
+    <string name="searching">Recherche en cours&#8230;</string>
+    <string name="searching_known_devices">Recherche en cour d\'une dreambox dans votre réseaux locale. Cela peut prendre environ une minute </string>
     <string name="autodiscover_dreamboxes">Dreambox trouvée !</string>
     <string name="autodiscovery_failed">Ne peut pas trouver de Dreambox sur votre réseau local</string>
     <string name="add_all">Tout ajouter</string>
-
 </resources>

@@ -114,10 +114,10 @@
     <string name="front_processor_version">Versión procesador frontal</string>
     <string name="device_name">Nombre del dispositivo</string>
     <string name="frontends">Frontend</string>
-    <string name="nics">Adaptadores de red</string>
+    <string name="nics">Adaptador de red</string>
     <string name="hdds">Discos duros</string>
     <string name="hdd_capacity">%1$s (%2$s libre)</string>
-    <string name="not_implemented">¡Esta función no está implementada todavía!</string>
+    <string name="not_implemented">¡Esta función no esta implementada todavía!</string>
     <string name="current_event">Evento actual</string>
     <string name="timeout">Tiempo espera</string>
     <string name="seconds">segundos</string>
@@ -127,14 +127,14 @@
     <string name="type">Tipo</string>
 
     <string-array name="message_types">
-        <item>Sí/No</item>
+        <item>Sí / No</item>
         <item>Aviso</item>
         <item>Informativo</item>
         <item>Error</item>
     </string-array>
 
     <string name="virtual_remote">Control remoto virtual</string>
-    <string name="login">Login</string>
+    <string name="login">Autentificación</string>
     <string name="login_enabled">Usar autentificación</string>
     <string name="wait_request_finished">¡Espera a que finalice la petición actual!</string>
     <string name="current_service">Actual</string>
@@ -143,7 +143,7 @@
     <string name="next">Siguiente</string>
     <string name="epg_search">Buscando EPG</string>
     <string name="epg_search_hint">Buscar EPG</string>
-    <string name="standard">Configuración estándar</string>
+    <string name="standard">Configuración estándard</string>
     <string name="quickzap">Configuración Zapeo</string>
     <string name="no_epg_available">¡Actualmente no hay información EPG de este canal!</string>
     <string name="ok">OK</string>
@@ -162,7 +162,7 @@
     <string name="profile_not_updated">No se ha podido actualizar el perfil</string>
     <string name="no_list_item">No hay elementos que mostrar&#8230;</string>
     <string name="locations_default_fallback">Error cargando localizaciones, dejando por defecto:</string>
-    <string name="tags">Etiqueta</string>
+    <string name="tags">Etiquetas</string>
     <string name="screenshot">Captura de pantalla</string>
     <string name="host_empty">¡El nombre del host no puede quedar vacío!</string>
     <string name="standby">En espera</string>
@@ -171,7 +171,7 @@
     <string name="reboot">Reiniciar</string>
     <string name="shutdown">Apagar</string>
     <string name="powercontrol">Panel encendido</string>
-    <string name="choose_tags">Seleccionar tags</string>
+    <string name="choose_tags">Seleccionar etiquetas</string>
     <string name="choose_location">Seleccionar localización</string>
     <string name="bouquet_overview">Vista de bouquets</string>
     <string name="set_default">Marcar por defecto</string>
@@ -180,7 +180,8 @@
     <string name="loading">Cargando&#8230;</string>
     <string name="about">Acerca de</string>
     <string name="changelog">Registro de cambios</string>
-    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">LICENSE:
+\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Código fuente disponible en: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Perfil</string>
     <string name="connection">Conexión</string>
@@ -224,7 +225,7 @@
     <string name="download">Descargar</string>
     <string name="extras">Extras</string>
     <string name="main_menu">Menú principal</string>
-    <string name="profiles">Perfil</string>
+    <string name="profiles">Perfiles</string>
     <string name="profiles_long">Configurar perfiles de conexión</string>
     <string name="enable_instant_zap">Zapeo instantáneo</string>
     <string name="enable_instant_zap_long">Zapeo instantáneo en presión corta sobre el servicio</string>
@@ -240,7 +241,6 @@
     <string name="mobile_imdb_long">Usar m.imdb.com en lugar de www.imdb.com</string>
     <string name="searching">Buscando&#8230;</string>
     <string name="searching_known_devices">Buscando Dreamboxes en tu red local. Esto puede tardar varios minutos&#8230;</string>
-    <string name="autodiscover_Dreamboxes">Auto-búsqueda de Dreambox</string>
     <string name="autodiscovery_failed">¡No se ha encontrado ninguna Dreambox en tu red local!</string>
     <string name="add_all">Añadir Todo</string>
     <string name="error_parsing">¡Error analizando los datos!</string>
@@ -263,7 +263,8 @@
     <string name="appearance">Apariencia</string>
     <string name="usability">Usabilidad</string>
     <string name="use_picons">Usar Picons</string>
-    <string name="use_picons_long">Habilitar el uso de picons en ciertas áreas.\nRequiere picons en /{ExternalStorageDir}/dreamDroid/picons</string>
+<string name="use_picons_long">Habilitar el uso de picons en ciertas áreas.
+\nRequiere picons en /{ExternalStorageDir}/dreamDroid/picons</string>
     <string name="sync_picons">Sincronizar Picons</string>
     <string name="sync_picons_long">Sincronizar Picons en /{ExternalStorageDir}/dreamDroid/picons usando el perfil de conexión actual</string>
     <string name="sync_picons_path">Picons - ruta remota</string>
@@ -286,9 +287,5 @@
     <string name="enable">Habilitar</string>
     <string name="disable">Deshabilitar</string>
     <string name="epg_sync">Sincronizando EPG</string>
-    <string name="epg_sync_finished">EPG sincronizado</string>
-    <string name="disable_fab_reload">Deshabilitar botón de recarga</string>
-    <string name="disable_fab_reload_long">Mostrar el botón de recarga en el ActionBar</string>
-    <string name="reset_default">Valores predeterminados</string>
-
+    <string name="epg_sync_finished">EPG ha sido sincronizado</string>
 </resources>

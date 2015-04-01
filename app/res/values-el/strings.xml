@@ -16,6 +16,7 @@
     </string-array>
 
     <string name="timer">Χρονόμετρο</string>
+    <string name="mediaplayer">Mediaplayer</string>
     <string name="service">Υπηρεσίες</string>
     <string name="afterevent">Μετά</string>
     <string name="location">Τοποθεσία</string>
@@ -154,7 +155,8 @@
     <string name="shutdown">Τερματισμός</string>
     <string name="loading">Παρακαλώ περιμένετε &#8230;</string>
     <string name="about">Περί</string>
-    <string name="license">¨Αδεια :\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">¨Αδεια :
+\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Ο πηγαίος κώδικας είναι διαθέσιμος στο: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Ενεργό προφίλ</string>
     <string name="connection_state">Κατάσταση σύνδεσης</string>
@@ -195,8 +197,7 @@
     <string name="screenshot_saved">Η εικόνα σώθηκε σε \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Δεν έχει εγκατασταθεί Videostreamer στην συσκευή</string>
-    <string name="mediaplayer">Mediaplayer</string>
-    <string name="edit_profile">Επεξεργασία Προφίλ</string>
+    <string name="edit_profile">Edit Profile</string>
     <string name="mobile_imdb">Χρησιμοποιήστε mobile έκδοση του imdb.com</string>
     <string name="mobile_imdb_long">Χρησιμοποιήστε m.imdb.com αντί του www.imdb.com</string>
     <string name="searching">Αναζήτηση &#8230;</string>
@@ -204,5 +205,4 @@
     <string name="autodiscover_dreamboxes">Αυτόματη Αναζήτηση Dreambox</string>
     <string name="autodiscovery_failed">Δεν βρέθηκε καμία συσκευή DreamBox στο τοπικό σας δίκτυο!</string>
     <string name="add_all">Προσθήκη όλων</string>
-
 </resources>

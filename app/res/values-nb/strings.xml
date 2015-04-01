@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
     <string name="description">Beskrivelse</string>
     <string name="title">Tittel</string>
     <string name="mo">Ma</string>
     <string name="app_name">DreamDroid</string>
+
     <string-array name="servicelist">
         <item>Utvalg (TV)</item>
         <item>Tilbyder (TV)</item>
@@ -12,16 +14,32 @@
         <item>Tilbyder (Radio)</item>
         <item>Alle (Radio)</item>
     </string-array>
+
     <string name="timer">Timer</string>
+    <string name="mediaplayer">Mediaspiller</string>
+    <string name="play">Play</string>
+    <string name="add_to_playlist">Legg til spilleliste</string>
+    <string name="navigation_back_media">Tilbake</string>
+    <string name="home_media">Hjem</string>
+    <string name="close_media">Steng mediaspiller</string>
+    <string name="next_media">Neste</string>
+    <string name="play_media">Play</string>
+    <string name="previous_media">Tidligere</string>
+    <string name="stop_media">Stopp</string>
+    <string name="playlist">Spilleliste</string>
+    <string name="filebrowser">Filutforsker</string>
+    <string name="delete_from_playlist">Slett fra spilleliste</string>
     <string name="service">Service</string>
     <string name="afterevent">Etterpå</string>
     <string name="location">Lokasjon</string>
+
     <string-array name="afterevents">
         <item>Ingen ting</item>
         <item>Hvilemodus</item>
         <item>Dvale</item>
         <item>Automatisk</item>
     </string-array>
+
     <string name="begin_time">Start tid</string>
     <string name="repeatings">Repetisjon</string>
     <string name="end_time">Slutt tid</string>
@@ -29,7 +47,6 @@
     <string name="movies">Filmer</string>
     <string name="device_info">Informasjon</string>
     <string name="send_message">Send melding</string>
-
     <string name="save">Lagre</string>
     <string name="cancel">Avbryt</string>
     <string name="fetching_data">Henter data...</string>
@@ -43,10 +60,10 @@
     <string name="ssl_enabled">Aktiver SSL</string>
     <string name="host">Vertsnavn/IP</string>
     <string name="port">Port</string>
+    <string name="live">Live</string>
     <string name="settings">Innstillinger</string>
     <string name="host_long">Vertsnavn eller IP</string>
-<string name="port_long">Listening Port
-</string>
+    <string name="port_long">Listening Port</string>
     <string name="close">Lukk</string>
     <string name="minutes_short">min.</string>
     <string name="user">Bruker</string>
@@ -63,6 +80,7 @@
     <string name="set_time_end">Sluttdato og tid</string>
     <string name="apply">Lagre</string>
     <string name="reload">Last på nytt</string>
+
     <string-array name="weekdays_short">
         <item>Ma</item>
         <item>Ti</item>
@@ -81,6 +99,7 @@
         <item>Lørdag</item>
         <item>Søndag</item>
     </string-array>
+
     <string name="none">Ingen</string>
     <string name="choose_days">Velg dager</string>
     <string name="mo_to_fr">Mandag til fredag</string>
@@ -102,12 +121,14 @@
     <string name="message_text_hint">Skriv inn meldingsteksten</string>
     <string name="send">Send</string>
     <string name="type">Type</string>
+
     <string-array name="message_types">
         <item>JaNei</item>
         <item>Advarsel</item>
         <item>Informasjon</item>
         <item>Feil</item>
     </string-array>
+
     <string name="virtual_remote">Virtuell fjernkontroll</string>
     <string name="login_enabled">Aktiver pålogging</string>
     <string name="wait_request_finished">Vent til gjeldende forespørsel er fullført!</string>
@@ -165,8 +186,8 @@
     <string name="edit_timer">Rediger timer</string>
     <string name="in_standby">Enheten er nå i hvilemodus</string>
     <string name="is_running">Enheten er på</string>
-
     <string name="similar">Lignende hendelser</string>
+
     <string-array name="timer_state">
         <item></item>
         <item></item>
@@ -178,6 +199,7 @@
         <item></item>
         <item></item>
     </string-array>
+
     <string name="current_volume">Volum er nå %s</string>
     <string name="muted">Dempet</string>
     <string name="download">Last ned</string>

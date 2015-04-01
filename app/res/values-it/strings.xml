@@ -16,6 +16,19 @@
     </string-array>
 
     <string name="timer">Timer</string>
+    <string name="mediaplayer">Lettore multimediale</string>
+    <string name="play">Riproduci</string>
+    <string name="add_to_playlist">Aggiungi alla lista</string>
+    <string name="navigation_back_media">Indietro</string>
+    <string name="home_media">Home</string>
+    <string name="close_media">Chiudi lettore multimediale</string>
+    <string name="next_media">Successivo</string>
+    <string name="play_media">Riproduci</string>
+    <string name="previous_media">Precedente</string>
+    <string name="stop_media">Ferma</string>
+    <string name="playlist">Lista esecuzione</string>
+    <string name="filebrowser">Sfoglia file</string>
+    <string name="delete_from_playlist">Elimina dalla lista</string>
     <string name="service">Canale</string>
     <string name="afterevent">Azione fine evento</string>
     <string name="location">Percorso</string>
@@ -47,6 +60,7 @@
     <string name="ssl_enabled">Abilita SSL</string>
     <string name="host">Nome sistema/IP</string>
     <string name="port">Porta</string>
+    <string name="live">Dal vivo</string>
     <string name="port_stream_live">Porta (dal vivo)</string>
     <string name="port_stream_file">Porta (registrazioni)</string>
     <string name="settings">Impostazioni</string>
@@ -102,9 +116,11 @@
     <string name="frontends">Interfaccia</string>
     <string name="nics">Connessione di rete</string>
     <string name="hdds">Disco fisso</string>
+    <string name="hdd_capacity">%1$s (%2$s liberi)</string>
     <string name="not_implemented">Questa funzione non è ancora implementata!</string>
     <string name="current_event">Evento attuale</string>
     <string name="timeout">Scadenza</string>
+    <string name="seconds">secondi</string>
     <string name="message">Messaggio</string>
     <string name="message_text_hint">Inserisci testo messaggio</string>
     <string name="send">Invia</string>
@@ -118,6 +134,7 @@
     </string-array>
 
     <string name="virtual_remote">Telecomando virtuale</string>
+    <string name="login">Accesso</string>
     <string name="login_enabled">Abilita accesso</string>
     <string name="wait_request_finished">Attendere il completamento della richiesta!</string>
     <string name="current_service">Attuale</string>
@@ -137,6 +154,7 @@
     <string name="profile_not_deleted">Errore eliminazione profilo</string>
     <string name="profile_deleted">Profilo eliminato</string>
     <string name="profile">Profilo</string>
+    <string name="profile_name">Nome profilo</string>
     <string name="profile_updated">Profilo aggiornato</string>
     <string name="profile_added">Profilo aggiunto</string>
     <string name="profile_add">Aggiungi profilo</string>
@@ -161,10 +179,13 @@
     <string name="default_bouquet_not_set">Impossibile impostare il paccheto predefinito!</string>
     <string name="loading">Caricamento...</string>
     <string name="about">Info</string>
-    <string name="license">LICENZA:\nLicenziato sotto i termini della Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="changelog">Note modifiche</string>
+<string name="license">LICENZA:
+\nLicenziato sotto i termini della Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Codice sorgente disponibile in: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Profilo attivo</string>
-    <string name="connection_state">Stato connessione</string>
+    <string name="active_profile">Profilo</string>
+    <string name="connection">Connessione</string>
+    <string name="connection_state">Stato</string>
     <string name="not_available">Non disponibile</string>
     <string name="checking">verifica...</string>
     <string name="error">ERRORE!</string>
@@ -205,6 +226,7 @@
     <string name="extras">Altro</string>
     <string name="main_menu">Principale</string>
     <string name="profiles">Profili</string>
+    <string name="profiles_long">Configura profili connessione</string>
     <string name="enable_instant_zap">Sintonia veloce</string>
     <string name="enable_instant_zap_long">Breve tocco su un canale per la sintonia veloce</string>
     <string name="wrong_activity">Errore attività! Ricrea i collegamenti precedenti per dreamDroid!</string>
@@ -212,7 +234,6 @@
     <string name="screenshot_saved">Schermata salvata in \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Nessun Player per la trasmissione video installato nel dispositivo!</string>
-    <string name="mediaplayer">Lettore multimediale</string>
     <string name="edit_profile">Modifica profilo</string>
     <string name="force_tablet_layout_long">Forza formato tablet ottimizzato</string>
     <string name="force_tablet_layout">Forza formato tablet</string>
@@ -226,7 +247,7 @@
     <string name="error_parsing">Si è verificato un errore durante l\'elaborazione dei dati!</string>
     <string name="enabled">Abilitato</string>
     <string name="signal_meter">Misuratore segnale</string>
-    <string name="accoustic_feedback">Segnale acustico</string>
+    <string name="accoustic_feedback">Segnale accustico</string>
     <string name="use_light_theme_long">Usa un tema leggero invece del tema oscuro predefinito</string>
     <string name="use_light_theme">Usa un tema leggero</string>
     <string name="leave_confirm">Uscire?</string>
@@ -243,9 +264,9 @@
     <string name="appearance">Aspetto</string>
     <string name="usability">Usabilità</string>
     <string name="use_picons">Usa Picons</string>
-    <string name="use_picons_long">Abilita l\'uso di Picons in certe aree. \nRichiede i picons in /{ExternalStorageDir}/dreamDroid/picons</string>
+    <string name="use_picons_long">Abilita l\'uso di Picons in certe aree.\nRichiede i picons in /{SchedaSD}/dreamDroid/picons</string>
     <string name="sync_picons">Sincronizza Picons</string>
-    <string name="sync_picons_long">Sincronizza Picons in /{ExternalStorageDir}/dreamDroid/picons usando il profilo di connessione attualmente configurato</string>
+    <string name="sync_picons_long">Sincronizza Picons in /{SchedaSD}/dreamDroid/picons usando il profilo di connessione attualmente configurato</string>
     <string name="sync_picons_path">Picons - percorso remoto</string>
     <string name="sync_picons_path_long">Percorso dove si trovano i Picons nel Dreambox</string>
     <string name="connecting">Connessione</string>
@@ -257,4 +278,25 @@
     <string name="drawer_close">Chiudi disegnatore di navigazione</string>
     <string name="enable_animations_long">Abilita vista animazioni aggiuntiva</string>
     <string name="enable_animations">Abilita animazioni</string>
+    <string name="use_name_as_picon_filename_long">Usa nome servizio come nome file nei picons</string>
+    <string name="use_name_as_picon_filename">Picon per nome servizio</string>
+    <string name="picons">Picons</string>
+    <string name="developer_settings">Impostazioni sviluppatore</string>
+    <string name="dump_xml">Estrai contenuto XML</string>
+    <string name="dump_xml_long">Estrai contenuto XML nella scheda SD</string>
+    <string name="enable">Abilita</string>
+    <string name="disable">Disabilita</string>
+    <string name="epg_sync">Sincronizzazione EPG</string>
+    <string name="epg_sync_finished">Guida EPG sincronizzata</string>
+    <string name="disable_fab_reload">Disabilita il tasto ricarica flottante</string>
+    <string name="disable_fab_reload_long">Il tasto ricarica sarà invece posizionato nella barra delle azioni</string>
+    <string name="reset_default">Reimposta predefinito</string>
+    <string name="max_grid_cols">Colonne massime elenco canali</string>
+    <string name="max_grid_cols_long">Numero massimo di colonne nell\'elenco canali</string>
+    <string name="default_to_full_vrm_long">Usa il formato di telecomando semplice come predefinito</string>
+    <string name="default_to_full_vrm">Telecomando semplice come predefinito</string>
+    <string name="donate_sum">Dona %s</string>
+    <string name="donate">Dona</string>
+    <string name="donation_thanks">Grazie mille della donazione!</string>
+    <string name="donation_error">La tua donazione è fallita! Siamo spiacenti! (%s)</string>
 </resources>

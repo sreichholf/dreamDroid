@@ -16,6 +16,19 @@
     </string-array>
 
     <string name="timer">Timer</string>
+    <string name="mediaplayer">Mediaspelare</string>
+    <string name="play">Spela</string>
+    <string name="add_to_playlist">Lägg till i spellists</string>
+    <string name="navigation_back_media">Tillbaka</string>
+    <string name="home_media">Hem</string>
+    <string name="close_media">Stänga mediaspelaren</string>
+    <string name="next_media">Nästa</string>
+    <string name="play_media">Spela</string>
+    <string name="previous_media">Tidigare</string>
+    <string name="stop_media">Stop</string>
+    <string name="playlist">Spellista</string>
+    <string name="filebrowser">Fil hanterare</string>
+    <string name="delete_from_playlist">Ta bort från spellista</string>
     <string name="service">Kanal</string>
     <string name="afterevent">Efter avslut</string>
     <string name="location">Ställen</string>
@@ -47,6 +60,8 @@
     <string name="ssl_enabled">Aktivera SSL</string>
     <string name="host">Värdnamn/IP</string>
     <string name="port">Port</string>
+    <string name="live">Live</string>
+    <string name="port_stream_live">Port live</string>
     <string name="settings">Inställningar</string>
     <string name="host_long">Värdnamn eller IP</string>
     <string name="close">Stäng</string>
@@ -158,7 +173,8 @@
     <string name="default_bouquet_not_set">Standardkanallista kunde inte aktiveras</string>
     <string name="loading">Laddar...</string>
     <string name="about">Om</string>
-    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">LICENSE:
+\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktiv profil</string>
     <string name="connection_state">Status på anslutningen</string>
@@ -209,7 +225,6 @@
     <string name="screenshot_saved">Skärmdump sparad till \'%s\'</string>
     <string name="imdb">IMDB</string>
     <string name="missing_stream_player">Ingen spelare för Streams finns installerad på denna enheten</string>
-    <string name="mediaplayer">Mediaspelare</string>
     <string name="edit_profile">Redigera profil</string>
     <string name="searching">Söker &#8230;</string>
     <string name="searching_known_devices">Söker efter dreamboxar i det lokala nätverket. Det här kan ta en liten stund &#8230;</string>
@@ -226,5 +241,4 @@
     <string name="watch_on_dream">Visa på Dreambox</string>
     <string name="sent_from_dreamdroid">Skickad från dreamDroid %s</string>
     <string name="no_profile_available">Ingen anslutnings profil kunde hittas, Skapa en via huvudapplikationen</string>
-
 </resources>

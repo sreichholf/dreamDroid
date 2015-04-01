@@ -16,6 +16,7 @@
     </string-array>
 
     <string name="timer">Таймер</string>
+    <string name="mediaplayer">Медиаплейер</string>
     <string name="service">Сервис</string>
     <string name="afterevent">Следующее событие</string>
     <string name="location">Позиция</string>
@@ -160,7 +161,8 @@
     <string name="default_bouquet_not_set">Фаворит по умолчанию не может быть установлен!</string>
     <string name="loading">Загружаю....</string>
     <string name="about">О...</string>
-    <string name="license">Лицензия:\nnLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">Лицензия:
+\nnLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">исходный код доступен на: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Активный профиль</string>
     <string name="connection_state">Состояние соединения</string>
@@ -211,7 +213,6 @@
     <string name="screenshot_saved">Скриншот сохранен в  \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Проигрыватель потокового видео не установлен на устройство!</string>
-    <string name="mediaplayer">Медиаплейер</string>
     <string name="edit_profile">Изменить профиль</string>
     <string name="mobile_imdb">Использовать мобильную версию imdb.com</string>
     <string name="mobile_imdb_long">Использовать m.imdb.com вместо www.imdb.com</string>

@@ -3,7 +3,7 @@
 
     <string name="description">Popis</string>
     <string name="title">Názov</string>
-    <string name="mo">Mo</string>
+    <string name="mo">Po</string>
     <string name="app_name">DreamDroid</string>
 
     <string-array name="servicelist">
@@ -16,6 +16,16 @@
     </string-array>
 
     <string name="timer">Časovač</string>
+    <string name="mediaplayer">Prehrávač médií</string>
+    <string name="play">Prehraj</string>
+    <string name="add_to_playlist">Pridaj do palylistu</string>
+    <string name="navigation_back_media">Naspäť</string>
+    <string name="home_media">Domov</string>
+    <string name="close_media">Zavri prehrávač médií</string>
+    <string name="next_media">Ďalší</string>
+    <string name="play_media">Prehraj</string>
+    <string name="previous_media">Predchádzajúci</string>
+    <string name="delete_from_playlist">Vymaž z playlistu</string>
     <string name="service">Služba</string>
     <string name="afterevent">Po udalosti</string>
     <string name="location">Umiestnenie</string>
@@ -36,7 +46,7 @@
     <string name="send_message">Pošli správu</string>
     <string name="save">Uložiť</string>
     <string name="cancel">Zrušiť</string>
-    <string name="fetching_data">Načítanie dáta ...</string>
+    <string name="fetching_data">Načítanie dát ...</string>
     <string name="parsing">Analýza ...</string>
     <string name="get_content_error">Chyba pri získavaní obsahu!</string>
     <string name="zap">Prepnúť</string>
@@ -53,7 +63,7 @@
     <string name="minutes_short">min.</string>
     <string name="user">Užívateľ</string>
     <string name="user_long">Meno užívateľa pre login</string>
-    <string name="pass">Heslow</string>
+    <string name="pass">Heslo</string>
     <string name="pass_long">Heslo pre login</string>
     <string name="saving">Ukladanie. Prosím počkajte ...</string>
     <string name="deleting">Vymazávanie. Prosím počkajte ...</string>
@@ -108,10 +118,10 @@
     <string name="type">Napísať</string>
 
     <string-array name="message_types">
-        <item>Áno</item>
-        <item>Nie</item>
+        <item>ÁnoNie</item>
         <item>Varovanie</item>
         <item>Info</item>
+        <item>Chyba</item>
     </string-array>
 
     <string name="virtual_remote">Virtuálny ovládač</string>
@@ -134,6 +144,7 @@
     <string name="profile_not_deleted">Chyba pri vymazaní profilu</string>
     <string name="profile_deleted">Vymazaný profil</string>
     <string name="profile">Profil</string>
+    <string name="profile_name">Názov profilu</string>
     <string name="profile_updated">Aktualizovaný profil</string>
     <string name="profile_added">Pridaný profil</string>
     <string name="profile_add">Pridať profil</string>
@@ -149,7 +160,7 @@
     <string name="restart_gui">Reštartovať GUI</string>
     <string name="reboot">Reštartovať</string>
     <string name="shutdown">Vypnúť</string>
-    <string name="powercontrol">Vypnúť</string>
+    <string name="powercontrol">Správa napájania</string>
     <string name="choose_tags">Vyberte tagy</string>
     <string name="choose_location">Zvoľte umiestnenie</string>
     <string name="bouquet_overview">Prehľad buquetov</string>
@@ -158,9 +169,11 @@
     <string name="default_bouquet_not_set">Súčasný buquet nemohol byť nastavený!</string>
     <string name="loading">Načítanie ...</string>
     <string name="about">O aplikácii</string>
-    <string name="license">LICENCIA:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">LICENCIA:
+\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Zdrojový kód dostupný na: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktívny profil</string>
+    <string name="connection">Spojenie</string>
     <string name="connection_state">Stav pripojenia</string>
     <string name="not_available">Nedostupné</string>
     <string name="checking">Overovanie ...</string>
@@ -202,6 +215,7 @@
     <string name="extras">Prídavné </string>
     <string name="main_menu">Hlavný</string>
     <string name="profiles">Profily</string>
+    <string name="profiles_long">Správa profilov pripojenia</string>
     <string name="enable_instant_zap">Okamžité prepnutie</string>
     <string name="enable_instant_zap_long">Okamžité prepnutie kanála pri dotknutí</string>
     <string name="wrong_activity">Zvolená nesprávna aktivita! Nastavte opäť všetky rýchle predvoľby pre DreamDroid!</string>
@@ -210,11 +224,38 @@
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Na tomto zariadení nemáte nainštalovaný žiadny prehrávač pre prehrávanie sieťových zdrojov videa!</string>
     <string name="edit_profile">Edituj profil</string>
+    <string name="force_tablet_layout_long">Vynútiť zobrazenie optimalizované pre tablet</string>
+    <string name="force_tablet_layout">Vynútiť zobrazenie pre tablet</string>
+    <string name="mobile_imdb">Použi mobilnú verziu imdb.com</string>
+    <string name="mobile_imdb_long">Použi m.imdb.com namiesto www.imdb.com</string>
+    <string name="searching">Hľadám</string>
+    <string name="searching_known_devices">Hľadanie dreamboxov v lokálnej sieti môže trvať pár minút</string>
+    <string name="autodiscover_dreamboxes">Automatické vyhľadanie dreamboxu</string>
+    <string name="autodiscovery_failed">Nepodarilo sa nájsť nijaký dreambox v lokálnej sieti! </string>
+    <string name="add_all">Pridaj všetko</string>
+    <string name="error_parsing">Chyba pri analýze dát!</string>
     <string name="enabled">Povolené</string>
     <string name="signal_meter">Signal Meter</string>
+    <string name="accoustic_feedback">Zvukový Feedback</string>
     <string name="use_light_theme_long">Použi svetlú tému namiesto hlavnej tmavej</string>
     <string name="use_light_theme">Použi svetlú tému</string>
     <string name="leave_confirm">Naozaj odísť?</string>
     <string name="leave_confirm_long">Naozaj chcete ukončiť dreamDroid?</string>
-
+    <string name="sent_as">Poslané ako %s</string>
+    <string name="watch_on_dream">Sledovať na dreamDroide</string>
+    <string name="sent_from_dreamdroid">Odoslal dreamDroid o %s</string>
+    <string name="no_profile_available">Neexistuje profil pripojenia! Vytvorte nejaký!</string>
+    <string name="confirm_app_close">Žiadať potvrdenie pred ukončením aplikácie</string>
+    <string name="login_movies">Prihlásenie (Filmy)</string>
+    <string name="ssl_movies">https (Filmy)</string>
+    <string name="appearance">Vzhľad</string>
+    <string name="connecting">Pripájam</string>
+    <string name="connected">Pripojený</string>
+    <string name="logged_in">Prihlásený</string>
+    <string name="getting_list_of_files">Získavam zoznam súborov</string>
+    <string name="enable_animations_long">Povoliť ďalšie animácie</string>
+    <string name="enable_animations">Povoliť animácie</string>
+    <string name="developer_settings">Vývojárske nastavenia</string>
+    <string name="enable">Povoliť</string>
+    <string name="disable">Zakázať</string>
 </resources>

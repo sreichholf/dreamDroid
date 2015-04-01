@@ -16,6 +16,19 @@
     </string-array>
 
     <string name="timer">Temporizador</string>
+    <string name="mediaplayer">Reprodutor mídia</string>
+    <string name="play">Reproduzir</string>
+    <string name="add_to_playlist">Adicionar aos Favoritos</string>
+    <string name="navigation_back_media">Retroceder</string>
+    <string name="home_media">Inicio</string>
+    <string name="close_media">Fechar Reprodutor mídia</string>
+    <string name="next_media">Próximo</string>
+    <string name="play_media">Reproduzir</string>
+    <string name="previous_media">Anterior</string>
+    <string name="stop_media">Parar</string>
+    <string name="playlist">Lista Favoritos</string>
+    <string name="filebrowser">Explorar de Ficheiros</string>
+    <string name="delete_from_playlist">Apagar da Lista Favoritos</string>
     <string name="service">Serviço</string>
     <string name="afterevent">Depois do evento</string>
     <string name="location">Localização</string>
@@ -27,37 +40,41 @@
         <item>Automático</item>
     </string-array>
 
-    <string name="begin_time">Hora de inicio</string>
+    <string name="begin_time">Hora de início</string>
     <string name="repeatings">Repetições</string>
     <string name="end_time">Hora de fim</string>
-    <string name="services">Serviços</string>
+    <string name="services">Canais</string>
     <string name="movies">Filmes</string>
-    <string name="device_info">Informação do aparelho</string>
+    <string name="device_info">Informação do Recetor</string>
     <string name="send_message">Enviar mensagem</string>
-    <string name="save">Salvar</string>
+    <string name="save">Gravar</string>
     <string name="cancel">Cancelar</string>
-    <string name="fetching_data">Importando dados</string>
-    <string name="parsing">Interpertando</string>
-    <string name="get_content_error">Erro ao obter conteúdos</string>
+    <string name="fetching_data">A Importar dados&#8230;</string>
+    <string name="parsing">Interpretando&#8230;</string>
+    <string name="get_content_error">Erro ao obter conteúdos!</string>
     <string name="zap">Mudar de canal</string>
-    <string name="browse_epg">Procura epg</string>
+    <string name="browse_epg">Procura EPG</string>
     <string name="edit">Editar</string>
     <string name="delete">Apagar</string>
     <string name="epg">EPG</string>
-    <string name="ssl_enabled">Activar SSL</string>
-    <string name="host">Hostname/IP</string>
+    <string name="ssl_enabled">https</string>
+    <string name="host">Anfitrião/IP</string>
     <string name="port">Porta</string>
+    <string name="live">Direto</string>
+    <string name="port_stream_live">Porto (direto)</string>
+    <string name="port_stream_file">Porto (filmes)</string>
     <string name="settings">Configuração</string>
-    <string name="host_long">Hostname ou IP</string>
+    <string name="host_long">Anfitrião ou IP</string>
+    <string name="port_long">Porto de escuta</string>
     <string name="close">Fechar</string>
     <string name="minutes_short">min</string>
-    <string name="user">Usuário</string>
-    <string name="user_long">Nome para login</string>
-    <string name="pass">Password</string>
-    <string name="pass_long">Password para login</string>
-    <string name="saving">Salvando. aguarde...</string>
-    <string name="deleting">Excluindo. aguarde...</string>
-    <string name="delete_confirm">Apagar. Confirma?</string>
+    <string name="user">Nome</string>
+    <string name="user_long">Nome de utilizador</string>
+    <string name="pass">Palavra-passe</string>
+    <string name="pass_long">Palavra-passe para utilizador</string>
+    <string name="saving">A Guardar. Por favor espere...</string>
+    <string name="deleting">A Apagar. Por favor espere...</string>
+    <string name="delete_confirm">Confirmar remoção?</string>
     <string name="set_timer">Programar temporizador</string>
     <string name="home">Início</string>
     <string name="pick_action">Escolha uma ação</string>
@@ -88,102 +105,112 @@
     <string name="none">Vazio</string>
     <string name="choose_days">Escolha de dias</string>
     <string name="mo_to_fr">de Segunda a Sábado</string>
-    <string name="daily">Diáriamente</string>
+    <string name="daily">Diariamente</string>
     <string name="new_timer">Novo temporizador</string>
     <string name="locations">Localização</string>
-    <string name="gui_version">GUI versao</string>
-    <string name="image_version">Verção da imagem</string>
+    <string name="gui_version">Versão da GUI</string>
+    <string name="image_version">Versão da imagem</string>
     <string name="interface_version">Versão do interface</string>
-    <string name="front_processor_version">Versão do frontprocessor</string>
-    <string name="device_name">Nome do aparelho</string>
+    <string name="front_processor_version">Versão do processador</string>
+    <string name="device_name">Nome do recetor</string>
     <string name="frontends">Frontends</string>
     <string name="nics">Interfaces de rede</string>
-    <string name="hdds">Discos duro</string>
+    <string name="hdds">Discos duros</string>
+    <string name="hdd_capacity">%1$s (%2$s livre)</string>
     <string name="not_implemented">Esta funcionalidade ainda não está implementada</string>
-    <string name="current_event">Evento actual</string>
+    <string name="current_event">Evento atual</string>
     <string name="timeout">Fim do tempo</string>
+    <string name="seconds">segundos</string>
     <string name="message">Mensagem</string>
     <string name="message_text_hint">Insira a sua mensagem</string>
     <string name="send">Enviar</string>
     <string name="type">Escrever</string>
 
     <string-array name="message_types">
-        <item>Sim Não</item>
+        <item>SimNão</item>
         <item>Atenção</item>
         <item>Informação</item>
         <item>Erro</item>
     </string-array>
 
-    <string name="virtual_remote">Controlo Remoto Virtual</string>
-    <string name="login_enabled">Activar Login</string>
+    <string name="virtual_remote">Comando Virtual</string>
+    <string name="login">Acesso</string>
+    <string name="login_enabled">Activar Acesso</string>
     <string name="wait_request_finished">Por favor espere até o pedido estar finalizado</string>
-    <string name="current_service">Actual</string>
+    <string name="current_service">Atual</string>
     <string name="provider">Fornecedor</string>
     <string name="now">Agora</string>
-    <string name="next">Proximo</string>
+    <string name="next">Próximo</string>
     <string name="epg_search">EPG-Busca</string>
-    <string name="epg_search_hint">Procura EGP</string>
-    <string name="standard">Template por defeito</string>
-    <string name="quickzap">Template de zapping</string>
-    <string name="no_epg_available">Actualmente não existe informação de EPG Disponivel para este canal!</string>
+    <string name="epg_search_hint">Procura EPG</string>
+    <string name="standard">Modelo por omissão</string>
+    <string name="quickzap">Modelo de zapping</string>
+    <string name="no_epg_available">Atualmente não existe informação de EPG Disponivel para este canal!</string>
     <string name="ok">OK</string>
-    <string name="activate">Activar</string>
+    <string name="activate">Ativar</string>
     <string name="confirm_delete_profile">Quer realmente apagar este perfil?</string>
-    <string name="profile_activated">Perfil activado</string>
+    <string name="profile_activated">Perfil ativado</string>
     <string name="profile_not_activated">Erro ao ativar perfil</string>
     <string name="profile_not_deleted">Erro ao apagar perfil</string>
     <string name="profile_deleted">Apagar Perfil</string>
     <string name="profile">Perfil</string>
+    <string name="profile_name">Nome de perfil</string>
     <string name="profile_updated">Atualizar Perfil</string>
     <string name="profile_added">Perfil Adicionado</string>
     <string name="profile_add">Adicionar Perfil</string>
-    <string name="profile_not_added">Não foi possivel adicionar perfil</string>
-    <string name="profile_not_updated">Não foi possivel atualizar perfil</string>
+    <string name="profile_not_added">Não foi possível adicionar perfil</string>
+    <string name="profile_not_updated">Não foi possível atualizar perfil</string>
     <string name="no_list_item">Sem itens para mostrar</string>
     <string name="locations_default_fallback">Erro ao carregar localização, voltando valores padrão:</string>
-    <string name="tags">Separadores</string>
-    <string name="screenshot">Foto da cena</string>
-    <string name="host_empty">O endereço não pode estar vazio!</string>
+    <string name="tags">Etiquetas</string>
+    <string name="screenshot">Foto do Ecrã</string>
+    <string name="host_empty">O nome do anfitrião não pode estar vazio!</string>
     <string name="standby">Suspender</string>
     <string name="powerup">Ligar</string>
     <string name="restart_gui">Reiniciar GUI</string>
     <string name="reboot">Reiniciar</string>
     <string name="shutdown">Desligar</string>
     <string name="powercontrol">Ligar/Desligar</string>
-    <string name="choose_tags">Escolher Separadores</string>
+    <string name="choose_tags">Escolher Etiquestas</string>
     <string name="choose_location">Escolher Localização</string>
     <string name="bouquet_overview">Pré-Visualização dos pacotes</string>
-    <string name="set_default">Predefenir</string>
-    <string name="default_bouquet_set_to">O pacote predefenido é:</string>
-    <string name="default_bouquet_not_set">O pacote predefenido não pode ser feito!</string>
-    <string name="loading">Carregando</string>
+    <string name="set_default">Predefinir</string>
+    <string name="default_bouquet_set_to">O pacote predefinido é:</string>
+    <string name="default_bouquet_not_set">O pacote predefinido não pôde ser feito!</string>
+    <string name="loading">A carregar</string>
     <string name="about">Sobre</string>
+    <string name="changelog">Alterações</string>
+<string name="license">LICENÇA:
+\nLicenciado sob a Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Código fonte disponível em http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Perfil</string>
+    <string name="connection">Ligação</string>
     <string name="connection_state">Estado</string>
-    <string name="not_available">Não disponivel</string>
-    <string name="checking">Verificando</string>
-    <string name="error">Erro</string>
+    <string name="not_available">Indisponível</string>
+    <string name="checking">A Verificar&#8230;</string>
+    <string name="error">ERRO!</string>
     <string name="check_connectivity">Verificar conetividade</string>
-    <string name="version_too_low">Versão</string>
-    <string name="connection_error">Erro conexão</string>
-    <string name="port_out_of_range">Porta tem de ser de 1 a 65535</string>
-    <string name="illegal_host">Dominio ilegal</string>
-    <string name="edit_timer">Editar tempo</string>
+    <string name="version_too_low">Versão &lt; 1.6.5</string>
+    <string name="connection_error">Erro de ligação</string>
+    <string name="port_out_of_range">Porto tem de ser de 1 a 65535</string>
+    <string name="illegal_host">Anfitrião incorreto</string>
+    <string name="edit_timer">Editar temporizador</string>
     <string name="cleaning_timerlist">Limpar lista</string>
     <string name="cleanup">Apagar</string>
-    <string name="in_standby">O aparelho esta em Standby</string>
-    <string name="is_running">O aparelho esta ligado</string>
+    <string name="in_standby">O recetor está desligado</string>
+    <string name="is_running">O recetor está ligado</string>
     <string name="stream">Stream</string>
-    <string name="stream_current">Stream actual</string>
+    <string name="stream_host">Anfitrião/IP de Streaming</string>
+    <string name="stream_host_long">Anfitrião/IP para Streaming</string>
+    <string name="stream_current">Stream atual</string>
     <string name="similar">Similar</string>
 
     <string-array name="timer_state">
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item>a aguardar&#8230;</item>
+        <item>preparado&#8230;</item>
+        <item>a correr&#8230;</item>
+        <item>finalizado</item>
+        <item>desativado</item>
     </string-array>
     <string-array name="timer_action">
         <item>Gravar</item>
@@ -192,48 +219,73 @@
 
     <string name="sleeptimer">Tempo para desligar</string>
     <string name="current_volume">Volume é %s</string>
-    <string name="muted">Sem Som</string>
+    <string name="muted">Sem som</string>
     <string name="enable_volume_control">Ativar controlo volume</string>
     <string name="enable_volume_control_long">Ativar controlo volume com as teclas</string>
-    <string name="download">Download</string>
+    <string name="download">Transferir</string>
     <string name="extras">Extras</string>
     <string name="main_menu">Principal</string>
-    <string name="profiles">Perfiles</string>
+    <string name="profiles">Perfis</string>
+    <string name="profiles_long">Configurar perfis de ligação</string>
     <string name="enable_instant_zap">Mudar agora</string>
-    <string name="enable_instant_zap_long">Zap instantâneo ao clicar um serviço</string>
+    <string name="enable_instant_zap_long">Zap instantâneo ao clicar no canal</string>
+    <string name="wrong_activity">Atividade errada executada! Por favor recrie os atalhos que criou para o dreamDroid!</string>
     <string name="simple_remote">Comando simples</string>
+    <string name="screenshot_saved">Foto do ecrã gravada em \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Não tem programa de video instalado</string>
     <string name="edit_profile">Editar perfil</string>
-    <string name="force_tablet_layout_long">Forçar layout otimizado para tablet</string>
-    <string name="force_tablet_layout">Forçar layout para tablet</string>
-    <string name="mobile_imdb">Usar versão mobile de IMDb.com</string>
+    <string name="force_tablet_layout_long">Forçar modelo otimizado para tablet</string>
+    <string name="force_tablet_layout">Forçar modelo para tablet</string>
+    <string name="mobile_imdb">Usar versão móvel do IMDb.com</string>
     <string name="mobile_imdb_long">Usar m.IMDb.com ao invés de www.IMDb.com</string>
-    <string name="searching">Procurando</string>
-    <string name="searching_known_devices">A procurar receptores na rede. Pode demorar alguns minutos</string>
-    <string name="autodiscover_dreamboxes">Auto detetar Dreambox</string>
-    <string name="autodiscovery_failed">Nao conseguiu auto detetar Dreambox</string>
+    <string name="searching">A procurar&#8230;</string>
+    <string name="searching_known_devices">A procurar recetores na rede. Pode demorar alguns minutos&#8230;</string>
+    <string name="autodiscover_dreamboxes">Detetar Dreambox automaticamente</string>
+    <string name="autodiscovery_failed">Nao conseguiu encontrar a dreamboc na rede local!</string>
     <string name="add_all">Adicionar todos</string>
-    <string name="error_parsing">Um erro ocorreu ao tratar os dados!</string>
+    <string name="error_parsing">Ocorreu um erro ao interpretar os dados!</string>
     <string name="enabled">Ativado</string>
     <string name="signal_meter">Medidor de sinal</string>
     <string name="accoustic_feedback">Retorno sonoro</string>
-    <string name="use_light_theme_long">Usar um tema claro ao invés do tema escuro padrão</string>
+    <string name="use_light_theme_long">Usar um tema claro ao invés do tema escuro</string>
     <string name="use_light_theme">Usar tema claro</string>
-    <string name="leave_confirm">Confirma a saída?</string>
-    <string name="leave_confirm_long">Confirma a saída do dreamDroid?</string>
-    <string name="sent_as">Enviar como %s</string>
-    <string name="watch_on_dream">Assistir no Receptor</string>
+    <string name="leave_confirm">Sair?</string>
+    <string name="leave_confirm_long">Sair do dreamDroid?</string>
+    <string name="sent_as">Enviado como %s</string>
+    <string name="watch_on_dream">Ver na Dreambox</string>
     <string name="sent_from_dreamdroid">Enviado do dreamDroid em %s</string>
-    <string name="no_profile_available">Conexão do perfil não encontrada! Por favor ao menos um perfil usando a aplicação principal!</string>
+    <string name="no_profile_available">Ligação de perfil não encontrada! Por favor ao menos um perfil usando a aplicação principal!</string>
     <string name="confirm_app_close">Pergunte pela confirmação antes de sair do aplicativo</string>
-    <string name="confirm_app_close_long">Pergunte pela confirmação antes da aplicação estar sendo fechada  precisando "back"</string>
+    <string name="confirm_app_close_long">Pergunte pela confirmação antes da aplicação estar sendo fechada  precisando &quot;voltar&quot;</string>
+    <string name="login_movies">Utilizador (Filmes)</string>
+    <string name="ssl_movies">https (Filmes)</string>
+    <string name="login_live">Utilizador (direto)</string>
     <string name="appearance">Aparência</string>
     <string name="usability">Usabilidade</string>
-    <string name="connecting">Ligando</string>
+    <string name="use_picons">Símbolo Canal</string>
+    <string name="use_picons_long">Ativar o uso dos picons em certas áreas. Requere picons em /{ExternalStorageDir}/dreamDroid/picons</string>
+    <string name="sync_picons">Sincronizar Símbolo do canal</string>
+    <string name="sync_picons_long">Sincronizar Picons para /{ExternalStorageDir}/dreamDroid/picons usando configuração de ligação de perfil atual</string>
+    <string name="sync_picons_path">Picons - caminho remoto</string>
+    <string name="sync_picons_path_long">Caminho onde os Picons residem na dreambox</string>
+    <string name="connecting">A ligar</string>
     <string name="connected">Ligado</string>
     <string name="logged_in">Registado</string>
-    <string name="getting_list_of_files">Pegando lista de arquivos</string>
+    <string name="getting_list_of_files">A atualizar a lista de ficheiros</string>
+    <string name="picon_sync_finished">%s picons transferidos com sucesso</string>
+    <string name="drawer_open">Abrir caixa de navegação</string>
+    <string name="drawer_close">Fechar caixa de navegação</string>
     <string name="enable_animations_long">Ativar visualização de animações adicionais</string>
     <string name="enable_animations">Ativar animações</string>
+    <string name="use_name_as_picon_filename_long">Usar o nome do canal como nome de ficheiro para picons</string>
+    <string name="use_name_as_picon_filename">Picons por nome de canal</string>
+    <string name="picons">Picons</string>
+    <string name="developer_settings">Configurações de programador</string>
+    <string name="dump_xml">Gravar conteúdo xml</string>
+    <string name="dump_xml_long">Gravar conteúdo xml para memória externa</string>
+    <string name="enable">Ativar</string>
+    <string name="disable">Desativar</string>
+    <string name="epg_sync">A sincronizar EPG</string>
+    <string name="epg_sync_finished">o EPG foi sincronizado</string>
 </resources>

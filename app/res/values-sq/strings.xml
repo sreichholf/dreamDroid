@@ -130,6 +130,7 @@
     <string name="port_out_of_range">Porta jo midis 1 dhe 65535</string>
     <string name="cleanup">Pastro</string>
 
+
     <string name="imdb">IMDB</string>
     <string name="enabled">Aktivizuar</string>
     <string name="leave_confirm">Je i sigurte te largohesh</string>

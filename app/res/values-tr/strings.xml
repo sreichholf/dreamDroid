@@ -16,6 +16,19 @@
     </string-array>
 
     <string name="timer">Zamanlayıcı</string>
+    <string name="mediaplayer">Video oynatıcı</string>
+    <string name="play">Oynat</string>
+    <string name="add_to_playlist">Çalma Listesine Ekle</string>
+    <string name="navigation_back_media">Geri</string>
+    <string name="home_media">Anasayfa</string>
+    <string name="close_media">MediaPlayer Kapat</string>
+    <string name="next_media">Sonraki</string>
+    <string name="play_media">Oynat</string>
+    <string name="previous_media">Önceki</string>
+    <string name="stop_media">Durdur</string>
+    <string name="playlist">Çalma Listesi</string>
+    <string name="filebrowser">Dosya Yöneticisi</string>
+    <string name="delete_from_playlist">Çalma Listesini Sil</string>
     <string name="service">Servisler</string>
     <string name="afterevent">Olay sonrası</string>
     <string name="location">Konum</string>
@@ -47,6 +60,7 @@
     <string name="ssl_enabled">SSL etkinleştir</string>
     <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
+    <string name="live">Canlı</string>
     <string name="port_stream_live">Port (Canlı yayın akışı)</string>
     <string name="port_stream_file">Port (Filmler)</string>
     <string name="settings">Ayarlar</string>
@@ -104,6 +118,7 @@
     <string name="not_implemented">Bu fonksiyon henüz tamamlanmadı!</string>
     <string name="current_event">Güncel olay</string>
     <string name="timeout">Zamanaşımı</string>
+    <string name="seconds">Saniye</string>
     <string name="message">Mesaj</string>
     <string name="message_text_hint">Mesajınızı giriniz</string>
     <string name="send">Gönder</string>
@@ -117,6 +132,7 @@
     </string-array>
 
     <string name="virtual_remote">Sanal Kumanda</string>
+    <string name="login">Giriş</string>
     <string name="login_enabled">Giriş Aktif</string>
     <string name="wait_request_finished">Lütfen çalışan işlem tamamlanana kadar bekleyin!</string>
     <string name="current_service">Geçerli</string>
@@ -136,6 +152,7 @@
     <string name="profile_not_deleted">Profil silme hatası</string>
     <string name="profile_deleted">Profili sil</string>
     <string name="profile">Profil</string>
+    <string name="profile_name">Profil adı</string>
     <string name="profile_updated">Güncellenen profil</string>
     <string name="profile_added">Eklenen profil</string>
     <string name="profile_add">Profil ekle</string>
@@ -160,9 +177,11 @@
     <string name="default_bouquet_not_set">Varsayılan buket ayarlanamadı!</string>
     <string name="loading">Yükleniyor&#8230;</string>
     <string name="about">Hakkında</string>
+    <string name="changelog">Sürüm notları</string>
     <string name="license">Lisans</string>
     <string name="source_code_link">Kaynak kodu mevcut: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Profili etkinleştir</string>
+    <string name="connection">Bağlantı</string>
     <string name="connection_state">Bağlantı durumu</string>
     <string name="not_available">Mevcut değil</string>
     <string name="checking">kontrol ediliyor&#8230;</string>
@@ -204,6 +223,7 @@
     <string name="extras">Ekstralar</string>
     <string name="main_menu">Ana</string>
     <string name="profiles">Profiller</string>
+    <string name="profiles_long">Bağlantı profillerini yapılandır</string>
     <string name="enable_instant_zap">Anlık zap</string>
     <string name="enable_instant_zap_long">Bir kanala kısa dokunulduğunda kanal değiştir</string>
     <string name="wrong_activity">Yanlış Kısayol </string>
@@ -211,7 +231,6 @@
     <string name="screenshot_saved">Ekran görüntüsü kaydedildi \'%s\'</string>
     <string name="imdb">imdb</string>
     <string name="missing_stream_player">Bu cihazda kurulu yayın oynatıcısı yok!</string>
-    <string name="mediaplayer">Video oynatıcı</string>
     <string name="edit_profile">Profili Düzenle</string>
     <string name="mobile_imdb">Imdb.com mobil sürümünü kullanın</string>
     <string name="mobile_imdb_long">M.imdb.com yerine www.imdb.com kullanımı</string>
@@ -219,5 +238,5 @@
     <string name="searching_known_devices">Yerel ağınızdaki dreamboxes aranıyor. Bu işlem birkaç dakika sürebilir &#8230;</string>
     <string name="autodiscover_dreamboxes">Dreambox\'da otomatik bul</string>
     <string name="add_all">Hepsini ekle</string>
-
+    <string name="enabled">Etkin</string>
 </resources>
