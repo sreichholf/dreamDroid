@@ -3,7 +3,9 @@
         android:color="?android:attr/colorControlHighlight">
     <item>
         <selector>
-
+            <item
+                android:drawable="@drawable/card_background_selected_dark"
+                android:state_selected="true"/>
             <item
                 android:drawable="@drawable/card_background_checked_dark"
                 android:state_checked="true"/>

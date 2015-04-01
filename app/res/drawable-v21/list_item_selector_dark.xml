@@ -3,7 +3,9 @@
         android:color="?android:attr/colorControlHighlight">
     <item>
         <selector xmlns:android="http://schemas.android.com/apk/res/android">
-
+            <item
+                android:drawable="@drawable/list_background_selected_dark"
+                android:state_selected="true"/>
             <item
                 android:drawable="@drawable/list_background_checked"
                 android:state_checked="true"/>
