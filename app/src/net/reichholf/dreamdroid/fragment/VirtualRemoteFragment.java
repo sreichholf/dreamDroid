@@ -56,7 +56,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 			{ R.id.ButtonPvr, Remote.KEY_PVR }, { R.id.ButtonRed, Remote.KEY_RED },
 			{ R.id.ButtonGreen, Remote.KEY_GREEN }, { R.id.ButtonYellow, Remote.KEY_YELLOW },
 			{ R.id.ButtonBlue, Remote.KEY_BLUE }, { R.id.ButtonRwd, Remote.KEY_REWIND },
-			{ R.id.ButtonPlay, Remote.KEY_PLAYPAUSE }, { R.id.ButtonStop, Remote.KEY_STOP },
+			{ R.id.ButtonPlay, Remote.KEY_PLAY }, { R.id.ButtonStop, Remote.KEY_STOP },
 			{ R.id.ButtonFwd, Remote.KEY_FORWARD }, { R.id.ButtonRec, Remote.KEY_RECORD },
 			{ R.id.ButtonAudio, Remote.KEY_AUDIO }, { R.id.Button1, Remote.KEY_1 }, { R.id.Button2, Remote.KEY_2 },
 			{ R.id.Button3, Remote.KEY_3 }, { R.id.Button4, Remote.KEY_4 }, { R.id.Button5, Remote.KEY_5 },
