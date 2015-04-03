@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -19,7 +20,6 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.DateTimePickerDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -52,23 +52,26 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.fourmob.datetimepicker.date.DatePickerDialog;
+import com.sleepbot.datetimepicker.time.RadialPickerLayout;
+import com.sleepbot.datetimepicker.time.TimePickerDialog;
 
 //TODO Add Tag Support
+
 /**
  * Activity for Editing existing or initial timers
- * 
+ *
  * @author sreichholf
- * 
  */
 public class TimerEditFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener,
 		MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
 
-	private static final int[] sRepeatedValues = { 1, 2, 4, 8, 16, 32, 64 };
+	private static final int[] sRepeatedValues = {1, 2, 4, 8, 16, 32, 64};
 
-	private boolean[] mCheckedDays = { false, false, false, false, false, false, false };
+	private boolean[] mCheckedDays = {false, false, false, false, false, false, false};
 
 	private boolean mTagsChanged;
 	private ArrayList<String> mSelectedTags;
@@ -82,8 +85,10 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	private CheckBox mZap;
 	private Spinner mAfterevent;
 	private Spinner mLocation;
-	private TextView mStart;
-	private TextView mEnd;
+	private TextView mStartDate;
+	private TextView mStartTime;
+	private TextView mEndDate;
+	private TextView mEndTime;
 	private TextView mService;
 	private TextView mRepeatings;
 	private TextView mTags;
@@ -91,6 +96,9 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	private ProgressDialog mProgress;
 
 	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
+
+	private int mBegin;
+	private int mEnd;
 
 	private class GetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
 
@@ -163,16 +171,20 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		mZap = (CheckBox) view.findViewById(R.id.CheckBoxZap);
 		mAfterevent = (Spinner) view.findViewById(R.id.SpinnerAfterEvent);
 		mLocation = (Spinner) view.findViewById(R.id.SpinnerLocation);
-		mStart = (TextView) view.findViewById(R.id.TextViewBegin);
-		mEnd = (TextView) view.findViewById(R.id.TextViewEnd);
+		mStartDate = (TextView) view.findViewById(R.id.TextViewBeginDate);
+		mStartTime = (TextView) view.findViewById(R.id.TextViewBeginTime);
+		mEndDate = (TextView) view.findViewById(R.id.TextViewEndDate);
+		mEndTime = (TextView) view.findViewById(R.id.TextViewEndTime);
 		mRepeatings = (TextView) view.findViewById(R.id.TextViewRepeated);
 		mService = (TextView) view.findViewById(R.id.TextViewService);
 		mTags = (TextView) view.findViewById(R.id.TextViewTags);
 
 		// onClickListeners
 		registerOnClickListener(mService, Statics.ITEM_PICK_SERVICE);
-		registerOnClickListener(mStart, Statics.ITEM_PICK_BEGIN);
-		registerOnClickListener(mEnd, Statics.ITEM_PICK_END);
+		registerOnClickListener(mStartDate, Statics.ITEM_PICK_BEGIN_DATE);
+		registerOnClickListener(mStartTime, Statics.ITEM_PICK_BEGIN_TIME);
+		registerOnClickListener(mEndDate, Statics.ITEM_PICK_END_DATE);
+		registerOnClickListener(mEndTime, Statics.ITEM_PICK_END_TIME);
 		registerOnClickListener(mRepeatings, Statics.ITEM_PICK_REPEATED);
 		registerOnClickListener(mTags, Statics.ITEM_PICK_TAGS);
 
@@ -338,67 +350,92 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	 */
 	protected boolean onItemSelected(int id) {
 		Bundle args;
-		boolean consume = false;
+		boolean consumed = false;
+		Calendar calendar = null;
 		switch (id) {
 		case Statics.ITEM_SAVE:
 			saveTimer();
-			consume = true;
+			consumed = true;
 			break;
 
 		case Statics.ITEM_CANCEL:
 			finish(Activity.RESULT_CANCELED);
-			consume = true;
+			consumed = true;
 			break;
 
 		case Statics.ITEM_PICK_SERVICE:
 			pickService();
-			consume = true;
+			consumed = true;
 			break;
 
-		case Statics.ITEM_PICK_BEGIN:
-			args = new Bundle();
-			args.putInt(DateTimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_BEGIN);
-			args.putString(DateTimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_BEGIN));
-			args.putString(DateTimePickerDialog.ARG_TITLE, getString(R.string.set_time_begin));
-
-			DateTimePickerDialog beginPicker = DateTimePickerDialog.newInstance();
-			beginPicker.setArguments(args);
-			getMultiPaneHandler().showDialogFragment(beginPicker, "dialog_pick_start_time");
-			consume = true;
+		case Statics.ITEM_PICK_BEGIN_DATE:
+			calendar = getCalendar(mBegin);
+			DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+				@Override
+				public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+					TimerEditFragment.this.onDateSet(true, year, month, day);
+				}
+			}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+			getMultiPaneHandler().showDialogFragment(datePickerDialogBegin, "dialog_pick_begin_date");
+			consumed = true;
 			break;
 
-		case Statics.ITEM_PICK_END:
-			args = new Bundle();
-			args.putInt(DateTimePickerDialog.ARG_REQUEST_CODE, Statics.ACTION_PICK_TIME_END);
-			args.putString(DateTimePickerDialog.ARG_TIMESTAMP, mTimer.getString(Timer.KEY_END));
-			args.putString(DateTimePickerDialog.ARG_TITLE, getString(R.string.set_time_end));
+		case Statics.ITEM_PICK_BEGIN_TIME:
+			calendar = getCalendar(mBegin);
+			TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
+				@Override
+				public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
+					TimerEditFragment.this.onTimeSet(true, hour, minute);
+				}
+			}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
+			getMultiPaneHandler().showDialogFragment(timePickerDialogBegin, "dialog_pick_begin_time");
+			consumed = true;
+			break;
 
-			DateTimePickerDialog endPicker = DateTimePickerDialog.newInstance();
-			endPicker.setArguments(args);
-			getMultiPaneHandler().showDialogFragment(endPicker, "dialog_pick_end_time");
-			consume = true;
+		case Statics.ITEM_PICK_END_DATE:
+			calendar = getCalendar(mEnd);
+			DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+				@Override
+				public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+					TimerEditFragment.this.onDateSet(false, year, month, day);
+				}
+			}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+			getMultiPaneHandler().showDialogFragment(datePickerDialogEnd, "dialog_pick_end_date");
+			consumed = true;
+			break;
+
+		case Statics.ITEM_PICK_END_TIME:
+			calendar = getCalendar(mEnd);
+			TimePickerDialog timePickerDialogEnd = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
+				@Override
+				public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
+					TimerEditFragment.this.onTimeSet(false, hour, minute);
+				}
+			}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
+			getMultiPaneHandler().showDialogFragment(timePickerDialogEnd, "dialog_pick_end_time");
+			consumed = true;
 			break;
 
 		case Statics.ITEM_PICK_REPEATED:
 			pickRepeatings();
-			consume = true;
+			consumed = true;
 			break;
 
 		case Statics.ITEM_PICK_TAGS:
 			pickTags();
-			consume = true;
+			consumed = true;
 			break;
 
 		default:
-			consume = super.onItemSelected(id);
+			consumed = super.onItemSelected(id);
 			break;
 		}
 
-		return consume;
+		return consumed;
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void pickService() {
 		ServiceListFragment f = new ServiceListFragment();
@@ -472,16 +509,18 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		}
 
 		// Start and Endtime
-		int begin = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_BEGIN));
-		int end = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_END));
-		long b = ((long) begin) * 1000;
-		long e = ((long) end) * 1000;
-		Date dateBegin = new Date(b);
-		Date dateEnd = new Date(e);
+		mBegin = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_BEGIN));
+		mEnd = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_END));
+		Date dateBegin = new Date(((long) mBegin) * 1000);
+		Date dateEnd = new Date(((long) mEnd) * 1000);
 
-		DateFormat df = DateFormat.getDateTimeInstance();
-		mStart.setText(df.format(dateBegin));
-		mEnd.setText(df.format(dateEnd));
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+
+		mStartDate.setText(dateFormat.format(dateBegin));
+		mStartTime.setText(timeFormat.format(dateBegin));
+		mEndDate.setText(dateFormat.format(dateEnd));
+		mEndTime.setText(timeFormat.format(dateEnd));
 
 		// Repeatings
 		int repeatedValue = 0;
@@ -506,9 +545,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 	/**
 	 * Interpret the repeated int-value by bit-shifting it
-	 * 
-	 * @param value
-	 *            The int-value for to-repeat-days
+	 *
+	 * @param value The int-value for to-repeat-days
 	 * @return All days selected for repeatings in "Mo, Tu, Fr"-style
 	 */
 	private String getRepeated(int value) {
@@ -538,11 +576,9 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 
 	/**
 	 * Applies repeated settings to a timer
-	 * 
-	 * @param checkedDays
-	 *            <code>boolean[]> of checked days for timer-repeatings
-	 * @param timer
-	 *            The acutal timer
+	 *
+	 * @param checkedDays <code>boolean[]> of checked days for timer-repeatings
+	 * @param timer       The acutal timer
 	 * @return The string to set for the GUI-Label
 	 */
 	private String setRepeated(boolean[] checkedDays, ExtendedHashMap timer) {
@@ -635,9 +671,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	/**
 	 * Apply the values of the TimePicker for the Timer-Begin to
 	 * <code>mTimer</code>
-	 * 
-	 * @param cal
-	 *            Calndear Object
+	 *
+	 * @param cal Calndear Object
 	 */
 	private void setBegin(Calendar cal) {
 		String timestamp = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
@@ -649,7 +684,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	/**
 	 * Apply the values of the TimePicker for the Timer-End to
 	 * <code>mTimer</code>
-	 * 
+	 *
 	 * @param cal
 	 */
 	private void setEnd(Calendar cal) {
@@ -683,16 +718,16 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		if ("dialog_select_tags".equals(dialogTag)) {
 			ArrayList<String> tags = DreamDroid.getTags();
 			ArrayList<String> selectedTags = new ArrayList<>();
-			for(Integer which : selected) {
+			for (Integer which : selected) {
 				selectedTags.add(tags.get(which));
 			}
 			mTagsChanged = !selectedTags.equals(mSelectedTags);
 			mSelectedTags = selectedTags;
 		} else if ("dialog_select_repeatings".equals(dialogTag)) {
-			for(int i = 0; i < mCheckedDays.length; ++i) {
+			for (int i = 0; i < mCheckedDays.length; ++i) {
 				mCheckedDays[i] = false;
 			}
-			for(Integer which : selected){
+			for (Integer which : selected) {
 				mCheckedDays[which] = true;
 			}
 			String text = setRepeated(mCheckedDays, mTimer);
@@ -708,4 +743,48 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 			mTags.setText(tags);
 		}
 	}
+
+	private Calendar getCalendar(int time) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis((long) time * 1000);
+		return cal;
+	}
+
+	public void onDateSet(boolean isBegin, int year, int month, int day) {
+		int time = isBegin ? mBegin : mEnd;
+
+		Calendar cal = getCalendar(time);
+
+		if (cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day)
+			return;
+		cal.set(year, month, day);
+
+		TextView dateView = isBegin ? mStartDate : mEndDate;
+		SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd");
+		dateView.setText(dayFormat.format(cal.getTime()));
+
+		if (isBegin)
+			mBegin = (int) (cal.getTimeInMillis() / 1000);
+		else
+			mEnd = (int) (cal.getTimeInMillis() / 1000);
+	}
+
+	public void onTimeSet(boolean isBegin, int hourOfDay, int minute) {
+		int time = isBegin ? mBegin : mEnd;
+		Calendar cal = getCalendar(time);
+		if (cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
+			return;
+		cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+		cal.set(Calendar.MINUTE, minute);
+
+		TextView timeView = isBegin ? mStartTime : mEndTime;
+		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+		timeView.setText(timeFormat.format(cal.getTime()));
+
+		if (isBegin)
+			mBegin = (int) (cal.getTimeInMillis() / 1000);
+		else
+			mEnd = (int) (cal.getTimeInMillis() / 1000);
+	}
+
 }
