@@ -671,7 +671,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 	 * Apply the values of the TimePicker for the Timer-Begin to
 	 * <code>mTimer</code>
 	 */
-	private void updateBegin() {
+	private void updateBegin(Calendar cal) {
+		mBegin = (int) (cal.getTimeInMillis() / 1000);
 		String timestamp = Long.valueOf(mBegin).toString();
 		mTimer.put(Timer.KEY_BEGIN, timestamp);
 		mTimer.put(Timer.KEY_BEGIN_READEABLE, DateTime.getYearDateTimeString(timestamp));
@@ -681,7 +682,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 	 * Apply the values of the TimePicker for the Timer-End to
 	 * <code>mTimer</code>
 	 */
-	private void updateEnd() {
+	private void updateEnd(Calendar cal) {
+		mEnd = (int) (cal.getTimeInMillis() / 1000);
 		String timestamp = Long.valueOf(mEnd).toString();
 		mTimer.put(Timer.KEY_END, timestamp);
 		mTimer.put(Timer.KEY_END_READABLE, DateTime.getYearDateTimeString(timestamp));
@@ -737,13 +739,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd");
 		dateView.setText(dayFormat.format(cal.getTime()));
 
-		if (isBegin) {
-			mBegin = (int) (cal.getTimeInMillis() / 1000);
-			updateBegin();
-		} else {
-			mEnd = (int) (cal.getTimeInMillis() / 1000);
-			updateEnd();
-		}
+		onTimeChanged(isBegin, cal);
 	}
 
 	public void onTimeSet(boolean isBegin, int hourOfDay, int minute) {
@@ -758,14 +754,13 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 		timeView.setText(timeFormat.format(cal.getTime()));
 
-		if (isBegin) {
-			mBegin = (int) (cal.getTimeInMillis() / 1000);
-			updateBegin();
-		} else {
-			mEnd = (int) (cal.getTimeInMillis() / 1000);
-			updateEnd();
-		}
-		updateEnd();
+		onTimeChanged(isBegin, cal);
 	}
 
+	private void onTimeChanged(boolean isBegin, Calendar cal) {
+		if (isBegin)
+			updateBegin(cal);
+		else
+			updateEnd(cal);
+	}
 }
