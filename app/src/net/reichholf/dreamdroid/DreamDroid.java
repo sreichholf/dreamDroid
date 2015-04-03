@@ -43,7 +43,7 @@ public class DreamDroid extends Application {
 	public static String VERSION_STRING;
 
 	public static final String ACTION_CREATE = "dreamdroid.intent.action.NEW";
-	public static final String LOG_TAG = "net.reichholf.dreamdroid";
+	public static final String LOG_TAG = "DreamDroid";
 
 	public static final String PREFS_KEY_QUICKZAP = "quickzap";
 	public static final String PREFS_KEY_CONFIRM_APP_CLOSE = "confirm_app_close";

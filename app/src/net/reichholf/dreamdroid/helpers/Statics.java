@@ -66,8 +66,8 @@ public class Statics {
 	public static final int ITEM_SAVE = R.id.menu_save;
 	public static final int ITEM_CANCEL = R.id.menu_cancel;
 	public static final int ITEM_PICK_SERVICE = 0x6027;
-	public static final int ITEM_PICK_BEGIN = 0x6028;
-	public static final int ITEM_PICK_END = 0x6029;
+	public static final int ITEM_PICK_BEGIN_DATE = 0x6028;
+	public static final int ITEM_PICK_END_DATE = 0x6029;
 	public static final int ITEM_PICK_REPEATED = 0x6030;
 	public static final int ITEM_PICK_TAGS = 0x6031;
 	public static final int ITEM_OVERVIEW = R.id.menu_overview;
@@ -84,6 +84,8 @@ public class Statics {
 	public static final int ITEM_ZAP = 0x6041;
 	public static final int ITEM_DELETE = R.id.menu_delete;
 	public static final int ITEM_BOUQUETEPG = 0x6042;
+	public static final int ITEM_PICK_BEGIN_TIME = 0x6043;
+	public static final int ITEM_PICK_END_TIME= 0x6044;
 
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;

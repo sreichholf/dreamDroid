@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
 
@@ -58,47 +57,110 @@
                 android:hint="@string/description"
                 android:singleLine="false"/>
 
-            <TextView
-                android:id="@+id/TextViewBeginTitle"
-                style="@style/SimpleHeader"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/begin_time"/>
-
-            <TextView
-                android:id="@+id/TextViewBegin"
-                style="@style/SelectableItem"
+            <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:clickable="true"
-                android:paddingBottom="8dp"
-                android:paddingLeft="3dp"
-                android:paddingRight="3dp"
-                android:paddingTop="8dp"
-                android:text="@+id/TextViewBegin"
-                android:textAppearance="@android:style/TextAppearance.Medium"/>
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/TextViewTime"
-                style="@style/SimpleHeader"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/end_time"/>
+                <TextView
+                    android:id="@+id/TextViewBeginTitle"
+                    style="@style/SimpleHeader"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/begin_time"/>
+            </LinearLayout>
 
-            <TextView
-                android:id="@+id/TextViewEnd"
-                style="@style/SelectableItem"
+            <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:clickable="true"
-                android:paddingBottom="8dp"
-                android:paddingLeft="3dp"
-                android:paddingRight="3dp"
-                android:paddingTop="8dp"
-                android:text="@+id/TextViewEnd"
-                android:textAppearance="@android:style/TextAppearance.Medium"/>
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/TextViewBeginDate"
+                    style="@style/SelectableItem"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:paddingTop="8dp"
+                    android:text="..."
+                    android:layout_weight="1"
+                    android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+                <TextView
+                    android:id="@+id/TextViewBeginTime"
+                    style="@style/SelectableItem"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:paddingTop="8dp"
+                    android:text="..."
+                    android:layout_weight="1"
+                    android:textAppearance="@android:style/TextAppearance.Medium"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/TextViewTime"
+                    style="@style/SimpleHeader"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/end_time"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/TextViewEndDate"
+                    style="@style/SelectableItem"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:paddingTop="8dp"
+                    android:layout_weight="1"
+                    android:text="..."
+                    android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+                <TextView
+                    android:id="@+id/TextViewEndTime"
+                    style="@style/SelectableItem"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:paddingTop="8dp"
+                    android:layout_weight="1"
+                    android:text="..."
+                    android:textAppearance="@android:style/TextAppearance.Medium"/>
+
+
+            </LinearLayout>
+
 
             <TextView
                 android:id="@+id/TextViewRepeatedTitle"
