@@ -64,8 +64,7 @@ import com.sleepbot.datetimepicker.time.TimePickerDialog;
  *
  * @author sreichholf
  */
-public class TimerEditFragment extends AbstractHttpFragment implements ActionDialog.DialogActionListener,
-		MultiChoiceDialog.MultiChoiceDialogListener {
+public class TimerEditFragment extends AbstractHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
 
@@ -353,82 +352,82 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		boolean consumed = false;
 		Calendar calendar = null;
 		switch (id) {
-		case Statics.ITEM_SAVE:
-			saveTimer();
-			consumed = true;
-			break;
+			case Statics.ITEM_SAVE:
+				saveTimer();
+				consumed = true;
+				break;
 
-		case Statics.ITEM_CANCEL:
-			finish(Activity.RESULT_CANCELED);
-			consumed = true;
-			break;
+			case Statics.ITEM_CANCEL:
+				finish(Activity.RESULT_CANCELED);
+				consumed = true;
+				break;
 
-		case Statics.ITEM_PICK_SERVICE:
-			pickService();
-			consumed = true;
-			break;
+			case Statics.ITEM_PICK_SERVICE:
+				pickService();
+				consumed = true;
+				break;
 
-		case Statics.ITEM_PICK_BEGIN_DATE:
-			calendar = getCalendar(mBegin);
-			DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
-				@Override
-				public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
-					TimerEditFragment.this.onDateSet(true, year, month, day);
-				}
-			}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
-			getMultiPaneHandler().showDialogFragment(datePickerDialogBegin, "dialog_pick_begin_date");
-			consumed = true;
-			break;
+			case Statics.ITEM_PICK_BEGIN_DATE:
+				calendar = getCalendar(mBegin);
+				DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+					@Override
+					public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+						TimerEditFragment.this.onDateSet(true, year, month, day);
+					}
+				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+				getMultiPaneHandler().showDialogFragment(datePickerDialogBegin, "dialog_pick_begin_date");
+				consumed = true;
+				break;
 
-		case Statics.ITEM_PICK_BEGIN_TIME:
-			calendar = getCalendar(mBegin);
-			TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
-				@Override
-				public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
-					TimerEditFragment.this.onTimeSet(true, hour, minute);
-				}
-			}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
-			getMultiPaneHandler().showDialogFragment(timePickerDialogBegin, "dialog_pick_begin_time");
-			consumed = true;
-			break;
+			case Statics.ITEM_PICK_BEGIN_TIME:
+				calendar = getCalendar(mBegin);
+				TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
+					@Override
+					public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
+						TimerEditFragment.this.onTimeSet(true, hour, minute);
+					}
+				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
+				getMultiPaneHandler().showDialogFragment(timePickerDialogBegin, "dialog_pick_begin_time");
+				consumed = true;
+				break;
 
-		case Statics.ITEM_PICK_END_DATE:
-			calendar = getCalendar(mEnd);
-			DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
-				@Override
-				public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
-					TimerEditFragment.this.onDateSet(false, year, month, day);
-				}
-			}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
-			getMultiPaneHandler().showDialogFragment(datePickerDialogEnd, "dialog_pick_end_date");
-			consumed = true;
-			break;
+			case Statics.ITEM_PICK_END_DATE:
+				calendar = getCalendar(mEnd);
+				DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+					@Override
+					public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+						TimerEditFragment.this.onDateSet(false, year, month, day);
+					}
+				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+				getMultiPaneHandler().showDialogFragment(datePickerDialogEnd, "dialog_pick_end_date");
+				consumed = true;
+				break;
 
-		case Statics.ITEM_PICK_END_TIME:
-			calendar = getCalendar(mEnd);
-			TimePickerDialog timePickerDialogEnd = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
-				@Override
-				public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
-					TimerEditFragment.this.onTimeSet(false, hour, minute);
-				}
-			}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
-			getMultiPaneHandler().showDialogFragment(timePickerDialogEnd, "dialog_pick_end_time");
-			consumed = true;
-			break;
+			case Statics.ITEM_PICK_END_TIME:
+				calendar = getCalendar(mEnd);
+				TimePickerDialog timePickerDialogEnd = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
+					@Override
+					public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
+						TimerEditFragment.this.onTimeSet(false, hour, minute);
+					}
+				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
+				getMultiPaneHandler().showDialogFragment(timePickerDialogEnd, "dialog_pick_end_time");
+				consumed = true;
+				break;
 
-		case Statics.ITEM_PICK_REPEATED:
-			pickRepeatings();
-			consumed = true;
-			break;
+			case Statics.ITEM_PICK_REPEATED:
+				pickRepeatings();
+				consumed = true;
+				break;
 
-		case Statics.ITEM_PICK_TAGS:
-			pickTags();
-			consumed = true;
-			break;
+			case Statics.ITEM_PICK_TAGS:
+				pickTags();
+				consumed = true;
+				break;
 
-		default:
-			consumed = super.onItemSelected(id);
-			break;
+			default:
+				consumed = super.onItemSelected(id);
+				break;
 		}
 
 		return consumed;
@@ -671,46 +670,21 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 	/**
 	 * Apply the values of the TimePicker for the Timer-Begin to
 	 * <code>mTimer</code>
-	 *
-	 * @param cal Calndear Object
 	 */
-	private void setBegin(Calendar cal) {
-		String timestamp = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
+	private void updateBegin() {
+		String timestamp = Long.valueOf(mBegin).toString();
 		mTimer.put(Timer.KEY_BEGIN, timestamp);
 		mTimer.put(Timer.KEY_BEGIN_READEABLE, DateTime.getYearDateTimeString(timestamp));
-		reload();
 	}
 
 	/**
 	 * Apply the values of the TimePicker for the Timer-End to
 	 * <code>mTimer</code>
-	 *
-	 * @param cal
 	 */
-	private void setEnd(Calendar cal) {
-		String timestamp = Long.valueOf((cal.getTimeInMillis() / 1000)).toString();
+	private void updateEnd() {
+		String timestamp = Long.valueOf(mEnd).toString();
 		mTimer.put(Timer.KEY_END, timestamp);
 		mTimer.put(Timer.KEY_END_READABLE, DateTime.getYearDateTimeString(timestamp));
-		reload();
-	}
-
-	@Override
-	public void onDialogAction(int action, Object details, String dialogTag) {
-		applyViewValues();
-		Calendar cal;
-		switch (action) {
-		case Statics.ACTION_PICK_TIME_BEGIN:
-			cal = (Calendar) details;
-			setBegin(cal);
-			break;
-		case Statics.ACTION_PICK_TIME_END:
-			cal = (Calendar) details;
-			setEnd(cal);
-			break;
-		default:
-			break;
-		}
-
 	}
 
 	@Override
@@ -763,10 +737,13 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd");
 		dateView.setText(dayFormat.format(cal.getTime()));
 
-		if (isBegin)
+		if (isBegin) {
 			mBegin = (int) (cal.getTimeInMillis() / 1000);
-		else
+			updateBegin();
+		} else {
 			mEnd = (int) (cal.getTimeInMillis() / 1000);
+			updateEnd();
+		}
 	}
 
 	public void onTimeSet(boolean isBegin, int hourOfDay, int minute) {
@@ -781,10 +758,14 @@ public class TimerEditFragment extends AbstractHttpFragment implements ActionDia
 		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 		timeView.setText(timeFormat.format(cal.getTime()));
 
-		if (isBegin)
+		if (isBegin) {
 			mBegin = (int) (cal.getTimeInMillis() / 1000);
-		else
+			updateBegin();
+		} else {
 			mEnd = (int) (cal.getTimeInMillis() / 1000);
+			updateEnd();
+		}
+		updateEnd();
 	}
 
 }
