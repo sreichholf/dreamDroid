@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -99,9 +98,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	private ListView mNavList;
 	private AbsListView mDetailList;
 	private View mEmpty;
-	private ProgressDialog mProgress;
 
-	private String mBaseTitle;
 	private String mCurrentTitle;
 	private String mNavReference;
 	private String mNavName;
@@ -122,7 +119,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mCurrentTitle = mBaseTitle = getString(R.string.services);
+		mCurrentTitle = getString(R.string.services);
 		mReload = true;
 		Bundle args = getArguments();
 		String mode = null;
@@ -484,7 +481,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AbstractListRequestHandler handler;
-		if(id == LOADER_BOUQUETLIST_ID){
+		if(id == LOADER_BOUQUETLIST_ID || mPickMode){
 			handler = new ServiceListRequestHandler();
 		}  else {
 			if (DreamDroid.featureNowNext())
@@ -587,7 +584,6 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 					reloadDetail(false);
 				}
 			}
-			mBaseTitle = nam;
 		} else { // It's a listitem in the servicelist
 			if (mPickMode) {
 				ExtendedHashMap map = new ExtendedHashMap();
@@ -682,7 +678,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
-		if (isBouquetList || mPickMode) {
+		if (isBouquetList) {
 			mSlidingPane.openPane();
 			if (ref.equals(SERVICE_REF_ROOT)) {
 				loadNavRoot();
@@ -699,7 +695,11 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			} else {
 				mSlidingPane.closePane();
 			}
-			params.add(new BasicNameValuePair("bRef", ref));
+			String param = "bRef";
+			if(mPickMode)
+				param = "sRef";
+			params.add(new BasicNameValuePair(param, ref));
+
 			mDetailHttpParams = params;
 			mHttpHelper.reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
 		}
