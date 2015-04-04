@@ -300,4 +300,5 @@
     <string name="donate_sum">Spende %s</string>
     <string name="donation_error">Spende fehlgeschlagen! Tut uns leid! (%s)</string>
     <string name="donation_thanks">Vielen Dank für ihre Spende!</string>
+    <string name="share">Teilen</string>
 </resources>

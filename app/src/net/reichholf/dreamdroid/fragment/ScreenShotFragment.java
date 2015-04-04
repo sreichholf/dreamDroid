@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
@@ -16,7 +17,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -50,9 +53,8 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
  * Allows fetching and showing the actual TV-Screen content
- * 
+ *
  * @author sre
- * 
  */
 public class ScreenShotFragment extends DreamDroidFragment implements
 		LoaderCallbacks<LoaderResult<byte[]>>, SwipeRefreshLayout.OnRefreshListener {
@@ -70,7 +72,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	private static final String BUNDLE_KEY_RETAIN = "retain";
 
 	private boolean mSetTitle;
-    private boolean mActionsEnabled;
+	private boolean mActionsEnabled;
 	private ImageView mImageView;
 	private int mType;
 	private int mFormat;
@@ -80,6 +82,8 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	private MediaScannerConnection mScannerConn;
 	private PhotoViewAttacher mAttacher;
 	private DreamDroidHttpFragmentHelper mHttpHelper;
+
+	private ShareActionProvider mShareActionProvider;
 
 	@Override
 	public void onRefresh() {
@@ -99,22 +103,22 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	}
 
-	public ScreenShotFragment(){
+	public ScreenShotFragment() {
 		super();
 		shouldRetain(true);
 		mHttpHelper = new DreamDroidHttpFragmentHelper();
-        mActionsEnabled = true;
+		mActionsEnabled = true;
 		mSetTitle = true;
 	}
 
-	public ScreenShotFragment(boolean retainInstance, boolean actionsEnabled, boolean setTitle){
+	public ScreenShotFragment(boolean retainInstance, boolean actionsEnabled, boolean setTitle) {
 		super();
 		shouldRetain(retainInstance);
-        mActionsEnabled = actionsEnabled;
+		mActionsEnabled = actionsEnabled;
 		mSetTitle = setTitle;
 	}
 
-	private void shouldRetain(boolean retainInstance){
+	private void shouldRetain(boolean retainInstance) {
 		Bundle args = new Bundle();
 		args.putBoolean(BUNDLE_KEY_RETAIN, retainInstance);
 		setArguments(args);
@@ -131,7 +135,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 			mHttpHelper.bindToFragment(this);
 
 		setHasOptionsMenu(true);
-		if(mSetTitle)
+		if (mSetTitle)
 			initTitles(getString(R.string.screenshot));
 	}
 
@@ -168,8 +172,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		return view;
 	}
 
-	public void onViewCreated(View view, Bundle savedInstanceState)
-	{
+	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
 		SwipeRefreshLayout SwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
@@ -192,6 +195,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	@Override
 	public void onPause() {
 		mScannerConn.disconnect();
+		mScannerConn = null;
 		super.onPause();
 	}
 
@@ -203,15 +207,45 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-        if(menu.findItem(R.id.menu_reload) == null && mActionsEnabled) {
-            inflater.inflate(R.menu.reload, menu);
-            inflater.inflate(R.menu.save, menu);
-        }
+		if (menu.findItem(R.id.menu_reload) == null && mActionsEnabled) {
+			inflater.inflate(R.menu.reload, menu);
+			inflater.inflate(R.menu.save, menu);
+			inflater.inflate(R.menu.share, menu);
+		}
+		MenuItem shareItem = menu.findItem(R.id.menu_share);
+		mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+	}
+
+	private void setShareIntent() {
+		if (mShareActionProvider != null) {
+			File file = saveToFile(true);
+			if (file == null) {
+				showToast(getString(R.string.error));
+				return;
+			}
+			file.setReadable(true, false);
+			Uri uri = Uri.fromFile(file);
+
+			Intent intent = new Intent(Intent.ACTION_SEND);
+			intent.putExtra(Intent.EXTRA_STREAM, uri);
+			intent.setType(String.format("image/%s", getFileExtension()));
+			mShareActionProvider.setShareIntent(intent);
+		}
+	}
+
+	private String getFileExtension() {
+		if (mFormat == FORMAT_JPG) {
+			return "jpg";
+		} else if (mFormat == FORMAT_PNG) {
+			return "png";
+		}
+		return "";
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		mScannerConn.disconnect();
+		if(mScannerConn != null)
+			mScannerConn.disconnect();
 		outState.putByteArray("rawImage", mRawImage);
 	}
 
@@ -228,15 +262,16 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		return true;
 	}
 
-		/**
-		 * @param bytes
-		 */
+	/**
+	 * @param bytes
+	 */
 	private void onScreenshotAvailable(byte[] bytes) {
 		if (this.isDetached())
 			return;
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		mAttacher.update();
+		setShareIntent();
 	}
 
 	protected void reload() {
@@ -244,24 +279,24 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
 
 		switch (mType) {
-		case (TYPE_OSD):
-			params.add(new BasicNameValuePair("o", ""));
-			params.add(new BasicNameValuePair("n", ""));
-			break;
-		case (TYPE_VIDEO):
-			params.add(new BasicNameValuePair("v", ""));
-			break;
-		case (TYPE_ALL):
-			break;
+			case (TYPE_OSD):
+				params.add(new BasicNameValuePair("o", ""));
+				params.add(new BasicNameValuePair("n", ""));
+				break;
+			case (TYPE_VIDEO):
+				params.add(new BasicNameValuePair("v", ""));
+				break;
+			case (TYPE_ALL):
+				break;
 		}
 
 		switch (mFormat) {
-		case (FORMAT_JPG):
-			params.add(new BasicNameValuePair("format", "jpg"));
-			break;
-		case (FORMAT_PNG):
-			params.add(new BasicNameValuePair("format", "png"));
-			break;
+			case (FORMAT_JPG):
+				params.add(new BasicNameValuePair("format", "jpg"));
+				break;
+			case (FORMAT_PNG):
+				params.add(new BasicNameValuePair("format", "png"));
+				break;
 		}
 
 		params.add(new BasicNameValuePair("r", String.valueOf(mSize)));
@@ -288,42 +323,54 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	}*/
 
 	private void saveToFile() {
+		saveToFile(false);
+	}
+
+	private File saveToFile(boolean inCache) {
 //		performFileSearch();
 
 		if (mRawImage != null) {
 			long timestamp = GregorianCalendar.getInstance().getTimeInMillis();
 
-			File root = Environment.getExternalStorageDirectory();
-			root = new File(String.format("%s%s%s", root.getAbsolutePath(), File.separator, "media/screenshots"));
 
-			String extension = "";
-
-			if (mFormat == FORMAT_JPG) {
-				extension = "jpg";
-			} else if (mFormat == FORMAT_PNG) {
-				extension = "png";
-			}
-
-			String fileName = String.format("dreamDroid_%s.%s", timestamp, extension);
-			FileOutputStream out;
-			try {
+			File root;
+			String filepath;
+			if (inCache) {
+				root = getActionBarActivity().getCacheDir();
+			} else {
+				root = Environment.getExternalStorageDirectory();
+				filepath = String.format("%s%s%s", root.getAbsolutePath(), File.separator, "media/screenshots");
+				root = new File(filepath);
 				if (!root.exists()) {
 					root.mkdirs();
 				}
+			}
 
+			String extension = getFileExtension();
+			String fileName;
+			if (inCache) {
+				fileName = String.format("screenshot.%s", extension);
+			} else {
+				fileName = String.format("dreamDroid_%s.%s", timestamp, extension);
+			}
+			FileOutputStream out;
+			try {
 				File file = new File(root, fileName);
 				file.createNewFile();
 				out = new FileOutputStream(file);
 				out.write(mRawImage);
 				out.close();
-				mScannerConn.scanFile(file.getAbsolutePath(), "image/*");
-				showToast(getString(R.string.screenshot_saved, file.getAbsolutePath()));
-
+				if (!inCache) {
+					mScannerConn.scanFile(file.getAbsolutePath(), "image/*");
+					showToast(getString(R.string.screenshot_saved, file.getAbsolutePath()));
+				}
+				return file;
 			} catch (IOException e) {
 				Log.e(DreamDroid.LOG_TAG, e.getLocalizedMessage());
 				showToast(e.toString());
 			}
 		}
+		return null;
 	}
 
 	@Override

@@ -298,4 +298,5 @@
     <string name="donate">Donate</string>
     <string name="donation_thanks">Thank you very much for your donation!</string>
     <string name="donation_error">Your donation failed! Sorry for that! (%s)</string>
+    <string name="share">Share</string>
 </resources>
