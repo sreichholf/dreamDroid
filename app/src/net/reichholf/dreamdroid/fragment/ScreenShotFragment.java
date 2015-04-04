@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.fragment;
 
 
-import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
@@ -70,6 +69,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	private static final String BUNDLE_KEY_RETAIN = "retain";
 
+	private boolean mSetTitle;
     private boolean mActionsEnabled;
 	private ImageView mImageView;
 	private int mType;
@@ -104,12 +104,14 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		shouldRetain(true);
 		mHttpHelper = new DreamDroidHttpFragmentHelper();
         mActionsEnabled = true;
+		mSetTitle = true;
 	}
 
-	public ScreenShotFragment(boolean retainInstance, boolean actionsEnabled){
+	public ScreenShotFragment(boolean retainInstance, boolean actionsEnabled, boolean setTitle){
 		super();
 		shouldRetain(retainInstance);
         mActionsEnabled = actionsEnabled;
+		mSetTitle = setTitle;
 	}
 
 	private void shouldRetain(boolean retainInstance){
@@ -129,7 +131,8 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 			mHttpHelper.bindToFragment(this);
 
 		setHasOptionsMenu(true);
-		initTitles(getString(R.string.screenshot));
+		if(mSetTitle)
+			initTitles(getString(R.string.screenshot));
 	}
 
 	@Override

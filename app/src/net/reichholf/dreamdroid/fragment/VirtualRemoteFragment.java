@@ -91,7 +91,7 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		View view = getRemoteView();
 
 		if(view.findViewById(R.id.screenshot_frame) != null){
-			mScreenshotFragment = new ScreenShotFragment(false, false);
+			mScreenshotFragment = new ScreenShotFragment(false, false, false);
 
 			FragmentManager fm = getChildFragmentManager();
 			FragmentTransaction ft = fm.beginTransaction();
