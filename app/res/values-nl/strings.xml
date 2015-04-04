@@ -95,7 +95,7 @@
     <string name="new_timer">Nieuwe timer</string>
     <string name="locations">Lokaties</string>
     <string name="gui_version">Grafische versie</string>
-    <string name="image_version">Afbeelding versie</string>
+    <string name="image_version">Image versie</string>
     <string name="interface_version">Interface versie</string>
     <string name="front_processor_version">Frontprocessor versie</string>
     <string name="device_name">Toestelnaam</string>
