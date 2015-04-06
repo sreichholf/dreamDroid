@@ -123,7 +123,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 			case Statics.REQUEST_PICK_BOUQUET:
 				ExtendedHashMap service = data.getParcelableExtra(PickServiceFragment.KEY_BOUQUET);
 				String reference = service.getString(Service.KEY_REFERENCE);
-				if (!mReference.equals(reference)) {
+				if (!reference.equals(mReference)) {
 					mReference = reference;
 					mName = service.getString(Service.KEY_NAME);
 					if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ECLAIR_MR1)
