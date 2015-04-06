@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 rc1" versioncode="264">
+    <release version="1.0 rc1" versioncode="266">
         <change>Neues App-Icon!</change>
-        <change>NEU: Spenden über In-App Käufe</change>
+        <change>NEU: Dialoge im Material Design</change>
+        <change>NEU: Screenshots können geteilt werden</change>
         <change>NEU: "EPG" hinzugefügt -> EPG eines Bouquets zu einem bestimmten Zeitpunkt</change>
         <change>NEU: Mehrspaltige Kanalliste auf Tablets (konfigurierbar in den allgemeinen Einstellungen</change>
-        <change>BESSER: Nutzbarkeit der Virtuellenfernbedienung verbessert. Standardlayout kann nun in den allgemeinen Einstellen vordefiniert werden</change>
-        <change>NEU: Dialoge im Material Design</change>
+        <change>NEU: Spenden über In-App Käufe</change>
+        <change>VERBESSERT: Nutzbarkeit der Virtuellenfernbedienung verbessert. Standardlayout kann nun in den allgemeinen Einstellen vordefiniert werden</change>
     </release>
     <release version="1.0 beta 31.1" versioncode="243">
         <change>Verbesserte Stabilität</change>

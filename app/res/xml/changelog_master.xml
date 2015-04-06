@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 rc1" versioncode="264">
+    <release version="1.0 rc1" versioncode="266">
         <change>New App-Icon!</change>
-        <change>NEW: Donations via In-App Purchases</change>
+        <change>NEW: Material Design for dialogs</change>
+        <change>NEW: Sharing Screnshots</change>
         <change>NEW: "EPG" added -> EPG of a Bouquet at a specific point in time</change>
         <change>NEW: Multi column service list, configurable via general settings</change>
+        <change>NEW: Donations via In-App Purchases</change>
         <change>IMPROVED: Improve usability of virtual remote, default layout is configurable in global preferences</change>
-        <change>NEW: Material Design for dialogs</change>
     </release>
     <release version="1.0 beta 31.1" versioncode="243">
         <change>Improved Stability</change>
