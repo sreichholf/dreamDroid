@@ -83,6 +83,7 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
 		super.onCreateOptionsMenu(menu, inflater);
+		MultiPaneHandler mph = getMultiPaneHandler(); //TODO how do i reproduce this?
 		if(mph == null || !mph.isDrawerOpen())
 			createOptionsMenu(menu, inflater);
 	}
