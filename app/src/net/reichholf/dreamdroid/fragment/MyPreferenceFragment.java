@@ -3,11 +3,13 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.preference.PreferenceFragment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -49,6 +51,15 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 				return true;
 			}
 		});
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		TypedValue typedValue = new TypedValue();
+		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
+		if(typedValue.resourceId > 0)
+			getListView().setSelector(typedValue.resourceId);
 	}
 
 	@Override

@@ -121,6 +121,7 @@
     </style>
 
     <style name="Theme.DreamDroid" parent="Base.Theme.DreamDroid">
+        <item name="android:listSelector">@drawable/list_selector_dark</item>
         <item name="ic_btn_clock">@drawable/ic_menu_clock_holo_light</item>
         <item name="ic_btn_close">@drawable/ic_menu_close_holo_light</item>
         <item name="ic_btn_movie">@drawable/ic_menu_movie_holo_light</item>
@@ -130,6 +131,7 @@
     </style>
 
     <style name="Theme.DreamDroid.Light" parent="Base.Theme.DreamDroid.Light">
+        <item name="android:listSelector">@drawable/list_selector_light</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light">

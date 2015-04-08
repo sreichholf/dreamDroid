@@ -15,8 +15,8 @@
     <color name="active_profile_color">#77AD2B</color>
     <color name="details_element_background_light">#FFEEEEEE</color>
     <color name="details_element_background_dark">#FF303030</color>
-    <color name="card_background_selected_light">#7E0099CC</color>
-    <color name="card_background_selected_dark">#7E0099CC</color>
+    <color name="card_background_selected_dark">#59FFFFFF</color>
+    <color name="card_background_selected_light">#19000000</color>
     <color name="card_background_light">#FFFFFF</color>
     <color name="card_background_dark">#333333</color>
 

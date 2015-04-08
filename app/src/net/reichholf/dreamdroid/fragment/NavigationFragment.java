@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -300,6 +301,11 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		super.onActivityCreated(savedInstanceState);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		getListView().setTextFilterEnabled(true);
+
+		TypedValue typedValue = new TypedValue();
+		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
+		if(typedValue.resourceId > 0)
+			getListView().setSelector(typedValue.resourceId);
 	}
 
 	@SuppressLint("NewApi")

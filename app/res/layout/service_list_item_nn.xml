@@ -21,7 +21,7 @@
             android:layout_marginRight="56dp"
             android:layout_weight="1"/>
 
-        <ProgressBar
+        <net.reichholf.dreamdroid.view.MaterialProgressBar
             android:id="@+id/service_progress"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="50dp"
