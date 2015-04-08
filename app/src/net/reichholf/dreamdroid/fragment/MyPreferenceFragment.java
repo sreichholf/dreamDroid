@@ -8,6 +8,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.preference.PreferenceFragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -22,7 +23,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Picon;
  * Created by Stephan on 08.04.2015.
  */
 public class MyPreferenceFragment extends PreferenceFragment implements
-		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener {
+		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener, ActivityCallbackHandler {
 
 	private static String LOG_TAG = MyPreferenceFragment.class.getSimpleName();
 
@@ -153,5 +154,15 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 
 		if (!mProgressDialog.isShowing())
 			mProgressDialog.show();
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		return false;
+	}
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		return false;
 	}
 }
