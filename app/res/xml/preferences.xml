@@ -2,12 +2,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orderingFromXml="true">
 
-    <Preference
-        android:key="profiles"
-        android:summary="@string/profiles_long"
-        android:title="@string/profiles"/>
     <PreferenceCategory
-        android:key="usability"
+        android:key="category_usability"
         android:title="@string/usability">
         <CheckBoxPreference
             android:key="volume_control"
@@ -33,7 +29,7 @@
             android:title="@string/confirm_app_close"/>
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="appearance"
+        android:key="category_appearance"
         android:title="@string/appearance">
         <CheckBoxPreference
             android:defaultValue="true"
@@ -61,7 +57,7 @@
             android:title="@string/max_grid_cols"/>
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="picons"
+        android:key="category_picons"
         android:title="@string/picons">
 
         <CheckBoxPreference

@@ -301,4 +301,6 @@
     <string name="donation_error">Spende fehlgeschlagen! Tut uns leid! (%s)</string>
     <string name="donation_thanks">Vielen Dank für ihre Spende!</string>
     <string name="share">Teilen</string>
+    <string name="restart">Neustart?</string>
+    <string name="theme_change_restart">Um das geänderte Motiv anzuwenden ist ein Neustart nötig. dreamDroid jetzt neu starten?</string>
 </resources>

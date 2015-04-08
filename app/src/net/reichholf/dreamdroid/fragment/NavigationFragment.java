@@ -23,7 +23,6 @@ import android.widget.ListView;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
-import net.reichholf.dreamdroid.activities.MyPreferenceActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
@@ -33,7 +32,6 @@ import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
-import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -51,7 +49,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 /**
  * This is where all begins. It's the "main menu activity" which acts as central
@@ -271,7 +268,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			@Override
 			public void onClick(View v) {
 				CheckableImageButton cib = (CheckableImageButton) v;
-				if (cib.getId() == R.id.buttonProfiles) {
+				if (cib.getId() == R.id.buttonProfiles || cib.getId() == R.id.buttonSettings) {
 					getListView().setItemChecked(mCurrentListItem, false);
 					mCurrentListItem = -1;
 					if (cib.isChecked()) {
@@ -279,6 +276,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 						return;
 					}
 					cib.setChecked(true);
+
+					CheckableImageButton btn = null;
+					if (cib.getId() == R.id.buttonProfiles)
+						btn = (CheckableImageButton) findViewById(R.id.buttonSettings);
+					else
+						btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
+					btn.setChecked(false);
 				} else {
 					CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
 					btn.setChecked(false);
@@ -319,6 +323,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		// TODO find a reliable way to mark the current item...
 		if (mHighlightCurrent) {
 			CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
+			btn.setChecked(false);
+			btn = (CheckableImageButton) findViewById(R.id.buttonSettings);
 			btn.setChecked(false);
 
 			if (mCurrent[4] == 0 || (mCurrent[4] == 2 && isTablet())) {
@@ -394,8 +400,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 				break;
 
 			case Statics.ITEM_PREFERENCES:
-				intent = new Intent(getMainActivity(), MyPreferenceActivity.class);
-				startActivityForResult(intent, Statics.REQUEST_ANY);
+				getMainActivity().showDetails(MyPreferenceFragment.class);
 				break;
 
 			case Statics.ITEM_MESSAGE:

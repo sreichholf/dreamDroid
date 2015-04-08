@@ -56,6 +56,8 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import de.cketti.library.changelog.ChangeLog;
 
 /**
@@ -64,7 +66,7 @@ import de.cketti.library.changelog.ChangeLog;
 public class MainActivity extends BaseActivity implements MultiPaneHandler, ProfileChangedListener,
 		ActionDialog.DialogActionListener, SleepTimerDialog.SleepTimerDialogActionListener,
 		SendMessageDialog.SendMessageDialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener,
-		SearchView.OnQueryTextListener {
+		SearchView.OnQueryTextListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -205,6 +207,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		super.onResume();
 		mIsPaused = false;
 		onProfileChanged(DreamDroid.getCurrentProfile());
+		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 	}
 
 	@Override
@@ -212,6 +215,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		if (mCheckProfileTask != null)
 			mCheckProfileTask.cancel(true);
 		mIsPaused = true;
+		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
 		super.onPause();
 	}
 
@@ -252,6 +256,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	private Fragment getCurrentDetailFragment() {
+		if(mDetailFragment == null)
+			mDetailFragment = getSupportFragmentManager().findFragmentById(R.id.detail_view);
 		return mDetailFragment;
 	}
 
@@ -647,16 +653,34 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		switch (resultCode) {
-			case Statics.RESULT_THEME_CHANGED:
-				Intent intent = new Intent(this, MainActivity.class);
-				startActivity(intent);
-				finish();
-				break;
-			default:
-				super.onActivityResult(requestCode, resultCode, data);
+	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+		Log.w(DreamDroid.LOG_TAG, key);
+		if ("light_theme".equals(key)) {
+			new MaterialDialog.Builder(this)
+					.callback(new MaterialDialog.ButtonCallback() {
+						@Override
+						public void onPositive(MaterialDialog dialog) {
+							restart();
+						}
+
+						@Override
+						public void onNegative(MaterialDialog dialog) {
+							super.onNegative(dialog);
+						}
+					})
+					.title(R.string.restart)
+					.content(R.string.theme_change_restart)
+					.positiveText(R.string.ok)
+					.negativeText(R.string.cancel)
+					.show();
 		}
+
+	}
+
+	private void restart() {
+		Intent intent = new Intent(MainActivity.this.getApplicationContext(), MainActivity.class);
+		startActivity(intent);
+		finish();
 	}
 
 	@Override
