@@ -1,0 +1,56 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.0'
+    }
+}
+
+apply plugin: 'com.android.library'
+
+repositories {
+    jcenter()
+}
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
+
+    sourceSets {
+        main {
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:22.+'
+    compile 'com.afollestad:material-dialogs:0.7.+'
+}
+
+
+project.ext {
+    pom = [
+        group: "de.cketti.library.changelog",
+        artifactId: "ckchangelog",
+        name: "ckChangeLog Library",
+        description: "An Android Library to display a Change Log",
+        url: "https://github.com/cketti/ckChangeLog",
+
+        scmUrl: "https://github.com/cketti/ckChangeLog",
+        scmConnection: "scm:git@github.com:cketti/ckChangeLog.git",
+        scmDevConnection: "scm:git@github.com:cketti/ckChangeLog.git",
+
+        licenseName: "The Apache Software License, Version 2.0",
+        licenseUrl: "http://www.apache.org/licenses/LICENSE-2.0.txt",
+        licenseDist: "repo",
+
+        developerId: "cketti",
+        developerName: "cketti"
+    ]
+}
+
+
