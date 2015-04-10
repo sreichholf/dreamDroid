@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 rc1" versioncode="266">
+    <release version="1.0 rc1" versioncode="267">
         <change>Neues App-Icon!</change>
-        <change>NEU: Dialoge im Material Design</change>
+        <change>NEU: Mehr Material Design, auch für Android &lt; 5.0 </change>
         <change>NEU: Screenshots können geteilt werden</change>
         <change>NEU: "EPG" hinzugefügt -> EPG eines Bouquets zu einem bestimmten Zeitpunkt</change>
         <change>NEU: Mehrspaltige Kanalliste auf Tablets (konfigurierbar in den allgemeinen Einstellungen</change>

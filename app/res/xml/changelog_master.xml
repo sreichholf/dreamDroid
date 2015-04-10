@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 rc1" versioncode="266">
+    <release version="1.0 rc1" versioncode="267">
         <change>New App-Icon!</change>
-        <change>NEW: Material Design for dialogs</change>
+        <change>NEW: More Material Design, also on android &lt; 5.0</change>
         <change>NEW: Sharing Screnshots</change>
         <change>NEW: "EPG" added -> EPG of a Bouquet at a specific point in time</change>
         <change>NEW: Multi column service list, configurable via general settings</change>
