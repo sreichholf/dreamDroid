@@ -339,7 +339,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		}
 		adapter = new ServiceListAdapter(getActionBarActivity(), mDetailItems);
 		if(Build.VERSION.SDK_INT < 11) {
-			mDetailList.setAdapter(adapter);
+			((ListView)mDetailList).setAdapter(adapter);
 		} else {
 			mDetailList.setAdapter(adapter);
 		}
