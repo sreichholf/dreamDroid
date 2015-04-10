@@ -41,7 +41,6 @@
                 <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MyPreferenceActivity"></activity>
         <activity android:name=".activities.SimpleFragmentActivity">
             <meta-data
                 android:name="android.support.UI_OPTIONS"
