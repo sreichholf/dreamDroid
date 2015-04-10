@@ -75,10 +75,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 					f = c.newInstance();
 					args.putAll(getIntent().getExtras());
 					f.setArguments(args);
-				} catch (InstantiationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
+				} catch (InstantiationException | IllegalAccessException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -125,7 +122,12 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	 */
 	@Override
 	public void showDetails(Class<? extends Fragment> fragmentClass) {
-		showDetails(fragmentClass);
+		try {
+			showDetails(fragmentClass.newInstance());
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/*
@@ -201,9 +203,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 			f = fragmentClass.newInstance();
 			f.setArguments(args);
 			showDialogFragment(f, tag);
-		} catch (InstantiationException e) {
-			Log.e(DreamDroid.LOG_TAG, e.getMessage());
-		} catch (IllegalAccessException e) {
+		} catch (InstantiationException | IllegalAccessException e) {
 			Log.e(DreamDroid.LOG_TAG, e.getMessage());
 		}
 	}

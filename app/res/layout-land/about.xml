@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:flattr_sdk="http://schemas.flattr4android.com/sdk"
-    android:layout_width="480dp"
-    android:layout_height="wrap_content"
-    android:orientation="vertical" >
+              android:layout_width="480dp"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
 
     <View
         android:id="@+id/divider"

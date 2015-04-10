@@ -145,7 +145,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			spl.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
 				@Override
 				public void onPanelSlide(View view, float v) {
-					return;
 				}
 
 				@Override
@@ -175,7 +174,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		initTitle(getString(R.string.mediaplayer));
 
-		mPlaylist = new ArrayList<ExtendedHashMap>();
+		mPlaylist = new ArrayList<>();
 		if (savedInstanceState != null) {
 			mMediaIndex = savedInstanceState.getInt(STATE_MEDIA_INDEX, -1);
 			if (mMediaIndex < 0)
@@ -230,12 +229,12 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		if(loader == LOADER_PLAYLIST_ID) {
-			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+			ArrayList<NameValuePair> params = new ArrayList<>();
 			params.add(new BasicNameValuePair("path", PLAYLIST_AS_ROOT));
 			return params;
 		} else { //LOADER_DEFAULT_ID
 			if(mFileListParams == null)
-				mFileListParams = new ArrayList<NameValuePair>();
+				mFileListParams = new ArrayList<>();
 			return mFileListParams;
 		}
 	}
@@ -283,7 +282,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				// add image to detail view
 				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
 
-				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+				ArrayList<NameValuePair> params = new ArrayList<>();
 				params.add(new BasicNameValuePair("file", "/tmp/.id3coverart"));
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
 				// String imageUrl =
@@ -488,7 +487,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	 * @param filePath
 	 */
 	private void addToPlaylist(String filePath) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_FILE, filePath));
 
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_ADD), params);
@@ -500,7 +499,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	 * @param filePath
 	 */
 	private void deleteFromPlaylist(String filePath) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_FILE, filePath));
 
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_REMOVE), params);
@@ -517,7 +516,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		// invalidate options menu
 		getActionBarActivity().supportInvalidateOptionsMenu();
 
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_FILE, filePath));
 		if (root != null)
 			params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_ROOT, root));
@@ -532,7 +531,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		// invalidate options menu
 		getActionBarActivity().supportInvalidateOptionsMenu();
 
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
 				MediaplayerCommandRequestHandler.CMD_PLAY));
 
@@ -546,7 +545,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		// invalidate options menu
 		getActionBarActivity().supportInvalidateOptionsMenu();
 
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
 				MediaplayerCommandRequestHandler.CMD_STOP));
 
@@ -559,7 +558,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	// play previous media item
 	private void previous() {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
 				MediaplayerCommandRequestHandler.CMD_PREVIOUS));
 
@@ -568,7 +567,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	// play next media item
 	private void next() {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
 				MediaplayerCommandRequestHandler.CMD_NEXT));
 
@@ -576,14 +575,16 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	private void clearPlaylist() {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
 				MediaplayerCommandRequestHandler.CMD_CLEAR));
+
+		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 	}
 
 	// close Mediaplayer
 	private void closePlayer() {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
 				MediaplayerCommandRequestHandler.CMD_EXIT));
 
@@ -591,7 +592,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	private void setArgs(String name, String value) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(name, value));
 		mFileListParams = params;
 	}
@@ -614,11 +615,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	private boolean isDetailViewAvailable(View v) {
 		LinearLayout detailLayout = (LinearLayout) v.findViewById(R.id.detailView);
 
-		if (detailLayout != null) {
-			return true;
-		} else {
-			return false;
-		}
+		return detailLayout != null;
 	}
 
 	private String getCommandFromKeyState(String keyStateText) {
@@ -658,7 +655,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				// add image to detail view
 				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
 
-				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+				ArrayList<NameValuePair> params = new ArrayList<>();
 				params.add(new BasicNameValuePair("file", "/tmp/.id3coverart"));
 
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
@@ -675,8 +672,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new MediaplayerListRequestHandler(), false, args);
-		return loader;
+		return new AsyncListLoader(getActionBarActivity(), new MediaplayerListRequestHandler(), false, args);
 	}
 
 	@Override

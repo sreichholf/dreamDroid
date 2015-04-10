@@ -14,9 +14,9 @@ import java.util.ArrayList;
  */
 public class BundleHelper {
 	public static ArrayList<String> toStringArrayList(CharSequence[] strings){
-		ArrayList<String> list = new ArrayList<String>();
-		for(int i = 0; i < strings.length; ++i){
-			list.add(strings[i].toString());
+		ArrayList<String> list = new ArrayList<>();
+		for (CharSequence string : strings) {
+			list.add(string.toString());
 		}
 		return list;
 	}

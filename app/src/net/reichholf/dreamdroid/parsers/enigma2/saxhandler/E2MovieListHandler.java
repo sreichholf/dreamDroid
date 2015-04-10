@@ -53,29 +53,41 @@ public class E2MovieListHandler extends E2ListHandler {
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
 
-		if (localName.equals(TAG_E2MOVIE)) {
-			inMovie = true;
-			mMovie = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inReference = true;
-		} else if (localName.equals(TAG_E2TITLE)) {
-			inTitle = true;
-		} else if (localName.equals(TAG_E2DESCRIPTION)) {
-			inDescription = true;
-		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
-			inDescriptionEx = true;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inName = true;
-		} else if (localName.equals(TAG_E2TIME)) {
-			inTime = true;
-		} else if (localName.equals(TAG_E2LENGTH)) {
-			inLength = true;
-		} else if (localName.equals(TAG_E2TAGS)) {
-			inTags = true;
-		} else if (localName.equals(TAG_E2FILENAME)) {
-			inFilename = true;
-		} else if (localName.equals(TAG_E2FILESIZE)) {
-			inFilesize = true;
+		switch (localName) {
+			case TAG_E2MOVIE:
+				inMovie = true;
+				mMovie = new ExtendedHashMap();
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inReference = true;
+				break;
+			case TAG_E2TITLE:
+				inTitle = true;
+				break;
+			case TAG_E2DESCRIPTION:
+				inDescription = true;
+				break;
+			case TAG_E2DESCRIPTIONEXTENDED:
+				inDescriptionEx = true;
+				break;
+			case TAG_E2SERVICENAME:
+				inName = true;
+				break;
+			case TAG_E2TIME:
+				inTime = true;
+				break;
+			case TAG_E2LENGTH:
+				inLength = true;
+				break;
+			case TAG_E2TAGS:
+				inTags = true;
+				break;
+			case TAG_E2FILENAME:
+				inFilename = true;
+				break;
+			case TAG_E2FILESIZE:
+				inFilesize = true;
+				break;
 		}
 	}
 
@@ -87,29 +99,41 @@ public class E2MovieListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2MOVIE)) {
-			inMovie = false;
-			mList.add(mMovie);
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inReference = false;
-		} else if (localName.equals(TAG_E2TITLE)) {
-			inTitle = false;
-		} else if (localName.equals(TAG_E2DESCRIPTION)) {
-			inDescription = false;
-		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
-			inDescriptionEx = false;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inName = false;
-		} else if (localName.equals(TAG_E2TIME)) {
-			inTime = false;
-		} else if (localName.equals(TAG_E2LENGTH)) {
-			inLength = false;
-		} else if (localName.equals(TAG_E2TAGS)) {
-			inTags = false;
-		} else if (localName.equals(TAG_E2FILENAME)) {
-			inFilename = false;
-		} else if (localName.equals(TAG_E2FILESIZE)) {
-			inFilesize = false;
+		switch (localName) {
+			case TAG_E2MOVIE:
+				inMovie = false;
+				mList.add(mMovie);
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inReference = false;
+				break;
+			case TAG_E2TITLE:
+				inTitle = false;
+				break;
+			case TAG_E2DESCRIPTION:
+				inDescription = false;
+				break;
+			case TAG_E2DESCRIPTIONEXTENDED:
+				inDescriptionEx = false;
+				break;
+			case TAG_E2SERVICENAME:
+				inName = false;
+				break;
+			case TAG_E2TIME:
+				inTime = false;
+				break;
+			case TAG_E2LENGTH:
+				inLength = false;
+				break;
+			case TAG_E2TAGS:
+				inTags = false;
+				break;
+			case TAG_E2FILENAME:
+				inFilename = false;
+				break;
+			case TAG_E2FILESIZE:
+				inFilesize = false;
+				break;
 		}
 	}
 

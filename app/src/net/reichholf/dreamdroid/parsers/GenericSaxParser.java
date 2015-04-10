@@ -90,26 +90,14 @@ public class GenericSaxParser implements DataParser {
 			xr.parse(is);
 
 			return true;
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			Log.e(DreamDroid.LOG_TAG, e.toString());
-			mError = true;
-			mErrorText = e.toString();
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			Log.e(DreamDroid.LOG_TAG, e.toString());
-			mError = true;
-			mErrorText = e.toString();
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (ParserConfigurationException | SAXException | IOException e) {
 			// TODO Auto-generated catch block
 			Log.e(DreamDroid.LOG_TAG, e.toString());
 			mError = true;
 			mErrorText = e.toString();
 			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
 	

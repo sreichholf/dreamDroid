@@ -70,8 +70,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 		@Override
 		protected ArrayList<Profile> doInBackground(Void... params) {
-			ArrayList<Profile> profiles = DeviceDetector.getAvailableHosts();
-			return profiles;
+			return DeviceDetector.getAvailableHosts();
 		}
 
 		@Override
@@ -188,8 +187,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.profiles));
 
-		mProfiles = new ArrayList<Profile>();
-		mProfileMapList = new ArrayList<ExtendedHashMap>();
+		mProfiles = new ArrayList<>();
+		mProfileMapList = new ArrayList<>();
 		mProfile = Profile.DEFAULT;
 
 		mAdapter = new ProfileListSimpleAdapter(getActionBarActivity(), mProfileMapList, R.layout.two_line_card_list_item,

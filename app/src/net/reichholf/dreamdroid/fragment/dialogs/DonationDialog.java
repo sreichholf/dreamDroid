@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.View;
 
 import com.afollestad.materialdialogs.MaterialDialog;

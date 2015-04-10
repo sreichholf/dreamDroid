@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,7 +21,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
-import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
 
@@ -84,7 +82,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		if (savedInstanceState != null) {
 			mMapList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_LIST);
 		} else {
-			mMapList = new ArrayList<ExtendedHashMap>();
+			mMapList = new ArrayList<>();
 		}
 
 		if (mExtras != null) {
@@ -145,7 +143,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void detachFabReload() {
 		FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
 		if (fab != null) {
-			//;
+			fab.hide();
 		}
 	}
 
@@ -198,7 +196,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		if (mData != null) {
 			Boolean b = (Boolean) mData.get(key);
 			if (b != null) {
-				return b.booleanValue();
+				return b;
 			}
 		}
 
@@ -294,8 +292,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		return params;
+		return new ArrayList<>();
 	}
 
 	@Override

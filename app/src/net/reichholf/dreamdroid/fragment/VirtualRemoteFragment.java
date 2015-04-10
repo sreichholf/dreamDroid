@@ -123,11 +123,11 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 	 *            for
 	 */
 	private void registerButtons(View view, int[][] buttonmap) {
-		for (int i = 0; i < buttonmap.length; i++) {
-			View v = view.findViewById(buttonmap[i][0]);
-			if(v == null)
+		for (int[] aButtonmap : buttonmap) {
+			View v = view.findViewById(aButtonmap[0]);
+			if (v == null)
 				continue;
-			registerOnClickListener(v, buttonmap[i][1]);
+			registerOnClickListener(v, aButtonmap[1]);
 		}
 	}
 

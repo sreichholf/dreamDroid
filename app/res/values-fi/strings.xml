@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources>
 
     <string name="description">Kuvaus</string>
     <string name="title">Otsikko</string>
@@ -87,10 +87,10 @@
     <string name="type">Kirjoita</string>
 
     <string-array name="message_types">
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
 
     <string name="virtual_remote">Virtuaali kaukosäädin</string>

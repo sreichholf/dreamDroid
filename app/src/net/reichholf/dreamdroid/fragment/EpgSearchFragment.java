@@ -24,7 +24,6 @@ import org.apache.http.message.BasicNameValuePair;
 import android.app.SearchManager;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
-import android.widget.SimpleAdapter;
 
 /**
  * @author sre
@@ -61,7 +60,7 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("search", mNeedle));
 
 		return params;
@@ -74,8 +73,7 @@ public class EpgSearchFragment extends AbstractHttpEventListFragment {
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(
+		return new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(
 				URIStore.EPG_SEARCH), false, args);
-		return loader;
 	}
 }

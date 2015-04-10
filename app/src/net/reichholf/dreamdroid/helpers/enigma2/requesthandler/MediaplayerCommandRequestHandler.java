@@ -62,7 +62,7 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 */
 	private String singleParamCall(SimpleHttpClient shc, String uri, String param, String value) {
 		mUri = uri;
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(param, value));
 		return get(shc, params);
 	}

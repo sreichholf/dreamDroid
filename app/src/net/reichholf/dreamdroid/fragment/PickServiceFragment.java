@@ -42,12 +42,6 @@ public class PickServiceFragment extends AbstractHttpListFragment{
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-
-	}
-
-	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mAdapter = new SimpleAdapter(getActionBarActivity(), mMapList, android.R.layout.simple_list_item_1,
@@ -65,7 +59,7 @@ public class PickServiceFragment extends AbstractHttpListFragment{
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("bRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
 		return params;
 	}

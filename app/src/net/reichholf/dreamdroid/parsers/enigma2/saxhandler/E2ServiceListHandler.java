@@ -35,13 +35,17 @@ public class E2ServiceListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2SERVICE)) {
-			inService = true;
-			mService = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inReference = true;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inName = true;
+		switch (localName) {
+			case TAG_E2SERVICE:
+				inService = true;
+				mService = new ExtendedHashMap();
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inReference = true;
+				break;
+			case TAG_E2SERVICENAME:
+				inName = true;
+				break;
 		}
 	}
 
@@ -53,13 +57,17 @@ public class E2ServiceListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2SERVICE)) {
-			inService = false;
-			mList.add(mService);
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inReference = false;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inName = false;
+		switch (localName) {
+			case TAG_E2SERVICE:
+				inService = false;
+				mList.add(mService);
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inReference = false;
+				break;
+			case TAG_E2SERVICENAME:
+				inName = false;
+				break;
 		}
 	}
 

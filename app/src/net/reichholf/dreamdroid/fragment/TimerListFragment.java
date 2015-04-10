@@ -108,7 +108,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		setAdapter();
 		mIsActionMode = false;
 		if (savedInstanceState != null) {
-			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
+			mTimer = savedInstanceState.getParcelable("timer");
 		} else {
 			mReload = true;
 		}
@@ -287,8 +287,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new TimerListRequestHandler(), false, args);
-		return loader;
+		return new AsyncListLoader(getActionBarActivity(), new TimerListRequestHandler(), false, args);
 	}
 
 	@Override

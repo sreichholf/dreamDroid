@@ -149,7 +149,7 @@ public class Timer {
 		 * &deleteOldOnSave=
 		 */
 		// Build Parameters using timer HashMap
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 
 		params.add(new BasicNameValuePair("sRef", timer.getString(KEY_REFERENCE)));
 		params.add(new BasicNameValuePair("begin", timer.getString(KEY_BEGIN)));
@@ -177,7 +177,7 @@ public class Timer {
 	}
 	
 	public static ArrayList<NameValuePair> getEventIdParams(ExtendedHashMap event){
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 
 		params.add(new BasicNameValuePair("sRef", event.getString(Event.KEY_SERVICE_REFERENCE)));
 		params.add(new BasicNameValuePair("eventid", event.getString(Event.KEY_EVENT_ID)));
@@ -187,7 +187,7 @@ public class Timer {
 	
 	public static ArrayList<NameValuePair> getDeleteParams(ExtendedHashMap timer){
 		// URL - web/timerdelete?sRef=&begin=&end=
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 
 		params.add(new BasicNameValuePair("sRef", timer.getString(KEY_REFERENCE)));
 		params.add(new BasicNameValuePair("begin", timer.getString(KEY_BEGIN)));

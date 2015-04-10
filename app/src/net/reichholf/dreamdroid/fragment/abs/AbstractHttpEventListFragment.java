@@ -38,7 +38,7 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 		if (savedInstanceState != null) {
 			mReference = savedInstanceState.getString("reference");
 			mName = savedInstanceState.getString("name");
-			mCurrentItem = (ExtendedHashMap) savedInstanceState.getParcelable("currentItem");
+			mCurrentItem = savedInstanceState.getParcelable("currentItem");
 		}
 	}
 

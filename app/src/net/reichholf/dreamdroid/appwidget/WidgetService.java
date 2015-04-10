@@ -1,8 +1,6 @@
 package net.reichholf.dreamdroid.appwidget;
 
-import android.app.IntentService;
 import android.content.Intent;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,12 +17,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-
-import de.duenndns.ssl.MemorizingTrustManager;
 
 /**
  * Created by Stephan on 08.12.13.
@@ -57,13 +49,11 @@ public class WidgetService extends HttpIntentService {
 
 		SimpleHttpClient shc = SimpleHttpClient.getInstance(profile);
 		RemoteCommandRequestHandler handler = new RemoteCommandRequestHandler();
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("command", intent.getStringExtra(KEY_KEYID)));
 		params.add(new BasicNameValuePair("type", "advanced"));
 		String xml = handler.get(shc, params);
 
-
-		Toast toast = null;
 		if (xml != null) {
 			ExtendedHashMap result = handler.parseSimpleResult(xml);
 			if (Python.FALSE.equals(result.getString(SimpleResult.KEY_STATE))) {

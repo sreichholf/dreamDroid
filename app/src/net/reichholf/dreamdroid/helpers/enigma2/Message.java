@@ -26,7 +26,7 @@ public class Message extends SimpleResult {
 	public static final String MESSAGE_TYPE_ERROR = "3";
 	
 	public static ArrayList<NameValuePair> getParams(ExtendedHashMap message){
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("text", message.getString(KEY_TEXT)));
 		params.add(new BasicNameValuePair("type", message.getString(KEY_TYPE)));
 		params.add(new BasicNameValuePair("timeout", message.getString(KEY_TIMEOUT)));

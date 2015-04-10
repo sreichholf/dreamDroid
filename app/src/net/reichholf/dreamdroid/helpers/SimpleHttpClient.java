@@ -214,9 +214,6 @@ public class SimpleHttpClient {
 		} catch (MalformedURLException e) {
 			mError = true;
 			mErrorText = e.toString();
-		} catch (IOException e) {
-			mError = true;
-			mErrorText = e.toString();
 		} catch (Exception e) {
 			mError = true;
 			mErrorText = e.toString();
@@ -265,8 +262,6 @@ public class SimpleHttpClient {
 			bos.write(mBytes);
 			bos.flush();
 			bos.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -78,11 +78,6 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		super.onCreateOptionsMenu(menu, inflater);
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemSelected(item.getItemId());
 	}
@@ -150,8 +145,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
-		return params;
+		return new ArrayList<>();
 	}
 
 	@Override

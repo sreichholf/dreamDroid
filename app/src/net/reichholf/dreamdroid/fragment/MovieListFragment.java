@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -50,7 +49,6 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -85,13 +83,13 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		mSelectedLocationPosition = 0;
 
 		if (savedInstanceState == null) {
-			mSelectedTags = new ArrayList<String>();
-			mOldTags = new ArrayList<String>();
+			mSelectedTags = new ArrayList<>();
+			mOldTags = new ArrayList<>();
 			mReload = true;
 		} else {
-			mMovie = (ExtendedHashMap) savedInstanceState.getParcelable("movie");
-			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
-			mOldTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
+			mMovie = savedInstanceState.getParcelable("movie");
+			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
+			mOldTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 			mCurrentLocation = savedInstanceState.getString("currentLocation");
 			mSelectedLocationPosition = savedInstanceState.getInt("selectedLocationPosition", 0);
 		}
@@ -126,7 +124,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 			return;
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
-		mLocationAdapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
+		mLocationAdapter = new ArrayAdapter<>(actionBar.getThemedContext(),
 				R.layout.support_simple_spinner_dropdown_item);
 
 		for (String location : DreamDroid.getLocations()) {
@@ -238,17 +236,13 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		for (String tag : DreamDroid.getTags()) {
 			tags[tc] = tag;
 
-			if (mSelectedTags.contains(tag)) {
-				selectedTags[tc] = true;
-			} else {
-				selectedTags[tc] = false;
-			}
+			selectedTags[tc] = mSelectedTags.contains(tag);
 
 			tc++;
 		}
 
 		mTagsChanged = false;
-		mOldTags = new ArrayList<String>();
+		mOldTags = new ArrayList<>();
 		mOldTags.addAll(mSelectedTags);
 
 		MultiChoiceDialog f = MultiChoiceDialog.newInstance(R.string.choose_tags, tags, selectedTags, R.string.ok,
@@ -313,7 +307,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		if (mCurrentLocation != null) {
 			params.add(new BasicNameValuePair("dirname", mCurrentLocation));
 		}
@@ -328,8 +322,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new MovieListRequestHandler(), true, args);
-		return loader;
+		return new AsyncListLoader(getActionBarActivity(), new MovieListRequestHandler(), true, args);
 	}
 
 	@Override
@@ -373,7 +366,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 				break;
 
 			case R.id.menu_download:
-				ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+				ArrayList<NameValuePair> params = new ArrayList<>();
 				params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
 				String url = getHttpClient().buildUrl(URIStore.FILE, params);
 

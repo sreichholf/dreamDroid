@@ -46,7 +46,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 
 	public void load() {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(this);
-		mProfileMapList = new ArrayList<ExtendedHashMap>();
+		mProfileMapList = new ArrayList<>();
 		mProfileMapList.clear();
 		mProfiles = dbh.getProfiles();
 		if (mProfiles.size() > 1) {
@@ -106,8 +106,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	public static Profile getWidgetProfile(Context context, int appWidgetId) {
 		int profileId = PreferenceManager.getDefaultSharedPreferences(context).getInt(getPrefsKey(appWidgetId), -1);
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
-		Profile p = dbh.getProfile(profileId);
-		return p;
+		return dbh.getProfile(profileId);
 	}
 
 	public static String getPrefsKey(int appWidgetId) {

@@ -250,7 +250,7 @@ public class SignalFragment extends AbstractHttpFragment {
 		AudioTrack audioTrack = null; // Get audio track
 		try {
 			audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO,
-					AudioFormat.ENCODING_PCM_16BIT, (int) numSamples * 2, AudioTrack.MODE_STATIC);
+					AudioFormat.ENCODING_PCM_16BIT, numSamples * 2, AudioTrack.MODE_STATIC);
 			// Load the track
 			audioTrack.write(generatedSnd, 0, generatedSnd.length);
 			audioTrack.play(); // Play the track

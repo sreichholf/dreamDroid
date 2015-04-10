@@ -49,7 +49,7 @@
         <item name="android:paddingRight">4dp</item>
     </style>
 
-    <style name="CardListView.Light" parent="CardListView"></style>
+    <style name="CardListView.Light" parent="CardListView"/>
 
     <style name="SimpleHeader" parent="@android:style/TextAppearance.Small">
 
@@ -62,9 +62,9 @@
         <item name="android:background">@drawable/simple_heading_line</item>
     </style>
 
-    <style name="ButtonPanel"></style>
+    <style name="ButtonPanel"/>
 
-    <style name="NavButtonBar" parent="@android:style/ButtonBar"></style>
+    <style name="NavButtonBar" parent="@android:style/ButtonBar"/>
 
     <style name="NavButtonBarButton">
         <item name="android:background">?attr/listItemBackground</item>
@@ -102,11 +102,11 @@
         <item name="android:background">@android:drawable/list_selector_background</item>
     </style>
 
-    <style name="buttonBarStyle"></style>
+    <style name="buttonBarStyle"/>
 
-    <style name="buttonBarButtonStyle"></style>
+    <style name="buttonBarButtonStyle"/>
 
-    <style name="buttonBarButtonPositiveStyle"></style>
+    <style name="buttonBarButtonPositiveStyle"/>
 
-    <style name="buttonBarButtonNegativeStyle"></style>
+    <style name="buttonBarButtonNegativeStyle"/>
 </resources>

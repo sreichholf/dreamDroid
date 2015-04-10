@@ -43,15 +43,20 @@ public class E2MediaPlayerListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2FILE)) {
-			inFile = true;
-			mItem = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inRef = true;
-		} else if (localName.equals(TAG_E2ISDIRECTORY)) {
-			inIsDirectory = true;
-		} else if (localName.equals(TAG_E2ROOT)) {
-			inRoot = true;
+		switch (localName) {
+			case TAG_E2FILE:
+				inFile = true;
+				mItem = new ExtendedHashMap();
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inRef = true;
+				break;
+			case TAG_E2ISDIRECTORY:
+				inIsDirectory = true;
+				break;
+			case TAG_E2ROOT:
+				inRoot = true;
+				break;
 		}
 	}
 
@@ -63,18 +68,23 @@ public class E2MediaPlayerListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2FILE)) {
-			inFile = false;
-			if (mItem != null) {
-				mList.add(mItem);
-				mItem = null;
-			}
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inRef = false;
-		} else if (localName.equals(TAG_E2ISDIRECTORY)) {
-			inIsDirectory = false;
-		} else if (localName.equals(TAG_E2ROOT)) {
-			inRoot = false;
+		switch (localName) {
+			case TAG_E2FILE:
+				inFile = false;
+				if (mItem != null) {
+					mList.add(mItem);
+					mItem = null;
+				}
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inRef = false;
+				break;
+			case TAG_E2ISDIRECTORY:
+				inIsDirectory = false;
+				break;
+			case TAG_E2ROOT:
+				inRoot = false;
+				break;
 		}
 	}
 

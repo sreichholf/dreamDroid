@@ -30,7 +30,7 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 
 	public PiconDownloadTask(PiconDownloadProgressListener listener) {
 		progress = new DownloadProgress();
-		progressListener = new WeakReference<PiconDownloadProgressListener>(listener);
+		progressListener = new WeakReference<>(listener);
 	}
 
 	/*

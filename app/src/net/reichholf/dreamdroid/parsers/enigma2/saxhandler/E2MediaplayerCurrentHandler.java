@@ -34,18 +34,25 @@ public class E2MediaplayerCurrentHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2ARTIST)) {
-			inArtist = true;
-		} else if (localName.equals(TAG_E2TITLE)) {
-			inTitle = true;
-		} else if (localName.equals(TAG_E2ALBUM)) {
-			inAlbum = true;
-		} else if (localName.equals(TAG_E2YEAR)) {
-			inYear = true;
-		} else if (localName.equals(TAG_E2GENRE)) {
-			inGenre = true;
-		} else if (localName.equals(TAG_E2COVERFILE)) {
-			inCoverfile = true;
+		switch (localName) {
+			case TAG_E2ARTIST:
+				inArtist = true;
+				break;
+			case TAG_E2TITLE:
+				inTitle = true;
+				break;
+			case TAG_E2ALBUM:
+				inAlbum = true;
+				break;
+			case TAG_E2YEAR:
+				inYear = true;
+				break;
+			case TAG_E2GENRE:
+				inGenre = true;
+				break;
+			case TAG_E2COVERFILE:
+				inCoverfile = true;
+				break;
 		}
 	}
 
@@ -57,18 +64,25 @@ public class E2MediaplayerCurrentHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2ARTIST)) {
-			inArtist = false;
-		} else if (localName.equals(TAG_E2TITLE)) {
-			inTitle = false;
-		} else if (localName.equals(TAG_E2ALBUM)) {
-			inAlbum = false;
-		} else if (localName.equals(TAG_E2YEAR)) {
-			inYear = false;
-		} else if (localName.equals(TAG_E2GENRE)) {
-			inGenre = false;
-		} else if (localName.equals(TAG_E2COVERFILE)) {
-			inCoverfile = false;
+		switch (localName) {
+			case TAG_E2ARTIST:
+				inArtist = false;
+				break;
+			case TAG_E2TITLE:
+				inTitle = false;
+				break;
+			case TAG_E2ALBUM:
+				inAlbum = false;
+				break;
+			case TAG_E2YEAR:
+				inYear = false;
+				break;
+			case TAG_E2GENRE:
+				inGenre = false;
+				break;
+			case TAG_E2COVERFILE:
+				inCoverfile = false;
+				break;
 		}
 	}
 

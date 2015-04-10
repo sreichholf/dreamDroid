@@ -10,7 +10,7 @@
         <item name="ic_btn_timer">@drawable/ic_menu_timer_single_holo_dark</item>
     </style>
 
-    <style name="Theme.DreamDroid.Light" parent="Base.Theme.DreamDroid.Light"></style>
+    <style name="Theme.DreamDroid.Light" parent="Base.Theme.DreamDroid.Light"/>
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.AppCompat.Dialog">
         <item name="colorAccent">@color/material_blue_500</item>

@@ -54,30 +54,41 @@ public class E2EpgNowNextListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2EVENT)) {
-			inEvent = true;
-			if(!isFirst || mEvent == null)
-				mEvent = new ExtendedHashMap();
-			isFirst = !isFirst;
+		switch (localName) {
+			case TAG_E2EVENT:
+				inEvent = true;
+				if (!isFirst || mEvent == null)
+					mEvent = new ExtendedHashMap();
+				isFirst = !isFirst;
 
-		} else if (localName.equals(TAG_E2EVENTID)) {
-			inId = true;
-		} else if (localName.equals(TAG_E2EVENTSTART)) {
-			inStart = true;
-		} else if (localName.equals(TAG_E2EVENTDURATION)) {
-			inDuration = true;
-		} else if (localName.equals(TAG_E2EVENTCURRENTTIME)) {
-			inCurrentTime = true;
-		} else if (localName.equals(TAG_E2EVENTTITLE)) {
-			inTitle = true;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
-			inDescription = true;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
-			inDescriptionEx = true;
-		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
-			inServiceRef = true;
-		} else if (localName.equals(TAG_E2EVENTSERVICENAME)) {
-			inServiceName = true;
+				break;
+			case TAG_E2EVENTID:
+				inId = true;
+				break;
+			case TAG_E2EVENTSTART:
+				inStart = true;
+				break;
+			case TAG_E2EVENTDURATION:
+				inDuration = true;
+				break;
+			case TAG_E2EVENTCURRENTTIME:
+				inCurrentTime = true;
+				break;
+			case TAG_E2EVENTTITLE:
+				inTitle = true;
+				break;
+			case TAG_E2EVENTDESCRIPTION:
+				inDescription = true;
+				break;
+			case TAG_E2EVENTDESCRIPTIONEXTENDED:
+				inDescriptionEx = true;
+				break;
+			case TAG_E2EVENTSERVICEREFERENCE:
+				inServiceRef = true;
+				break;
+			case TAG_E2EVENTSERVICENAME:
+				inServiceName = true;
+				break;
 		}
 	}
 
@@ -89,35 +100,46 @@ public class E2EpgNowNextListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2EVENT)) {
-			inEvent = false;
-			String prefix = "";
-			if(!isFirst)
-				prefix = Event.PREFIX_NEXT;
-			Event.supplementReadables(prefix, mEvent);
-			if(!isFirst)
-				mList.add(mEvent);
-		} else if (localName.equals(TAG_E2EVENTID)) {
-			inId = false;
-		} else if (localName.equals(TAG_E2EVENTSTART)) {
-			inStart = false;
-		} else if (localName.equals(TAG_E2EVENTDURATION)) {
-			inDuration = false;
-		} else if (localName.equals(TAG_E2EVENTCURRENTTIME)) {
-			inCurrentTime = false;
-		} else if (localName.equals(TAG_E2EVENTTITLE)) {
-			inTitle = false;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
-			inDescription = false;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
-			String descEx = mEvent.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
-			if(descEx != null)
-				mEvent.put(Event.KEY_EVENT_DESCRIPTION_EXTENDED, descEx.replace("\u008a", "\n"));
-			inDescriptionEx = false;
-		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
-			inServiceRef = false;
-		} else if (localName.equals(TAG_E2EVENTSERVICENAME)) {
-			inServiceName = false;
+		switch (localName) {
+			case TAG_E2EVENT:
+				inEvent = false;
+				String prefix = "";
+				if (!isFirst)
+					prefix = Event.PREFIX_NEXT;
+				Event.supplementReadables(prefix, mEvent);
+				if (!isFirst)
+					mList.add(mEvent);
+				break;
+			case TAG_E2EVENTID:
+				inId = false;
+				break;
+			case TAG_E2EVENTSTART:
+				inStart = false;
+				break;
+			case TAG_E2EVENTDURATION:
+				inDuration = false;
+				break;
+			case TAG_E2EVENTCURRENTTIME:
+				inCurrentTime = false;
+				break;
+			case TAG_E2EVENTTITLE:
+				inTitle = false;
+				break;
+			case TAG_E2EVENTDESCRIPTION:
+				inDescription = false;
+				break;
+			case TAG_E2EVENTDESCRIPTIONEXTENDED:
+				String descEx = mEvent.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
+				if (descEx != null)
+					mEvent.put(Event.KEY_EVENT_DESCRIPTION_EXTENDED, descEx.replace("\u008a", "\n"));
+				inDescriptionEx = false;
+				break;
+			case TAG_E2EVENTSERVICEREFERENCE:
+				inServiceRef = false;
+				break;
+			case TAG_E2EVENTSERVICENAME:
+				inServiceName = false;
+				break;
 		}
 	}
 

@@ -89,7 +89,7 @@ public class E2CurrentServiceHandler extends E2SimpleHandler {
 	 */
 	public E2CurrentServiceHandler() {
 		super();
-		mEvents = new ArrayList<ExtendedHashMap>();
+		mEvents = new ArrayList<>();
 	}
 
 	/*
@@ -100,66 +100,96 @@ public class E2CurrentServiceHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals("e2service")) {
-			inService = true;
-			mService = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inServiceReference = true;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inServiceName = true;
-		} else if (localName.equals(TAG_E2PROVIDERNAME)) {
-			inProviderName = true;
-		} else if (localName.equals(TAG_E2VIDEOWIDTH)) {
-			inVideoWidth = true;
-		} else if (localName.equals(TAG_E2VIDEOHEIGHT)) {
-			inVideoHeight = true;
-		} else if (localName.equals(TAG_E2SERVICEVIDEOSIZE)) {
-			inVideoSize = true;
-		} else if (localName.equals(TAG_E2ISWIDESCREEN)) {
-			inIsWideScreen = true;
-		} else if (localName.equals(TAG_E2APID)) {
-			inApid = true;
-		} else if (localName.equals(TAG_E2VPID)) {
-			inVpid = true;
-		} else if (localName.equals(TAG_E2PCRPID)) {
-			inPcrPid = true;
-		} else if (localName.equals(TAG_E2PMTPID)) {
-			inPmtPid = true;
-		} else if (localName.equals(TAG_E2TXTPID)) {
-			inTxtPid = true;
-		} else if (localName.equals(TAG_E2TSID)) {
-			inTsid = true;
-		} else if (localName.equals(TAG_E2ONID)) {
-			inOnid = true;
-		} else if (localName.equals(TAG_E2SID)) {
-			inSid = true;
-		} else if (localName.equals(TAG_E2EVENT)) {
-			inEvent = true;
-			mEvent = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
-			inEventServiceReference = true;
-		} else if (localName.equals(TAG_E2EVENTSERVICENAME)) {
-			inEventServiceName = true;
-		} else if (localName.equals(TAG_E2EVENTPROVIDERNAME)) {
-			inEventProviderName = true;
-		} else if (localName.equals(TAG_E2EVENTID)) {
-			inEventId = true;
-		} else if (localName.equals(TAG_E2EVENTNAME)) {
-			inEventName = true;
-		} else if (localName.equals(TAG_E2EVENTTITLE)) {
-			inEventTitle = true;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
-			inEventDescription = true;
-		} else if (localName.equals(TAG_E2EVENTSTART)) {
-			inEventStart = true;
-		} else if (localName.equals(TAG_E2EVENTDURATION)) {
-			inEventDuration = true;
-		} else if (localName.equals(TAG_E2EVENTREMAINING)) {
-			inEventRemaining = true;
-		} else if (localName.equals(TAG_E2EVENTCURRENTTIME)) {
-			inEventCurrentTime = true;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
-			inEventDescriptionExtended = true;
+		switch (localName) {
+			case "e2service":
+				inService = true;
+				mService = new ExtendedHashMap();
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inServiceReference = true;
+				break;
+			case TAG_E2SERVICENAME:
+				inServiceName = true;
+				break;
+			case TAG_E2PROVIDERNAME:
+				inProviderName = true;
+				break;
+			case TAG_E2VIDEOWIDTH:
+				inVideoWidth = true;
+				break;
+			case TAG_E2VIDEOHEIGHT:
+				inVideoHeight = true;
+				break;
+			case TAG_E2SERVICEVIDEOSIZE:
+				inVideoSize = true;
+				break;
+			case TAG_E2ISWIDESCREEN:
+				inIsWideScreen = true;
+				break;
+			case TAG_E2APID:
+				inApid = true;
+				break;
+			case TAG_E2VPID:
+				inVpid = true;
+				break;
+			case TAG_E2PCRPID:
+				inPcrPid = true;
+				break;
+			case TAG_E2PMTPID:
+				inPmtPid = true;
+				break;
+			case TAG_E2TXTPID:
+				inTxtPid = true;
+				break;
+			case TAG_E2TSID:
+				inTsid = true;
+				break;
+			case TAG_E2ONID:
+				inOnid = true;
+				break;
+			case TAG_E2SID:
+				inSid = true;
+				break;
+			case TAG_E2EVENT:
+				inEvent = true;
+				mEvent = new ExtendedHashMap();
+				break;
+			case TAG_E2EVENTSERVICEREFERENCE:
+				inEventServiceReference = true;
+				break;
+			case TAG_E2EVENTSERVICENAME:
+				inEventServiceName = true;
+				break;
+			case TAG_E2EVENTPROVIDERNAME:
+				inEventProviderName = true;
+				break;
+			case TAG_E2EVENTID:
+				inEventId = true;
+				break;
+			case TAG_E2EVENTNAME:
+				inEventName = true;
+				break;
+			case TAG_E2EVENTTITLE:
+				inEventTitle = true;
+				break;
+			case TAG_E2EVENTDESCRIPTION:
+				inEventDescription = true;
+				break;
+			case TAG_E2EVENTSTART:
+				inEventStart = true;
+				break;
+			case TAG_E2EVENTDURATION:
+				inEventDuration = true;
+				break;
+			case TAG_E2EVENTREMAINING:
+				inEventRemaining = true;
+				break;
+			case TAG_E2EVENTCURRENTTIME:
+				inEventCurrentTime = true;
+				break;
+			case TAG_E2EVENTDESCRIPTIONEXTENDED:
+				inEventDescriptionExtended = true;
+				break;
 		}
 	}
 
@@ -171,69 +201,100 @@ public class E2CurrentServiceHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals("e2service")) {
-			inService = false;
-			mResult.put(CurrentService.KEY_SERVICE, mService);
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inServiceReference = false;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inServiceName = false;
-		} else if (localName.equals(TAG_E2PROVIDERNAME)) {
-			inProviderName = false;
-		} else if (localName.equals(TAG_E2VIDEOWIDTH)) {
-			inVideoWidth = false;
-		} else if (localName.equals(TAG_E2VIDEOHEIGHT)) {
-			inVideoHeight = false;
-		} else if (localName.equals(TAG_E2SERVICEVIDEOSIZE)) {
-			inVideoSize = false;
-		} else if (localName.equals(TAG_E2ISWIDESCREEN)) {
-			inIsWideScreen = false;
-		} else if (localName.equals(TAG_E2APID)) {
-			inApid = false;
-		} else if (localName.equals(TAG_E2VPID)) {
-			inVpid = false;
-		} else if (localName.equals(TAG_E2PCRPID)) {
-			inPcrPid = false;
-		} else if (localName.equals(TAG_E2PMTPID)) {
-			inPmtPid = false;
-		} else if (localName.equals(TAG_E2TXTPID)) {
-			inTxtPid = false;
-		} else if (localName.equals(TAG_E2TSID)) {
-			inTsid = false;
-		} else if (localName.equals(TAG_E2ONID)) {
-			inOnid = false;
-		} else if (localName.equals(TAG_E2SID)) {
-			inSid = false;
-		} else if (localName.equals(TAG_E2EVENT)) {
-			inEvent = false;
-			Event.supplementReadables(mEvent);
-			mEvents.add(mEvent);
-		} else if (localName.equals(TAG_E2EVENTSERVICEREFERENCE)) {
-			inEventServiceReference = false;
-		} else if (localName.equals(TAG_E2EVENTSERVICENAME)) {
-			inEventServiceName = false;
-		} else if (localName.equals(TAG_E2EVENTPROVIDERNAME)) {
-			inEventProviderName = false;
-		} else if (localName.equals(TAG_E2EVENTID)) {
-			inEventId = false;
-		} else if (localName.equals(TAG_E2EVENTNAME)) {
-			inEventName = false;
-		} else if (localName.equals(TAG_E2EVENTTITLE)) {
-			inEventTitle = false;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTION)) {
-			inEventDescription = false;
-		} else if (localName.equals(TAG_E2EVENTSTART)) {
-			inEventStart = false;
-		} else if (localName.equals(TAG_E2EVENTDURATION)) {
-			inEventDuration = false;
-		} else if (localName.equals(TAG_E2EVENTREMAINING)) {
-			inEventRemaining = false;
-		} else if (localName.equals(TAG_E2EVENTCURRENTTIME)) {
-			inEventCurrentTime = false;
-		} else if (localName.equals(TAG_E2EVENTDESCRIPTIONEXTENDED)) {
-			inEventDescriptionExtended = false;
-		} else if (localName.equals(TAG_E2CURRENTSERVICEINFORMATION)) {
-			mResult.put(CurrentService.KEY_EVENTS, mEvents);
+		switch (localName) {
+			case "e2service":
+				inService = false;
+				mResult.put(CurrentService.KEY_SERVICE, mService);
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inServiceReference = false;
+				break;
+			case TAG_E2SERVICENAME:
+				inServiceName = false;
+				break;
+			case TAG_E2PROVIDERNAME:
+				inProviderName = false;
+				break;
+			case TAG_E2VIDEOWIDTH:
+				inVideoWidth = false;
+				break;
+			case TAG_E2VIDEOHEIGHT:
+				inVideoHeight = false;
+				break;
+			case TAG_E2SERVICEVIDEOSIZE:
+				inVideoSize = false;
+				break;
+			case TAG_E2ISWIDESCREEN:
+				inIsWideScreen = false;
+				break;
+			case TAG_E2APID:
+				inApid = false;
+				break;
+			case TAG_E2VPID:
+				inVpid = false;
+				break;
+			case TAG_E2PCRPID:
+				inPcrPid = false;
+				break;
+			case TAG_E2PMTPID:
+				inPmtPid = false;
+				break;
+			case TAG_E2TXTPID:
+				inTxtPid = false;
+				break;
+			case TAG_E2TSID:
+				inTsid = false;
+				break;
+			case TAG_E2ONID:
+				inOnid = false;
+				break;
+			case TAG_E2SID:
+				inSid = false;
+				break;
+			case TAG_E2EVENT:
+				inEvent = false;
+				Event.supplementReadables(mEvent);
+				mEvents.add(mEvent);
+				break;
+			case TAG_E2EVENTSERVICEREFERENCE:
+				inEventServiceReference = false;
+				break;
+			case TAG_E2EVENTSERVICENAME:
+				inEventServiceName = false;
+				break;
+			case TAG_E2EVENTPROVIDERNAME:
+				inEventProviderName = false;
+				break;
+			case TAG_E2EVENTID:
+				inEventId = false;
+				break;
+			case TAG_E2EVENTNAME:
+				inEventName = false;
+				break;
+			case TAG_E2EVENTTITLE:
+				inEventTitle = false;
+				break;
+			case TAG_E2EVENTDESCRIPTION:
+				inEventDescription = false;
+				break;
+			case TAG_E2EVENTSTART:
+				inEventStart = false;
+				break;
+			case TAG_E2EVENTDURATION:
+				inEventDuration = false;
+				break;
+			case TAG_E2EVENTREMAINING:
+				inEventRemaining = false;
+				break;
+			case TAG_E2EVENTCURRENTTIME:
+				inEventCurrentTime = false;
+				break;
+			case TAG_E2EVENTDESCRIPTIONEXTENDED:
+				inEventDescriptionExtended = false;
+				break;
+			case TAG_E2CURRENTSERVICEINFORMATION:
+				mResult.put(CurrentService.KEY_EVENTS, mEvents);
+				break;
 		}
 
 	}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources>
 
     <string name="description">Opis</string>
     <string name="title">Tytuł</string>
@@ -129,7 +129,7 @@
         <item>Tak/Nie</item>
         <item>Ostrzeżenie</item>
         <item>Info</item>
-        <item></item>
+        <item/>
     </string-array>
 
     <string name="virtual_remote">Pilot</string>

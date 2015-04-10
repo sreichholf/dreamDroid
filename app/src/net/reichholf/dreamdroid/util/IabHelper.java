@@ -399,10 +399,7 @@ public class IabHelper {
             mRequestCode = requestCode;
             mPurchaseListener = listener;
             mPurchasingItemType = itemType;
-            act.startIntentSenderForResult(pendingIntent.getIntentSender(),
-                                           requestCode, new Intent(),
-                                           Integer.valueOf(0), Integer.valueOf(0),
-                                           Integer.valueOf(0));
+            act.startIntentSenderForResult(pendingIntent.getIntentSender(), requestCode, new Intent(), 0, 0, 0);
         }
         catch (SendIntentException e) {
             logError("SendIntentException while launching purchase flow for sku " + sku);
@@ -725,7 +722,7 @@ public class IabHelper {
     public void consumeAsync(Purchase purchase, OnConsumeFinishedListener listener) {
         checkNotDisposed();
         checkSetupDone("consume");
-        List<Purchase> purchases = new ArrayList<Purchase>();
+        List<Purchase> purchases = new ArrayList<>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
     }
@@ -791,7 +788,7 @@ public class IabHelper {
             logDebug("Bundle with null response code, assuming OK (known issue)");
             return BILLING_RESPONSE_RESULT_OK;
         }
-        else if (o instanceof Integer) return ((Integer)o).intValue();
+        else if (o instanceof Integer) return (Integer) o;
         else if (o instanceof Long) return (int)((Long)o).longValue();
         else {
             logError("Unexpected type for bundle response code.");
@@ -807,7 +804,7 @@ public class IabHelper {
             logError("Intent with no response code, assuming OK (known issue)");
             return BILLING_RESPONSE_RESULT_OK;
         }
-        else if (o instanceof Integer) return ((Integer)o).intValue();
+        else if (o instanceof Integer) return (Integer) o;
         else if (o instanceof Long) return (int)((Long)o).longValue();
         else {
             logError("Unexpected type for intent response code.");
@@ -897,7 +894,7 @@ public class IabHelper {
     int querySkuDetails(String itemType, Inventory inv, List<String> moreSkus)
             throws RemoteException, JSONException {
         logDebug("Querying SKU details.");
-        ArrayList<String> skuList = new ArrayList<String>();
+        ArrayList<String> skuList = new ArrayList<>();
         skuList.addAll(inv.getAllOwnedSkus(itemType));
         if (moreSkus != null) {
             for (String sku : moreSkus) {
@@ -913,19 +910,19 @@ public class IabHelper {
         }
 
         // Split the sku list in blocks of no more than 20 elements.
-        ArrayList<ArrayList<String>> packs = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<String>> packs = new ArrayList<>();
         ArrayList<String> tempList;
         int n = skuList.size() / 20;
         int mod = skuList.size() % 20;
         for (int i = 0; i < n; i++) {
-            tempList = new ArrayList<String>();
+            tempList = new ArrayList<>();
             for (String s : skuList.subList(i * 20, i * 20 + 20)) {
                 tempList.add(s);
             }
             packs.add(tempList);
         }
         if (mod != 0) {
-            tempList = new ArrayList<String>();
+            tempList = new ArrayList<>();
             for (String s : skuList.subList(n * 20, n * 20 + mod)) {
                 tempList.add(s);
             }
@@ -969,7 +966,7 @@ public class IabHelper {
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
-                final List<IabResult> results = new ArrayList<IabResult>();
+                final List<IabResult> results = new ArrayList<>();
                 for (Purchase purchase : purchases) {
                     try {
                         consume(purchase);

@@ -31,9 +31,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -84,10 +81,10 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 		mCurrentServiceReady = false;
 		if (savedInstanceState != null) {
 			// currents service data
-			HashMap<String, Object> current = (HashMap<String, Object>) savedInstanceState.getParcelable("current");
+			HashMap<String, Object> current = savedInstanceState.getParcelable("current");
 			mCurrent = new ExtendedHashMap(current);
 			// currently selected item (now or next dialog)
-			HashMap<String, Object> currentItem = (HashMap<String, Object>) savedInstanceState
+			HashMap<String, Object> currentItem = savedInstanceState
 					.getParcelable("currentItem");
 			mCurrentItem = new ExtendedHashMap(currentItem);
 		}
@@ -297,8 +294,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		AsyncSimpleLoader loader = new AsyncSimpleLoader(getActionBarActivity(), new CurrentServiceRequestHandler(),
+		return new AsyncSimpleLoader(getActionBarActivity(), new CurrentServiceRequestHandler(),
 				args);
-		return loader;
 	}
 }

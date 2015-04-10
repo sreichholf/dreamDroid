@@ -115,14 +115,15 @@ public class DreamDroid extends Application {
 
 		try {
 			String s = sdf.format(date);
+			//noinspection ResultOfMethodCallIgnored
 			Integer.parseInt(s);
 			DATE_LOCALE_WO = true;
 		} catch (Exception e) {
 			DATE_LOCALE_WO = false;
 		}
 
-		sLocations = new ArrayList<String>();
-		sTags = new ArrayList<String>();
+		sLocations = new ArrayList<>();
+		sTags = new ArrayList<>();
 		loadCurrentProfile(this);
 
 		initImageLoader(getApplicationContext());
@@ -298,7 +299,7 @@ public class DreamDroid extends Application {
 
 		if (!gotLoc) {
 			Log.e(LOG_TAG, "Error parsing locations, falling back to /hdd/movie");
-			sLocations = new ArrayList<String>();
+			sLocations = new ArrayList<>();
 			sLocations.add("/hdd/movie");
 		}
 
@@ -328,7 +329,7 @@ public class DreamDroid extends Application {
 
 		if (!gotTags) {
 			Log.e(LOG_TAG, "Error parsing Tags, no more Tags will be available");
-			sTags = new ArrayList<String>();
+			sTags = new ArrayList<>();
 		}
 
 		return gotTags;

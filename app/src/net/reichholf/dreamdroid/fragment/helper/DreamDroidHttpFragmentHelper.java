@@ -214,7 +214,7 @@ public class DreamDroidHttpFragmentHelper {
 	}
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		return keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || false;
+		return keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN;
 	}
 
 	public void onDestroy() {
@@ -232,7 +232,7 @@ public class DreamDroidHttpFragmentHelper {
 	 */
 	@SuppressWarnings("unchecked")
 	private void onVolumeButtonClicked(String set) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("set", set));
 		if (mVolumeTask != null) {
 			mVolumeTask.cancel(true);
@@ -312,7 +312,7 @@ public class DreamDroidHttpFragmentHelper {
 	}
 
 	public void zapTo(String ref) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("sRef", ref));
 		execSimpleResultTask(new ZapRequestHandler(), params);
 	}

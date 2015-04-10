@@ -28,12 +28,16 @@ public class E2VolumeHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2RESULT)) {
-			inResult = true;
-		} else if (localName.equals(TAG_E2CURRENT)) {
-			inCurrent = true;
-		} else if (localName.equals(TAG_E2ISMUTED)) {
-			inMuted = true;
+		switch (localName) {
+			case TAG_E2RESULT:
+				inResult = true;
+				break;
+			case TAG_E2CURRENT:
+				inCurrent = true;
+				break;
+			case TAG_E2ISMUTED:
+				inMuted = true;
+				break;
 		}
 	}
 
@@ -45,12 +49,16 @@ public class E2VolumeHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2RESULT)) {
-			inResult = false;
-		} else if (localName.equals(TAG_E2CURRENT)) {
-			inCurrent = false;
-		} else if (localName.equals(TAG_E2ISMUTED)) {
-			inMuted = false;
+		switch (localName) {
+			case TAG_E2RESULT:
+				inResult = false;
+				break;
+			case TAG_E2CURRENT:
+				inCurrent = false;
+				break;
+			case TAG_E2ISMUTED:
+				inMuted = false;
+				break;
 		}
 	}
 

@@ -71,9 +71,9 @@ public class E2DeviceInfoHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void startDocument() {
-		mFrontends = new ArrayList<ExtendedHashMap>();
-		mHdds = new ArrayList<ExtendedHashMap>();
-		mNics = new ArrayList<ExtendedHashMap>();
+		mFrontends = new ArrayList<>();
+		mHdds = new ArrayList<>();
+		mNics = new ArrayList<>();
 	}
 
 	@Override
@@ -96,43 +96,61 @@ public class E2DeviceInfoHandler extends E2SimpleHandler {
 		 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2ENIGMAVERSION)) {
-			inGuiV = true;
-		} else if (localName.equals(TAG_E2IMAGEVERSION)) {
-			inImageV = true;
-		} else if (localName.equals(TAG_E2WEBIFVERSION)) {
-			inInterfaceV = true;
-		} else if (localName.equals(TAG_E2FPVERSION)) {
-			inFpV = true;
-		} else if (localName.equals(TAG_E2DEVICENAME)) {
-			inDeviceName = true;
-		} else if (localName.equals(TAG_E2FRONTEND)) {
-			inFrontend = true;
-			mFrontendData = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2NAME)) {
-			inName = true;
-		} else if (localName.equals(TAG_E2MODEL)) {
-			inModel = true;
-		} else if (localName.equals(TAG_E2INTERFACE)) {
-			inInterface = true;
-			mNicData = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2MAC)) {
-			inMac = true;
-		} else if (localName.equals(TAG_E2DHCP)) {
-			inDhcp = true;
-		} else if (localName.equals(TAG_E2IP)) {
-			inIp = true;
-		} else if (localName.equals(TAG_E2GATEWAY)) {
-			inGateway = true;
-		} else if (localName.equals(TAG_E2NETMASK)) {
-			inNetmask = true;
-		} else if (localName.equals(TAG_E2HDD)) {
-			inHdd = true;
-			mHddData = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2CAPACITY)) {
-			inCapacity = true;
-		} else if (localName.equals(TAG_E2FREE)) {
-			inFree = true;
+		switch (localName) {
+			case TAG_E2ENIGMAVERSION:
+				inGuiV = true;
+				break;
+			case TAG_E2IMAGEVERSION:
+				inImageV = true;
+				break;
+			case TAG_E2WEBIFVERSION:
+				inInterfaceV = true;
+				break;
+			case TAG_E2FPVERSION:
+				inFpV = true;
+				break;
+			case TAG_E2DEVICENAME:
+				inDeviceName = true;
+				break;
+			case TAG_E2FRONTEND:
+				inFrontend = true;
+				mFrontendData = new ExtendedHashMap();
+				break;
+			case TAG_E2NAME:
+				inName = true;
+				break;
+			case TAG_E2MODEL:
+				inModel = true;
+				break;
+			case TAG_E2INTERFACE:
+				inInterface = true;
+				mNicData = new ExtendedHashMap();
+				break;
+			case TAG_E2MAC:
+				inMac = true;
+				break;
+			case TAG_E2DHCP:
+				inDhcp = true;
+				break;
+			case TAG_E2IP:
+				inIp = true;
+				break;
+			case TAG_E2GATEWAY:
+				inGateway = true;
+				break;
+			case TAG_E2NETMASK:
+				inNetmask = true;
+				break;
+			case TAG_E2HDD:
+				inHdd = true;
+				mHddData = new ExtendedHashMap();
+				break;
+			case TAG_E2CAPACITY:
+				inCapacity = true;
+				break;
+			case TAG_E2FREE:
+				inFree = true;
+				break;
 		}
 	}
 
@@ -145,69 +163,90 @@ public class E2DeviceInfoHandler extends E2SimpleHandler {
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
 		try {
-			if (localName.equals(TAG_E2ENIGMAVERSION)) {
-				inGuiV = false;
+			switch (localName) {
+				case TAG_E2ENIGMAVERSION:
+					inGuiV = false;
 
-			} else if (localName.equals(TAG_E2IMAGEVERSION)) {
-				inImageV = false;
+					break;
+				case TAG_E2IMAGEVERSION:
+					inImageV = false;
 
-			} else if (localName.equals(TAG_E2WEBIFVERSION)) {
-				inInterfaceV = false;
+					break;
+				case TAG_E2WEBIFVERSION:
+					inInterfaceV = false;
 
-			} else if (localName.equals(TAG_E2FPVERSION)) {
-				inFpV = false;
+					break;
+				case TAG_E2FPVERSION:
+					inFpV = false;
 
-			} else if (localName.equals(TAG_E2DEVICENAME)) {
-				inDeviceName = false;
+					break;
+				case TAG_E2DEVICENAME:
+					inDeviceName = false;
 
-			} else if (localName.equals(TAG_E2FRONTEND)) {
-				inFrontend = false;
-				mFrontends.add(mFrontendData);
+					break;
+				case TAG_E2FRONTEND:
+					inFrontend = false;
+					mFrontends.add(mFrontendData);
 
-			} else if (localName.equals("e2frontends")) {
-				mResult.putOrConcat(DeviceInfo.KEY_FRONTENDS, mFrontends);
+					break;
+				case "e2frontends":
+					mResult.putOrConcat(DeviceInfo.KEY_FRONTENDS, mFrontends);
 
-			} else if (localName.equals(TAG_E2NAME)) {
-				inName = false;
+					break;
+				case TAG_E2NAME:
+					inName = false;
 
-			} else if (localName.equals(TAG_E2MODEL)) {
-				inModel = false;
+					break;
+				case TAG_E2MODEL:
+					inModel = false;
 
-			} else if (localName.equals(TAG_E2INTERFACE)) {
-				inInterface = false;
-				mNics.add(mNicData);
+					break;
+				case TAG_E2INTERFACE:
+					inInterface = false;
+					mNics.add(mNicData);
 
-			} else if (localName.equals("e2network")) {
-				mResult.putOrConcat(DeviceInfo.KEY_NICS, mNics);
+					break;
+				case "e2network":
+					mResult.putOrConcat(DeviceInfo.KEY_NICS, mNics);
 
-			} else if (localName.equals(TAG_E2MAC)) {
-				inMac = false;
+					break;
+				case TAG_E2MAC:
+					inMac = false;
 
-			} else if (localName.equals(TAG_E2DHCP)) {
-				inDhcp = false;
+					break;
+				case TAG_E2DHCP:
+					inDhcp = false;
 
-			} else if (localName.equals(TAG_E2IP)) {
-				inIp = false;
+					break;
+				case TAG_E2IP:
+					inIp = false;
 
-			} else if (localName.equals(TAG_E2GATEWAY)) {
-				inGateway = false;
+					break;
+				case TAG_E2GATEWAY:
+					inGateway = false;
 
-			} else if (localName.equals(TAG_E2NETMASK)) {
-				inNetmask = false;
+					break;
+				case TAG_E2NETMASK:
+					inNetmask = false;
 
-			} else if (localName.equals(TAG_E2HDD)) {
-				inHdd = false;
-				mHdds.add(mHddData);
+					break;
+				case TAG_E2HDD:
+					inHdd = false;
+					mHdds.add(mHddData);
 
-			} else if (localName.equals("e2hdds")) {
-				mResult.putOrConcat(DeviceInfo.KEY_HDDS, mHdds);
+					break;
+				case "e2hdds":
+					mResult.putOrConcat(DeviceInfo.KEY_HDDS, mHdds);
 
-			} else if (localName.equals(TAG_E2CAPACITY)) {
-				inCapacity = false;
+					break;
+				case TAG_E2CAPACITY:
+					inCapacity = false;
 
-			} else if (localName.equals(TAG_E2FREE)) {
-				inFree = false;
+					break;
+				case TAG_E2FREE:
+					inFree = false;
 
+					break;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -28,7 +28,7 @@ public class EnhancedHorizontalScrollView extends HorizontalScrollView {
 	}
 
 	private void init() {
-		mScrollChangedListeners = new ArrayList<OnScrollChangedListener>();
+		mScrollChangedListeners = new ArrayList<>();
 	}
 
 	@Override

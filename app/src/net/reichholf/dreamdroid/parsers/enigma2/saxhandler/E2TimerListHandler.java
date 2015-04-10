@@ -82,59 +82,86 @@ public class E2TimerListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2TIMER)) {
-			inTimer = true;
-			mTimer = new ExtendedHashMap();
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inReference = true;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inServicename = true;
-		} else if (localName.equals(TAG_E2EIT)) {
-			inEit = true;
-		} else if (localName.equals(TAG_E2NAME)) {
-			inName = true;
-		} else if (localName.equals(TAG_E2DESCRIPTION)) {
-			inDescription = true;
-		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
-			inDescriptionEx = true;
-		} else if (localName.equals(TAG_E2DISABLED)) {
-			inDisabled = true;
-		} else if (localName.equals(TAG_E2TIMEBEGIN)) {
-			inBegin = true;
-		} else if (localName.equals(TAG_E2TIMEEND)) {
-			inEnd = true;
-		} else if (localName.equals(TAG_E2DURATION)) {
-			inDuration = true;
-		} else if (localName.equals(TAG_E2STARTPREPARE)) {
-			inStartPrepare = true;
-		} else if (localName.equals(TAG_E2JUSTPLAY)) {
-			inJustPlay = true;
-		} else if (localName.equals(TAG_E2AFTEREVENT)) {
-			inAfterevent = true;
-		} else if (localName.equals(TAG_E2LOCATION)) {
-			inLocation = true;
-		} else if (localName.equals(TAG_E2TAGS)) {
-			inTags = true;
-		} else if (localName.equals(TAG_E2LOGENTRIES)) {
-			inLogEntries = true;
-		} else if (localName.equals(TAG_E2FILENAME)) {
-			inFilename = true;
-		} else if (localName.equals(TAG_E2BACKOFF)) {
-			inBackoff = true;
-		} else if (localName.equals(TAG_E2NEXTACTIVATION)) {
-			inNextActivation = true;
-		} else if (localName.equals(TAG_E2FIRSTTRYPREPARE)) {
-			inFirstTryPrepare = true;
-		} else if (localName.equals(TAG_E2STATE)) {
-			inState = true;
-		} else if (localName.equals(TAG_E2REPEATED)) {
-			inRepeated = true;
-		} else if (localName.equals(TAG_E2DONTSAVE)) {
-			inDontSave = true;
-		} else if (localName.equals(TAG_E2CANCLED)) {
-			inCanceled = true;
-		} else if (localName.equals(TAG_E2TOGGLEDISABLED)) {
-			inToggleDisabled = true;
+		switch (localName) {
+			case TAG_E2TIMER:
+				inTimer = true;
+				mTimer = new ExtendedHashMap();
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inReference = true;
+				break;
+			case TAG_E2SERVICENAME:
+				inServicename = true;
+				break;
+			case TAG_E2EIT:
+				inEit = true;
+				break;
+			case TAG_E2NAME:
+				inName = true;
+				break;
+			case TAG_E2DESCRIPTION:
+				inDescription = true;
+				break;
+			case TAG_E2DESCRIPTIONEXTENDED:
+				inDescriptionEx = true;
+				break;
+			case TAG_E2DISABLED:
+				inDisabled = true;
+				break;
+			case TAG_E2TIMEBEGIN:
+				inBegin = true;
+				break;
+			case TAG_E2TIMEEND:
+				inEnd = true;
+				break;
+			case TAG_E2DURATION:
+				inDuration = true;
+				break;
+			case TAG_E2STARTPREPARE:
+				inStartPrepare = true;
+				break;
+			case TAG_E2JUSTPLAY:
+				inJustPlay = true;
+				break;
+			case TAG_E2AFTEREVENT:
+				inAfterevent = true;
+				break;
+			case TAG_E2LOCATION:
+				inLocation = true;
+				break;
+			case TAG_E2TAGS:
+				inTags = true;
+				break;
+			case TAG_E2LOGENTRIES:
+				inLogEntries = true;
+				break;
+			case TAG_E2FILENAME:
+				inFilename = true;
+				break;
+			case TAG_E2BACKOFF:
+				inBackoff = true;
+				break;
+			case TAG_E2NEXTACTIVATION:
+				inNextActivation = true;
+				break;
+			case TAG_E2FIRSTTRYPREPARE:
+				inFirstTryPrepare = true;
+				break;
+			case TAG_E2STATE:
+				inState = true;
+				break;
+			case TAG_E2REPEATED:
+				inRepeated = true;
+				break;
+			case TAG_E2DONTSAVE:
+				inDontSave = true;
+				break;
+			case TAG_E2CANCLED:
+				inCanceled = true;
+				break;
+			case TAG_E2TOGGLEDISABLED:
+				inToggleDisabled = true;
+				break;
 		}
 	}
 
@@ -146,59 +173,86 @@ public class E2TimerListHandler extends E2ListHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2TIMER)) {
-			inTimer = false;
-			mList.add(mTimer);
-		} else if (localName.equals(TAG_E2SERVICEREFERENCE)) {
-			inReference = false;
-		} else if (localName.equals(TAG_E2SERVICENAME)) {
-			inServicename = false;
-		} else if (localName.equals(TAG_E2EIT)) {
-			inEit = false;
-		} else if (localName.equals(TAG_E2NAME)) {
-			inName = false;
-		} else if (localName.equals(TAG_E2DESCRIPTION)) {
-			inDescription = false;
-		} else if (localName.equals(TAG_E2DESCRIPTIONEXTENDED)) {
-			inDescriptionEx = false;
-		} else if (localName.equals(TAG_E2DISABLED)) {
-			inDisabled = false;
-		} else if (localName.equals(TAG_E2TIMEBEGIN)) {
-			inBegin = false;
-		} else if (localName.equals(TAG_E2TIMEEND)) {
-			inEnd = false;
-		} else if (localName.equals(TAG_E2DURATION)) {
-			inDuration = false;
-		} else if (localName.equals(TAG_E2STARTPREPARE)) {
-			inStartPrepare = false;
-		} else if (localName.equals(TAG_E2JUSTPLAY)) {
-			inJustPlay = false;
-		} else if (localName.equals(TAG_E2AFTEREVENT)) {
-			inAfterevent = false;
-		} else if (localName.equals(TAG_E2LOCATION)) {
-			inLocation = false;
-		} else if (localName.equals(TAG_E2TAGS)) {
-			inTags = false;
-		} else if (localName.equals(TAG_E2LOGENTRIES)) {
-			inLogEntries = false;
-		} else if (localName.equals(TAG_E2FILENAME)) {
-			inFilename = false;
-		} else if (localName.equals(TAG_E2BACKOFF)) {
-			inBackoff = false;
-		} else if (localName.equals(TAG_E2NEXTACTIVATION)) {
-			inNextActivation = false;
-		} else if (localName.equals(TAG_E2FIRSTTRYPREPARE)) {
-			inFirstTryPrepare = false;
-		} else if (localName.equals(TAG_E2STATE)) {
-			inState = false;
-		} else if (localName.equals(TAG_E2REPEATED)) {
-			inRepeated = false;
-		} else if (localName.equals(TAG_E2DONTSAVE)) {
-			inDontSave = false;
-		} else if (localName.equals(TAG_E2CANCLED)) {
-			inCanceled = false;
-		} else if (localName.equals(TAG_E2TOGGLEDISABLED)) {
-			inToggleDisabled = false;
+		switch (localName) {
+			case TAG_E2TIMER:
+				inTimer = false;
+				mList.add(mTimer);
+				break;
+			case TAG_E2SERVICEREFERENCE:
+				inReference = false;
+				break;
+			case TAG_E2SERVICENAME:
+				inServicename = false;
+				break;
+			case TAG_E2EIT:
+				inEit = false;
+				break;
+			case TAG_E2NAME:
+				inName = false;
+				break;
+			case TAG_E2DESCRIPTION:
+				inDescription = false;
+				break;
+			case TAG_E2DESCRIPTIONEXTENDED:
+				inDescriptionEx = false;
+				break;
+			case TAG_E2DISABLED:
+				inDisabled = false;
+				break;
+			case TAG_E2TIMEBEGIN:
+				inBegin = false;
+				break;
+			case TAG_E2TIMEEND:
+				inEnd = false;
+				break;
+			case TAG_E2DURATION:
+				inDuration = false;
+				break;
+			case TAG_E2STARTPREPARE:
+				inStartPrepare = false;
+				break;
+			case TAG_E2JUSTPLAY:
+				inJustPlay = false;
+				break;
+			case TAG_E2AFTEREVENT:
+				inAfterevent = false;
+				break;
+			case TAG_E2LOCATION:
+				inLocation = false;
+				break;
+			case TAG_E2TAGS:
+				inTags = false;
+				break;
+			case TAG_E2LOGENTRIES:
+				inLogEntries = false;
+				break;
+			case TAG_E2FILENAME:
+				inFilename = false;
+				break;
+			case TAG_E2BACKOFF:
+				inBackoff = false;
+				break;
+			case TAG_E2NEXTACTIVATION:
+				inNextActivation = false;
+				break;
+			case TAG_E2FIRSTTRYPREPARE:
+				inFirstTryPrepare = false;
+				break;
+			case TAG_E2STATE:
+				inState = false;
+				break;
+			case TAG_E2REPEATED:
+				inRepeated = false;
+				break;
+			case TAG_E2DONTSAVE:
+				inDontSave = false;
+				break;
+			case TAG_E2CANCLED:
+				inCanceled = false;
+				break;
+			case TAG_E2TOGGLEDISABLED:
+				inToggleDisabled = false;
+				break;
 		}
 	}
 

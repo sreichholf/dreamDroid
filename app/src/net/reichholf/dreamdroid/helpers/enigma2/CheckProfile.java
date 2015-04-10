@@ -47,7 +47,7 @@ public class CheckProfile {
 		DreamDroid.disableSleepTimer();
 		DreamDroid.disableNowNext();
 
-		ArrayList<ExtendedHashMap> resultList = new ArrayList<ExtendedHashMap>();
+		ArrayList<ExtendedHashMap> resultList = new ArrayList<>();
 		ExtendedHashMap checkResult = new ExtendedHashMap();
 
 		checkResult.put(KEY_RESULT_LIST, resultList);

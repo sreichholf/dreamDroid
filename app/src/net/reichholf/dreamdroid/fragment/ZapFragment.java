@@ -56,7 +56,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 		@Override
 		protected Boolean doInBackground(Void... unused) {
-			mTaskList = new ArrayList<ExtendedHashMap>();
+			mTaskList = new ArrayList<>();
 			if (isCancelled())
 				return false;
 
@@ -70,7 +70,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 		}
 
 		private boolean addBouquets(AbstractListRequestHandler handler, String ref){
-			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+			ArrayList<NameValuePair> params = new ArrayList<>();
 			params.add(new BasicNameValuePair("sRef", ref));
 			String xml = handler.getList(getHttpClient(), params);
 			if (xml != null && !isCancelled()) {
@@ -97,7 +97,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 		super.onCreate(savedInstanceState);
 		initTitle("");
 
-		mBouquetList = new ArrayList<ExtendedHashMap>();
+		mBouquetList = new ArrayList<>();
 		mCurrentBouquet = new ExtendedHashMap();
 		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
 		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
@@ -213,7 +213,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("sRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
 
 		return params;
@@ -268,7 +268,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 			return;
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
-		mBouquetListAdapter = new ArrayAdapter<String>(actionBar.getThemedContext(),
+		mBouquetListAdapter = new ArrayAdapter<>(actionBar.getThemedContext(),
 				R.layout.support_simple_spinner_dropdown_item);
 
 		actionBar.setListNavigationCallbacks(mBouquetListAdapter, new ActionBar.OnNavigationListener() {
@@ -285,7 +285,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 				return true;
 			}
 		});
-		ArrayList<ExtendedHashMap> list = new ArrayList<ExtendedHashMap>(mBouquetList);
+		ArrayList<ExtendedHashMap> list = new ArrayList<>(mBouquetList);
 		applyBouquetList(list);
 		mBouquetListAdapter.notifyDataSetChanged();
 	}

@@ -35,14 +35,19 @@ public class E2SleepTimerHandler extends E2SimpleHandler {
 		if (localName.equals(TAG_E2SLEEPTIMER)) {
 			inSleeptimer = true;
 		} else if (inSleeptimer) {
-			if (localName.equals(TAG_E2ENABLED)) {
-				inEnabled = true;
-			} else if (localName.equals(TAG_E2MINUTES)) {
-				inMinutes = true;
-			} else if (localName.equals(TAG_E2ACTION)) {
-				inAction = true;
-			} else if (localName.equals(TAG_E2TEXT)) {
-				inText = true;
+			switch (localName) {
+				case TAG_E2ENABLED:
+					inEnabled = true;
+					break;
+				case TAG_E2MINUTES:
+					inMinutes = true;
+					break;
+				case TAG_E2ACTION:
+					inAction = true;
+					break;
+				case TAG_E2TEXT:
+					inText = true;
+					break;
 			}
 		}
 	}
@@ -58,14 +63,19 @@ public class E2SleepTimerHandler extends E2SimpleHandler {
 		if (localName.equals(TAG_E2SLEEPTIMER)) {
 			inSleeptimer = false;
 		} else if (inSleeptimer) {
-			if (localName.equals(TAG_E2ENABLED)) {
-				inEnabled = false;
-			} else if (localName.equals(TAG_E2MINUTES)) {
-				inMinutes = false;
-			} else if (localName.equals(TAG_E2ACTION)) {
-				inAction = false;
-			} else if (localName.equals(TAG_E2TEXT)) {
-				inText = false;
+			switch (localName) {
+				case TAG_E2ENABLED:
+					inEnabled = false;
+					break;
+				case TAG_E2MINUTES:
+					inMinutes = false;
+					break;
+				case TAG_E2ACTION:
+					inAction = false;
+					break;
+				case TAG_E2TEXT:
+					inText = false;
+					break;
 			}
 		}
 	}

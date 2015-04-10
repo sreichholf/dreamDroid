@@ -67,7 +67,7 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Parcelab
 					if ((old.getClass().equals(Class.forName("java.lang.String")))) {
 						String oldval = (String) old;
 						String val = (String) value;
-						value = (Object) oldval.concat(val);
+						value = oldval.concat(val);
 					}
 				}
 			} catch (Exception e) {
@@ -123,6 +123,6 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Parcelab
 	 */
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeSerializable((HashMap<String,Object>) this);
+		dest.writeSerializable(this);
 	}
 }

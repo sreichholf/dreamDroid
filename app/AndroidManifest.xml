@@ -7,7 +7,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="21"></uses-sdk>
+        android:targetSdkVersion="21"/>
 
     <supports-screens
         android:anyDensity="true"
@@ -15,11 +15,11 @@
         android:normalScreens="true"
         android:resizeable="true"
         android:smallScreens="true"
-        android:xlargeScreens="true"></supports-screens>
+        android:xlargeScreens="true"/>
 
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-    <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="com.android.vending.BILLING" />
 
     <application
@@ -53,14 +53,14 @@
         <activity
             android:name=".activities.SimpleNoTitleFragmentActivity"
             android:theme="@style/Theme.DreamDroid.Light.NoTitle"
-            android:uiOptions=""></activity>
+            android:uiOptions=""/>
 
         <meta-data
             android:name="com.google.android.backup.api_key"
             android:value="AEdPqrEAAAAIpJ1ddymOdlswxM_S0SOTS9GK0WKiqESIKU7KLw" />
         <meta-data
             android:name="android.app.default_searchable"
-            android:value=".activities.SimpleFragmentActivity"></meta-data>
+            android:value=".activities.SimpleFragmentActivity"/>
 
         <activity
             android:name=".activities.ShareActivity"

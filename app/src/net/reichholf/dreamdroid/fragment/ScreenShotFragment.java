@@ -93,12 +93,10 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {
 		@Override
 		public void onMediaScannerConnected() {
-			return;
 		}
 
 		@Override
 		public void onScanCompleted(String arg0, Uri arg1) {
-			return;
 		}
 
 	}
@@ -276,7 +274,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	protected void reload() {
 		mHttpHelper.onLoadStarted();
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 
 		switch (mType) {
 			case (TYPE_OSD):
@@ -310,7 +308,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		Bundle args = new Bundle();
 		args.putString("uri", URIStore.SCREENSHOT);
 		args.putSerializable("params", params);
-		getLoaderManager().restartLoader(0, args, (LoaderCallbacks<LoaderResult<byte[]>>) this);
+		getLoaderManager().restartLoader(0, args, this);
 	}
 
 
@@ -387,8 +385,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
-		AsyncByteLoader loader = new AsyncByteLoader(getActionBarActivity(), args);
-		return loader;
+		return new AsyncByteLoader(getActionBarActivity(), args);
 	}
 
 	@Override

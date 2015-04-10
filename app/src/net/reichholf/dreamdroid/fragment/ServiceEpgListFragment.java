@@ -74,7 +74,7 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("sRef", mReference));
 		return params;
 	}
@@ -86,7 +86,6 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(), false, args);
-		return loader;
+		return new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(), false, args);
 	}
 }

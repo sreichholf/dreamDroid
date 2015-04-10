@@ -62,7 +62,7 @@ public class IntentFactory {
 	public static Intent getStreamFileIntent(String fileName, String title) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("file", fileName));
 		Uri uri = Uri.parse(shc.buildFileStreamUrl(URIStore.FILE, params));
 		Log.i(DreamDroid.LOG_TAG, "Streaming file: " + uri.getEncodedQuery());

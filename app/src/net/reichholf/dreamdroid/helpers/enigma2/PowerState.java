@@ -28,7 +28,7 @@ public class PowerState {
 	public static String STATE_GUI_RESTART = "3";
 	
 	public static ArrayList<NameValuePair> getStateParams(String state){
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();		
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("newstate", state) );
 		
 		return params;

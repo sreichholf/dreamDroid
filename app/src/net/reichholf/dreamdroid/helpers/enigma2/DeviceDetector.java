@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 
 import javax.jmdns.JmDNS;
@@ -27,7 +28,7 @@ public class DeviceDetector {
 	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2", "dm500hdsev2", "dm7020hdv2", "dm7080" };
 
 	public static ArrayList<Profile> getAvailableHosts() {
-		ArrayList<Profile> profiles = new ArrayList<Profile>();
+		ArrayList<Profile> profiles = new ArrayList<>();
 		for (String hostname : KNOWN_HOSTNAMES) {
 			try {
 				InetAddress host = InetAddress.getByName(hostname);
@@ -44,8 +45,6 @@ public class DeviceDetector {
 				p.setUser("root");
 				p.setSimpleRemote(simpleRemote);
 				addToList(profiles, p);
-			} catch (UnknownHostException e) {
-				Log.w(LOG_TAG, e.getMessage());
 			} catch (IOException e) {
 				Log.w(LOG_TAG, e.getMessage());
 			}
@@ -56,7 +55,7 @@ public class DeviceDetector {
 			jmdns = JmDNS.create();
 			ServiceInfo si[] = jmdns.list("_http._tcp.local.");
 			for (ServiceInfo s : si) {
-				Log.i(LOG_TAG, s.getHostAddresses().toString());
+				Log.i(LOG_TAG, Arrays.toString(s.getHostAddresses()));
 				if (s.getName().toLowerCase(Locale.US).matches("dm[0-9]{1,4}.*")) {
 					String address = s.getHostAddresses()[0];
 					int port = s.getPort();

@@ -70,8 +70,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private static final String TAG = MainActivity.class.getSimpleName();
 
-	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList(new String[]{"about_dialog",
-			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog"});
+	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList("about_dialog",
+			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog");
 
 	private boolean mSlider;
 	private boolean mIsPaused;
@@ -454,12 +454,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void showDetails(Class<? extends Fragment> fragmentClass) {
 		try {
-			Fragment fragment = fragmentClass.newInstance();
-			showDetails(fragment);
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
+			showDetails(fragmentClass.newInstance());
+		} catch (InstantiationException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -503,11 +499,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public void setTitle(CharSequence title) {
-		super.setTitle(title);
-	}
-
-	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
 		if (callbackHandler != null)
@@ -516,7 +507,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		// if the detail fragment didn't handle it, check if the navigation
 		// fragment wants it
-		callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
+		callbackHandler = mNavigationFragment;
 		if (callbackHandler != null)
 			if (callbackHandler.onKeyDown(keyCode, event))
 				return true;
@@ -533,7 +524,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		// if the detail fragment didn't handle it, check if the navigation
 		// fragment wants it
-		callbackHandler = (ActivityCallbackHandler) mNavigationFragment;
+		callbackHandler = mNavigationFragment;
 		if (callbackHandler != null)
 			if (callbackHandler.onKeyUp(keyCode, event))
 				return true;
@@ -584,9 +575,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			f = fragmentClass.newInstance();
 			f.setArguments(args);
 			showDialogFragment(f, tag);
-		} catch (InstantiationException e) {
-			Log.e(TAG, e.getMessage());
-		} catch (IllegalAccessException e) {
+		} catch (InstantiationException | IllegalAccessException e) {
 			Log.e(TAG, e.getMessage());
 		}
 	}
@@ -617,9 +606,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	private boolean isNavigationDialog(String dialogTag) {
-		Iterator<String> iter = NAVIGATION_DIALOG_TAGS.iterator();
-		while (iter.hasNext()) {
-			String tag = iter.next();
+		for (String tag : NAVIGATION_DIALOG_TAGS) {
 			if (tag.equals(dialogTag))
 				return true;
 		}
@@ -636,7 +623,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onSetSleepTimer(String time, String action, boolean enabled) {
 		if (mNavigationFragment != null)
-			((SleepTimerDialog.SleepTimerDialogActionListener) mNavigationFragment).onSetSleepTimer(time, action,
+			mNavigationFragment.onSetSleepTimer(time, action,
 					enabled);
 	}
 
@@ -649,7 +636,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onSendMessage(String text, String type, String timeout) {
-		((SendMessageDialog.SendMessageDialogActionListener) mNavigationFragment).onSendMessage(text, type, timeout);
+		mNavigationFragment.onSendMessage(text, type, timeout);
 	}
 
 	@Override
@@ -663,10 +650,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 							restart();
 						}
 
-						@Override
-						public void onNegative(MaterialDialog dialog) {
-							super.onNegative(dialog);
-						}
 					})
 					.title(R.string.restart)
 					.content(R.string.theme_change_restart)

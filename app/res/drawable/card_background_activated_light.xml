@@ -9,7 +9,7 @@
     <item android:bottom="1dp">
         <shape
             android:shape="rectangle">
-            <solid android:color="@color/card_background_light"></solid>
+            <solid android:color="@color/card_background_light"/>
             <padding
                 android:bottom="2dp"
                 android:left="1dp"

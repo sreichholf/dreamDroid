@@ -22,15 +22,14 @@ public class ExtendedHashMapHelper {
 	}
 
 	public static ArrayList<ExtendedHashMap> restoreListFromBundle(Bundle bundle, String key) {
-		ArrayList<ExtendedHashMap> l = new ArrayList<ExtendedHashMap>();
+		ArrayList<ExtendedHashMap> l = new ArrayList<>();
 
 		@SuppressWarnings("unchecked")
 		ArrayList<HashMap<String, Object>> list = (ArrayList<HashMap<String, Object>>) bundle
 				.getSerializable(key);
 
-		Iterator<HashMap<String, Object>> iter = list.iterator();
-		while (iter.hasNext()) {
-			l.add(new ExtendedHashMap(iter.next()));
+		for (HashMap<String, Object> aList : list) {
+			l.add(new ExtendedHashMap(aList));
 		}
 
 		return l;

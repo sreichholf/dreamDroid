@@ -48,7 +48,7 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 		if (args != null && args.containsKey("params"))
 			mParams = (ArrayList<NameValuePair>) args.getSerializable("params");
 		else
-			mParams = new ArrayList<NameValuePair>();
+			mParams = new ArrayList<>();
 	}
 
 	@Override
@@ -83,8 +83,8 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 			}
 		}
 
-		mList = new ArrayList<ExtendedHashMap>();
-		LoaderResult<ArrayList<ExtendedHashMap>> result = new LoaderResult<ArrayList<ExtendedHashMap>>();
+		mList = new ArrayList<>();
+		LoaderResult<ArrayList<ExtendedHashMap>> result = new LoaderResult<>();
 
 		String xml = mListRequestHandler.getList(mShc, mParams);
 		if (xml != null) {

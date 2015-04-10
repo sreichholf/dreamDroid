@@ -6,11 +6,11 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -18,7 +18,6 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -227,7 +226,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				mTimerOld = null;
 			}
 
-			mSelectedTags = new ArrayList<String>();
+			mSelectedTags = new ArrayList<>();
 
 			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
 				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask();
@@ -236,9 +235,9 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				reload();
 			}
 		} else if (savedInstanceState != null) {
-			mTimer = (ExtendedHashMap) savedInstanceState.getParcelable("timer");
-			mTimerOld = (ExtendedHashMap) savedInstanceState.getParcelable("timerOld");
-			mSelectedTags = new ArrayList<String>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
+			mTimer = savedInstanceState.getParcelable("timer");
+			mTimerOld = savedInstanceState.getParcelable("timerOld");
+			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
 			if (mTimer != null) {
 				reload();
 			}
@@ -272,11 +271,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 			}
 		}
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
 	}
 
 	@Override
@@ -315,11 +309,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		int tc = 0;
 		for (String tag : DreamDroid.getTags()) {
 			tags[tc] = tag;
-			if (mSelectedTags.contains(tag)) {
-				selectedTags[tc] = true;
-			} else {
-				selectedTags[tc] = false;
-			}
+			selectedTags[tc] = mSelectedTags.contains(tag);
 			tc++;
 		}
 
@@ -491,7 +481,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
-		ArrayAdapter<String> aaLocations = new ArrayAdapter<String>(getActionBarActivity(),
+		ArrayAdapter<String> aaLocations = new ArrayAdapter<>(getActionBarActivity(),
 				android.R.layout.simple_spinner_item, DreamDroid.getLocations());
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
@@ -537,9 +527,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		}
 		mTags.setText(text);
 		String[] tags = text.split(" ");
-		for (String tag : tags) {
-			mSelectedTags.add(tag);
-		}
+		Collections.addAll(mSelectedTags, tags);
 	}
 
 	/**

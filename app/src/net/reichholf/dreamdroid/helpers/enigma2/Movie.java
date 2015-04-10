@@ -32,7 +32,7 @@ public class Movie{
 	public static final String KEY_FILE_SIZE_READABLE = "filesize_readable";
 
 	public static ArrayList<NameValuePair> getDeleteParams(ExtendedHashMap movie){
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("sRef", movie.getString(Movie.KEY_REFERENCE)));
 		
 		return params;

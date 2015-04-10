@@ -8,10 +8,8 @@ package net.reichholf.dreamdroid.activities;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import android.content.SharedPreferences;
+
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.view.Window;
 import android.view.WindowManager;
 
 /**

@@ -5,7 +5,7 @@
         <item name="android:divider">?attr/dividerHorizontal</item>
     </style>
 
-    <style name="NavButtonBar" parent="@android:style/Holo.Light.ButtonBar.AlertDialog"></style>
+    <style name="NavButtonBar" parent="@android:style/Holo.Light.ButtonBar.AlertDialog"/>
 
     <style name="SelectableItem">
         <item name="android:background">?android:attr/selectableItemBackground</item>

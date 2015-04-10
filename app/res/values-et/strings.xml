@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources>
 
     <string name="description">Kirjeldus</string>
     <string name="title">Pealkiri</string>
@@ -8,11 +8,11 @@
 
     <string-array name="servicelist">
         <item>Lemmikud</item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
 
     <string name="timer">Taimer</string>
@@ -144,15 +144,15 @@
     <string name="shutdown">Lülita välja</string>
 
     <string-array name="timer_state">
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
     <string-array name="timer_action">
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
     </string-array>
 
     <string name="main_menu">Peamenüü</string>

@@ -20,9 +20,9 @@
     </style>
 -->
 
-    <style name="buttonBarButtonStyle" parent="android:Widget.Material.Button.Borderless.Colored"></style>
+    <style name="buttonBarButtonStyle" parent="android:Widget.Material.Button.Borderless.Colored"/>
 
-    <style name="buttonBarButtonPositiveStyle" parent="android:Widget.Material.Button.Borderless.Colored"></style>
+    <style name="buttonBarButtonPositiveStyle" parent="android:Widget.Material.Button.Borderless.Colored"/>
 
     <style name="buttonBarButtonNegativeStyle" parent="android:Widget.Material.Button.Borderless.Colored">
         <item name="android:textColor">?android:attr/textColorPrimary</item>

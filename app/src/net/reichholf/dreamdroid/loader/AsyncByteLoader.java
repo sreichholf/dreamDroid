@@ -66,7 +66,7 @@ public class AsyncByteLoader extends AsyncTaskLoader<LoaderResult<byte[]>> {
 		else
 			data = Request.getBytes(mShc, mUri, mParams);
 
-		LoaderResult<byte[]> result = new LoaderResult<byte[]>();
+		LoaderResult<byte[]> result = new LoaderResult<>();
 		if (data.length > 0) {
 			result.set(data);
 		} else {

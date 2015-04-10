@@ -296,7 +296,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME};
 		SQLiteDatabase db = getReadableDatabase();
 
-		ArrayList<Profile> list = new ArrayList<Profile>();
+		ArrayList<Profile> list = new ArrayList<>();
 
 		Cursor c = db.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE_PROFILE);
 		if(c.getCount() == 0){
@@ -404,10 +404,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String id = values.getAsString(KEY_EVENT_ID);
         db.delete(EVENT_TABLE_NAME, KEY_EVENT_ID + "=?;", new String[]{id,});
-        if (db.insert(EVENT_TABLE_NAME, null, values) > -1) {
-            return true;
-        }
-        return false;
+	    return db.insert(EVENT_TABLE_NAME, null, values) > -1;
     }
 
     public ContentValues eventToCv(ExtendedHashMap event){

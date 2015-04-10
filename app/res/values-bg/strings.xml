@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources>
     <string name="description">описание</string>
     <string name="title">заглавие</string>
     <string name="app_name">ДримДроид</string>
     <string-array name="servicelist">
         <item>Букети(ТВ)Провайдер(ТВ)Всички Канали(ТВ)Букети(радио)Провайдер(радио)Всички канали(радио)</item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
     <string name="timer">таймер</string>
     <string name="service">канали</string>
     <string name="location">местоположение</string>
     <string-array name="afterevents">
         <item>нищо/заспиване/дълбоко заспиване/автоматично</item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
     <string name="begin_time">начало</string>
     <string name="repeatings">повторение</string>
@@ -61,21 +61,21 @@
     <string name="reload">Презареди</string>
     <string-array name="weekdays_short">
         <item>По/Вт/Ср/Чет/Пет/Съб/Нед</item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
     <string-array name="weekdays">
         <item>Понеделник/Вторник/Сряда/Четвъртък/Петък/Събота/Неделя</item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
     <string name="none">Никой</string>
     <string name="choose_days">Избери ден</string>
@@ -98,10 +98,10 @@
     <string name="send">Изпрати</string>
     <string name="type">Пиши</string>
     <string-array name="message_types">
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
     <string name="virtual_remote">Виртуално дистанционно</string>
     <string name="login_enabled">Влизането разрешено</string>
@@ -169,15 +169,15 @@
     <string name="stream_current">Настоящ стрим</string>
     <string name="similar">Подобни събития</string>
     <string-array name="timer_state">
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
     <string-array name="timer_action">
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
     </string-array>
     <string name="sleeptimer">Заспиване</string>
     <string name="current_volume">Усилването на звука е %s</string>

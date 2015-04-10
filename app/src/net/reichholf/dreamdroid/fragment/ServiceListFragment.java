@@ -65,6 +65,7 @@ import org.apache.http.message.BasicNameValuePair;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Handles ServiceLists of (based on service references).
@@ -128,11 +129,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mode = args.getString("action");
 		}
 
-		if (Intent.ACTION_PICK.equals(mode)) {
-			mPickMode = true;
-		} else {
-			mPickMode = false;
-		}
+		mPickMode = Intent.ACTION_PICK.equals(mode);
 
 		if (savedInstanceState != null && !mPickMode) {
 			mNavName = savedInstanceState.getString(BUNDLE_KEY_NAVNAME);
@@ -148,7 +145,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 			mReload = false;
 		} else {
-			mHistory = new ArrayList<ExtendedHashMap>();
+			mHistory = new ArrayList<>();
 			if (!SERVICE_REF_ROOT.equals(mNavReference)) {
 				ExtendedHashMap map = new ExtendedHashMap();
 				map.put(Event.KEY_SERVICE_REFERENCE, mNavReference);
@@ -157,8 +154,8 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 				mHistory.add(map);
 
 				mExtras = getArguments();
-				mNavItems = new ArrayList<ExtendedHashMap>();
-				mDetailItems = new ArrayList<ExtendedHashMap>();
+				mNavItems = new ArrayList<>();
+				mDetailItems = new ArrayList<>();
 			}
 		}
 
@@ -326,11 +323,6 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		super.onSaveInstanceState(outState);
 	}
 
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
-
 	public String genWindowTitle(String title) {
 		return title + " - " + mNavName;
 	}
@@ -347,7 +339,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		}
 		adapter = new ServiceListAdapter(getActionBarActivity(), mDetailItems);
 		if(Build.VERSION.SDK_INT < 11) {
-			((ListView) mDetailList).setAdapter(adapter);
+			mDetailList.setAdapter(adapter);
 		} else {
 			mDetailList.setAdapter(adapter);
 		}
@@ -413,7 +405,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 				mSlidingPane.openPane();
 				return true;
 			}
-			if ((mSlidingPane.isOpen() || !mSlidingPane.isSlideable()) && mNavReference != SERVICE_REF_ROOT) {
+			if ((mSlidingPane.isOpen() || !mSlidingPane.isSlideable()) && !SERVICE_REF_ROOT.equals(mNavReference)) {
 				mNavReference = SERVICE_REF_ROOT;
 				mNavName = (String) getText(R.string.bouquet_overview);
 				reloadNav();
@@ -676,7 +668,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		data.put(Event.KEY_SERVICE_NAME, String.valueOf(ref));
 		mExtras.putSerializable(sData, data);
 
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 
 		if (isBouquetList) {
 			mSlidingPane.openPane();

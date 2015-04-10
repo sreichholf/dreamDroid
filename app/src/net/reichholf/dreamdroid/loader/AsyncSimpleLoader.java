@@ -66,7 +66,7 @@ public class AsyncSimpleLoader extends AsyncTaskLoader< LoaderResult<ExtendedHas
 		else
 			xml = mHandler.get(mShc, mParams);
 		
-		LoaderResult<ExtendedHashMap> result = new LoaderResult<ExtendedHashMap>();
+		LoaderResult<ExtendedHashMap> result = new LoaderResult<>();
 		if (xml != null) {
 			if (mHandler.parse(xml, content))
 				result.set(content);

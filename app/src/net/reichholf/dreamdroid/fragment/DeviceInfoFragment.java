@@ -50,7 +50,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 		initTitles(getString(R.string.device_info));
 
 		if (savedInstanceState != null) {
-			mInfo = (ExtendedHashMap) savedInstanceState.getParcelable("info");
+			mInfo = savedInstanceState.getParcelable("info");
 		} else {
 			mInfo = new ExtendedHashMap();
 		}
@@ -58,9 +58,9 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mFrontends = new ArrayList<ExtendedHashMap>();
-		mNics = new ArrayList<ExtendedHashMap>();
-		mHdds = new ArrayList<ExtendedHashMap>();
+		mFrontends = new ArrayList<>();
+		mNics = new ArrayList<>();
+		mHdds = new ArrayList<>();
 
 		mInflater = getLayoutInflater(savedInstanceState);
 		View view = mInflater.inflate(R.layout.device_info, null);
@@ -156,8 +156,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		AsyncSimpleLoader loader = new AsyncSimpleLoader(getActionBarActivity(), new DeviceInfoRequestHandler(), args);
-		return loader;
+		return new AsyncSimpleLoader(getActionBarActivity(), new DeviceInfoRequestHandler(), args);
 	}
 
 	/*

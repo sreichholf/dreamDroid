@@ -151,14 +151,14 @@ public class ShareActivity extends ListActivity {
 						title = tmp;
 				}
 			}
-			mTitle = new String(title);
+			mTitle = title;
 
 			url = URLEncoder.encode(url).replace("+", "%20");
 			title = URLEncoder.encode(title).replace("+", "%20");
 
 			String ref = "4097:0:1:0:0:0:0:0:0:0:" + url + ":" + title;
 			Log.i(LOG_TAG, ref);
-			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+			ArrayList<NameValuePair> params = new ArrayList<>();
 			params.add(new BasicNameValuePair("file", ref));
 			execSimpleResultTask(params);
 		} else {
@@ -168,7 +168,7 @@ public class ShareActivity extends ListActivity {
 
 	public void load() {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(this);
-		mProfileMapList = new ArrayList<ExtendedHashMap>();
+		mProfileMapList = new ArrayList<>();
 		mProfileMapList.clear();
 		mProfiles = dbh.getProfiles();
 		if (mProfiles.size() > 1) {

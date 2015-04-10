@@ -198,7 +198,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 * @param enabled
 	 */
 	public void onSetSleepTimer(String time, String action, boolean enabled) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("cmd", SleepTimer.CMD_SET));
 		params.add(new BasicNameValuePair("time", time));
 		params.add(new BasicNameValuePair("action", action));
@@ -216,7 +216,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 *
 	 */
 	private void getSleepTimer(boolean showDialogOnFinish) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		execSleepTimerTask(params, showDialogOnFinish);
 	}
 

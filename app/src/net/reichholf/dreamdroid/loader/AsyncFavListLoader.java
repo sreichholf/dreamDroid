@@ -23,8 +23,8 @@ public class AsyncFavListLoader extends AsyncListLoader {
 
 	@Override
 	public LoaderResult<ArrayList<ExtendedHashMap>> loadInBackground() {
-		mList = new ArrayList<ExtendedHashMap>();
-		LoaderResult<ArrayList<ExtendedHashMap>> result = new LoaderResult<ArrayList<ExtendedHashMap>>();
+		mList = new ArrayList<>();
+		LoaderResult<ArrayList<ExtendedHashMap>> result = new LoaderResult<>();
 		String ref = mParams.get(0).getValue();
 
 		if(ref.equals(REF_FAVS)) {
@@ -44,10 +44,10 @@ public class AsyncFavListLoader extends AsyncListLoader {
 	}
 
 	public ArrayList<ExtendedHashMap> loadBouquet(String ref){
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("bRef", ref));
 
-		ArrayList<ExtendedHashMap> list = new ArrayList<ExtendedHashMap>();
+		ArrayList<ExtendedHashMap> list = new ArrayList<>();
 		String xml = mListRequestHandler.getList(mShc, params);
 		if (xml == null)
 			return list;

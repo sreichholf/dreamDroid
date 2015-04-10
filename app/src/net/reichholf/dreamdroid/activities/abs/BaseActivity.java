@@ -21,7 +21,6 @@ import net.reichholf.dreamdroid.util.SkuDetails;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;

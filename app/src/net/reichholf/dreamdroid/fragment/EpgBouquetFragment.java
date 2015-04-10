@@ -155,7 +155,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("bRef", mReference));
 		params.add(new BasicNameValuePair("time", Integer.toString(mTime)));
 		return params;
@@ -168,8 +168,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AsyncListLoader loader = new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(URIStore.EPG_BOUQUET), false, args);
-		return loader;
+		return new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(URIStore.EPG_BOUQUET), false, args);
 	}
 
 	@Override

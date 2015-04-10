@@ -47,11 +47,11 @@ public class EpgDatabase {
 
         SimpleHttpClient shc = SimpleHttpClient.getInstance(DreamDroid.getCurrentProfile());
 		ServiceListRequestHandler slh = new ServiceListRequestHandler();
-		ArrayList<NameValuePair> args = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> args = new ArrayList<>();
 		args.add(new BasicNameValuePair("sRef", reference));
 
 		String xml = slh.getList(shc, args);
-		ArrayList<ExtendedHashMap> services = new ArrayList<ExtendedHashMap>();
+		ArrayList<ExtendedHashMap> services = new ArrayList<>();
 		if(xml != null){
 			slh.parseList(xml, services);
             Log.i(TAG_EPG_DATABASE, String.format("Syncing EPG for Bouquet %s with %s services", reference, services.size()));
@@ -72,11 +72,11 @@ public class EpgDatabase {
 	public void syncService(Context context, String reference){
 		SimpleHttpClient shc = SimpleHttpClient.getInstance(DreamDroid.getCurrentProfile());
 		EventListRequestHandler elh = new EventListRequestHandler();
-		ArrayList<NameValuePair> args = new ArrayList<NameValuePair>();
+		ArrayList<NameValuePair> args = new ArrayList<>();
 		args.add(new BasicNameValuePair("sRef", reference));
 
 		String xml = elh.getList(shc, args);
-		ArrayList<ExtendedHashMap> events = new ArrayList<ExtendedHashMap>();
+		ArrayList<ExtendedHashMap> events = new ArrayList<>();
 
         int success = 0;
 

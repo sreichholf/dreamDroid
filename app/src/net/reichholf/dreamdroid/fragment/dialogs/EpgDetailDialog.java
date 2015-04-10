@@ -16,10 +16,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -33,11 +31,6 @@ public class EpgDetailDialog extends ActionDialog {
 	private ExtendedHashMap mCurrentItem;
 
 	public EpgDetailDialog() {
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 	}
 
 	@Override
@@ -64,7 +57,7 @@ public class EpgDetailDialog extends ActionDialog {
 
 		MaterialDialog dialog = null;
 		if (!"N/A".equals(title) && date != null) {
-			date = date.concat(" (" + (String) mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
+			date = date.concat(" (" + mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
 					+ getText(R.string.minutes_short) + ")");
 			String descShort = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION, "");
 			String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);

@@ -30,14 +30,19 @@ public class E2SignalHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
-		if (localName.equals(TAG_E2SNRDB)) {
-			inSnrdb = true;
-		} else if (localName.equals(TAG_E2SNR)) {
-			inSnr = true;
-		} else if (localName.equals(TAG_E2BER)) {
-			inBer = true;
-		} else if (localName.equals(TAG_E2AGC)) {
-			inAgc = true;
+		switch (localName) {
+			case TAG_E2SNRDB:
+				inSnrdb = true;
+				break;
+			case TAG_E2SNR:
+				inSnr = true;
+				break;
+			case TAG_E2BER:
+				inBer = true;
+				break;
+			case TAG_E2AGC:
+				inAgc = true;
+				break;
 		}
 	}
 
@@ -49,14 +54,19 @@ public class E2SignalHandler extends E2SimpleHandler {
 	 */
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName) {
-		if (localName.equals(TAG_E2SNRDB)) {
-			inSnrdb = false;
-		} else if (localName.equals(TAG_E2SNR)) {
-			inSnr = false;
-		} else if (localName.equals(TAG_E2BER)) {
-			inBer = false;
-		} else if (localName.equals(TAG_E2AGC)) {
-			inAgc = false;
+		switch (localName) {
+			case TAG_E2SNRDB:
+				inSnrdb = false;
+				break;
+			case TAG_E2SNR:
+				inSnr = false;
+				break;
+			case TAG_E2BER:
+				inBer = false;
+				break;
+			case TAG_E2AGC:
+				inAgc = false;
+				break;
 		}
 	}
 
