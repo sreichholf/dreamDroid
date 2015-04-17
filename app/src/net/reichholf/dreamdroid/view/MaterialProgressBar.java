@@ -34,6 +34,6 @@ public class MaterialProgressBar extends ProgressBar {
 	}
 
 	public void init(){
-		TintHelper.setProgressBarTint(this, TintHelper.getColorFromAttr(getContext(), R.attr.colorAccent));
+		TintHelper.setTint(this, TintHelper.getColorFromAttr(getContext(), R.attr.colorAccent));
 	}
 }
