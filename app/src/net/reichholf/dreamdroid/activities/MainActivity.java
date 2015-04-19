@@ -6,9 +6,36 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import android.app.SearchManager;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.widget.TextView;
+
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.nispok.snackbar.Snackbar;
+import com.nispok.snackbar.SnackbarManager;
+import com.nispok.snackbar.listeners.ActionClickListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -19,7 +46,9 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.NavigationFragment;
+import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
@@ -29,34 +58,8 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 
-import android.app.SearchManager;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.afollestad.materialdialogs.MaterialDialog;
+import java.util.Arrays;
+import java.util.List;
 
 import de.cketti.library.changelog.ChangeLog;
 
@@ -101,7 +104,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		@Override
 		protected ExtendedHashMap doInBackground(Void... params) {
 			publishProgress(getText(R.string.checking).toString());
-			return CheckProfile.checkProfile(mProfile);
+			return CheckProfile.checkProfile(mProfile, MainActivity.this);
 		}
 
 		/*
@@ -127,17 +130,24 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
-	public void onProfileChecked(ExtendedHashMap result) {
+	public void onProfileChecked(final ExtendedHashMap result) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
 
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error, true);
-
-			String text = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error);
-			Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
-			toast.show();
+			SnackbarManager.show(
+					Snackbar.with(this)
+							.text(error)
+							.duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
+							.actionLabel(R.string.more)
+							.actionListener(new ActionClickListener() {
+								@Override
+								public void onActionClicked(Snackbar snackbar) {
+									showErrorDetails(result);
+								}
+							}));
 
 			if (isFirstStart)
 				for (int i = 0; i < NavigationFragment.MENU_ITEMS.length; i++) {
@@ -145,6 +155,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 						mNavigationFragment.setSelectedItem(i);
 				}
 		} else {
+			SnackbarManager.dismiss();
 			setConnectionState(getString(R.string.ok), true);
 			mNavigationFragment.setAvailableFeatures();
 			if (getCurrentDetailFragment() == null) {
@@ -157,6 +168,17 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				toggle();
 			sp.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false).commit();
 		}
+	}
+
+	public void showErrorDetails(ExtendedHashMap result) {
+		String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
+		error = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error);
+		if (error == null)
+			error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
+		Profile p = DreamDroid.getCurrentProfile();
+		String title = String.format("%s@%s:%s", p.getUser(), p.getHost(), p.getPort());
+		ConnectionErrorDialog alert = ConnectionErrorDialog.newInstance(title, error);
+		showDialogFragment(alert, "connection_error");
 	}
 
 	@Override
@@ -256,7 +278,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	private Fragment getCurrentDetailFragment() {
-		if(mDetailFragment == null)
+		if (mDetailFragment == null)
 			mDetailFragment = getSupportFragmentManager().findFragmentById(R.id.detail_view);
 		return mDetailFragment;
 	}
@@ -594,6 +616,20 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		if ("connection_error".equals(dialogTag) && action == ConnectionErrorDialog.ACTION_EDIT_PROFILE) {
+			if (mDetailFragment != null && ProfileEditFragment.class.equals(mDetailFragment.getClass()))
+				return;
+			Bundle args = new Bundle();
+			args.putString("action", Intent.ACTION_EDIT);
+			args.putSerializable("profile", DreamDroid.getCurrentProfile());
+
+			Fragment f = new ProfileEditFragment();
+			f.setArguments(args);
+			if (mDetailFragment != null)
+				f.setTargetFragment(mDetailFragment, Statics.REQUEST_EDIT_PROFILE);
+			showDetails(f, true);
+		}
+
 		if (action == Statics.ACTION_LEAVE_CONFIRMED) {
 			finish();
 		} else if (action == Statics.ACTION_NONE) {

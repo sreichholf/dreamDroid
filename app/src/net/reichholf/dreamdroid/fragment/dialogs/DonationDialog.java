@@ -20,14 +20,14 @@ public class DonationDialog extends ActionDialog {
 	private int[] mActionIds;
 	private CharSequence[] mActions;
 
-	private static String KEY_ITEMS;
+	private static String KEY_ITEMS = "items";
 
-	public DonationDialog(ExtendedHashMap items) {
+	public DonationDialog() {
 		super();
 	}
 
 	public static DonationDialog newInstance(ExtendedHashMap items){
-		DonationDialog d = new DonationDialog(items);
+		DonationDialog d = new DonationDialog();
 		Bundle args = new Bundle();
 		args.putParcelable(KEY_ITEMS, items);
 		d.setArguments(args);

@@ -6,11 +6,13 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.util.Base64;
 
@@ -23,15 +25,16 @@ import org.apache.http.util.ByteArrayBuffer;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +54,7 @@ public class SimpleHttpClient {
 	private String mFilePrefix;
 	private byte[] mBytes;
 	private String mErrorText;
+	private int mErrorTextId;
 
 	private boolean mError;
 	private int mRememberedReturnCode;
@@ -160,6 +164,7 @@ public class SimpleHttpClient {
 		applyConfig();
 
 		mErrorText = "";
+		mErrorTextId = -1;
 		mError = false;
 		mBytes = new byte[0];
 		if (!uri.startsWith("/")) {
@@ -192,6 +197,14 @@ public class SimpleHttpClient {
 					return fetchPageContent(uri, parameters);
 				}
 				mRememberedReturnCode = 0;
+				Log.e(LOG_TAG, Integer.toString(conn.getResponseCode()));
+				switch(conn.getResponseCode()){
+					case HttpURLConnection.HTTP_UNAUTHORIZED:
+						mErrorTextId = R.string.auth_error;
+						break;
+					default:
+						mErrorTextId = -1;
+				}
 				mErrorText = conn.getResponseMessage();
 				mError = true;
 				return false;
@@ -213,10 +226,16 @@ public class SimpleHttpClient {
 
 		} catch (MalformedURLException e) {
 			mError = true;
-			mErrorText = e.toString();
-		} catch (Exception e) {
+			mErrorTextId = R.string.illegal_host;
+		} catch (UnknownHostException e) {
 			mError = true;
-			mErrorText = e.toString();
+			mErrorText = null;
+			mErrorTextId = R.string.host_not_found;
+		} catch (ProtocolException e) {
+			mError = true;
+			mErrorText = e.getLocalizedMessage();
+		} catch (IOException e) {
+			e.printStackTrace();
 		} finally {
 			if (conn != null)
 				conn.disconnect();
@@ -279,10 +298,18 @@ public class SimpleHttpClient {
 		return mBytes;
 	}
 
+
+
 	/**
 	 * @return
 	 */
 	public String getErrorText() {
+		return mErrorText;
+	}
+
+	public String getErrorText(Context context){
+		if(mErrorTextId > 0)
+			return context.getString(mErrorTextId);
 		return mErrorText;
 	}
 

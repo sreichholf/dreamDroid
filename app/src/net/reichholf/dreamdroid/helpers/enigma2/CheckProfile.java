@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -41,7 +43,7 @@ public class CheckProfile {
 	 * @param profile
 	 * @return
 	 */
-	public static ExtendedHashMap checkProfile(Profile profile) {
+	public static ExtendedHashMap checkProfile(Profile profile, Context context) {
 		int[] versionZero = { 0, 0, 0 };
 		CURRENT_VERSION = versionZero;
 		DreamDroid.disableSleepTimer();
@@ -99,8 +101,8 @@ public class CheckProfile {
 						}
 
 					} else if (shc.hasError()) {
-						addEntry(resultList, R.string.host, true, String.valueOf(host), R.string.connection_error);
-						setError(checkResult, true, R.string.connection_error, shc.getErrorText());
+						addEntry(resultList, R.string.connection, true, String.valueOf(host), R.string.connection_error, shc.getErrorText(context));
+						setError(checkResult, true, R.string.connection_error, shc.getErrorText(context));
 					} else if (xml == null) {
 						// TODO Unexpected Error
 					}
@@ -158,12 +160,18 @@ public class CheckProfile {
 	 * @param errorTextId
 	 */
 	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
-			String value, int errorTextId) {
+								 String value, int errorTextId){
+		addEntry(resultList, checkTypeId, hasError, value, errorTextId, null);
+	}
+
+	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
+			String value, int errorTextId, String errorTextExt) {
 		ExtendedHashMap entry = new ExtendedHashMap();
 		entry.put(KEY_HAS_ERROR, hasError);
 		entry.put(KEY_WHAT, checkTypeId);
 		entry.put(KEY_VALUE, String.valueOf(value));
 		entry.put(KEY_ERROR_TEXT, errorTextId);
+		entry.put(KEY_ERROR_TEXT_EXT, errorTextExt);
 
 		resultList.add(entry);
 	}
