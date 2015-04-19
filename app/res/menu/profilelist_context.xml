@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
+    <item
+        android:id="@+id/menu_delete"
+        android:icon="@drawable/ic_action_delete"
+        dreamDroid:showAsAction="ifRoom"
+        android:title="@string/delete"/>
+    <item
+        android:id="@+id/menu_edit"
+        android:icon="@drawable/ic_action_edit"
+        dreamDroid:showAsAction="ifRoom"
+        android:title="@string/edit"/>
+</menu>

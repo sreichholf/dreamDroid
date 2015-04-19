@@ -86,6 +86,7 @@ public class Statics {
 	public static final int ITEM_BOUQUETEPG = 0x6042;
 	public static final int ITEM_PICK_BEGIN_TIME = 0x6043;
 	public static final int ITEM_PICK_END_TIME= 0x6044;
+	public static final int ITEM_EDIT = R.id.menu_edit;
 
 
 	public static final int REQUEST_EDIT_TIMER = 0x5000;

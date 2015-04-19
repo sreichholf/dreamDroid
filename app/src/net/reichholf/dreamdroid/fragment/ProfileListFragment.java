@@ -6,21 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
-
-import net.reichholf.dreamdroid.DatabaseHelper;
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.Profile;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.ProfileListSimpleAdapter;
-import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -33,6 +18,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,6 +33,20 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
+
+import net.reichholf.dreamdroid.DatabaseHelper;
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.adapter.ProfileListSimpleAdapter;
+import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
+
+import java.util.ArrayList;
 
 /**
  * Shows a list of all connection profiles
@@ -66,6 +66,24 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	public static final String KEY_ACTIVE_PROFILE = "active_profile";
 
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
+		switch(action){
+			case Statics.ACTION_DELETE_CONFIRMED:
+				DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
+				if (dbh.deleteProfile(mProfile)) {
+					showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
+				} else {
+					showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
+				}
+				// TODO Add error handling
+				reloadProfiles();
+				mProfile = Profile.DEFAULT;
+				mAdapter.notifyDataSetChanged();
+				break;
+		}
+	}
+
 	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>> {
 
 		@Override
@@ -78,6 +96,51 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			onDevicesDetected(profiles);
 		}
 	}
+
+
+	protected boolean mIsActionMode;
+	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+
+		// Called when the action mode is created; startActionMode() was called
+		@Override
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			// Inflate a menu resource providing context menu items
+			MenuInflater inflater = mode.getMenuInflater();
+			inflater.inflate(R.menu.profilelist_context, menu);
+			mIsActionMode = true;
+			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			return true;
+		}
+
+		// Called each time the action mode is shown. Always called after onCreateActionMode, but
+		// may be called multiple times if the mode is invalidated.
+		@Override
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			return true;
+		}
+
+		// Called when the user selects a contextual menu item
+		@Override
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			mode.finish(); // Action picked, so close the CAB
+			return onItemClicked(item.getItemId());
+		}
+
+		// Called when the user exits the action mode
+		@Override
+		public void onDestroyActionMode(ActionMode mode) {
+			final ListView lv = getListView();
+			lv.setItemChecked(lv.getCheckedItemPosition(), false);
+			getListView().post(new Runnable() {
+				@Override
+				public void run() {
+					lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+				}
+			});
+			mIsActionMode = false;
+		}
+	};
+
 
 	/**
 	 *
@@ -236,11 +299,11 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		mProfile = mProfiles.get(position);
-
-		CharSequence[] actions = {getText(R.string.activate), getText(R.string.edit), getText(R.string.delete)};
-		int[] actionIds = {Statics.ACTION_ACTIVATE, Statics.ACTION_EDIT, Statics.ACTION_DELETE};
-		getMultiPaneHandler().showDialogFragment(
-				SimpleChoiceDialog.newInstance(mProfile.getName(), actions, actionIds), "dialog_profile_selected");
+		if (mIsActionMode) {
+			getListView().setItemChecked(position, true);
+			return;
+		}
+		activateProfile();
 	}
 
 	private void reloadProfiles() {
@@ -268,8 +331,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile = mProfiles.get(position);
-		activateProfile();
-
+		getActionBarActivity().startSupportActionMode(mActionModeCallback);
+		getListView().setItemChecked(position, true);
 		return true;
 	}
 
@@ -300,6 +363,15 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 				break;
 			case Statics.ITEM_DETECT_DEVICES:
 				detectDevices();
+				break;
+			case Statics.ITEM_EDIT:
+				editProfile();
+				break;
+			case Statics.ITEM_DELETE:
+				getMultiPaneHandler().showDialogFragment(
+						PositiveNegativeDialog.newInstance(mProfile.getName(), R.string.confirm_delete_profile,
+								android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
+								Statics.ACTION_NONE), "dialog_delete_profile_confirm");
 				break;
 			default:
 				return false;
@@ -365,35 +437,5 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
-	}
-
-	@Override
-	public void onDialogAction(int action, Object details, String dialogTag) {
-		switch (action) {
-			case Statics.ACTION_ACTIVATE:
-				activateProfile();
-				break;
-			case Statics.ACTION_EDIT:
-				editProfile();
-				break;
-			case Statics.ACTION_DELETE:
-				getMultiPaneHandler().showDialogFragment(
-						PositiveNegativeDialog.newInstance(mProfile.getName(), R.string.confirm_delete_profile,
-								android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
-								Statics.ACTION_NONE), "dialog_delete_profile_confirm");
-				break;
-			case Statics.ACTION_DELETE_CONFIRMED:
-				DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
-				if (dbh.deleteProfile(mProfile)) {
-					showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
-				} else {
-					showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
-				}
-				// TODO Add error handling
-				reloadProfiles();
-				mProfile = Profile.DEFAULT;
-				mAdapter.notifyDataSetChanged();
-				break;
-		}
 	}
 }
