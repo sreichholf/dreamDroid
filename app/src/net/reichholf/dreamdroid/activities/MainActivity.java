@@ -140,6 +140,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			SnackbarManager.show(
 					Snackbar.with(this)
 							.text(error)
+							.textColorResource(R.color.material_red_500)
 							.duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
 							.actionLabel(R.string.more)
 							.actionListener(new ActionClickListener() {

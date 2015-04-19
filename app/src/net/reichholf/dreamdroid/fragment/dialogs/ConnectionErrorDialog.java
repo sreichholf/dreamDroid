@@ -39,7 +39,7 @@ public class ConnectionErrorDialog extends ActionDialog {
 		Dialog dialog = new MaterialDialog.Builder(getActivity())
 				.title(title)
 				.content(text)
-				.contentColor(Color.RED)
+				.contentColorRes(R.color.material_red_500)
 				.positiveText(R.string.ok)
 				.neutralText(R.string.edit_profile)
 				.callback(new MaterialDialog.ButtonCallback() {
