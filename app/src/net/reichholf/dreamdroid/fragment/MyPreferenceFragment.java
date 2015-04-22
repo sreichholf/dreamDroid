@@ -158,7 +158,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 					.title(R.string.sync_picons)
 					.content(R.string.wait_request_finished)
 					.cancelable(false)
-					.progress(false, 1)
+					.progress(false, 1, true)
 					.build();
 		}
 
