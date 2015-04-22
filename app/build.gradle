@@ -14,8 +14,8 @@ repositories {
 
 dependencies {
     compile 'com.afollestad:material-dialogs:0.7.+'
-    compile 'com.android.support:support-v4:22.+'
-    compile 'com.android.support:appcompat-v7:22.+'
+    compile 'com.android.support:support-v4:22.1.+'
+    compile 'com.android.support:appcompat-v7:22.1.+'
     compile 'com.android.support:support-annotations:20.0.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.github.flavienlaurent.datetimepicker:library:0.0.2'
