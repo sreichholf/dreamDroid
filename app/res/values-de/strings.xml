@@ -305,4 +305,5 @@
     <string name="theme_change_restart">Um das geänderte Motiv anzuwenden ist ein Neustart nötig. dreamDroid jetzt neu starten?</string>
     <string name="host_not_found">Host nicht gefunden</string>
     <string name="auth_error">Anmelden fehlgeschlagen (Benutzer/Passwort prüfen)</string>
+    <string name="more">Mehr</string>
 </resources>
