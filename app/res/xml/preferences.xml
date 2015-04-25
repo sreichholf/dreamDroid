@@ -83,14 +83,26 @@
             android:summary="@string/sync_picons_path_long"
             android:title="@string/sync_picons_path"/>
     </PreferenceCategory>
-    <!--
+
     <PreferenceCategory
         android:key="developer"
         android:title="@string/developer_settings">
+
+        <CheckBoxPreference
+            android:key="enable_developer"
+            android:title="@string/developer_settings_enable"/>
+
+        <CheckBoxPreference
+            android:key="fake_picon"
+            android:dependency="enable_developer"
+            android:summary="@string/use_fake_picon_long"
+            android:title="@string/use_fake_picon"/>
+
         <CheckBoxPreference
             android:key="xml_debug"
+            android:dependency="enable_developer"
             android:summary="@string/dump_xml_long"
             android:title="@string/dump_xml"/>
     </PreferenceCategory>
-    -->
+
 </PreferenceScreen>

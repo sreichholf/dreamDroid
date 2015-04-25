@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.fragment;
 
 
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -59,6 +60,12 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
 		if(typedValue.resourceId > 0)
 			getListView().setSelector(typedValue.resourceId);
+
+		boolean isDebuggable = (0 != (getActivity().getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
+		if(!isDebuggable) {
+			Preference dev = findPreference("developer");
+			getPreferenceScreen().removePreference(dev);
+		}
 	}
 
 	@Override

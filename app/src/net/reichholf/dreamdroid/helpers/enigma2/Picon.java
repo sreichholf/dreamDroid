@@ -55,6 +55,9 @@ public class Picon {
 
 	public static String getPiconFileName(Context context, ExtendedHashMap service, boolean useName) {
 		String root = getBasepath(context);
+		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, false))
+			return  String.format("%spicon_default.png", root);
+
 		String fileName;
 		if(useName){
 			fileName = service.getString(Event.KEY_SERVICE_NAME);
