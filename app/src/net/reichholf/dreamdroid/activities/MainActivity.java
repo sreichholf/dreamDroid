@@ -629,6 +629,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (mDetailFragment != null)
 				f.setTargetFragment(mDetailFragment, Statics.REQUEST_EDIT_PROFILE);
 			showDetails(f, true);
+			return;
 		}
 
 		if (action == Statics.ACTION_LEAVE_CONFIRMED) {
