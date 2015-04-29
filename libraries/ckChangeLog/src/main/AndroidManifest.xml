@@ -2,7 +2,7 @@
     package="de.cketti.library.changelog">
 
     <uses-sdk
-        android:minSdkVersion="7"
+        android:minSdkVersion="8"
         android:targetSdkVersion="22"></uses-sdk>
     <application />
 
