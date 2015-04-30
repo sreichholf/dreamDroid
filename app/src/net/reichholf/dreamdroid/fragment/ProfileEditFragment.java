@@ -187,7 +187,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
 		mCurrentProfile.setSimpleRemote(mSimpleRemote.isChecked());
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 		if (mCurrentProfile.getId() > 0) {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
 				showToast(getText(R.string.host_empty));
@@ -219,7 +219,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	 *            The text to show
 	 */
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -230,7 +230,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	 *            The text to show
 	 */
 	protected void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 

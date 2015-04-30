@@ -11,8 +11,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -54,7 +52,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 			mHttpHelper.bindToFragment(this);
 		setHasOptionsMenu(true);
 		// CustomExceptionHandler.register(this);
-		DreamDroid.loadCurrentProfile(getActionBarActivity());
+		DreamDroid.loadCurrentProfile(getAppCompatActivity());
 	}
 
 	@Override
@@ -171,7 +169,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	public void onLoadFinished(Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
 		mHttpHelper.onLoadFinished();
 		setCurrentTitle(getLoadFinishedTitle());
-		getActionBarActivity().setTitle(getCurrentTitle());
+		getAppCompatActivity().setTitle(getCurrentTitle());
 		if (result.isError()) {
 			showToast(result.getErrorText());
 			return;

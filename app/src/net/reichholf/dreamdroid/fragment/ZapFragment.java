@@ -155,7 +155,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new ZapListAdapter(getActionBarActivity(), R.layout.zap_grid_item, mMapList);
+		mAdapter = new ZapListAdapter(getAppCompatActivity(), R.layout.zap_grid_item, mMapList);
 		setListAdapter(mAdapter);
 	}
 
@@ -177,7 +177,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 		if(mGetBouquetListTask != null)
 			mGetBouquetListTask.cancel(true);
 		mGetBouquetListTask = null;
-		getActionBarActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		getAppCompatActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		super.onPause();
 	}
 
@@ -208,7 +208,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle bundle) {
-		return new AsyncListLoader(getActionBarActivity(), new ServiceListRequestHandler(), false, bundle);
+		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, bundle);
 	}
 
 	@Override
@@ -223,7 +223,6 @@ public class ZapFragment extends AbstractHttpListFragment {
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		if(mGetBouquetListTask != null){
 			mGetBouquetListTask.cancel(true);
 			mGetBouquetListTask = null;
@@ -239,7 +238,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 		ArrayList<ExtendedHashMap> list = result.getResult();
 		setCurrentTitle(getLoadFinishedTitle());
-		getActionBarActivity().setTitle(getCurrentTitle());
+		getAppCompatActivity().setTitle(getCurrentTitle());
 
 		if (list.size() == 0) {
 			setEmptyText(getText(R.string.no_list_item));
@@ -263,7 +262,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 	}
 
 	public void setupListNavigation() {
-		ActionBar actionBar = getActionBarActivity().getSupportActionBar();
+		ActionBar actionBar = getAppCompatActivity().getSupportActionBar();
 		if (actionBar.getNavigationMode() == ActionBar.NAVIGATION_MODE_LIST)
 			return;
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
@@ -314,7 +313,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 		if(isDefaultMissing){
 			addDefaultBouquetToList();
 		}
-		getActionBarActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedBouquetPosition);
+		getAppCompatActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedBouquetPosition);
 		mBouquetListAdapter.notifyDataSetChanged();
 	}
 

@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.activities.abs;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -31,7 +31,7 @@ import de.duenndns.ssl.MemorizingTrustManager;
 /**
  * Created by Stephan on 06.11.13.
  */
-public class BaseActivity extends ActionBarActivity {
+public class BaseActivity extends AppCompatActivity {
 	private static String TAG = BaseActivity.class.getSimpleName();
 
 	private MemorizingTrustManager mTrustManager;
@@ -204,8 +204,5 @@ public class BaseActivity extends ActionBarActivity {
 		super.onDestroy();
 		if (mIabHelper != null) mIabHelper.dispose();
 		mIabHelper = null;
-	}
-
-	public void setSupportProgressBarIndeterminateVisibility(boolean visible) {
 	}
 }

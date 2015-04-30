@@ -89,7 +89,7 @@ public class VirtualRemotePagerFragment extends AbstractHttpFragment {
 			}
 		});
 
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (!sp.getBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, true))
 			mPager.setCurrentItem(1);
 

@@ -156,7 +156,7 @@ public class DeviceInfoFragment extends AbstractHttpFragment {
 
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		return new AsyncSimpleLoader(getActionBarActivity(), new DeviceInfoRequestHandler(), args);
+		return new AsyncSimpleLoader(getAppCompatActivity(), new DeviceInfoRequestHandler(), args);
 	}
 
 	/*

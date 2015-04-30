@@ -70,7 +70,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
+
 		if (mHttpHelper == null)
 			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
 		else
@@ -93,7 +93,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		} else {
 			mExtras = new Bundle();
 		}
-		DreamDroid.loadCurrentProfile(getActionBarActivity());
+		DreamDroid.loadCurrentProfile(getAppCompatActivity());
 
 	}
 
@@ -129,7 +129,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	public void connectFabReload(View view, AbsListView listView) {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (!sp.getBoolean("disable_fab_reload", false)) {
 			registerFab(R.id.fab_reload, view, new View.OnClickListener() {
 				@Override
@@ -151,7 +151,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		if (!mEnableReload)
 			return;
 
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (sp.getBoolean("disable_fab_reload", false)) {
 			detachFabReload();
 			inflater.inflate(R.menu.reload, menu);
@@ -230,7 +230,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 				reload();
 				return true;
 			case Statics.ITEM_HOME:
-				intent = new Intent(getActionBarActivity(), TabbedNavigationActivity.class);
+				intent = new Intent(getAppCompatActivity(), TabbedNavigationActivity.class);
 				startActivity(intent);
 				return true;
 			default:
@@ -326,7 +326,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 		ArrayList<ExtendedHashMap> list = result.getResult();
 		setCurrentTitle(getLoadFinishedTitle());
-		getActionBarActivity().setTitle(getCurrentTitle());
+		getAppCompatActivity().setTitle(getCurrentTitle());
 
 		if (list.size() == 0)
 			setEmptyText(getText(R.string.no_list_item));

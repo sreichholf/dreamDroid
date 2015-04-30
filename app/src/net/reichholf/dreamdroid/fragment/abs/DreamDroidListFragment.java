@@ -6,18 +6,11 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
-import net.reichholf.dreamdroid.helpers.Statics;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
+
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
+import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
+import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.helpers.Statics;
 
 /**
  * @author sre
@@ -153,17 +153,17 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		mHelper.finish(resultCode, data);
 	}
 
-	protected ActionBarActivity getActionBarActivity() {
-		return (ActionBarActivity) getActivity();
+	protected AppCompatActivity getAppCompatActivity() {
+		return (AppCompatActivity) getActivity();
 	}
 
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
 	protected void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -190,7 +190,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+				Toast.makeText(getAppCompatActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
 				return true;
 			}
 		});

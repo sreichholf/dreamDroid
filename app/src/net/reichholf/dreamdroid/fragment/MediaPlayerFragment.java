@@ -150,13 +150,13 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				@Override
 				public void onPanelOpened(View view) {
 					getListView().setEnabled(true);
-					getActionBarActivity().supportInvalidateOptionsMenu();
+					getAppCompatActivity().supportInvalidateOptionsMenu();
 				}
 
 				@Override
 				public void onPanelClosed(View view) {
 					getListView().setEnabled(false);
-					getActionBarActivity().supportInvalidateOptionsMenu();
+					getAppCompatActivity().supportInvalidateOptionsMenu();
 				}
 			});
 			spl.openPane();
@@ -171,7 +171,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
 		initTitle(getString(R.string.mediaplayer));
 
 		mPlaylist = new ArrayList<>();
@@ -246,8 +245,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
-		getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
-
 		if (loader.getId() == LOADER_PLAYLIST_ID) {
 			setCurrentTitle(getLoadFinishedTitle());
 			mPlaylist.clear();
@@ -291,7 +288,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			}
 
 			// check for changes in options menu
-			getActionBarActivity().supportInvalidateOptionsMenu();
+			getAppCompatActivity().supportInvalidateOptionsMenu();
 
 			String root = media.getString(Mediaplayer.KEY_ROOT);
 			String path = "";
@@ -306,7 +303,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			setCurrentTitle(getLoadFinishedTitle() + path);
 			mMapList.addAll(list);
 		}
-		getActionBarActivity().setTitle(getCurrentTitle());
+		getAppCompatActivity().setTitle(getCurrentTitle());
 		mAdapter.notifyDataSetChanged();
 	}
 
@@ -514,7 +511,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		mMode = PLAY_MODE;
 
 		// invalidate options menu
-		getActionBarActivity().supportInvalidateOptionsMenu();
+		getAppCompatActivity().supportInvalidateOptionsMenu();
 
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_FILE, filePath));
@@ -529,7 +526,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		mMode = PLAY_MODE;
 
 		// invalidate options menu
-		getActionBarActivity().supportInvalidateOptionsMenu();
+		getAppCompatActivity().supportInvalidateOptionsMenu();
 
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
@@ -543,7 +540,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		mMode = STOP_MODE;
 
 		// invalidate options menu
-		getActionBarActivity().supportInvalidateOptionsMenu();
+		getAppCompatActivity().supportInvalidateOptionsMenu();
 
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(MediaplayerCommandRequestHandler.PARAM_CMD,
@@ -601,10 +598,10 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	 * Initializes the <code>MediaListAdapter</code>
 	 */
 	private void setAdapter(View v) {
-		mAdapter = new MediaListAdapter(getActionBarActivity(), mMapList);
+		mAdapter = new MediaListAdapter(getAppCompatActivity(), mMapList);
 		setListAdapter(mAdapter);
 
-		mPlaylistAdapter = new MediaListAdapter(getActionBarActivity(), mPlaylist);
+		mPlaylistAdapter = new MediaListAdapter(getAppCompatActivity(), mPlaylist);
 		ListView playlistView = (ListView) v.findViewById(R.id.playlist);
 		playlistView.setAdapter(mPlaylistAdapter);
 	}
@@ -672,7 +669,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		return new AsyncListLoader(getActionBarActivity(), new MediaplayerListRequestHandler(), false, args);
+		return new AsyncListLoader(getAppCompatActivity(), new MediaplayerListRequestHandler(), false, args);
 	}
 
 	@Override

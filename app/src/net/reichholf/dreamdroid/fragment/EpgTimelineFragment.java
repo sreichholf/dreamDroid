@@ -136,7 +136,7 @@ public class EpgTimelineFragment extends AbstractHttpEventListFragment {
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		return new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(
+		return new AsyncListLoader(getAppCompatActivity(), new EventListRequestHandler(
 				URIStore.EPG_MULTI), false, args);
 	}
 

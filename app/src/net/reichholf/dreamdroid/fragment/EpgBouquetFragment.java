@@ -146,7 +146,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new EPGListAdapter(getActionBarActivity(), mMapList, R.layout.epg_multi_service_list_item, new String[]{
+		mAdapter = new EPGListAdapter(getAppCompatActivity(), mMapList, R.layout.epg_multi_service_list_item, new String[]{
 				Event.KEY_EVENT_TITLE, Event.KEY_SERVICE_NAME, Event.KEY_EVENT_DESCRIPTION_EXTENDED, Event.KEY_EVENT_START_READABLE,
 				Event.KEY_EVENT_DURATION_READABLE}, new int[]{R.id.event_title, R.id.service_name, R.id.event_short, R.id.event_start,
 				R.id.event_duration});
@@ -168,7 +168,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		return new AsyncListLoader(getActionBarActivity(), new EventListRequestHandler(URIStore.EPG_BOUQUET), false, args);
+		return new AsyncListLoader(getAppCompatActivity(), new EventListRequestHandler(URIStore.EPG_BOUQUET), false, args);
 	}
 
 	@Override
@@ -193,7 +193,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_PICK_BOUQUET);
-		((MultiPaneHandler) getActionBarActivity()).showDetails(f, true);
+		((MultiPaneHandler) getAppCompatActivity()).showDetails(f, true);
 	}
 
 	private Calendar getCalendar() {

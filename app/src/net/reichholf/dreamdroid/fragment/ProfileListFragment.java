@@ -70,7 +70,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch(action){
 			case Statics.ACTION_DELETE_CONFIRMED:
-				DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
+				DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 				if (dbh.deleteProfile(mProfile)) {
 					showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
 				} else {
@@ -155,7 +155,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			if (mProgress != null) {
 				mProgress.dismiss();
 			}
-			mProgress = ProgressDialog.show(getActionBarActivity(), getText(R.string.searching),
+			mProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.searching),
 					getText(R.string.searching_known_devices));
 			mProgress.setCancelable(false);
 			mDetectDevicesTask = new DetectDevicesTask();
@@ -174,7 +174,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 *
 	 */
 	private void addAllDetectedDevices() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 		for (Profile p : mDetectedProfiles) {
 			if (dbh.addProfile(p)) {
 				showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
@@ -194,9 +194,9 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 		AlertDialog.Builder builder;
 		if(Build.VERSION.SDK_INT >= 11)
-			builder = new AlertDialog.Builder(getActionBarActivity(), DreamDroid.getDialogTheme(getActionBarActivity()));
+			builder = new AlertDialog.Builder(getAppCompatActivity(), DreamDroid.getDialogTheme(getAppCompatActivity()));
 		else
-			builder = new AlertDialog.Builder(getActionBarActivity());
+			builder = new AlertDialog.Builder(getAppCompatActivity());
 		builder.setTitle(R.string.autodiscover_dreamboxes);
 
 		if (mDetectedProfiles.size() > 0) {
@@ -254,7 +254,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfileMapList = new ArrayList<>();
 		mProfile = Profile.DEFAULT;
 
-		mAdapter = new ProfileListSimpleAdapter(getActionBarActivity(), mProfileMapList, R.layout.two_line_card_list_item,
+		mAdapter = new ProfileListSimpleAdapter(getAppCompatActivity(), mProfileMapList, R.layout.two_line_card_list_item,
 				new String[]{DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1, android.R.id.text2});
 		setListAdapter(mAdapter);
 	}
@@ -292,7 +292,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 				return onListItemLongClick(a, v, position, id);
 			}
 		});
-		SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) getActionBarActivity().findViewById(R.id.ptr_layout);
+		SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
 		swipeRefreshLayout.setEnabled(false);
 	}
 
@@ -307,12 +307,12 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	private void reloadProfiles() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 		mProfiles.clear();
 		mProfileMapList.clear();
 		mProfiles.addAll(dbh.getProfiles());
 
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 
 		for (Profile m : mProfiles) {
 			boolean isActive = false;
@@ -331,7 +331,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
 		mProfile = mProfiles.get(position);
-		getActionBarActivity().startSupportActionMode(mActionModeCallback);
+		getAppCompatActivity().startSupportActionMode(mActionModeCallback);
 		getListView().setItemChecked(position, true);
 		return true;
 	}
@@ -384,7 +384,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 * Activates the selected profile
 	 */
 	private void activateProfile() {
-		if (DreamDroid.setCurrentProfile(getActionBarActivity(), mProfile.getId(), true)) {
+		if (DreamDroid.setCurrentProfile(getAppCompatActivity(), mProfile.getId(), true)) {
 			showToast(getText(R.string.profile_activated) + " '" + mProfile.getName() + "'");
 		} else {
 			showToast(getText(R.string.profile_not_activated) + " '" + mProfile.getName() + "'");
@@ -425,7 +425,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	 * @param text The text to show as toast
 	 */
 	protected void showToast(String text) {
-		Toast toast = Toast.makeText(getActionBarActivity(), text, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), text, Toast.LENGTH_LONG);
 		toast.show();
 	}
 

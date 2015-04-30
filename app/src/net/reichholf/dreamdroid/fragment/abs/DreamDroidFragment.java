@@ -10,7 +10,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -130,17 +130,17 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 		mHelper.finish(resultCode, data);
 	}
 	
-	protected ActionBarActivity getActionBarActivity() {
-		return (ActionBarActivity) getActivity();
+	protected AppCompatActivity getAppCompatActivity() {
+		return (AppCompatActivity) getActivity();
 	}
 
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
 	protected void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -153,7 +153,7 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				Toast.makeText(getActionBarActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+				Toast.makeText(getAppCompatActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
 				return true;
 			}
 		});

@@ -125,13 +125,13 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				return;
 			if (mLoadProgress != null) {
 				if (!mLoadProgress.isShowing()) {
-					mLoadProgress = ProgressDialog.show(getActionBarActivity(), getText(R.string.loading).toString(),
+					mLoadProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.loading).toString(),
 							progress[0]);
 				} else {
 					mLoadProgress.setMessage(progress[0]);
 				}
 			} else {
-				mLoadProgress = ProgressDialog.show(getActionBarActivity(), getText(R.string.loading).toString(),
+				mLoadProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.loading).toString(),
 						progress[0]);
 			}
 		}
@@ -438,7 +438,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 
 		f.setArguments(args);
 		f.setTargetFragment(this, Statics.REQUEST_PICK_SERVICE);
-		((MultiPaneHandler) getActionBarActivity()).showDetails(f, true);
+		((MultiPaneHandler) getAppCompatActivity()).showDetails(f, true);
 	}
 
 	/**
@@ -471,7 +471,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		mService.setText(mTimer.getString(Timer.KEY_SERVICE_NAME));
 
 		// Afterevents
-		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getActionBarActivity(),
+		ArrayAdapter<CharSequence> aaAfterevent = ArrayAdapter.createFromResource(getAppCompatActivity(),
 				R.array.afterevents, android.R.layout.simple_spinner_item);
 		aaAfterevent.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mAfterevent.setAdapter(aaAfterevent);
@@ -481,7 +481,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		mAfterevent.setSelection(aeValue);
 
 		// Locations
-		ArrayAdapter<String> aaLocations = new ArrayAdapter<>(getActionBarActivity(),
+		ArrayAdapter<String> aaLocations = new ArrayAdapter<>(getAppCompatActivity(),
 				android.R.layout.simple_spinner_item, DreamDroid.getLocations());
 		aaLocations.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mLocation.setAdapter(aaLocations);
@@ -634,7 +634,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				mProgress.dismiss();
 			}
 		}
-		Activity activtiy = getActionBarActivity();
+		Activity activtiy = getAppCompatActivity();
 		mProgress = ProgressDialog.show(activtiy, "", getText(R.string.saving), true);
 
 		applyViewValues();

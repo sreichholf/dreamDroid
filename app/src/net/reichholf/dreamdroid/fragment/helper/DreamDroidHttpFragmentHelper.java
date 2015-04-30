@@ -14,7 +14,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
@@ -83,10 +83,10 @@ public class DreamDroidHttpFragmentHelper {
 		if(mSwipeRefreshLayout == null)
 			return;
 
-		Context ctx = getActionBarActivity();
+		Context ctx = getAppCompatActivity();
 		TypedValue typed_value = new TypedValue();
 		ctx.getTheme().resolveAttribute(android.support.v7.appcompat.R.attr.actionBarSize, typed_value, true);
-		mSwipeRefreshLayout.setProgressViewOffset(false, 0, getActionBarActivity().getResources().getDimensionPixelSize(typed_value.resourceId));
+		mSwipeRefreshLayout.setProgressViewOffset(false, 0, getAppCompatActivity().getResources().getDimensionPixelSize(typed_value.resourceId));
 
 		ctx.getTheme().resolveAttribute(R.attr.colorAccent, typed_value, true);
 		int accent = ctx.getResources().getColor(typed_value.resourceId);
@@ -97,8 +97,8 @@ public class DreamDroidHttpFragmentHelper {
 		mShc = SimpleHttpClient.getInstance();
 	}
 
-	public ActionBarActivity getActionBarActivity() {
-		return (ActionBarActivity) mFragment.getActivity();
+	public AppCompatActivity getAppCompatActivity() {
+		return (AppCompatActivity) mFragment.getActivity();
 	}
 
 	public HttpBaseFragment getBaseFragment() {
@@ -139,14 +139,9 @@ public class DreamDroidHttpFragmentHelper {
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			if (!isCancelled() && getActionBarActivity().getSupportActionBar() != null)
-				getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		}
 
 		protected void onPostExecute(Boolean result) {
-			if(getActionBarActivity().getSupportActionBar() != null)
-				getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
-
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 			}
@@ -183,13 +178,9 @@ public class DreamDroidHttpFragmentHelper {
 
 		@Override
 		protected void onProgressUpdate(Void... progress) {
-			if (!isCancelled())
-				getActionBarActivity().setSupportProgressBarIndeterminateVisibility(true);
 		}
 
 		protected void onPostExecute(Boolean result) {
-			getActionBarActivity().setSupportProgressBarIndeterminateVisibility(false);
-
 			if (!result || mVolume == null) {
 				mVolume = new ExtendedHashMap();
 			}
@@ -199,7 +190,7 @@ public class DreamDroidHttpFragmentHelper {
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (PreferenceManager.getDefaultSharedPreferences(getActionBarActivity()).getBoolean("volume_control", false)) {
+		if (PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean("volume_control", false)) {
 			switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				onVolumeButtonClicked(Volume.CMD_UP);
@@ -299,7 +290,7 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param toastText
 	 */
 	private void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -307,7 +298,7 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param toastText
 	 */
 	private void showToast(CharSequence toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 
@@ -319,7 +310,7 @@ public class DreamDroidHttpFragmentHelper {
 
 	public void updateProgress(String progress) {
 		getBaseFragment().setCurrentTitle(progress);
-		getActionBarActivity().setTitle(progress);
+		getAppCompatActivity().setTitle(progress);
 		onLoadStarted();
 	}
 
@@ -328,7 +319,7 @@ public class DreamDroidHttpFragmentHelper {
 	 */
 	public void finishProgress(String title) {
 		getBaseFragment().setCurrentTitle(title);
-		getActionBarActivity().setTitle(title);
+		getAppCompatActivity().setTitle(title);
 		onLoadFinished();
 	}
 
@@ -341,7 +332,7 @@ public class DreamDroidHttpFragmentHelper {
 		args.putString(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
 		f.setArguments(args);
 
-		MultiPaneHandler m = (MultiPaneHandler) getActionBarActivity();
+		MultiPaneHandler m = (MultiPaneHandler) getAppCompatActivity();
 		m.showDetails(f, true);
 	}
 
@@ -354,7 +345,7 @@ public class DreamDroidHttpFragmentHelper {
 		if (!"".equals(getBaseFragment().getBaseTitle().trim()))
 			getBaseFragment().setCurrentTitle(mFragment.getString(R.string.loading));
 
-		getActionBarActivity().setTitle(getBaseFragment().getCurrentTitle());
+		getAppCompatActivity().setTitle(getBaseFragment().getCurrentTitle());
 		mFragment.getLoaderManager().restartLoader(loader, getBaseFragment().getLoaderBundle(loader),
 				(LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
 	}

@@ -44,7 +44,7 @@ public class PickServiceFragment extends AbstractHttpListFragment{
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleAdapter(getActionBarActivity(), mMapList, android.R.layout.simple_list_item_1,
+		mAdapter = new SimpleAdapter(getAppCompatActivity(), mMapList, android.R.layout.simple_list_item_1,
 				new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
 		setListAdapter(mAdapter);
 	}
@@ -66,7 +66,7 @@ public class PickServiceFragment extends AbstractHttpListFragment{
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle args) {
-		return new AsyncFavListLoader(getActionBarActivity(), args);
+		return new AsyncFavListLoader(getAppCompatActivity(), args);
 	}
 
 }

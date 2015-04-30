@@ -187,7 +187,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			mCurrentItem = event;
 			Bundle args = new Bundle();
 			args.putParcelable("currentItem", mCurrentItem);
-			((MultiPaneHandler) getActionBarActivity()).showDialogFragment(EpgDetailDialog.class, args,
+			((MultiPaneHandler) getAppCompatActivity()).showDialogFragment(EpgDetailDialog.class, args,
 					"current_epg_detail_dialog");
 		}
 	}
@@ -222,7 +222,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 
 			ImageView piconView = (ImageView) getView().findViewById(R.id.picon);
-			Picon.setPiconForView(getActionBarActivity(), piconView, mService);
+			Picon.setPiconForView(getAppCompatActivity(), piconView, mService);
 		} else {
 			showToast(getText(R.string.not_available));
 		}
@@ -232,7 +232,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 	 * @param event
 	 */
 	protected void setTimerByEventData(ExtendedHashMap event) {
-		Timer.editUsingEvent((MultiPaneHandler) getActionBarActivity(), event, this);
+		Timer.editUsingEvent((MultiPaneHandler) getAppCompatActivity(), event, this);
 	}
 
 	/**
@@ -245,7 +245,7 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			}
 		}
 
-		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerAddByEventIdRequestHandler(), Timer.getEventIdParams(event));
 	}
 
@@ -287,14 +287,14 @@ public class CurrentServiceFragment extends AbstractHttpFragment implements Acti
 			findSimilarEvents(mCurrentItem);
 			break;
 		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getActionBarActivity(), mCurrentItem);
+			IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentItem);
 			break;
 		}
 	}
 
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		return new AsyncSimpleLoader(getActionBarActivity(), new CurrentServiceRequestHandler(),
+		return new AsyncSimpleLoader(getAppCompatActivity(), new CurrentServiceRequestHandler(),
 				args);
 	}
 }

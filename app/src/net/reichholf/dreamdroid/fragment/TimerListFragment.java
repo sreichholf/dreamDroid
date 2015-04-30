@@ -134,7 +134,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				mTimer = mMapList.get(position);
-				getActionBarActivity().startSupportActionMode(mActionModeCallback);
+				getAppCompatActivity().startSupportActionMode(mActionModeCallback);
 				getListView().setItemChecked(position, true);
 				return true;
 			}
@@ -169,7 +169,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_EDIT_TIMER) {
 			if (resultCode == Activity.RESULT_OK) {
-				if (getActionBarActivity() != null) // we're somewhere active!
+				if (getAppCompatActivity() != null) // we're somewhere active!
 					// reload();
 					Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!");
 			}
@@ -216,7 +216,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new TimerListAdapter(getActionBarActivity(), R.layout.timer_list_item, mMapList);
+		mAdapter = new TimerListAdapter(getAppCompatActivity(), R.layout.timer_list_item, mMapList);
 		setListAdapter(mAdapter);
 	}
 
@@ -243,7 +243,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			}
 		}
 		ArrayList<NameValuePair> params = Timer.getDeleteParams(timer);
-		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.deleting), true);
+		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.deleting), true);
 		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
 
@@ -256,7 +256,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			timerNew.put(Timer.KEY_DISABLED, "1");
 
 		ArrayList<NameValuePair> params = Timer.getSaveParams(timerNew, timer);
-		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.saving), true);
+		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerChangeRequestHandler(), params);
 	}
 
@@ -270,7 +270,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			}
 		}
 
-		mProgress = ProgressDialog.show(getActionBarActivity(), "", getText(R.string.cleaning_timerlist), true);
+		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.cleaning_timerlist), true);
 		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<NameValuePair>());
 	}
 
@@ -287,7 +287,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		return new AsyncListLoader(getActionBarActivity(), new TimerListRequestHandler(), false, args);
+		return new AsyncListLoader(getAppCompatActivity(), new TimerListRequestHandler(), false, args);
 	}
 
 	@Override

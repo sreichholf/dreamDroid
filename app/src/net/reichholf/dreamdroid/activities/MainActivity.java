@@ -290,7 +290,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		setSupportActionBar(toolbar);
 
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		setSupportProgressBarIndeterminateVisibility(false);
 
 		mSlider = findViewById(R.id.drawer_layout) != null;
 		if (mSlider) {
@@ -463,8 +462,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	private void setConnectionState(String state, boolean finished) {
 		mConnectionState.setText(state);
-		if (finished)
-			setSupportProgressBarIndeterminateVisibility(false);
 	}
 
 	/*

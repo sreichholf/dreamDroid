@@ -505,7 +505,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		// Pop the backstack completely everytime the user navigates "away"
 		// Avoid's "stacking" fragments due to back-button behaviour that feels
 		// really mysterious
-		FragmentManager fm = getActionBarActivity().getSupportFragmentManager();
+		FragmentManager fm = getAppCompatActivity().getSupportFragmentManager();
 		if (fm.getBackStackEntryCount() > 0) {
 			fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 		}
@@ -584,7 +584,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 * @return
 	 */
 	public View findViewById(int id) {
-		return getActionBarActivity().findViewById(id);
+		return getAppCompatActivity().findViewById(id);
 	}
 
 	@Override

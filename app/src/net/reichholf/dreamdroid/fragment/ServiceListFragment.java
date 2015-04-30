@@ -65,7 +65,6 @@ import org.apache.http.message.BasicNameValuePair;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 /**
  * Handles ServiceLists of (based on service references).
@@ -199,7 +198,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mDetailItems = mNavItems;
 		}
 		if(GridView.class.isInstance(mDetailList)) {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 			((GridView) mDetailList).setNumColumns(
 					Integer.parseInt(
 							prefs.getString(
@@ -270,8 +269,8 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getActionBarActivity().supportInvalidateOptionsMenu();
-		getActionBarActivity().setTitle(mCurrentTitle);
+		getAppCompatActivity().supportInvalidateOptionsMenu();
+		getAppCompatActivity().setTitle(mCurrentTitle);
 
 		mNavList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
@@ -305,7 +304,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			loadNavRoot();
 			reloadDetail(false);
 		} else {
-			getActionBarActivity().setTitle(mDetailName);
+			getAppCompatActivity().setTitle(mDetailName);
 		}
 	}
 
@@ -333,11 +332,11 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	private void setAdapter() {
 		ListAdapter adapter;
 		if (!mNavList.equals(mDetailList)) {
-			adapter = new SimpleAdapter(getActionBarActivity(), mNavItems, android.R.layout.simple_list_item_1,
+			adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
 					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
 			mNavList.setAdapter(adapter);
 		}
-		adapter = new ServiceListAdapter(getActionBarActivity(), mDetailItems);
+		adapter = new ServiceListAdapter(getAppCompatActivity(), mDetailItems);
 		if(Build.VERSION.SDK_INT < 11) {
 			((ListView)mDetailList).setAdapter(adapter);
 		} else {
@@ -363,7 +362,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	public void checkMenuReload(Menu menu, MenuInflater inflater){
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity());
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if(sp.getBoolean("disable_fab_reload", false)) {
 			detachFabReload();
 			inflater.inflate(R.menu.reload, menu);
@@ -432,7 +431,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 					if (mNavReference != null)
 						p.setDefaultRef2Values(mNavReference, mNavName);
 				}
-				DatabaseHelper dbh = DatabaseHelper.getInstance(getActionBarActivity());
+				DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 				if (dbh.updateProfile(p)) {
 					if(!reset)
 						showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
@@ -442,7 +441,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			} else {
 				showToast(getText(R.string.default_bouquet_not_set));
 			}
-			getActionBarActivity().supportInvalidateOptionsMenu();
+			getAppCompatActivity().supportInvalidateOptionsMenu();
 			return true;
             case Statics.ITEM_SYNC_EPG:
                 syncEpg();
@@ -481,13 +480,13 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			else
 				handler = new EventListRequestHandler(URIStore.EPG_NOW);
 		}
-		return new AsyncListLoader(getActionBarActivity(), handler, true, args);
+		return new AsyncListLoader(getAppCompatActivity(), handler, true, args);
 	}
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		getActionBarActivity().supportInvalidateOptionsMenu();
+		getAppCompatActivity().supportInvalidateOptionsMenu();
 
 		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
 			mNavItems.clear();
@@ -586,7 +585,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 				intent.putExtra(sData, (Serializable) map);
 				finish(Activity.RESULT_OK, intent);
 			} else {
-				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getActionBarActivity()).getBoolean(
+				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
 						"instant_zap", false);
 				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
@@ -599,7 +598,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	public void showPopupMenu(View v){
-		PopupMenu menu = new PopupMenu(getActionBarActivity(), v);
+		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
 
 		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -646,7 +645,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 				setEmptyText(getString(R.string.loading));
 				mEmpty.setVisibility(View.VISIBLE);
 				mDetailList.setVisibility(View.GONE);
-				getActionBarActivity().setTitle(mDetailName);
+				getAppCompatActivity().setTitle(mDetailName);
 			}
 			reload(mDetailReference, false);
 		} else {
@@ -681,9 +680,9 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mNavHttpParams = params;
 			mHttpHelper.reload(LOADER_BOUQUETLIST_ID);
 		} else {
-			if(DreamDroid.checkInitial(getActionBarActivity(), DreamDroid.INITIAL_SERVICELIST_PANE)){
+			if(DreamDroid.checkInitial(getAppCompatActivity(), DreamDroid.INITIAL_SERVICELIST_PANE)){
 				mSlidingPane.openPane();
-				DreamDroid.setNotInitial(getActionBarActivity(), DreamDroid.INITIAL_SERVICELIST_PANE);
+				DreamDroid.setNotInitial(getAppCompatActivity(), DreamDroid.INITIAL_SERVICELIST_PANE);
 			} else {
 				mSlidingPane.closePane();
 			}
@@ -698,7 +697,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	}
 
 	public void loadNavRoot() {
-		getActionBarActivity().setTitle(getString(R.string.services));
+		getAppCompatActivity().setTitle(getString(R.string.services));
 
 		mNavItems.clear();
 
@@ -714,7 +713,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 		mNavReference = SERVICE_REF_ROOT;
 		mNavName = "";
-		getActionBarActivity().supportInvalidateOptionsMenu();
+		getAppCompatActivity().supportInvalidateOptionsMenu();
 		((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 	}
 
@@ -754,7 +753,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			break;
 
 		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getActionBarActivity(), mCurrentService);
+			IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentService);
 			break;
 		}
 	}

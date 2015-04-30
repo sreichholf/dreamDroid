@@ -140,7 +140,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getActionBarActivity().setTitle(getText(R.string.screenshot));
+		getAppCompatActivity().setTitle(getText(R.string.screenshot));
 	}
 
 	@Override
@@ -180,7 +180,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		mScannerConn = new MediaScannerConnection(getActionBarActivity(), new DummyMediaScannerConnectionClient());
+		mScannerConn = new MediaScannerConnection(getAppCompatActivity(), new DummyMediaScannerConnectionClient());
 		mScannerConn.connect();
 
 		if (mRawImage.length == 0) {
@@ -334,7 +334,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 			File root;
 			String filepath;
 			if (inCache) {
-				root = getActionBarActivity().getCacheDir();
+				root = getAppCompatActivity().getCacheDir();
 			} else {
 				root = Environment.getExternalStorageDirectory();
 				filepath = String.format("%s%s%s", root.getAbsolutePath(), File.separator, "media/screenshots");
@@ -385,7 +385,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 	@Override
 	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
-		return new AsyncByteLoader(getActionBarActivity(), args);
+		return new AsyncByteLoader(getAppCompatActivity(), args);
 	}
 
 	@Override
@@ -407,7 +407,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	}
 
 	protected void showToast(String toastText) {
-		Toast toast = Toast.makeText(getActionBarActivity(), toastText, Toast.LENGTH_LONG);
+		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
 		toast.show();
 	}
 

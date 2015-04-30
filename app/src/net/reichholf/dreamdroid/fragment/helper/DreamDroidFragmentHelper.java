@@ -6,18 +6,18 @@
 
 package net.reichholf.dreamdroid.fragment.helper;
 
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
-import net.reichholf.dreamdroid.helpers.Statics;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.helpers.Statics;
 
 
 public class DreamDroidFragmentHelper {
@@ -37,8 +37,8 @@ public class DreamDroidFragmentHelper {
 		mFragment = fragment;
 	}
 
-	public ActionBarActivity getActionBarActivity() {
-		return (ActionBarActivity) mFragment.getActivity();
+	public AppCompatActivity getAppCompatActivity() {
+		return (AppCompatActivity) mFragment.getActivity();
 	}
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -46,14 +46,10 @@ public class DreamDroidFragmentHelper {
 	}
 
 	public void onActivityCreated(Bundle savedInstanceState) {
-		getActionBarActivity().setTitle(mCurrentTitle);
+		getAppCompatActivity().setTitle(mCurrentTitle);
 	}
 
 	public void onAttach(Activity activity) {
-		if(activity.getClass().equals(ActionBarActivity.class))
-			((ActionBarActivity) activity).setSupportProgressBarIndeterminateVisibility(false);
-		else
-			activity.setProgressBarIndeterminateVisibility(false);
 	}
 
 	public void onResume() {
@@ -71,7 +67,7 @@ public class DreamDroidFragmentHelper {
 	}
 
 	public MultiPaneHandler getMultiPaneHandler() {
-		return (MultiPaneHandler) getActionBarActivity();
+		return (MultiPaneHandler) getAppCompatActivity();
 	}
 
 	public String getBaseTitle() {
@@ -94,7 +90,7 @@ public class DreamDroidFragmentHelper {
 		MultiPaneHandler mph = ((MutliPaneContent) mFragment).getMultiPaneHandler();
 		if (mph.isMultiPane()) {
 			boolean explicitShow = false;
-			FragmentManager fm = getActionBarActivity().getSupportFragmentManager();
+			FragmentManager fm = getAppCompatActivity().getSupportFragmentManager();
 			if (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
 			} else {
@@ -105,7 +101,7 @@ public class DreamDroidFragmentHelper {
 			if (target != null) {
 				if (resultCode != Statics.RESULT_NONE || data != null) {
 					if (explicitShow) {
-						FragmentTransaction ft = getActionBarActivity().getSupportFragmentManager().beginTransaction();
+						FragmentTransaction ft = getAppCompatActivity().getSupportFragmentManager().beginTransaction();
 						ft.remove(mFragment);
 						ft.commit();
 
@@ -115,8 +111,8 @@ public class DreamDroidFragmentHelper {
 				}
 			}
 		} else {
-			getActionBarActivity().setResult(resultCode, data);
-			getActionBarActivity().finish();
+			getAppCompatActivity().setResult(resultCode, data);
+			getAppCompatActivity().finish();
 		}
 	}
 }
