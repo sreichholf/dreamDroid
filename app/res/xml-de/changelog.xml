@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 rc1" versioncode="270">
+    <release version="1.0 rc2" versioncode="272">
+        <change>FIX: Abstürze im Bezug auf Spenden (IAB threading bugs)</change>
+        <change>FIX: Absturz beim schließen des "Verbindungsfehler Detail Dialog"</change>
+        <change>Kleinere fixes und cleanups</change>
+    </release>
+    <release version="1.0 rc1" versioncode="271">
         <change>Neues App-Icon!</change>
         <change>NEU: Mehr Material Design, auch für Android &lt; 5.0 </change>
         <change>NEU: Screenshots können geteilt werden</change>

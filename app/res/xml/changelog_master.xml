@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 rc1" versioncode="270">
+    <release version="1.0 rc2" versioncode="272">
+        <change>FIX: Some crashes related to Donations (IAB concurrency problems)</change>
+        <change>FIX: crash when closing the connection error detail dialog</change>
+        <change>Minor fixes and code cleanups</change>
+    </release>
+    <release version="1.0 rc1" versioncode="271">
         <change>New App-Icon!</change>
         <change>NEW: Material Design (almost) everywhere (across all android versions)</change>
         <change>NEW: Sharing Screnshots</change>
