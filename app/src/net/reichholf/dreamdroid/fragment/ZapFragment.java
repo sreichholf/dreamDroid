@@ -294,8 +294,9 @@ public class ZapFragment extends AbstractHttpListFragment {
 	}
 
 	private void applyBouquetList(ArrayList<ExtendedHashMap> list){
-		mBouquetList.clear();
 		mBouquetListAdapter.clear();
+		mBouquetList.clear();
+
 
 		String defaultRef = DreamDroid.getCurrentProfile().getDefaultRef();
 		boolean isDefaultMissing = true;

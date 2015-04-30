@@ -134,11 +134,11 @@
         <item name="android:listSelector">@drawable/list_selector_light</item>
     </style>
 
-    <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Light">
+    <style name="Theme.DreamDroid.Dialog" parent="Theme.AppCompat.Dialog">
         <item name="colorAccent">@color/material_blue_600</item>
     </style>
 
-    <style name="Theme.DreamDroid.Light.Dialog" parent="Theme.DreamDroid.Dialog">
+    <style name="Theme.DreamDroid.Light.Dialog" parent="Theme.AppCompat.Light.Dialog">
         <item name="colorAccent">@color/material_blue_600</item>
     </style>
 

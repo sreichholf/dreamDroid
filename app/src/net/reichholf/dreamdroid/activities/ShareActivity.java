@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
