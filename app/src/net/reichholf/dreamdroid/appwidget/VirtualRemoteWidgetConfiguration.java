@@ -94,7 +94,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	public void saveWidgetConfiguration(int profileId) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.putInt(getPrefsKey(mAppWidgetId), profileId);
+		editor.putInt(getProfileId(mAppWidgetId), profileId);
 		editor.commit();
 	}
 
@@ -104,20 +104,24 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	}
 
 	public static Profile getWidgetProfile(Context context, int appWidgetId) {
-		int profileId = PreferenceManager.getDefaultSharedPreferences(context).getInt(getPrefsKey(appWidgetId), -1);
+		int profileId = PreferenceManager.getDefaultSharedPreferences(context).getInt(getProfileId(appWidgetId), -1);
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		return dbh.getProfile(profileId);
 	}
 
-	public static String getPrefsKey(int appWidgetId) {
+	public static String getProfileId(int appWidgetId) {
 		return VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + Integer.toString(appWidgetId);
+	}
+
+	public static boolean isFull(Context context, int appWidgetId) {
+		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + Integer.toString(appWidgetId) + "isFull", false);
 	}
 
 	public static void deleteWidgetConfiguration(Context context, int appWidgetId) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		if (prefs.contains(getPrefsKey(appWidgetId))) {
+		if (prefs.contains(getProfileId(appWidgetId))) {
 			SharedPreferences.Editor editor = prefs.edit();
-			editor.remove(getPrefsKey(appWidgetId));
+			editor.remove(getProfileId(appWidgetId));
 			editor.commit();
 		}
 	}

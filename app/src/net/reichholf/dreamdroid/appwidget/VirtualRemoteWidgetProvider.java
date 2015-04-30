@@ -40,7 +40,11 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
 
 		if (profile == null)
 			return;
-		RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.virtual_remote_appwidget);
+		RemoteViews remoteViews;
+		if(VirtualRemoteWidgetConfiguration.isFull(context, appWidgetId))
+			remoteViews = new RemoteViews(context.getPackageName(), R.layout.virtual_remote_appwidget);
+		else
+			remoteViews = new RemoteViews(context.getPackageName(), R.layout.virtual_remote_appwidget_quickzap);
 		remoteViews.setTextViewText(R.id.profile_name, profile.getName());
 		registerButtons(context, remoteViews, appWidgetId);
 		// Tell the AppWidgetManager to perform an update on the current app widget

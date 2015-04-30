@@ -72,14 +72,16 @@
 
     <style name="RemoteButton">
         <item name="android:textColor">@android:color/white</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textAppearance">@android:style/TextAppearance.Small</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
         <item name="android:layout_margin">2dp</item>
+        <item name="android:elevation">2dp</item>
+        <item name="android:stateListAnimator">@anim/button_elevation</item>
     </style>
 
     <style name="RemoteButton.Big" parent="RemoteButton">
         <item name="android:layout_margin">5dp</item>
-        <item name="android:padding">5dp</item>
+
     </style>
 
 
