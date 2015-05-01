@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -234,8 +235,13 @@ public class SimpleHttpClient {
 		} catch (ProtocolException e) {
 			mError = true;
 			mErrorText = e.getLocalizedMessage();
+		} catch (ConnectException e) {
+			mError = true;
+			mErrorTextId = R.string.host_unreach;
 		} catch (IOException e) {
 			e.printStackTrace();
+			mError = true;
+			mErrorText = e.getLocalizedMessage();
 		} finally {
 			if (conn != null)
 				conn.disconnect();

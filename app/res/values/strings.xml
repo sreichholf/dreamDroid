@@ -307,4 +307,5 @@
     <string name="developer_settings_enable">Enable developer settings</string>
     <string name="use_fake_picon">Use a fake picon</string>
     <string name="use_fake_picon_long">Use a fake picon (picon_default.png) to avoid copyright problems on screenshots</string>
+    <string name="host_unreach">Could not connect to host</string>
 </resources>
