@@ -23,7 +23,7 @@
 
     <ImageButton
         android:id="@+id/toggle_remote"
-        style="@style/buttonBarButtonStyle"
+        style="?attr/buttonBarButtonStyle"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_alignParentBottom="true"

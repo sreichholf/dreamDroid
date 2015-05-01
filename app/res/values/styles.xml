@@ -7,6 +7,7 @@
         <item name="android:maxLines">1</item>
         <item name="android:singleLine">true</item>
         <item name="android:textColor">?attr/text_color</item>
+        <item name="android:fontFamily">sans-serif-light</item>
     </style>
 
     <style name="CardTitle" parent="@style/CardText">
@@ -27,6 +28,7 @@
         <item name="android:background">?attr/cardBackground</item>
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:elevation">4dp</item>
     </style>
 
     <style name="CardStyleMultiEpg">
@@ -52,8 +54,7 @@
     <style name="CardListView.Light" parent="CardListView"/>
 
     <style name="SimpleHeader" parent="@android:style/TextAppearance.Small">
-
-        <!-- <item name="android:textAllCaps">true</item> -->
+        <item name="android:textAllCaps">true</item>
         <item name="android:paddingLeft">3dp</item>
         <item name="android:paddingRight">3dp</item>
         <item name="android:textSize">12sp</item>
@@ -64,7 +65,7 @@
 
     <style name="ButtonPanel"/>
 
-    <style name="NavButtonBar" parent="@android:style/ButtonBar"/>
+    <style name="NavButtonBar" parent="@style/Widget.AppCompat.ButtonBar"/>
 
     <style name="NavButtonBarButton">
         <item name="android:background">?attr/listItemBackground</item>
@@ -101,14 +102,14 @@
     </style>
 
     <style name="SelectableItem">
-        <item name="android:background">@android:drawable/list_selector_background</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="buttonBarStyle"/>
+    <style name="buttonBarButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
+    <style name="buttonBarNeutralButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
+    <style name="buttonBarPositiveButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
+    <style name="buttonBarNegativeButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
 
-    <style name="buttonBarButtonStyle"/>
-
-    <style name="buttonBarButtonPositiveStyle"/>
-
-    <style name="buttonBarButtonNegativeStyle"/>
 </resources>

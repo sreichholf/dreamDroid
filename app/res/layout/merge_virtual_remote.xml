@@ -381,7 +381,7 @@
 			android:layout_height="@dimen/remote_key_height"
 			android:layout_column="1"
 			android:background="@drawable/button_key_dark_oval"
-			android:src="@drawable/ic_media_previous_holo_dark"
+			android:src="@drawable/ic_media_previous_dark"
 			android:text="RWD"/>
 
 		<ImageButton
@@ -391,7 +391,7 @@
 			android:layout_height="@dimen/remote_key_height"
 			android:layout_toRightOf="@id/ButtonRwd"
 			android:background="@drawable/button_key_dark_oval"
-			android:src="@drawable/ic_media_play_holo_dark"
+			android:src="@drawable/ic_media_play_dark"
 			android:text="PLAY"/>
 
 		<ImageButton
@@ -401,7 +401,7 @@
 			android:layout_height="@dimen/remote_key_height"
 			android:layout_toRightOf="@id/ButtonPlay"
 			android:background="@drawable/button_key_dark_oval"
-			android:src="@drawable/ic_media_stop_holo_dark"
+			android:src="@drawable/ic_media_stop_dark"
 			android:text="STOP"/>
 
 		<ImageButton
@@ -411,7 +411,7 @@
 			android:layout_height="@dimen/remote_key_height"
 			android:layout_toRightOf="@id/ButtonStop"
 			android:background="@drawable/button_key_dark_oval"
-			android:src="@drawable/ic_media_next_holo_dark"
+			android:src="@drawable/ic_media_next_dark"
 			android:text="FWD"/>
 
 		<Button
