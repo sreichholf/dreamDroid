@@ -614,7 +614,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		if ("connection_error".equals(dialogTag) && action == ConnectionErrorDialog.ACTION_EDIT_PROFILE) {
+		if ("connection_error".equals(dialogTag)) {
+			if(action != ConnectionErrorDialog.ACTION_EDIT_PROFILE)
+				return;
+
 			if (mDetailFragment != null && ProfileEditFragment.class.equals(mDetailFragment.getClass()))
 				return;
 			Bundle args = new Bundle();
