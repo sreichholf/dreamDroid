@@ -127,7 +127,7 @@ public abstract class AbstractHttpRecyclerViewFragment extends DreamDroidRecycle
 				public void onClick(View v) {
 					reload();
 				}
-			}, recyclerView, true, true);
+			}, recyclerView, true);
 		}
 	}
 

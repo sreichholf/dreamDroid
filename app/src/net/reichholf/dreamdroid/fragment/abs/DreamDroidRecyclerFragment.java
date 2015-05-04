@@ -184,15 +184,11 @@ public abstract class DreamDroidRecyclerFragment extends Fragment implements Act
 	}
 
 	protected void registerFab(int id, View view, View.OnClickListener onClickListener, RecyclerView recyclerView, boolean topAligned) {
-		registerFab(id, view, onClickListener, recyclerView, topAligned, false);
-	}
-
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener, RecyclerView recyclerView, boolean topAligned, boolean inverted) {
 		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
 		if (fab == null)
 			return;
 		if (recyclerView != null)
-			fab.attachToRecyclerView(recyclerView, topAligned, inverted);
+			fab.attachToRecyclerView(recyclerView, topAligned);
 
 		fab.setOnClickListener(onClickListener);
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
