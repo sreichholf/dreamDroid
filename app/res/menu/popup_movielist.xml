@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/menu_info"
+        dreamDroid:showAsAction="never"
+        android:title="@string/epg"/>
+    <item
         android:id="@+id/menu_zap"
         dreamDroid:showAsAction="never"
         android:title="@string/zap"/>
