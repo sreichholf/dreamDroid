@@ -25,18 +25,17 @@ import java.util.ArrayList;
  * @author sre
  * 
  */
-public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.TimerViewHolder> {
+public class TimerAdapter extends BaseAdapter<TimerAdapter.TimerViewHolder> {
 	private CharSequence[] mState;
 	private CharSequence[] mAction;
 	private int[] mStateColor;
-	private ArrayList<ExtendedHashMap> mData;
 
 	/**
 	 * @param context
 	 * @param data
 	 */
 	public TimerAdapter(Context context, ArrayList<ExtendedHashMap> data) {
-		mData = data;
+		super(data);
 		mState = context.getResources().getTextArray(R.array.timer_state);
 		mAction = context.getResources().getTextArray(R.array.timer_action);
 		mStateColor = context.getResources().getIntArray(R.array.timer_state_color);
@@ -77,11 +76,6 @@ public class TimerAdapter extends RecyclerView.Adapter<TimerAdapter.TimerViewHol
 			holder.state.setText(mState[stateId]);
 			holder.stateIndicator.setBackgroundColor(mStateColor[stateId]);
 		}
-	}
-
-	@Override
-	public int getItemCount() {
-		return mData.size();
 	}
 
 	public class TimerViewHolder extends RecyclerView.ViewHolder {

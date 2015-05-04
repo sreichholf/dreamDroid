@@ -17,13 +17,13 @@ import java.util.ArrayList;
 /**
  * Created by Stephan on 03.05.2015.
  */
-public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ProfileViewHolder> {
+public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder> {
 
 	protected int mActiveColor;
-	protected ArrayList<ExtendedHashMap> mData;
+
 
 	public ProfileAdapter(Context context, ArrayList<ExtendedHashMap> data) {
-		mData = data;
+		super(data);
 		mActiveColor = context.getResources().getColor(R.color.active_profile_color);
 	}
 
@@ -51,11 +51,6 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ProfileV
 		} else {
 			holder.indicator.setVisibility(View.GONE);
 		}
-	}
-
-	@Override
-	public int getItemCount() {
-		return mData.size();
 	}
 
 	public class ProfileViewHolder extends RecyclerView.ViewHolder {
