@@ -39,6 +39,10 @@ public class FloatingActionButton extends ImageButton {
     private FabOnScrollListener mOnScrollListener;
     private FabRecyclerOnViewScrollListener mRecyclerViewOnScrollListener;
 
+    public boolean isTopAligned() {
+        return mTopAligned;
+    }
+
     @IntDef({TYPE_NORMAL, TYPE_MINI})
     public @interface TYPE {
     }
@@ -51,7 +55,6 @@ public class FloatingActionButton extends ImageButton {
 
     private boolean mVisible;
     private boolean mTopAligned;
-    private boolean mIsInverted;
 
     private int mColorNormal;
     private int mColorPressed;
@@ -90,7 +93,6 @@ public class FloatingActionButton extends ImageButton {
     private void init(Context context, AttributeSet attributeSet) {
         mVisible = true;
         mTopAligned = false;
-        mIsInverted = false;
         mColorNormal = getColor(R.color.material_blue_500);
         mColorPressed = getColor(R.color.material_blue_600);
         mColorRipple = getColor(android.R.color.white);
@@ -285,10 +287,6 @@ public class FloatingActionButton extends ImageButton {
         return mRecyclerViewOnScrollListener;
     }
 
-    public boolean isInverted() {
-        return mIsInverted;
-    }
-
     public void show() {
         show(true);
     }
@@ -357,10 +355,6 @@ public class FloatingActionButton extends ImageButton {
 		attachToListView(listView, new FabOnScrollListener(), isTopAligned);
 	}
 
-	public void attachToListView(@NonNull AbsListView listView, boolean isTopAligned, boolean isInverted) {
-		attachToListView(listView, new FabOnScrollListener(), isTopAligned, isInverted);
-	}
-
     /**
      * If need to use custom {@link android.widget.AbsListView.OnScrollListener},
      * pass it to {@link #attachToListView(android.widget.AbsListView, com.melnykov.fab.FloatingActionButton.FabOnScrollListener, boolean inverted)}
@@ -370,18 +364,14 @@ public class FloatingActionButton extends ImageButton {
     }
 
 	public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener) {
-		attachToListView(listView, onScrollListener, false, false);
+		attachToListView(listView, onScrollListener, false);
 	}
 
     public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener, boolean topAligned) {
-        attachToListView(listView, onScrollListener, topAligned, false);
-    }
-
-    public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener, boolean topAligned, boolean isInverted) {
         mListView = listView;
         mOnScrollListener = onScrollListener;
         mTopAligned = topAligned;
-        mIsInverted = isInverted;
+
         onScrollListener.setFloatingActionButton(this);
         onScrollListener.setListView(listView);
         mListView.setOnScrollListener(onScrollListener);
@@ -428,7 +418,7 @@ public class FloatingActionButton extends ImageButton {
          */
         @Override
         public void onScrollDown() {
-            if (mFloatingActionButton.isInverted())
+            if (mFloatingActionButton.isTopAligned())
                 mFloatingActionButton.hide();
             else
                 mFloatingActionButton.show();
@@ -443,7 +433,7 @@ public class FloatingActionButton extends ImageButton {
          */
         @Override
         public void onScrollUp() {
-            if (mFloatingActionButton.isInverted())
+            if (mFloatingActionButton.isTopAligned())
                 mFloatingActionButton.show();
             else
                 mFloatingActionButton.hide();
@@ -475,7 +465,10 @@ public class FloatingActionButton extends ImageButton {
          */
         @Override
         public void onScrollDown() {
-            mFloatingActionButton.show();
+            if (mFloatingActionButton.isTopAligned())
+                mFloatingActionButton.hide();
+            else
+                mFloatingActionButton.show();
         }
 
         /**
@@ -487,7 +480,10 @@ public class FloatingActionButton extends ImageButton {
          */
         @Override
         public void onScrollUp() {
-            mFloatingActionButton.hide();
+            if (mFloatingActionButton.isTopAligned())
+                mFloatingActionButton.show();
+            else
+                mFloatingActionButton.hide();
         }
     }
 }

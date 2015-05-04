@@ -131,20 +131,22 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void connectFabReload(View view, AbsListView listView) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (!sp.getBoolean("disable_fab_reload", false)) {
+			FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
+			if (fab != null)
+				fab.setVisibility(View.VISIBLE);
 			registerFab(R.id.fab_reload, view, new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					reload();
 				}
-			}, listView, true, true);
+			}, listView, true);
 		}
 	}
 
 	public void detachFabReload() {
 		FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
-		if (fab != null) {
-			fab.hide();
-		}
+		if (fab != null)
+			fab.setVisibility(View.GONE);
 	}
 
 	public void checkMenuReload(Menu menu, MenuInflater inflater) {
