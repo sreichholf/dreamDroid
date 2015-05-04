@@ -39,7 +39,6 @@ public abstract class AbstractHttpRecyclerViewFragment extends DreamDroidRecycle
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
 	public static final String BUNDLE_KEY_LIST = "list";
 
-	protected final String sData = "data";
 	protected boolean mReload;
 	protected boolean mEnableReload;
 	protected ArrayList<ExtendedHashMap> mMapList;
