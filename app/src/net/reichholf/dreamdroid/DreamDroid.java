@@ -366,8 +366,13 @@ public class DreamDroid extends Application {
 	}
 
 	public static void setTheme(Context context) {
-		if (!isLightTheme(context))
+		if (!isLightTheme(context)) {
 			context.setTheme(R.style.Theme_DreamDroid);
+			context.getApplicationContext().setTheme(R.style.Theme_DreamDroid);
+		} else {
+			context.setTheme(R.style.Theme_DreamDroid_Light);
+			context.getApplicationContext().setTheme(R.style.Theme_DreamDroid_Light);
+		}
 	}
 
 	public static void setDialogTheme(Context context, DialogFragment dialogFragment) {

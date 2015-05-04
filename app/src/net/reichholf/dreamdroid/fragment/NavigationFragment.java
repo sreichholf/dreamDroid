@@ -239,8 +239,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		initTitle(getString(R.string.app_name));
 
 		mCurrentListItem = -1;
-
-		setAdapter();
 	}
 
 	@Override
@@ -261,6 +259,12 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		registerImageButtonListener(view, R.id.buttonChangeLog);
 
 		return view;
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		setAdapter();
 	}
 
 	private void registerImageButtonListener(View view, int buttonId) {
