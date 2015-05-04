@@ -24,11 +24,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.MovieAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpRecyclerViewFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -332,6 +335,15 @@ public class MovieListFragment extends AbstractHttpRecyclerViewFragment implemen
 
 	public boolean onMovieAction(int action) {
 		switch (action) {
+			case R.id.menu_info: {
+				if(mMovie.getString(Movie.KEY_DESCRIPTION_EXTENDED) == null){
+					showToast(getString(R.string.no_epg_available));
+					break;
+				}
+				getMultiPaneHandler().showDialogFragment(MovieDetailDialog.newInstance(mMovie), "movie_detail_dialog");
+				break;
+			}
+
 			case R.id.menu_zap:
 				zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 				break;
