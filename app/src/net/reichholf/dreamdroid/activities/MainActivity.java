@@ -308,6 +308,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 				public void onDrawerOpened(View drawerView) {
 					supportInvalidateOptionsMenu();
+					SnackbarManager.dismiss();
 				}
 			};
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
