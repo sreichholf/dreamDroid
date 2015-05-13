@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 rc3" versioncode="278">
+        <change>NEU: Änderung des Themes ohne Neustart unter Android >= 3.0</change>
+        <change>NEU: EPG Option für Aufnahmen</change>
+        <change>NEU: Virtual Remote Widget auch mit vollständigem Layout (benötigt viel Platz, vmtl. nur auf Tablets/ohne Search-Bar)</change>
+        <change>FIX: "Alter Reload Button" funktioniert wieder korrekt</change>
+        <change>FIX: einige Farben entsprachen nicht den Material-Design guidelines</change>
+        <change>FIX: Diverse kleinere Fixes und Verbesserungen</change>
+    </release>
     <release version="1.0 rc2" versioncode="276">
         <change>FIX: Abstürze im Bezug auf Spenden (IAB threading bugs)</change>
         <change>FIX: Absturz beim schließen des "Verbindungsfehler Detail Dialog"</change>

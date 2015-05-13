@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 rc3" versioncode="278">
+        <change>NEW: Theme changes are now immediate on Android >= 3.0</change>
+        <change>NEW: EPG option for recordings</change>
+        <change>NEW: Virtual Remote Widget can now have full layout (requires quite some space, tablet recommended)</change>
+        <change>FIX: "Old style reload button" does again work as expected</change>
+        <change>FIX: Some moreMaterial Design tinting</change>
+        <change>FIX: Several smaller fixes and improvements</change>
+    </release>
     <release version="1.0 rc2" versioncode="276">
         <change>FIX: Some crashes related to Donations (IAB concurrency problems)</change>
         <change>FIX: Crash when closing the connection error detail dialog</change>
