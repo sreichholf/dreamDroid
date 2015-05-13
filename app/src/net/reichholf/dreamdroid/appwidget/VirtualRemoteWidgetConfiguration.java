@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.virtual_remote_widget_config);
 		setResult(RESULT_CANCELED);
 
 		Intent intent = getIntent();
@@ -64,7 +66,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 			mAdapter.notifyDataSetChanged();
 		} else {
 			if (mProfiles.size() == 1) {
-				finish(mProfiles.get(0).getId());
+				finish(mProfiles.get(0).getId(), isQuickZapChecked());
 			} else {
 				showToast(getString(R.string.no_profile_available));
 				finish();
@@ -72,16 +74,20 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 		}
 	}
 
-	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		finish(mProfiles.get(position).getId());
+	private boolean isQuickZapChecked(){
+		return ((CheckBox) findViewById(R.id.checkbox_quickzap)).isChecked();
 	}
 
-	public void finish(int profileId) {
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		finish(mProfiles.get(position).getId(), isQuickZapChecked());
+	}
+
+	public void finish(int profileId, boolean isQuickZap) {
 		Intent data = new Intent();
 		data.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
 		setResult(RESULT_OK, data);
-		saveWidgetConfiguration(profileId);
+		saveWidgetConfiguration(profileId, !isQuickZap);
 
 		Context context = getApplicationContext();
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
@@ -91,10 +97,11 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 		finish();
 	}
 
-	public void saveWidgetConfiguration(int profileId) {
+	public void saveWidgetConfiguration(int profileId, boolean isFull) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.putInt(getProfileId(mAppWidgetId), profileId);
+		editor.putInt(getProfileIdKey(mAppWidgetId), profileId);
+		editor.putBoolean(getIsFullKey(mAppWidgetId), isFull);
 		editor.commit();
 	}
 
@@ -104,13 +111,17 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	}
 
 	public static Profile getWidgetProfile(Context context, int appWidgetId) {
-		int profileId = PreferenceManager.getDefaultSharedPreferences(context).getInt(getProfileId(appWidgetId), -1);
+		int profileId = PreferenceManager.getDefaultSharedPreferences(context).getInt(getProfileIdKey(appWidgetId), -1);
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		return dbh.getProfile(profileId);
 	}
 
-	public static String getProfileId(int appWidgetId) {
+	public static String getProfileIdKey(int appWidgetId) {
 		return VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + Integer.toString(appWidgetId);
+	}
+
+	public static String getIsFullKey(int appWidgetId) {
+		return VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + Integer.toString(appWidgetId) + "isFull";
 	}
 
 	public static boolean isFull(Context context, int appWidgetId) {
@@ -119,9 +130,9 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 
 	public static void deleteWidgetConfiguration(Context context, int appWidgetId) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		if (prefs.contains(getProfileId(appWidgetId))) {
+		if (prefs.contains(getProfileIdKey(appWidgetId))) {
 			SharedPreferences.Editor editor = prefs.edit();
-			editor.remove(getProfileId(appWidgetId));
+			editor.remove(getProfileIdKey(appWidgetId));
 			editor.commit();
 		}
 	}

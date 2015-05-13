@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.reichholf.dreamdroid"
-    android:installLocation="auto"
-    android:versionCode="277"
-    android:versionName="1.0 rc2">
+<manifest package="net.reichholf.dreamdroid"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:installLocation="auto"
+          android:versionCode="277"
+          android:versionName="1.0 rc2">
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -20,7 +20,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="com.android.vending.BILLING"/>
 
     <application
         android:name=".DreamDroid"
@@ -35,19 +35,19 @@
         android:uiOptions="splitActionBarWhenNarrow">
         <activity android:name=".activities.TabbedNavigationActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity android:name=".activities.SimpleFragmentActivity">
             <meta-data
                 android:name="android.support.UI_OPTIONS"
-                android:value="splitActionBarWhenNarrow" />
+                android:value="splitActionBarWhenNarrow"/>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
+                <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
         </activity>
         <activity
@@ -57,7 +57,7 @@
 
         <meta-data
             android:name="com.google.android.backup.api_key"
-            android:value="AEdPqrEAAAAIpJ1ddymOdlswxM_S0SOTS9GK0WKiqESIKU7KLw" />
+            android:value="AEdPqrEAAAAIpJ1ddymOdlswxM_S0SOTS9GK0WKiqESIKU7KLw"/>
         <meta-data
             android:name="android.app.default_searchable"
             android:value=".activities.SimpleFragmentActivity"/>
@@ -66,68 +66,70 @@
             android:name=".activities.ShareActivity"
             android:theme="@style/Theme.DreamDroid.Dialog">
             <intent-filter android:label="@string/watch_on_dream">
-                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.VIEW"/>
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
 
-                <data android:mimeType="video/*" />
-                <data android:mimeType="audio/*" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:scheme="rtsp" />
-                <data android:scheme="rtmp" />
-                <data android:scheme="mms" />
+                <data android:mimeType="video/*"/>
+                <data android:mimeType="audio/*"/>
+                <data android:scheme="http"/>
+                <data android:scheme="https"/>
+                <data android:scheme="rtsp"/>
+                <data android:scheme="rtmp"/>
+                <data android:scheme="mms"/>
             </intent-filter>
         </activity>
         <activity android:name=".activities.MainActivity">
             <meta-data
                 android:name="android.support.UI_OPTIONS"
-                android:value="splitActionBarWhenNarrow" />
+                android:value="splitActionBarWhenNarrow"/>
 
         </activity>
 
-        <activity android:name=".appwidget.VirtualRemoteWidgetConfiguration">
+        <activity
+            android:name=".appwidget.VirtualRemoteWidgetConfiguration"
+            android:theme="@style/Theme.DreamDroid.Dialog">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
 
         <receiver android:name=".appwidget.VirtualRemoteWidgetProvider">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/virtual_remote_appwidget_info" />
+                android:resource="@xml/virtual_remote_appwidget_info"/>
         </receiver>
 
         <service
             android:name=".appwidget.WidgetService"
-            android:enabled="true" />
+            android:enabled="true"/>
         <service
             android:name=".helpers.SyncService"
-            android:enabled="true" />
+            android:enabled="true"/>
 
         <uses-library
             android:name="com.sec.android.app.multiwindow"
-            android:required="false" />
+            android:required="false"/>
 
         <meta-data
             android:name="com.sec.android.support.multiwindow"
-            android:value="true" />
+            android:value="true"/>
         <meta-data
             android:name="com.sec.android.multiwindow.DEFAULT_SIZE_W"
-            android:resource="@dimen/app_defaultsize_w" />
+            android:resource="@dimen/app_defaultsize_w"/>
         <meta-data
             android:name="com.sec.android.multiwindow.DEFAULT_SIZE_H"
-            android:resource="@dimen/app_defaultsize_h" />
+            android:resource="@dimen/app_defaultsize_h"/>
         <meta-data
             android:name="com.sec.android.multiwindow.MINIMUM_SIZE_W"
-            android:resource="@dimen/app_minimumsize_w" />
+            android:resource="@dimen/app_minimumsize_w"/>
         <meta-data
             android:name="com.sec.android.multiwindow.MINIMUM_SIZE_H"
-            android:resource="@dimen/app_minimumsize_h" />
+            android:resource="@dimen/app_minimumsize_h"/>
 
     </application>
 

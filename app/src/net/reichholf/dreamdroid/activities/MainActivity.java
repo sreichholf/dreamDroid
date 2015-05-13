@@ -139,6 +139,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			setConnectionState(error, true);
 			SnackbarManager.show(
 					Snackbar.with(this)
+							.margin(15, 15)
 							.text(error)
 							.textColorResource(R.color.material_red_500)
 							.duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
