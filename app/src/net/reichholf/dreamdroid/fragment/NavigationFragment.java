@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -304,7 +305,7 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		getListView().setTextFilterEnabled(true);
+		getRecyclerView().setTextFilterEnabled(true);
 
 		TypedValue typedValue = new TypedValue();
 		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
@@ -315,19 +316,19 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 	@SuppressLint("NewApi")
 	public void setSelectedItem(int position) {
 		if (Build.VERSION.SDK_INT >= 8)
-			getListView().smoothScrollToPosition(position);
+			getRecyclerView().smoothScrollToPosition(position);
 		onListItemClick(getListView(), null, position, position);
 	}
 
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
+	public void onItemClick(RecyclerView l, View v, int position, long id) {
 		if (mCurrentListItem == position) {
 			// Don't reload what we already see but close
 			getMainActivity().showContent();
 			return;
 		}
 
-		mCurrent = (int[]) l.getItemAtPosition(position);
+		mCurrent = MENU_ITEMS[position];
 
 		// only mark the entry if it isn't a "dialog-only-item"
 		// TODO find a reliable way to mark the current item...
