@@ -51,7 +51,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 		mProfileMapList = new ArrayList<>();
 		mProfileMapList.clear();
 		mProfiles = dbh.getProfiles();
-		if (mProfiles.size() > 1) {
+		if (mProfiles.size() > 0) {
 			for (Profile m : mProfiles) {
 				ExtendedHashMap map = new ExtendedHashMap();
 				map.put(DatabaseHelper.KEY_PROFILE_PROFILE, m.getName());
@@ -65,12 +65,8 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 			setListAdapter(mAdapter);
 			mAdapter.notifyDataSetChanged();
 		} else {
-			if (mProfiles.size() == 1) {
-				finish(mProfiles.get(0).getId(), isQuickZapChecked());
-			} else {
-				showToast(getString(R.string.no_profile_available));
-				finish();
-			}
+			showToast(getString(R.string.no_profile_available));
+			finish();
 		}
 	}
 
