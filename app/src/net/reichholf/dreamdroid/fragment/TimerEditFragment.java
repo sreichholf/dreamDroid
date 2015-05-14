@@ -17,7 +17,7 @@ import java.util.HashMap;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -63,7 +63,7 @@ import com.sleepbot.datetimepicker.time.TimePickerDialog;
  *
  * @author sreichholf
  */
-public class TimerEditFragment extends AbstractHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
+public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
 

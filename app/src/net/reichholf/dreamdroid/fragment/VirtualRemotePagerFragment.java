@@ -17,13 +17,13 @@ import com.viewpagerindicator.UnderlinePageIndicator;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 /**
  * Created by Stephan on 09.11.13.
  */
-public class VirtualRemotePagerFragment extends AbstractHttpFragment {
+public class VirtualRemotePagerFragment extends BaseHttpFragment {
 
 	PageIndicator mIndicator;
 	ViewPager mPager;

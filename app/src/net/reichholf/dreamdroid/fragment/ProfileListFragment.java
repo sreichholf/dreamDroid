@@ -34,7 +34,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ProfileAdapter;
-import net.reichholf.dreamdroid.fragment.abs.DreamDroidRecyclerFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -50,7 +50,7 @@ import java.util.ArrayList;
  *
  * @author sre
  */
-public class ProfileListFragment extends DreamDroidRecyclerFragment implements ActionDialog.DialogActionListener {
+public class ProfileListFragment extends BaseRecyclerFragment implements ActionDialog.DialogActionListener {
 	private Profile mProfile;
 	private ArrayList<Profile> mProfiles;
 	private ArrayList<ExtendedHashMap> mProfileMapList;

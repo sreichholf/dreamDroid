@@ -26,7 +26,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
@@ -57,7 +57,7 @@ import java.util.ArrayList;
  *
  * @author sreichholf
  */
-public class NavigationFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
+public class NavigationFragment extends BaseHttpRecyclerFragment implements ActionDialog.DialogActionListener,
 		SleepTimerDialog.SleepTimerDialogActionListener, SendMessageDialog.SendMessageDialogActionListener {
 
 	@SuppressWarnings("unused")

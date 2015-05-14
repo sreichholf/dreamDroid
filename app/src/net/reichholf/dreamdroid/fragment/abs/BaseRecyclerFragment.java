@@ -29,7 +29,7 @@ import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 /**
  * Created by Stephan on 03.05.2015.
  */
-public abstract class DreamDroidRecyclerFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent, ItemClickSupport.OnItemClickListener, ItemClickSupport.OnItemLongClickListener {
+public abstract class BaseRecyclerFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent, ItemClickSupport.OnItemClickListener, ItemClickSupport.OnItemLongClickListener {
 
 	private DreamDroidFragmentHelper mHelper;
 	protected boolean mShouldRetainInstance = true;
@@ -38,7 +38,7 @@ public abstract class DreamDroidRecyclerFragment extends Fragment implements Act
 	protected ItemClickSupport mItemClickSupport;
 	protected ItemSelectionSupport mSelectionSupport;
 
-	public DreamDroidRecyclerFragment() {
+	public BaseRecyclerFragment() {
 		super();
 		mHelper = new DreamDroidFragmentHelper();
 	}
@@ -63,7 +63,7 @@ public abstract class DreamDroidRecyclerFragment extends Fragment implements Act
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.card_recycler_content_fab, container, false);
+		return inflater.inflate(R.layout.card_recycler_content, container, false);
 	}
 
 	@Override

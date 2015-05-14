@@ -24,7 +24,7 @@ import android.view.ViewGroup;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.TimerAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpRecyclerViewFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -47,7 +47,7 @@ import java.util.ArrayList;
  *
  * @author sreichholf
  */
-public class TimerListFragment extends AbstractHttpRecyclerViewFragment implements ActionDialog.DialogActionListener {
+public class TimerListFragment extends BaseHttpRecyclerFragment implements ActionDialog.DialogActionListener {
 	protected boolean mIsActionMode;
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
@@ -200,7 +200,7 @@ public class TimerListFragment extends AbstractHttpRecyclerViewFragment implemen
 	}
 
 	/**
-	 * Initializes the <code>SimpleListAdapter</code>
+	 * Initializes the <code>SimpleTextAdapter</code>
 	 */
 	private void setAdapter() {
 		mAdapter = new TimerAdapter(getAppCompatActivity(), mMapList);

@@ -24,12 +24,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.recyclerview.MovieAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpRecyclerViewFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
@@ -58,7 +56,7 @@ import java.util.Arrays;
  *
  * @author sreichholf
  */
-public class MovieListFragment extends AbstractHttpRecyclerViewFragment implements ActionDialog.DialogActionListener,
+public class MovieListFragment extends BaseHttpRecyclerFragment implements ActionDialog.DialogActionListener,
 		MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private String mCurrentLocation;
@@ -99,7 +97,10 @@ public class MovieListFragment extends AbstractHttpRecyclerViewFragment implemen
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new MovieAdapter(mMapList);
+		mAdapter = new SimpleTextAdapter(mMapList, R.layout.movie_list_item, new String[]{
+				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
+				Movie.KEY_LENGTH}, new int[]{R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
+				R.id.event_duration});
 		getRecyclerView().setAdapter(mAdapter);
 	}
 

@@ -32,14 +32,14 @@ import java.util.ArrayList;
 /**
  * @author sreichholf
  */
-public abstract class AbstractHttpFragment extends DreamDroidFragment implements
+public abstract class BaseHttpFragment extends BaseFragment implements
 		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
 
 	protected final String sData = "data";
 	protected DreamDroidHttpFragmentHelper mHttpHelper;
 	protected boolean mReload = false;
 
-	public AbstractHttpFragment() {
+	public BaseHttpFragment() {
 		mHttpHelper = new DreamDroidHttpFragmentHelper();
 	}
 

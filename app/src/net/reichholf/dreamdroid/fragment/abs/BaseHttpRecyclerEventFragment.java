@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.intents.IntentFactory;
  * @author sreichholf
  *
  */
-public abstract class AbstractHttpRecyclerViewEventFragment extends AbstractHttpRecyclerViewFragment implements
+public abstract class BaseHttpRecyclerEventFragment extends BaseHttpRecyclerFragment implements
 		ActionDialog.DialogActionListener {
 
 	protected String mReference;
@@ -48,7 +48,7 @@ public abstract class AbstractHttpRecyclerViewEventFragment extends AbstractHttp
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
-		mCurrentItem = mMapList.get((int) id);
+		mCurrentItem = mMapList.get(position);
 		Bundle args = new Bundle();
 		args.putParcelable("currentItem", mCurrentItem);
 		getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");

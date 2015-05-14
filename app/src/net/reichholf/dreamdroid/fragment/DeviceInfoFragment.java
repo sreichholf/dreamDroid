@@ -9,7 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
@@ -29,7 +29,7 @@ import android.widget.TextView;
  * @author sreichholf
  * 
  */
-public class DeviceInfoFragment extends AbstractHttpFragment {
+public class DeviceInfoFragment extends BaseHttpFragment {
 	private ExtendedHashMap mInfo;
 	private TextView mGuiVersion;
 	private TextView mImageVersion;

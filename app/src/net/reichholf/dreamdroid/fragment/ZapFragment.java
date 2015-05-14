@@ -16,7 +16,7 @@ import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.ZapListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
@@ -36,7 +36,7 @@ import java.util.ArrayList;
  * This fragment is actually based on a GridView, it uses some small hacks to trick the ListFragment into working anyways
  * As a GridView is also using a ListAdapter, this avoids having to copy existing code
  */
-public class ZapFragment extends AbstractHttpListFragment {
+public class ZapFragment extends BaseHttpRecyclerFragment {
 	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 

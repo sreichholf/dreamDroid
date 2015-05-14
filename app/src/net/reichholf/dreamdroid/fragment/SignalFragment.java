@@ -7,7 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Signal;
@@ -33,7 +33,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class SignalFragment extends AbstractHttpFragment {
+public class SignalFragment extends BaseHttpFragment {
 	private static final String TAG = SignalFragment.class.getSimpleName();
 
 	private static int sMaxSnrDb = 17;

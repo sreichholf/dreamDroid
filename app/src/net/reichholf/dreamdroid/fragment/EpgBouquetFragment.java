@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.util.Log;
@@ -20,8 +19,8 @@ import com.sleepbot.datetimepicker.time.TimePickerDialog;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.adapter.EPGListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.EpgAdapter;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -41,7 +40,7 @@ import java.util.Calendar;
 /**
  * Created by Stephan on 01.11.2014.
  */
-public class EpgBouquetFragment extends AbstractHttpEventListFragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
+public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 	private static final String LOG_TAG = EpgBouquetFragment.class.getSimpleName();
 	private TextView mDateView;
 	private TextView mTimeView;
@@ -61,7 +60,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_list_header_content, container, false);
+		View view = inflater.inflate(R.layout.card_recycler_header_content, container, false);
 		View header = inflater.inflate(R.layout.date_time_picker_header, null, false);
 
 		Calendar cal = getCalendar();
@@ -92,6 +91,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 		FrameLayout frame = (FrameLayout) view.findViewById(R.id.content_header);
 		frame.addView(header);
+
 		return view;
 	}
 
@@ -126,8 +126,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 				if (!reference.equals(mReference)) {
 					mReference = reference;
 					mName = service.getString(Service.KEY_NAME);
-					if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ECLAIR_MR1)
-						getListView().smoothScrollToPosition(0);
+					getRecyclerView().smoothScrollToPosition(0);
 				}
 				reload();
 		}
@@ -143,14 +142,14 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	}
 
 	/**
-	 * Initializes the <code>SimpleListAdapter</code>
+	 * Initializes the <code>SimpleTextAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new EPGListAdapter(getAppCompatActivity(), mMapList, R.layout.epg_multi_service_list_item, new String[]{
+		mAdapter = new EpgAdapter(mMapList, R.layout.epg_multi_service_list_item, new String[]{
 				Event.KEY_EVENT_TITLE, Event.KEY_SERVICE_NAME, Event.KEY_EVENT_DESCRIPTION_EXTENDED, Event.KEY_EVENT_START_READABLE,
 				Event.KEY_EVENT_DURATION_READABLE}, new int[]{R.id.event_title, R.id.service_name, R.id.event_short, R.id.event_start,
 				R.id.event_duration});
-		setListAdapter(mAdapter);
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	@Override

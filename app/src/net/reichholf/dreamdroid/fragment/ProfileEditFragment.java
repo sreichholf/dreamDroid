@@ -9,7 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.content.Intent;
@@ -34,7 +34,7 @@ import android.widget.Toast;
  * @author sre
  * 
  */
-public class ProfileEditFragment extends DreamDroidFragment {
+public class ProfileEditFragment extends BaseFragment {
 	private Profile mCurrentProfile;
 
 	private EditText mProfile;

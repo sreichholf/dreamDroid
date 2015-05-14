@@ -28,11 +28,11 @@ import net.reichholf.dreamdroid.widget.FloatingActionButton;
  * @author sre
  * 
  */
-public abstract class DreamDroidFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
+public abstract class BaseFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
 	private DreamDroidFragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
 
-	public DreamDroidFragment() {
+	public BaseFragment() {
 		super();
 		mHelper = new DreamDroidFragmentHelper();
 	}

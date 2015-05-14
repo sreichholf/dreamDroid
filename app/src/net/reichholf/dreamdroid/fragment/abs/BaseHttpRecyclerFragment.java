@@ -35,9 +35,10 @@ import java.util.HashMap;
 /**
  * Created by Stephan on 03.05.2015.
  */
-public abstract class AbstractHttpRecyclerViewFragment extends DreamDroidRecyclerFragment implements
+public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment implements
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
 	public static final String BUNDLE_KEY_LIST = "list";
+	protected final String sData = "data";
 
 	protected boolean mReload;
 	protected boolean mEnableReload;
@@ -47,7 +48,7 @@ public abstract class AbstractHttpRecyclerViewFragment extends DreamDroidRecycle
 	protected RecyclerView.Adapter mAdapter;
 	protected DreamDroidHttpFragmentHelper mHttpHelper;
 
-	public AbstractHttpRecyclerViewFragment() {
+	public BaseHttpRecyclerFragment() {
 		mHttpHelper = new DreamDroidHttpFragmentHelper();
 	}
 
