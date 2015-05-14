@@ -10,12 +10,12 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,20 +27,16 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
-
+import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
@@ -79,7 +75,7 @@ import java.util.HashMap;
  * @author sreichholf
  *
  */
-public class ServiceListFragment extends AbstractHttpEventListFragment implements ActionDialog.DialogActionListener {
+public class ServiceListFragment extends BaseHttpRecyclerEventFragment implements ActionDialog.DialogActionListener {
 	private static final int LOADER_BOUQUETLIST_ID = 1;
 
 	public static final String SERVICE_REF_ROOT = "root";
@@ -96,7 +92,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	private boolean mReload;
 
 	private ListView mNavList;
-	private AbsListView mDetailList;
+	private RecyclerView mDetailList;
 	private View mEmpty;
 
 	private String mCurrentTitle;
@@ -186,34 +182,36 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		mEmpty = v.findViewById(android.R.id.empty);
 
 		mNavList = (ListView) v.findViewById(android.R.id.list);
-		mDetailList = (AbsListView) v.findViewById(R.id.list2);
+		mDetailList = (RecyclerView) v.findViewById(R.id.list2);
 
+//TODO fix this for recyclerview
 		// Some may call this a Hack, but I think it a proper solution
 		// On devices with resolutions other than xlarge, there is no second
 		// ListView (@id/listView2).
 		// So we just use the only one available and the rest will work as
 		// normal with almost no additional adjustments.
-		if (mDetailList == null) {
-			mDetailList = mNavList;
-			mDetailItems = mNavItems;
-		}
-		if(GridView.class.isInstance(mDetailList)) {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
-			((GridView) mDetailList).setNumColumns(
-					Integer.parseInt(
-							prefs.getString(
-									DreamDroid.PREFS_KEY_GRID_MAX_COLS,
-									Integer.toString(GridView.AUTO_FIT)
-							)
-					)
-			);
-		}
+//		if (mDetailList == null) {
+//			mDetailList = mNavList;
+//			mDetailItems = mNavItems;
+//		}
+//		if(GridView.class.isInstance(mDetailList)) {
+//			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
+//			((GridView) mDetailList).setNumColumns(
+//					Integer.parseInt(
+//							prefs.getString(
+//									DreamDroid.PREFS_KEY_GRID_MAX_COLS,
+//									Integer.toString(GridView.AUTO_FIT)
+//							)
+//					)
+//			);
+//		}
+
 
 		mNavList.setFastScrollEnabled(true);
-		mDetailList.setFastScrollEnabled(true);
+//		mDetailList.setFastScrollEnabled(true);
 
-		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), false, true);
-		mDetailList.setOnScrollListener(listener);
+//		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), false, true);
+//		mDetailList.addOnScrollListener(listener);
 
 		mSlidingPane = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
 		mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
@@ -237,6 +235,12 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 		setAdapter();
 		return v;
+	}
+
+
+	@Override
+	public RecyclerView getRecyclerView() {
+		return (RecyclerView) getView().findViewById(R.id.list2);
 	}
 
 	/**
@@ -279,12 +283,12 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			}
 		});
 
-		mDetailList.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-				onListItemClick((AbsListView) a, v, position, id);
-			}
-		});
+//		mDetailList.setOnItemClickListener(new OnItemClickListener() {
+//			@Override
+//			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+//				onListItemClick((AbsListView) a, v, position, id);
+//			}
+//		});
 
 		mNavList.setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
@@ -293,12 +297,12 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			}
 		});
 
-		mDetailList.setOnItemLongClickListener(new OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-				return onListItemLongClick((AbsListView) a, v, position, id);
-			}
-		});
+//		mDetailList.setOnItemLongClickListener(new OnItemLongClickListener() {
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
+//				return onListItemLongClick((AbsListView) a, v, position, id);
+//			}
+//		});
 
 		if (mReload) {
 			loadNavRoot();
@@ -306,6 +310,16 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 		} else {
 			getAppCompatActivity().setTitle(mDetailName);
 		}
+	}
+
+	@Override
+	public void onItemClick(RecyclerView parent, View view, int position, long id) {
+		onListItemClick(null, view, position, id);
+	}
+
+	@Override
+	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
+		return onListItemLongClick(null, view, position, id);
 	}
 
 	@Override
@@ -331,17 +345,12 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	 */
 	private void setAdapter() {
 		ListAdapter adapter;
-		if (!mNavList.equals(mDetailList)) {
-			adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
-					new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
-			mNavList.setAdapter(adapter);
-		}
-		adapter = new ServiceListAdapter(getAppCompatActivity(), mDetailItems);
-		if(Build.VERSION.SDK_INT < 11) {
-			((ListView)mDetailList).setAdapter(adapter);
-		} else {
-			mDetailList.setAdapter(adapter);
-		}
+		adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
+				new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
+		mNavList.setAdapter(adapter);
+
+		ServiceAdapter serviceAdapter = new ServiceAdapter( mDetailItems);
+		mDetailList.setAdapter(serviceAdapter);
 	}
 
 	public void onListItemClick(AbsListView l, View v, int position, long id) {
@@ -493,7 +502,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			((BaseAdapter) mNavList.getAdapter()).notifyDataSetChanged();
 		} else {
 			mDetailItems.clear();
-			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
+			mDetailList.getAdapter().notifyDataSetChanged();
 		}
 
 		String title = mNavName;
@@ -520,7 +529,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mEmpty.setVisibility(View.GONE);
 			mDetailList.setVisibility(View.VISIBLE);
 			mDetailItems.addAll(list);
-			((BaseAdapter) mDetailList.getAdapter()).notifyDataSetChanged();
+			mDetailList.getAdapter().notifyDataSetChanged();
 		}
 	}
 
