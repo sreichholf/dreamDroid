@@ -19,6 +19,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,25 +27,21 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
-
-import com.melnykov.fab.FloatingActionButton;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.ProfileListSimpleAdapter;
-import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.ProfileAdapter;
+import net.reichholf.dreamdroid.fragment.abs.DreamDroidRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
+import net.reichholf.dreamdroid.widget.FloatingActionButton;
+import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import java.util.ArrayList;
 
@@ -53,13 +50,13 @@ import java.util.ArrayList;
  *
  * @author sre
  */
-public class ProfileListFragment extends DreamDroidListFragment implements ActionDialog.DialogActionListener {
+public class ProfileListFragment extends DreamDroidRecyclerFragment implements ActionDialog.DialogActionListener {
 	private Profile mProfile;
 	private ArrayList<Profile> mProfiles;
 	private ArrayList<ExtendedHashMap> mProfileMapList;
 	private ArrayList<Profile> mDetectedProfiles;
 
-	private SimpleAdapter mAdapter;
+	private RecyclerView.Adapter mAdapter;
 	private DetectDevicesTask mDetectDevicesTask;
 
 	private ProgressDialog mProgress;
@@ -108,7 +105,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.profilelist_context, menu);
 			mIsActionMode = true;
-			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE);
 			return true;
 		}
 
@@ -129,12 +126,12 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		// Called when the user exits the action mode
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
-			final ListView lv = getListView();
-			lv.setItemChecked(lv.getCheckedItemPosition(), false);
-			getListView().post(new Runnable() {
+			final RecyclerView rv = getRecyclerView();
+			mSelectionSupport.setItemChecked(mSelectionSupport.getCheckedItemPosition(), false);
+			rv.post(new Runnable() {
 				@Override
 				public void run() {
-					lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+					mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.NONE);
 				}
 			});
 			mIsActionMode = false;
@@ -253,27 +250,28 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProfiles = new ArrayList<>();
 		mProfileMapList = new ArrayList<>();
 		mProfile = Profile.DEFAULT;
-
-		mAdapter = new ProfileListSimpleAdapter(getAppCompatActivity(), mProfileMapList, R.layout.two_line_card_list_item,
-				new String[]{DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1, android.R.id.text2});
-		setListAdapter(mAdapter);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
+		View view = inflater.inflate(R.layout.card_recycler_content_fab, container, false);
+		return view;
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		mAdapter = new ProfileAdapter(getActivity(), mProfileMapList);
+		getRecyclerView().setAdapter(mAdapter);
 
 		FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_add);
 		fab.setContentDescription(getString(R.string.profile_add));
-		ListView listView = (ListView) view.findViewById(android.R.id.list);
 		registerFab(R.id.fab_add, view, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				createProfile();
 			}
-		}, listView);
-
-		return view;
+		}, getRecyclerView());
 	}
 
 	@Override
@@ -286,24 +284,33 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			mProfile = mProfiles.get(pos);
 		}
 
-		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-				return onListItemLongClick(a, v, position, id);
-			}
-		});
+//		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
+//				return onListItemLongClick(a, v, position, id);
+//			}
+//		});
 		SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
 		swipeRefreshLayout.setEnabled(false);
 	}
 
+
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
+	public void onItemClick(RecyclerView parent, View view, int position, long id) {
 		mProfile = mProfiles.get(position);
 		if (mIsActionMode) {
-			getListView().setItemChecked(position, true);
+			mSelectionSupport.setItemChecked(position, true);
 			return;
 		}
 		activateProfile();
+	}
+
+	@Override
+	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
+		mProfile = mProfiles.get(position);
+		getAppCompatActivity().startSupportActionMode(mActionModeCallback);
+		mSelectionSupport.setItemChecked(position, true);
+		return true;
 	}
 
 	private void reloadProfiles() {
@@ -327,13 +334,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			mProfileMapList.add(map);
 		}
 		mAdapter.notifyDataSetChanged();
-	}
-
-	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
-		mProfile = mProfiles.get(position);
-		getAppCompatActivity().startSupportActionMode(mActionModeCallback);
-		getListView().setItemChecked(position, true);
-		return true;
 	}
 
 	@Override

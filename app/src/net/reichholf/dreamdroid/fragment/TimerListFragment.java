@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,14 +20,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.TimerListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.TimerAdapter;
+import net.reichholf.dreamdroid.fragment.abs.AbstractHttpRecyclerViewFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -38,6 +36,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteReques
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import org.apache.http.NameValuePair;
 
@@ -48,7 +47,7 @@ import java.util.ArrayList;
  *
  * @author sreichholf
  */
-public class TimerListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
+public class TimerListFragment extends AbstractHttpRecyclerViewFragment implements ActionDialog.DialogActionListener {
 	protected boolean mIsActionMode;
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
@@ -59,7 +58,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.timerlist_context, menu);
 			mIsActionMode = true;
-			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE);
 			return true;
 		}
 
@@ -85,12 +84,12 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		// Called when the user exits the action mode
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
-			final ListView lv = getListView();
-			lv.setItemChecked(lv.getCheckedItemPosition(), false);
-			getListView().post(new Runnable() {
+			final RecyclerView rv = getRecyclerView();
+			mSelectionSupport.setItemChecked(mSelectionSupport.getCheckedItemPosition(), false);
+			getRecyclerView().post(new Runnable() {
 				@Override
 				public void run() {
-					lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+					mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE);
 				}
 			});
 			mIsActionMode = false;
@@ -105,7 +104,6 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		mEnableReload = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.timer));
-		setAdapter();
 		mIsActionMode = false;
 		if (savedInstanceState != null) {
 			mTimer = savedInstanceState.getParcelable("timer");
@@ -116,47 +114,36 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
-		AbsListView listView = (AbsListView) view.findViewById(android.R.id.list);
+		View view = inflater.inflate(R.layout.card_recycler_content_fab, container, false);
+		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
 		registerFab(R.id.fab_add, view, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				onItemSelected(Statics.ITEM_NEW_TIMER);
 			}
-		}, listView);
+		}, recyclerView);
 		return view;
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				mTimer = mMapList.get(position);
-				getAppCompatActivity().startSupportActionMode(mActionModeCallback);
-				getListView().setItemChecked(position, true);
-				return true;
-			}
-		});
-
-
+//		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//				mTimer = mMapList.get(position);
+//				getAppCompatActivity().startSupportActionMode(mActionModeCallback);
+//				getListView().setItemChecked(position, true);
+//				return true;
+//			}
+//		});
+		setAdapter();
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable("timer", mTimer);
 		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
-		mTimer = mMapList.get(position);
-		if (mIsActionMode) {
-			getListView().setItemChecked(position, true);
-			return;
-		}
-		editTimer(mTimer, false);
 	}
 
 	/*
@@ -216,8 +203,8 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	 * Initializes the <code>SimpleListAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new TimerListAdapter(getAppCompatActivity(), R.layout.timer_list_item, mMapList);
-		setListAdapter(mAdapter);
+		mAdapter = new TimerAdapter(getAppCompatActivity(), mMapList);
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	/**
@@ -305,5 +292,23 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			default:
 				break;
 		}
+	}
+
+	@Override
+	public void onItemClick(RecyclerView parent, View view, int position, long id) {
+		mTimer = mMapList.get(position);
+		if (mIsActionMode) {
+			mSelectionSupport.setItemChecked(position, true);
+			return;
+		}
+		editTimer(mTimer, false);
+	}
+
+	@Override
+	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
+		mTimer = mMapList.get(position);
+		getAppCompatActivity().startSupportActionMode(mActionModeCallback);
+		mSelectionSupport.setItemChecked(position, true);
+		return true;
 	}
 }

@@ -15,7 +15,6 @@
 */
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -24,36 +23,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/ptr_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-
-            <android.support.v4.widget.SwipeRefreshLayout
-                android:id="@+id/ptr_layout"
+            <android.support.v7.widget.RecyclerView
+                android:id="@android:id/list"
+                style="?attr/cardListView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <ListView
-                    android:id="@android:id/list"
-                    style="?attr/cardListView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="0dp"
-                    android:clipToPadding="false"/>
-
-            </android.support.v4.widget.SwipeRefreshLayout>
-
-            <FrameLayout
-                android:id="@+id/content_header"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_margin="0dp"
-                android:layout_weight="0"
-                android:padding="0dp"/>
-        </LinearLayout>
+                android:clipToPadding="false"
+                android:drawSelectorOnTop="false"/>
+        </android.support.v4.widget.SwipeRefreshLayout>
 
         <TextView
             android:id="@android:id/empty"
@@ -64,16 +46,14 @@
     </FrameLayout>
 
     <net.reichholf.dreamdroid.widget.FloatingActionButton
-        android:id="@+id/fab_reload"
+        android:id="@+id/fab_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginRight="32dp"
-        android:layout_marginTop="20dp"
-        android:contentDescription="@string/reload"
-        android:src="@drawable/ic_action_refresh"
-        app:fab_type="mini"/>
-
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="16dp"
+        android:contentDescription="@string/new_timer"
+        android:src="@drawable/ic_action_fab_add"/>
 </RelativeLayout>
