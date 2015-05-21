@@ -64,7 +64,8 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 		boolean isDebuggable = (0 != (getActivity().getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
 		if(!isDebuggable) {
 			Preference dev = findPreference("developer");
-			getPreferenceScreen().removePreference(dev);
+			if(dev != null) //Already removed?
+				getPreferenceScreen().removePreference(dev);
 		}
 	}
 
