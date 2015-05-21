@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 rc4" versioncode="279">
+        <change>FIX: Improve Virtual Remote Widget a bit</change>
+        <change>FIX: Crashing Servicelist on Android &lt; 3.0</change>
+        <change>FIX: Crash in the preferences</change>
+    </release>
     <release version="1.0 rc3" versioncode="278">
         <change>NEW: Theme changes are now immediate on Android >= 3.0</change>
         <change>NEW: EPG option for recordings</change>

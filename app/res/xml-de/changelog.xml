@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 rc4" versioncode="279">
+        <change>FIX: Kleinere Verbesserungen am Virtual Remote Widget</change>
+        <change>FIX: Abstürzende Kanalliste unter Android &lt; 3.0</change>
+        <change>FIX: Absturz in den Einstellungen</change>
+    </release>
     <release version="1.0 rc3" versioncode="278">
         <change>NEU: Änderung des Themes ohne Neustart unter Android >= 3.0</change>
         <change>NEU: EPG Option für Aufnahmen</change>
