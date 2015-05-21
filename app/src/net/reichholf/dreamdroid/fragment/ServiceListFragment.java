@@ -198,7 +198,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mDetailItems = mNavItems;
 		}
 
-		if(Build.VERSION.SDK_INT >= 11) {
+		if(GridView.class.isInstance(mDetailList)){
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 			((GridView) mDetailList).setNumColumns(
 					Integer.parseInt(
