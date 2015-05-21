@@ -181,7 +181,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.dual_list_view, null, false);
+		View v = inflater.inflate(R.layout.dual_list_view, container, false);
 
 		mEmpty = v.findViewById(android.R.id.empty);
 
@@ -197,7 +197,8 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mDetailList = mNavList;
 			mDetailItems = mNavItems;
 		}
-		if(GridView.class.isInstance(mDetailList)) {
+
+		if(Build.VERSION.SDK_INT >= 11) {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 			((GridView) mDetailList).setNumColumns(
 					Integer.parseInt(
