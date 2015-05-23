@@ -51,7 +51,7 @@ public class WidgetService extends HttpIntentService {
 		RemoteCommandRequestHandler handler = new RemoteCommandRequestHandler();
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("command", intent.getStringExtra(KEY_KEYID)));
-		params.add(new BasicNameValuePair("type", "advanced"));
+		params.add(new BasicNameValuePair("rcu", "advanced"));
 		String xml = handler.get(shc, params);
 
 		if (xml != null) {
