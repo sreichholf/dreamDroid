@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 rc5" versioncode="280">
+        <change>FIX: All keys of the full virtual remote widget do now work as expected</change>
+        <change>FIX: Version &lt; 1.6.5 no longer causes a SnackBar to show</change>
+    </release>
     <release version="1.0 rc4" versioncode="279">
         <change>FIX: Improve Virtual Remote Widget a bit</change>
         <change>FIX: Crashing Servicelist on Android &lt; 3.0</change>
