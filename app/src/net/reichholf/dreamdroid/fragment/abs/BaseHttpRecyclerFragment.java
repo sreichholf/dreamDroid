@@ -52,10 +52,6 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		mHttpHelper = new DreamDroidHttpFragmentHelper();
 	}
 
-	protected void setDefaultLocation() {
-		throw new UnsupportedOperationException("Required Method setDefaultLocation() not re-implemented");
-	}
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

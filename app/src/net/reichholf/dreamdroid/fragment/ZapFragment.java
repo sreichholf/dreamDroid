@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -109,20 +110,21 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
-		mGridView = (GridView) view.findViewById(R.id.grid);
-		mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				onListItemClick(null, view, position, id);
-			}
-		});
-		mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				onListItemLongClick(null, view, position, id);
-				return true;
-			}
-		});
+		//TODO fixup zap fragment stuff
+//		mGridView = (GridView) view.findViewById(R.id.grid);
+//		mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//			@Override
+//			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//				onListItemClick(null, view, position, id);
+//			}
+//		});
+//		mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//				onListItemLongClick(null, view, position, id);
+//				return true;
+//			}
+//		});
 		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true);
 		mGridView.setOnScrollListener(listener);
 
@@ -155,8 +157,8 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new ZapListAdapter(getAppCompatActivity(), R.layout.zap_grid_item, mMapList);
-		setListAdapter(mAdapter);
+//		mAdapter = new ZapListAdapter(getAppCompatActivity(), R.layout.zap_grid_item, mMapList);
+//		setListAdapter(mAdapter);
 	}
 
 	@Override
@@ -181,22 +183,14 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		super.onPause();
 	}
 
-	/***
-	 * The ListView is fake! We do set mAdapter on the GridView.
-	 *  This way all the code of "AbstractHttpListFragment" will work on a GridView
-	 **/
 	@Override
-	public void setListAdapter(ListAdapter adapter) {
-		mGridView.setAdapter(adapter);
-	}
-
-	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
+	public void onItemClick(RecyclerView rv, View v, int position, long id) {
 		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
 		zapTo(ref);
 	}
 
-	public void onListItemLongClick(ListView l, View v, int position, long id) {
+	@Override
+	public boolean onItemLongClick(RecyclerView rv, View v, int position, long id) {
 		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
 		String name = mMapList.get(position).getString(Service.KEY_NAME);
 		try {
@@ -204,6 +198,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		} catch (ActivityNotFoundException e) {
 			showToast(getText(R.string.missing_stream_player));
 		}
+		return true;
 	}
 
 	@Override

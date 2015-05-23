@@ -64,7 +64,7 @@ import java.util.HashMap;
 
 /**
  * Handles ServiceLists of (based on service references).
- *
+ * <p/>
  * If called with Intent.ACTION_PICK it can be used for selecting services (e.g.
  * to set a timer).<br/>
  * In Pick-Mode no EPG will be loaded/shown.<br/>
@@ -73,7 +73,6 @@ import java.util.HashMap;
  * <code>ServiceEpgListActivity</code> to show the whole EPG of a service
  *
  * @author sreichholf
- *
  */
 public class ServiceListFragment extends BaseHttpRecyclerEventFragment implements ActionDialog.DialogActionListener {
 	private static final int LOADER_BOUQUETLIST_ID = 1;
@@ -209,7 +208,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 
 		mNavList.setFastScrollEnabled(true);
 //		mDetailList.setFastScrollEnabled(true);
-
+//
 //		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), false, true);
 //		mDetailList.addOnScrollListener(listener);
 
@@ -230,7 +229,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 			}
 		});
 
-		if(mDetailReference == null || "".equals(mDetailReference))
+		if (mDetailReference == null || "".equals(mDetailReference))
 			mSlidingPane.openPane();
 
 		setAdapter();
@@ -346,10 +345,10 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 	private void setAdapter() {
 		ListAdapter adapter;
 		adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
-				new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
+				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
 		mNavList.setAdapter(adapter);
 
-		ServiceAdapter serviceAdapter = new ServiceAdapter( mDetailItems);
+		ServiceAdapter serviceAdapter = new ServiceAdapter(getAppCompatActivity(), mDetailItems);
 		mDetailList.setAdapter(serviceAdapter);
 	}
 
@@ -370,9 +369,9 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		return true;
 	}
 
-	public void checkMenuReload(Menu menu, MenuInflater inflater){
+	public void checkMenuReload(Menu menu, MenuInflater inflater) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
-		if(sp.getBoolean("disable_fab_reload", false)) {
+		if (sp.getBoolean("disable_fab_reload", false)) {
 			detachFabReload();
 			inflater.inflate(R.menu.reload, menu);
 		} else {
@@ -388,7 +387,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		if(getMultiPaneHandler().isDrawerOpen())
+		if (getMultiPaneHandler().isDrawerOpen())
 			return;
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
@@ -408,67 +407,67 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 	@Override
 	protected boolean onItemSelected(int id) {
 		switch (id) {
-		case Statics.ITEM_OVERVIEW:
-			if(!mSlidingPane.isOpen()) {
-				mSlidingPane.openPane();
-				return true;
-			}
-			if ((mSlidingPane.isOpen() || !mSlidingPane.isSlideable()) && !SERVICE_REF_ROOT.equals(mNavReference)) {
-				mNavReference = SERVICE_REF_ROOT;
-				mNavName = (String) getText(R.string.bouquet_overview);
-				reloadNav();
-				return true;
-			}
-			mSlidingPane.closePane();
-			return true;
-		case Statics.ITEM_SET_DEFAULT:
-			if (mDetailReference != null || mNavReference != null) {
-				Profile p = DreamDroid.getCurrentProfile();
-				boolean reset = false;
-				if(p.getDefaultRef() != null && p.getDefaultRef().equals(mDetailReference)) {
-					p.setDefaultRef(null);
-					reset = true;
+			case Statics.ITEM_OVERVIEW:
+				if (!mSlidingPane.isOpen()) {
+					mSlidingPane.openPane();
+					return true;
 				}
-				if(p.getDefaultRef2() != null && p.getDefaultRef2().equals(mNavReference)) {
-					p.setDefaultRef2(null);
-					reset = true;
+				if ((mSlidingPane.isOpen() || !mSlidingPane.isSlideable()) && !SERVICE_REF_ROOT.equals(mNavReference)) {
+					mNavReference = SERVICE_REF_ROOT;
+					mNavName = (String) getText(R.string.bouquet_overview);
+					reloadNav();
+					return true;
 				}
+				mSlidingPane.closePane();
+				return true;
+			case Statics.ITEM_SET_DEFAULT:
+				if (mDetailReference != null || mNavReference != null) {
+					Profile p = DreamDroid.getCurrentProfile();
+					boolean reset = false;
+					if (p.getDefaultRef() != null && p.getDefaultRef().equals(mDetailReference)) {
+						p.setDefaultRef(null);
+						reset = true;
+					}
+					if (p.getDefaultRef2() != null && p.getDefaultRef2().equals(mNavReference)) {
+						p.setDefaultRef2(null);
+						reset = true;
+					}
 
-				if(!reset) {
-					if (mDetailReference != null)
-						p.setDefaultRefValues(mDetailReference, mDetailName);
-					if (mNavReference != null)
-						p.setDefaultRef2Values(mNavReference, mNavName);
-				}
-				DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
-				if (dbh.updateProfile(p)) {
-					if(!reset)
-						showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
+					if (!reset) {
+						if (mDetailReference != null)
+							p.setDefaultRefValues(mDetailReference, mDetailName);
+						if (mNavReference != null)
+							p.setDefaultRef2Values(mNavReference, mNavName);
+					}
+					DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
+					if (dbh.updateProfile(p)) {
+						if (!reset)
+							showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
+					} else {
+						showToast(getText(R.string.default_bouquet_not_set));
+					}
 				} else {
 					showToast(getText(R.string.default_bouquet_not_set));
 				}
-			} else {
-				showToast(getText(R.string.default_bouquet_not_set));
-			}
-			getAppCompatActivity().supportInvalidateOptionsMenu();
-			return true;
-            case Statics.ITEM_SYNC_EPG:
-                syncEpg();
-                return true;
-		default:
-			return super.onItemSelected(id);
+				getAppCompatActivity().supportInvalidateOptionsMenu();
+				return true;
+			case Statics.ITEM_SYNC_EPG:
+				syncEpg();
+				return true;
+			default:
+				return super.onItemSelected(id);
 		}
 	}
 
-    private void syncEpg(){
-        Intent intent = new Intent(getActivity().getApplicationContext(), SyncService.class);
-        intent.putExtra(Event.KEY_SERVICE_REFERENCE, mDetailReference);
-        getActivity().startService(intent);
-    }
+	private void syncEpg() {
+		Intent intent = new Intent(getActivity().getApplicationContext(), SyncService.class);
+		intent.putExtra(Event.KEY_SERVICE_REFERENCE, mDetailReference);
+		getActivity().startService(intent);
+	}
 
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		switch(loader){
+		switch (loader) {
 			case DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID:
 				return mDetailHttpParams;
 			case LOADER_BOUQUETLIST_ID:
@@ -481,9 +480,9 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AbstractListRequestHandler handler;
-		if(id == LOADER_BOUQUETLIST_ID || mPickMode){
+		if (id == LOADER_BOUQUETLIST_ID || mPickMode) {
 			handler = new ServiceListRequestHandler();
-		}  else {
+		} else {
 			if (DreamDroid.featureNowNext())
 				handler = new EpgNowNextListRequestHandler();
 			else
@@ -494,7 +493,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+	                           LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		getAppCompatActivity().supportInvalidateOptionsMenu();
 
 		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
@@ -506,7 +505,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		}
 
 		String title = mNavName;
-		if(isDetailAvail())
+		if (isDetailAvail())
 			title = mDetailName;
 
 		mHttpHelper.finishProgress(title);
@@ -517,7 +516,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		}
 
 		ArrayList<ExtendedHashMap> list = result.getResult();
-		if(list == null){
+		if (list == null) {
 			showToast(getString(R.string.error));
 			return;
 		}
@@ -535,10 +534,8 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 
 
 	/**
-	 * @param ref
-	 *            The ServiceReference to catch the EPG for
-	 * @param nam
-	 *            The name of the Service for the reference
+	 * @param ref The ServiceReference to catch the EPG for
+	 * @param nam The name of the Service for the reference
 	 */
 	public void openEpg(String ref, String nam) {
 		ServiceEpgListFragment f = new ServiceEpgListFragment();
@@ -561,7 +558,12 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 	 */
 	private void onListItemClick(AbsListView l, View v, int position, long id, boolean isLong) {
 		@SuppressWarnings("unchecked")
-		ExtendedHashMap item = new ExtendedHashMap((HashMap<String, Object>) l.getItemAtPosition(position));
+
+		ExtendedHashMap item;
+		if(l == null)
+			 item = mDetailItems.get(position);
+		else
+			item = mNavItems.get(position);
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
 		if (Service.isBouquet(ref)) {
@@ -606,7 +608,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		}
 	}
 
-	public void showPopupMenu(View v){
+	public void showPopupMenu(View v) {
 		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
 
@@ -615,7 +617,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 			public boolean onMenuItemClick(MenuItem menuItem) {
 				String ref = mCurrentService.getString(Service.KEY_REFERENCE);
 				String name = mCurrentService.getString(Service.KEY_NAME);
-				switch(menuItem.getItemId()){
+				switch (menuItem.getItemId()) {
 					case R.id.menu_current_event:
 						Bundle args = new Bundle();
 						args.putParcelable("currentItem", mCurrentService);
@@ -689,14 +691,14 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 			mNavHttpParams = params;
 			mHttpHelper.reload(LOADER_BOUQUETLIST_ID);
 		} else {
-			if(DreamDroid.checkInitial(getAppCompatActivity(), DreamDroid.INITIAL_SERVICELIST_PANE)){
+			if (DreamDroid.checkInitial(getAppCompatActivity(), DreamDroid.INITIAL_SERVICELIST_PANE)) {
 				mSlidingPane.openPane();
 				DreamDroid.setNotInitial(getAppCompatActivity(), DreamDroid.INITIAL_SERVICELIST_PANE);
 			} else {
 				mSlidingPane.closePane();
 			}
 			String param = "bRef";
-			if(mPickMode)
+			if (mPickMode)
 				param = "sRef";
 			params.add(new BasicNameValuePair(param, ref));
 
@@ -736,7 +738,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		super.onSimpleResult(success, result);
 	}
 
-	protected boolean isDetailAvail(){
+	protected boolean isDetailAvail() {
 		return !(mDetailReference == null) && !"".equals(mDetailReference.trim());
 	}
 
@@ -749,21 +751,21 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
-		case Statics.ACTION_SET_TIMER:
-			setTimerById(mCurrentService);
-			break;
+			case Statics.ACTION_SET_TIMER:
+				setTimerById(mCurrentService);
+				break;
 
-		case Statics.ACTION_EDIT_TIMER:
-			setTimerByEventData(mCurrentService);
-			break;
+			case Statics.ACTION_EDIT_TIMER:
+				setTimerByEventData(mCurrentService);
+				break;
 
-		case Statics.ACTION_FIND_SIMILAR:
-			mHttpHelper.findSimilarEvents(mCurrentService);
-			break;
+			case Statics.ACTION_FIND_SIMILAR:
+				mHttpHelper.findSimilarEvents(mCurrentService);
+				break;
 
-		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentService);
-			break;
+			case Statics.ACTION_IMDB:
+				IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentService);
+				break;
 		}
 	}
 }

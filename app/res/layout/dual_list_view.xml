@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/listView2Header">
 
-                <net.reichholf.dreamdroid.view.AutoGridView
+                <android.support.v7.widget.RecyclerView
                     android:id="@+id/list2"
                     style="?attr/cardListView"
                     android:layout_width="fill_parent"

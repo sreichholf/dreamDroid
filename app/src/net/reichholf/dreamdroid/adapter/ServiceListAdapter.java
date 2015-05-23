@@ -73,13 +73,8 @@ public class ServiceListAdapter extends ArrayAdapter<ExtendedHashMap> {
 			layoutId = R.layout.service_list_marker;
 			hasNow = false;
 		} else {
-			if (hasNext) {
-				viewId = R.id.service_list_item_nn;
-				layoutId = R.layout.service_list_item_nn;
-			} else if (hasNow) {
-				viewId = R.id.service_list_item;
-				layoutId = R.layout.service_list_item;
-			}
+			viewId = R.id.service_list_item_nn;
+			layoutId = R.layout.service_list_item_nn;
 		}
 
 		ServiceViewHolder viewHolder = null;
