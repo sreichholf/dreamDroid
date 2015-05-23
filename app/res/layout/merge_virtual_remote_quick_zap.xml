@@ -167,7 +167,7 @@
             android:src="@drawable/ic_key_down"/>
 
         <Button
-            android:id="@+id/ButtonVideo"
+            android:id="@+id/ButtonPvr"
             style="@style/RemoteButton.Big"
             android:layout_width="@dimen/remote_key_width_big"
             android:layout_height="@dimen/remote_key_height_big"

@@ -77,7 +77,7 @@ public class CheckProfile {
 									deviceInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 
 							String version = deviceInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION, "0");
-
+							version = "1.6.4";
 							int vc = checkVersion(version);
 							if (vc >= 0) {
 								int[] requiredForSleeptimer = { 1, 6, 5 };
@@ -94,7 +94,7 @@ public class CheckProfile {
 							} else {
 								addEntry(resultList, R.string.interface_version, true, version,
 										R.string.version_too_low);
-								setError(checkResult, true, R.string.version_too_low);
+								setError(checkResult, false, R.string.version_too_low);
 							}
 						} else {
 							// TODO Parser-Error
