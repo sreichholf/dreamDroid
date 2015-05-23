@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.adapter.NavigationListAdapter;
+import net.reichholf.dreamdroid.adapter.recyclerview.NavigationAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
@@ -46,6 +48,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequest
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.widget.CheckableImageButton;
+import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -265,6 +268,8 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		RecyclerView rv = getRecyclerView();
+		rv.addItemDecoration(new SpacesItemDecoration(0));
 		setAdapter();
 	}
 
@@ -275,7 +280,7 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 			public void onClick(View v) {
 				CheckableImageButton cib = (CheckableImageButton) v;
 				if (cib.getId() == R.id.buttonProfiles || cib.getId() == R.id.buttonSettings) {
-					getListView().setItemChecked(mCurrentListItem, false);
+					mSelectionSupport.setItemChecked(mCurrentListItem, false);
 					mCurrentListItem = -1;
 					if (cib.isChecked()) {
 						getMainActivity().showContent();
@@ -304,20 +309,18 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		getRecyclerView().setTextFilterEnabled(true);
-
-		TypedValue typedValue = new TypedValue();
-		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
-		if(typedValue.resourceId > 0)
-			getListView().setSelector(typedValue.resourceId);
+		mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE);
+//		TypedValue typedValue = new TypedValue();
+//		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
+//		if(typedValue.resourceId > 0)
+//			getRecyclerView().setSelector(typedValue.resourceId);
 	}
 
 	@SuppressLint("NewApi")
 	public void setSelectedItem(int position) {
 		if (Build.VERSION.SDK_INT >= 8)
 			getRecyclerView().smoothScrollToPosition(position);
-		onListItemClick(getListView(), null, position, position);
+		onItemClick(getRecyclerView(), null, position, position);
 	}
 
 	@Override
@@ -339,24 +342,24 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 			btn.setChecked(false);
 
 			if (mCurrent[4] == 0 || (mCurrent[4] == 2 && isTablet())) {
-				l.setItemChecked(position, true);
+				mSelectionSupport.setItemChecked(position, true);
 				mCurrentListItem = position;
 			} else {
-				l.setItemChecked(position, false);
+				mSelectionSupport.setItemChecked(position, false);
 				if (mCurrentListItem > 0) {
-					l.setItemChecked(mCurrentListItem, true);
+					mSelectionSupport.setItemChecked(mCurrentListItem, true);
 				}
 			}
 		} else {
-			l.setItemChecked(position, false);
+			mSelectionSupport.setItemChecked(position, false);
 		}
 
 		onItemSelected(mCurrent[0]);
 	}
 
 	private void setAdapter() {
-		mAdapter = new NavigationListAdapter(getMainActivity(), MENU_ITEMS);
-		setListAdapter(mAdapter);
+		mAdapter = new NavigationAdapter(getMainActivity(), MENU_ITEMS);
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	@Override
