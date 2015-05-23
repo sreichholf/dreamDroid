@@ -174,7 +174,7 @@
             android:layout_below="@id/ButtonRight"
             android:layout_toRightOf="@id/ButtonDown"
             android:background="@drawable/button_key_dark"
-            android:text="Video"/>
+            android:text="PVR"/>
     </RelativeLayout>
 
     <RelativeLayout

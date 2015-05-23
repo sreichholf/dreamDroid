@@ -134,7 +134,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
 
-		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
+		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR) && !(Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error, true);
 			SnackbarManager.show(
@@ -158,7 +158,12 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				}
 		} else {
 			SnackbarManager.dismiss();
-			setConnectionState(getString(R.string.ok), true);
+			if((Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)){
+				String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
+				setConnectionState(error, true);
+			} else {
+				setConnectionState(getString(R.string.ok), true);
+			}
 			mNavigationFragment.setAvailableFeatures();
 			if (getCurrentDetailFragment() == null) {
 				mNavigationFragment.setSelectedItem(0);
