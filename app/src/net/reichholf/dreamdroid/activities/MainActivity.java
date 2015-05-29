@@ -15,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -33,9 +34,6 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.nispok.snackbar.Snackbar;
-import com.nispok.snackbar.SnackbarManager;
-import com.nispok.snackbar.listeners.ActionClickListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -89,6 +87,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	private ActionBarDrawerToggle mDrawerToggle;
 	private DrawerLayout mDrawerLayout;
 
+	private Snackbar mSnackbar;
+
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
 
@@ -130,6 +130,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
+	private void dismissSnackbar(){
+		if(mSnackbar != null) {
+			mSnackbar.dismiss();
+			mSnackbar = null;
+		}
+	}
+
 	public void onProfileChecked(final ExtendedHashMap result) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
@@ -137,19 +144,16 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR) && !(Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error, true);
-			SnackbarManager.show(
-					Snackbar.with(this)
-							.margin(15, 15)
-							.text(error)
-							.textColorResource(R.color.material_red_500)
-							.duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
-							.actionLabel(R.string.more)
-							.actionListener(new ActionClickListener() {
-								@Override
-								public void onActionClicked(Snackbar snackbar) {
-									showErrorDetails(result);
-								}
-							}));
+			dismissSnackbar();
+			mSnackbar = Snackbar.make(findViewById(R.id.drawer_layout), error, Snackbar.LENGTH_LONG)
+					.setAction(R.string.more, new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							showErrorDetails(result);
+						}
+					});
+			mSnackbar.show();
+
 
 			if (isFirstStart)
 				for (int i = 0; i < NavigationFragment.MENU_ITEMS.length; i++) {
@@ -157,7 +161,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 						mNavigationFragment.setSelectedItem(i);
 				}
 		} else {
-			SnackbarManager.dismiss();
+			dismissSnackbar();
 			if((Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)){
 				String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 				setConnectionState(error, true);
@@ -314,7 +318,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 				public void onDrawerOpened(View drawerView) {
 					supportInvalidateOptionsMenu();
-					SnackbarManager.dismiss();
+					dismissSnackbar();
 				}
 			};
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
