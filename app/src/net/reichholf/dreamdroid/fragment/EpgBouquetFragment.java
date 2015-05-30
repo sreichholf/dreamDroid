@@ -89,8 +89,9 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 			}
 		});
 
-		FrameLayout frame = (FrameLayout) view.findViewById(R.id.content_header);
+		FrameLayout frame = (FrameLayout) getAppCompatActivity().findViewById(R.id.content_header);
 		frame.addView(header);
+		frame.setVisibility(View.VISIBLE);
 
 		return view;
 	}

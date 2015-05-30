@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.SwipeRefreshLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/ptr_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ScrollView
+    <android.support.v4.widget.NestedScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:paddingBottom="@dimen/content_vert_padding"
         android:paddingLeft="@dimen/content_horz_padding"
         android:paddingRight="@dimen/content_horz_padding"
-        android:paddingTop="@dimen/content_vert_padding">
+        android:paddingTop="?attr/actionBarSize"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -194,5 +197,5 @@
                 android:text="@string/stream_current"/>
         </LinearLayout>
 
-    </ScrollView>
+    </android.support.v4.widget.NestedScrollView>
 </android.support.v4.widget.SwipeRefreshLayout>

@@ -29,15 +29,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <FrameLayout
-                android:id="@+id/content_header"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="0dp"
-                android:layout_marginBottom="2dp"
-                android:padding="0dp"
-                android:elevation="2dp"/>
-
             <android.support.v4.widget.SwipeRefreshLayout
                 android:id="@+id/ptr_layout"
                 android:layout_width="match_parent"
@@ -49,7 +40,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"
-                    android:drawSelectorOnTop="false"/>
+                    android:drawSelectorOnTop="false"
+                    app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
             </android.support.v4.widget.SwipeRefreshLayout>
         </LinearLayout>

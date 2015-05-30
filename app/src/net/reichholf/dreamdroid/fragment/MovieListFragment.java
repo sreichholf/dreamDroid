@@ -153,13 +153,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Actio
 	}
 
 	@Override
-	protected void setDefaultLocation() {
-		if (mCurrentLocation == null && DreamDroid.getLocations().size() > 0) {
-			mCurrentLocation = DreamDroid.getLocations().get(0);
-		}
-	}
-
-	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		checkMenuReload(menu, inflater);
 		inflater.inflate(R.menu.locactions_and_tags, menu);

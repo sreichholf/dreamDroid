@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     android:id="@+id/service_list_item_nn"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
@@ -131,4 +131,4 @@
         </LinearLayout>
 
     </RelativeLayout>
-</FrameLayout>
+</LinearLayout>
