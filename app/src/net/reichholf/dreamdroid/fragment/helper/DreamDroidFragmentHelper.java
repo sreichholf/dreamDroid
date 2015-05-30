@@ -13,10 +13,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 
 
@@ -47,6 +49,14 @@ public class DreamDroidFragmentHelper {
 
 	public void onActivityCreated(Bundle savedInstanceState) {
 		getAppCompatActivity().setTitle(mCurrentTitle);
+		View header = getAppCompatActivity().findViewById(R.id.content_header);
+		boolean hasHeader = ((IBaseFragment) mFragment).hasHeader();
+		if (header == null)
+			return;
+		if(hasHeader)
+			header.setVisibility(View.VISIBLE);
+		else
+			header.setVisibility(View.GONE);
 	}
 
 	public void onAttach(Activity activity) {
@@ -87,7 +97,7 @@ public class DreamDroidFragmentHelper {
 	}
 
 	public void finish(int resultCode, Intent data) {
-		MultiPaneHandler mph = ((MutliPaneContent) mFragment).getMultiPaneHandler();
+		MultiPaneHandler mph = ((IMutliPaneContent) mFragment).getMultiPaneHandler();
 		if (mph.isMultiPane()) {
 			boolean explicitShow = false;
 			FragmentManager fm = getAppCompatActivity().getSupportFragmentManager();

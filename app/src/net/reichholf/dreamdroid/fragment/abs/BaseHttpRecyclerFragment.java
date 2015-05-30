@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -36,7 +36,7 @@ import java.util.HashMap;
  * Created by Stephan on 03.05.2015.
  */
 public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, SwipeRefreshLayout.OnRefreshListener {
 	public static final String BUNDLE_KEY_LIST = "list";
 	protected final String sData = "data";
 

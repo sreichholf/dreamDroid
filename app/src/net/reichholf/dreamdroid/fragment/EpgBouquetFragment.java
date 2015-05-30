@@ -91,7 +91,6 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 
 		FrameLayout frame = (FrameLayout) getAppCompatActivity().findViewById(R.id.content_header);
 		frame.addView(header);
-		frame.setVisibility(View.VISIBLE);
 
 		return view;
 	}
@@ -136,7 +135,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 
 	@Override
 	protected void reload() {
-		if(mReference != null)
+		if (mReference != null)
 			super.reload();
 		else
 			pickBouquet();
@@ -181,6 +180,11 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		return super.onItemSelected(id);
 	}
 
+	@Override
+	public boolean hasHeader() {
+		return true;
+	}
+
 	private void pickBouquet() {
 		PickServiceFragment f = new PickServiceFragment();
 		Bundle args = new Bundle();
@@ -205,7 +209,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 	@Override
 	public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
 		Calendar cal = getCalendar();
-		if(cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day)
+		if (cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day)
 			return;
 		cal.set(year, month, day);
 
@@ -219,7 +223,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 	@Override
 	public void onTimeSet(RadialPickerLayout radialPickerLayout, int hourOfDay, int minute) {
 		Calendar cal = getCalendar();
-		if(cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
+		if (cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
 			return;
 		cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
 		cal.set(Calendar.MINUTE, minute);

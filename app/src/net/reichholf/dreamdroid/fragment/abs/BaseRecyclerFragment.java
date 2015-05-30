@@ -19,7 +19,8 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.widget.FloatingActionButton;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
@@ -29,7 +30,7 @@ import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 /**
  * Created by Stephan on 03.05.2015.
  */
-public abstract class BaseRecyclerFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent, ItemClickSupport.OnItemClickListener, ItemClickSupport.OnItemLongClickListener {
+public abstract class BaseRecyclerFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment, ItemClickSupport.OnItemClickListener, ItemClickSupport.OnItemLongClickListener {
 
 	private DreamDroidFragmentHelper mHelper;
 	protected boolean mShouldRetainInstance = true;
@@ -57,7 +58,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
-		if(mShouldRetainInstance)
+		if (mShouldRetainInstance)
 			setRetainInstance(true);
 	}
 
@@ -103,20 +104,24 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		if(!getMultiPaneHandler().isDrawerOpen())
+		if (!getMultiPaneHandler().isDrawerOpen())
 			createOptionsMenu(menu, inflater);
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 	}
 
 	@Override
 	public MultiPaneHandler getMultiPaneHandler() {
 		return mHelper.getMultiPaneHandler();
+	}
+
+	@Override
+	public boolean hasHeader() {
+		return false;
 	}
 
 	public String getBaseTitle() {
@@ -166,8 +171,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		toast.show();
 	}
 
-	public RecyclerView getRecyclerView()
-	{
+	public RecyclerView getRecyclerView() {
 		return (RecyclerView) getView().findViewById(android.R.id.list);
 	}
 
@@ -223,7 +227,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 			outRect.bottom = space;
 
 			// Add top margin only for the first item to avoid double space between items
-			if(parent.getChildPosition(view) == 0)
+			if (parent.getChildPosition(view) == 0)
 				outRect.top = space;
 		}
 	}

@@ -26,7 +26,8 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
+import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -45,7 +46,7 @@ import java.util.HashMap;
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, IBaseFragment, SwipeRefreshLayout.OnRefreshListener {
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
@@ -125,6 +126,11 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemSelected(item.getItemId());
+	}
+
+	@Override
+	public boolean hasHeader() {
+		return false;
 	}
 
 	public void connectFabReload(View view, AbsListView listView) {

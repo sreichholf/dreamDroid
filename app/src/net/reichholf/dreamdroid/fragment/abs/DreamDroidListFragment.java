@@ -24,15 +24,15 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.widget.FloatingActionButton;
 
 /**
  * @author sre
- * 
  */
-public abstract class DreamDroidListFragment extends ListFragment implements ActivityCallbackHandler, MutliPaneContent {
+public abstract class DreamDroidListFragment extends ListFragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment {
 	private DreamDroidFragmentHelper mHelper;
 	protected boolean mShouldRetainInstance = true;
 
@@ -57,7 +57,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
-		if(mShouldRetainInstance)
+		if (mShouldRetainInstance)
 			setRetainInstance(true);
 	}
 
@@ -103,16 +103,21 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		if(!getMultiPaneHandler().isDrawerOpen())
+		if (!getMultiPaneHandler().isDrawerOpen())
 			createOptionsMenu(menu, inflater);
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 	}
+
+	@Override
+	public boolean hasHeader() {
+		return false;
+	}
+
 
 	@Override
 	public MultiPaneHandler getMultiPaneHandler() {
@@ -166,7 +171,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		toast.show();
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener){
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener) {
 		registerFab(id, view, onClickListener, null, false);
 	}
 
@@ -174,7 +179,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		registerFab(id, view, onClickListener, listView, false);
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean topAligned){
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean topAligned) {
 		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
 		if (fab == null)
 			return;

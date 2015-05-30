@@ -19,16 +19,16 @@ import android.widget.Toast;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.widget.FloatingActionButton;
 
 
 /**
  * @author sre
- * 
  */
-public abstract class BaseFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
+public abstract class BaseFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment {
 	private DreamDroidFragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
 
@@ -51,7 +51,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
-		if(mShouldRetainInstance)
+		if (mShouldRetainInstance)
 			setRetainInstance(true);
 	}
 
@@ -59,6 +59,11 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mHelper.onActivityCreated(savedInstanceState);
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 	}
 
 	@Override
@@ -80,16 +85,20 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		MultiPaneHandler mph = getMultiPaneHandler(); //TODO how do i reproduce this?
-		if(mph == null || !mph.isDrawerOpen())
+		if (mph == null || !mph.isDrawerOpen())
 			createOptionsMenu(menu, inflater);
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	}
+
+	@Override
+	public boolean hasHeader() {
+		return false;
 	}
 
 	public String getBaseTitle() {
@@ -128,7 +137,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	protected void finish(int resultCode, Intent data) {
 		mHelper.finish(resultCode, data);
 	}
-	
+
 	protected AppCompatActivity getAppCompatActivity() {
 		return (AppCompatActivity) getActivity();
 	}
@@ -143,7 +152,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		toast.show();
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener){
+	protected void registerFab(int id, View view, View.OnClickListener onClickListener) {
 		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
 		if (fab == null)
 			return;
