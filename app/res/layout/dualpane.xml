@@ -30,7 +30,8 @@
                 android:id="@+id/content_header"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"/>
+                android:visibility="gone"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
         </android.support.design.widget.AppBarLayout>
 

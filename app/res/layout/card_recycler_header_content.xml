@@ -40,8 +40,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"
-                    android:drawSelectorOnTop="false"
-                    app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+                    android:drawSelectorOnTop="false"/>
 
             </android.support.v4.widget.SwipeRefreshLayout>
         </LinearLayout>

@@ -47,8 +47,7 @@
                     android:horizontalSpacing="5dp"
                     android:numColumns="auto_fit"
                     android:stretchMode="columnWidth"
-                    android:verticalSpacing="5dp"
-                    app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+                    android:verticalSpacing="5dp"/>
 
             </android.support.v4.widget.SwipeRefreshLayout>
 
