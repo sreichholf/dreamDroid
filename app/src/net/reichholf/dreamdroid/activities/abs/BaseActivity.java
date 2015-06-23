@@ -18,6 +18,8 @@ import net.reichholf.dreamdroid.util.Inventory;
 import net.reichholf.dreamdroid.util.Purchase;
 import net.reichholf.dreamdroid.util.SkuDetails;
 
+import org.piwik.sdk.PiwikApplication;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,6 +98,7 @@ public class BaseActivity extends AppCompatActivity {
 		}
 
 		initIAB();
+		initPiwik();
 	}
 
 	private void initIAB() {
@@ -120,6 +123,18 @@ public class BaseActivity extends AppCompatActivity {
 				mIabHelper.queryInventoryAsync(true, skuList, mQueryInventoryFinishedListener);
 			}
 		});
+	}
+
+	private void initPiwik() {
+		if(!DreamDroid.isTrackingEnabled(this))
+			return;
+		// do not send http requests
+		((PiwikApplication) getApplication()).getGlobalSettings().setDryRun(false);
+
+		((PiwikApplication) getApplication()).getTracker()
+				.setDispatchInterval(5)
+				.trackAppDownload()
+				.reportUncaughtExceptions(true);
 	}
 
 	@Override

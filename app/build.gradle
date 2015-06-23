@@ -10,6 +10,7 @@ apply plugin: 'com.android.application'
 
 repositories {
     jcenter()
+    maven { url 'https://dl.bintray.com/drummer-aidan/maven' }
 }
 
 dependencies {
@@ -24,6 +25,7 @@ dependencies {
 
     compile files('libs/ftp4j-1.7.2.jar')
     compile files('libs/jmdns-3.4.1.jar')
+    compile files('libs/PiwikAndroidSdk.jar')
     compile files('libs/signpost-core-1.2.1.1.jar')
 
     compile project(':libraries:gaugeview-library')
