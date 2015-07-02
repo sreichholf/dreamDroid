@@ -185,6 +185,8 @@ public class BaseActivity extends AppCompatActivity {
 	}
 
 	public void consumeAll(Inventory inventory) {
+		if(inventory == null || mIabHelper == null)
+			return;
 		ArrayList<Purchase> purchases = new ArrayList<>();
 		for (String sku : DreamDroid.SKU_LIST) {
 			if (inventory.hasPurchase(sku)) {
