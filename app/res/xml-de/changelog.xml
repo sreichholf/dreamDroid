@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 rc6" versioncode="281">
+        <change>NEU: Sammeln anonymer Stastiken. Kann in den Einstellungen deaktiviert werden.</change>
+        <change>NEU: Wechsel zu Google's SnackBar Implementierung</change>
+        <change>FIX: Einige Abstürze wurde behoben</change>
+    </release>
     <release version="1.0 rc5" versioncode="280">
         <change>FIX: Im Virtual Remote Widget funktionieren im großen Layout nun alle Tasten wie erwartet</change>
         <change>FIX: Bei "Version &lt; 1.6.5" öffnet sich keine Snackbar mehr</change>
