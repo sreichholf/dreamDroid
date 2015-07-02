@@ -283,7 +283,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		reloadProfiles();
 		if (savedInstanceState != null) {
 			int pos = savedInstanceState.getInt("cursorPosition");
-			mProfile = mProfiles.get(pos);
+			if(pos < mProfiles.size())
+				mProfile = mProfiles.get(pos);
 		}
 
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
