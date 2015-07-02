@@ -2,8 +2,8 @@
 <manifest package="net.reichholf.dreamdroid"
           xmlns:android="http://schemas.android.com/apk/res/android"
           android:installLocation="auto"
-          android:versionCode="280"
-          android:versionName="1.0 rc5">
+          android:versionCode="281"
+          android:versionName="1.0 rc6">
 
     <uses-sdk
         android:minSdkVersion="8"
