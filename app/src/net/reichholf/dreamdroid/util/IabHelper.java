@@ -627,10 +627,9 @@ public class IabHelper {
                     result = ex.getResult();
                 }
 
-                flagEndAsync();
-
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
+
                 if (!mDisposed && !mDisposeRequested && listener != null) {
                     handler.post(new Runnable() {
                         public void run() {
@@ -638,6 +637,7 @@ public class IabHelper {
                         }
                     });
                 }
+                flagEndAsync();
             }
         })).start();
     }
