@@ -252,6 +252,8 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param result
 	 */
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
+		if(mFragment.isDetached())
+			return;
 		String toastText = (String) mFragment.getText(R.string.get_content_error);
 		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
 
@@ -269,6 +271,8 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param volume
 	 */
 	public void onVolumeSet(boolean success, ExtendedHashMap volume) {
+		if(mFragment.isDetached())
+			return;
 		String text = mFragment.getString(R.string.get_content_error);
 		if (success) {
 			if (Python.TRUE.equals(volume.getString(Volume.KEY_RESULT))) {
