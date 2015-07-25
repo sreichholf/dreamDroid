@@ -147,7 +147,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error, true);
 			dismissSnackbar();
-			mSnackbar = Snackbar.make(findViewById(R.id.drawer_layout), error, Snackbar.LENGTH_LONG)
+			mSnackbar = Snackbar.make(findViewById(R.id.drawer_layout), error, Snackbar.LENGTH_INDEFINITE)
 					.setAction(R.string.more, new View.OnClickListener() {
 						@Override
 						public void onClick(View v) {
