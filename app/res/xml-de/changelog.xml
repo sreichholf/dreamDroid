@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version=".10 rc7" versioncode="283">
+        <change>NEU: Datenschutzerklärung hinzugefügt</change>
+        <change>FIX: Kleinere Bugfixes</change>
+    </release>
     <release version="1.0 rc6" versioncode="281">
         <change>NEU: Sammeln anonymer Stastiken. Kann in den Einstellungen deaktiviert werden.</change>
         <change>NEU: Wechsel zu Google's SnackBar Implementierung</change>

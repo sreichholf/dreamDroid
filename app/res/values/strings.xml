@@ -310,4 +310,7 @@
     <string name="host_unreach">Could not connect to host</string>
     <string name="allow_tracking_long">Allow collection of anonymized usage statistics</string>
     <string name="allow_tracking">Usage statistics</string>
+    <string name="privacy_statement">dreamDroid contains a module for collecting statistical usage data. The data to be collected contains the following Information:\n\n&#8226; Anonymized IP Address\n&#8226; The "Pages" you open (e.g. ServiceList, Movies, ...) including the duration\n&#8226; Crashes you experience\n\nThere is no unique ID or full IP-Adress being recorded and your data will not be fowarded or given to any 3rd party.\n\nDo you agree with enabling anonymized statistics?</string>
+    <string name="privacy_statement_title">Privacy Statement</string>
+    <string name="privacy">Privacy</string>
 </resources>

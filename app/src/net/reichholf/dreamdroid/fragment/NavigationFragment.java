@@ -608,6 +608,10 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		if (action == Statics.ACTION_SHOW_PRIVACY_STATEMENT) {
+			getMainActivity().showPrivacyStatement();
+			return;
+		}
 		onItemSelected(action);
 	}
 }

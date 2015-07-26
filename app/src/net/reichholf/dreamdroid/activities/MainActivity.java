@@ -656,6 +656,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		} else if (mDetailFragment != null) {
 			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
 		}
+		super.onDialogAction(action, details, dialogTag);
 	}
 
 	private boolean isNavigationDialog(String dialogTag) {

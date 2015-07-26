@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version=".10 rc7" versioncode="283">
+        <change>NEW: Add Privacy Statement</change>
+        <change>FIX: Minor bugfixes</change>
+    </release>
     <release version="1.0 rc6" versioncode="281">
         <change>NEW: Gather anonymized statistics, you can opt out at any time in the settings</change>
         <change>NEW: Switch to Google's SnackBar implementation</change>

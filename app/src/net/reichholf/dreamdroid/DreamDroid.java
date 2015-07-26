@@ -60,7 +60,8 @@ public class DreamDroid extends PiwikApplication {
 	public static final String PREFS_KEY_ENABLE_DEVELOPER_SETTINGS = "enable_developer";
 	public static final String PREFS_KEY_FAKE_PICON = "fake_picon";
 	public static final String PREFS_KEY_XML_DEBUG = "xml_debug";
-	private static final String PREFS_KEY_ALLOW_TRACKING = "allow_tracking";
+	public static final String PREFS_KEY_ALLOW_TRACKING = "allow_tracking";
+	public static final String PREFS_KEY_PRIVACY_STATEMENT_SHOWN = "privacy_statement_shown";
 
 	public static final String IAB_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wvbGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpnaEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR888CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB";
 
