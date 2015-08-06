@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version=".10 rc8" versioncode="284">
+        <change>FIX: In-App purchase chrash</change>
+    </release>
     <release version=".10 rc7" versioncode="283">
         <change>NEW: Add Privacy Statement</change>
         <change>FIX: Minor bugfixes</change>
