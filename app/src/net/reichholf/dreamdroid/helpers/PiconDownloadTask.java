@@ -106,6 +106,8 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 
 	@Override
 	protected void onPostExecute(Void unused) {
+		if(isCancelled())
+			return;
 		raiseEvent(DownloadProgress.EVENT_ID_FINISHED);
 	}
 

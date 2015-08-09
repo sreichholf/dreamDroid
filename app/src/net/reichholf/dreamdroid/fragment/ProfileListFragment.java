@@ -93,7 +93,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 		@Override
 		protected void onPostExecute(ArrayList<Profile> profiles) {
-			onDevicesDetected(profiles);
+			if(!isCancelled())
+				onDevicesDetected(profiles);
 		}
 	}
 

@@ -415,7 +415,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-
+			if(isCancelled())
+				return;
 			String title = getCurrentTitle();
 
 			if (result) {

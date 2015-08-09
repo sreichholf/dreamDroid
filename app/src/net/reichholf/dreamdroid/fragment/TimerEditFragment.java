@@ -138,6 +138,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			if (mLoadProgress.isShowing()) {
 				mLoadProgress.dismiss();
 			}

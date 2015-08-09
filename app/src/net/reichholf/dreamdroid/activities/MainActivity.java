@@ -127,7 +127,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		@Override
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(TAG, result.toString());
-			if (!this.isCancelled())
+			if (!isCancelled())
 				onProfileChecked(result);
 		}
 	}

@@ -142,6 +142,8 @@ public class DreamDroidHttpFragmentHelper {
 		}
 
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 			}
@@ -252,7 +254,7 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param result
 	 */
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-		if(mFragment.isDetached())
+		if(!mFragment.isAdded())
 			return;
 		String toastText = (String) mFragment.getText(R.string.get_content_error);
 		String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
@@ -271,7 +273,7 @@ public class DreamDroidHttpFragmentHelper {
 	 * @param volume
 	 */
 	public void onVolumeSet(boolean success, ExtendedHashMap volume) {
-		if(mFragment.isDetached())
+		if(!mFragment.isAdded())
 			return;
 		String text = mFragment.getString(R.string.get_content_error);
 		if (success) {

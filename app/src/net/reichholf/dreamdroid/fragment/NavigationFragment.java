@@ -125,6 +125,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 
@@ -183,6 +185,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			mProgressDialogFragment.dismiss();
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
