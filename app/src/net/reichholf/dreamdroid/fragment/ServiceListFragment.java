@@ -601,6 +601,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	public void showPopupMenu(View v){
 		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
+		menu.getMenu().findItem(R.id.menu_next_event).setVisible(DreamDroid.featureNowNext());
 
 		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 			@Override
@@ -608,11 +609,20 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 				String ref = mCurrentService.getString(Service.KEY_REFERENCE);
 				String name = mCurrentService.getString(Service.KEY_NAME);
 				switch(menuItem.getItemId()){
-					case R.id.menu_current_event:
+					case R.id.menu_current_event: {
 						Bundle args = new Bundle();
 						args.putParcelable("currentItem", mCurrentService);
+						args.putBoolean("showNext", false);
 						getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
 						break;
+					}
+					case R.id.menu_next_event: {
+						Bundle args = new Bundle();
+						args.putParcelable("currentItem", mCurrentService);
+						args.putBoolean("showNext", true);
+						getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
+						break;
+					}
 					case R.id.menu_browse_epg:
 						openEpg(ref, name);
 						break;

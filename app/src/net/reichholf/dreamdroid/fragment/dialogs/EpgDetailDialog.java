@@ -49,11 +49,17 @@ public class EpgDetailDialog extends ActionDialog {
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		mCurrentItem = new ExtendedHashMap((HashMap<String, Object>) getArguments().get("currentItem"));
+		Bundle args = getArguments();
+		mCurrentItem = new ExtendedHashMap((HashMap<String, Object>) args.get("currentItem"));
+		boolean showNext = args.getBoolean("showNext", false);
 
-		String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
-		String title = mCurrentItem.getString(Event.KEY_EVENT_TITLE);
-		String date = mCurrentItem.getString(Event.KEY_EVENT_START_READABLE);
+		String prefix = "";
+		if(showNext)
+			prefix = Event.PREFIX_NEXT;
+
+		String servicename = mCurrentItem.getString(prefix.concat(Event.KEY_SERVICE_NAME));
+		String title = mCurrentItem.getString(prefix.concat(Event.KEY_EVENT_TITLE));
+		String date = mCurrentItem.getString(prefix.concat(Event.KEY_EVENT_START_READABLE));
 
 		MaterialDialog dialog = null;
 		if (!"N/A".equals(title) && date != null) {
