@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version=".10 rc8" versioncode="284">
+    <release version="1.0 rc9" versioncode="285">
+        <change>NEW: Add "Next Event" to servicelist pop-over</change>
+        <change>FIX: Some minor issues have been fixed</change>
+    </release>
+    <release version="1.0 rc8" versioncode="284">
         <change>FIX: In-App purchase chrash</change>
     </release>
-    <release version=".10 rc7" versioncode="283">
+    <release version="1.0 rc7" versioncode="283">
         <change>NEW: Add Privacy Statement</change>
         <change>FIX: Minor bugfixes</change>
     </release>

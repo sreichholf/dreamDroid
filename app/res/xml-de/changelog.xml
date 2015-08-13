@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0 rc9" versioncode="285">
+        <change>NEU: "Nächste Sendung" in der Kanalliste</change>
+        <change>FIX: Ein paar kleinere Probleme wurden behoben</change>
+    </release>
     <release version=".10 rc8" versioncode="284">
         <change>FIX: In-App purchase Absturz</change>
     </release>
