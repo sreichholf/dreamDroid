@@ -57,16 +57,16 @@ public class EpgDetailDialog extends ActionDialog {
 		if(showNext)
 			prefix = Event.PREFIX_NEXT;
 
-		String servicename = mCurrentItem.getString(prefix.concat(Event.KEY_SERVICE_NAME));
-		String title = mCurrentItem.getString(prefix.concat(Event.KEY_EVENT_TITLE));
-		String date = mCurrentItem.getString(prefix.concat(Event.KEY_EVENT_START_READABLE));
+		String servicename = mCurrentItem.getString(prefix + Event.KEY_SERVICE_NAME);
+		String title = mCurrentItem.getString(prefix + Event.KEY_EVENT_TITLE);
+		String date = mCurrentItem.getString(prefix + Event.KEY_EVENT_START_READABLE);
 
 		MaterialDialog dialog = null;
 		if (!"N/A".equals(title) && date != null) {
-			date = date.concat(" (" + mCurrentItem.getString(Event.KEY_EVENT_DURATION_READABLE) + " "
+			date = date.concat(" (" + mCurrentItem.getString(prefix + Event.KEY_EVENT_DURATION_READABLE) + " "
 					+ getText(R.string.minutes_short) + ")");
-			String descShort = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION, "");
-			String descEx = mCurrentItem.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED);
+			String descShort = mCurrentItem.getString(prefix + Event.KEY_EVENT_DESCRIPTION, "");
+			String descEx = mCurrentItem.getString(prefix + Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 
 			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
 			builder.title(title)

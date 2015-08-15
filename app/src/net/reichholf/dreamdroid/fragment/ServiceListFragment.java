@@ -588,7 +588,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			} else {
 				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
 						"instant_zap", false);
-				if ((instantZap && !isLong) || (!instantZap && isLong)) {
+				if (instantZap || isLong) {
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
