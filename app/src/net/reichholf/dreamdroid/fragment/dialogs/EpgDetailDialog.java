@@ -51,10 +51,10 @@ public class EpgDetailDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Bundle args = getArguments();
 		mCurrentItem = new ExtendedHashMap((HashMap<String, Object>) args.get("currentItem"));
-		boolean showNext = args.getBoolean("showNext", false);
+		final boolean isNext = args.getBoolean("showNext", false);
 
 		String prefix = "";
-		if(showNext)
+		if(isNext)
 			prefix = Event.PREFIX_NEXT;
 
 		String servicename = mCurrentItem.getString(prefix + Event.KEY_SERVICE_NAME);
@@ -94,7 +94,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonSetTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_SET_TIMER, null);
+					finishDialog(Statics.ACTION_SET_TIMER, isNext);
 				}
 			});
 
@@ -102,7 +102,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonEditTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_EDIT_TIMER, null);
+					finishDialog(Statics.ACTION_EDIT_TIMER, isNext);
 				}
 			});
 
@@ -118,7 +118,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonSimilar.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_FIND_SIMILAR, null);
+					finishDialog(Statics.ACTION_FIND_SIMILAR, isNext);
 				}
 			});
 		} else {

@@ -44,6 +44,7 @@ import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -588,7 +589,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			} else {
 				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
 						"instant_zap", false);
-				if (instantZap || isLong) {
+				if ((instantZap && !isLong) || (!instantZap && isLong)) {
 					zapTo(ref);
 				} else {
 					mCurrentService = item;
@@ -750,21 +751,36 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		ExtendedHashMap service;
+		if((Boolean)details){
+			service = new ExtendedHashMap();
+			service.put(Event.KEY_EVENT_ID, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_ID));
+			service.put(Event.KEY_EVENT_START, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_START));
+			service.put(Event.KEY_EVENT_DURATION, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_DURATION));
+			service.put(Event.KEY_EVENT_TITLE, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_TITLE));
+			service.put(Event.KEY_EVENT_DESCRIPTION, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_DESCRIPTION));
+			service.put(Event.KEY_EVENT_DESCRIPTION_EXTENDED, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_DESCRIPTION_EXTENDED));
+			service.put(Event.KEY_SERVICE_NAME, mCurrentService.getString(Event.KEY_SERVICE_NAME));
+			service.put(Event.KEY_SERVICE_REFERENCE, mCurrentService.getString(Event.KEY_SERVICE_REFERENCE));
+		} else {
+			service = mCurrentService;
+		}
+
 		switch (action) {
 		case Statics.ACTION_SET_TIMER:
-			setTimerById(mCurrentService);
+			setTimerById(service);
 			break;
 
 		case Statics.ACTION_EDIT_TIMER:
-			setTimerByEventData(mCurrentService);
+			setTimerByEventData(service);
 			break;
 
 		case Statics.ACTION_FIND_SIMILAR:
-			mHttpHelper.findSimilarEvents(mCurrentService);
+			mHttpHelper.findSimilarEvents(service);
 			break;
 
 		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentService);
+			IntentFactory.queryIMDb(getAppCompatActivity(), service);
 			break;
 		}
 	}
