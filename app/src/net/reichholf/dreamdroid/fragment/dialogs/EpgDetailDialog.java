@@ -110,7 +110,7 @@ public class EpgDetailDialog extends ActionDialog {
 			buttonIMDb.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					finishDialog(Statics.ACTION_IMDB, null);
+					finishDialog(Statics.ACTION_IMDB, isNext);
 				}
 			});
 

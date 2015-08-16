@@ -752,7 +752,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		ExtendedHashMap service;
-		if((Boolean)details){
+		if(details != null && (Boolean)details){
 			service = new ExtendedHashMap();
 			service.put(Event.KEY_EVENT_ID, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_ID));
 			service.put(Event.KEY_EVENT_START, mCurrentService.getString(Event.PREFIX_NEXT + Event.KEY_EVENT_START));
