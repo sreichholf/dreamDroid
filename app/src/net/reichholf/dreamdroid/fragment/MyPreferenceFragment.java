@@ -128,6 +128,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 			case PiconDownloadTask.DownloadProgress.EVENT_ID_FINISHED:
 				mProgressDialog.setCancelable(true);
 				mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+				Picon.clearCache();
 				if (!progress.error) {
 					message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
 				} else {
