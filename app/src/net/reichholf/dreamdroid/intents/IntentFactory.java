@@ -10,12 +10,10 @@ import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -63,7 +61,7 @@ public class IntentFactory {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("file", fileName));
+		params.add(new NameValuePair("file", fileName));
 		Uri uri = Uri.parse(shc.buildFileStreamUrl(URIStore.FILE, params));
 		Log.i(DreamDroid.LOG_TAG, "Streaming file: " + uri.getEncodedQuery());
 

@@ -34,6 +34,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -45,9 +46,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequest
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.widget.CheckableImageButton;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
@@ -203,14 +201,14 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	 */
 	public void onSetSleepTimer(String time, String action, boolean enabled) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("cmd", SleepTimer.CMD_SET));
-		params.add(new BasicNameValuePair("time", time));
-		params.add(new BasicNameValuePair("action", action));
+		params.add(new NameValuePair("cmd", SleepTimer.CMD_SET));
+		params.add(new NameValuePair("time", time));
+		params.add(new NameValuePair("action", action));
 
 		if (enabled) {
-			params.add(new BasicNameValuePair("enabled", Python.TRUE));
+			params.add(new NameValuePair("enabled", Python.TRUE));
 		} else {
-			params.add(new BasicNameValuePair("enabled", Python.FALSE));
+			params.add(new NameValuePair("enabled", Python.FALSE));
 		}
 
 		execSleepTimerTask(params, false);

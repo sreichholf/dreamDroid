@@ -26,6 +26,7 @@ import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -35,9 +36,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 /**
@@ -226,7 +224,7 @@ public class DreamDroidHttpFragmentHelper {
 	@SuppressWarnings("unchecked")
 	private void onVolumeButtonClicked(String set) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("set", set));
+		params.add(new NameValuePair("set", set));
 		if (mVolumeTask != null) {
 			mVolumeTask.cancel(true);
 		}
@@ -310,7 +308,7 @@ public class DreamDroidHttpFragmentHelper {
 
 	public void zapTo(String ref) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("sRef", ref));
+		params.add(new NameValuePair("sRef", ref));
 		execSimpleResultTask(new ZapRequestHandler(), params);
 	}
 

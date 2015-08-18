@@ -35,13 +35,11 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.loader.AsyncByteLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -278,11 +276,11 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 		switch (mType) {
 			case (TYPE_OSD):
-				params.add(new BasicNameValuePair("o", ""));
-				params.add(new BasicNameValuePair("n", ""));
+				params.add(new NameValuePair("o", ""));
+				params.add(new NameValuePair("n", ""));
 				break;
 			case (TYPE_VIDEO):
-				params.add(new BasicNameValuePair("v", ""));
+				params.add(new NameValuePair("v", ""));
 				break;
 			case (TYPE_ALL):
 				break;
@@ -290,20 +288,20 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 
 		switch (mFormat) {
 			case (FORMAT_JPG):
-				params.add(new BasicNameValuePair("format", "jpg"));
+				params.add(new NameValuePair("format", "jpg"));
 				break;
 			case (FORMAT_PNG):
-				params.add(new BasicNameValuePair("format", "png"));
+				params.add(new NameValuePair("format", "png"));
 				break;
 		}
 
-		params.add(new BasicNameValuePair("r", String.valueOf(mSize)));
+		params.add(new NameValuePair("r", String.valueOf(mSize)));
 
 		if (mFilename == null) {
 			long ts = (new GregorianCalendar().getTimeInMillis()) / 1000;
 			mFilename = "/tmp/dreamDroid-" + ts;
 		}
-		params.add(new BasicNameValuePair("filename", mFilename));
+		params.add(new NameValuePair("filename", mFilename));
 
 		Bundle args = new Bundle();
 		args.putString("uri", URIStore.SCREENSHOT);

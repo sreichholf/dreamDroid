@@ -17,10 +17,8 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.TimerEditFragment;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -151,26 +149,26 @@ public class Timer {
 		// Build Parameters using timer HashMap
 		ArrayList<NameValuePair> params = new ArrayList<>();
 
-		params.add(new BasicNameValuePair("sRef", timer.getString(KEY_REFERENCE)));
-		params.add(new BasicNameValuePair("begin", timer.getString(KEY_BEGIN)));
-		params.add(new BasicNameValuePair("end", timer.getString(KEY_END)));
-		params.add(new BasicNameValuePair("name", timer.getString(KEY_NAME)));
-		params.add(new BasicNameValuePair("description", timer.getString(KEY_DESCRIPTION)));
-		params.add(new BasicNameValuePair("dirname", timer.getString(KEY_LOCATION)));
-		params.add(new BasicNameValuePair("tags", timer.getString(KEY_TAGS)));
-		params.add(new BasicNameValuePair("eit", timer.getString(KEY_EIT)));
-		params.add(new BasicNameValuePair("disabled", timer.getString(KEY_DISABLED)));
-		params.add(new BasicNameValuePair("justplay", timer.getString(KEY_JUST_PLAY)));
-		params.add(new BasicNameValuePair("afterevent", timer.getString(KEY_AFTER_EVENT)));
-		params.add(new BasicNameValuePair("repeated", timer.getString(KEY_REPEATED)));
+		params.add(new NameValuePair("sRef", timer.getString(KEY_REFERENCE)));
+		params.add(new NameValuePair("begin", timer.getString(KEY_BEGIN)));
+		params.add(new NameValuePair("end", timer.getString(KEY_END)));
+		params.add(new NameValuePair("name", timer.getString(KEY_NAME)));
+		params.add(new NameValuePair("description", timer.getString(KEY_DESCRIPTION)));
+		params.add(new NameValuePair("dirname", timer.getString(KEY_LOCATION)));
+		params.add(new NameValuePair("tags", timer.getString(KEY_TAGS)));
+		params.add(new NameValuePair("eit", timer.getString(KEY_EIT)));
+		params.add(new NameValuePair("disabled", timer.getString(KEY_DISABLED)));
+		params.add(new NameValuePair("justplay", timer.getString(KEY_JUST_PLAY)));
+		params.add(new NameValuePair("afterevent", timer.getString(KEY_AFTER_EVENT)));
+		params.add(new NameValuePair("repeated", timer.getString(KEY_REPEATED)));
 
 		if (timerOld != null) {
-			params.add(new BasicNameValuePair("channelOld", timerOld.getString(KEY_REFERENCE)));
-			params.add(new BasicNameValuePair("beginOld", timerOld.getString(KEY_BEGIN)));
-			params.add(new BasicNameValuePair("endOld", timerOld.getString(KEY_END)));
-			params.add(new BasicNameValuePair("deleteOldOnSave", "1"));
+			params.add(new NameValuePair("channelOld", timerOld.getString(KEY_REFERENCE)));
+			params.add(new NameValuePair("beginOld", timerOld.getString(KEY_BEGIN)));
+			params.add(new NameValuePair("endOld", timerOld.getString(KEY_END)));
+			params.add(new NameValuePair("deleteOldOnSave", "1"));
 		} else {
-			params.add(new BasicNameValuePair("deleteOldOnSave", "0"));
+			params.add(new NameValuePair("deleteOldOnSave", "0"));
 		}
 		
 		return params;
@@ -179,8 +177,8 @@ public class Timer {
 	public static ArrayList<NameValuePair> getEventIdParams(ExtendedHashMap event){
 		ArrayList<NameValuePair> params = new ArrayList<>();
 
-		params.add(new BasicNameValuePair("sRef", event.getString(Event.KEY_SERVICE_REFERENCE)));
-		params.add(new BasicNameValuePair("eventid", event.getString(Event.KEY_EVENT_ID)));
+		params.add(new NameValuePair("sRef", event.getString(Event.KEY_SERVICE_REFERENCE)));
+		params.add(new NameValuePair("eventid", event.getString(Event.KEY_EVENT_ID)));
 		
 		return params;
 	}
@@ -189,9 +187,9 @@ public class Timer {
 		// URL - web/timerdelete?sRef=&begin=&end=
 		ArrayList<NameValuePair> params = new ArrayList<>();
 
-		params.add(new BasicNameValuePair("sRef", timer.getString(KEY_REFERENCE)));
-		params.add(new BasicNameValuePair("begin", timer.getString(KEY_BEGIN)));
-		params.add(new BasicNameValuePair("end", timer.getString(KEY_END)));
+		params.add(new NameValuePair("sRef", timer.getString(KEY_REFERENCE)));
+		params.add(new NameValuePair("begin", timer.getString(KEY_BEGIN)));
+		params.add(new NameValuePair("end", timer.getString(KEY_END)));
 		
 		return params;
 	}
