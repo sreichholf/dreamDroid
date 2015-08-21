@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.0 rc9" versioncode="285">
+    <release version="1.0" versioncode="289">
+        <change>dreamDroid is officially out of beta</change>
+    </release>
+    <release version="1.0 rc9" versioncode="288">
         <change>NEW: Add "Next Event" to servicelist pop-over</change>
         <change>FIX: Some minor issues have been fixed</change>
     </release>
