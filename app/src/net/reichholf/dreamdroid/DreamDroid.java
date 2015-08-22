@@ -6,12 +6,14 @@
 
 package net.reichholf.dreamdroid;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.os.Build;
+import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.util.Log;
 
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -22,18 +24,14 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
 
-import android.app.Application;
-
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.os.Build;
-import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
-import android.util.Log;
-
 import org.piwik.sdk.PiwikApplication;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * @author sre
@@ -112,20 +110,10 @@ public class DreamDroid extends PiwikApplication {
 		return "https://reichholf.net/piwik/piwik.php";
 	}
 
-	/**
-	 * AuthToken is deprecated in Piwik >= 2.8.0 due to security reasons.
-	 * @return token or null
-	 */
-	@Override
-	public String getAuthToken() {
-		return null;
-	}
-
 	@Override
 	public Integer getSiteId() {
 		return 2;
 	}
-
 
 	/*
 	 * (non-Javadoc)

@@ -144,12 +144,12 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		if(!DreamDroid.isTrackingEnabled(this))
 			return;
 		// do not send http requests
-		((PiwikApplication) getApplication()).getGlobalSettings().setDryRun(false);
+		((PiwikApplication) getApplication()).getPiwik().setDryRun(false);
 
 		((PiwikApplication) getApplication()).getTracker()
 				.setDispatchInterval(5)
-				.trackAppDownload()
-				.reportUncaughtExceptions(true);
+				.trackAppDownload();
+
 	}
 
 	@Override
