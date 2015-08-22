@@ -41,7 +41,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.NotificationCompat;
+import android.app.Notification;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -375,16 +375,14 @@ public class MemorizingTrustManager implements X509TrustManager {
 
 	@SuppressWarnings("deprecation")
 	void startActivityNotification(Intent intent, String certName) {
-		Notification n = new NotificationCompat.Builder(master)
-				.setLargeIcon(BitmapFactory.decodeResource(master.getResources(), android.R.drawable.ic_lock_lock))
-				.setContentText(master.getString(R.string.mtm_notification)).build();
-		
 		PendingIntent call = PendingIntent.getActivity(master, 0, intent, 0);
-		n.setLatestEventInfo(master.getApplicationContext(),
-				master.getString(R.string.mtm_notification),
-				certName, call);
-		n.flags |= Notification.FLAG_AUTO_CANCEL;
+		Notification n = new Notification.Builder(master)
+				.setLargeIcon(BitmapFactory.decodeResource(master.getResources(), android.R.drawable.ic_lock_lock))
+				.setContentText(master.getString(R.string.mtm_notification))
+				.setContentIntent(call)
+				.build();
 
+		n.flags |= Notification.FLAG_AUTO_CANCEL;
 		notificationManager.notify(NOTIFICATION_ID, n);
 	}
 
