@@ -12,13 +12,11 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.os.Bundle;
 import android.support.v4.content.Loader;
@@ -75,7 +73,7 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("sRef", mReference));
+		params.add(new NameValuePair("sRef", mReference));
 		return params;
 	}
 

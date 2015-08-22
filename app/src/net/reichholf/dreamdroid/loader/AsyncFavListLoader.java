@@ -5,11 +5,9 @@ import android.os.Bundle;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
@@ -25,7 +23,7 @@ public class AsyncFavListLoader extends AsyncListLoader {
 	public LoaderResult<ArrayList<ExtendedHashMap>> loadInBackground() {
 		mList = new ArrayList<>();
 		LoaderResult<ArrayList<ExtendedHashMap>> result = new LoaderResult<>();
-		String ref = mParams.get(0).getValue();
+		String ref = mParams.get(0).value();
 
 		if(ref.equals(REF_FAVS)) {
 			ref = getContext().getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
@@ -45,7 +43,7 @@ public class AsyncFavListLoader extends AsyncListLoader {
 
 	public ArrayList<ExtendedHashMap> loadBouquet(String ref){
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("bRef", ref));
+		params.add(new NameValuePair("bRef", ref));
 
 		ArrayList<ExtendedHashMap> list = new ArrayList<>();
 		String xml = mListRequestHandler.getList(mShc, params);

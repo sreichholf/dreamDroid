@@ -2,19 +2,16 @@ package net.reichholf.dreamdroid.appwidget;
 
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
 import net.reichholf.dreamdroid.service.HttpIntentService;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
@@ -50,8 +47,8 @@ public class WidgetService extends HttpIntentService {
 		SimpleHttpClient shc = SimpleHttpClient.getInstance(profile);
 		RemoteCommandRequestHandler handler = new RemoteCommandRequestHandler();
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("command", intent.getStringExtra(KEY_KEYID)));
-		params.add(new BasicNameValuePair("rcu", "advanced"));
+		params.add(new NameValuePair("command", intent.getStringExtra(KEY_KEYID)));
+		params.add(new NameValuePair("rcu", "advanced"));
 		String xml = handler.get(shc, params);
 
 		if (xml != null) {

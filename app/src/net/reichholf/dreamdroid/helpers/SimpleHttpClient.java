@@ -16,14 +16,9 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.util.Base64;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.ByteArrayBuffer;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -104,7 +99,7 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String buildUrl(String uri, List<NameValuePair> parameters) {
-		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
+		String parms = NameValuePair.toString(parameters);
 		if(!uri.contains("?"))
 			uri += "?";
 		return mPrefix + mProfile.getHost() + ":" + mProfile.getPortString() + uri + parms;
@@ -117,7 +112,7 @@ public class SimpleHttpClient {
 	 */
 	public String buildServiceStreamUrl(String ref, String title) {
 		try {
-			ref = URLEncoder.encode(ref, HTTP.UTF_8).replace("+", "%20");
+			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
 		} catch (UnsupportedEncodingException e) {
 		}
 		String streamLoginString = "";
@@ -134,7 +129,8 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
-		String parms = URLEncodedUtils.format(parameters, HTTP.UTF_8).replace("+", "%20");
+
+		String parms = NameValuePair.toString(parameters);
 		String fileAuthString = "";
 		if (mProfile.isFileLogin())
 			fileAuthString = mProfile.getUser() + ":" + mProfile.getPass() + "@";
@@ -175,7 +171,7 @@ public class SimpleHttpClient {
 		HttpURLConnection conn = null;
 		try {
 			if(mProfile.getSessionId() != null)
-				parameters.add(new BasicNameValuePair("sessionid", mProfile.getSessionId()));
+				parameters.add(new NameValuePair("sessionid", mProfile.getSessionId()));
 			URL url = new URL(buildUrl(uri, parameters));
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setConnectTimeout(mConnectionTimeoutMillis);
@@ -212,15 +208,15 @@ public class SimpleHttpClient {
 			}
 
 			BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
-			ByteArrayBuffer baf = new ByteArrayBuffer(50);
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			int read = 0;
 			int bufSize = 512;
 			byte[] buffer = new byte[bufSize];
 			while ((read = bis.read(buffer)) != -1) {
-				baf.append(buffer, 0, read);
+				bos.write(buffer, 0, read);
 			}
 
-			mBytes = baf.toByteArray();
+			mBytes = bos.toByteArray();
 			if (DreamDroid.dumpXml())
 				dumpToFile(url);
 			return true;

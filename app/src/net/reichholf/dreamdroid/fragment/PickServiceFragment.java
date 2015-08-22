@@ -12,13 +12,11 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.loader.AsyncFavListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
@@ -59,7 +57,7 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment {
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("bRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
+		params.add(new NameValuePair("bRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
 		return params;
 	}
 

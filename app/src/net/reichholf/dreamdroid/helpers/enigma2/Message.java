@@ -9,9 +9,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 
 /**
  * @author sreichholf
@@ -27,9 +25,9 @@ public class Message extends SimpleResult {
 	
 	public static ArrayList<NameValuePair> getParams(ExtendedHashMap message){
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("text", message.getString(KEY_TEXT)));
-		params.add(new BasicNameValuePair("type", message.getString(KEY_TYPE)));
-		params.add(new BasicNameValuePair("timeout", message.getString(KEY_TIMEOUT)));
+		params.add(new NameValuePair("text", message.getString(KEY_TEXT)));
+		params.add(new NameValuePair("type", message.getString(KEY_TYPE)));
+		params.add(new NameValuePair("timeout", message.getString(KEY_TIMEOUT)));
 		
 		return params;
 	}

@@ -6,11 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import net.reichholf.dreamdroid.helpers.NameValuePair;
+
 import java.util.ArrayList;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 
 /**
  * @author sre
@@ -29,7 +27,7 @@ public class PowerState {
 	
 	public static ArrayList<NameValuePair> getStateParams(String state){
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("newstate", state) );
+		params.add(new NameValuePair("newstate", state) );
 		
 		return params;
 	}

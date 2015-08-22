@@ -11,14 +11,12 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
@@ -48,7 +46,7 @@ public class EpgDatabase {
         SimpleHttpClient shc = SimpleHttpClient.getInstance(DreamDroid.getCurrentProfile());
 		ServiceListRequestHandler slh = new ServiceListRequestHandler();
 		ArrayList<NameValuePair> args = new ArrayList<>();
-		args.add(new BasicNameValuePair("sRef", reference));
+		args.add(new NameValuePair("sRef", reference));
 
 		String xml = slh.getList(shc, args);
 		ArrayList<ExtendedHashMap> services = new ArrayList<>();
@@ -73,7 +71,7 @@ public class EpgDatabase {
 		SimpleHttpClient shc = SimpleHttpClient.getInstance(DreamDroid.getCurrentProfile());
 		EventListRequestHandler elh = new EventListRequestHandler();
 		ArrayList<NameValuePair> args = new ArrayList<>();
-		args.add(new BasicNameValuePair("sRef", reference));
+		args.add(new NameValuePair("sRef", reference));
 
 		String xml = elh.getList(shc, args);
 		ArrayList<ExtendedHashMap> events = new ArrayList<>();

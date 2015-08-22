@@ -42,6 +42,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.SyncService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -54,9 +55,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -687,7 +685,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 				mHttpHelper.onLoadFinished();
 				return;
 			}
-			params.add(new BasicNameValuePair("sRef", ref));
+			params.add(new NameValuePair("sRef", ref));
 			mNavHttpParams = params;
 			mHttpHelper.reload(LOADER_BOUQUETLIST_ID);
 		} else {
@@ -700,7 +698,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 			String param = "bRef";
 			if (mPickMode)
 				param = "sRef";
-			params.add(new BasicNameValuePair(param, ref));
+			params.add(new NameValuePair(param, ref));
 
 			mDetailHttpParams = params;
 			mHttpHelper.reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
