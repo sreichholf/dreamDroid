@@ -103,4 +103,8 @@ public class Picon {
 
 		ImageLoader.getInstance().displayImage("file://" + fileName, piconView, sDisplayOptions, animateImageDisplayListener);
 	}
+
+	public static void clearCache() {
+		ImageLoader.getInstance().clearMemoryCache();
+	}
 }

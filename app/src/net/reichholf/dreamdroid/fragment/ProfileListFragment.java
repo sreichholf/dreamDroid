@@ -90,7 +90,8 @@ public class ProfileListFragment extends BaseRecyclerFragment implements ActionD
 
 		@Override
 		protected void onPostExecute(ArrayList<Profile> profiles) {
-			onDevicesDetected(profiles);
+			if(!isCancelled())
+				onDevicesDetected(profiles);
 		}
 	}
 
@@ -281,7 +282,8 @@ public class ProfileListFragment extends BaseRecyclerFragment implements ActionD
 		reloadProfiles();
 		if (savedInstanceState != null) {
 			int pos = savedInstanceState.getInt("cursorPosition");
-			mProfile = mProfiles.get(pos);
+			if(pos < mProfiles.size())
+				mProfile = mProfiles.get(pos);
 		}
 
 //		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {

@@ -174,6 +174,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		initTitle(getString(R.string.mediaplayer));
 
 		mPlaylist = new ArrayList<>();
+		mMediaInfo = new ExtendedHashMap();
 		if (savedInstanceState != null) {
 			mMediaIndex = savedInstanceState.getInt(STATE_MEDIA_INDEX, -1);
 			if (mMediaIndex < 0)
@@ -381,7 +382,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	 * @author Get current media information async
 	 */
 	private class GetCurrentMediaInfoTask extends AsyncTask<String, String, Boolean> {
-		// protected ExtendedHashMap mMediaInfo;
 
 		@Override
 		protected Boolean doInBackground(String... params) {
@@ -415,7 +415,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-
+			if(isCancelled())
+				return;
 			String title = getCurrentTitle();
 
 			if (result) {
@@ -449,16 +450,16 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 	public void setMediaInfo(ExtendedHashMap map) {
 		TextView artist = (TextView) getView().findViewById(R.id.artist);
+		TextView title = (TextView) getView().findViewById(R.id.title);
 		// TextView album = (TextView) getView().findViewById(R.id.album);
 		// TextView year = (TextView) getView().findViewById(R.id.year);
 		// TextView category = (TextView) getView().findViewById(R.id.category);
-		TextView title = (TextView) getView().findViewById(R.id.title);
 
 		artist.setText(map.getString(Mediaplayer.KEY_ARTIST));
+		title.setText(map.getString(Mediaplayer.KEY_TITLE));
 		// album.setText(map.getString(Mediaplayer.KEY_ALBUM));
 		// year.setText(map.getString(Mediaplayer.KEY_YEAR));
 		// category.setText(map.getString(Mediaplayer.KEY_GENRE));
-		title.setText(map.getString(Mediaplayer.KEY_TITLE));
 	}
 
 	/**

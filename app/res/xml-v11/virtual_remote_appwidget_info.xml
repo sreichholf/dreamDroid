@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:minWidth="294dp"
-                    android:minHeight="320dp"
-                    android:minResizeWidth="294dp"
-                    android:minResizeHeight="320dp"
+                    android:minWidth="318dp"
+                    android:minHeight="318dp"
+                    android:minResizeWidth="318dp"
+                    android:minResizeHeight="318dp"
                     android:previewImage="@mipmap/ic_launcher"
                     android:initialLayout="@layout/virtual_remote_appwidget"
                     android:configure="net.reichholf.dreamdroid.appwidget.VirtualRemoteWidgetConfiguration"

@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0.1" versioncode="290">
+        <change>Behebt Abstürze unter Android 4.0.3 (woraround für https://code.google.com/p/android/issues/detail?id=183129)</change>
+    </release>
+    <release version="1.0" versioncode="289">
+        <change>dreamDroid hat offiziell die Betaphase verlassen</change>
+    </release>
+    <release version="1.0 rc9" versioncode="288">
+        <change>NEU: "Nächste Sendung" in der Kanalliste</change>
+        <change>FIX: Ein paar kleinere Probleme wurden behoben</change>
+    </release>
+    <release version=".10 rc8" versioncode="284">
+        <change>FIX: In-App purchase Absturz</change>
+    </release>
+    <release version=".10 rc7" versioncode="283">
+        <change>NEU: Datenschutzerklärung hinzugefügt</change>
+        <change>FIX: Kleinere Bugfixes</change>
+    </release>
+    <release version="1.0 rc6" versioncode="281">
+        <change>NEU: Sammeln anonymer Stastiken. Kann in den Einstellungen deaktiviert werden.</change>
+        <change>NEU: Wechsel zu Google's SnackBar Implementierung</change>
+        <change>FIX: Einige Abstürze wurde behoben</change>
+    </release>
+    <release version="1.0 rc5" versioncode="280">
+        <change>FIX: Im Virtual Remote Widget funktionieren im großen Layout nun alle Tasten wie erwartet</change>
+        <change>FIX: Bei "Version &lt; 1.6.5" öffnet sich keine Snackbar mehr</change>
+    </release>
+    <release version="1.0 rc4" versioncode="279">
+        <change>FIX: Kleinere Verbesserungen am Virtual Remote Widget</change>
+        <change>FIX: Abstürzende Kanalliste unter Android &lt; 3.0</change>
+        <change>FIX: Absturz in den Einstellungen</change>
+    </release>
     <release version="1.0 rc3" versioncode="278">
         <change>NEU: Änderung des Themes ohne Neustart unter Android >= 3.0</change>
         <change>NEU: EPG Option für Aufnahmen</change>

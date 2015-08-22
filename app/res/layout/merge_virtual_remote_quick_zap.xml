@@ -167,14 +167,14 @@
             android:src="@drawable/ic_key_down"/>
 
         <Button
-            android:id="@+id/ButtonVideo"
+            android:id="@+id/ButtonPvr"
             style="@style/RemoteButton.Big"
             android:layout_width="@dimen/remote_key_width_big"
             android:layout_height="@dimen/remote_key_height_big"
             android:layout_below="@id/ButtonRight"
             android:layout_toRightOf="@id/ButtonDown"
             android:background="@drawable/button_key_dark"
-            android:text="Video"/>
+            android:text="PVR"/>
     </RelativeLayout>
 
     <RelativeLayout

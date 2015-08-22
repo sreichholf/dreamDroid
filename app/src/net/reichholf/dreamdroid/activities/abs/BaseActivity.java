@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.activities.abs;
 
+import android.app.DialogFragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +11,8 @@ import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.util.IabException;
@@ -18,9 +22,12 @@ import net.reichholf.dreamdroid.util.Inventory;
 import net.reichholf.dreamdroid.util.Purchase;
 import net.reichholf.dreamdroid.util.SkuDetails;
 
+import org.piwik.sdk.PiwikApplication;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -31,7 +38,7 @@ import de.duenndns.ssl.MemorizingTrustManager;
 /**
  * Created by Stephan on 06.11.13.
  */
-public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity implements ActionDialog.DialogActionListener {
 	private static String TAG = BaseActivity.class.getSimpleName();
 
 	private MemorizingTrustManager mTrustManager;
@@ -96,6 +103,7 @@ public class BaseActivity extends AppCompatActivity {
 		}
 
 		initIAB();
+		initPiwik();
 	}
 
 	private void initIAB() {
@@ -120,6 +128,28 @@ public class BaseActivity extends AppCompatActivity {
 				mIabHelper.queryInventoryAsync(true, skuList, mQueryInventoryFinishedListener);
 			}
 		});
+	}
+
+	public void showPrivacyStatement() {
+		PositiveNegativeDialog dialog = PositiveNegativeDialog.newInstance(getString(R.string.privacy_statement_title), R.string.privacy_statement, android.R.string.yes, Statics.ACTION_STATISTICS_AGREED, android.R.string.no, Statics.ACTION_STATISTICS_DENIED);
+		dialog.show(getSupportFragmentManager(), "privacy_statement_dialog");
+	}
+
+	private void initPiwik() {
+		if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, false)) {
+			showPrivacyStatement();
+			return;
+		}
+
+		if(!DreamDroid.isTrackingEnabled(this))
+			return;
+		// do not send http requests
+		((PiwikApplication) getApplication()).getGlobalSettings().setDryRun(false);
+
+		((PiwikApplication) getApplication()).getTracker()
+				.setDispatchInterval(5)
+				.trackAppDownload()
+				.reportUncaughtExceptions(true);
 	}
 
 	@Override
@@ -170,6 +200,8 @@ public class BaseActivity extends AppCompatActivity {
 	}
 
 	public void consumeAll(Inventory inventory) {
+		if(inventory == null || mIabHelper == null)
+			return;
 		ArrayList<Purchase> purchases = new ArrayList<>();
 		for (String sku : DreamDroid.SKU_LIST) {
 			if (inventory.hasPurchase(sku)) {
@@ -204,5 +236,17 @@ public class BaseActivity extends AppCompatActivity {
 		super.onDestroy();
 		if (mIabHelper != null) mIabHelper.dispose();
 		mIabHelper = null;
+	}
+
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
+		if(action == Statics.ACTION_STATISTICS_AGREED || action == Statics.ACTION_STATISTICS_DENIED) {
+			boolean enabled = action == Statics.ACTION_STATISTICS_AGREED;
+			SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(this).edit();
+			prefs.putBoolean(DreamDroid.PREFS_KEY_ALLOW_TRACKING, enabled);
+			prefs.putBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, true);
+			prefs.commit();
+			initPiwik();
+		}
 	}
 }

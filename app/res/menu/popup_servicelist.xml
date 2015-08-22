@@ -6,6 +6,11 @@
         dreamDroid:showAsAction="never"
         android:title="@string/current_event"/>
     <item
+        android:id="@+id/menu_next_event"
+        dreamDroid:showAsAction="never"
+        android:title="@string/next_event"
+        android:visible="false"/>
+    <item
         android:id="@+id/menu_browse_epg"
         dreamDroid:showAsAction="never"
         android:title="@string/browse_epg"/>

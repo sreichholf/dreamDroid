@@ -15,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -33,9 +34,6 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.nispok.snackbar.Snackbar;
-import com.nispok.snackbar.SnackbarManager;
-import com.nispok.snackbar.listeners.ActionClickListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -57,6 +55,8 @@ import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+
+import org.piwik.sdk.PiwikApplication;
 
 import java.util.Arrays;
 import java.util.List;
@@ -88,6 +88,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private ActionBarDrawerToggle mDrawerToggle;
 	private DrawerLayout mDrawerLayout;
+
+	private Snackbar mSnackbar;
 
 	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
 		private Profile mProfile;
@@ -125,8 +127,15 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		@Override
 		protected void onPostExecute(ExtendedHashMap result) {
 			Log.i(TAG, result.toString());
-			if (!this.isCancelled())
+			if (!isCancelled())
 				onProfileChecked(result);
+		}
+	}
+
+	private void dismissSnackbar(){
+		if(mSnackbar != null) {
+			mSnackbar.dismiss();
+			mSnackbar = null;
 		}
 	}
 
@@ -134,22 +143,19 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
 
-		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR)) {
+		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR) && !(Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 			setConnectionState(error, true);
-			SnackbarManager.show(
-					Snackbar.with(this)
-							.margin(15, 15)
-							.text(error)
-							.textColorResource(R.color.material_red_500)
-							.duration(Snackbar.SnackbarDuration.LENGTH_INDEFINITE)
-							.actionLabel(R.string.more)
-							.actionListener(new ActionClickListener() {
-								@Override
-								public void onActionClicked(Snackbar snackbar) {
-									showErrorDetails(result);
-								}
-							}));
+			dismissSnackbar();
+			mSnackbar = Snackbar.make(findViewById(R.id.drawer_layout), error, Snackbar.LENGTH_INDEFINITE)
+					.setAction(R.string.more, new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							showErrorDetails(result);
+						}
+					});
+			mSnackbar.show();
+
 
 			if (isFirstStart)
 				for (int i = 0; i < NavigationFragment.MENU_ITEMS.length; i++) {
@@ -157,8 +163,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 						mNavigationFragment.setSelectedItem(i);
 				}
 		} else {
-			SnackbarManager.dismiss();
-			setConnectionState(getString(R.string.ok), true);
+			dismissSnackbar();
+			if((Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)){
+				String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
+				setConnectionState(error, true);
+			} else {
+				setConnectionState(getString(R.string.ok), true);
+			}
 			mNavigationFragment.setAvailableFeatures();
 			if (getCurrentDetailFragment() == null) {
 				mNavigationFragment.setSelectedItem(0);
@@ -309,7 +320,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 				public void onDrawerOpened(View drawerView) {
 					supportInvalidateOptionsMenu();
-					SnackbarManager.dismiss();
+					dismissSnackbar();
 				}
 			};
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -509,14 +520,16 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale,
-					R.anim.activity_close_translate);
+			if(Build.VERSION.SDK_INT != 15)
+				ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
 
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {
 			ft.addToBackStack(null);
 		}
 		ft.commit();
+		if(DreamDroid.isTrackingEnabled(this))
+			((PiwikApplication) getApplication()).getTracker().trackScreenView(fragment.getClass().getSimpleName(), fragment.getClass().getSimpleName());
 	}
 
 	@Override
@@ -642,6 +655,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		} else if (mDetailFragment != null) {
 			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
 		}
+		super.onDialogAction(action, details, dialogTag);
 	}
 
 	private boolean isNavigationDialog(String dialogTag) {

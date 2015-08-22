@@ -31,6 +31,7 @@ public class CheckProfile {
 	public static final int[] FEATURE_POST_REQEUEST = { 1, 7, 3 };
 
 	public static final String KEY_HAS_ERROR = "error";
+	public static final String KEY_SOFT_ERROR = "soft_error";
 	public static final String KEY_VALUE = "value";
 	public static final String KEY_ERROR_TEXT = "text";
 	public static final String KEY_ERROR_TEXT_EXT = "text_ext";
@@ -77,7 +78,6 @@ public class CheckProfile {
 									deviceInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 
 							String version = deviceInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION, "0");
-
 							int vc = checkVersion(version);
 							if (vc >= 0) {
 								int[] requiredForSleeptimer = { 1, 6, 5 };
@@ -94,7 +94,7 @@ public class CheckProfile {
 							} else {
 								addEntry(resultList, R.string.interface_version, true, version,
 										R.string.version_too_low);
-								setError(checkResult, true, R.string.version_too_low);
+								setError(checkResult, true, true, R.string.version_too_low);
 							}
 						} else {
 							// TODO Parser-Error
@@ -176,33 +176,29 @@ public class CheckProfile {
 		resultList.add(entry);
 	}
 
-	/**
-	 * @param resultList
-	 * @param checkTypeId
-	 * @param hasError
-	 * @param value
-	 */
 	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value) {
 		addEntry(resultList, checkTypeId, hasError, value, -1);
 	}
 
-	/**
-	 * @param checkResult
-	 * @param hasError
-	 */
 	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId) {
-		setError(checkResult, hasError, errorTextId, null);
+		setError(checkResult, hasError, false, errorTextId, null);
 	}
 
-	/**
-	 * @param checkResult
-	 * @param hasError
-	 */
 	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId, String extendedText) {
+		setError(checkResult, hasError, false, errorTextId, extendedText);
+	}
+
+	private static void setError(ExtendedHashMap checkResult, boolean hasError, boolean isSoftError, int errorTextId) {
+		setError(checkResult, hasError, isSoftError, errorTextId, null);
+	}
+
+	private static void setError(ExtendedHashMap checkResult, boolean hasError, boolean isSoftError, int errorTextId, String extendedText) {
 		checkResult.put(KEY_HAS_ERROR, hasError);
+		checkResult.put(KEY_SOFT_ERROR, isSoftError);
 		checkResult.put(KEY_ERROR_TEXT, errorTextId);
 		if (extendedText == null)
 			extendedText = "";
 		checkResult.put(KEY_ERROR_TEXT_EXT, extendedText);
+
 	}
 }

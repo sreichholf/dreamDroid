@@ -242,7 +242,7 @@ public class ScreenShotFragment extends BaseFragment implements
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		if(mScannerConn != null)
+		if (mScannerConn != null)
 			mScannerConn.disconnect();
 		outState.putByteArray("rawImage", mRawImage);
 	}
@@ -264,7 +264,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	 * @param bytes
 	 */
 	private void onScreenshotAvailable(byte[] bytes) {
-		if (this.isDetached())
+		if (!isAdded())
 			return;
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));

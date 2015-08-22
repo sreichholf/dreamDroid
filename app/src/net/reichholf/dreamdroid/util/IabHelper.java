@@ -627,17 +627,20 @@ public class IabHelper {
                     result = ex.getResult();
                 }
 
+                boolean isValid = !mDisposed && !mDisposeRequested && listener != null;
                 flagEndAsync();
 
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
-                if (!mDisposed && !mDisposeRequested && listener != null) {
+
+                if (isValid) {
                     handler.post(new Runnable() {
                         public void run() {
                             listener.onQueryInventoryFinished(result_f, inv_f);
                         }
                     });
                 }
+
             }
         })).start();
     }

@@ -327,6 +327,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {
+			mAdapter.notifyDataSetChanged();
 			setEmptyText(result.getErrorText());
 			return;
 		}

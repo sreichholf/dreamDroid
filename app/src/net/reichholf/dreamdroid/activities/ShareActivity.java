@@ -86,6 +86,8 @@ public class ShareActivity extends ListActivity {
 		}
 
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			ShareActivity.this.setProgressBarIndeterminateVisibility(false);
 
 			if (!result || mResult == null) {

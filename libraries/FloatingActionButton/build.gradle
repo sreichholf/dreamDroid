@@ -13,22 +13,13 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    compile 'com.android.support:support-v4:22.+'
-}
-
 android {
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
+}
 
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            res.srcDirs = ['res']
-        }
-    }
-    lintOptions {
-        abortOnError false
-    }
+dependencies {
+    compile 'com.android.support:support-annotations:20.0.0'
+    compile 'com.android.support:recyclerview-v7:22.+'
+    compile 'com.nineoldandroids:library:2.4.0'
 }

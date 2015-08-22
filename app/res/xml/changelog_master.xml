@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0.1" versioncode="290">
+        <change>Fixes crashes on Android 4.0.3 (woraround for https://code.google.com/p/android/issues/detail?id=183129)</change>
+    </release>
+    <release version="1.0" versioncode="289">
+        <change>dreamDroid is officially out of beta</change>
+    </release>
+    <release version="1.0 rc9" versioncode="288">
+        <change>NEW: Add "Next Event" to servicelist pop-over</change>
+        <change>FIX: Some minor issues have been fixed</change>
+    </release>
+    <release version="1.0 rc8" versioncode="284">
+        <change>FIX: In-App purchase chrash</change>
+    </release>
+    <release version="1.0 rc7" versioncode="283">
+        <change>NEW: Add Privacy Statement</change>
+        <change>FIX: Minor bugfixes</change>
+    </release>
+    <release version="1.0 rc6" versioncode="281">
+        <change>NEW: Gather anonymized statistics, you can opt out at any time in the settings</change>
+        <change>NEW: Switch to Google's SnackBar implementation</change>
+        <change>FIX: Fix some crashes</change>
+    </release>
+    <release version="1.0 rc5" versioncode="280">
+        <change>FIX: All keys of the full virtual remote widget do now work as expected</change>
+        <change>FIX: Version &lt; 1.6.5 no longer causes a SnackBar to show</change>
+    </release>
+    <release version="1.0 rc4" versioncode="279">
+        <change>FIX: Improve Virtual Remote Widget a bit</change>
+        <change>FIX: Crashing Servicelist on Android &lt; 3.0</change>
+        <change>FIX: Crash in the preferences</change>
+    </release>
     <release version="1.0 rc3" versioncode="278">
         <change>NEW: Theme changes are now immediate on Android >= 3.0</change>
         <change>NEW: EPG option for recordings</change>

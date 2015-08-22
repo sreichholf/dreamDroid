@@ -64,7 +64,8 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 		boolean isDebuggable = (0 != (getActivity().getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
 		if(!isDebuggable) {
 			Preference dev = findPreference("developer");
-			getPreferenceScreen().removePreference(dev);
+			if(dev != null) //Already removed?
+				getPreferenceScreen().removePreference(dev);
 		}
 	}
 
@@ -127,6 +128,7 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 			case PiconDownloadTask.DownloadProgress.EVENT_ID_FINISHED:
 				mProgressDialog.setCancelable(true);
 				mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+				Picon.clearCache();
 				if (!progress.error) {
 					message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
 				} else {

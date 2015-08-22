@@ -2,6 +2,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orderingFromXml="true">
 
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="allow_tracking"
+        android:summary="@string/allow_tracking_long"
+        android:title="@string/allow_tracking"/>
+
     <PreferenceCategory
         android:key="category_usability"
         android:title="@string/usability">
@@ -93,14 +99,14 @@
             android:title="@string/developer_settings_enable"/>
 
         <CheckBoxPreference
-            android:key="fake_picon"
             android:dependency="enable_developer"
+            android:key="fake_picon"
             android:summary="@string/use_fake_picon_long"
             android:title="@string/use_fake_picon"/>
 
         <CheckBoxPreference
-            android:key="xml_debug"
             android:dependency="enable_developer"
+            android:key="xml_debug"
             android:summary="@string/dump_xml_long"
             android:title="@string/dump_xml"/>
     </PreferenceCategory>

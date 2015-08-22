@@ -129,6 +129,8 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
 
@@ -187,6 +189,8 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
 			mProgressDialogFragment.dismiss();
 			if (!result || mResult == null) {
 				mResult = new ExtendedHashMap();
@@ -612,6 +616,10 @@ public class NavigationFragment extends BaseHttpRecyclerFragment implements Acti
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		if (action == Statics.ACTION_SHOW_PRIVACY_STATEMENT) {
+			getMainActivity().showPrivacyStatement();
+			return;
+		}
 		onItemSelected(action);
 	}
 }

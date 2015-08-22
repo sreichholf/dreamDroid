@@ -17,26 +17,17 @@ public class Statics {
 	public static final int ACTION_EDIT_TIMER = 0xc002;
 	public static final int ACTION_IMDB = 0xc003;
 	public static final int ACTION_FIND_SIMILAR = 0xc004;
-	public static final int ACTION_CURRENT = 0xc005;
-	public static final int ACTION_EPG = 0xc006;
-	public static final int ACTION_ZAP = 0xc007;
-	public static final int ACTION_STREAM = 0xc008;
 	public static final int ACTION_DELETE = 0xc009;
-	public static final int ACTION_DOWNLOAD = 0xc010;
 	public static final int ACTION_DELETE_CONFIRMED = 0xc011;
 	public static final int ACTION_EDIT = 0xc012;
-	public static final int ACTION_PICK_TIME_BEGIN = 0xc013;
-	public static final int ACTION_PICK_TIME_END = 0xc014;
 	public static final int ACTION_LEAVE_CONFIRMED = 0xc015;
-	public static final int ACTION_ACTIVATE = 0xc016;
 	public static final int ACTION_ADD_TO_PLAYLIST = 0xc17;
 	public static final int ACTION_PLAY_MEDIA = 0xc18;
 	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc19;
-	public static final int ACTION_DONATE = 0xc20;
+	public static final int ACTION_STATISTICS_AGREED = 0xc20;
+	public static final int ACTION_STATISTICS_DENIED = 0xc21;
+	public static final int ACTION_SHOW_PRIVACY_STATEMENT = 0xc22;
 	public static final int ACTION_NONE = 0xcfff;
-
-	public static final int DIALOG_TIMER_PICK_BEGIN_ID = 0x8009;
-	public static final int DIALOG_TIMER_PICK_END_ID = 0x8010;
 
 	public static final int ITEM_NOW = 0x6000;
 	public static final int ITEM_NEXT = 0x6001;
@@ -76,7 +67,6 @@ public class Statics {
 	public static final int ITEM_TAGS = R.id.menu_tags;
 	public static final int ITEM_NEW_TIMER = 0x6032;
 	public static final int ITEM_CLEANUP = R.id.menu_cleanup;
-	public static final int ITEM_LAYOUT = R.id.menu_remote_toggle;
 	public static final int ITEM_TOGGLE_ENABLED = R.id.menu_toggle_enabled;
 	public static final int ITEM_HOME = 0x6039;
 	public static final int ITEM_DETECT_DEVICES = R.id.menu_detect_devices;
@@ -93,13 +83,9 @@ public class Statics {
 	public static final int REQUEST_PICK_SERVICE = 0x5001;
 	public static final int REQUEST_PICK_BOUQUET = 0x5002;
 	public static final int REQUEST_EDIT_PROFILE = 0x5003;
-	public static final int REQUEST_ANY = 0x5003;
 	public static final int REQUEST_DONATE = 0x1337;
 
-	public static final int RESULT_THEME_CHANGED = 0x00a1;
 	public static final int RESULT_NONE = -9999;
-
-	public static final String KEY_RELOAD = "reload";
 
 	public static final int ITEM_MEDIA_HOME = R.id.menu_home_media;
 	public static final int ITEM_MEDIA_BACK = R.id.menu_navigation_back_media;
@@ -108,5 +94,6 @@ public class Statics {
 
 
 	public static final String INTENT_ACTION_PICK_BOUQUET = "pick_bouquet";
+
 
 }
