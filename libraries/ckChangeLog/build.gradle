@@ -24,6 +24,9 @@ android {
             res.srcDirs = ['src/main/res']
         }
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 dependencies {
