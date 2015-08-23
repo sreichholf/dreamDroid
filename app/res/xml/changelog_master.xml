@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0.2" versioncode="291">
+        <change>Crash and handling fixes related to the contextual ActionBar (Profiles / Timer)</change>
+    </release>
     <release version="1.0.1" versioncode="290">
-        <change>Fixes crashes on Android 4.0.3 (woraround for https://code.google.com/p/android/issues/detail?id=183129)</change>
+        <change>Fixes crashes on Android 4.0.3 (workaround for https://code.google.com/p/android/issues/detail?id=183129)</change>
     </release>
     <release version="1.0" versioncode="289">
         <change>dreamDroid is officially out of beta</change>
