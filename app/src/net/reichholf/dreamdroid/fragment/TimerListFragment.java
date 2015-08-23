@@ -48,7 +48,7 @@ import java.util.ArrayList;
  * @author sreichholf
  */
 public class TimerListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
-	protected boolean mIsActionMode;
+
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
 		// Called when the action mode is created; startActionMode() was called
@@ -58,6 +58,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.timerlist_context, menu);
 			mIsActionMode = true;
+			mIsActionModeRequired = false;
 			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 			return true;
 		}
@@ -84,6 +85,9 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		// Called when the user exits the action mode
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
+			mIsActionMode = false;
+			if(mIsActionModeRequired)
+				return;
 			final ListView lv = getListView();
 			lv.setItemChecked(lv.getCheckedItemPosition(), false);
 			getListView().post(new Runnable() {
@@ -92,11 +96,11 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 					lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
 				}
 			});
-			mIsActionMode = false;
 		}
 	};
 	private ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
+	protected int mCurrentPos;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -105,7 +109,8 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.timer));
 		setAdapter();
-		mIsActionMode = false;
+
+		mCurrentPos = -1;
 		if (savedInstanceState != null) {
 			mTimer = savedInstanceState.getParcelable("timer");
 		} else {
@@ -132,14 +137,24 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				mTimer = mMapList.get(position);
-				getAppCompatActivity().startSupportActionMode(mActionModeCallback);
-				getListView().setItemChecked(position, true);
+				mCurrentPos = position;
+				startActionMode();
 				return true;
 			}
 		});
+	}
 
+	@Override
+	protected void startActionMode() {
+		mTimer = mMapList.get(mCurrentPos);
+		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
+		getListView().setItemChecked(mCurrentPos, true);
+	}
 
+	@Override
+	public void onDestroyView() {
+		endActionMode();
+		super.onDestroyView();
 	}
 
 	@Override

@@ -93,6 +93,15 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	{
 	}
 
+	@Override
+	public void onDrawerOpened() {
+	}
+
+	@Override
+	public void onDrawerClosed() {
+
+	}
+
 	public String getBaseTitle() {
 		return mHelper.getBaseTitle();
 	}

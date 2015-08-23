@@ -13,6 +13,8 @@ import android.view.KeyEvent;
  *
  */
 public interface ActivityCallbackHandler {
+	public void onDrawerOpened();
+	public void onDrawerClosed();
 	public boolean onKeyDown(int keyCode, KeyEvent event);
 	public boolean onKeyUp(int keyCode, KeyEvent event);
 }

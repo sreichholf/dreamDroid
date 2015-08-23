@@ -78,6 +78,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private boolean mSlider;
 	private boolean mIsPaused;
+	private boolean mIsDrawerOpen;
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
 
@@ -205,6 +206,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 					"navigation");
 		}
 
+		mIsDrawerOpen = false;
+
 		DreamDroid.setCurrentProfileChangedListener(this);
 
 		initViews();
@@ -314,13 +317,28 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 					R.string.drawer_open, /* "open drawer" description for accessibility */
 					R.string.drawer_close /* "close drawer" description for accessibility */
 			) {
+				@Override
 				public void onDrawerClosed(View view) {
+					mIsDrawerOpen = false;
 					supportInvalidateOptionsMenu();
+					ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+					if(callbackHandler != null)
+						callbackHandler.onDrawerClosed();
 				}
-
+				@Override
 				public void onDrawerOpened(View drawerView) {
 					supportInvalidateOptionsMenu();
 					dismissSnackbar();
+				}
+
+				@Override
+				public void onDrawerSlide(View drawerView, float slideOffset) {
+					if(isDrawerOpen() || mIsDrawerOpen)
+						return;
+					mIsDrawerOpen = true;
+					ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+					if(callbackHandler != null)
+						callbackHandler.onDrawerOpened();
 				}
 			};
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
