@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +40,10 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 
 	protected boolean mCardListStyle = false;
 
+	protected ActionMode mActionMode;
+	protected boolean mIsActionMode;
+	protected boolean mIsActionModeRequired;
+
 	public DreamDroidListFragment() {
 		super();
 		mHelper = new DreamDroidFragmentHelper();
@@ -53,6 +58,8 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mActionMode = null;
+		mIsActionMode = false;
 		if (mHelper == null)
 			mHelper = new DreamDroidFragmentHelper(this);
 		else
@@ -89,6 +96,12 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	}
 
 	@Override
+	public void onDestroyView() {
+		endActionMode();
+		super.onDestroyView();
+	}
+
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		mHelper.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
@@ -118,6 +131,22 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	@Override
 	public MultiPaneHandler getMultiPaneHandler() {
 		return mHelper.getMultiPaneHandler();
+	}
+
+	@Override
+	public void onDrawerOpened() {
+		mIsActionModeRequired = mIsActionMode;
+		if(mActionMode != null)
+			mActionMode.finish();
+	}
+
+	@Override
+	public void onDrawerClosed() {
+		if(mIsActionModeRequired)
+			startActionMode();
+	}
+
+	protected void startActionMode(){
 	}
 
 	public String getBaseTitle() {
@@ -190,5 +219,11 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 				return true;
 			}
 		});
+	}
+
+	protected void endActionMode(){
+		if(mActionMode != null)
+			mActionMode.finish();
+		mActionMode = null;
 	}
 }

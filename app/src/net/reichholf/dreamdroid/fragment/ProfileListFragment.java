@@ -64,6 +64,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	private ProgressDialog mProgress;
 
+	private int mCurrentPos;
+
 	public static final String KEY_ACTIVE_PROFILE = "active_profile";
 
 	@Override
@@ -98,8 +100,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		}
 	}
 
-
-	protected boolean mIsActionMode;
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
 		// Called when the action mode is created; startActionMode() was called
@@ -109,6 +109,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.profilelist_context, menu);
 			mIsActionMode = true;
+			mIsActionModeRequired = false;
 			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 			return true;
 		}
@@ -130,6 +131,9 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		// Called when the user exits the action mode
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
+			mIsActionMode = false;
+			if(mIsActionModeRequired)
+				return;
 			final ListView lv = getListView();
 			lv.setItemChecked(lv.getCheckedItemPosition(), false);
 			getListView().post(new Runnable() {
@@ -138,7 +142,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 					lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
 				}
 			});
-			mIsActionMode = false;
 		}
 	};
 
@@ -251,6 +254,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.profiles));
 
+		mCurrentPos = -1;
+
 		mProfiles = new ArrayList<>();
 		mProfileMapList = new ArrayList<>();
 		mProfile = Profile.DEFAULT;
@@ -332,10 +337,16 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	}
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
-		mProfile = mProfiles.get(position);
-		getAppCompatActivity().startSupportActionMode(mActionModeCallback);
-		getListView().setItemChecked(position, true);
+		mCurrentPos = position;
+		startActionMode();
 		return true;
+	}
+
+	@Override
+	protected void startActionMode() {
+		mProfile = mProfiles.get(mCurrentPos);
+		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
+		getListView().setItemChecked(mCurrentPos, true);
 	}
 
 	@Override

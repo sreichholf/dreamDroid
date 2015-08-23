@@ -176,6 +176,14 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 	}
 
 	@Override
+	public void onDrawerOpened() {
+	}
+
+	@Override
+	public void onDrawerClosed() {
+	}
+
+	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		return false;
 	}
