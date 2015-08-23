@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0.2" versioncode="291">
+        <change>Behebt Abstürze und verbessert das Handling in Verbindung mit der Kontext bezogenen ActionBar (Profile / Timer)</change>
+    </release>
     <release version="1.0.1" versioncode="290">
-        <change>Behebt Abstürze unter Android 4.0.3 (woraround für https://code.google.com/p/android/issues/detail?id=183129)</change>
+        <change>Behebt Abstürze unter Android 4.0.3 (workaround für https://code.google.com/p/android/issues/detail?id=183129)</change>
     </release>
     <release version="1.0" versioncode="289">
         <change>dreamDroid hat offiziell die Betaphase verlassen</change>
