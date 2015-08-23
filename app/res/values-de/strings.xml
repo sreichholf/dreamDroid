@@ -295,7 +295,7 @@
     <string name="developer_settings">Entwickler Einstellungen</string>
     <string name="default_to_full_vrm">Einfache Fernbedienung als Standard</string>
     <string name="default_to_full_vrm_long">Die virtuelle Fernbedienung nutzt beim öffnen das einfache Layout</string>
-    <string name="dump_xml"/>
+    <string name="dump_xml">XML Inhalte ablegen</string>
     <string name="donate">Spenden</string>
     <string name="donate_sum">Spende %s</string>
     <string name="donation_error">Spende fehlgeschlagen! Tut uns leid! (%s)</string>
@@ -311,4 +311,10 @@
     <string name="privacy_statement">dreamDroid enthält ein Modul zur Erfassung statistischer Nutzungsdaten. Die gesammelten Daten enthalten folgende Informationen:\n\n&#8226; Anonymisierte IP Adresse\n&#8226; Die geöffneten "Seiten" (z.B. Kanalliste, Filme, ...)inkl. der Dauer der Nutzung\n&#8226; Programmabstürze.\n\nEs wird keine eineutige ID oder vollständige IP Adresse erfasst/gespeichert. Die erfassten Daten werden nicht an Dritte weitergegeben.\n\nStimmen Sie der Erfassung anonymer Statistiken zu?</string>
     <string name="privacy">Datenschutz</string>
     <string name="next_event">Nächste Sendung</string>
+    <string name="allow_tracking">Tracking erlauben</string>
+    <string name="allow_tracking_long">Das Sammeln anonymisierter Nutzungsstatistiken erlauben</string>
+    <string name="dump_xml_long">XML Inhalte auf dem externen Speicher ablegen</string>
+    <string name="use_fake_picon">Ersatz Picon benutzen</string>
+    <string name="use_fake_picon_long">Ersatzpicon (picon_default.png) nutzen um Copyrightprobleme bei Screenshots zu vermeiden</string>
+    <string name="developer_settings_enable">Entwicklereinstellungen aktivieren</string>
 </resources>
