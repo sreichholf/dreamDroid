@@ -15,7 +15,7 @@
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
-        android:textColor="@color/white"
+        android:textColor="@android:color/white"
         android:padding="3dp"
         android:textAppearance="?android:attr/textAppearanceLarge"/>
 
@@ -26,7 +26,7 @@
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
-        android:textColor="@color/white"
+        android:textColor="@android:color/white"
         android:gravity="right"
         android:padding="5dp"
         android:textAppearance="?android:attr/textAppearanceLarge"/>

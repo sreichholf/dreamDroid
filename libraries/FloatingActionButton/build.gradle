@@ -10,19 +10,19 @@ buildscript {
 apply plugin: 'com.android.library'
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
+    buildToolsVersion project.BUILD_TOOLS_VERSION
+
     lintOptions {
         abortOnError false
     }
 }
 
 dependencies {
-    compile 'com.android.support:support-annotations:22.0.0'
-    compile 'com.android.support:recyclerview-v7:22.+'
-    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.android.support:support-annotations:23.+'
+    compile 'com.android.support:recyclerview-v7:23.+'
 }

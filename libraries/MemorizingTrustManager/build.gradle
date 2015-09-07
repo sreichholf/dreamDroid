@@ -10,16 +10,16 @@ buildscript {
 apply plugin: 'com.android.library'
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:22.+'
+    compile 'com.android.support:support-v4:23.0.+'
 }
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
+    buildToolsVersion project.BUILD_TOOLS_VERSION
 
     sourceSets {
         main {

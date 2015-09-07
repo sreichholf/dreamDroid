@@ -1,7 +1,7 @@
 include ':app'
 include ':libraries:ckChangeLog'
+include ':libraries:datetimepicker'
 include ':libraries:numberpicker'
 include ':libraries:gaugeview-library'
 include ':libraries:MemorizingTrustManager'
 include ':libraries:FloatingActionButton'
-include ':libraries:android-support-v4-preferencefragment'

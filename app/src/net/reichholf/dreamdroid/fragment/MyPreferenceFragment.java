@@ -5,14 +5,16 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
-import android.support.v4.preference.PreferenceFragment;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
+
+
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -24,7 +26,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 /**
  * Created by Stephan on 08.04.2015.
  */
-public class MyPreferenceFragment extends PreferenceFragment implements
+public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener, ActivityCallbackHandler {
 
 	private static String LOG_TAG = MyPreferenceFragment.class.getSimpleName();
@@ -37,6 +39,11 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 		super.onCreate(savedInstanceState);
 
 		// Load the preferences from an XML resource
+
+	}
+
+	@Override
+	public void onCreatePreferences(Bundle bundle, String s) {
 		addPreferencesFromResource(R.xml.preferences);
 		getActivity().setTitle(R.string.settings);
 
@@ -58,8 +65,9 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 		super.onActivityCreated(savedInstanceState);
 		TypedValue typedValue = new TypedValue();
 		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
-		if(typedValue.resourceId > 0)
+/*		if(typedValue.resourceId > 0)
 			getListView().setSelector(typedValue.resourceId);
+*/
 
 		boolean isDebuggable = (0 != (getActivity().getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
 		if(!isDebuggable) {

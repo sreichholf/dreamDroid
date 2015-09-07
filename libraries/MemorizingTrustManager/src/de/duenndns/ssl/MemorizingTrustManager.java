@@ -377,15 +377,15 @@ public class MemorizingTrustManager implements X509TrustManager {
 
 	@SuppressWarnings("deprecation")
 	void startActivityNotification(Intent intent, String certName) {
+
+		PendingIntent call = PendingIntent.getActivity(master, 0, intent, 0);
 		Notification n = new NotificationCompat.Builder(master)
 				.setLargeIcon(BitmapFactory.decodeResource(master.getResources(), android.R.drawable.ic_lock_lock))
-				.setContentText(master.getString(R.string.mtm_notification)).build();
-		
-		PendingIntent call = PendingIntent.getActivity(master, 0, intent, 0);
-		n.setLatestEventInfo(master.getApplicationContext(),
-				master.getString(R.string.mtm_notification),
-				certName, call);
-		n.flags |= Notification.FLAG_AUTO_CANCEL;
+				.setContentText(master.getString(R.string.mtm_notification))
+				.setContentTitle(certName)
+				.setContentIntent(call)
+				.setAutoCancel(true)
+				.build();
 
 		notificationManager.notify(NOTIFICATION_ID, n);
 	}

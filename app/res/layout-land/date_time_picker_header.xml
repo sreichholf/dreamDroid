@@ -19,7 +19,7 @@
         android:gravity="center_horizontal|start"
         android:text="test12"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/white"/>
+        android:textColor="@android:color/white"/>
 
     <net.reichholf.dreamdroid.view.VerticalTextView
         android:id="@+id/textViewTime"
@@ -32,5 +32,5 @@
         android:padding="5dp"
         android:text="test12"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/white"/>
+        android:textColor="@android:color/white"/>
 </LinearLayout>
