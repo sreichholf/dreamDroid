@@ -329,8 +329,8 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 	                           LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		//when popping fromt he backstack (e.g. after epg search) onStart will restore the loader which will in return call onLoadfinished
-		//because this in done twice (in onStart and in onResumed and we are not ready to handle this before onResume, we ignore any onLoadFinished
+		//when popping from the backstack (e.g. after epg search) onStart will restore the loader which will in return call onLoadfinished
+		//because this is done twice (in onStart and in onResumed and we are not ready to handle this before onResume, we ignore any onLoadFinished
 		//that happens while we are not in a Resumed state
 		if (!isResumed())
 			return;
