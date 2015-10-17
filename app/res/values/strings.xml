@@ -314,4 +314,5 @@
     <string name="privacy_statement_title">Privacy Statement</string>
     <string name="privacy">Privacy</string>
     <string name="next_event">Next Event</string>
+    <string name="refresh_folder_list">Refresh folder list</string>
 </resources>
