@@ -11,6 +11,7 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
@@ -26,8 +27,6 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -72,6 +71,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
 	private ArrayAdapter<String> mLocationAdapter;
+	private ForceGetLocationsAndTagsTask mForceGetLocationsAndTagsTask;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -93,6 +93,54 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 			mOldTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 			mCurrentLocation = savedInstanceState.getString("currentLocation");
 			mSelectedLocationPosition = savedInstanceState.getInt("selectedLocationPosition", 0);
+		}
+	}
+
+
+	private class ForceGetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
+
+		private ProgressDialog mLoadProgress;
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			if (isCancelled())
+				return false;
+			publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
+			DreamDroid.loadLocations(getHttpClient());
+
+			if (isCancelled())
+				return false;
+			publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
+			DreamDroid.loadTags(getHttpClient());
+
+			return true;
+		}
+
+		@Override
+		protected void onProgressUpdate(String... progress) {
+			if (isCancelled())
+				return;
+			if (mLoadProgress != null) {
+				if (!mLoadProgress.isShowing()) {
+					mLoadProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.loading).toString(),
+							progress[0]);
+				} else {
+					mLoadProgress.setMessage(progress[0]);
+				}
+			} else {
+				mLoadProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.loading).toString(),
+						progress[0]);
+			}
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if(isCancelled())
+				return;
+			if (mLoadProgress.isShowing()) {
+				mLoadProgress.dismiss();
+			}
+			setupListNavigation();
 		}
 	}
 
@@ -219,10 +267,21 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
+	public void onDestroy() {
+		if (mForceGetLocationsAndTagsTask != null)
+			mForceGetLocationsAndTagsTask.cancel(true);
+		super.onDestroy();
+	}
+
+	@Override
 	protected boolean onItemSelected(int id) {
 		switch (id) {
 			case Statics.ITEM_TAGS:
 				pickTags();
+				return true;
+			case Statics.ITEM_REFRESH_FOLDERS:
+				mForceGetLocationsAndTagsTask = new ForceGetLocationsAndTagsTask();
+				mForceGetLocationsAndTagsTask.execute();
 				return true;
 			default:
 				return super.onItemSelected(id);

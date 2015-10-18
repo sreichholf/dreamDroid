@@ -7,5 +7,10 @@
         android:icon="@drawable/ic_action_tags"
         android:title="@string/tags"
         dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_refresh_folder_list"
+        android:icon="@drawable/ic_action_refresh"
+        dreamDroid:showAsAction="ifRoom"
+        android:title="@string/refresh_folder_list"/>
 
 </menu>

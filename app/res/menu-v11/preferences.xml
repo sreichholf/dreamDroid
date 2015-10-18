@@ -7,10 +7,5 @@
         android:icon="@drawable/ic_action_connectivity"
         dreamDroid:showAsAction="never"
         android:title="@string/check_connectivity"/>
-    <item
-        android:id="@+id/menu_refresh_folder_list"
-        android:icon="@drawable/ic_action_refresh"
-        dreamDroid:showAsAction="ifRoom"
-        android:title="@string/refresh_folder_list"/>
 
 </menu>
