@@ -458,10 +458,6 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 				getMainActivity().onProfileChanged(DreamDroid.getCurrentProfile());
 				break;
 
-			case Statics.ITEM_REFRESH_FOLDERS:
-				//TODO: async refresh here
-				break;
-
 			case Statics.ITEM_CHANGELOG:
 				getMainActivity().showChangeLogIfNeeded(false);
 				break;

@@ -267,10 +267,10 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	}
 
 	@Override
-	public void onDestroy() {
+	public void onDestroyView() {
 		if (mForceGetLocationsAndTagsTask != null)
 			mForceGetLocationsAndTagsTask.cancel(true);
-		super.onDestroy();
+		super.onDestroyView();
 	}
 
 	@Override
