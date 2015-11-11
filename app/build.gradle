@@ -55,7 +55,12 @@ android {
             debuggable false
         }
     }
+
     lintOptions {
         abortOnError false
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
     }
 }
