@@ -15,12 +15,11 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -162,7 +161,7 @@ public class ShareActivity extends ListActivity {
 			String ref = "4097:0:1:0:0:0:0:0:0:0:" + url + ":" + title;
 			Log.i(LOG_TAG, ref);
 			ArrayList<NameValuePair> params = new ArrayList<>();
-			params.add(new BasicNameValuePair("file", ref));
+			params.add(new NameValuePair("file", ref));
 			execSimpleResultTask(params);
 		} else {
 			finish();

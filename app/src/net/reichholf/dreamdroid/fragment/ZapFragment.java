@@ -19,15 +19,13 @@ import net.reichholf.dreamdroid.adapter.ZapListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
@@ -71,7 +69,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 		private boolean addBouquets(AbstractListRequestHandler handler, String ref){
 			ArrayList<NameValuePair> params = new ArrayList<>();
-			params.add(new BasicNameValuePair("sRef", ref));
+			params.add(new NameValuePair("sRef", ref));
 			String xml = handler.getList(getHttpClient(), params);
 			if (xml != null && !isCancelled()) {
 				return handler.parseList(xml, mTaskList);
@@ -214,7 +212,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("sRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
+		params.add(new NameValuePair("sRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
 
 		return params;
 	}

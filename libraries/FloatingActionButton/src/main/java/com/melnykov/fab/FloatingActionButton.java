@@ -1,5 +1,6 @@
 package com.melnykov.fab;
 
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -26,8 +27,6 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.AbsListView;
 import android.widget.ImageButton;
-
-import com.nineoldandroids.animation.ObjectAnimator;
 
 /**
  * Android Google+ like floating action button which reacts on the attached list view scrolling events.
@@ -332,6 +331,12 @@ public class FloatingActionButton extends ImageButton {
                 from = visible ? -(2 * height) : 0;
             }
 
+            if (animate) {
+                animate().setDuration(TRANSLATE_DURATION_MILLIS)
+                        .translationY(translationY)
+                        .start();
+            }
+/*
             ObjectAnimator animator = ObjectAnimator.ofFloat(this,
                     "translationY", from, translationY);
             animator.setInterpolator(mInterpolator);
@@ -340,6 +345,7 @@ public class FloatingActionButton extends ImageButton {
             } else {
                 animator.setDuration(0).start();
             }
+*/
         }
     }
 

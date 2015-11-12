@@ -12,9 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import com.viewpagerindicator.PageIndicator;
-import com.viewpagerindicator.UnderlinePageIndicator;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
@@ -25,7 +22,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
  */
 public class VirtualRemotePagerFragment extends AbstractHttpFragment {
 
-	PageIndicator mIndicator;
 	ViewPager mPager;
 	RemotePagerAdapter mPagerAdapter;
 
@@ -74,9 +70,6 @@ public class VirtualRemotePagerFragment extends AbstractHttpFragment {
 		mPager = (ViewPager) view.findViewById(R.id.pager);
 		mPagerAdapter = new RemotePagerAdapter(getChildFragmentManager());
 		mPager.setAdapter(mPagerAdapter);
-
-		mIndicator = (UnderlinePageIndicator) view.findViewById(R.id.indicator);
-		mIndicator.setViewPager(mPager);
 
 		ImageButton toggle = (ImageButton) view.findViewById(R.id.toggle_remote);
 		toggle.setOnClickListener(new View.OnClickListener() {

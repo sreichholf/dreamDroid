@@ -23,7 +23,7 @@ public class NumberPickerPreference extends DialogPreference {
         TypedArray arr = context.obtainStyledAttributes(attrs, R.styleable.numberpicker);
         mStartRange = arr.getInteger(R.styleable.numberpicker_startRange, 0);
         mEndRange = arr.getInteger(R.styleable.numberpicker_endRange, 200);
-        mDefault = arr.getInteger(R.styleable.numberpicker_defaultValue, 0);
+        mDefault = arr.getInteger(R.styleable.numberpicker_npDefaultValue, 0);
 
         arr.recycle();
 

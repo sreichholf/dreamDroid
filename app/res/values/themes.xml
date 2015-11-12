@@ -2,6 +2,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Base.Theme.DreamDroid" parent="Theme.AppCompat.NoActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground</item>
         <item name="actionModeShareDrawable">@drawable/ic_action_share</item>
         <item name="actionModeBackground">@color/material_blue_grey_800</item>
         <item name="windowActionModeOverlay">true</item>
@@ -59,6 +61,8 @@
     </style>
 
     <style name="Base.Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground</item>
         <item name="actionModeShareDrawable">@drawable/ic_action_share</item>
         <item name="actionModeBackground">@color/material_blue_grey_800</item>
         <item name="windowActionModeOverlay">true</item>

@@ -37,6 +37,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
@@ -48,9 +49,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestH
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -312,12 +310,12 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		if (mCurrentLocation != null) {
-			params.add(new BasicNameValuePair("dirname", mCurrentLocation));
+			params.add(new NameValuePair("dirname", mCurrentLocation));
 		}
 
 		if (mSelectedTags.size() > 0) {
 			String tags = Tag.implodeTags(mSelectedTags);
-			params.add(new BasicNameValuePair("tag", tags));
+			params.add(new NameValuePair("tag", tags));
 		}
 
 		return params;
@@ -379,7 +377,7 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 
 			case R.id.menu_download:
 				ArrayList<NameValuePair> params = new ArrayList<>();
-				params.add(new BasicNameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
+				params.add(new NameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
 				String url = getHttpClient().buildUrl(URIStore.FILE, params);
 
 				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));

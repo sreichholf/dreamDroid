@@ -8,11 +8,9 @@ package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
 import java.util.ArrayList;
 
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 /**
  * @author sre
@@ -63,7 +61,7 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	private String singleParamCall(SimpleHttpClient shc, String uri, String param, String value) {
 		mUri = uri;
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair(param, value));
+		params.add(new NameValuePair(param, value));
 		return get(shc, params);
 	}
 

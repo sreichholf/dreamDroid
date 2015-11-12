@@ -148,7 +148,7 @@ public class NumberPicker extends LinearLayout implements OnClickListener,
         mStart = a.getInt( R.styleable.numberpicker_startRange, DEFAULT_MIN );
         mEnd = a.getInt( R.styleable.numberpicker_endRange, DEFAULT_MAX );
         mWrap = a.getBoolean( R.styleable.numberpicker_wrap, DEFAULT_WRAP );
-        mCurrent = 	a.getInt( R.styleable.numberpicker_defaultValue, DEFAULT_VALUE );
+        mCurrent = 	a.getInt( R.styleable.numberpicker_npDefaultValue, DEFAULT_VALUE );
         mCurrent = Math.max( mStart, Math.min( mCurrent, mEnd ) );
         mText.setText( "" + mCurrent );
     }

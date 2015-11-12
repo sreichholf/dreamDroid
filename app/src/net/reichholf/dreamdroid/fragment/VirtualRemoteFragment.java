@@ -26,13 +26,11 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Remote;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.util.ArrayList;
 
@@ -199,14 +197,14 @@ public class VirtualRemoteFragment extends AbstractHttpFragment {
 		mVibrator.vibrate(msec);
 
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("command", String.valueOf(id)));
+		params.add(new NameValuePair("command", String.valueOf(id)));
 		if (mSimpleRemote) {
-			params.add(new BasicNameValuePair("rcu", "standard"));
+			params.add(new NameValuePair("rcu", "standard"));
 		} else {
-			params.add(new BasicNameValuePair("rcu", "advanced"));
+			params.add(new NameValuePair("rcu", "advanced"));
 		}
 		if (longClick) {
-			params.add(new BasicNameValuePair("type", Remote.CLICK_TYPE_LONG));
+			params.add(new NameValuePair("type", Remote.CLICK_TYPE_LONG));
 		}
 		execSimpleResultTask(new RemoteCommandRequestHandler(), params);
 	}

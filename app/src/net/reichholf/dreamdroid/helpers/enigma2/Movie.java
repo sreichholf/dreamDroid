@@ -9,9 +9,7 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
 
 /**
  * @author sreichholf
@@ -33,7 +31,7 @@ public class Movie{
 
 	public static ArrayList<NameValuePair> getDeleteParams(ExtendedHashMap movie){
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new BasicNameValuePair("sRef", movie.getString(Movie.KEY_REFERENCE)));
+		params.add(new NameValuePair("sRef", movie.getString(Movie.KEY_REFERENCE)));
 		
 		return params;
 	}
