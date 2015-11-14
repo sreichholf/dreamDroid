@@ -11,6 +11,7 @@ apply plugin: 'com.android.library'
 
 repositories {
     jcenter()
+    maven { url "https://jitpack.io" }
 }
 
 android {
@@ -31,7 +32,9 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:23.+'
-    compile 'com.afollestad:material-dialogs:0.7.+'
+    compile('com.github.afollestad.material-dialogs:core:0.8.+@aar') {
+        transitive = true
+    }
 }
 
 

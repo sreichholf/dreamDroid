@@ -10,11 +10,14 @@ apply plugin: 'com.android.application'
 
 repositories {
     jcenter()
+    maven { url "https://jitpack.io" }
     maven { url 'https://dl.bintray.com/drummer-aidan/maven' }
 }
 
 dependencies {
-    compile 'com.afollestad:material-dialogs:0.7.+'
+    compile('com.github.afollestad.material-dialogs:core:0.8.+@aar') {
+        transitive = true
+    }
     compile 'com.android.support:support-v4:23.+'
     compile 'com.android.support:preference-v14:23.+'
     compile 'com.android.support:preference-v7:23.+'
