@@ -1,12 +1,12 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:minHeight="?attr/actionBarSize"
     android:background="?attr/colorAccent"
+    android:elevation="4dp"
     android:gravity="center_vertical"
+    android:minHeight="?attr/actionBarSize"
     android:orientation="horizontal"
-    android:elevation="4dp">
+    android:paddingBottom="3dp">
 
     <TextView
         android:id="@+id/textViewDate"
@@ -15,9 +15,9 @@
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
-        android:textColor="@android:color/white"
         android:padding="3dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/textViewTime"
@@ -26,8 +26,8 @@
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
-        android:textColor="@android:color/white"
         android:gravity="right"
         android:padding="5dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/white" />
 </LinearLayout>

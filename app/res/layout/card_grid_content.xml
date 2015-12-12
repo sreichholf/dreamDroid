@@ -28,6 +28,7 @@
                 android:verticalSpacing="10dp"
                 android:horizontalSpacing="10dp"
                 android:stretchMode="columnWidth"
+                android:nestedScrollingEnabled="true"
                 android:gravity="center"/>
         </android.support.v4.widget.SwipeRefreshLayout>
 

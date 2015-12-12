@@ -45,10 +45,7 @@
         <item name="android:drawSelectorOnTop">false</item>
         <item name="android:listSelector">@android:color/transparent</item>
         <item name="android:background">@android:color/transparent</item>
-        <item name="android:paddingTop">4dp</item>
-        <item name="android:paddingBottom">0dp</item>
-        <item name="android:paddingLeft">4dp</item>
-        <item name="android:paddingRight">4dp</item>
+        <item name="android:padding">4dp</item>
     </style>
 
     <style name="CardListView.Light" parent="CardListView"/>

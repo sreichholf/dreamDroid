@@ -15,8 +15,9 @@
 */
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/listContainer"
@@ -34,7 +35,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:drawSelectorOnTop="false"/>
+                android:drawSelectorOnTop="false"
+                android:nestedScrollingEnabled="true" />
         </android.support.v4.widget.SwipeRefreshLayout>
 
         <TextView
@@ -42,7 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textAppearance="?android:attr/textAppearanceSmall"/>
+            android:textAppearance="?android:attr/textAppearanceSmall" />
     </FrameLayout>
 
     <com.melnykov.fab.FloatingActionButton
@@ -55,5 +57,5 @@
         android:layout_marginBottom="20dp"
         android:layout_marginRight="16dp"
         android:contentDescription="@string/new_timer"
-        android:src="@drawable/ic_action_fab_add"/>
+        android:src="@drawable/ic_action_fab_add" />
 </RelativeLayout>

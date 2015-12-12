@@ -35,6 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_margin="0dp"
+                android:nestedScrollingEnabled="true"
                 android:clipToPadding="false"/>
         </android.support.v4.widget.SwipeRefreshLayout>
 
