@@ -18,6 +18,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.helpers.PiconDownloadTask;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 
@@ -25,7 +26,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Picon;
  * Created by Stephan on 08.04.2015.
  */
 public class MyPreferenceFragment extends PreferenceFragment implements
-		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener, ActivityCallbackHandler {
+		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener, ActivityCallbackHandler, ActionDialog.DialogActionListener {
 
 	private static String LOG_TAG = MyPreferenceFragment.class.getSimpleName();
 
@@ -191,5 +192,9 @@ public class MyPreferenceFragment extends PreferenceFragment implements
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
+	}
+
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
 	}
 }
