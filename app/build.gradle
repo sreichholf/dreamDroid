@@ -11,10 +11,11 @@ apply plugin: 'com.android.application'
 repositories {
     jcenter()
     maven { url 'https://dl.bintray.com/drummer-aidan/maven' }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
-    compile 'com.afollestad:material-dialogs:0.7.+'
+    compile 'com.afollestad:material-dialogs:0.7.+@aar'
     compile 'com.android.support:design:22.2.+'
     compile 'com.android.support:support-annotations:22.2.+'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
