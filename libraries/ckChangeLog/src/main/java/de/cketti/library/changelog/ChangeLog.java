@@ -45,10 +45,12 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.XmlResourceParser;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.SparseArray;
 import android.webkit.WebView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -302,20 +304,18 @@ public class ChangeLog {
                         full ? R.string.changelog_full_title : R.string.changelog_title))
                 .customView(wv, false)
                 .positiveText(mContext.getResources().getString(R.string.changelog_ok_button))
-                .callback(new MaterialDialog.ButtonCallback() {
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
-                    public void onPositive(MaterialDialog dialog) {
-                        super.onPositive(dialog);
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         updateVersionInPreferences();
                     }
-
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
-                    public void onNegative(MaterialDialog dialog) {
-                        super.onNegative(dialog);
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         getFullLogDialog().show();
                     }
                 });
-
         if (!full) {
             // Show "More…" button if we're only displaying a partial change log.
             builder.negativeText(R.string.changelog_show_full);
