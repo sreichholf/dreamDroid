@@ -316,8 +316,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 
 	@SuppressLint("NewApi")
 	public void setSelectedItem(int position) {
-		if (Build.VERSION.SDK_INT >= 8)
-			getListView().smoothScrollToPosition(position);
+		getListView().smoothScrollToPosition(position);
 		onListItemClick(getListView(), null, position, position);
 	}
 

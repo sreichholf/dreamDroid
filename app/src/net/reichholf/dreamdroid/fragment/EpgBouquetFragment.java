@@ -125,8 +125,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 				if (!reference.equals(mReference)) {
 					mReference = reference;
 					mName = service.getString(Service.KEY_NAME);
-					if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ECLAIR_MR1)
-						getListView().smoothScrollToPosition(0);
+					getListView().smoothScrollToPosition(0);
 				}
 				reload();
 		}

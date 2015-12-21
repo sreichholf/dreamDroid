@@ -337,11 +337,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			mNavList.setAdapter(adapter);
 		}
 		adapter = new ServiceListAdapter(getAppCompatActivity(), mDetailItems);
-		if(Build.VERSION.SDK_INT < 11) {
-			((ListView)mDetailList).setAdapter(adapter);
-		} else {
-			mDetailList.setAdapter(adapter);
-		}
+		mDetailList.setAdapter(adapter);
 	}
 
 	public void onListItemClick(AbsListView l, View v, int position, long id) {

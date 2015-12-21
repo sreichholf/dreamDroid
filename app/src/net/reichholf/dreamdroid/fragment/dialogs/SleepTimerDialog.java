@@ -8,10 +8,12 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RadioGroup;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.michaelnovakjr.numberpicker.NumberPicker;
 
@@ -57,15 +59,10 @@ public class SleepTimerDialog extends AbstractDialog {
 				.title(R.string.sleeptimer)
 				.positiveText(R.string.save)
 				.negativeText(R.string.cancel)
-				.callback(new MaterialDialog.ButtonCallback() {
-
+				.onPositive(new MaterialDialog.SingleButtonCallback() {
 					@Override
-					public void onNegative(MaterialDialog materialDialog) {
-					}
-
-					@Override
-					public void onPositive(MaterialDialog materialDialog) {
-						View view = materialDialog.getCustomView();
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+						View view = dialog.getCustomView();
 						NumberPicker time = (NumberPicker) view.findViewById(R.id.NumberPicker);
 						CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
 						RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);

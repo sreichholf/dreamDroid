@@ -16,7 +16,6 @@ import android.os.Build;
  * @author sre
  *
  */
-@TargetApi(Build.VERSION_CODES.FROYO)
 public class DreamDroidBackupAgent extends BackupAgentHelper {
 	public static final String PREFS = "net.reichholf.dreamdroid_preferences";
 	

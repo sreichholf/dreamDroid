@@ -406,8 +406,6 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	public static int getDialogTheme(Context context) {
-		if (Build.VERSION.SDK_INT < 11)
-			return android.R.style.Theme_Dialog;
 		if (isLightTheme(context))
 			return R.style.Theme_DreamDroid_Light_Dialog;
 		else

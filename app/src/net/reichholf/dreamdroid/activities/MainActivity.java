@@ -33,8 +33,6 @@ import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.ProfileChangedListener;
@@ -101,7 +99,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
@@ -112,7 +110,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
 		 */
 		@Override
@@ -122,7 +120,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		/*
 		 * (non-Javadoc)
-		 * 
+		 *
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		@Override
@@ -133,8 +131,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
-	private void dismissSnackbar(){
-		if(mSnackbar != null) {
+	private void dismissSnackbar() {
+		if (mSnackbar != null) {
 			mSnackbar.dismiss();
 			mSnackbar = null;
 		}
@@ -165,7 +163,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				}
 		} else {
 			dismissSnackbar();
-			if((Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)){
+			if ((Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)) {
 				String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 				setConnectionState(error, true);
 			} else {
@@ -272,15 +270,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		getMenuInflater().inflate(R.menu.search, menu);
 		MenuItem searchItem = menu.findItem(R.id.action_search);
 
-		// there is a bug with NAVIGATION_MODE_LIST and
-		// SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW which makes the
-		// List "invisible" after the search view as expanded, the following
-		// two lines are a workaround for this bug!
-		// SDK < 11 is handled differently... (non-collapsible there)
-		if (Build.VERSION.SDK_INT >= 11) {
-			MenuItemCompat.expandActionView(searchItem);
-			MenuItemCompat.collapseActionView(searchItem);
-		}
+        MenuItemCompat.expandActionView(searchItem);
+        MenuItemCompat.collapseActionView(searchItem);
 
 		SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
 		if (searchView == null) { //WAIT, WHAT?
@@ -322,9 +313,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 					mIsDrawerOpen = false;
 					supportInvalidateOptionsMenu();
 					ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-					if(callbackHandler != null)
+					if (callbackHandler != null)
 						callbackHandler.onDrawerClosed();
 				}
+
 				@Override
 				public void onDrawerOpened(View drawerView) {
 					supportInvalidateOptionsMenu();
@@ -333,11 +325,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 				@Override
 				public void onDrawerSlide(View drawerView, float slideOffset) {
-					if(isDrawerOpen() || mIsDrawerOpen)
+					if (isDrawerOpen() || mIsDrawerOpen)
 						return;
 					mIsDrawerOpen = true;
 					ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
-					if(callbackHandler != null)
+					if (callbackHandler != null)
 						callbackHandler.onDrawerOpened();
 				}
 			};
@@ -383,7 +375,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
 	 * onSaveInstanceState(android.os.Bundle)
 	 */
@@ -459,7 +451,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.reichholf.dreamdroid.OnActiveProfileChangedListener#
 	 * onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
 	 */
@@ -497,7 +489,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java
 	 * .lang.Class, java.lang.Class)
@@ -514,7 +506,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
 	 * .support.v4.app.Fragment)
@@ -526,7 +518,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
 	 * .support.v4.app.Fragment, boolean)
@@ -539,7 +531,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			if(Build.VERSION.SDK_INT != 15)
 				ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
 
 		showFragment(ft, R.id.detail_view, fragment);
@@ -547,7 +538,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			ft.addToBackStack(null);
 		}
 		ft.commit();
-		if(DreamDroid.isTrackingEnabled(this))
+		if (DreamDroid.isTrackingEnabled(this))
 			((PiwikApplication) getApplication()).getTracker().trackScreenView(fragment.getClass().getSimpleName(), fragment.getClass().getSimpleName());
 	}
 
@@ -647,14 +638,14 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog.
 	 * EpgDetailDialogListener#onFinishEpgDetailDialog(int)
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		if ("connection_error".equals(dialogTag)) {
-			if(action != ConnectionErrorDialog.ACTION_EDIT_PROFILE)
+			if (action != ConnectionErrorDialog.ACTION_EDIT_PROFILE)
 				return;
 
 			if (mDetailFragment != null && ProfileEditFragment.class.equals(mDetailFragment.getClass()))
@@ -693,7 +684,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog.
 	 * SleepTimerDialogActionListener#setSleepTimer(java.lang.String,
 	 * java.lang.String, boolean)
@@ -707,7 +698,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog.
 	 * SendMessageDialogActionListener#onSendMessage(java.lang.String,
 	 * java.lang.String, java.lang.String)
@@ -721,26 +712,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
 		if ("light_theme".equals(key)) {
-			if(Build.VERSION.SDK_INT >= 11){
-				DreamDroid.setTheme(this);
-				recreate();
-				return;
-			}
-			new MaterialDialog.Builder(this)
-					.callback(new MaterialDialog.ButtonCallback() {
-						@Override
-						public void onPositive(MaterialDialog dialog) {
-							restart();
-						}
-
-					})
-					.title(R.string.restart)
-					.content(R.string.theme_change_restart)
-					.positiveText(R.string.ok)
-					.negativeText(R.string.cancel)
-					.show();
+			DreamDroid.setTheme(this);
+			recreate();
+			return;
 		}
-
 	}
 
 	private void restart() {
@@ -773,7 +748,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextSubmit
 	 * (java.lang.String)
@@ -790,7 +765,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextChange
 	 * (java.lang.String)
