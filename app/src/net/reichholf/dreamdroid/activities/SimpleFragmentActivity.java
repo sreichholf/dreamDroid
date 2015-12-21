@@ -32,7 +32,6 @@ import android.view.Window;
  */
 public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHandler,
 		ActionDialog.DialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener {
-	public static final int MENU_HOME = 89283794;
 
 	private Fragment mFragment;
 	private ActivityCallbackHandler mCallBackHandler;
@@ -43,8 +42,9 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	public void onCreate(Bundle savedInstanceState) {
 		if (!mThemeSet)
 			DreamDroid.setTheme(this);
-		super.onCreate(savedInstanceState);
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		super.onCreate(savedInstanceState);
+
 
 		if (getSupportActionBar() != null) {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
