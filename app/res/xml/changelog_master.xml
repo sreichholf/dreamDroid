@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1" versioncode="350">
+    <release version="1.1" versioncode="351">
+        <change>More Material Design stuff. Especially on Android &gt;= 5.0</change>
         <change>Internal changes required for building with android 6.0 SDK</change>
     </release>
 </changelog>
