@@ -8,10 +8,12 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.R;
@@ -35,14 +37,10 @@ public class SendMessageDialog extends AbstractDialog {
 				.title(R.string.send_message)
 				.positiveText(R.string.send)
 				.negativeText(R.string.cancel)
-				.callback(new MaterialDialog.ButtonCallback() {
+				.onPositive(new MaterialDialog.SingleButtonCallback() {
 					@Override
-					public void onNegative(MaterialDialog materialDialog) {
-					}
-
-					@Override
-					public void onPositive(MaterialDialog materialDialog) {
-						View view = materialDialog.getCustomView();
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+						View view = dialog.getCustomView();
 						EditText text = (EditText) view.findViewById(R.id.EditTextMessage);
 						EditText timeout = (EditText) view.findViewById(R.id.EditTextTimeout);
 

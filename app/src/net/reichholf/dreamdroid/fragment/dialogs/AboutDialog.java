@@ -22,6 +22,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 /**
@@ -44,19 +45,20 @@ public class AboutDialog extends ActionDialog {
 				.content(text)
 				.neutralText(R.string.donate)
 				.positiveText(R.string.privacy)
-		.callback(new MaterialDialog.ButtonCallback() {
-			@Override
-			public void onNeutral(MaterialDialog dialog) {
-				ExtendedHashMap skus = ((BaseActivity) getActivity()).getIabItems();
-				DonationDialog d = DonationDialog.newInstance(skus);
-				((MultiPaneHandler) getActivity()).showDialogFragment(d, "donate_dialog");
-			}
-
-			@Override
-			public void onPositive(MaterialDialog dialog) {
-				finishDialog(Statics.ACTION_SHOW_PRIVACY_STATEMENT, null);
-			}
-		});
+				.onNeutral(new MaterialDialog.SingleButtonCallback() {
+					@Override
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+						ExtendedHashMap skus = ((BaseActivity) getActivity()).getIabItems();
+						DonationDialog d = DonationDialog.newInstance(skus);
+						((MultiPaneHandler) getActivity()).showDialogFragment(d, "donate_dialog");
+					}
+				})
+				.onPositive(new MaterialDialog.SingleButtonCallback() {
+					@Override
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+						finishDialog(Statics.ACTION_SHOW_PRIVACY_STATEMENT, null);
+					}
+				});
 
 		MaterialDialog dialog = builder.build();
 		Linkify.addLinks(dialog.getContentView(), Linkify.EMAIL_ADDRESSES|Linkify.WEB_URLS);

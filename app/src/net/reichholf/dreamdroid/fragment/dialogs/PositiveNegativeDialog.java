@@ -8,8 +8,10 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -70,14 +72,15 @@ public class PositiveNegativeDialog extends ActionDialog {
 				.cancelable(false)
 				.positiveText(mPositiveText)
 				.negativeText(mNegativeText)
-				.callback(new MaterialDialog.ButtonCallback() {
+				.onPositive(new MaterialDialog.SingleButtonCallback() {
 					@Override
-					public void onPositive(MaterialDialog materialDialog) {
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 						finishDialog(mPositiveId, null);
 					}
-
+				})
+				.onNegative(new MaterialDialog.SingleButtonCallback() {
 					@Override
-					public void onNegative(MaterialDialog dialog) {
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 						finishDialog(mNegativeId, null);
 					}
 				});

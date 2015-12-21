@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.R;
@@ -42,16 +43,16 @@ public class ConnectionErrorDialog extends ActionDialog {
 				.contentColorRes(R.color.material_red_500)
 				.positiveText(R.string.ok)
 				.neutralText(R.string.edit_profile)
-				.callback(new MaterialDialog.ButtonCallback() {
+				.onPositive(new MaterialDialog.SingleButtonCallback() {
 					@Override
-					public void onPositive(MaterialDialog dialog) {
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 						finishDialog(ACTION_POSITIVE, null);
 					}
-
+				})
+				.onNeutral(new MaterialDialog.SingleButtonCallback() {
 					@Override
-					public void onNeutral(MaterialDialog dialog) {
+					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 						finishDialog(ACTION_EDIT_PROFILE, null);
-						super.onNeutral(dialog);
 					}
 				})
 				.build();

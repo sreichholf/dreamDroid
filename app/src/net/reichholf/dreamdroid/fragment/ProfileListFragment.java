@@ -6,16 +6,12 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.ActionMode;
@@ -32,6 +28,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.melnykov.fab.FloatingActionButton;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
@@ -62,7 +60,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	private SimpleAdapter mAdapter;
 	private DetectDevicesTask mDetectDevicesTask;
 
-	private ProgressDialog mProgress;
+	private MaterialDialog mProgress;
 
 	private int mCurrentPos;
 
@@ -70,7 +68,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		switch(action){
+		switch (action) {
 			case Statics.ACTION_DELETE_CONFIRMED:
 				DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 				if (dbh.deleteProfile(mProfile)) {
@@ -95,7 +93,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 		@Override
 		protected void onPostExecute(ArrayList<Profile> profiles) {
-			if(!isCancelled())
+			if (!isCancelled())
 				onDevicesDetected(profiles);
 		}
 	}
@@ -132,7 +130,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
 			mIsActionMode = false;
-			if(mIsActionModeRequired)
+			if (mIsActionModeRequired)
 				return;
 			final ListView lv = getListView();
 			lv.setItemChecked(lv.getCheckedItemPosition(), false);
@@ -159,9 +157,14 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 			if (mProgress != null) {
 				mProgress.dismiss();
 			}
-			mProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.searching),
-					getText(R.string.searching_known_devices));
-			mProgress.setCancelable(false);
+			MaterialDialog.Builder builder = new MaterialDialog.Builder(getAppCompatActivity());
+			builder.progress(true, 0)
+					.progressIndeterminateStyle(true)
+					.title(R.string.searching)
+					.content(R.string.searching_known_devices)
+					.cancelable(false);
+			mProgress = builder.build();
+			mProgress.show();
 			mDetectDevicesTask = new DetectDevicesTask();
 			mDetectDevicesTask.execute();
 		} else {
@@ -196,12 +199,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		mProgress.dismiss();
 		mDetectedProfiles = profiles;
 
-		AlertDialog.Builder builder;
-		if(Build.VERSION.SDK_INT >= 11)
-			builder = new AlertDialog.Builder(getAppCompatActivity(), DreamDroid.getDialogTheme(getAppCompatActivity()));
-		else
-			builder = new AlertDialog.Builder(getAppCompatActivity());
-		builder.setTitle(R.string.autodiscover_dreamboxes);
+		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
+		builder.title(R.string.autodiscover_dreamboxes);
 
 		if (mDetectedProfiles.size() > 0) {
 			CharSequence[] items = new CharSequence[profiles.size()];
@@ -210,40 +209,33 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 				items[i] = String.format("%s (%s)", profiles.get(i).getName(), profiles.get(i).getHost());
 			}
 
-			builder.setItems(items, new DialogInterface.OnClickListener() {
+			builder.items(items);
+			builder.positiveText(R.string.reload);
+			builder.negativeText(R.string.add_all);
+
+			builder.itemsCallback(new MaterialDialog.ListCallback() {
 				@Override
-				public void onClick(DialogInterface dialog, int which) {
+				public void onSelection(MaterialDialog dialog, View itemView, int which, CharSequence text) {
 					mProfile = mDetectedProfiles.get(which);
 					editProfile();
-					dialog.dismiss();
 				}
-
 			});
-
-			builder.setPositiveButton(R.string.reload, new OnClickListener() {
+			builder.onPositive(new MaterialDialog.SingleButtonCallback() {
 				@Override
-				public void onClick(DialogInterface dialog, int id) {
+				public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 					mDetectedProfiles = null;
-					dialog.dismiss();
 					detectDevices();
 				}
 			});
-
-			builder.setNegativeButton(R.string.add_all, new OnClickListener() {
+			builder.onNegative(new MaterialDialog.SingleButtonCallback() {
 				@Override
-				public void onClick(DialogInterface dialog, int id) {
-					dialog.dismiss();
+				public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 					addAllDetectedDevices();
 				}
 			});
 		} else {
-			builder.setMessage(R.string.autodiscovery_failed);
-			builder.setNeutralButton(android.R.string.ok, new OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int id) {
-					dialog.cancel();
-				}
-			});
+			builder.content(R.string.autodiscovery_failed);
+			builder.neutralText(android.R.string.ok);
 		}
 		builder.show();
 	}
@@ -289,7 +281,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		reloadProfiles();
 		if (savedInstanceState != null) {
 			int pos = savedInstanceState.getInt("cursorPosition");
-			if(pos < mProfiles.size())
+			if (pos < mProfiles.size())
 				mProfile = mProfiles.get(pos);
 		}
 
