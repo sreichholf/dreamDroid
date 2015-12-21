@@ -639,6 +639,12 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		fragment.show(fm, tag);
 	}
 
+	@Override
+	public void showDialogFragment(android.app.DialogFragment fragment, String tag) {
+		android.app.FragmentManager fm = getFragmentManager();
+		fragment.show(fm, tag);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

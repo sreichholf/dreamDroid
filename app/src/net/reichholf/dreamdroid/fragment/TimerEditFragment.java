@@ -47,14 +47,17 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
-import com.fourmob.datetimepicker.date.DatePickerDialog;
-import com.sleepbot.datetimepicker.time.RadialPickerLayout;
-import com.sleepbot.datetimepicker.time.TimePickerDialog;
 
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
+import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 //TODO Add Tag Support
 
 /**
@@ -339,9 +342,8 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 	 * @param id
 	 */
 	protected boolean onItemSelected(int id) {
-		Bundle args;
-		boolean consumed = false;
-		Calendar calendar = null;
+		boolean consumed;
+		Calendar calendar;
 		switch (id) {
 			case Statics.ITEM_SAVE:
 				saveTimer();
@@ -360,12 +362,12 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 
 			case Statics.ITEM_PICK_BEGIN_DATE:
 				calendar = getCalendar(mBegin);
-				DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+				DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance(new OnDateSetListener() {
 					@Override
-					public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+					public void onDateSet(DatePickerDialog view, int year, int month, int day) {
 						TimerEditFragment.this.onDateSet(true, year, month, day);
 					}
-				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 				getMultiPaneHandler().showDialogFragment(datePickerDialogBegin, "dialog_pick_begin_date");
 				consumed = true;
 				break;
@@ -374,22 +376,22 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				calendar = getCalendar(mBegin);
 				TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
 					@Override
-					public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
+					public void onTimeSet(RadialPickerLayout view, int hour, int minute, int second) {
 						TimerEditFragment.this.onTimeSet(true, hour, minute);
 					}
-				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
+				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialogBegin, "dialog_pick_begin_time");
 				consumed = true;
 				break;
 
 			case Statics.ITEM_PICK_END_DATE:
 				calendar = getCalendar(mEnd);
-				DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance(new DatePickerDialog.OnDateSetListener() {
+				DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance(new OnDateSetListener() {
 					@Override
-					public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+					public void onDateSet(DatePickerDialog view, int year, int month, int day) {
 						TimerEditFragment.this.onDateSet(false, year, month, day);
 					}
-				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 				getMultiPaneHandler().showDialogFragment(datePickerDialogEnd, "dialog_pick_end_date");
 				consumed = true;
 				break;
@@ -398,10 +400,10 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				calendar = getCalendar(mEnd);
 				TimePickerDialog timePickerDialogEnd = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
 					@Override
-					public void onTimeSet(RadialPickerLayout radialPickerLayout, int hour, int minute) {
+					public void onTimeSet(RadialPickerLayout view, int hour, int minute, int second) {
 						TimerEditFragment.this.onTimeSet(false, hour, minute);
 					}
-				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
+				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialogEnd, "dialog_pick_end_time");
 				consumed = true;
 				break;
@@ -420,7 +422,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 				consumed = super.onItemSelected(id);
 				break;
 		}
-
 		return consumed;
 	}
 

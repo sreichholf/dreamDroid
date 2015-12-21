@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.fourmob.datetimepicker.date.DatePickerDialog;
-import com.sleepbot.datetimepicker.time.RadialPickerLayout;
-import com.sleepbot.datetimepicker.time.TimePickerDialog;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
@@ -72,8 +72,9 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 			@Override
 			public void onClick(View v) {
 				Calendar calendar = getCalendar();
-				final DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+				final DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 				getMultiPaneHandler().showDialogFragment(datePickerDialog, "epg_bouquet_date_picker");
+
 			}
 		});
 
@@ -83,7 +84,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 			@Override
 			public void onClick(View v) {
 				Calendar calendar = getCalendar();
-				final TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true, true);
+				final TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialog, "epg_bouquet_time_picker");
 			}
 		});
@@ -215,7 +216,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	}
 
 	@Override
-	public void onTimeSet(RadialPickerLayout radialPickerLayout, int hourOfDay, int minute) {
+	public void onTimeSet(RadialPickerLayout radialPickerLayout, int hourOfDay, int minute, int second) {
 		Calendar cal = getCalendar();
 		if(cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
 			return;

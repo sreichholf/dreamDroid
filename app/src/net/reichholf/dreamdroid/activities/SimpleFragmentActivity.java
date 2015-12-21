@@ -214,6 +214,12 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	}
 
 	@Override
+	public void showDialogFragment(android.app.DialogFragment fragment, String tag) {
+		android.app.FragmentManager fm = getFragmentManager();
+		fragment.show(fm, tag);
+	}
+
+	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		if (mFragment != null)
 			((ActionDialog.DialogActionListener) mFragment).onDialogAction(action, details, dialogTag);

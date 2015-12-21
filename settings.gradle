@@ -1,6 +1,5 @@
 include ':app'
 include ':libraries:ckChangeLog'
-include ':libraries:datetimepicker'
 include ':libraries:numberpicker'
 include ':libraries:gaugeview-library'
 include ':libraries:MemorizingTrustManager'

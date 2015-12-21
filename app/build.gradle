@@ -26,11 +26,11 @@ dependencies {
     compile 'com.github.chrisbanes.photoview:library:1.2.+'
     compile 'com.nineoldandroids:library:2.4.+'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.3'
+    compile 'com.wdullaer:materialdatetimepicker:2.1.1'
     compile files('libs/ftp4j-1.7.2.jar')
     compile files('libs/jmdns-3.4.1.jar')
     compile files('libs/PiwikAndroidSdk.jar')
     compile files('libs/signpost-core-1.2.1.1.jar')
-    compile project(':libraries:datetimepicker')
     compile project(':libraries:ckChangeLog')
     compile project(':libraries:gaugeview-library')
     compile project(':libraries:numberpicker')

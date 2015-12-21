@@ -29,6 +29,8 @@ public interface MultiPaneHandler {
 
 	public void showDialogFragment(DialogFragment fragment, String tag);
 
+	public void showDialogFragment(android.app.DialogFragment fragment, String tag);
+
 	public boolean isMultiPane();
 
 	public boolean isDrawerOpen();
