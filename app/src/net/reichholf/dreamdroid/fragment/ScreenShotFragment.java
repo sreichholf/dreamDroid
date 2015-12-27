@@ -34,7 +34,7 @@ import android.widget.Toast;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -79,7 +79,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	private byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
 	private PhotoViewAttacher mAttacher;
-	private DreamDroidHttpFragmentHelper mHttpHelper;
+	private HttpFragmentHelper mHttpHelper;
 
 	private ShareActionProvider mShareActionProvider;
 
@@ -102,7 +102,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	public ScreenShotFragment() {
 		super();
 		shouldRetain(true);
-		mHttpHelper = new DreamDroidHttpFragmentHelper();
+		mHttpHelper = new HttpFragmentHelper();
 		mActionsEnabled = true;
 		mSetTitle = true;
 	}
@@ -126,7 +126,7 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 		mShouldRetainInstance = getArguments().getBoolean(BUNDLE_KEY_RETAIN);
 		super.onCreate(savedInstanceState);
 		if (mHttpHelper == null)
-			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
+			mHttpHelper = new HttpFragmentHelper(this);
 		else
 			mHttpHelper.bindToFragment(this);
 

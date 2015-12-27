@@ -20,16 +20,16 @@ import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 
 
-public class DreamDroidFragmentHelper {
+public class FragmentHelper {
 	private Fragment mFragment;
 	protected String mCurrentTitle;
 	protected String mBaseTitle;
 
-	public DreamDroidFragmentHelper() {
+	public FragmentHelper() {
 
 	}
 
-	public DreamDroidFragmentHelper(Fragment fragment) {
+	public FragmentHelper(Fragment fragment) {
 		mFragment = fragment;
 	}
 

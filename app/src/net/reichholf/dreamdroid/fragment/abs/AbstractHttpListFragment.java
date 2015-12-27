@@ -27,7 +27,8 @@ import com.melnykov.fab.FloatingActionButton;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
@@ -45,7 +46,7 @@ import java.util.HashMap;
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
@@ -55,10 +56,10 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
 	protected BaseAdapter mAdapter;
-	protected DreamDroidHttpFragmentHelper mHttpHelper;
+	protected HttpFragmentHelper mHttpHelper;
 
 	public AbstractHttpListFragment() {
-		mHttpHelper = new DreamDroidHttpFragmentHelper();
+		mHttpHelper = new HttpFragmentHelper();
 	}
 
 	protected void setDefaultLocation() {
@@ -71,7 +72,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		super.onCreate(savedInstanceState);
 
 		if (mHttpHelper == null)
-			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
+			mHttpHelper = new HttpFragmentHelper(this);
 		else
 			mHttpHelper.bindToFragment(this);
 		setHasOptionsMenu(true);
@@ -262,7 +263,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * @param result
 	 */
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-		mHttpHelper.onSimpleResult(success, result);
+		//mHttpHelper.onSimpleResult(success, result);
 	}
 
 	@Override
@@ -308,7 +309,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	protected void reload() {
-		reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
+		reload(HttpFragmentHelper.LOADER_DEFAULT_ID);
 	}
 
 	public String getLoadFinishedTitle() {

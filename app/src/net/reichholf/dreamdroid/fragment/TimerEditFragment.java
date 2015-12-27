@@ -6,17 +6,36 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
+import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
+import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
@@ -30,34 +49,13 @@ import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.TimePicker;
-
-
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
-import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
-import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 //TODO Add Tag Support
 
 /**
@@ -65,7 +63,7 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
  *
  * @author sreichholf
  */
-public class TimerEditFragment extends AbstractHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
+public class TimerEditFragment extends AbstractHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener, GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
 
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
 
@@ -92,67 +90,21 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 	private TextView mService;
 	private TextView mRepeatings;
 	private TextView mTags;
-	private ProgressDialog mLoadProgress;
+	private ProgressDialog mLocationsAndTagsProgress;
 	private ProgressDialog mProgress;
 
 	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
 
+
 	private int mBegin;
 	private int mEnd;
 
-	private class GetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
-
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			if (DreamDroid.getLocations().size() == 0) {
-				if (isCancelled())
-					return false;
-				publishProgress(getText(R.string.locations) + " - " + getText(R.string.fetching_data));
-				DreamDroid.loadLocations(getHttpClient());
-			}
-
-			if (DreamDroid.getTags().size() == 0) {
-				if (isCancelled())
-					return false;
-				publishProgress(getText(R.string.tags) + " - " + getText(R.string.fetching_data));
-				DreamDroid.loadTags(getHttpClient());
-			}
-
-			return true;
-		}
-
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			if (isCancelled())
-				return;
-			if (mLoadProgress != null) {
-				if (!mLoadProgress.isShowing()) {
-					mLoadProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.loading).toString(),
-							progress[0]);
-				} else {
-					mLoadProgress.setMessage(progress[0]);
-				}
-			} else {
-				mLoadProgress = ProgressDialog.show(getAppCompatActivity(), getText(R.string.loading).toString(),
-						progress[0]);
-			}
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			if(isCancelled())
-				return;
-			if (mLoadProgress.isShowing()) {
-				mLoadProgress.dismiss();
-			}
-			reload();
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.timer));
+		mLocationsAndTagsProgress = null;
 	}
 
 	@Override
@@ -233,7 +185,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 			mSelectedTags = new ArrayList<>();
 
 			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
-				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask();
+				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
 				mGetLocationsAndTagsTask.execute();
 			} else {
 				reload();
@@ -650,7 +602,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 			mProgress.dismiss();
 			mProgress = null;
 		}
-		super.onSimpleResult(success, result);
 
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			finish(Activity.RESULT_OK);
@@ -752,5 +703,29 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 			updateBegin(cal);
 		else
 			updateEnd(cal);
+	}
+
+	@Override
+	public void onGetLocationsAndTagsProgress(String title, String progress) {
+
+		if (mLocationsAndTagsProgress != null) {
+			if (!mLocationsAndTagsProgress.isShowing()) {
+				mLocationsAndTagsProgress = ProgressDialog.show(getAppCompatActivity(), title, progress);
+			} else {
+				mLocationsAndTagsProgress.setMessage(progress);
+			}
+		} else {
+			mLocationsAndTagsProgress = ProgressDialog.show(getAppCompatActivity(), title, progress);
+		}
+
+	}
+
+	@Override
+	public void onLocationsAndTagsReady() {
+		if (mLocationsAndTagsProgress != null) {
+			mLocationsAndTagsProgress.dismiss();
+			mLocationsAndTagsProgress = null;
+		}
+		reload();
 	}
 }

@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.fragment;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.Loader;
@@ -255,10 +254,10 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.navigation_layout, container, false);
-		registerImageButtonListener(view, R.id.buttonSettings);
-		registerImageButtonListener(view, R.id.buttonAbout);
-		registerImageButtonListener(view, R.id.buttonProfiles);
-		registerImageButtonListener(view, R.id.buttonChangeLog);
+		registerImageButtonListener(view, R.id.menu_navigation_settings);
+		registerImageButtonListener(view, R.id.menu_navigation_about);
+		registerImageButtonListener(view, R.id.menu_navigation_profiles);
+		registerImageButtonListener(view, R.id.menu_navigation_changelog);
 
 		return view;
 	}
@@ -275,7 +274,7 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 			@Override
 			public void onClick(View v) {
 				CheckableImageButton cib = (CheckableImageButton) v;
-				if (cib.getId() == R.id.buttonProfiles || cib.getId() == R.id.buttonSettings) {
+				if (cib.getId() == R.id.menu_navigation_profiles || cib.getId() == R.id.menu_navigation_settings) {
 					getListView().setItemChecked(mCurrentListItem, false);
 					mCurrentListItem = -1;
 					if (cib.isChecked()) {
@@ -285,13 +284,13 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 					cib.setChecked(true);
 
 					CheckableImageButton btn = null;
-					if (cib.getId() == R.id.buttonProfiles)
-						btn = (CheckableImageButton) findViewById(R.id.buttonSettings);
+					if (cib.getId() == R.id.menu_navigation_profiles)
+						btn = (CheckableImageButton) findViewById(R.id.menu_navigation_settings);
 					else
-						btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
+						btn = (CheckableImageButton) findViewById(R.id.menu_navigation_profiles);
 					btn.setChecked(false);
 				} else {
-					CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
+					CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.menu_navigation_profiles);
 					btn.setChecked(false);
 				}
 				onItemSelected(v.getId());
@@ -300,7 +299,8 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 	}
 
 	public void setHighlightCurrent(boolean highlight) {
-		mHighlightCurrent = highlight;
+		//mHighlightCurrent = highlight;
+		mHighlightCurrent = false;
 	}
 
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -333,9 +333,9 @@ public class NavigationFragment extends AbstractHttpListFragment implements Acti
 		// only mark the entry if it isn't a "dialog-only-item"
 		// TODO find a reliable way to mark the current item...
 		if (mHighlightCurrent) {
-			CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.buttonProfiles);
+			CheckableImageButton btn = (CheckableImageButton) findViewById(R.id.menu_navigation_profiles);
 			btn.setChecked(false);
-			btn = (CheckableImageButton) findViewById(R.id.buttonSettings);
+			btn = (CheckableImageButton) findViewById(R.id.menu_navigation_settings);
 			btn.setChecked(false);
 
 			if (mCurrent[4] == 0 || (mCurrent[4] == 2 && isTablet())) {

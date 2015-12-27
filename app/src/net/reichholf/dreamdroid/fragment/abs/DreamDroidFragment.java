@@ -20,7 +20,7 @@ import com.melnykov.fab.FloatingActionButton;
 
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
+import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 
@@ -30,12 +30,12 @@ import net.reichholf.dreamdroid.helpers.Statics;
  * 
  */
 public abstract class DreamDroidFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
-	private DreamDroidFragmentHelper mHelper = null;
+	private FragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
 
 	public DreamDroidFragment() {
 		super();
-		mHelper = new DreamDroidFragmentHelper();
+		mHelper = new FragmentHelper();
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (mHelper == null)
-			mHelper = new DreamDroidFragmentHelper(this);
+			mHelper = new FragmentHelper(this);
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);

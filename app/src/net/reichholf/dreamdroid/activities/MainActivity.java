@@ -7,12 +7,11 @@
 package net.reichholf.dreamdroid.activities;
 
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
@@ -39,9 +38,9 @@ import net.reichholf.dreamdroid.ProfileChangedListener;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.asynctask.CheckProfileTask;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
-import net.reichholf.dreamdroid.fragment.NavigationFragment;
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog;
@@ -49,6 +48,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
+import net.reichholf.dreamdroid.fragment.helper.NavigationHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -61,13 +61,15 @@ import java.util.List;
 
 import de.cketti.library.changelog.ChangeLog;
 
+//import net.reichholf.dreamdroid.fragment.NavigationFragment;
+
 /**
  * @author sre
  */
 public class MainActivity extends BaseActivity implements MultiPaneHandler, ProfileChangedListener,
 		ActionDialog.DialogActionListener, SleepTimerDialog.SleepTimerDialogActionListener,
 		SendMessageDialog.SendMessageDialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener,
-		SearchView.OnQueryTextListener, SharedPreferences.OnSharedPreferenceChangeListener {
+		SearchView.OnQueryTextListener, SharedPreferences.OnSharedPreferenceChangeListener, CheckProfileTask.CheckProfileTaskHandler {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -82,54 +84,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private CheckProfileTask mCheckProfileTask;
 
-	private NavigationFragment mNavigationFragment;
+	private NavigationHelper mNavigationHelper;
 	private Fragment mDetailFragment;
 
 	private ActionBarDrawerToggle mDrawerToggle;
 	private DrawerLayout mDrawerLayout;
 
 	private Snackbar mSnackbar;
-
-	private class CheckProfileTask extends AsyncTask<Void, String, ExtendedHashMap> {
-		private Profile mProfile;
-
-		public CheckProfileTask(Profile p) {
-			mProfile = p;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see android.os.AsyncTask#doInBackground(Params[])
-		 */
-		@Override
-		protected ExtendedHashMap doInBackground(Void... params) {
-			publishProgress(getText(R.string.checking).toString());
-			return CheckProfile.checkProfile(mProfile, MainActivity.this);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(String... progress) {
-			setConnectionState(progress[0], false);
-		}
-
-		/*
-		 * (non-Javadoc)
-		 *
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		@Override
-		protected void onPostExecute(ExtendedHashMap result) {
-			Log.i(TAG, result.toString());
-			if (!isCancelled())
-				onProfileChecked(result);
-		}
-	}
 
 	private void dismissSnackbar() {
 		if (mSnackbar != null) {
@@ -138,9 +99,19 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
+	public Context getProfileCheckContext() {
+		return this;
+	}
+
+	public void onProfileCheckProgress(String state) {
+		setConnectionState(state, false);
+	}
+
 	public void onProfileChecked(final ExtendedHashMap result) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
+		if (isFirstStart)
+			mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
 
 		if ((Boolean) result.get(CheckProfile.KEY_HAS_ERROR) && !(Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)) {
 			String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
@@ -154,13 +125,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 						}
 					});
 			mSnackbar.show();
-
-
-			if (isFirstStart)
-				for (int i = 0; i < NavigationFragment.MENU_ITEMS.length; i++) {
-					if (NavigationFragment.MENU_ITEMS[i][0] == Statics.ITEM_PROFILES)
-						mNavigationFragment.setSelectedItem(i);
-				}
 		} else {
 			dismissSnackbar();
 			if ((Boolean) result.get(CheckProfile.KEY_SOFT_ERROR)) {
@@ -169,9 +133,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			} else {
 				setConnectionState(getString(R.string.ok), true);
 			}
-			mNavigationFragment.setAvailableFeatures();
+			mNavigationHelper.setAvailableFeatures();
 			if (getCurrentDetailFragment() == null) {
-				mNavigationFragment.setSelectedItem(0);
+				mNavigationHelper.navigateTo(R.id.menu_navigation_services);
 			}
 		}
 
@@ -199,18 +163,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
 
-		if (savedInstanceState != null) {
-			mNavigationFragment = (NavigationFragment) getSupportFragmentManager().getFragment(savedInstanceState,
-					"navigation");
-		}
-
 		mIsDrawerOpen = false;
 
 		DreamDroid.setCurrentProfileChangedListener(this);
-
 		initViews();
-		mNavigationFragment.setHighlightCurrent(true);
-
 		showChangeLogIfNeeded(true);
 	}
 
@@ -242,6 +198,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	public void onResume() {
 		super.onResume();
 		mIsPaused = false;
+		//TODO preserve/restore mNavigationHelper properly
+		mNavigationHelper = new NavigationHelper(this);
 		onProfileChanged(DreamDroid.getCurrentProfile());
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 	}
@@ -251,6 +209,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		if (mCheckProfileTask != null)
 			mCheckProfileTask.cancel(true);
 		mIsPaused = true;
+		//TODO preserve/restore mNavigationHelper properly
+		mNavigationHelper = null;
 		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
 		super.onPause();
 	}
@@ -270,8 +230,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		getMenuInflater().inflate(R.menu.search, menu);
 		MenuItem searchItem = menu.findItem(R.id.action_search);
 
-        MenuItemCompat.expandActionView(searchItem);
-        MenuItemCompat.collapseActionView(searchItem);
+		MenuItemCompat.expandActionView(searchItem);
+		MenuItemCompat.collapseActionView(searchItem);
 
 		SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
 		if (searchView == null) { //WAIT, WHAT?
@@ -338,12 +298,14 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
 
-		if (mNavigationFragment == null || !((Object) mNavigationFragment).getClass().equals(NavigationFragment.class)) {
-			mNavigationFragment = new NavigationFragment();
+		//TODO recover mNavigationHelper
+		if (mNavigationHelper == null || !((Object) mNavigationHelper).getClass().equals(NavigationHelper.class)) {
+			mNavigationHelper = new NavigationHelper(this);
 		}
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		showFragment(ft, R.id.navigation_view, mNavigationFragment);
+		//showFragment(ft, R.id.navigation_view, mNavigationHelper);
+//        ft.add(mNavigationHelper, "navigation_fragment");
 		Fragment detailFragment = getCurrentDetailFragment();
 		if (detailFragment != null) {
 			showFragment(ft, R.id.detail_view, detailFragment);
@@ -381,7 +343,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		getSupportFragmentManager().putFragment(outState, "navigation", mNavigationFragment);
+		// TODO getSupportFragmentManager().putFragment(outState, "navigation", mNavigationHelper);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -464,11 +426,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			mCheckProfileTask.cancel(true);
 		}
 
-		mCheckProfileTask = new CheckProfileTask(p);
+		mCheckProfileTask = new CheckProfileTask(p, this);
 		mCheckProfileTask.execute();
 
-		if (mNavigationFragment != null)
-			mNavigationFragment.onProfileChanged();
+		if (mNavigationHelper != null)
+			mNavigationHelper.onProfileChanged();
 		if (mDetailFragment != null && mDetailFragment instanceof HttpBaseFragment)
 			((HttpBaseFragment) mDetailFragment).onProfileChanged();
 	}
@@ -531,7 +493,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-				ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
+			ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
 
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {
@@ -549,13 +511,17 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (callbackHandler.onKeyDown(keyCode, event))
 				return true;
 
-		// if the detail fragment didn't handle it, check if the navigation
-		// fragment wants it
-		callbackHandler = mNavigationFragment;
-		if (callbackHandler != null)
-			if (callbackHandler.onKeyDown(keyCode, event))
-				return true;
+		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("volume_control", false)) {
+			switch (keyCode) {
+				case KeyEvent.KEYCODE_VOLUME_UP:
+					//TODO onVolumeButtonClicked(Volume.CMD_UP);
+					return true;
 
+				case KeyEvent.KEYCODE_VOLUME_DOWN:
+					//TODO onVolumeButtonClicked(Volume.CMD_DOWN);
+					return true;
+			}
+		}
 		return super.onKeyDown(keyCode, event);
 	}
 
@@ -566,14 +532,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (callbackHandler.onKeyUp(keyCode, event))
 				return true;
 
-		// if the detail fragment didn't handle it, check if the navigation
-		// fragment wants it
-		callbackHandler = mNavigationFragment;
-		if (callbackHandler != null)
-			if (callbackHandler.onKeyUp(keyCode, event))
-				return true;
-
-		return super.onKeyUp(keyCode, event);
+		return keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || super.onKeyUp(keyCode, event);
 	}
 
 	public boolean isMultiPane() {
@@ -600,7 +559,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onFragmentResume(Fragment fragment) {
-		if (!fragment.equals(mNavigationFragment) && !fragment.equals(mDetailFragment)) {
+		if (!fragment.equals(mNavigationHelper) && !fragment.equals(mDetailFragment)) {
 			mDetailFragment = fragment;
 			showDetails(fragment);
 		}
@@ -608,13 +567,12 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onFragmentPause(Fragment fragment) {
-		if (fragment != mNavigationFragment)
-			mDetailFragment = null;
+		mDetailFragment = null;
 	}
 
 	@Override
 	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
-		DialogFragment f = null;
+		DialogFragment f;
 		try {
 			f = fragmentClass.newInstance();
 			f.setArguments(args);
@@ -667,7 +625,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		} else if (action == Statics.ACTION_NONE) {
 			return;
 		} else if (isNavigationDialog(dialogTag)) {
-			mNavigationFragment.onDialogAction(action, details, dialogTag);
+			mNavigationHelper.onDialogAction(action, details, dialogTag);
 		} else if (mDetailFragment != null) {
 			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
 		}
@@ -691,8 +649,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onSetSleepTimer(String time, String action, boolean enabled) {
-		if (mNavigationFragment != null)
-			mNavigationFragment.onSetSleepTimer(time, action,
+		if (mNavigationHelper != null)
+			mNavigationHelper.onSetSleepTimer(time, action,
 					enabled);
 	}
 
@@ -705,7 +663,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onSendMessage(String text, String type, String timeout) {
-		mNavigationFragment.onSendMessage(text, type, timeout);
+		mNavigationHelper.onSendMessage(text, type, timeout);
 	}
 
 	@Override
@@ -727,7 +685,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
 		if (isNavigationDialog(dialogTag)) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationFragment).onMultiChoiceDialogSelection(dialogTag,
+			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogSelection(dialogTag,
 					dialog, selected);
 		} else if (mDetailFragment != null) {
 			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment).onMultiChoiceDialogSelection(dialogTag,
@@ -738,7 +696,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
 		if (isNavigationDialog(dialogTag)) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationFragment).onMultiChoiceDialogFinish(dialogTag,
+			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogFinish(dialogTag,
 					result);
 		} else if (mDetailFragment != null) {
 			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment)

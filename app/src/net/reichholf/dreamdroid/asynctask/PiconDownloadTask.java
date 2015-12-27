@@ -4,7 +4,7 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
-package net.reichholf.dreamdroid.helpers;
+package net.reichholf.dreamdroid.asynctask;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -20,7 +20,6 @@ import it.sauronsoftware.ftp4j.FTPFile;
 
 /**
  * @author sre
- * 
  */
 public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 	private static String TAG = "PiconDownloadTask";
@@ -52,7 +51,7 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 				tmpFile.mkdirs();
 
 			tmpFile = new File(String.format("%s.nomedia", basePath));
-			if(!tmpFile.exists())
+			if (!tmpFile.exists())
 				tmpFile.createNewFile();
 
 			publishProgress(DownloadProgress.EVENT_ID_CONNECTING);
@@ -106,7 +105,7 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 
 	@Override
 	protected void onPostExecute(Void unused) {
-		if(isCancelled())
+		if (isCancelled())
 			return;
 		raiseEvent(DownloadProgress.EVENT_ID_FINISHED);
 	}

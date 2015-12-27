@@ -30,7 +30,7 @@
 
 
         <net.reichholf.dreamdroid.widget.CheckableImageButton
-            android:id="@+id/buttonChangeLog"
+            android:id="@+id/menu_navigation_changelog"
             style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -39,7 +39,7 @@
             android:src="?attr/ic_menu_changelog"/>
 
         <net.reichholf.dreamdroid.widget.CheckableImageButton
-            android:id="@+id/buttonAbout"
+            android:id="@+id/menu_navigation_about"
             style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -48,7 +48,7 @@
             android:src="?attr/ic_menu_about"/>
 
         <net.reichholf.dreamdroid.widget.CheckableImageButton
-            android:id="@+id/buttonProfiles"
+            android:id="@+id/menu_navigation_profiles"
             style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -57,7 +57,7 @@
             android:src="?attr/ic_menu_profiles"/>
 
         <net.reichholf.dreamdroid.widget.CheckableImageButton
-            android:id="@+id/buttonSettings"
+            android:id="@+id/menu_navigation_settings"
             style="@style/NavButtonBarButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

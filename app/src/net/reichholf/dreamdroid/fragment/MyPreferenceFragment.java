@@ -20,7 +20,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.helpers.PiconDownloadTask;
+import net.reichholf.dreamdroid.asynctask.PiconDownloadTask;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 
 /**
@@ -105,9 +105,9 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see net.reichholf.dreamdroid.helpers.PiconDownloadTask.
+	 * @see net.reichholf.dreamdroid.asynctask.PiconDownloadTask.
 	 * PiconDownloadProgressListener#updatePiconDownloadProgress(int,
-	 * net.reichholf.dreamdroid.helpers.PiconDownloadTask.DownloadProgress)
+	 * net.reichholf.dreamdroid.asynctask.PiconDownloadTask.DownloadProgress)
 	 */
 	@Override
 	public void updatePiconDownloadProgress(int eventid, PiconDownloadTask.DownloadProgress progress) {

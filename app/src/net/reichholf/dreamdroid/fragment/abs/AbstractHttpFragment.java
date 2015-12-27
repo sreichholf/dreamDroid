@@ -16,7 +16,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -32,21 +33,21 @@ import java.util.ArrayList;
  * @author sreichholf
  */
 public abstract class AbstractHttpFragment extends DreamDroidFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
 
 	protected final String sData = "data";
-	protected DreamDroidHttpFragmentHelper mHttpHelper;
+	protected HttpFragmentHelper mHttpHelper;
 	protected boolean mReload = false;
 
 	public AbstractHttpFragment() {
-		mHttpHelper = new DreamDroidHttpFragmentHelper();
+		mHttpHelper = new HttpFragmentHelper();
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (mHttpHelper == null)
-			mHttpHelper = new DreamDroidHttpFragmentHelper(this);
+			mHttpHelper = new HttpFragmentHelper(this);
 		else
 			mHttpHelper.bindToFragment(this);
 		setHasOptionsMenu(true);
@@ -148,7 +149,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	@Override
 	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
-		args.putSerializable("params", getHttpParams(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID));
+		args.putSerializable("params", getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
 		return args;
 	}
 
@@ -209,7 +210,7 @@ public abstract class AbstractHttpFragment extends DreamDroidFragment implements
 	}
 
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-		mHttpHelper.onSimpleResult(success, result);
+		//mHttpHelper.onSimpleResult(success, result);
 	}
 
 	public void zapTo(String ref) {
