@@ -314,4 +314,7 @@
     <string name="privacy_statement_title">Privacy Statement</string>
     <string name="privacy">Privacy</string>
     <string name="next_event">Next Event</string>
+    <string name="settings_and_about"><![CDATA[Settings & About]]></string>
+    <string name="tools">Tools</string>
+    <string name="control">Control</string>
 </resources>

@@ -1,43 +1,16 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="120dip"
-    android:background="@color/material_blue_600">
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="128dip"
+              android:background="?attr/colorPrimary"
+              android:gravity="bottom"
+              android:orientation="vertical"
+              android:padding="16dp"
+              android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <net.reichholf.dreamdroid.widget.CheckableImageButton
-        android:id="@+id/menu_navigation_changelog"
-        style="@style/NavButtonBarButton"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="60dip"
-        android:layout_weight="1"
-        android:contentDescription="@string/changelog"
-        android:src="?attr/ic_menu_changelog"/>
-
-    <net.reichholf.dreamdroid.widget.CheckableImageButton
-        android:id="@+id/menu_navigation_about"
-        style="@style/NavButtonBarButton"
-        android:layout_width="match_parent"
-        android:layout_height="60dip"
-        android:layout_weight="1"
-        android:contentDescription="@string/about"
-        android:src="?attr/ic_menu_about"/>
-
-    <net.reichholf.dreamdroid.widget.CheckableImageButton
-        android:id="@+id/menu_navigation_profiles"
-        style="@style/NavButtonBarButton"
-        android:layout_width="match_parent"
-        android:layout_height="60dip"
-        android:layout_weight="1"
-        android:contentDescription="@string/profiles"
-        android:src="?attr/ic_menu_profiles"/>
-
-    <net.reichholf.dreamdroid.widget.CheckableImageButton
-        android:id="@+id/menu_navigation_settings"
-        style="@style/NavButtonBarButton"
-        android:layout_width="match_parent"
-        android:layout_height="60dip"
-        android:layout_weight="1"
-        android:contentDescription="@string/settings"
-        android:src="?attr/ic_menu_settings"/>
-
+        android:layout_height="wrap_content"
+        android:text="dreamDroid"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"/>
 </LinearLayout>

@@ -46,7 +46,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
-import net.reichholf.dreamdroid.widget.CheckableImageButton;
 
 import java.util.ArrayList;
 
@@ -54,7 +53,7 @@ import java.util.ArrayList;
  * Created by Stephan on 25.12.2015.
  */
 public class NavigationHelper implements NavigationView.OnNavigationItemSelectedListener, SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
-    protected int[] mCheckableImageButtonIds;
+    protected static int[] sDialogItemIds = {R.id.menu_navigation_remote, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
 
     MainActivity mActivity;
     protected SetPowerStateTask mSetPowerStateTask;
@@ -63,25 +62,14 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     protected SimpleHttpClient mShc;
 
     protected DialogFragment mSleepTimerProgress;
-
-
+    protected int mSelectedItemId;
 
     public NavigationHelper(MainActivity activity) {
         mActivity = activity;
         mSleepTimerProgress = null;
 
+        mSelectedItemId = -1;
         getNavigationView().setNavigationItemSelectedListener(this);
-        getNavigationView().setCheckedItem(R.id.menu_navigation_services);
-
-        mCheckableImageButtonIds = new int[]{R.id.menu_navigation_about, R.id.menu_navigation_changelog, R.id.menu_navigation_profiles, R.id.menu_navigation_settings};
-        for (int buttonId : mCheckableImageButtonIds) {
-            getHeaderView().findViewById(buttonId).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onNavigationItemClick(v.getId());
-                }
-            });
-        }
     }
 
     protected SimpleHttpClient getHttpClient() {
@@ -142,19 +130,26 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     }
 
     protected void setSelectedItem(int itemId) {
+        if (isDialogItem(itemId))
+            return;
         getNavigationView().setCheckedItem(itemId);
-        for (int buttonId : mCheckableImageButtonIds) {
-            ((CheckableImageButton) getHeaderView().findViewById(buttonId)).setChecked(buttonId == itemId);
-        }
+        mSelectedItemId = itemId;
     }
 
-    public void navigateTo(int itemId){
+    public void navigateTo(int itemId) {
         onNavigationItemClick(itemId);
     }
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         return onNavigationItemClick(item.getItemId());
+    }
+
+    protected boolean isDialogItem(int itemId) {
+        for (int id : sDialogItemIds)
+            if (id == itemId)
+                return true;
+        return false;
     }
 
     protected boolean onNavigationItemClick(int itemId) {
@@ -288,7 +283,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 break;
         }
         getMainActivity().showContent();
-        return true;
+        return !isDialogItem(itemId);
     }
 
     /**
@@ -321,7 +316,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
 
     @Override
     public void onSleepTimerProgressUpdate(String title, String text) {
-        if(mSleepTimerProgress == null) {
+        if (mSleepTimerProgress == null) {
             mSleepTimerProgress = SimpleProgressDialog.newInstance(getString(R.string.sleeptimer),
                     getString(R.string.loading));
             getMainActivity().showDialogFragment(mSleepTimerProgress, "sleeptimer_progress_dialog");
@@ -330,7 +325,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
 
     @Override
     public void onSleepTimerSet(boolean success, ExtendedHashMap result, boolean openDialog, String errorText) {
-        if(mSleepTimerProgress != null) {
+        if (mSleepTimerProgress != null) {
             mSleepTimerProgress.dismiss();
             mSleepTimerProgress = null;
         }
