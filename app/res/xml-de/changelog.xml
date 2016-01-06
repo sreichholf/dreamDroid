@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1" versioncode="351">
+    <release version="1.1 beta 3" versioncode="352">
         <change>Mehr Material Design. Speziell unter Android &gt;= 5.0</change>
         <change>Interne Änderungen die durch das Android 6.0 SDK notwendig wurden</change>
+        <change>"EPG" mit älteren Versionen des WebInterface</change>
     </release>
 </changelog>
