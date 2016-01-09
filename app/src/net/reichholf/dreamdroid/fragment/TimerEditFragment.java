@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import net.reichholf.widget.FloatingActionButton;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
@@ -102,6 +103,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.timer));
 		mLocationsAndTagsProgress = null;
@@ -200,8 +202,11 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 		} else {
 			reload();
 		}
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_main);
 
-		registerFab(R.id.fab_save, view, new View.OnClickListener() {
+
+
+		registerFab(R.id.fab_main, view, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				onItemSelected(Statics.ITEM_SAVE);

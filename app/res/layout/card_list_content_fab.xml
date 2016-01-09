@@ -14,7 +14,8 @@
 ** limitations under the License.
 */
 -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -35,7 +36,7 @@
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
                 android:drawSelectorOnTop="false"
-                android:nestedScrollingEnabled="true" />
+                android:nestedScrollingEnabled="true"/>
         </android.support.v4.widget.SwipeRefreshLayout>
 
         <TextView
@@ -43,18 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
     </FrameLayout>
 
-    <com.melnykov.fab.FloatingActionButton
-        android:id="@+id/fab_add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="@dimen/fab_margin_bottom"
-        android:layout_marginRight="@dimen/fab_margin_right"
-        android:contentDescription="@string/new_timer"
-        android:src="@drawable/ic_action_fab_add" />
 </RelativeLayout>

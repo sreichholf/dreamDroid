@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment.abs;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -21,22 +22,22 @@ import android.widget.AbsListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
-
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.widget.FloatingActionButton;
 
 /**
  * @author sre
- * 
  */
 public abstract class DreamDroidListFragment extends ListFragment implements ActivityCallbackHandler, MutliPaneContent {
 	private FragmentHelper mHelper;
 	protected boolean mShouldRetainInstance = true;
+	protected boolean mHasFabReload = true;
+	protected boolean mHasFabMain = false;
 
 	protected boolean mCardListStyle = false;
 
@@ -65,7 +66,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
-		if(mShouldRetainInstance)
+		if (mShouldRetainInstance)
 			setRetainInstance(true);
 	}
 
@@ -117,15 +118,14 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		if(!getMultiPaneHandler().isDrawerOpen())
+		if (!getMultiPaneHandler().isDrawerOpen())
 			createOptionsMenu(menu, inflater);
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 	}
 
 	@Override
@@ -136,17 +136,31 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	@Override
 	public void onDrawerOpened() {
 		mIsActionModeRequired = mIsActionMode;
-		if(mActionMode != null)
+		if (mActionMode != null)
 			mActionMode.finish();
 	}
 
 	@Override
 	public void onDrawerClosed() {
-		if(mIsActionModeRequired)
+		if (mIsActionModeRequired)
 			startActionMode();
 	}
 
-	protected void startActionMode(){
+	@Override
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		setViewVisible(R.id.fab_reload, mHasFabReload);
+		setViewVisible(R.id.fab_main, mHasFabMain);
+	}
+
+	protected void setViewVisible(int id, boolean isVisible) {
+		View v = getAppCompatActivity().findViewById(id);
+		int visibility = isVisible ? View.VISIBLE : View.GONE;
+		v.setVisibility(visibility);
+	}
+
+
+	protected void startActionMode() {
 	}
 
 	public String getBaseTitle() {
@@ -196,20 +210,23 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		toast.show();
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener){
-		registerFab(id, view, onClickListener, null, false);
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
+		registerFab(id, view, descriptionId, backgroundResId, onClickListener, null, false);
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView) {
-		registerFab(id, view, onClickListener, listView, false);
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, AbsListView listView) {
+		registerFab(id, view, descriptionId, backgroundResId, onClickListener, listView, false);
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener, AbsListView listView, boolean topAligned){
-		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, AbsListView listView, boolean topAligned) {
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
 		if (listView != null)
 			fab.attachToListView(listView, topAligned);
+
+		fab.setContentDescription(getString(descriptionId));
+		fab.setImageResource(backgroundResId);
 
 		fab.setOnClickListener(onClickListener);
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
@@ -221,8 +238,8 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		});
 	}
 
-	protected void endActionMode(){
-		if(mActionMode != null)
+	protected void endActionMode() {
+		if (mActionMode != null)
 			mActionMode.finish();
 		mActionMode = null;
 	}

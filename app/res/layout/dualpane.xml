@@ -12,9 +12,11 @@
         android:orientation="vertical">
 
         <android.support.design.widget.CoordinatorLayout
+            android:id="@+id/coordinator_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="20dp"
+            android:layout_weight="1">
 
             <android.support.design.widget.AppBarLayout
                 android:id="@+id/appbar"
@@ -40,9 +42,35 @@
                 android:layout_height="fill_parent"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
+            <net.reichholf.widget.FloatingActionButton
+                android:id="@+id/fab_main"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/fab_margin_right"
+                android:src="@drawable/ic_action_fab_add"
+                android:visibility="gone"
+                app:elevation="6dp"
+                app:layout_anchor="@+id/coordinator_layout"
+                app:layout_anchorGravity="bottom|end|right"
+                app:pressedTranslationZ="12dp"/>
+
+            <net.reichholf.widget.FloatingActionButton
+                android:id="@+id/fab_reload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/fab_margin_right"
+                android:src="@drawable/ic_action_refresh"
+                android:visibility="gone"
+                app:elevation="6dp"
+                app:fabSize="mini"
+                app:layout_anchor="@+id/coordinator_layout"
+                app:layout_anchorGravity="top|end|right"
+                app:pressedTranslationZ="12dp"/>
+
         </android.support.design.widget.CoordinatorLayout>
 
-        <include layout="@layout/dualpane_connection_state"/>
+        <include
+            layout="@layout/dualpane_connection_state"/>
 
     </LinearLayout>
 
@@ -51,8 +79,8 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:itemBackground="?attr/listItemBackground"
         app:headerLayout="@layout/navigation_header"
+        app:itemBackground="?attr/listItemBackground"
         app:menu="@menu/navigation"/>
 
 </net.reichholf.dreamdroid.widget.DrawerLayout>

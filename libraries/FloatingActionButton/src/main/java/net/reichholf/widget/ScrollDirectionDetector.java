@@ -1,7 +1,9 @@
-package com.melnykov.fab;
+package net.reichholf.widget;
 
 import android.view.View;
 import android.widget.AbsListView;
+
+import net.reichholf.fab.R;
 
 /**
  * Detects which direction list view was scrolled.

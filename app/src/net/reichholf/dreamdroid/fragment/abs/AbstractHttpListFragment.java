@@ -22,8 +22,6 @@ import android.view.View.OnClickListener;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 
-import com.melnykov.fab.FloatingActionButton;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
@@ -37,6 +35,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.widget.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -131,20 +130,19 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void connectFabReload(View view, AbsListView listView) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (!sp.getBoolean("disable_fab_reload", false)) {
-			FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
-			if (fab != null)
-				fab.setVisibility(View.VISIBLE);
-			registerFab(R.id.fab_reload, view, new View.OnClickListener() {
+			registerFab(R.id.fab_reload, view, R.string.reload, R.drawable.ic_action_refresh, new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					reload();
 				}
 			}, listView, true);
+			FloatingActionButton fab_reload = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
+			fab_reload.hide();
 		}
 	}
 
 	public void detachFabReload() {
-		FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
 		if (fab != null)
 			fab.setVisibility(View.GONE);
 	}
@@ -318,7 +316,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-	                           LoaderResult<ArrayList<ExtendedHashMap>> result) {
+							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {

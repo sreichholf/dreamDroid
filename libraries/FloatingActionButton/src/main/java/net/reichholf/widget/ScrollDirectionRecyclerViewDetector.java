@@ -1,8 +1,10 @@
-package com.melnykov.fab;
+package net.reichholf.widget;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import net.reichholf.fab.R;
 
 /**
  * Detects which direction list view was scrolled.
@@ -79,7 +81,7 @@ public abstract class ScrollDirectionRecyclerViewDetector extends RecyclerView.O
      * </ul>
      * <p/>
      * It's necessary to track if row did not change, so events
-     * {@link com.melnykov.fab.ScrollDirectionListener#onScrollUp()} or {@link com.melnykov.fab.ScrollDirectionListener#onScrollDown()} could be fired with confidence
+     * {@link net.reichholf.widget.ScrollDirectionListener#onScrollUp()} or {@link net.reichholf.widget.ScrollDirectionListener#onScrollDown()} could be fired with confidence
      *
      * @see #estimateScrollY()
      */

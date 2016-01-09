@@ -6,6 +6,11 @@
 
 package net.reichholf.dreamdroid.fragment.abs;
 
+import android.app.ProgressDialog;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ListView;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
@@ -14,14 +19,9 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
-import android.app.ProgressDialog;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ListView;
 
 /**
  * @author sreichholf
- * 
  */
 public abstract class AbstractHttpEventListFragment extends AbstractHttpListFragment implements
 		ActionDialog.DialogActionListener {
@@ -92,18 +92,18 @@ public abstract class AbstractHttpEventListFragment extends AbstractHttpListFrag
 
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
-		case Statics.ACTION_SET_TIMER:
-			setTimerById(mCurrentItem);
-			break;
-		case Statics.ACTION_EDIT_TIMER:
-			setTimerByEventData(mCurrentItem);
-			break;
-		case Statics.ACTION_FIND_SIMILAR:
-			mHttpHelper.findSimilarEvents(mCurrentItem);
-			break;
-		case Statics.ACTION_IMDB:
-			IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentItem);
-			break;
+			case Statics.ACTION_SET_TIMER:
+				setTimerById(mCurrentItem);
+				break;
+			case Statics.ACTION_EDIT_TIMER:
+				setTimerByEventData(mCurrentItem);
+				break;
+			case Statics.ACTION_FIND_SIMILAR:
+				mHttpHelper.findSimilarEvents(mCurrentItem);
+				break;
+			case Statics.ACTION_IMDB:
+				IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentItem);
+				break;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package com.melnykov.fab;
+package net.reichholf.widget;
 
 /**
  * Callbacks when list was scrolled up or down.

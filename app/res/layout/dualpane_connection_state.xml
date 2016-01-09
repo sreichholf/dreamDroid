@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="20dp"
     android:layout_marginBottom="0dp"
     android:layout_marginTop="-20dp"
+    android:layout_weight="1"
     android:gravity="top"
     android:orientation="horizontal"
     android:paddingBottom="2dp"
@@ -20,7 +22,7 @@
         android:textAllCaps="true"
         android:textColor="#888"
         android:textSize="12sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/TextViewConnectionState"
@@ -32,6 +34,6 @@
         android:textAllCaps="true"
         android:textColor="#888"
         android:textSize="12sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"/>
 
 </LinearLayout>

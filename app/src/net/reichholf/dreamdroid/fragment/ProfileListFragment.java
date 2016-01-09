@@ -29,7 +29,6 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.melnykov.fab.FloatingActionButton;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
@@ -221,6 +220,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
+		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.profiles));
@@ -239,11 +239,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
-
-		FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_add);
-		fab.setContentDescription(getString(R.string.profile_add));
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
-		registerFab(R.id.fab_add, view, new View.OnClickListener() {
+		registerFab(R.id.fab_main, view, R.string.profile_add, R.drawable.ic_action_fab_add, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				createProfile();

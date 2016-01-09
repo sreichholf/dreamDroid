@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="128dip"
-              android:background="?attr/colorPrimary"
-              android:gravity="bottom"
-              android:orientation="vertical"
-              android:padding="16dp"
-              android:theme="@style/ThemeOverlay.AppCompat.Dark">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="128dip"
+    android:background="?attr/colorPrimary">
 
-    <TextView
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="dreamDroid"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"/>
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:layout_margin="0dp"
+        android:padding="0dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/dreamdroid_logo_simple"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    </ImageView>
+</FrameLayout>
