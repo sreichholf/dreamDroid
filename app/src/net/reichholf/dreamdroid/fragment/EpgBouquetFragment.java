@@ -44,6 +44,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	private TextView mDateView;
 	private TextView mTimeView;
 	private int mTime;
+	private boolean mWaitingForPicker;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 		mReference = getArguments().getString(Event.KEY_SERVICE_REFERENCE);
 		mName = getArguments().getString(Event.KEY_SERVICE_NAME);
 		mTime = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
+		mWaitingForPicker = false;
 	}
 
 	@Override
@@ -94,17 +96,14 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 		return view;
 	}
 
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		if (mReference != null) {
-			setAdapter();
-			if (mMapList.size() <= 0)
-				Log.w(LOG_TAG, String.format("%s", mTime));
-			reload();
-		} else {
-			pickBouquet();
-		}
+		setAdapter();
+		if (mMapList.size() <= 0)
+			Log.w(LOG_TAG, String.format("%s", mTime));
+		reload();
 	}
 
 	@Override
@@ -128,15 +127,17 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 					getListView().smoothScrollToPosition(0);
 				}
 				reload();
+				mWaitingForPicker = false;
+				break;
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@Override
 	protected void reload() {
-		if(mReference != null)
+		if(mReference != null && !mReference.isEmpty())
 			super.reload();
-		else
+		else if(!mWaitingForPicker)
 			pickBouquet();
 	}
 
@@ -180,6 +181,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	}
 
 	private void pickBouquet() {
+		mWaitingForPicker = true;
 		PickServiceFragment f = new PickServiceFragment();
 		Bundle args = new Bundle();
 
