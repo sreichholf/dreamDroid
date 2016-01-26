@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
             android:id="@+id/ptr_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -37,7 +37,7 @@
                 android:clipToPadding="false"
                 android:drawSelectorOnTop="false"
                 android:nestedScrollingEnabled="true"/>
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 
         <TextView
             android:id="@android:id/empty"

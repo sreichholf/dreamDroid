@@ -1,20 +1,13 @@
-<android.support.v4.widget.SwipeRefreshLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
     android:id="@+id/ptr_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ScrollView
+    <ImageView
+        android:id="@+id/screenshoot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="none"
-        android:fillViewport="true">
+        android:adjustViewBounds="false"/>
 
-        <ImageView
-            android:id="@+id/screenshoot"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="false"/>
-
-    </ScrollView>
-</android.support.v4.widget.SwipeRefreshLayout>
+</net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>

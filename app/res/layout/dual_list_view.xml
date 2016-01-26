@@ -31,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <android.support.v4.widget.SwipeRefreshLayout
+            <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
                 android:id="@+id/ptr_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
                     android:stretchMode="columnWidth"
                     android:verticalSpacing="5dp"/>
 
-            </android.support.v4.widget.SwipeRefreshLayout>
+            </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 
         </RelativeLayout>
 

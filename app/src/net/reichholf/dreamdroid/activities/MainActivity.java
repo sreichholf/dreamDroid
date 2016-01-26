@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -495,6 +496,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
 			ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
 
+		AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.appbar);
+		if(appBarLayout != null)
+			appBarLayout.setExpanded(true, true);
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {
 			ft.addToBackStack(null);

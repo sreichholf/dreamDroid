@@ -6,7 +6,7 @@
               android:paddingLeft="1dp"
               android:paddingRight="1dp">
 
-    <android.support.v4.widget.SwipeRefreshLayout
+    <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
         android:id="@+id/ptr_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -17,7 +17,7 @@
             android:layout_height="0dip"
             android:layout_weight="1"
             android:drawSelectorOnTop="false"/>
-    </android.support.v4.widget.SwipeRefreshLayout>
+    </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 
     <TextView
         android:id="@id/android:empty"

@@ -30,9 +30,8 @@
                     android:layout_height="?attr/actionBarSize"
                     android:background="?attr/colorPrimary"
                     android:minHeight="?attr/actionBarSize"
-                    app:layout_scrollFlags="scroll|enterAlways"
-                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                    app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+                    app:layout_scrollFlags="scroll|enterAlways|snap"
+                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
             </android.support.design.widget.AppBarLayout>
 
@@ -41,6 +40,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
 
             <net.reichholf.widget.FloatingActionButton
                 android:id="@+id/fab_main"
