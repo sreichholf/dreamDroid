@@ -62,8 +62,6 @@ import java.util.List;
 
 import de.cketti.library.changelog.ChangeLog;
 
-//import net.reichholf.dreamdroid.fragment.NavigationFragment;
-
 /**
  * @author sre
  */
@@ -305,8 +303,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		//showFragment(ft, R.id.navigation_view, mNavigationHelper);
-//        ft.add(mNavigationHelper, "navigation_fragment");
 		Fragment detailFragment = getCurrentDetailFragment();
 		if (detailFragment != null) {
 			showFragment(ft, R.id.detail_view, detailFragment);

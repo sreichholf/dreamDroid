@@ -1,44 +1,30 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<FrameLayout
+    android:id="@+id/listContainer"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"/>
-
-    <FrameLayout
-        android:id="@+id/listContainer"
+    <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
+        android:id="@+id/ptr_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
-            android:id="@+id/ptr_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <net.reichholf.dreamdroid.view.AutoGridView
-                android:id="@+id/grid"
-                style="?attr/cardListView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:columnWidth="90dp"
-                android:numColumns="auto_fit"
-                android:verticalSpacing="10dp"
-                android:horizontalSpacing="10dp"
-                android:stretchMode="columnWidth"
-                android:nestedScrollingEnabled="true"
-                android:gravity="center"/>
-        </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
-
-        <TextView
-            android:id="@android:id/empty"
+        <net.reichholf.dreamdroid.view.AutofitRecyclerView
+            android:id="@+android:id/list"
+            style="?attr/cardListView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:visibility="gone"/>
-    </FrameLayout>
+            android:orientation="horizontal"
+            android:columnWidth="90dp"
+            android:gravity="center"/>
+    </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 
-</LinearLayout>
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:visibility="gone"/>
+</FrameLayout>
+

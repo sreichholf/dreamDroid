@@ -4,24 +4,25 @@ import android.content.ActivityNotFoundException;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.GridView;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.adapter.recyclerview.ZapAdapter;
 import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
+import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
@@ -41,7 +42,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
-	private GridView mGridView;
 	private GetBouquetListTask mGetBouquetListTask;
 	private ArrayList<ExtendedHashMap> mBouquetList;
 	private ArrayAdapter<String> mBouquetListAdapter;
@@ -65,26 +65,17 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
-		//TODO fixup zap fragment stuff
-//		mGridView = (GridView) view.findViewById(R.id.grid);
-//		mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//			@Override
-//			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//				onListItemClick(null, view, position, id);
-//			}
-//		});
-//		mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//				onListItemLongClick(null, view, position, id);
-//				return true;
-//			}
-//		});
-		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true);
-		mGridView.setOnScrollListener(listener);
+		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(ImageLoader.getInstance(), true, true);
+		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
+		recyclerView.setOnScrollListener(listener);
 
 		restoreState(savedInstanceState);
 		return view;
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 	}
 
 	private void restoreState(Bundle savedInstanceState) {
@@ -112,8 +103,8 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-//		mAdapter = new ZapListAdapter(getAppCompatActivity(), R.layout.zap_grid_item, mMapList);
-//		setListAdapter(mAdapter);
+		mAdapter = new ZapAdapter(getContext(), mMapList);
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	@Override
@@ -181,6 +172,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 		mGetBouquetListTask.execute();
 
 		mMapList.clear();
+		mAdapter.notifyDataSetChanged();
 		if (result.isError()) {
 			setEmptyText(result.getErrorText());
 			return;

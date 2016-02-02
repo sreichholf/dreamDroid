@@ -10,7 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -26,7 +26,7 @@ import java.util.Date;
 /**
  * Created by Stephan on 09.03.14.
  */
-public class EpgTimelineFragment extends AbstractHttpEventListFragment {
+public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

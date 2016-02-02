@@ -44,11 +44,9 @@
                     android:columnWidth="290dp"
                     android:gravity="center"
                     android:horizontalSpacing="5dp"
-                    android:nestedScrollingEnabled="true"
                     android:numColumns="auto_fit"
                     android:stretchMode="columnWidth"
                     android:verticalSpacing="5dp"/>
-
 
             </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 

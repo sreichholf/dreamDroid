@@ -13,10 +13,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
+import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -26,7 +28,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.dreamdroid.widget.FloatingActionButton;
+import net.reichholf.widget.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +37,7 @@ import java.util.HashMap;
  * Created by Stephan on 03.05.2015.
  */
 public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, SwipeRefreshLayout.OnRefreshListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
 	public static final String BUNDLE_KEY_LIST = "list";
 	protected final String sData = "data";
 
@@ -92,7 +94,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mHttpHelper.onActivityCreated();
-//		getListView().setFastScrollEnabled(false);
+
 		try {
 			setEmptyText(getText(R.string.loading));
 		} catch (IllegalStateException e) {
@@ -116,14 +118,14 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 
 	public void connectFabReload(View view, RecyclerView recyclerView) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
-		if (!sp.getBoolean("disable_fab_reload", false)) {
-			registerFab(R.id.fab_reload, view, new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					reload();
-				}
-			}, recyclerView, true);
-		}
+		if (sp.getBoolean("disable_fab_reload", false))
+			return;
+		registerFab(R.id.fab_reload, view, R.string.reload, R.drawable.ic_action_refresh, new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				reload();
+			}
+		}, recyclerView, true);
 	}
 
 	public void detachFabReload() {
@@ -242,12 +244,8 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		return title;
 	}
 
-	/**
-	 * @param success
-	 * @param result
-	 */
+	@Override
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-		mHttpHelper.onSimpleResult(success, result);
 	}
 
 	@Override
@@ -302,7 +300,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-	                           LoaderResult<ArrayList<ExtendedHashMap>> result) {
+							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {
@@ -344,5 +342,34 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	@Override
 	public void onProfileChanged() {
 		mHttpHelper.onProfileChanged();
+	}
+
+
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
+		registerFab(id, view, descriptionId, backgroundResId, onClickListener, null, false);
+	}
+
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, RecyclerView recyclerView) {
+		registerFab(id, view, descriptionId, backgroundResId, onClickListener, recyclerView, false);
+	}
+
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, RecyclerView recyclerView, boolean topAligned) {
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		if (fab == null)
+			return;
+		if (recyclerView != null)
+			fab.attachToRecyclerView(recyclerView, topAligned);
+
+		fab.setContentDescription(getString(descriptionId));
+		fab.setImageResource(backgroundResId);
+
+		fab.setOnClickListener(onClickListener);
+		fab.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				Toast.makeText(getAppCompatActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+				return true;
+			}
+		});
 	}
 }

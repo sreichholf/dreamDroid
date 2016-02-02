@@ -170,10 +170,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         mSimpleResultTask.execute(params);
     }
 
-    /**
-     * @param success
-     * @param result
-     */
+    @Override
     public void onSimpleResult(boolean success, ExtendedHashMap result) {
         if (!mFragment.isAdded())
             return;

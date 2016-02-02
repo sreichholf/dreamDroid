@@ -175,8 +175,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.dual_list_view, null, false);
-
+		View v = inflater.inflate(R.layout.dual_list_view, container, false);
 		mEmpty = v.findViewById(android.R.id.empty);
 
 		mNavList = (ListView) v.findViewById(android.R.id.list);

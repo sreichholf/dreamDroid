@@ -245,12 +245,12 @@ public class ProfileListFragment extends BaseRecyclerFragment implements ActionD
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
 		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
-//		registerFab(R.id.fab_main, recyclerView, R.string.profile_add, R.drawable.ic_action_fab_add, new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				createProfile();
-//			}
-//		});
+		registerFab(R.id.fab_main, view, R.string.profile_add, R.drawable.ic_action_fab_add, new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				createProfile();
+			}
+		}, recyclerView, false);
 		return view;
 	}
 
@@ -272,12 +272,6 @@ public class ProfileListFragment extends BaseRecyclerFragment implements ActionD
 				mProfile = mProfiles.get(pos);
 		}
 
-//		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-//				return onListItemLongClick(a, v, position, id);
-//			}
-//		});
 		SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
 		swipeRefreshLayout.setEnabled(false);
 	}
@@ -332,8 +326,8 @@ public class ProfileListFragment extends BaseRecyclerFragment implements ActionD
 
 	protected void startActionMode() {
 		mProfile = mProfiles.get(mCurrentPos);
-//		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
-//		getListView().setItemChecked(mCurrentPos, true);
+		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
+		mSelectionSupport.setItemChecked(mCurrentPos, true);
 	}
 
 	@Override

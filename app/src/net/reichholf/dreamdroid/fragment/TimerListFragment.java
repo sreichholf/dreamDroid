@@ -47,9 +47,6 @@ import java.util.ArrayList;
  * @author sreichholf
  */
 public class TimerListFragment extends BaseHttpRecyclerFragment implements ActionDialog.DialogActionListener {
-	protected boolean mIsActionMode;
-	protected boolean mIsActionModeRequired;
-
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
 		// Called when the action mode is created; startActionMode() was called
@@ -124,49 +121,31 @@ public class TimerListFragment extends BaseHttpRecyclerFragment implements Actio
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
 		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
-//		registerFab(R.id.fab_main, view, R.string.new_timer, R.drawable.ic_action_fab_add, new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				onItemSelected(Statics.ITEM_NEW_TIMER);
-//			}
-//		}, recyclerView);
+		registerFab(R.id.fab_main, view, R.string.new_timer, R.drawable.ic_action_fab_add, new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onItemSelected(Statics.ITEM_NEW_TIMER);
+			}
+		}, recyclerView);
 		return view;
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-//		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//				mCurrentPos = position;
-//				startActionMode();
-//				return true;
-//			}
-//		});
+		setAdapter();
 	}
-
 
 	protected void startActionMode() {
 		mTimer = mMapList.get(mCurrentPos);
-//		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
+		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
 		mSelectionSupport.setItemChecked(mCurrentPos, true);
 	}
 
 	@Override
 	public void onDestroyView() {
-//		endActionMode();
+		endActionMode();
 		super.onDestroyView();
-//		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//				mTimer = mMapList.get(position);
-//				getAppCompatActivity().startSupportActionMode(mActionModeCallback);
-//				getListView().setItemChecked(position, true);
-//				return true;
-//			}
-//		});
-		setAdapter();
 	}
 
 	@Override

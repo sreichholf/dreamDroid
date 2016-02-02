@@ -25,12 +25,9 @@ import android.widget.BaseAdapter;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
-
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
-
-import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
-
+import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -38,7 +35,8 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.dreamdroid.widget.FloatingActionButton;
+import net.reichholf.widget.FloatingActionButton;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -270,7 +268,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * @param result
 	 */
 	public void onSimpleResult(boolean success, ExtendedHashMap result) {
-		//mHttpHelper.onSimpleResult(success, result);
 	}
 
 	@Override

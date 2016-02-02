@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
@@ -23,9 +24,9 @@ import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.widget.FloatingActionButton;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
+import net.reichholf.widget.FloatingActionButton;
 
 
 /**
@@ -40,6 +41,10 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 
 	protected ItemClickSupport mItemClickSupport;
 	protected ItemSelectionSupport mSelectionSupport;
+
+	protected ActionMode mActionMode;
+	protected boolean mIsActionMode;
+	protected boolean mIsActionModeRequired;
 
 	public BaseRecyclerFragment() {
 		super();
@@ -73,7 +78,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		RecyclerView rv = getRecyclerView();
 		rv.setLayoutManager(new LinearLayoutManager(getActivity()));
-		rv.addItemDecoration(new SpacesItemDecoration(15));
+		rv.addItemDecoration(new SpacesItemDecoration(5));
 		mItemClickSupport = ItemClickSupport.addTo(rv);
 		mItemClickSupport.setOnItemClickListener(this);
 		mItemClickSupport.setOnItemLongClickListener(this);
@@ -184,17 +189,15 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	protected void setEmptyText(CharSequence text) {
 	}
 
-
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener, RecyclerView recyclerView) {
-		registerFab(id, view, onClickListener, recyclerView, false);
-	}
-
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener, RecyclerView recyclerView, boolean topAligned) {
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, RecyclerView recyclerView, boolean topAligned) {
 		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
 		if (fab == null)
 			return;
-		//if (recyclerView != null)
-			//fab.attachToRecyclerView(recyclerView, topAligned);
+		if (recyclerView != null)
+			fab.attachToRecyclerView(recyclerView, topAligned);
+
+		fab.setContentDescription(getString(descriptionId));
+		fab.setImageResource(backgroundResId);
 
 		fab.setOnClickListener(onClickListener);
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
@@ -227,21 +230,16 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 			outRect.left = space;
 			outRect.right = space;
 			outRect.bottom = space;
-
-			// Add top margin only for the first item to avoid double space between items
-			if (parent.getChildPosition(view) == 0)
-				outRect.top = space;
+			outRect.top = space;
 		}
 	}
 
 	@Override
 	public void onDrawerClosed() {
-
 	}
 
 	@Override
 	public void onDrawerOpened() {
-
 	}
 
 	@Override
@@ -252,5 +250,14 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
+	}
+
+	protected void startActionMode() {
+	}
+
+	protected void endActionMode() {
+		if (mActionMode != null)
+			mActionMode.finish();
+		mActionMode = null;
 	}
 }

@@ -24,7 +24,7 @@ import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.widget.FloatingActionButton;
+import net.reichholf.widget.FloatingActionButton;
 
 
 /**

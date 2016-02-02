@@ -164,8 +164,8 @@ public class FloatingActionButton extends android.support.design.widget.Floating
 	 * If need to use custom {@link android.widget.AbsListView.OnScrollListener},
 	 * pass it to {@link #attachToListView(android.widget.AbsListView, net.reichholf.widget.FloatingActionButton.FabOnScrollListener, boolean inverted)}
 	 */
-	public void attachToRecyclerView(@NonNull RecyclerView recyclerView) {
-		attachToRecyclerView(recyclerView, new FabRecyclerOnViewScrollListener());
+	public void attachToRecyclerView(@NonNull RecyclerView recyclerView, boolean topAligned) {
+		attachToRecyclerView(recyclerView, new FabRecyclerOnViewScrollListener(), topAligned);
 	}
 
 	public void attachToListView(@NonNull AbsListView listView, @NonNull FabOnScrollListener onScrollListener) {
@@ -183,8 +183,13 @@ public class FloatingActionButton extends android.support.design.widget.Floating
 	}
 
 	public void attachToRecyclerView(@NonNull RecyclerView recyclerView, @NonNull FabRecyclerOnViewScrollListener onScrollListener) {
+		attachToRecyclerView(recyclerView, onScrollListener, false);
+	}
+
+	public void attachToRecyclerView(@NonNull RecyclerView recyclerView, @NonNull FabRecyclerOnViewScrollListener onScrollListener, boolean topAligned) {
 		mRecyclerView = recyclerView;
 		mRecyclerViewOnScrollListener = onScrollListener;
+		mTopAligned = topAligned;
 		onScrollListener.setFloatingActionButton(this);
 		onScrollListener.setRecyclerView(recyclerView);
 		mRecyclerView.setOnScrollListener(onScrollListener);
