@@ -10,7 +10,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_margin="0dp"
+        android:orientation="vertical"
+        android:padding="0dp">
 
         <android.support.design.widget.AppBarLayout
             android:id="@+id/appbar"
@@ -39,11 +41,11 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_gravity="center"
-            android:layout_marginLeft="75dp"
-            android:layout_marginRight="75dp"
             android:layout_marginTop="0dp"
             android:background="?attr/detailsElementBackground"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp">
 
             <FrameLayout
                 android:id="@+id/detail_view"
@@ -58,12 +60,11 @@
         </LinearLayout>
     </LinearLayout>
 
-    <android.support.design.widget.NavigationView
+    <FrameLayout
         android:id="@+id/navigation_view"
-        android:layout_width="wrap_content"
+        style="@style/NavigationDrawer"
+        android:layout_width="320dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:headerLayout="@layout/navigation_header"
-        app:menu="@menu/navigation"/>
+        android:layout_gravity="start"/>
 
 </net.reichholf.dreamdroid.widget.DrawerLayout>

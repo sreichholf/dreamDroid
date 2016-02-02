@@ -33,7 +33,7 @@ import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -54,7 +54,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  *
  * @author sre
  */
-public class ScreenShotFragment extends DreamDroidFragment implements
+public class ScreenShotFragment extends BaseFragment implements
 		LoaderCallbacks<LoaderResult<byte[]>>, SwipeRefreshLayout.OnRefreshListener {
 	public static final int TYPE_OSD = 0;
 	public static final int TYPE_VIDEO = 1;
@@ -86,6 +86,11 @@ public class ScreenShotFragment extends DreamDroidFragment implements
 	@Override
 	public void onRefresh() {
 		reload();
+	}
+
+	@Override
+	public boolean hasHeader() {
+		return false;
 	}
 
 	private class DummyMediaScannerConnectionClient implements MediaScannerConnectionClient {

@@ -50,7 +50,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
@@ -432,8 +432,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		if (mNavigationHelper != null)
 			mNavigationHelper.onProfileChanged();
-		if (mDetailFragment != null && mDetailFragment instanceof HttpBaseFragment)
-			((HttpBaseFragment) mDetailFragment).onProfileChanged();
+		if (mDetailFragment != null && mDetailFragment instanceof IHttpBase)
+			((IHttpBase) mDetailFragment).onProfileChanged();
 	}
 
 	/**
@@ -497,7 +497,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
 
 		AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.appbar);
-		if(appBarLayout != null)
+		if (appBarLayout != null)
 			appBarLayout.setExpanded(true, true);
 		showFragment(ft, R.id.detail_view, fragment);
 		if (addToBackStack) {

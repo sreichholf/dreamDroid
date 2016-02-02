@@ -25,9 +25,12 @@ import android.widget.BaseAdapter;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
-import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
+
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
+
+import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
+import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -35,7 +38,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.widget.FloatingActionButton;
+import net.reichholf.dreamdroid.widget.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +48,8 @@ import java.util.HashMap;
  */
 
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, IBaseFragment, SwipeRefreshLayout.OnRefreshListener {
+
 	public static final String BUNDLE_KEY_LIST = "list";
 
 	protected final String sData = "data";
@@ -125,6 +129,11 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return onItemSelected(item.getItemId());
+	}
+
+	@Override
+	public boolean hasHeader() {
+		return false;
 	}
 
 	public void connectFabReload(View view, AbsListView listView) {

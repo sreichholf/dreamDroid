@@ -5,12 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -23,10 +23,9 @@ import java.util.ArrayList;
 /**
  * Created by Stephan on 09.11.2014.
  */
-public class PickServiceFragment extends AbstractHttpListFragment{
+public class PickServiceFragment extends BaseHttpRecyclerFragment {
 	public ExtendedHashMap mCurrentBouquet;
 	public static final String KEY_BOUQUET = "bouquet";
-
 
 
 	@Override
@@ -42,13 +41,13 @@ public class PickServiceFragment extends AbstractHttpListFragment{
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleAdapter(getAppCompatActivity(), mMapList, android.R.layout.simple_list_item_1,
-				new String[] { Event.KEY_SERVICE_NAME }, new int[] { android.R.id.text1 });
-		setListAdapter(mAdapter);
+		mAdapter = new SimpleTextAdapter(mMapList, android.R.layout.simple_list_item_1,
+				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
+	public void onItemClick(RecyclerView parent, View view, int position, long id) {
 		mCurrentBouquet = mMapList.get(position);
 		Intent data = new Intent();
 		data.putExtra(KEY_BOUQUET, (Parcelable) mCurrentBouquet);

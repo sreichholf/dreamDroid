@@ -13,9 +13,9 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 
 /**
  * @author sre
- * 
  */
-public interface MutliPaneContent {
-	public MultiPaneHandler getMultiPaneHandler();
-	public void createOptionsMenu(Menu menu, MenuInflater inflater);
+public interface IMutliPaneContent {
+	MultiPaneHandler getMultiPaneHandler();
+
+	void createOptionsMenu(Menu menu, MenuInflater inflater);
 }

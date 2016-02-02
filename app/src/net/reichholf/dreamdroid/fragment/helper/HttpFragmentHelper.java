@@ -25,7 +25,7 @@ import net.reichholf.dreamdroid.asynctask.SetVolumeTask;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
-import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -64,7 +64,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     public void bindToFragment(Fragment fragment) {
-        if (!(fragment instanceof HttpBaseFragment) && !(fragment instanceof ScreenShotFragment))
+        if (!(fragment instanceof IHttpBase) && !(fragment instanceof ScreenShotFragment))
             throw new IllegalStateException(getClass().getSimpleName() + " must be attached to a HttpBaseFragment.");
         if (!fragment.equals(mFragment)) {
             mFragment = fragment;
@@ -102,8 +102,8 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         return (AppCompatActivity) mFragment.getActivity();
     }
 
-    public HttpBaseFragment getBaseFragment() {
-        return (HttpBaseFragment) mFragment;
+    public IHttpBase getBaseFragment() {
+        return (IHttpBase) mFragment;
     }
 
     @Override

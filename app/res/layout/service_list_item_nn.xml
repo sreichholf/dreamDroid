@@ -1,113 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     android:id="@+id/service_list_item_nn"
-    style="@style/CardStyle"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
     <LinearLayout
-        android:id="@+id/service"
+        android:id="@+id/parent_marker"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:orientation="horizontal">
+        android:layout_height="fill_parent"
+        android:visibility="gone">
 
         <TextView
-            android:id="@+id/service_name"
-            style="@style/CardTitle"
+            android:id="@+id/marker_name"
+            style="@style/MediumHeader"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="56dp"
-            android:layout_weight="1"/>
+            android:layout_height="fill_parent"/>
 
-        <net.reichholf.dreamdroid.view.MaterialProgressBar
-            android:id="@+id/service_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="50dp"
-            android:layout_height="8dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="-54dp"
-            android:layout_weight="1"/>
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/picon"
-        android:layout_width="48dp"
-        android:layout_height="30dp"
-        android:layout_below="@id/service"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="3dp"
-        android:layout_marginTop="5dp"/>
-
-    <LinearLayout
-        android:id="@+id/event_now"
+    <RelativeLayout
+        android:id="@+id/parent_service"
+        style="@style/CardStyle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/service"
-        android:layout_toRightOf="@id/picon"
-        android:orientation="horizontal">
+        android:elevation="4dp">
 
-        <TextView
-            android:id="@+id/event_now_start"
-            style="@style/CardText"
-            android:layout_width="45dip"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="-45dip"/>
-
-        <TextView
-            android:id="@+id/event_now_title"
-            style="@style/CardText"
+        <LinearLayout
+            android:id="@+id/service"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="45dip"
-            android:layout_marginRight="55dip"
-            android:ellipsize="end"
-            android:maxLines="1"/>
+            android:layout_alignParentTop="true"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/event_now_duration"
-            style="@style/CardText"
-            android:layout_width="50dip"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="-55dip"
-            android:gravity="right"
-            android:minHeight="0dip"/>
-    </LinearLayout>
+            <TextView
+                android:id="@+id/service_name"
+                style="@style/CardTitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="56dp"
+                android:layout_weight="1"/>
 
-    <LinearLayout
-        android:id="@+id/event_next"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/event_now"
-        android:layout_toRightOf="@id/picon"
-        android:orientation="horizontal">
+            <net.reichholf.dreamdroid.view.MaterialProgressBar
+                android:id="@+id/service_progress"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="50dp"
+                android:layout_height="8dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="-54dp"
+                android:layout_weight="1"/>
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/event_next_start"
-            style="@style/CardText"
-            android:layout_width="45dip"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="-45dip"/>
+        <ImageView
+            android:id="@+id/picon"
+            android:layout_width="48dp"
+            android:layout_height="30dp"
+            android:layout_below="@id/service"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="3dp"
+            android:layout_marginTop="5dp"/>
 
-        <TextView
-            android:id="@+id/event_next_title"
-            style="@style/CardText"
+        <LinearLayout
+            android:id="@+id/event_now"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="45dip"
-            android:layout_marginRight="55dip"
-            android:ellipsize="end"
-            android:maxLines="1"/>
+            android:layout_below="@id/service"
+            android:layout_toRightOf="@id/picon"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/event_next_duration"
-            style="@style/CardText"
-            android:layout_width="50dip"
+            <TextView
+                android:id="@+id/event_now_start"
+                style="@style/CardText"
+                android:layout_width="45dip"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="-45dip"/>
+
+            <TextView
+                android:id="@+id/event_now_title"
+                style="@style/CardText"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="45dip"
+                android:layout_marginRight="55dip"
+                android:ellipsize="end"
+                android:maxLines="1"/>
+
+            <TextView
+                android:id="@+id/event_now_duration"
+                style="@style/CardText"
+                android:layout_width="50dip"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-55dip"
+                android:gravity="right"
+                android:minHeight="0dip"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/event_next"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="-55dip"
-            android:gravity="right"
-            android:minHeight="0dip"/>
-    </LinearLayout>
+            android:layout_below="@id/event_now"
+            android:layout_toRightOf="@id/picon"
+            android:orientation="horizontal">
 
-</RelativeLayout>
+            <TextView
+                android:id="@+id/event_next_start"
+                style="@style/CardText"
+                android:layout_width="45dip"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="-45dip"/>
+
+            <TextView
+                android:id="@+id/event_next_title"
+                style="@style/CardText"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="45dip"
+                android:layout_marginRight="55dip"
+                android:ellipsize="end"
+                android:maxLines="1"/>
+
+            <TextView
+                android:id="@+id/event_next_duration"
+                style="@style/CardText"
+                android:layout_width="50dip"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-55dip"
+                android:gravity="right"
+                android:minHeight="0dip"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+</LinearLayout>

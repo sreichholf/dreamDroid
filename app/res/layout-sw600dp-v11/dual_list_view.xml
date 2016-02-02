@@ -2,6 +2,7 @@
 <android.support.v4.widget.SlidingPaneLayout
     android:id="@+id/sliding_pane"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="0dp"
@@ -30,10 +31,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
+            <android.support.v4.widget.SwipeRefreshLayout
                 android:id="@+id/ptr_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_below="@id/listView2Header">
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/list2"
@@ -41,17 +43,27 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
-                    android:columnWidth="290dp"
+                    android:columnWidth="300dp"
                     android:gravity="center"
                     android:horizontalSpacing="5dp"
-                    android:nestedScrollingEnabled="true"
                     android:numColumns="auto_fit"
                     android:stretchMode="columnWidth"
                     android:verticalSpacing="5dp"/>
 
+            </android.support.v4.widget.SwipeRefreshLayout>
 
-            </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
-
+            <net.reichholf.dreamdroid.widget.FloatingActionButton
+                android:id="@+id/fab_reload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="20dp"
+                android:contentDescription="@string/reload"
+                android:src="@drawable/ic_action_refresh"
+                app:fab_type="mini"/>
 
         </RelativeLayout>
 

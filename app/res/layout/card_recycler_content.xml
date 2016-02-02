@@ -14,10 +14,9 @@
 ** limitations under the License.
 */
 -->
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/listContainer"
@@ -29,14 +28,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
                 android:id="@android:id/list"
                 style="?attr/cardListView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:drawSelectorOnTop="false"
-                android:nestedScrollingEnabled="true"/>
+                android:drawSelectorOnTop="false"/>
         </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 
         <TextView
@@ -46,5 +44,4 @@
             android:gravity="center"
             android:textAppearance="?android:attr/textAppearanceSmall"/>
     </FrameLayout>
-
 </RelativeLayout>

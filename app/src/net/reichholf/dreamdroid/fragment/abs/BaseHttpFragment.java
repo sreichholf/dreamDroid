@@ -16,9 +16,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.HttpBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -32,14 +31,15 @@ import java.util.ArrayList;
 /**
  * @author sreichholf
  */
-public abstract class AbstractHttpFragment extends DreamDroidFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, HttpBaseFragment, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
+
+public abstract class BaseHttpFragment extends BaseFragment implements
+		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, IHttpBase, SwipeRefreshLayout.OnRefreshListener {
 
 	protected final String sData = "data";
 	protected HttpFragmentHelper mHttpHelper;
 	protected boolean mReload = false;
 
-	public AbstractHttpFragment() {
+	public BaseHttpFragment() {
 		mHttpHelper = new HttpFragmentHelper();
 	}
 

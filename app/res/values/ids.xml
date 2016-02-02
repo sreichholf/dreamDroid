@@ -2,5 +2,7 @@
 <resources>
 
     <item name="detail_title_prio" type="id"/>
+    <item name="recyclerview_item_click_support" type="id"/>
+    <item name="recyclerview_item_selection_support" type="id"/>
 
 </resources>

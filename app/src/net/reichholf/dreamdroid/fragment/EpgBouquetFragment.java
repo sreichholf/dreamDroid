@@ -19,8 +19,8 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.adapter.EPGListAdapter;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.EpgAdapter;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -38,7 +38,7 @@ import java.util.Calendar;
 /**
  * Created by Stephan on 01.11.2014.
  */
-public class EpgBouquetFragment extends AbstractHttpEventListFragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
+public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 	private static final String LOG_TAG = EpgBouquetFragment.class.getSimpleName();
 	private TextView mDateView;
 	private TextView mTimeView;
@@ -60,7 +60,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_list_header_content, container, false);
+		View view = inflater.inflate(R.layout.card_recycler_header_content, container, false);
 		View header = inflater.inflate(R.layout.date_time_picker_header, null, false);
 
 		Calendar cal = getCalendar();
@@ -90,8 +90,9 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 			}
 		});
 
-		FrameLayout frame = (FrameLayout) view.findViewById(R.id.content_header);
+		FrameLayout frame = (FrameLayout) getAppCompatActivity().findViewById(R.id.content_header);
 		frame.addView(header);
+
 		return view;
 	}
 
@@ -123,7 +124,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 				if (!reference.equals(mReference)) {
 					mReference = reference;
 					mName = service.getString(Service.KEY_NAME);
-					getListView().smoothScrollToPosition(0);
+					getRecyclerView().smoothScrollToPosition(0);
 				}
 				reload();
 				mWaitingForPicker = false;
@@ -141,14 +142,14 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	}
 
 	/**
-	 * Initializes the <code>SimpleListAdapter</code>
+	 * Initializes the <code>SimpleTextAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new EPGListAdapter(getAppCompatActivity(), mMapList, R.layout.epg_multi_service_list_item, new String[]{
+		mAdapter = new EpgAdapter(mMapList, R.layout.epg_multi_service_list_item, new String[]{
 				Event.KEY_EVENT_TITLE, Event.KEY_SERVICE_NAME, Event.KEY_EVENT_DESCRIPTION_EXTENDED, Event.KEY_EVENT_START_READABLE,
 				Event.KEY_EVENT_DURATION_READABLE}, new int[]{R.id.event_title, R.id.service_name, R.id.event_short, R.id.event_start,
 				R.id.event_duration});
-		setListAdapter(mAdapter);
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	@Override
@@ -179,6 +180,11 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 		return super.onItemSelected(id);
 	}
 
+	@Override
+	public boolean hasHeader() {
+		return true;
+	}
+
 	private void pickBouquet() {
 		mWaitingForPicker = true;
 		PickServiceFragment f = new PickServiceFragment();
@@ -204,7 +210,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	@Override
 	public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
 		Calendar cal = getCalendar();
-		if(cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day)
+		if (cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day)
 			return;
 		cal.set(year, month, day);
 
@@ -218,7 +224,7 @@ public class EpgBouquetFragment extends AbstractHttpEventListFragment implements
 	@Override
 	public void onTimeSet(RadialPickerLayout radialPickerLayout, int hourOfDay, int minute, int second) {
 		Calendar cal = getCalendar();
-		if(cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
+		if (cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
 			return;
 		cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
 		cal.set(Calendar.MINUTE, minute);

@@ -26,14 +26,14 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.widget.FloatingActionButton;
 
 /**
  * @author sre
  */
-public abstract class DreamDroidListFragment extends ListFragment implements ActivityCallbackHandler, MutliPaneContent {
+public abstract class DreamDroidListFragment extends ListFragment implements ActivityCallbackHandler, IMutliPaneContent {
 	private FragmentHelper mHelper;
 	protected boolean mShouldRetainInstance = true;
 	protected boolean mHasFabReload = true;

@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -26,7 +27,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import net.reichholf.widget.FloatingActionButton;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog.OnDateSetListener;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
@@ -36,8 +36,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
-import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -49,6 +48,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
+import net.reichholf.widget.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,6 +57,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+
 //TODO Add Tag Support
 
 /**
@@ -64,7 +65,7 @@ import java.util.HashMap;
  *
  * @author sreichholf
  */
-public class TimerEditFragment extends AbstractHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener, GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
+public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener, GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler {
 
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
 
@@ -203,7 +204,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 			reload();
 		}
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_main);
-
 
 
 		registerFab(R.id.fab_main, view, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {

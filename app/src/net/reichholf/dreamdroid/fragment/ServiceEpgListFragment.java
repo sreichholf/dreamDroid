@@ -9,7 +9,8 @@ package net.reichholf.dreamdroid.fragment;
 import java.util.ArrayList;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -21,7 +22,6 @@ import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.widget.SimpleAdapter;
 
 /**
  * Shows the EPG of a service. Timers can be set via integrated detail dialog
@@ -29,7 +29,7 @@ import android.widget.SimpleAdapter;
  * @author sreichholf
  * 
  */
-public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
+public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
@@ -60,14 +60,14 @@ public class ServiceEpgListFragment extends AbstractHttpEventListFragment {
 	}
 
 	/**
-	 * Initializes the <code>SimpleListAdapter</code>
+	 * Initializes the <code>SimpleTextAdapter</code>
 	 */
 	private void setAdapter() {
-		mAdapter = new SimpleAdapter(getAppCompatActivity(), mMapList, R.layout.epg_list_item, new String[] {
+		mAdapter = new SimpleTextAdapter(mMapList, R.layout.epg_list_item, new String[] {
 				Event.KEY_EVENT_TITLE, Event.KEY_EVENT_DESCRIPTION_EXTENDED, Event.KEY_EVENT_START_READABLE,
 				Event.KEY_EVENT_DURATION_READABLE }, new int[] { R.id.event_title, R.id.event_short, R.id.event_start,
 				R.id.event_duration });
-		setListAdapter(mAdapter);
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	@Override

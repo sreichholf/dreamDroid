@@ -17,21 +17,17 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
-
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
@@ -58,7 +54,7 @@ import java.util.Arrays;
  *
  * @author sreichholf
  */
-public class MovieListFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener,
+public class MovieListFragment extends BaseHttpRecyclerFragment implements ActionDialog.DialogActionListener,
 		MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private String mCurrentLocation;
@@ -99,18 +95,11 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleAdapter(getAppCompatActivity(), mMapList, R.layout.movie_list_item, new String[]{
+		mAdapter = new SimpleTextAdapter(mMapList, R.layout.movie_list_item, new String[]{
 				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
 				Movie.KEY_LENGTH}, new int[]{R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
 				R.id.event_duration});
-
-		setListAdapter(mAdapter);
-		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-				return onListItemLongClick(a, v, position, id);
-			}
-		});
+		getRecyclerView().setAdapter(mAdapter);
 	}
 
 	@Override
@@ -159,30 +148,6 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 	public void onPause() {
 		getAppCompatActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 		super.onPause();
-	}
-
-	@Override
-	protected void setDefaultLocation() {
-		if (mCurrentLocation == null && DreamDroid.getLocations().size() > 0) {
-			mCurrentLocation = DreamDroid.getLocations().get(0);
-		}
-	}
-
-	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
-		onListItemClick(v, position, id, false);
-	}
-
-	/**
-	 * @param a
-	 * @param v
-	 * @param position
-	 * @param id
-	 * @return
-	 */
-	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
-		onListItemClick(v, position, id, true);
-		return true;
 	}
 
 	@Override
@@ -252,14 +217,25 @@ public class MovieListFragment extends AbstractHttpListFragment implements Actio
 		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
 	}
 
-	private void onListItemClick(View v, int position, long id, boolean isLong) {
-		mMovie = mMapList.get(position);
+	@Override
+	public void onItemClick(RecyclerView parent, View view, int position, long id) {
+		onMovieItemClick(view, position, false);
+	}
+
+	@Override
+	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
+		onMovieItemClick(view, position, true);
+		return true;
+	}
+
+	private void onMovieItemClick(View view, int position, boolean isLong) {
+	mMovie = mMapList.get(position);
 		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
 				"instant_zap", false);
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
-			showPopupMenu(v);
+			showPopupMenu(view);
 		}
 	}
 

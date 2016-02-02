@@ -24,7 +24,7 @@ import android.view.ViewGroup;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -40,7 +40,7 @@ import java.util.ArrayList;
  * @author sreichholf
  *
  */
-public class VirtualRemoteFragment extends AbstractHttpFragment {
+public class VirtualRemoteFragment extends BaseHttpFragment {
 	private static String TAG = VirtualRemoteFragment.class.getSimpleName();
 
 	public static final int[][] REMOTE_BUTTONS = { { R.id.ButtonPower, Remote.KEY_POWER },

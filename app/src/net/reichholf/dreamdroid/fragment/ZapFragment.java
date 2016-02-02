@@ -4,14 +4,12 @@ import android.content.ActivityNotFoundException;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -19,9 +17,8 @@ import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.ZapListAdapter;
 import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -33,12 +30,14 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
 
+
 /**
  * Created by reichi on 8/30/13.
  * This fragment is actually based on a GridView, it uses some small hacks to trick the ListFragment into working anyways
  * As a GridView is also using a ListAdapter, this avoids having to copy existing code
  */
-public class ZapFragment extends AbstractHttpListFragment implements GetBouquetListTask.GetBoquetListTaskHandler {
+
+public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetListTask.GetBoquetListTaskHandler {
 	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
@@ -66,20 +65,21 @@ public class ZapFragment extends AbstractHttpListFragment implements GetBouquetL
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
-		mGridView = (GridView) view.findViewById(R.id.grid);
-		mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				onListItemClick(null, view, position, id);
-			}
-		});
-		mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				onListItemLongClick(null, view, position, id);
-				return true;
-			}
-		});
+		//TODO fixup zap fragment stuff
+//		mGridView = (GridView) view.findViewById(R.id.grid);
+//		mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//			@Override
+//			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//				onListItemClick(null, view, position, id);
+//			}
+//		});
+//		mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//				onListItemLongClick(null, view, position, id);
+//				return true;
+//			}
+//		});
 		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), true, true);
 		mGridView.setOnScrollListener(listener);
 
@@ -112,8 +112,8 @@ public class ZapFragment extends AbstractHttpListFragment implements GetBouquetL
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		mAdapter = new ZapListAdapter(getAppCompatActivity(), R.layout.zap_grid_item, mMapList);
-		setListAdapter(mAdapter);
+//		mAdapter = new ZapListAdapter(getAppCompatActivity(), R.layout.zap_grid_item, mMapList);
+//		setListAdapter(mAdapter);
 	}
 
 	@Override
@@ -138,22 +138,14 @@ public class ZapFragment extends AbstractHttpListFragment implements GetBouquetL
 		super.onPause();
 	}
 
-	/***
-	 * The ListView is fake! We do set mAdapter on the GridView.
-	 * This way all the code of "AbstractHttpListFragment" will work on a GridView
-	 **/
 	@Override
-	public void setListAdapter(ListAdapter adapter) {
-		mGridView.setAdapter(adapter);
-	}
-
-	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
+	public void onItemClick(RecyclerView rv, View v, int position, long id) {
 		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
 		zapTo(ref);
 	}
 
-	public void onListItemLongClick(ListView l, View v, int position, long id) {
+	@Override
+	public boolean onItemLongClick(RecyclerView rv, View v, int position, long id) {
 		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
 		String name = mMapList.get(position).getString(Service.KEY_NAME);
 		try {
@@ -161,6 +153,7 @@ public class ZapFragment extends AbstractHttpListFragment implements GetBouquetL
 		} catch (ActivityNotFoundException e) {
 			showToast(getText(R.string.missing_stream_player));
 		}
+		return true;
 	}
 
 	@Override

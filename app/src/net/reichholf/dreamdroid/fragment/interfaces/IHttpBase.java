@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment.interfaces;
 
 import android.os.Bundle;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -15,26 +16,25 @@ import java.util.ArrayList;
 
 /**
  * @author sre
- * 
  */
-public interface HttpBaseFragment {
-	public String getBaseTitle();
+public interface IHttpBase {
+	String getBaseTitle();
 
-	public void setBaseTitle(String baseTitle);
+	void setBaseTitle(String baseTitle);
 
-	public String getCurrentTitle();
+	String getCurrentTitle();
 
-	public void setCurrentTitle(String currentTitle);
+	void setCurrentTitle(String currentTitle);
 
-	public ArrayList<NameValuePair> getHttpParams(int loader);
+	ArrayList<NameValuePair> getHttpParams(int loader);
 
-	public Bundle getLoaderBundle(int loader);
+	Bundle getLoaderBundle(int loader);
 
-	public String getLoadFinishedTitle();
+	String getLoadFinishedTitle();
 
-	public SimpleHttpClient getHttpClient();
+	SimpleHttpClient getHttpClient();
 
-	public void onProfileChanged();
-	
-	public abstract void onSimpleResult(boolean success, ExtendedHashMap result);
+	void onProfileChanged();
+
+	void onSimpleResult(boolean success, ExtendedHashMap result);
 }

@@ -6,17 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.Signal;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHandler;
-import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import org.codeandmagic.android.gauge.GaugeView;
-
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -33,7 +22,18 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class SignalFragment extends AbstractHttpFragment {
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.enigma2.Signal;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHandler;
+import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
+
+import org.codeandmagic.android.gauge.GaugeView;
+
+public class SignalFragment extends BaseHttpFragment {
 	private static final String TAG = SignalFragment.class.getSimpleName();
 
 	private static int sMaxSnrDb = 17;
@@ -218,10 +218,10 @@ public class SignalFragment extends AbstractHttpFragment {
 		int i = 0;
 
 		int ramp = numSamples / 20; // Amplitude ramp as a percent of sample
-									// count
+		// count
 
 		for (i = 0; i < numSamples; ++i) { // Ramp amplitude up (to avoid
-											// clicks)
+			// clicks)
 			if (i < ramp) {
 				double dVal = sample[i];
 				// Ramp up to maximum

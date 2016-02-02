@@ -21,21 +21,23 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
+import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
+import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.widget.FloatingActionButton;
+import net.reichholf.dreamdroid.widget.FloatingActionButton;
 
 
 /**
  * @author sre
  */
-public abstract class DreamDroidFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
+
+public abstract class BaseFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment {
 	private FragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
 	protected boolean mHasFabReload = false;
 	protected boolean mHasFabMain = false;
 
-	public DreamDroidFragment() {
+	public BaseFragment() {
 		super();
 		mHelper = new FragmentHelper();
 	}
@@ -114,7 +116,10 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 
 	@Override
 	public void onDrawerClosed() {
+	}
 
+	public boolean hasHeader () {
+		return false;
 	}
 
 	public String getBaseTitle() {
