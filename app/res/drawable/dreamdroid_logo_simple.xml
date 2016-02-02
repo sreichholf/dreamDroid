@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="192dp"
+        android:height="192dp"
+        android:viewportWidth="192"
+        android:viewportHeight="192">
+
+    <group
+        android:translateX="1.55"
+        android:translateY="-1.25">
+        <path
+            android:fillColor="#4caf50"
+            android:strokeWidth="6"
+            android:pathData="M 76.99221 120.51492 H 94.992179 V 126.5121138 H 76.99221 V 120.51492 Z" />
+        <path
+            android:fillColor="#ffeb3b"
+            android:strokeWidth="6"
+            android:pathData="M 96.990509 120.51212 H 114.990478 V 126.5093138 H 96.990509 V 120.51212 Z" />
+        <path
+            android:fillColor="#f44336"
+            android:strokeWidth="6"
+            android:pathData="M 57.023491 120.51491 H 75.02346 V 126.5121038 H 57.023491 V 120.51491 Z" />
+        <path
+            android:fillColor="#3f51b5"
+            android:strokeWidth="6"
+            android:pathData="M 116.97652 120.51492 H 134.976489 V 126.5121138 H 116.97652 V 120.51492 Z" />
+    </group>
+    <group
+        android:translateX="9.6814435e-7"
+        android:translateY="-2.716779">
+        <path
+            android:fillColor="#ffffff"
+            android:strokeWidth="1"
+            android:pathData="M 132.45074,103.1986 c 4.22956,0 6.86521,-1.47478 7.7,-4.424344
+0.22261,-1.224348 0.3,-2.838261 0.3,-4.841739 l 0,-28.466088 11,0 0,30.553044 c
+-0.0205,14.158757 -9.83032,17.503437 -20.3,17.446957 l -71.817641,0 c
+-5.453913,0 -9.906087,-1.50261 -13.356522,-4.50783 -3.673044,-3.22782
+-5.48174,-7.54086 -5.426088,-12.939127 0,-5.008695 1.669565,-9.182608
+5.008696,-12.521739 3.394783,-3.394783 7.624348,-5.092174 12.688697,-5.092174 l
+54.202858,-0.166957 c 3.28348,0.222609 5,1.947826 5,5.175652 0,3.450435
+-1.54957,5.087265 -5,5.087265 -22.45526,-0.0103 -30.118716,-0.05046
+-52.616771,-0.07858 -6.177392,0 -9.18261,2.448696 -9.015653,7.346088
+0.111305,4.953042 3.422609,7.429562 9.933913,7.429562 z" />
+    </group>
+</vector>

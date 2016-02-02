@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -30,19 +29,18 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.melnykov.fab.FloatingActionButton;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.ProfileListSimpleAdapter;
+import net.reichholf.dreamdroid.asynctask.DetectDevicesTask;
 import net.reichholf.dreamdroid.fragment.abs.DreamDroidListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
 
 import java.util.ArrayList;
 
@@ -51,7 +49,7 @@ import java.util.ArrayList;
  *
  * @author sre
  */
-public class ProfileListFragment extends DreamDroidListFragment implements ActionDialog.DialogActionListener {
+public class ProfileListFragment extends DreamDroidListFragment implements ActionDialog.DialogActionListener, DetectDevicesTask.DetectDevicesTaskHandler {
 	private Profile mProfile;
 	private ArrayList<Profile> mProfiles;
 	private ArrayList<ExtendedHashMap> mProfileMapList;
@@ -81,20 +79,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 				mProfile = Profile.DEFAULT;
 				mAdapter.notifyDataSetChanged();
 				break;
-		}
-	}
-
-	private class DetectDevicesTask extends AsyncTask<Void, Void, ArrayList<Profile>> {
-
-		@Override
-		protected ArrayList<Profile> doInBackground(Void... params) {
-			return DeviceDetector.getAvailableHosts();
-		}
-
-		@Override
-		protected void onPostExecute(ArrayList<Profile> profiles) {
-			if (!isCancelled())
-				onDevicesDetected(profiles);
 		}
 	}
 
@@ -143,10 +127,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		}
 	};
 
-
-	/**
-	 *
-	 */
 	private void detectDevices() {
 		if (mDetectedProfiles == null) {
 			if (mDetectDevicesTask != null) {
@@ -165,7 +145,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 					.cancelable(false);
 			mProgress = builder.build();
 			mProgress.show();
-			mDetectDevicesTask = new DetectDevicesTask();
+			mDetectDevicesTask = new DetectDevicesTask(this);
 			mDetectDevicesTask.execute();
 		} else {
 			if (mDetectedProfiles.size() == 0) {
@@ -177,9 +157,6 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void addAllDetectedDevices() {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 		for (Profile p : mDetectedProfiles) {
@@ -195,7 +172,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	/**
 	 * @param profiles A list of profiles for auto-discovered dreamboxes
 	 */
-	private void onDevicesDetected(ArrayList<Profile> profiles) {
+	@Override
+	public void onDevicesDetected(ArrayList<Profile> profiles) {
 		mProgress.dismiss();
 		mDetectedProfiles = profiles;
 
@@ -242,6 +220,7 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
+		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitle(getString(R.string.profiles));
@@ -260,11 +239,8 @@ public class ProfileListFragment extends DreamDroidListFragment implements Actio
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
-
-		FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_add);
-		fab.setContentDescription(getString(R.string.profile_add));
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
-		registerFab(R.id.fab_add, view, new View.OnClickListener() {
+		registerFab(R.id.fab_main, view, R.string.profile_add, R.drawable.ic_action_fab_add, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				createProfile();

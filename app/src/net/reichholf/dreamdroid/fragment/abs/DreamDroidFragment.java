@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment.abs;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -16,26 +17,27 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
-
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidFragmentHelper;
+import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.MutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.widget.FloatingActionButton;
 
 
 /**
  * @author sre
- * 
  */
 public abstract class DreamDroidFragment extends Fragment implements ActivityCallbackHandler, MutliPaneContent {
-	private DreamDroidFragmentHelper mHelper = null;
+	private FragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
+	protected boolean mHasFabReload = false;
+	protected boolean mHasFabMain = false;
 
 	public DreamDroidFragment() {
 		super();
-		mHelper = new DreamDroidFragmentHelper();
+		mHelper = new FragmentHelper();
 	}
 
 	@Override
@@ -48,13 +50,27 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (mHelper == null)
-			mHelper = new DreamDroidFragmentHelper(this);
+			mHelper = new FragmentHelper(this);
 		else
 			mHelper.bindToFragment(this);
 		mHelper.onCreate(savedInstanceState);
-		if(mShouldRetainInstance)
+		if (mShouldRetainInstance)
 			setRetainInstance(true);
 	}
+
+	@Override
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		setViewVisible(R.id.fab_reload, mHasFabReload);
+		setViewVisible(R.id.fab_main, mHasFabMain);
+	}
+
+	protected void setViewVisible(int id, boolean isVisible) {
+		View v = getAppCompatActivity().findViewById(id);
+		int visibility = isVisible ? View.VISIBLE : View.GONE;
+		v.setVisibility(visibility);
+	}
+
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -81,16 +97,15 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		MultiPaneHandler mph = getMultiPaneHandler(); //TODO how do i reproduce this?
-		if(mph == null || !mph.isDrawerOpen())
+		if (mph == null || !mph.isDrawerOpen())
 			createOptionsMenu(menu, inflater);
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater)
-	{
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 	}
 
 	@Override
@@ -138,7 +153,7 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 	protected void finish(int resultCode, Intent data) {
 		mHelper.finish(resultCode, data);
 	}
-	
+
 	protected AppCompatActivity getAppCompatActivity() {
 		return (AppCompatActivity) getActivity();
 	}
@@ -153,10 +168,13 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 		toast.show();
 	}
 
-	protected void registerFab(int id, View view, View.OnClickListener onClickListener){
-		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
+	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
+
+		fab.setContentDescription(getString(descriptionId));
+		fab.setImageResource(backgroundResId);
 
 		fab.setOnClickListener(onClickListener);
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
@@ -166,6 +184,14 @@ public abstract class DreamDroidFragment extends Fragment implements ActivityCal
 				return true;
 			}
 		});
-		fab.show();
+	}
+
+	protected void unregisterFab(int id) {
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		if (fab == null)
+			return;
+		fab.setVisibility(View.GONE);
+		fab.setOnClickListener(null);
+		fab.setOnLongClickListener(null);
 	}
 }

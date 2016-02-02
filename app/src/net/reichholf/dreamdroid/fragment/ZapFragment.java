@@ -1,14 +1,18 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.content.ActivityNotFoundException;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
@@ -16,12 +20,12 @@ import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.ZapListAdapter;
+import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpListFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
@@ -34,7 +38,7 @@ import java.util.ArrayList;
  * This fragment is actually based on a GridView, it uses some small hacks to trick the ListFragment into working anyways
  * As a GridView is also using a ListAdapter, this avoids having to copy existing code
  */
-public class ZapFragment extends AbstractHttpListFragment {
+public class ZapFragment extends AbstractHttpListFragment implements GetBouquetListTask.GetBoquetListTaskHandler {
 	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
@@ -44,51 +48,6 @@ public class ZapFragment extends AbstractHttpListFragment {
 	private ArrayAdapter<String> mBouquetListAdapter;
 	private ExtendedHashMap mCurrentBouquet;
 	private int mSelectedBouquetPosition;
-
-	/**
-	 * @author sreichholf Fetches a service list async. Does all the
-	 *         error-handling, refreshing and title-setting
-	 */
-	private class GetBouquetListTask extends AsyncTask<Void, String, Boolean> {
-		private ArrayList<ExtendedHashMap> mTaskList;
-
-		@Override
-		protected Boolean doInBackground(Void... unused) {
-			mTaskList = new ArrayList<>();
-			if (isCancelled())
-				return false;
-
-			AbstractListRequestHandler handler = new ServiceListRequestHandler();
-			String ref = getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
-			addBouquets(handler, ref);
-			ref = getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
-			addBouquets(handler, ref);
-
-			return true;
-		}
-
-		private boolean addBouquets(AbstractListRequestHandler handler, String ref){
-			ArrayList<NameValuePair> params = new ArrayList<>();
-			params.add(new NameValuePair("sRef", ref));
-			String xml = handler.getList(getHttpClient(), params);
-			if (xml != null && !isCancelled()) {
-				return handler.parseList(xml, mTaskList);
-			}
-			return false;
-		}
-
-		@Override
-		protected void onPostExecute(Boolean result) {
-			if(isCancelled())
-				return;
-			if (result) {
-				if (getHttpClient().hasError()) {
-					showToast(getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText());
-				}
-			}
-			onBouquetListReady(result, mTaskList);
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -128,25 +87,25 @@ public class ZapFragment extends AbstractHttpListFragment {
 		return view;
 	}
 
-	private void restoreState(Bundle savedInstanceState){
+	private void restoreState(Bundle savedInstanceState) {
 		boolean reload = false;
-		if(savedInstanceState == null){
+		if (savedInstanceState == null) {
 			mReload = true;
 		} else {
 			ExtendedHashMap currentBouquet = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_BOUQUET);
-			if(currentBouquet != null)
+			if (currentBouquet != null)
 				mCurrentBouquet = currentBouquet;
 			else
 				mReload = true;
 
 			ArrayList<ExtendedHashMap> bouquetList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_BOUQUETLIST);
-			if(bouquetList != null)
+			if (bouquetList != null)
 				mBouquetList = bouquetList;
 			else
 				mReload = true;
 		}
 
-		if(reload)
+		if (reload)
 			mReload = true;
 	}
 
@@ -171,8 +130,8 @@ public class ZapFragment extends AbstractHttpListFragment {
 	}
 
 	@Override
-	public void onPause(){
-		if(mGetBouquetListTask != null)
+	public void onPause() {
+		if (mGetBouquetListTask != null)
 			mGetBouquetListTask.cancel(true);
 		mGetBouquetListTask = null;
 		getAppCompatActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
@@ -181,7 +140,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 
 	/***
 	 * The ListView is fake! We do set mAdapter on the GridView.
-	 *  This way all the code of "AbstractHttpListFragment" will work on a GridView
+	 * This way all the code of "AbstractHttpListFragment" will work on a GridView
 	 **/
 	@Override
 	public void setListAdapter(ListAdapter adapter) {
@@ -221,11 +180,11 @@ public class ZapFragment extends AbstractHttpListFragment {
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
-		if(mGetBouquetListTask != null){
+		if (mGetBouquetListTask != null) {
 			mGetBouquetListTask.cancel(true);
 			mGetBouquetListTask = null;
 		}
-		mGetBouquetListTask = new GetBouquetListTask();
+		mGetBouquetListTask = new GetBouquetListTask(this);
 		mGetBouquetListTask.execute();
 
 		mMapList.clear();
@@ -241,8 +200,8 @@ public class ZapFragment extends AbstractHttpListFragment {
 		if (list.size() == 0) {
 			setEmptyText(getText(R.string.no_list_item));
 		} else {
-			for(ExtendedHashMap service : list){
-				if(!Service.isMarker(service.getString(Service.KEY_REFERENCE)))
+			for (ExtendedHashMap service : list) {
+				if (!Service.isMarker(service.getString(Service.KEY_REFERENCE)))
 					mMapList.add(service);
 			}
 		}
@@ -253,7 +212,7 @@ public class ZapFragment extends AbstractHttpListFragment {
 	@Override
 	public void setEmptyText(CharSequence text) {
 		TextView emptyView = (TextView) getView().findViewById(android.R.id.empty);
-		if (emptyView != null){
+		if (emptyView != null) {
 			emptyView.setText(text);
 			emptyView.setVisibility(View.GONE);
 		}
@@ -287,39 +246,41 @@ public class ZapFragment extends AbstractHttpListFragment {
 		mBouquetListAdapter.notifyDataSetChanged();
 	}
 
-	public void onBouquetListReady(boolean result, ArrayList<ExtendedHashMap> list){
-		applyBouquetList(list);
+	public void onBouquetListReady(boolean result, ArrayList<ExtendedHashMap> list, String errorText) {
+		if (result)
+			applyBouquetList(list);
+		else
+			showToast(errorText);
 	}
 
-	private void applyBouquetList(ArrayList<ExtendedHashMap> list){
+	private void applyBouquetList(ArrayList<ExtendedHashMap> list) {
 		mBouquetListAdapter.clear();
 		mBouquetList.clear();
-
 
 		String defaultRef = DreamDroid.getCurrentProfile().getDefaultRef();
 		boolean isDefaultMissing = true;
 
 		int position = mSelectedBouquetPosition = 0;
-		for( ExtendedHashMap service : list){
+		for (ExtendedHashMap service : list) {
 			mBouquetList.add(service);
 			mBouquetListAdapter.add(service.getString(Service.KEY_NAME));
-			if(defaultRef != null && !"".equals(defaultRef) && service.getString(Service.KEY_REFERENCE).equals(defaultRef))
+			if (defaultRef != null && !"".equals(defaultRef) && service.getString(Service.KEY_REFERENCE).equals(defaultRef))
 				isDefaultMissing = false;
-			if(service.getString(Service.KEY_REFERENCE).equals(mCurrentBouquet.getString(Service.KEY_REFERENCE)))
+			if (service.getString(Service.KEY_REFERENCE).equals(mCurrentBouquet.getString(Service.KEY_REFERENCE)))
 				mSelectedBouquetPosition = position;
 			position++;
 		}
-		if(isDefaultMissing){
+		if (isDefaultMissing) {
 			addDefaultBouquetToList();
 		}
 		getAppCompatActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedBouquetPosition);
 		mBouquetListAdapter.notifyDataSetChanged();
 	}
 
-	private void addDefaultBouquetToList(){
+	private void addDefaultBouquetToList() {
 		ExtendedHashMap defaultBouquet = new ExtendedHashMap();
 		String defaultRef = DreamDroid.getCurrentProfile().getDefaultRef();
-		if("".equals(defaultRef))
+		if ("".equals(defaultRef))
 			return;
 		defaultBouquet.put(Service.KEY_REFERENCE, defaultRef);
 		defaultBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());

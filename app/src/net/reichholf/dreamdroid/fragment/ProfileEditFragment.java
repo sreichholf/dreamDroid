@@ -6,11 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import net.reichholf.dreamdroid.DatabaseHelper;
-import net.reichholf.dreamdroid.Profile;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
-import net.reichholf.dreamdroid.helpers.Statics;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,11 +23,16 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import net.reichholf.dreamdroid.DatabaseHelper;
+import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.abs.DreamDroidFragment;
+import net.reichholf.dreamdroid.helpers.Statics;
+
 /**
  * Used to edit connection profiles
- * 
+ *
  * @author sre
- * 
  */
 public class ProfileEditFragment extends DreamDroidFragment {
 	private Profile mCurrentProfile;
@@ -55,6 +55,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitles(getString(R.string.edit_profile));
@@ -102,7 +103,7 @@ public class ProfileEditFragment extends DreamDroidFragment {
 				onSslChanged(checked);
 			}
 		});
-		registerFab(R.id.fab_save, view, new View.OnClickListener() {
+		registerFab(R.id.fab_main, view, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				save();
@@ -118,14 +119,14 @@ public class ProfileEditFragment extends DreamDroidFragment {
 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case Statics.ITEM_SAVE:
-			save();
-			break;
-		case Statics.ITEM_CANCEL:
-			finish(Activity.RESULT_CANCELED);
-			break;
-		default:
-			return false;
+			case Statics.ITEM_SAVE:
+				save();
+				break;
+			case Statics.ITEM_CANCEL:
+				finish(Activity.RESULT_CANCELED);
+				break;
+			default:
+				return false;
 		}
 		return true;
 	}
@@ -138,9 +139,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 	}
 
 	/**
-	 * @param checked
-	 *            Enables or disables the user/password input-boxes depending on
-	 *            login enabled/disabled
+	 * @param checked Enables or disables the user/password input-boxes depending on
+	 *                login enabled/disabled
 	 */
 	private void onIsLoginChanged(boolean checked) {
 		if (checked) {
@@ -214,9 +214,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 
 	/**
 	 * Show a toast
-	 * 
-	 * @param toastText
-	 *            The text to show
+	 *
+	 * @param toastText The text to show
 	 */
 	protected void showToast(String toastText) {
 		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
@@ -225,9 +224,8 @@ public class ProfileEditFragment extends DreamDroidFragment {
 
 	/**
 	 * Show a toast
-	 * 
-	 * @param toastText
-	 *            The text to show
+	 *
+	 * @param toastText The text to show
 	 */
 	protected void showToast(CharSequence toastText) {
 		Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);

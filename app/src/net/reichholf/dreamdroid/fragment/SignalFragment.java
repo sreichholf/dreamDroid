@@ -8,7 +8,7 @@ package net.reichholf.dreamdroid.fragment;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpFragment;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Signal;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHandler;
@@ -173,7 +173,7 @@ public class SignalFragment extends AbstractHttpFragment {
 			setCurrentTitle(getBaseTitle() + " - " + getString(R.string.loading));
 
 		getAppCompatActivity().setTitle(getCurrentTitle());
-		getLoaderManager().restartLoader(0, getLoaderBundle(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID), this);
+		getLoaderManager().restartLoader(0, getLoaderBundle(HttpFragmentHelper.LOADER_DEFAULT_ID), this);
 	}
 
 	private void startPolling() {

@@ -10,7 +10,6 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
@@ -43,8 +42,7 @@ import net.reichholf.dreamdroid.adapter.ServiceListAdapter;
 import net.reichholf.dreamdroid.fragment.abs.AbstractHttpEventListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
-import net.reichholf.dreamdroid.fragment.helper.DreamDroidHttpFragmentHelper;
-import net.reichholf.dreamdroid.helpers.DateTime;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -456,7 +454,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		switch(loader){
-			case DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID:
+			case HttpFragmentHelper.LOADER_DEFAULT_ID:
 				return mDetailHttpParams;
 			case LOADER_BOUQUETLIST_ID:
 				return mNavHttpParams;
@@ -698,7 +696,7 @@ public class ServiceListFragment extends AbstractHttpEventListFragment implement
 			params.add(new NameValuePair(param, ref));
 
 			mDetailHttpParams = params;
-			mHttpHelper.reload(DreamDroidHttpFragmentHelper.LOADER_DEFAULT_ID);
+			mHttpHelper.reload(HttpFragmentHelper.LOADER_DEFAULT_ID);
 		}
 	}
 

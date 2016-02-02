@@ -86,7 +86,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
 			mIsActionMode = false;
-			if(mIsActionModeRequired)
+			if (mIsActionModeRequired)
 				return;
 			final ListView lv = getListView();
 			lv.setItemChecked(lv.getCheckedItemPosition(), false);
@@ -106,6 +106,7 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
 		mEnableReload = true;
+		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.timer));
 		setAdapter();
@@ -122,7 +123,8 @@ public class TimerListFragment extends AbstractHttpListFragment implements Actio
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_list_content_fab, container, false);
 		AbsListView listView = (AbsListView) view.findViewById(android.R.id.list);
-		registerFab(R.id.fab_add, view, new View.OnClickListener() {
+
+		registerFab(R.id.fab_main, view, R.string.new_timer, R.drawable.ic_action_fab_add, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				onItemSelected(Statics.ITEM_NEW_TIMER);

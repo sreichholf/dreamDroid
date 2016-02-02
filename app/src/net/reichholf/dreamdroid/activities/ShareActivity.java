@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -37,7 +38,7 @@ import android.widget.Toast;
  * @author sre
  * 
  */
-public class ShareActivity extends ListActivity {
+public class ShareActivity extends ListActivity implements SimpleResultTask.SimpleResultTaskHandler {
 	public static String LOG_TAG = ShareActivity.class.getSimpleName();
 
 	private SimpleResultTask mSimpleResultTask;
@@ -48,54 +49,6 @@ public class ShareActivity extends ListActivity {
 	private String mTitle;
 
 	ArrayList<Profile> mProfiles;
-
-	protected class SimpleResultTask extends AsyncTask<ArrayList<NameValuePair>, Void, Boolean> {
-		private ExtendedHashMap mResult;
-		private SimpleResultRequestHandler mHandler;
-
-		public SimpleResultTask(SimpleResultRequestHandler handler) {
-			mHandler = handler;
-		}
-
-		@Override
-		protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
-			if (isCancelled())
-				return false;
-			publishProgress();
-			String xml = mHandler.get(mShc, params[0]);
-
-			if (xml != null) {
-				ExtendedHashMap result = mHandler.parseSimpleResult(xml);
-
-				String stateText = result.getString("statetext");
-
-				if (stateText != null) {
-					mResult = result;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		@Override
-		protected void onProgressUpdate(Void... progress) {
-			if (!isCancelled())
-				ShareActivity.this.setProgressBarIndeterminateVisibility(true);
-		}
-
-		protected void onPostExecute(Boolean result) {
-			if(isCancelled())
-				return;
-			ShareActivity.this.setProgressBarIndeterminateVisibility(false);
-
-			if (!result || mResult == null) {
-				mResult = new ExtendedHashMap();
-			}
-
-			ShareActivity.this.onSimpleResult(result, mResult);
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -202,7 +155,7 @@ public class ShareActivity extends ListActivity {
 		}
 		mProgress = ProgressDialog.show(this, getString(R.string.loading), getString(R.string.loading));
 		SimpleResultRequestHandler handler = new SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY);
-		mSimpleResultTask = new SimpleResultTask(handler);
+		mSimpleResultTask = new SimpleResultTask(handler, this);
 		mSimpleResultTask.execute(params);
 	}
 

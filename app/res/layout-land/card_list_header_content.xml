@@ -30,7 +30,7 @@
             android:orientation="horizontal">
 
 
-            <android.support.v4.widget.SwipeRefreshLayout
+            <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
                 android:id="@+id/ptr_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -45,7 +45,7 @@
                     android:nestedScrollingEnabled="true"
                     android:clipToPadding="false"/>
 
-            </android.support.v4.widget.SwipeRefreshLayout>
+            </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 
             <FrameLayout
                 android:id="@+id/content_header"
@@ -64,7 +64,7 @@
             android:textAppearance="?android:attr/textAppearanceSmall"/>
     </FrameLayout>
 
-    <com.melnykov.fab.FloatingActionButton
+    <net.reichholf.widget.FloatingActionButton
         android:id="@+id/fab_reload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
