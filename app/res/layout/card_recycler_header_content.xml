@@ -40,13 +40,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <net.reichholf.dreamdroid.widget.AutofitRecyclerView
+                <android.support.v7.widget.RecyclerView
                     android:id="@android:id/list"
                     style="?attr/cardListView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:clipToPadding="false"
-                    android:columnWidth="200dp"/>
+                    android:clipToPadding="false"/>
 
             </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
         </LinearLayout>
