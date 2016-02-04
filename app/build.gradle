@@ -35,7 +35,6 @@ dependencies {
     compile project(':libraries:ckChangeLog')
     compile project(':libraries:gaugeview-library')
     compile project(':libraries:numberpicker')
-    compile project(':libraries:FloatingActionButton')
     compile project(':libraries:MemorizingTrustManager')
 }
 

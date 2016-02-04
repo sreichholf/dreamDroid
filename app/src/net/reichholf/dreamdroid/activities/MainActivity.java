@@ -15,6 +15,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -54,6 +55,7 @@ import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+import net.reichholf.dreamdroid.widget.behaviour.ScrollAwareFABBehavior;
 
 import org.piwik.sdk.PiwikApplication;
 
@@ -485,7 +487,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-
 		if (mDetailFragment != null
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
@@ -674,12 +675,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			recreate();
 			return;
 		}
-	}
-
-	private void restart() {
-		Intent intent = new Intent(MainActivity.this.getApplicationContext(), MainActivity.class);
-		startActivity(intent);
-		finish();
 	}
 
 	@Override

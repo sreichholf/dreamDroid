@@ -120,13 +120,12 @@ public class TimerListFragment extends BaseHttpRecyclerFragment implements Actio
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
-		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
-		registerFab(R.id.fab_main, view, R.string.new_timer, R.drawable.ic_action_fab_add, new View.OnClickListener() {
+		registerFab(R.id.fab_main, R.string.new_timer, R.drawable.ic_action_fab_add, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				onItemSelected(Statics.ITEM_NEW_TIMER);
 			}
-		}, recyclerView);
+		});
 		return view;
 	}
 

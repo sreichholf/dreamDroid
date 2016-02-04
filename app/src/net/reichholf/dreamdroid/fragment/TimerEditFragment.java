@@ -12,6 +12,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -48,7 +49,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
-import net.reichholf.widget.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -203,10 +203,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		} else {
 			reload();
 		}
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_main);
-
-
-		registerFab(R.id.fab_main, view, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
+		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				onItemSelected(Statics.ITEM_SAVE);
