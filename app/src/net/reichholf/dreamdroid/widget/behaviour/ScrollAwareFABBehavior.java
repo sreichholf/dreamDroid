@@ -32,7 +32,8 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
 							   final View target, final int dxConsumed, final int dyConsumed,
 							   final int dxUnconsumed, final int dyUnconsumed) {
 		super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
-		if(child.getTag(R.id.fab_scrolling_view_behavior_enabled).equals(false)) {
+		Boolean tag = (Boolean) child.getTag(R.id.fab_scrolling_view_behavior_enabled);
+		if(tag == null || child.getTag(R.id.fab_scrolling_view_behavior_enabled).equals(false)) {
 			child.hide();
 			return;
 		}
