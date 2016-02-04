@@ -65,8 +65,9 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
-		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(ImageLoader.getInstance(), true, true);
 		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
+		recyclerView.setLayoutManager(new GridLayoutManager(getAppCompatActivity(), 3));
+		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(ImageLoader.getInstance(), true, true);
 		recyclerView.setOnScrollListener(listener);
 
 		restoreState(savedInstanceState);

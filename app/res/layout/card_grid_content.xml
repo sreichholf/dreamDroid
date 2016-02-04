@@ -1,30 +1,33 @@
-<FrameLayout
-    android:id="@+id/listContainer"
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
-        android:id="@+id/ptr_layout"
+    <FrameLayout
+        android:id="@+id/listContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <net.reichholf.dreamdroid.view.AutofitRecyclerView
-            android:id="@+android:id/list"
-            style="?attr/cardListView"
+        <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
+            android:id="@+id/ptr_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <net.reichholf.dreamdroid.widget.AutofitRecyclerView
+                android:id="@+android:id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:columnWidth="92dp"
+                android:gravity="center"/>
+        </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
+
+        <TextView
+            android:id="@android:id/empty"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:columnWidth="90dp"
-            android:gravity="center"/>
-    </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
-
-    <TextView
-        android:id="@android:id/empty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:visibility="gone"/>
-</FrameLayout>
-
+            android:gravity="center"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:visibility="gone"/>
+    </FrameLayout>
+</LinearLayout>
