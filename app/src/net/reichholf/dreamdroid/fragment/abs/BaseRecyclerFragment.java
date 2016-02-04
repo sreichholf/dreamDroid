@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
@@ -77,7 +78,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		RecyclerView rv = getRecyclerView();
-		rv.setLayoutManager(new LinearLayoutManager(getActivity()));
+		rv.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 		rv.addItemDecoration(new SpacesItemDecoration(5));
 		mItemClickSupport = ItemClickSupport.addTo(rv);
 		mItemClickSupport.setOnItemClickListener(this);
