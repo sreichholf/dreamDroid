@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -27,16 +29,16 @@ import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
-import net.reichholf.widget.FloatingActionButton;
 
 
 /**
  * Created by Stephan on 03.05.2015.
  */
-public abstract class BaseRecyclerFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment, ItemClickSupport.OnItemClickListener, ItemClickSupport.OnItemLongClickListener {
+public abstract class BaseRecyclerFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment, ItemClickSupport.OnItemClickListener, ItemClickSupport.OnItemLongClickListener, SwipeRefreshLayout.OnRefreshListener {
 
 	private FragmentHelper mHelper;
 	protected boolean mHasFabMain;
+	protected boolean mEnableReload = true;
 	protected boolean mShouldRetainInstance = true;
 	protected boolean mCardListStyle = false;
 
@@ -76,7 +78,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		RecyclerView rv = getRecyclerView();
 		rv.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 		rv.addItemDecoration(new SpacesItemDecoration(5));
@@ -85,6 +87,21 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		mItemClickSupport.setOnItemLongClickListener(this);
 		mSelectionSupport = ItemSelectionSupport.addTo(rv);
 		super.onViewCreated(view, savedInstanceState);
+		setFabEnabled(R.id.fab_reload, mEnableReload);
+		setFabEnabled(R.id.fab_main, mHasFabMain);
+
+		getAppCompatActivity().findViewById(R.id.ptr_layout).setEnabled(mEnableReload);
+		SwipeRefreshLayout srl = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
+		srl.setOnRefreshListener(this);
+	}
+
+	protected void setFabEnabled(int id, boolean enabled) {
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
+		if(enabled)
+			fab.show();
+		else
+			fab.hide();
 	}
 
 	@Override
@@ -190,26 +207,6 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	protected void setEmptyText(CharSequence text) {
 	}
 
-	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, RecyclerView recyclerView, boolean topAligned) {
-		FloatingActionButton fab = (FloatingActionButton) view.findViewById(id);
-		if (fab == null)
-			return;
-		if (recyclerView != null)
-			fab.attachToRecyclerView(recyclerView, topAligned);
-
-		fab.setContentDescription(getString(descriptionId));
-		fab.setImageResource(backgroundResId);
-
-		fab.setOnClickListener(onClickListener);
-		fab.setOnLongClickListener(new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				Toast.makeText(getAppCompatActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
-				return true;
-			}
-		});
-	}
-
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
 	}
@@ -217,6 +214,12 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	@Override
 	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
 		return false;
+	}
+
+	@Override
+	public void onRefresh() {
+		SwipeRefreshLayout srl = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
+		srl.setRefreshing(false);
 	}
 
 	public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
@@ -260,5 +263,28 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		if (mActionMode != null)
 			mActionMode.finish();
 		mActionMode = null;
+	}
+
+	protected void registerFab(int id, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
+		registerFab(id, descriptionId, backgroundResId, onClickListener, false);
+	}
+
+	protected void registerFab(int id, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, boolean topAligned) {
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		if (fab == null)
+			return;
+
+		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, true);
+		fab.show();
+		fab.setContentDescription(getString(descriptionId));
+		fab.setImageResource(backgroundResId);
+		fab.setOnClickListener(onClickListener);
+		fab.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				Toast.makeText(getAppCompatActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+				return true;
+			}
+		});
 	}
 }

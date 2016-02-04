@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -24,7 +25,6 @@ import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.widget.FloatingActionButton;
 
 
 /**
@@ -63,14 +63,17 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	@Override
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		setViewVisible(R.id.fab_reload, mHasFabReload);
-		setViewVisible(R.id.fab_main, mHasFabMain);
+		setFabEnabled(R.id.fab_reload, mHasFabReload);
+		setFabEnabled(R.id.fab_main, mHasFabMain);
 	}
 
-	protected void setViewVisible(int id, boolean isVisible) {
-		View v = getAppCompatActivity().findViewById(id);
-		int visibility = isVisible ? View.VISIBLE : View.GONE;
-		v.setVisibility(visibility);
+	protected void setFabEnabled(int id, boolean enabled) {
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
+		if(enabled)
+			fab.show();
+		else
+			fab.hide();
 	}
 
 
@@ -173,14 +176,15 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		toast.show();
 	}
 
-	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
+	protected void registerFab(int id, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
 
+		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, true);
+		fab.show();
 		fab.setContentDescription(getString(descriptionId));
 		fab.setImageResource(backgroundResId);
-
 		fab.setOnClickListener(onClickListener);
 		fab.setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
@@ -195,7 +199,8 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
-		fab.setVisibility(View.GONE);
+		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, false);
+		fab.hide();
 		fab.setOnClickListener(null);
 		fab.setOnLongClickListener(null);
 	}

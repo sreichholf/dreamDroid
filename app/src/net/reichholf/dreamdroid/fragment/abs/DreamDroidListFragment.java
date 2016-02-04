@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -28,7 +29,6 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.widget.FloatingActionButton;
 
 /**
  * @author sre
@@ -222,8 +222,6 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
-		if (listView != null)
-			fab.attachToListView(listView, topAligned);
 
 		fab.setContentDescription(getString(descriptionId));
 		fab.setImageResource(backgroundResId);

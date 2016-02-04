@@ -4,5 +4,6 @@
     <item name="detail_title_prio" type="id"/>
     <item name="recyclerview_item_click_support" type="id"/>
     <item name="recyclerview_item_selection_support" type="id"/>
+    <item name="fab_scrolling_view_behavior_enabled" type="id"/>
 
 </resources>

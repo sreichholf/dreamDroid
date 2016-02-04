@@ -103,7 +103,7 @@ public class ProfileEditFragment extends BaseFragment {
 				onSslChanged(checked);
 			}
 		});
-		registerFab(R.id.fab_main, view, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
+		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				save();

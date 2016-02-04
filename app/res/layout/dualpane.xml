@@ -42,7 +42,7 @@
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
 
-            <net.reichholf.widget.FloatingActionButton
+            <android.support.design.widget.FloatingActionButton
                 android:id="@+id/fab_main"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -54,17 +54,19 @@
                 app:layout_anchorGravity="bottom|end|right"
                 app:pressedTranslationZ="12dp"/>
 
-            <net.reichholf.widget.FloatingActionButton
+            <android.support.design.widget.FloatingActionButton
                 android:id="@+id/fab_reload"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/fab_margin_right"
+                android:layout_marginRight="@dimen/fab_margin_right"
+                android:layout_marginTop="?attr/actionBarSize"
                 android:src="@drawable/ic_action_refresh"
                 android:visibility="gone"
                 app:elevation="6dp"
                 app:fabSize="mini"
-                app:layout_anchor="@+id/coordinator_layout"
-                app:layout_anchorGravity="top|end|right"
+                app:layout_anchor="@+id/detail_view"
+                app:layout_anchorGravity="top|end"
+                app:layout_behavior="net.reichholf.dreamdroid.widget.behaviour.ScrollAwareFABBehavior"
                 app:pressedTranslationZ="12dp"/>
 
         </android.support.design.widget.CoordinatorLayout>
