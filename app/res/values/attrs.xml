@@ -4,6 +4,7 @@
     <attr name="simpleHeaderBackground" format="color"/>
     <attr name="lightBackgroundColor" format="color"/>
     <attr name="darkBackgroundColor" format="color"/>
+    <attr name="navigation_item_selector" format="color"/>
     <attr name="navListPreferredItemHeight" format="dimension"/>
     <attr name="listItemBackground" format="reference"/>
     <attr name="cardBackground" format="reference"/>
