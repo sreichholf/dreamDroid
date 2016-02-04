@@ -218,9 +218,6 @@ public class ItemSelectionSupport {
 
 	@TargetApi(HONEYCOMB)
 	public void setViewChecked(View view, boolean checked) {
-		View checkable = view.findViewById(R.id.checkable_layout);
-		if(checkable != null)
-			view = checkable;
 		if (view instanceof Checkable) {
 			((Checkable) view).setChecked(checked);
 		} else if (Build.VERSION.SDK_INT >= HONEYCOMB) {
