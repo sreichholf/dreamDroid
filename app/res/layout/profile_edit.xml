@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/content_horz_padding"
     android:paddingTop="@dimen/content_vert_padding">
 
-    <LinearLayout
+    <net.reichholf.dreamdroid.widget.CheckableLinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -274,6 +274,6 @@
                     android:text="@string/ssl_enabled"/>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </net.reichholf.dreamdroid.widget.CheckableLinearLayout>
 
 </android.support.v4.widget.NestedScrollView>
