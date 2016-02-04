@@ -81,7 +81,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		RecyclerView rv = getRecyclerView();
 		rv.setLayoutManager(new GridLayoutManager(getActivity(), 1));
-		rv.addItemDecoration(new SpacesItemDecoration(5));
+		rv.addItemDecoration(new SpacesItemDecoration(getAppCompatActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
 		mItemClickSupport = ItemClickSupport.addTo(rv);
 		mItemClickSupport.setOnItemClickListener(this);
 		mItemClickSupport.setOnItemLongClickListener(this);
