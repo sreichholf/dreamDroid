@@ -25,7 +25,6 @@
         <item name="simpleHeaderBackground">@android:color/transparent</item>
         <item name="lightBackgroundColor">#333</item>
         <item name="darkBackgroundColor">#111</item>
-        <item name="cardBackground">@drawable/card_list_item_selector_dark</item>
         <item name="listItemBackground">@drawable/list_item_selector_dark</item>
         <item name="cardListView">@style/CardListView</item>
         <item name="ic_media_play">@drawable/ic_media_play_dark</item>
@@ -86,7 +85,6 @@
         <item name="simpleHeaderBackground">#DDD</item>
         <item name="lightBackgroundColor">#FFF</item>
         <item name="darkBackgroundColor">#DDD</item>
-        <item name="cardBackground">@drawable/card_list_item_selector_light</item>
         <item name="listItemBackground">@drawable/list_item_selector_light</item>
         <item name="cardListView">@style/CardListView.Light</item>
         <item name="ic_media_play">@drawable/ic_media_play_light</item>
