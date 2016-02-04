@@ -2,6 +2,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <style name="Base.Theme.DreamDroid" parent="Theme.AppCompat.NoActionBar">
+        <item name="cardPreventCornerOverlap">true</item>
+        <item name="cardBackgroundColor">@color/cardview_dark_background</item>
         <item name="navigation_item_selector">@color/navigation_item_selector_dark</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground</item>
@@ -62,6 +64,8 @@
     </style>
 
     <style name="Base.Theme.DreamDroid.Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="cardPreventCornerOverlap">true</item>
+        <item name="cardBackgroundColor">@color/cardview_light_background</item>
         <item name="navigation_item_selector">@color/navigation_item_selector_light</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground</item>
