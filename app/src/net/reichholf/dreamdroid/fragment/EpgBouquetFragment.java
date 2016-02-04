@@ -60,7 +60,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_recycler_header_content, container, false);
+		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
 		View header = inflater.inflate(R.layout.date_time_picker_header, null, false);
 
 		Calendar cal = getCalendar();
@@ -90,7 +90,8 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 			}
 		});
 
-		FrameLayout frame = (FrameLayout) view.findViewById(R.id.content_header);
+		FrameLayout frame = (FrameLayout) getAppCompatActivity().findViewById(R.id.content_header);
+		frame.removeAllViews();
 		frame.addView(header);
 
 		return view;

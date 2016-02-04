@@ -72,6 +72,11 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 		reload();
 	}
 
+	@Override
+	public boolean hasHeader() {
+		return true;
+	}
+
 	public LinearLayout createTimeLine(LayoutInflater inflater) {
 		LinearLayout row = (LinearLayout) inflater.inflate(R.layout.multiepg_row, null);
 

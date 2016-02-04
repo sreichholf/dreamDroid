@@ -15,7 +15,6 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -55,7 +54,6 @@ import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
-import net.reichholf.dreamdroid.widget.behaviour.ScrollAwareFABBehavior;
 
 import org.piwik.sdk.PiwikApplication;
 
@@ -318,6 +316,17 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
 		if (mConnectionState == null) {
 			mConnectionState = new TextView(this);
+		}
+	}
+
+	@Override
+	public void setTitle(CharSequence title) {
+		TextView titleView = (TextView) findViewById(R.id.toolbar_title);
+		if (titleView != null) {
+			titleView.setText(title);
+			super.setTitle("");
+		} else {
+			super.setTitle(title);
 		}
 	}
 

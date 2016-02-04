@@ -1,17 +1,18 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="?attr/actionBarSize"
-    android:gravity="center_vertical"
+    android:gravity="right"
+    android:layout_gravity="right"
     android:minHeight="?attr/actionBarSize"
     android:orientation="horizontal"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
     <TextView
         android:id="@+id/textViewDate"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1"
+        android:layout_marginRight="5dp"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:gravity="center"
@@ -22,9 +23,8 @@
 
     <TextView
         android:id="@+id/textViewTime"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:gravity="center"
