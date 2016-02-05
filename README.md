@@ -24,6 +24,7 @@ Officially supported are the following devices:
 * Dreambox DM 7080 HD
 * Dreambox DM 7020 HD
 * Dreambox DM 8000 HD PVR
+* Dreambox DM 820 HD
 * Dreambox DM 800 HD se
 * Dreambox DM 800 HD PVR
 * Dreambox DM 500 HD
@@ -32,9 +33,9 @@ Officially supported are the following devices:
 # Requirements
 
 * The target dreamboxes should be running a WebInterface with Version 1.6.8 or later.
-* dreamDroid requires at least Android 2.1 (which is the minimum SDK Version required by android-support-v7-appcompat) to work properly.
+* dreamDroid requires at least Android 4.0
 
-# Developing / building dreamDroid with AndroidStudio (>= 0.8.11)
+# Developing / building dreamDroid with AndroidStudio
 
 Simply import dreamDroid as gradle project and you should be fine.
 
