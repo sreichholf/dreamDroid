@@ -14,14 +14,19 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/EditTextProfile"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="fill_parent"
-            android:layout_height="0dip"
-            android:layout_marginBottom="4dp"
-            android:layout_weight="1"
-            android:hint="@string/profile_name"
-            android:singleLine="true"/>
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/EditTextProfile"
+                android:layout_width="fill_parent"
+                android:layout_height="0dip"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="1"
+                android:hint="@string/profile_name"
+                android:singleLine="true"/>
+        </android.support.design.widget.TextInputLayout>
 
         <LinearLayout
             android:id="@+id/LinearLayoutIsSimpleRemote"
@@ -37,36 +42,40 @@
                 android:text="@string/simple_remote"/>
         </LinearLayout>
 
-        <TextView
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:text="@string/connection"/>
-
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
             android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/EditTextHost"
-                android:layout_width="match_parent"
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="80dp"
-                android:hint="@string/host_long"
-                android:singleLine="true"/>
+                android:layout_marginRight="80dp">
 
-            <EditText
-                android:id="@+id/EditTextPort"
-                android:layout_width="match_parent"
+                <EditText
+                    android:id="@+id/EditTextHost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:hint="@string/host_long"
+                    android:singleLine="true"/>
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="-80dp"
-                android:hint="@string/port"
-                android:inputType="number"
-                android:maxLength="5"
-                android:singleLine="true"/>
+                android:layout_marginLeft="-80dp">
+
+                <EditText
+                    android:id="@+id/EditTextPort"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/port"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:singleLine="true"/>
+            </android.support.design.widget.TextInputLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -79,48 +88,27 @@
                 android:id="@+id/CheckBoxSsl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/ssl_enabled"/>
-        </LinearLayout>
-
-        <TextView
-            style="@style/SimpleHeader"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:text="@string/login"/>
-
-        <LinearLayout
-            android:id="@+id/LinearLayoutIsLogin"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:orientation="horizontal">
 
             <CheckBox
                 android:id="@+id/CheckBoxLogin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="@string/login_enabled"/>
         </LinearLayout>
 
-        <TableLayout
+        <LinearLayout
             android:id="@+id/LoginLayout"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:paddingLeft="6dp">
+            android:orientation="horizontal">
 
-            <TableRow
-                android:id="@+id/tableRow1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="8dp"
-                    android:text="@string/user"
-                    android:textAppearance="@android:style/TextAppearance.Medium"/>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/EditTextUser"
@@ -128,19 +116,12 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/user"
                     android:singleLine="true"/>
-            </TableRow>
+            </android.support.design.widget.TextInputLayout>
 
-            <TableRow
-                android:id="@+id/tableRow2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="8dp"
-                    android:text="@string/pass"
-                    android:textAppearance="@android:style/TextAppearance.Medium"/>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
 
                 <EditText
                     android:id="@+id/EditTextPass"
@@ -150,8 +131,8 @@
                     android:hint="@string/pass"
                     android:inputType="textPassword"
                     android:singleLine="true"/>
-            </TableRow>
-        </TableLayout>
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
 
         <TextView
             style="@style/SimpleHeader"
@@ -161,13 +142,18 @@
             android:layout_marginTop="4dp"
             android:text="@string/stream"/>
 
-        <EditText
-            android:id="@+id/EditTextStreamHost"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:hint="@string/stream_host_long"
-            android:singleLine="true"/>
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/EditTextStreamHost"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:hint="@string/stream_host_long"
+                android:singleLine="true"/>
+        </android.support.design.widget.TextInputLayout>
 
         <LinearLayout
             android:id="@+id/linearLayout4"
@@ -190,18 +176,9 @@
                     android:layout_marginBottom="4dp"
                     android:text="@string/live"/>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="3dp"
-                        android:layout_marginRight="8dp"
-                        android:text="@string/port"
-                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
 
                     <EditText
                         android:id="@+id/EditTextStreamPort"
@@ -212,7 +189,7 @@
                         android:maxLength="5"
                         android:singleLine="true">
                     </EditText>
-                </LinearLayout>
+                </android.support.design.widget.TextInputLayout>
 
                 <CheckBox
                     android:id="@+id/CheckBoxLoginStream"
@@ -237,18 +214,9 @@
                     android:layout_marginBottom="4dp"
                     android:text="@string/movies"/>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="3dp"
-                        android:layout_marginRight="8dp"
-                        android:text="@string/port"
-                        android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
 
                     <EditText
                         android:id="@+id/EditTextFilePort"
@@ -259,7 +227,7 @@
                         android:maxLength="5"
                         android:singleLine="true">
                     </EditText>
-                </LinearLayout>
+                </android.support.design.widget.TextInputLayout>
 
                 <CheckBox
                     android:id="@+id/CheckBoxLoginFileStream"

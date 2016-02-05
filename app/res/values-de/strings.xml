@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="description">Dreambox</string>
+    <string name="description">Beschreibung</string>
     <string name="title">Titel</string>
     <string name="mo">Mo</string>
     <string name="app_name">DreamDroid</string>
