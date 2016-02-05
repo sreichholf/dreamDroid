@@ -69,6 +69,8 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 
 	protected void setFabEnabled(int id, boolean enabled) {
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		if(fab == null)
+			return;
 		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
 		if(enabled)
 			fab.show();
