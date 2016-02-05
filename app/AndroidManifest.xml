@@ -110,6 +110,9 @@
         <service
             android:name=".helpers.SyncService"
             android:enabled="true"/>
+        <service
+            android:name=".helpers.PiconSyncService"
+            android:enabled="true"/>
 
         <uses-library
             android:name="com.sec.android.app.multiwindow"

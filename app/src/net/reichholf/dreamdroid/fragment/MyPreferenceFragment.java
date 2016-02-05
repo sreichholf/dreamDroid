@@ -1,45 +1,36 @@
 package net.reichholf.dreamdroid.fragment;
 
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
-import android.view.WindowManager;
+import android.view.View;
 import android.widget.Toast;
-
-
-import android.support.v7.preference.PreferenceFragmentCompat;
-
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.PiconDownloadTask;
-import net.reichholf.dreamdroid.helpers.enigma2.Picon;
+import net.reichholf.dreamdroid.helpers.PiconSyncService;
 
 /**
  * Created by Stephan on 08.04.2015.
  */
 public class MyPreferenceFragment extends PreferenceFragmentCompat implements
-		SharedPreferences.OnSharedPreferenceChangeListener, PiconDownloadTask.PiconDownloadProgressListener, ActivityCallbackHandler {
-
-	private static String LOG_TAG = MyPreferenceFragment.class.getSimpleName();
-
-	private MaterialDialog mProgressDialog;
-	private PiconDownloadTask mSyncPiconTask;
+		SharedPreferences.OnSharedPreferenceChangeListener, ActivityCallbackHandler {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		// Load the preferences from an XML resource
-
 	}
 
 	@Override
@@ -65,122 +56,47 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		super.onActivityCreated(savedInstanceState);
 		TypedValue typedValue = new TypedValue();
 		getActivity().getTheme().resolveAttribute(android.R.attr.listSelector, typedValue, true);
-/*		if(typedValue.resourceId > 0)
-			getListView().setSelector(typedValue.resourceId);
-*/
 
 		boolean isDebuggable = (0 != (getActivity().getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
-		if(!isDebuggable) {
+		if (!isDebuggable) {
 			Preference dev = findPreference("developer");
-			if(dev != null) //Already removed?
+			if (dev != null) //Already removed?
 				getPreferenceScreen().removePreference(dev);
 		}
 	}
 
 	@Override
-	public void onPause() {
-		if (mProgressDialog != null) {
-			mProgressDialog.dismiss();
-			mProgressDialog = null;
-		}
-		if (mSyncPiconTask != null) {
-			mSyncPiconTask.cancel(true);
-			mSyncPiconTask = null;
-		}
-		super.onPause();
+	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		setFabEnabled(R.id.fab_reload, false);
+		setFabEnabled(R.id.fab_main, false);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see android.content.SharedPreferences.OnSharedPreferenceChangeListener#
-	 * onSharedPreferenceChanged(android.content.SharedPreferences,
-	 * java.lang.String)
-	 */
+	protected void setFabEnabled(int id, boolean enabled) {
+		FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(id);
+		if (fab == null)
+			return;
+		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
+		if (enabled)
+			fab.show();
+		else
+			fab.hide();
+	}
+
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see net.reichholf.dreamdroid.asynctask.PiconDownloadTask.
-	 * PiconDownloadProgressListener#updatePiconDownloadProgress(int,
-	 * net.reichholf.dreamdroid.asynctask.PiconDownloadTask.DownloadProgress)
-	 */
-	@Override
-	public void updatePiconDownloadProgress(int eventid, PiconDownloadTask.DownloadProgress progress) {
-		String message = "-";
-		checkProgress();
-		switch (eventid) {
-			case PiconDownloadTask.DownloadProgress.EVENT_ID_CONNECTING:
-				message = getString(R.string.connecting);
-				break;
-			case PiconDownloadTask.DownloadProgress.EVENT_ID_CONNECTED:
-				message = getString(R.string.connected);
-				break;
-			case PiconDownloadTask.DownloadProgress.EVENT_ID_LOGIN_SUCCEEDED:
-				message = getString(R.string.connected);
-				break;
-			case PiconDownloadTask.DownloadProgress.EVENT_ID_LISTING:
-				message = getString(R.string.getting_list_of_files);
-				break;
-			case PiconDownloadTask.DownloadProgress.EVENT_ID_LISTING_READY:
-				message = "";
-				mProgressDialog.setMaxProgress(progress.totalFiles);
-				break;
-			case PiconDownloadTask.DownloadProgress.EVENT_ID_DOWNLOADING_FILE:
-				message = progress.currentFile;
-				break;
-			case PiconDownloadTask.DownloadProgress.EVENT_ID_FINISHED:
-				mProgressDialog.setCancelable(true);
-				mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-				Picon.clearCache();
-				if (!progress.error) {
-					message = getString(R.string.picon_sync_finished, progress.downloadedFiles);
-				} else {
-					message = progress.errorText;
-					if (message == null) //TODO I am not happy about this, imo this shouldn't even happen!
-						message = progress.currentFile;
-				}
-				break;
-		}
-
-		if (message == null || "".equals(message.trim())) //TODO I am not happy about this, imo this shouldn't even happen!
-			message = "-";
-		Log.i(LOG_TAG, message);
-		if (mProgressDialog != null && mProgressDialog.isShowing()) {
-			mProgressDialog.setMessage(message);
-			mProgressDialog.setProgress(progress.downloadedFiles);
-		} else if (eventid == PiconDownloadTask.DownloadProgress.EVENT_ID_FINISHED) {
-			Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-		}
-	}
 
 	public void startPiconSync() {
-		if (mSyncPiconTask != null) {
-			if (mSyncPiconTask.getStatus() != AsyncTask.Status.FINISHED)
-				mSyncPiconTask.cancel(true);
+		if (isSyncServiceRunning()) {
+			Toast.makeText(getActivity(), R.string.picon_sync_running, Toast.LENGTH_LONG).show();
+			return;
 		}
-
-		mSyncPiconTask = new PiconDownloadTask(this);
-		mSyncPiconTask.execute(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(
-				DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"), Picon.getBasepath(getActivity()));
-	}
-
-	public void checkProgress() {
-		if (mProgressDialog == null || !mProgressDialog.isShowing()) {
-			mProgressDialog = new MaterialDialog.Builder(getActivity())
-					.title(R.string.sync_picons)
-					.content(R.string.wait_request_finished)
-					.cancelable(false)
-					.progress(false, 1, true)
-					.build();
-		}
-
-		if (!mProgressDialog.isShowing())
-			mProgressDialog.show();
+		Intent piconSyncItent = new Intent(getActivity(), PiconSyncService.class);
+		getActivity().startService(piconSyncItent);
+		Toast.makeText(getActivity(), R.string.picon_sync_started, Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -198,6 +114,16 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		return false;
+	}
+
+	private boolean isSyncServiceRunning() {
+		ActivityManager manager = (ActivityManager) getActivity().getSystemService(Activity.ACTIVITY_SERVICE);
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+			if (PiconSyncService.class.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
 		return false;
 	}
 }

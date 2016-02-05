@@ -317,4 +317,9 @@
     <string name="use_fake_picon">Ersatz Picon benutzen</string>
     <string name="use_fake_picon_long">Ersatzpicon (picon_default.png) nutzen um Copyrightprobleme bei Screenshots zu vermeiden</string>
     <string name="developer_settings_enable">Entwicklereinstellungen aktivieren</string>
+    <string name="picon_sync_running">Es läuft bereits eine Synchronisation von Picons!</string>
+    <string name="picon_sync_started">Picon Synchronisation gestartet. Mehr Details im Benachrichtungsbereich.</string>
+    <string name="settings_and_about"><![CDATA[Einstellungen & Über]]></string>
+    <string name="tools">Werkzeuge</string>
+    <string name="control">Steuerung</string>
 </resources>

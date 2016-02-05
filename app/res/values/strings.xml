@@ -317,4 +317,6 @@
     <string name="settings_and_about"><![CDATA[Settings & About]]></string>
     <string name="tools">Tools</string>
     <string name="control">Control</string>
+    <string name="picon_sync_started">Picon synchronization started. See notifaction area for details.</string>
+    <string name="picon_sync_running">There is still another picon synchronization running!</string>
 </resources>
