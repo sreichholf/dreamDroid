@@ -1,36 +1,37 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal"
-                android:padding="20dp">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:padding="20dp">
 
     <org.codeandmagic.android.gauge.GaugeView
         android:id="@+id/gauge_view1"
         android:layout_width="240dp"
         android:layout_height="240dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"/>
 
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/gauge_view1"
-        android:layout_below="@+id/gauge_view1" >
+        android:layout_below="@+id/gauge_view1">
 
         <TextView
             android:id="@+id/text_snrdb_title"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="SNRdb"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
 
         <TextView
             android:id="@+id/text_snrdb"
             android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:text="0"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
     </LinearLayout>
 
     <LinearLayout
@@ -38,21 +39,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/linearLayout1"
-        android:layout_below="@+id/linearLayout1" >
+        android:layout_below="@+id/linearLayout1">
 
         <TextView
             android:id="@+id/text_ber_title"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="BER"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
 
         <TextView
             android:id="@+id/text_ber"
             android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:text="0"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
     </LinearLayout>
 
     <LinearLayout
@@ -60,21 +61,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/linearLayout3"
-        android:layout_below="@+id/linearLayout3" >
+        android:layout_below="@+id/linearLayout3">
 
         <TextView
             android:id="@+id/text_agc_title"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="AGC"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
 
         <TextView
             android:id="@+id/text_agc"
             android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:text="0"
-            android:textAppearance="@android:style/TextAppearance.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Medium"/>
     </LinearLayout>
 
     <CheckBox
@@ -83,13 +84,13 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/linearLayout2"
         android:layout_below="@+id/linearLayout2"
-        android:text="@string/accoustic_feedback" />
+        android:text="@string/accoustic_feedback"/>
 
     <ToggleButton
         android:id="@+id/toggle_enabled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/check_accoustic_feedback"/>
 
 </RelativeLayout>
