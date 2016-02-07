@@ -22,6 +22,7 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import android.app.SearchManager;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
+import android.view.View;
 
 /**
  * @author sre
@@ -36,13 +37,18 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment {
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.epg_search));
 
-		setAdapter();
 		String needle = getArguments().getString(SearchManager.QUERY);
 		if (needle != null) {
 			mNeedle = needle;
 			if (mMapList.size() == 0)
 				mReload = true;
 		}
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		setAdapter();
 	}
 
 	/**
