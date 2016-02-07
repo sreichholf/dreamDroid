@@ -50,6 +50,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		mEnableReload = false;
 		super.onCreate(savedInstanceState);
 		initTitle("");
 
