@@ -54,6 +54,8 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     protected SimpleResultTask mSimpleResultTask;
     protected SetVolumeTask mVolumeTask;
 
+    protected boolean mShowToastOnSimpleResult = true;
+
     public HttpFragmentHelper() {
         resetHttpClient();
     }
@@ -183,8 +185,13 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
             toastText = mShc.getErrorText();
         }
 
-        showToast(toastText);
+        if(mShowToastOnSimpleResult)
+            showToast(toastText);
         ((SimpleResultTask.SimpleResultTaskHandler)mFragment).onSimpleResult(success, result);
+    }
+
+    public void showToastOnSimpleResult(boolean show) {
+        mShowToastOnSimpleResult = show;
     }
 
     /**

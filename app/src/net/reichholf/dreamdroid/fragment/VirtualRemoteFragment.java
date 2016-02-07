@@ -76,6 +76,7 @@ public class VirtualRemoteFragment extends BaseHttpFragment {
 		mShouldRetainInstance = false;
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.virtual_remote));
+		mHttpHelper.showToastOnSimpleResult(false);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		mQuickZap = getArguments().getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, prefs.getBoolean(DreamDroid.PREFS_KEY_QUICKZAP, false) );
