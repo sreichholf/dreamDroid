@@ -6,7 +6,12 @@
 
 package net.reichholf.dreamdroid.intents;
 
-import java.util.ArrayList;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -15,16 +20,10 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.preference.PreferenceManager;
-import android.util.Log;
+import java.util.ArrayList;
 
 /**
  * @author sre
- * 
  */
 public class IntentFactory {
 	/**
@@ -49,10 +48,11 @@ public class IntentFactory {
 
 	public static Intent getStreamServiceIntent(String ref, String title) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
-		String uriString = SimpleHttpClient.getInstance().buildServiceStreamUrl(ref, title);
+		String uriString = SimpleHttpClient.getInstance().buildStreamUrl(ref, title);
 		Log.i(DreamDroid.LOG_TAG, "Service-Streaming URL set to '" + uriString + "'");
 
-		intent.setDataAndType(Uri.parse(uriString), "video/*");
+		Uri uri = Uri.parse(uriString);
+		intent.setDataAndType(uri, "video/*");
 		intent.putExtra("title", title);
 		return intent;
 	}

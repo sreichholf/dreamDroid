@@ -51,6 +51,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_PROFILE_DEFAULT_REF_NAME = "default_ref_name";
 	public static final String KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2";
 	public static final String KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name";
+	//ENCODER
+	public static final String KEY_PROFILE_ENCODER_STREAM = "encoder_stream";
+	public static final String KEY_PROFILE_ENCODER_PATH = "encoder_path";
+	public static final String KEY_PROFILE_ENCODER_PORT = "encoder_port";
+	public static final String KEY_PROFILE_ENCODER_LOGIN = "encoder_login";
+	public static final String KEY_PROFILE_ENCODER_USER = "encoder_user";
+	public static final String KEY_PROFILE_ENCODER_PASS = "encoder_pass";
+	public static final String KEY_PROFILE_ENCODER_VIDEO_BITRATE = "encoder_video_bitrate";
+	public static final String KEY_PROFILE_ENCODER_AUDIO_BITRATE = "encoder_audio_bitrate";
 
 	public static final String KEY_EVENT_ID = "id";
 	public static final String KEY_EVENT_START = "start";
@@ -63,13 +72,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_SERVICES_NAME = "name";
 
 	public static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 12;
 	private static final String PROFILES_TABLE_NAME = "profiles";
 	private static final String EVENT_TABLE_NAME = "events";
 	private static final String SERVICES_TABLE_NAME = "services";
 
 	private static final String PROFILES_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
-				PROFILES_TABLE_NAME + " (" +
+			PROFILES_TABLE_NAME + " (" +
 			KEY_PROFILE_ID + " INTEGER PRIMARY KEY, " +
 			KEY_PROFILE_PROFILE + " TEXT, " +
 			KEY_PROFILE_HOST + " TEXT, " +
@@ -88,7 +97,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			KEY_PROFILE_DEFAULT_REF_2_NAME + " TEXT, " +
 			KEY_PROFILE_FILE_LOGIN + " BOOLEAN, " +
 			KEY_PROFILE_FILE_SSL + " BOOLEAN, " +
-			KEY_PROFILE_STREAM_LOGIN + " BOOLEAN);";
+			KEY_PROFILE_STREAM_LOGIN + " BOOLEAN, " +
+			KEY_PROFILE_ENCODER_STREAM + " BOOLEAN, " +
+			KEY_PROFILE_ENCODER_PATH + " TEXT, " +
+			KEY_PROFILE_ENCODER_PORT + " INTEGER, " +
+			KEY_PROFILE_ENCODER_LOGIN + " BOOLEAN, " +
+			KEY_PROFILE_ENCODER_USER + " TEXT, " +
+			KEY_PROFILE_ENCODER_PASS + " TEXT, " +
+			KEY_PROFILE_ENCODER_VIDEO_BITRATE + " TEXT, " +
+			KEY_PROFILE_ENCODER_AUDIO_BITRATE + " TEXT);";
 
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
 			+ KEY_PROFILE_STREAM_HOST + " TEXT;";
@@ -111,6 +128,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String PROFILES_TABLE_UPGRADE_7_8_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_FILE_SSL + " BOOLEAN;";
 
 	private static final String PROFILES_TABLE_UPGRADE_8_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_STREAM_LOGIN + " BOOLEAN;";
+
+	private static final String PROFILES_TABLE_UPGRADE_11_12_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_STREAM + " BOOLEAN;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_PATH + " TEXT;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_PORT + " INTEGER;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_4 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_LOGIN + " BOOLEAN;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_5 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_USER + " TEXT;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_PASS + " TEXT;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_7 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_VIDEO_BITRATE + " INTEGER;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_8 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_AUDIO_BITRATE + " INTEGER;";
 
 	private static final String EVENT_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
 			EVENT_TABLE_NAME + " (" +
@@ -156,6 +182,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_2);
 	}
 
+	private void upgrade11to12(SQLiteDatabase db){
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_1);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_2);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_3);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_4);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_5);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_6);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_7);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_8);
+	}
+
 	/* (non-Javadoc)
 	 * @see android.database.sqlite.SQLiteOpenHelper#onUpgrade(android.database.sqlite.SQLiteDatabase, int, int)
 	 */
@@ -196,11 +233,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				db.execSQL(SERVICES_TABLE_CREATE);
 				oldVersion += 2;
 			}
-            if( oldVersion == 10){ //DEVELOPMENT VERSIONS ONLY
+            if(oldVersion == 10){ //DEVELOPMENT VERSIONS ONLY
                 db.execSQL("DROP TABLE EPG;");
                 db.execSQL(EVENT_TABLE_CREATE);
                 oldVersion++;
             }
+			if(oldVersion == 11){
+				upgrade11to12(db);
+				oldVersion++;
+			}
+
 			if (oldVersion != DATABASE_VERSION){ //this should never happen...
 				emergencyRecovery(db);
 			}
@@ -241,6 +283,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		values.put(KEY_PROFILE_DEFAULT_REF_NAME, p.getDefaultRefName());
 		values.put(KEY_PROFILE_DEFAULT_REF_2, p.getDefaultRef2());
 		values.put(KEY_PROFILE_DEFAULT_REF_2_NAME, p.getDefaultRef2Name());
+		values.put(KEY_PROFILE_ENCODER_STREAM, p.isEncoderStream());
+		values.put(KEY_PROFILE_ENCODER_PATH, p.getEncoderPath());
+		values.put(KEY_PROFILE_ENCODER_PORT, p.getEncoderPort());
+		values.put(KEY_PROFILE_ENCODER_LOGIN, p.isEncoderLogin());
+		values.put(KEY_PROFILE_ENCODER_USER, p.getEncoderUser());
+		values.put(KEY_PROFILE_ENCODER_PASS, p.getEncoderPass());
+		values.put(KEY_PROFILE_ENCODER_VIDEO_BITRATE, p.getEncoderVideoBitrate());
+		values.put(KEY_PROFILE_ENCODER_AUDIO_BITRATE, p.getEncoderAudioBitrate());
 		return values;
 	}
 
@@ -293,7 +343,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public ArrayList<Profile> getProfiles() {
 		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
-				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME};
+				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
+				KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN, KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE, KEY_PROFILE_ENCODER_AUDIO_BITRATE};
 		SQLiteDatabase db = getReadableDatabase();
 
 		ArrayList<Profile> list = new ArrayList<>();
@@ -321,7 +372,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public Profile getProfile(int id) {
 		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
-				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME};
+				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
+				KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN, KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE, KEY_PROFILE_ENCODER_AUDIO_BITRATE};
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor c = db.query(PROFILES_TABLE_NAME, columns, KEY_PROFILE_ID + "=" + id, null, null, null, KEY_PROFILE_PROFILE);
 
@@ -352,24 +404,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			filePort = 80;
 		}
 
-		int login = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_LOGIN));
-		boolean ynLogin = login == 1;
+		boolean isLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_LOGIN)) == 1;
+		boolean isSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_SSL)) == 1;
+		boolean isStreamLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_STREAM_LOGIN)) == 1;
+		boolean isFileLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_FILE_LOGIN)) == 1;
+		boolean isFileSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_FILE_SSL)) == 1;
+		boolean isSimpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_SIMPLE_REMOTE)) == 1;
 
-		int ssl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_SSL));
-		boolean ynSsl = ssl == 1;
-
-
-		int streamLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_STREAM_LOGIN));
-		boolean ynStreamLogin = streamLogin == 1;
-
-		int fileLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_FILE_LOGIN));
-		boolean ynFileLogin = fileLogin == 1;
-
-		int fileSsl = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_FILE_SSL));
-		boolean ynFileSsl = fileSsl == 1;
-
-		int simpleRemote = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_SIMPLE_REMOTE));
-		boolean ynSimpleRemote = simpleRemote == 1;
 
 		String user = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_USER));
 		String pass = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_PASS));
@@ -380,7 +421,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		String defaultRef2 = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_DEFAULT_REF_2));
 		String defaultRef2Name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_DEFAULT_REF_2_NAME));
 
-		return new Profile(id, name, host, streamHost, port, streamPort, filePort, ynLogin, user, pass, ynSsl, ynStreamLogin, ynFileLogin, ynFileSsl, ynSimpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name);
+		boolean isEncoderStream = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_STREAM)) == 1;
+		String encoderPath = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_PATH));
+		int encoderPort = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_PORT));
+		boolean isEncoderLogin = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_LOGIN)) == 1;
+		String encoderUser = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_USER));
+		String encoderPass = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_PASS));
+		int encoderAudioBitrate = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_AUDIO_BITRATE));
+		int encoderVideoBitrate = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_VIDEO_BITRATE));
+
+		encoderPath = encoderPath == null ? "stream" : encoderPath;
+		encoderPort = encoderPort <= 0 ? 554 : encoderPort;
+		encoderUser = encoderUser == null ? "" : encoderUser;
+		encoderPass = encoderPass == null ? "" : encoderPass;
+		encoderAudioBitrate = encoderAudioBitrate <= 0 ? 128 : encoderAudioBitrate;
+		encoderVideoBitrate = encoderVideoBitrate <= 0 ? 2500 : encoderVideoBitrate;
+
+		return new Profile(id, name, host, streamHost, port, streamPort, filePort, isLogin, user, pass, isSsl, isStreamLogin, isFileLogin, isFileSsl, isSimpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, isEncoderStream, encoderPath, encoderPort, isEncoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate );
 	}
 
     public int setEvents(ArrayList<ExtendedHashMap> events){

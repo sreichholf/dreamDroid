@@ -110,6 +110,40 @@ public class SimpleHttpClient {
 	 * @param title
 	 * @return
 	 */
+	public String buildEncoderStreamUrl(String ref, String title) {
+		try {
+			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
+		} catch (UnsupportedEncodingException e) {
+		}
+		String streamLoginString = "";
+		if (mProfile.isEncoderLogin())
+			streamLoginString = mProfile.getEncoderUser() + ":" + mProfile.getEncoderPass() + "@";
+
+		String url = String.format(
+				"rtsp://%s%s:%s/%s?ref=%s&video_bitrate=%s&audio_bitrate=%s",
+				streamLoginString,
+				mProfile.getStreamHost(),
+				mProfile.getEncoderPort(),
+				mProfile.getEncoderPath(),
+				ref,
+				mProfile.getEncoderVideoBitrate(),
+				mProfile.getEncoderAudioBitrate()
+		);
+		return url;
+	}
+
+	public String buildStreamUrl(String ref, String title) {
+		if(mProfile.isEncoderStream())
+			return buildEncoderStreamUrl(ref, title);
+		else
+			return buildServiceStreamUrl(ref, title);
+	}
+
+	/**
+	 * @param ref
+	 * @param title
+	 * @return
+	 */
 	public String buildServiceStreamUrl(String ref, String title) {
 		try {
 			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");

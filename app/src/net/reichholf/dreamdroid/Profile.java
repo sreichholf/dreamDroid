@@ -6,9 +6,9 @@
 
 package net.reichholf.dreamdroid;
 
-import java.io.Serializable;
-
 import android.util.Log;
+
+import java.io.Serializable;
 
 
 /**
@@ -18,21 +18,30 @@ public class Profile implements Serializable {
 
 	public static final Profile DEFAULT = new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
 	private static final long serialVersionUID = 8176949133234868302L;
-	private final int mId;
+	private int mId;
 	private String mName;
 	private String mHost;
 	private String mStreamHost;
+	private String mEncoderPath;
 	private String mUser;
 	private String mPass;
+	private String mEncoderUser;
+	private String mEncoderPass;
 	private boolean mLogin;
 	private boolean mSsl;
 	private boolean mStreamLogin;
 	private boolean mFileLogin;
+	private boolean mEncoderLogin;
+	private boolean mEncoderStream;
 	private boolean mFileSsl;
 	private boolean mSimpleRemote;
 	private int mPort;
 	private int mStreamPort;
 	private int mFilePort;
+	private int mEncoderPort;
+	private int mEncoderAudioBitrate;
+	private int mEncoderVideoBitrate;
+
 	private String mDefaultRef;
 	private String mDefaultRefName;
 	private String mDefaultRef2;
@@ -42,7 +51,20 @@ public class Profile implements Serializable {
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
+		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, false, "stream", 554, false, "", "", 2500, 128);
+	}
 
+	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
+				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
+				   String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
+		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, encoderStream, encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate);
+	}
+
+	private void init(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+					  String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
+					  boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
+					  String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
 		mId = id;
 		mSessionId = null;
 		setName(name);
@@ -61,6 +83,15 @@ public class Profile implements Serializable {
 		setSimpleRemote(simpleRemote);
 		setDefaultRefValues(defaultRef, defaultRefName);
 		setDefaultRef2Values(defaultRef2, defaultRef2Name);
+		//Encoder
+		setEncoderStream(encoderStream);
+		setEncoderPort(encoderPort);
+		setEncoderPath(encoderPath);
+		setEncoderAudioBitrate(encoderAudioBitrate);
+		setEncoderVideoBitrate(encoderVideoBitrate);
+		setEncoderLogin(encoderLogin);
+		setEncoderUser(encoderUser);
+		setEncoderPass(encoderPass);
 	}
 
 	public void setPort(int port) {
@@ -120,6 +151,14 @@ public class Profile implements Serializable {
 		return mStreamHost;
 	}
 
+	public void setEncoderPath(String encoderPath) {
+		mEncoderPath = encoderPath;
+	}
+
+	public String getEncoderPath() {
+		return mEncoderPath;
+	}
+
 	public String getUser() {
 		return mUser;
 	}
@@ -146,6 +185,30 @@ public class Profile implements Serializable {
 
 	public void setLogin(boolean login) {
 		mLogin = login;
+	}
+
+	public String getEncoderUser() {
+		return mEncoderUser;
+	}
+
+	public void setEncoderUser(String user) {
+		mEncoderUser = user;
+	}
+
+	public String getEncoderPass() {
+		return mEncoderPass;
+	}
+
+	public void setEncoderPass(String pass) {
+		mEncoderPass = pass;
+	}
+
+	public boolean isEncoderLogin() {
+		return mEncoderLogin;
+	}
+
+	public void setEncoderLogin(boolean isLogin) {
+		mEncoderLogin = isLogin;
 	}
 
 	public boolean isSsl() {
@@ -218,9 +281,43 @@ public class Profile implements Serializable {
 		}
 	}
 
+
+	public boolean isEncoderStream() {
+		return mEncoderStream;
+	}
+
+	public void setEncoderStream(boolean encoderStream) {
+		mEncoderStream = encoderStream;
+	}
+
 	public String getStreamPortString() {
 		return String.valueOf(mStreamPort);
 	}
+
+	public int getEncoderPort() {
+		return mEncoderPort;
+	}
+
+	public void setEncoderPort(int port) {
+		mEncoderPort = port;
+	}
+
+	public int getEncoderVideoBitrate() {
+		return mEncoderVideoBitrate;
+	}
+
+	public void setEncoderVideoBitrate(int bitrate) {
+		mEncoderVideoBitrate = bitrate;
+	}
+
+	public int getEncoderAudioBitrate() {
+		return mEncoderAudioBitrate;
+	}
+
+	public void setEncoderAudioBitrate(int bitrate) {
+		mEncoderAudioBitrate = bitrate;
+	}
+
 
 	public int getFilePort() {
 		return mFilePort;
@@ -289,21 +386,36 @@ public class Profile implements Serializable {
 		mStreamLogin = streamLogin;
 	}
 
-	public void setSessionId(String sessionId){
+	public void setSessionId(String sessionId) {
 		mSessionId = sessionId;
 	}
 
-	public String getSessionId(){
+	public String getSessionId() {
 		return mSessionId;
 	}
 
 	public boolean equals(Profile p) {
-		return getHost().equals(p.getHost()) && getStreamHost().equals(p.getStreamHost())
-				&& getUser().equals(p.getUser()) && getPass().equals(p.getPass()) && isLogin() == p.isLogin()
-				&& isSsl() == p.isSsl() && isSimpleRemote() == p.isSimpleRemote() && getId() == p.getId()
-				&& getPort() == p.getPort() && getStreamPort() == p.getStreamPort() && getFilePort() == p.getFilePort()
-				&& isStreamLogin() == p.isStreamLogin() && isFileSsl() == p.isFileSsl()
-				&& isFileLogin() == p.isFileLogin();
+		return getHost().equals(p.getHost())
+				&& getStreamHost().equals(p.getStreamHost())
+				&& getUser().equals(p.getUser())
+				&& getPass().equals(p.getPass())
+				&& isLogin() == p.isLogin()
+				&& isSsl() == p.isSsl()
+				&& isSimpleRemote() == p.isSimpleRemote()
+				&& getId() == p.getId()
+				&& getPort() == p.getPort()
+				&& getStreamPort() == p.getStreamPort()
+				&& getFilePort() == p.getFilePort()
+				&& isStreamLogin() == p.isStreamLogin()
+				&& isFileSsl() == p.isFileSsl()
+				&& isFileLogin() == p.isFileLogin()
+				&& isEncoderStream() == p.isEncoderStream()
+				&& getEncoderPort() == p.getEncoderPort()
+				&& getEncoderPath().equals(p.getEncoderPath())
+				&& isEncoderLogin() == p.isEncoderLogin()
+				&& getEncoderUser().equals(p.getEncoderUser())
+				&& getEncoderPass().equals(p.getEncoderPass())
+				&& getEncoderVideoBitrate() == p.getEncoderVideoBitrate()
+				&& getEncoderAudioBitrate() == p.getEncoderAudioBitrate();
 	}
-
 }

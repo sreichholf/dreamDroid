@@ -314,9 +314,15 @@
     <string name="privacy_statement_title">Privacy Statement</string>
     <string name="privacy">Privacy</string>
     <string name="next_event">Next Event</string>
+    <string name="use_encoder">Use encoder for streaming</string>
+    <string name="encoder_path">Stream path</string>
+    <string name="audio_bitrate">Audio Bitrate</string>
+    <string name="video_bitrate">Video Bitrate</string>
+    <string name="encoder_port">Stream port</string>
     <string name="settings_and_about"><![CDATA[Settings & About]]></string>
     <string name="tools">Tools</string>
     <string name="control">Control</string>
     <string name="picon_sync_started">Picon synchronization started. See notifaction area for details.</string>
     <string name="picon_sync_running">There is still another picon synchronization running!</string>
+    <string name="streaming">Streaming</string>
 </resources>

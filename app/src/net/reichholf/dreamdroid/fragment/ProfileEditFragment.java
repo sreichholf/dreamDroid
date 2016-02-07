@@ -52,6 +52,18 @@ public class ProfileEditFragment extends BaseFragment {
 	private EditText mPass;
 	private CheckBox mSimpleRemote;
 	private LinearLayout mLayoutLogin;
+	private LinearLayout mLayoutStream;
+	//Encoder Settings
+	private CheckBox mEncoderStream;
+	private CheckBox mEncoderLogin;
+	private EditText mEncoderPath;
+	private EditText mEncoderUser;
+	private EditText mEncoderPass;
+	private EditText mEncoderVideoBitrate;
+	private EditText mEncoderAudioBitrate;
+	private EditText mEncoderPort;
+	private LinearLayout mLayoutEncoder;
+	private LinearLayout mLayoutEncoderLogin;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,6 +92,19 @@ public class ProfileEditFragment extends BaseFragment {
 		mFileSsl = (CheckBox) view.findViewById(R.id.CheckBoxSslFileStream);
 		mFileLogin = (CheckBox) view.findViewById(R.id.CheckBoxLoginFileStream);
 
+		//Encoder
+		mEncoderStream = (CheckBox) view.findViewById(R.id.CheckBoxEncoder);
+		mEncoderPath = (EditText) view.findViewById(R.id.EditTextEncoderPath);
+		mEncoderPort = (EditText) view.findViewById(R.id.EditTextEncoderPort);
+		mEncoderLogin = (CheckBox) view.findViewById(R.id.CheckBoxEncoderLogin);
+		mEncoderUser = (EditText) view.findViewById(R.id.EditTextEncodermUser);
+		mEncoderPass = (EditText) view.findViewById(R.id.EditTextEncoderPass);
+		mEncoderVideoBitrate = (EditText) view.findViewById(R.id.EditTextVideoBitrate);
+		mEncoderAudioBitrate = (EditText) view.findViewById(R.id.EditTextAudioBitrate);
+
+		mLayoutEncoder = (LinearLayout) view.findViewById(R.id.linearLayoutEncoder);
+		mLayoutEncoderLogin = (LinearLayout) view.findViewById(R.id.linearLayoutEncoderLogin);
+		mLayoutStream = (LinearLayout) view.findViewById(R.id.linearLayoutStream);
 		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LoginLayout);
 
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
@@ -89,7 +114,13 @@ public class ProfileEditFragment extends BaseFragment {
 			assignProfile();
 		}
 		onIsLoginChanged(mLogin.isChecked());
+		onIsEncoderStreamChanged(mEncoderStream.isChecked());
+		onIsEncoderLoginChanged(mEncoderLogin.isChecked());
+		registerListeners();
+		return view;
+	}
 
+	private void registerListeners() {
 		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
@@ -103,13 +134,26 @@ public class ProfileEditFragment extends BaseFragment {
 				onSslChanged(checked);
 			}
 		});
+
+		mEncoderStream.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				onIsEncoderStreamChanged(isChecked);
+			}
+		});
+
+		mEncoderLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				onIsEncoderLoginChanged(isChecked);
+			}
+		});
 		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				save();
 			}
 		});
-		return view;
 	}
 
 	@Override
@@ -150,6 +194,25 @@ public class ProfileEditFragment extends BaseFragment {
 		}
 	}
 
+	private void onIsEncoderStreamChanged(boolean checked) {
+		if (checked) {
+			mLayoutEncoder.setVisibility(View.VISIBLE);
+			mLayoutStream.setVisibility(View.GONE);
+		} else {
+			mLayoutEncoder.setVisibility(View.GONE);
+			mLayoutStream.setVisibility(View.VISIBLE);
+		}
+	}
+
+	private void onIsEncoderLoginChanged(boolean checked) {
+		if (checked) {
+			mLayoutEncoderLogin.setVisibility(View.VISIBLE);
+		} else {
+			mLayoutEncoderLogin.setVisibility(View.GONE);
+		}
+	}
+
+
 	/**
 	 * Assign all values of <code>mProfile</code> to the GUI-Components
 	 */
@@ -168,6 +231,15 @@ public class ProfileEditFragment extends BaseFragment {
 		mFileLogin.setChecked(mCurrentProfile.isFileLogin());
 		mFileSsl.setChecked(mCurrentProfile.isFileSsl());
 		mSimpleRemote.setChecked(mCurrentProfile.isSimpleRemote());
+
+		mEncoderStream.setChecked(mCurrentProfile.isEncoderStream());
+		mEncoderPath.setText(mCurrentProfile.getEncoderPath());
+		mEncoderPort.setText(String.valueOf(mCurrentProfile.getEncoderPort()));
+		mEncoderLogin.setChecked(mCurrentProfile.isEncoderLogin());
+		mEncoderUser.setText(mCurrentProfile.getEncoderUser());
+		mEncoderPass.setText(mCurrentProfile.getEncoderPass());
+		mEncoderVideoBitrate.setText(String.valueOf(mCurrentProfile.getEncoderVideoBitrate()));
+		mEncoderAudioBitrate.setText(String.valueOf(mCurrentProfile.getEncoderAudioBitrate()));
 	}
 
 	/**
@@ -187,6 +259,17 @@ public class ProfileEditFragment extends BaseFragment {
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
 		mCurrentProfile.setSimpleRemote(mSimpleRemote.isChecked());
+		//Encoder
+		mCurrentProfile.setEncoderStream(mEncoderStream.isChecked());
+		mCurrentProfile.setEncoderPath(mEncoderPath.getText().toString());
+		mCurrentProfile.setEncoderPort(Integer.valueOf(mEncoderPort.getText().toString()));
+		mCurrentProfile.setEncoderLogin(mEncoderLogin.isChecked());
+		mCurrentProfile.setEncoderUser(mEncoderUser.getText().toString());
+		mCurrentProfile.setEncoderPass(mEncoderPass.getText().toString());
+		mCurrentProfile.setEncoderAudioBitrate(Integer.valueOf(mEncoderAudioBitrate.getText().toString()));
+		mCurrentProfile.setEncoderVideoBitrate(Integer.valueOf(mEncoderVideoBitrate.getText().toString()));
+
+
 		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 		if (mCurrentProfile.getId() > 0) {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
