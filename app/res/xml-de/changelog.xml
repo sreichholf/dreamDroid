@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1 beta 3" versioncode="352">
-        <change>Mehr Material Design. Speziell unter Android &gt;= 5.0</change>
+    <release version="1.1 beta 4" versioncode="354">
+        <change>ANMERKUNG: IN 1.1 Beta 4 gab es haufenweise interne Umbauten, so dass wir uns nun wieder in einem richtigen Betatest befinden!</change>
+        <change>Mehr Material Design!</change>
+        <change>Erhebliche interne Umbauten um technisch wieder auf dem aktuellen Stand zu sein</change>
         <change>Interne Änderungen die durch das Android 6.0 SDK notwendig wurden</change>
-        <change>"EPG" mit älteren Versionen des WebInterface</change>
+        <change>"EPG"-Fixes mit älteren Versionen des WebInterface</change>
+        <change>Einstellung zum Streamen über den eingebauten Encoder der DM7080 HD oder DM820 HD via rtsp</change>
     </release>
 </changelog>
