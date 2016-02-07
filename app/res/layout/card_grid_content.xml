@@ -18,7 +18,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:columnWidth="92dp"
+                android:columnWidth="100dp"
                 android:gravity="center"/>
         </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
 

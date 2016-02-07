@@ -33,7 +33,9 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 	public ZapViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 		View itemView = inflater.inflate(R.layout.zap_grid_item, parent, false);
-		return new ZapViewHolder(itemView);
+		ZapViewHolder zvh = new ZapViewHolder(itemView);
+		itemView.setTag(zvh);
+		return zvh;
 	}
 
 	@Override

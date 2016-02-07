@@ -7,9 +7,10 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:foreground="?attr/selectableItemBackground"
+    android:minHeight="70dp"
     app:cardBackgroundColor="?attr/cardBackgroundColor"
     app:cardElevation="4dp"
-    app:contentPadding="4dp">
+    app:contentPadding="0dp">
 
     <TextView
         android:id="@android:id/text1"
