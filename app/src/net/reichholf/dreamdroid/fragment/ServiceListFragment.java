@@ -369,13 +369,13 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 			detachFabReload();
 			inflater.inflate(R.menu.reload, menu);
 		} else {
-			connectFabReload(getView(), mDetailList);
+			connectFabReload();
 		}
 	}
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		checkMenuReload(menu, inflater);
+		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.servicelist, menu);
 	}
 

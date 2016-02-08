@@ -172,7 +172,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment implements Actio
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		checkMenuReload(menu, inflater);
+		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.timerlist, menu);
 	}
 

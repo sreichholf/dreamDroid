@@ -152,7 +152,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Actio
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		checkMenuReload(menu, inflater);
+		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.locactions_and_tags, menu);
 	}
 

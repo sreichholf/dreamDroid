@@ -7,7 +7,6 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -102,7 +101,6 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 			reload();
 	}
 
-
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
@@ -114,7 +112,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		return onItemSelected(item.getItemId());
 	}
 
-	public void connectFabReload(View view, RecyclerView recyclerView) {
+	public void connectFabReload() {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (sp.getBoolean("disable_fab_reload", false))
 			return;
@@ -126,10 +124,17 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		}, true);
 	}
 
+	@Override
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+		checkMenuReload(menu, inflater);
+	}
+
 	public void detachFabReload() {
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
-		if(fab != null)
+		if (fab != null) {
 			setFabEnabled(fab.getId(), false);
+			unregisterFab(fab.getId());
+		}
 	}
 
 	public void checkMenuReload(Menu menu, MenuInflater inflater) {
@@ -141,7 +146,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 			detachFabReload();
 			inflater.inflate(R.menu.reload, menu);
 		} else {
-			connectFabReload(getView(), getRecyclerView());
+			connectFabReload();
 		}
 	}
 

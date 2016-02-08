@@ -54,11 +54,6 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 		}
 	}
 
-	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		checkMenuReload(menu, inflater);
-	}
-
 	/**
 	 * Initializes the <code>SimpleTextAdapter</code>
 	 */

@@ -109,7 +109,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		checkMenuReload(menu, inflater);
+		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.epgbouquet, menu);
 	}
 
