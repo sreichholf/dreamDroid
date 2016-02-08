@@ -31,6 +31,9 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
+
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -43,6 +46,7 @@ import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
+import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.SyncService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -55,6 +59,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -181,34 +186,20 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		mNavList = (ListView) v.findViewById(android.R.id.list);
 		mDetailList = (RecyclerView) v.findViewById(R.id.list2);
 
-//TODO fix this for recyclerview
-		// Some may call this a Hack, but I think it a proper solution
-		// On devices with resolutions other than xlarge, there is no second
-		// ListView (@id/listView2).
-		// So we just use the only one available and the rest will work as
-		// normal with almost no additional adjustments.
-//		if (mDetailList == null) {
-//			mDetailList = mNavList;
-//			mDetailItems = mNavItems;
-//		}
-//		if(GridView.class.isInstance(mDetailList)) {
-//			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
-//			((GridView) mDetailList).setNumColumns(
-//					Integer.parseInt(
-//							prefs.getString(
-//									DreamDroid.PREFS_KEY_GRID_MAX_COLS,
-//									Integer.toString(GridView.AUTO_FIT)
-//							)
-//					)
-//			);
-//		}
-
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
+		((AutofitRecyclerView) mDetailList).setMaxSpanCount(
+				Integer.parseInt(
+						prefs.getString(
+								DreamDroid.PREFS_KEY_GRID_MAX_COLS,
+								Integer.toString(AutofitRecyclerView.DEFAULT_MAX_SPAN_COUNT)
+						)
+				)
+		);
 
 		mNavList.setFastScrollEnabled(true);
-//		mDetailList.setFastScrollEnabled(true);
-//
-//		PauseOnScrollListener listener = new PauseOnScrollListener(ImageLoader.getInstance(), false, true);
-//		mDetailList.addOnScrollListener(listener);
+		//TODO Detaillist FastScroll??!
+		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(ImageLoader.getInstance(), true, true);
+		mDetailList.addOnScrollListener(listener);
 
 		mSlidingPane = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
 		mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
