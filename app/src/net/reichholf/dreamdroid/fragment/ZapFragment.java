@@ -69,7 +69,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
 		recyclerView.setLayoutManager(new GridLayoutManager(getAppCompatActivity(), 3));
 		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(ImageLoader.getInstance(), true, true);
-		recyclerView.setOnScrollListener(listener);
+		recyclerView.addOnScrollListener(listener);
 
 		restoreState(savedInstanceState);
 		return view;
