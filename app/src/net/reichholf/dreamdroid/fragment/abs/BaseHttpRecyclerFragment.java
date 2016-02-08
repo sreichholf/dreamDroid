@@ -127,11 +127,9 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	public void detachFabReload() {
-		FloatingActionButton fab = (FloatingActionButton) getView().findViewById(R.id.fab_reload);
-		if (fab != null) {
-			fab.setEnabled(false);
-			fab.setVisibility(View.GONE);
-		}
+		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
+		if(fab != null)
+			setFabEnabled(fab.getId(), false);
 	}
 
 	public void checkMenuReload(Menu menu, MenuInflater inflater) {
