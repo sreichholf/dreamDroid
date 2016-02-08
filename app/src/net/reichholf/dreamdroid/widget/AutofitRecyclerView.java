@@ -7,8 +7,10 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
 public class AutofitRecyclerView extends RecyclerView {
+	public static int DEFAULT_MAX_SPAN_COUNT = -1;
 	private int mColumnWidth = -1;
 	private int mSpanCount = 4;
+	private int mMaxSpanCount = DEFAULT_MAX_SPAN_COUNT;
 
 	public AutofitRecyclerView(Context context) {
 		super(context);
@@ -23,6 +25,10 @@ public class AutofitRecyclerView extends RecyclerView {
 	public AutofitRecyclerView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init(context, attrs);
+	}
+
+	public void setMaxSpanCount(int maxSpanCount) {
+		mMaxSpanCount = maxSpanCount;
 	}
 
 	private void init(Context context, AttributeSet attrs) {
@@ -41,6 +47,8 @@ public class AutofitRecyclerView extends RecyclerView {
 		super.onMeasure(widthSpec, heightSpec);
 		if (mColumnWidth > 0) {
 			int newSpanCount = Math.max(1, getMeasuredWidth() / mColumnWidth);
+			if(mMaxSpanCount > 0)
+				newSpanCount = Math.min(mMaxSpanCount, newSpanCount);
 			mSpanCount = newSpanCount;
 			((GridLayoutManager)getLayoutManager()).setSpanCount(mSpanCount);
 		}
