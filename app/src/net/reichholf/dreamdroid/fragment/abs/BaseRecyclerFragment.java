@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.fragment.abs;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -27,7 +26,6 @@ import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
