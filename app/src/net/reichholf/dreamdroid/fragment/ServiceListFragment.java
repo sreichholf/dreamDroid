@@ -605,16 +605,21 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 	public void showPopupMenu(View v) {
 		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
+		menu.getMenu().findItem(R.id.menu_next_event).setVisible(DreamDroid.featureNowNext());
 
 		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 			@Override
 			public boolean onMenuItemClick(MenuItem menuItem) {
 				String ref = mCurrentService.getString(Service.KEY_REFERENCE);
 				String name = mCurrentService.getString(Service.KEY_NAME);
+				boolean showNext = false;
 				switch (menuItem.getItemId()) {
+					case R.id.menu_next_event:
+						showNext = true;
 					case R.id.menu_current_event:
 						Bundle args = new Bundle();
 						args.putParcelable("currentItem", mCurrentService);
+						args.putBoolean("showNext", showNext);
 						getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
 						break;
 					case R.id.menu_browse_epg:
