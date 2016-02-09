@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,20 +45,20 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 	public void onBindViewHolder(ServiceViewHolder holder, int position) {
 		ExtendedHashMap service = mData.get(position);
 		String next = service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
-		String now = service.getString(Event.KEY_EVENT_TITLE);
 		boolean hasNext = next != null && !"".equals(next);
-		boolean hasNow = now != null && !"".equals(now);
 
-		String name = service.getString(Event.KEY_SERVICE_NAME);
-
-		Picon.setPiconForView(mContext, holder.picon, service);
 		if (service != null) {
 			if (Service.isMarker(service.getString(Service.KEY_REFERENCE))) {
+				holder.root.setCardElevation(0);
+				holder.root.setClickable(false);
 				holder.parentService.setVisibility(View.GONE);
 				holder.parentMarker.setVisibility(View.VISIBLE);
 				holder.markerName.setText(service.getString(Event.KEY_SERVICE_NAME));
 				return;
 			}
+			Picon.setPiconForView(mContext, holder.picon, service);
+			holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
+			holder.root.setClickable(false);
 			holder.parentService.setVisibility(View.VISIBLE);
 			holder.parentMarker.setVisibility(View.GONE);
 			holder.serviceName.setText(service.getString(Event.KEY_SERVICE_NAME));
@@ -97,6 +98,7 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 	}
 
 	public class ServiceViewHolder extends RecyclerView.ViewHolder {
+		CardView root;
 		ImageView picon;
 		ProgressBar progress;
 		TextView serviceName;
@@ -113,6 +115,8 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 
 		public ServiceViewHolder(View itemView) {
 			super(itemView);
+
+			root = (CardView) itemView.findViewById(R.id.service_list_item_nn);
 			picon = (ImageView) itemView.findViewById(R.id.picon);
 			progress = (ProgressBar) itemView.findViewById(R.id.service_progress);
 			serviceName = (TextView) itemView.findViewById(R.id.service_name);

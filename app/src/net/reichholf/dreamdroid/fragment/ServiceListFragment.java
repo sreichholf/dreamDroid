@@ -560,6 +560,8 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 			item = mNavItems.get(position);
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
+		if(Service.isMarker(ref))
+			return;
 		if (Service.isBouquet(ref)) {
 			if (l.equals(mNavList)) {
 				// without FROM it's a "all" reference
