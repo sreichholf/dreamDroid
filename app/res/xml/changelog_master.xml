@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 4.2" versioncode="366">
+        <change>FIX: Missing "Next Event" in the service list</change>
+        <change>FIX: Style and handling fo bookmarks in the service list</change>
+        <change>FIX: Crash when touching the reload indicator</change>
+    </release>
     <release version="1.1 beta 4.1" versioncode="355">
         <change>FIX: Honor Servicelist max columns setting again</change>
         <change>FIX: Don't crash when using EPG search</change>
@@ -8,7 +13,7 @@
         <change>NEW: Set Statusbar translucent on Lollipop and above</change>
     </release>
     <release version="1.1 beta 4" versioncode="354">
-        <change>NOTE: IN beta 4 there have been lots and lots of internal changes, please be aware that we're be back to real betatesting now!</change>
+        <change>NOTE: IN beta 4 there have been lots and lots of internal changes, please be aware that we're be back to real beta testing now!</change>
         <change>More Material Design!</change>
         <change>Extensive internal changes so we're back on the latest state of the art</change>
         <change>Internal changes required for building with android 6.0 SDK</change>

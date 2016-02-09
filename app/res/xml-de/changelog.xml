@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 4.2" versioncode="366">
+        <change>FIX: Fehlenden Punkt "Nächste Sendung" in der Kanalliste</change>
+        <change>FIX: Optik und Handling von Bookmarks in der Kanalliste</change>
+        <change>FIX: Crash beim Berühren der Reload-Anzeige</change>
+    </release>
     <release version="1.1 beta 4.1" versioncode="355">
         <change>FIX: Maximale Anzahl an Spalten in der Kanalliste wurden nicht beachtet</change>
         <change>FIX: Absturz beim Nutzen der EPG-Suc he</change>
