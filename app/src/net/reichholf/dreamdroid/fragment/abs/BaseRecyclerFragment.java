@@ -27,8 +27,10 @@ import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
+import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
 
 /**
@@ -227,22 +229,6 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	public void onRefresh() {
 		SwipeRefreshLayout srl = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
 		srl.setRefreshing(false);
-	}
-
-	public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
-		private int space;
-
-		public SpacesItemDecoration(int space) {
-			this.space = space;
-		}
-
-		@Override
-		public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-			outRect.left = space;
-			outRect.right = space;
-			outRect.bottom = space;
-			outRect.top = space;
-		}
 	}
 
 	@Override
