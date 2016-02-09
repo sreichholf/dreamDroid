@@ -42,7 +42,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
-                    android:columnWidth="200dp"
+                    android:columnWidth="290dp"
                     android:gravity="center"
                     android:scrollbars="vertical"/>
 

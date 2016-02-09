@@ -59,8 +59,12 @@
                 android:id="@+id/detail_view"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:layout_marginBottom="0dp"
+                android:layout_marginEnd="@dimen/content_margin_horizontal"
+                android:layout_marginStart="@dimen/content_margin_horizontal"
+                android:layout_marginTop="0dp"
+                android:background="?attr/cardBackgroundColor"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/fab_main"

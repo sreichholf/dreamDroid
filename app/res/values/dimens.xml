@@ -30,4 +30,7 @@
     <dimen name="navigation_header_height">120dp</dimen>
     <dimen name="navigation_header_padding_top">0dp</dimen>
     <dimen name="cardview_elevation">4dp</dimen>
+    <dimen name="grid_column_width">100dp</dimen>
+    <dimen name="zap_grid_item_height">70dp</dimen>
+    <dimen name="content_margin_horizontal">0dp</dimen>
 </resources>

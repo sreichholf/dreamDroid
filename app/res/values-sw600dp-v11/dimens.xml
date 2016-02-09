@@ -3,5 +3,8 @@
 
     <dimen name="keyline1">24dip</dimen>
     <dimen name="keyline2">80dip</dimen>
+    <dimen name="grid_column_width">150dp</dimen>
+    <dimen name="zap_grid_item_height">105dp</dimen>
+    <dimen name="content_margin_horizontal">55dp</dimen>
 
 </resources>
