@@ -30,7 +30,6 @@ import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
-
 /**
  * Created by Stephan on 03.05.2015.
  */
