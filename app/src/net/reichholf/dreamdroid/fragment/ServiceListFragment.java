@@ -22,23 +22,21 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
@@ -162,10 +160,10 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
 		}
 
-//		if( mNavReference == null ){
-//			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
-//			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
-//		}
+		if( mNavReference == null ){
+			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
+			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
+		}
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -267,33 +265,15 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		mNavList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-				onListItemClick((AbsListView) a, v, position, id);
+				onNavItemClick(a, position);
 			}
 		});
-
-//		mDetailList.setOnItemClickListener(new OnItemClickListener() {
-//			@Override
-//			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-//				onListItemClick((AbsListView) a, v, position, id);
-//			}
-//		});
-
-		mNavList.setOnItemLongClickListener(new OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-				return onListItemLongClick((ListView) a, v, position, id);
-			}
-		});
-
-//		mDetailList.setOnItemLongClickListener(new OnItemLongClickListener() {
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
-//				return onListItemLongClick((AbsListView) a, v, position, id);
-//			}
-//		});
 
 		if (mReload) {
-			loadNavRoot();
+			if(mNavReference != null && ! "".equals(mNavReference))
+				reloadNav();
+			else
+				loadNavRoot();
 			reloadDetail(false);
 		} else {
 			getAppCompatActivity().setTitle(mDetailName);
@@ -302,12 +282,13 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
-		onListItemClick(null, view, position, id);
+		onDetailItemClick(parent, view, position, false);
 	}
 
 	@Override
 	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
-		return onListItemLongClick(null, view, position, id);
+		onDetailItemClick(parent, view, position, true);
+		return true;
 	}
 
 	@Override
@@ -332,35 +313,16 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 	 *
 	 */
 	private void setAdapter() {
-		ListAdapter adapter;
-		if (!mNavList.equals(mDetailList)) {
-			adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
-					new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
-			mNavList.setAdapter(adapter);
-		}
-		adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
+		ListAdapter adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
 				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
 		mNavList.setAdapter(adapter);
-
-		ServiceAdapter serviceAdapter = new ServiceAdapter(getAppCompatActivity(), mDetailItems);
-		mDetailList.setAdapter(serviceAdapter);
-	}
-
-	public void onListItemClick(AbsListView l, View v, int position, long id) {
-		onListItemClick(l, v, position, id, false);
-	}
-
-	/**
-	 * @param l
-	 * @param v
-	 * @param position
-	 * @param id
-	 * @return
-	 */
-	protected boolean onListItemLongClick(AbsListView l, View v, int position, long id) {
-		onListItemClick(l, v, position, id, true);
-
-		return true;
+		if(mPickMode){
+			SimpleTextAdapter simpleTextAdapter = new SimpleTextAdapter(mDetailItems, R.layout.simple_list_item_1, new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
+			mDetailList.setAdapter(simpleTextAdapter);
+		} else {
+			ServiceAdapter serviceAdapter = new ServiceAdapter(getAppCompatActivity(), mDetailItems);
+			mDetailList.setAdapter(serviceAdapter);
+		}
 	}
 
 	public void checkMenuReload(Menu menu, MenuInflater inflater) {
@@ -539,67 +501,55 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 		Bundle args = new Bundle();
 		args.putSerializable(sData, map);
 		f.setArguments(args);
-
 		getMultiPaneHandler().showDetails(f, true);
 	}
 
-	/**
-	 * @param l
-	 * @param v
-	 * @param position
-	 * @param id
-	 * @param isLong
-	 */
-	private void onListItemClick(AbsListView l, View v, int position, long id, boolean isLong) {
-		@SuppressWarnings("unchecked")
-
-		ExtendedHashMap item;
-		if (l == null)
-			item = mDetailItems.get(position);
-		else
-			item = mNavItems.get(position);
+	private void onNavItemClick(View l, int position) {
+		ExtendedHashMap item = mNavItems.get(position);
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
-		if(Service.isMarker(ref))
+		if (Service.isMarker(ref) || !Service.isBouquet(ref))
 			return;
-		if (Service.isBouquet(ref)) {
-			if (l.equals(mNavList)) {
-				// without FROM it's a "all" reference
-				if (SERVICE_REF_ROOT.equals(mNavReference) && ref.toUpperCase().contains("FROM")) {
-					ExtendedHashMap map = new ExtendedHashMap();
-					map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
-					map.put(Event.KEY_SERVICE_NAME, String.valueOf(nam));
+		// without FROM it's a "all" reference
+		if (SERVICE_REF_ROOT.equals(mNavReference) && ref.toUpperCase().contains("FROM")) {
+			ExtendedHashMap map = new ExtendedHashMap();
+			map.put(Event.KEY_SERVICE_REFERENCE, String.valueOf(ref));
+			map.put(Event.KEY_SERVICE_NAME, String.valueOf(nam));
+			mHistory.add(map);
+			mNavReference = ref;
+			mNavName = nam;
+			mNavList.setSelectionAfterHeaderView();
+			reloadNav();
+		} else {
+			mDetailReference = ref;
+			mDetailName = nam;
+			reloadDetail(false);
+		}
+	}
 
-					mHistory.add(map);
-					mNavReference = ref;
-					mNavName = nam;
-					mNavList.setSelectionAfterHeaderView();
-					reloadNav();
-				} else {
-					mDetailReference = ref;
-					mDetailName = nam;
-//					mDetailList.setSelectionAfterHeaderView();
-					reloadDetail(false);
-				}
-			}
-		} else { // It's a listitem in the servicelist
-			if (mPickMode) {
-				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(Event.KEY_SERVICE_REFERENCE, ref);
-				map.put(Event.KEY_SERVICE_NAME, nam);
+	private void onDetailItemClick(View l, View v, int position, boolean isLong) {
+		ExtendedHashMap item = mDetailItems.get(position);
+		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
+		final String nam = item.getString(Event.KEY_SERVICE_NAME);
+		if (Service.isMarker(ref))
+			return;
 
-				Intent intent = new Intent();
-				intent.putExtra(sData, (Serializable) map);
-				finish(Activity.RESULT_OK, intent);
+		if (mPickMode) {
+			ExtendedHashMap map = new ExtendedHashMap();
+			map.put(Event.KEY_SERVICE_REFERENCE, ref);
+			map.put(Event.KEY_SERVICE_NAME, nam);
+
+			Intent intent = new Intent();
+			intent.putExtra(sData, (Serializable) map);
+			finish(Activity.RESULT_OK, intent);
+		} else {
+			boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
+					"instant_zap", false);
+			if ((instantZap && !isLong) || (!instantZap && isLong)) {
+				zapTo(ref);
 			} else {
-				boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
-						"instant_zap", false);
-				if ((instantZap && !isLong) || (!instantZap && isLong)) {
-					zapTo(ref);
-				} else {
-					mCurrentService = item;
-					showPopupMenu(v);
-				}
+				mCurrentService = item;
+				showPopupMenu(v);
 			}
 		}
 	}
