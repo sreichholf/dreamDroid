@@ -17,7 +17,6 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 
-
             <EditText
                 android:id="@+id/EditTextTitle"
                 android:layout_width="fill_parent"
@@ -151,10 +150,7 @@
                 android:paddingTop="8dp"
                 android:text="..."
                 android:textAppearance="@android:style/TextAppearance.Medium"/>
-
-
         </LinearLayout>
-
 
         <TextView
             android:id="@+id/TextViewRepeatedTitle"
