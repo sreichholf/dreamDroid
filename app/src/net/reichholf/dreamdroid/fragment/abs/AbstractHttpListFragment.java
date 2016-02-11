@@ -25,6 +25,7 @@ import android.widget.BaseAdapter;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
@@ -96,12 +97,13 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			mExtras = new Bundle();
 		}
 		DreamDroid.loadCurrentProfile(getAppCompatActivity());
-
 	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		((MainActivity)getAppCompatActivity()).unregisterFab(R.id.fab_reload);
+		((MainActivity)getAppCompatActivity()).unregisterFab(R.id.fab_main);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
 	}
 
@@ -151,8 +153,10 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	public void detachFabReload() {
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
-		if (fab != null)
+		if (fab != null) {
 			fab.setVisibility(View.GONE);
+			((MainActivity)getAppCompatActivity()).unregisterFab(R.id.fab_reload);
+		}
 	}
 
 	public void checkMenuReload(Menu menu, MenuInflater inflater) {

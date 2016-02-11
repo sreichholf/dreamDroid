@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
@@ -97,10 +98,12 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	protected void setFabEnabled(int id, boolean enabled) {
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
 		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
-		if (enabled)
+		if (enabled) {
 			fab.show();
-		else
+		} else {
 			fab.hide();
+			((MainActivity) getAppCompatActivity()).unregisterFab(id);
+		}
 	}
 
 	@Override
@@ -132,13 +135,6 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		super.onCreateOptionsMenu(menu, inflater);
 		if (!getMultiPaneHandler().isDrawerOpen())
 			createOptionsMenu(menu, inflater);
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		unregisterFab(R.id.fab_reload);
-		unregisterFab(R.id.fab_main);
 	}
 
 	@Override
@@ -276,13 +272,5 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 				return true;
 			}
 		});
-	}
-
-	protected void unregisterFab(int id) {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
-		if (fab == null)
-			return;
-		fab.setOnClickListener(null);
-		fab.setOnLongClickListener(null);
 	}
 }

@@ -15,6 +15,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -512,6 +513,14 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		ft.commit();
 		if (DreamDroid.isTrackingEnabled(this))
 			((PiwikApplication) getApplication()).getTracker().trackScreenView(fragment.getClass().getSimpleName(), fragment.getClass().getSimpleName());
+	}
+
+	public void unregisterFab(int id) {
+		FloatingActionButton fab = (FloatingActionButton) findViewById(id);
+		if (fab == null)
+			return;
+		fab.setOnClickListener(null);
+		fab.setOnLongClickListener(null);
 	}
 
 	@Override

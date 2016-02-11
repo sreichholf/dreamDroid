@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
@@ -72,10 +73,12 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		if(fab == null)
 			return;
 		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
-		if(enabled)
+		if(enabled) {
 			fab.show();
-		else
+		} else {
 			fab.hide();
+			((MainActivity)getAppCompatActivity()).unregisterFab(id);
+		}
 	}
 
 
@@ -195,15 +198,5 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 				return true;
 			}
 		});
-	}
-
-	protected void unregisterFab(int id) {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
-		if (fab == null)
-			return;
-		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, false);
-		fab.hide();
-		fab.setOnClickListener(null);
-		fab.setOnLongClickListener(null);
 	}
 }
