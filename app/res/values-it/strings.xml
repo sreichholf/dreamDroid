@@ -302,7 +302,7 @@
     <string name="donation_error">La tua donazione è fallita! Siamo spiacenti! (%s)</string>
     <string name="share">Condividi</string>
     <string name="restart">Riavviare?</string>
-    <string name="theme_change_restart">E' necessario un riavvio per applicare il cambio tema. Riavviare dreamDroid adesso?</string>
+    <string name="theme_change_restart">E\' necessario un riavvio per applicare il cambio tema. Riavviare dreamDroid adesso?</string>
     <string name="more">Altro</string>
     <string name="host_not_found">Nome sistema non trovato</string>
     <string name="auth_error">Autorizzazione fallita (verifica nome utente/password)</string>
@@ -320,7 +320,7 @@
 \n
 \nNon esistono ID univoci o indirizzi IP completi che vengono registrati e i tuoi dati non saranno inoltrati o consegnati a terze parti.
 \n
-\nAccetti l'attivazione delle statistiche anonime?</string>
+\nAccetti l\'attivazione delle statistiche anonime?</string>
     <string name="privacy_statement_title">Accordo privacy</string>
     <string name="privacy">Privacy</string>
 </resources>

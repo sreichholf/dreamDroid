@@ -134,7 +134,7 @@
     </string-array>
 
     <string name="virtual_remote">Télécommande</string>
-    <string name="login">Nom d'\utilisateur</string>
+    <string name="login">Nom d\'utilisateur</string>
     <string name="login_enabled">Connexion par nom d\'utilisateur et mot de passe</string>
     <string name="wait_request_finished">Merci de patienter jusqu\'a ce que la requête soit terminé!</string>
     <string name="current_service">Actuellement</string>
