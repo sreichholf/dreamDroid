@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1 beta 4.2" versioncode="366">
+    <release version="1.1 beta 4.3" versioncode="357">
+        <change>FIX: Save/New FAB broken</change>
+        <change>IMPROVE: Grid based layouts look better now</change>
+        <change>FIX: Code cleanup</change>
+    </release>
+    <release version="1.1 beta 4.2" versioncode="356">
         <change>FIX: Missing "Next Event" in the service list</change>
         <change>FIX: Style and handling fo bookmarks in the service list</change>
         <change>FIX: Crash when touching the reload indicator</change>

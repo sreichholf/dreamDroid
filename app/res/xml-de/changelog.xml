@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1 beta 4.2" versioncode="366">
+    <release version="1.1 beta 4.3" versioncode="357">
+        <change>FIX: Speichern/Neu Button in Listen reagiert nicht</change>
+        <change>IMPROVE: Grid basierte Ansichten verschönert</change>
+        <change>FIX: Code aufgeräumt</change>
+    </release>
+    <release version="1.1 beta 4.2" versioncode="356">
         <change>FIX: Fehlenden Punkt "Nächste Sendung" in der Kanalliste</change>
         <change>FIX: Optik und Handling von Bookmarks in der Kanalliste</change>
         <change>FIX: Crash beim Berühren der Reload-Anzeige</change>
