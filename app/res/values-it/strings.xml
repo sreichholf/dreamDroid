@@ -264,7 +264,8 @@
     <string name="appearance">Aspetto</string>
     <string name="usability">Usabilità</string>
     <string name="use_picons">Usa Picons</string>
-    <string name="use_picons_long">Abilita l\'uso di Picons in certe aree.\nRichiede i picons in /{SchedaSD}/dreamDroid/picons</string>
+<string name="use_picons_long">Abilita l\'uso di Picons in certe aree.
+\nRichiede i picons in /{SchedaSD}/dreamDroid/picons</string>
     <string name="sync_picons">Sincronizza Picons</string>
     <string name="sync_picons_long">Sincronizza Picons in /{SchedaSD}/dreamDroid/picons usando il profilo di connessione attualmente configurato</string>
     <string name="sync_picons_path">Picons - percorso remoto</string>
@@ -295,8 +296,31 @@
     <string name="max_grid_cols_long">Numero massimo di colonne nell\'elenco canali</string>
     <string name="default_to_full_vrm_long">Usa il formato di telecomando semplice come predefinito</string>
     <string name="default_to_full_vrm">Telecomando semplice come predefinito</string>
-    <string name="donate_sum">Dona %s</string>
-    <string name="donate">Dona</string>
+    <string name="donate_sum">Donazione di %s</string>
+    <string name="donate">Donazione</string>
     <string name="donation_thanks">Grazie mille della donazione!</string>
     <string name="donation_error">La tua donazione è fallita! Siamo spiacenti! (%s)</string>
+    <string name="share">Condividi</string>
+    <string name="restart">Riavviare?</string>
+    <string name="theme_change_restart">E' necessario un riavvio per applicare il cambio tema. Riavviare dreamDroid adesso?</string>
+    <string name="more">Altro</string>
+    <string name="host_not_found">Nome sistema non trovato</string>
+    <string name="auth_error">Autorizzazione fallita (verifica nome utente/password)</string>
+    <string name="developer_settings_enable">Abilita impostazioni sviluppatore</string>
+    <string name="use_fake_picon">Usa un picon falso</string>
+    <string name="use_fake_picon_long">Usa un picon falso (picon_default.png) per evitare problemi con i diritti di autore nelle schermate</string>
+    <string name="host_unreach">Impossibile collegarsi al sistema</string>
+    <string name="allow_tracking_long">Permetti la raccolta anonima di statistiche di utilizzo</string>
+    <string name="allow_tracking">Statistiche di utilizzo</string>
+<string name="privacy_statement">dreamDroid contiene un modulo per la raccolta di statistiche dei dati utilizzati. I dati raccolti contengono le seguenti informazioni:
+\n
+\n&#8226; Indirizzo IP anonimo
+\n&#8226; Le "Schede" aperte (es. Elenco servizi, Registrazioni, etc) inclusa la durata
+\n&#8226; Blocchi del programma
+\n
+\nNon esistono ID univoci o indirizzi IP completi che vengono registrati e i tuoi dati non saranno inoltrati o consegnati a terze parti.
+\n
+\nAccetti l'attivazione delle statistiche anonime?</string>
+    <string name="privacy_statement_title">Accordo privacy</string>
+    <string name="privacy">Privacy</string>
 </resources>

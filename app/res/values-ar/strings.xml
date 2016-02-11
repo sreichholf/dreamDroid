@@ -7,20 +7,25 @@
 
     <string-array name="servicelist">
         <item>قائمة الخدمات</item>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
     </string-array>
 
     <string name="timer">المؤقت</string>
     <string name="play">تشغيل</string>
+    <string name="add_to_playlist">إضافة لقائمة التشغيل</string>
     <string name="navigation_back_media">الى الخلف</string>
     <string name="home_media">الرئيسية</string>
     <string name="next_media">التالي</string>
+    <string name="play_media">تشغيل</string>
+    <string name="previous_media">السابق</string>
     <string name="stop_media">ايقاف</string>
+    <string name="playlist">قائمة التشغيل</string>
     <string name="filebrowser">تصفح الملفات</string>
+    <string name="delete_from_playlist">حذف من القائمة</string>
     <string name="service">الخدمة</string>
     <string name="afterevent">بعد الحدث</string>
     <string name="location">الموقع</string>
@@ -97,12 +102,13 @@
     <string name="daily">يوميا</string>
     <string name="new_timer">مؤقت جديد</string>
     <string name="locations">المواقع</string>
-    <string name="image_version">نسخة صورة</string>
-    <string name="interface_version">إصدار الواجهة</string>
+    <string name="gui_version">اصدار واجهة المستخدم</string>
+    <string name="image_version">اصدار الصورة</string>
+    <string name="interface_version">اصدار الواجهة</string>
     <string name="front_processor_version">اصدار المعالج الامامي</string>
     <string name="device_name">اسم الجهاز</string>
     <string name="frontends">النهايات الامامية</string>
-    <string name="nics">التشبيك</string>
+    <string name="nics">واجهة الشبكة</string>
     <string name="hdds">الاقراص الصلبة</string>
     <string name="not_implemented">هذه العملية غير متوفرة حاليا!</string>
     <string name="current_event">الحدث الحالي</string>
@@ -111,13 +117,13 @@
     <string name="message">رسالة</string>
     <string name="message_text_hint">أدخل الرسالة</string>
     <string name="send">ارسال</string>
-    <string name="type">نوع</string>
+    <string name="type">اكتب</string>
 
     <string-array name="message_types">
         <item>انواع الرسائل</item>
-        <item/>
-        <item/>
-        <item/>
+        <item></item>
+        <item></item>
+        <item></item>
     </string-array>
 
     <string name="virtual_remote">الريموت الوهمي</string>
@@ -164,6 +170,7 @@
     <string name="default_bouquet_not_set">لا يمكن اختيار باقة الوضع الافتراضي!</string>
     <string name="loading">جاري التحميل..</string>
     <string name="about">عن البرنامج</string>
+    <string name="changelog">سجل التغير</string>
     <string name="license">رخصة</string>
     <string name="active_profile">العنوان الفعال</string>
     <string name="connection">اتصال</string>
@@ -181,17 +188,14 @@
     <string name="cleanup">تنظيف </string>
     <string name="in_standby">الجهاز مطفأ</string>
     <string name="is_running">الجهاز شغال</string>
+    <string name="similar">مشابه</string>
 
     <string-array name="timer_state">
         <item>حالة المؤقت</item>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-    </string-array>
-    <string-array name="timer_action">
-        <item/>
-        <item/>
+        <item></item>
+        <item></item>
+        <item></item>
+        <item></item>
     </string-array>
 
     <string name="sleeptimer">مؤقت النوم</string>
@@ -209,11 +213,24 @@
     <string name="screenshot_saved">تم حفظ صورة الشاشة الى \'%s\'</string>
     <string name="imdb">موقع IMDb</string>
     <string name="missing_stream_player">لا يوجد مشغل فيديو مناسب</string>
-    <string name="leave_confirm_long">تأكيد الخروج</string>
+    <string name="edit_profile">تعيدل البروفايل</string>
+    <string name="add_all">اضافة الكل</string>
+    <string name="enabled">تمكين</string>
+    <string name="leave_confirm">تأكيد الخروج؟</string>
+    <string name="leave_confirm_long">هل حقا تريد الخروج من دريم درويد؟</string>
     <string name="watch_on_dream">مشاهدة على الدريم بوكس</string>
     <string name="connecting">جاري الاتصال</string>
     <string name="connected">متصل</string>
+    <string name="logged_in">دخول</string>
     <string name="enable">تفعيل</string>
     <string name="disable">تعطيل</string>
-    <string name="epg_sync">تعطيل</string>
+    <string name="epg_sync">مزامنة البرامج</string>
+    <string name="epg_sync_finished">تم مزامنة البرامج</string>
+    <string name="reset_default">اعادة الافتراضي</string>
+    <string name="donate">تبرع</string>
+    <string name="donation_thanks">شكرا جزيلا على تبرعك</string>
+    <string name="donation_error">نأسف - لقد فشلت عملية التبرع</string>
+    <string name="share">مشاركة</string>
+    <string name="restart">إعادة؟</string>
+    <string name="more">المزيد</string>
 </resources>

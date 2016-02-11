@@ -27,7 +27,7 @@
     <string name="previous_media">Tidigare</string>
     <string name="stop_media">Stop</string>
     <string name="playlist">Spellista</string>
-    <string name="filebrowser">Fil hanterare</string>
+    <string name="filebrowser">Filhanterare</string>
     <string name="delete_from_playlist">Ta bort från spellista</string>
     <string name="service">Kanal</string>
     <string name="afterevent">Efter avslut</string>
@@ -40,7 +40,7 @@
         <item>Automatiskt</item>
     </string-array>
 
-    <string name="begin_time">Start tid</string>
+    <string name="begin_time">Starttid</string>
     <string name="repeatings">Återkommande</string>
     <string name="end_time">Sluttid</string>
     <string name="services">Kanaler</string>
@@ -76,8 +76,8 @@
     <string name="set_timer">Lägg till timer</string>
     <string name="home">Hem</string>
     <string name="pick_action">Välj</string>
-    <string name="set_time_begin">Start datum och tid</string>
-    <string name="set_time_end">Slut datum och tid</string>
+    <string name="set_time_begin">Startdatum och tid</string>
+    <string name="set_time_end">Slutdatum och tid</string>
     <string name="apply">Lägg till</string>
     <string name="reload">Uppdatera</string>
 
@@ -139,16 +139,17 @@
     <string name="epg_search">EPG-Sök</string>
     <string name="epg_search_hint">Sök EPG</string>
     <string name="standard">Standard utseende</string>
-    <string name="quickzap">SnabbZaps Utseende</string>
+    <string name="quickzap">SnabbZaps-utseende</string>
     <string name="no_epg_available">Det finns Ingen EPG-Information tillgänglig för denna kanal</string>
     <string name="ok">OK</string>
     <string name="activate">Aktivera</string>
     <string name="confirm_delete_profile">Vill du verkligen ta bort denna profil?</string>
-    <string name="profile_activated">Aktivera Profil</string>
+    <string name="profile_activated">Aktivera profil</string>
     <string name="profile_not_activated">Det gick inte att aktivera denna profil</string>
     <string name="profile_not_deleted">Fel, det gick inte att ta bort denna profil</string>
     <string name="profile_deleted">Borttagen profil</string>
     <string name="profile">Profil</string>
+    <string name="profile_name">Profilnamn</string>
     <string name="profile_updated">Uppdaterad profil</string>
     <string name="profile_added">Tillagd profil</string>
     <string name="profile_add">Lägg till profil</string>
@@ -160,8 +161,8 @@
     <string name="screenshot">Skärmdump</string>
     <string name="host_empty">Värdnamnet kan inte vara tomt!</string>
     <string name="standby">Standby</string>
-    <string name="powerup">Starta Upp</string>
-    <string name="restart_gui">Omstart Av GUI</string>
+    <string name="powerup">Starta upp</string>
+    <string name="restart_gui">Omstart av GUI</string>
     <string name="reboot">Omstart</string>
     <string name="shutdown">Stäng av</string>
     <string name="powercontrol">På/Av</string>
@@ -177,6 +178,7 @@
 \nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktiv profil</string>
+    <string name="connection">Anslutning</string>
     <string name="connection_state">Status på anslutningen</string>
     <string name="not_available">Inte tillgänglig</string>
     <string name="checking">Testar...</string>
@@ -189,10 +191,10 @@
     <string name="edit_timer">Ändra timer</string>
     <string name="cleaning_timerlist">Städar upp timerlistan</string>
     <string name="cleanup">Städa</string>
-    <string name="in_standby">Enheten är nu i Standby</string>
+    <string name="in_standby">Enheten är nu i standby</string>
     <string name="is_running">Enheten är igång</string>
     <string name="stream">Strömma</string>
-    <string name="stream_host">Strömmande Värdnamn/IP</string>
+    <string name="stream_host">Strömmande värdnamn/IP</string>
     <string name="stream_host_long">Värd/IP för strömmen (optional)</string>
     <string name="stream_current">Strömma aktuell </string>
     <string name="similar">Liknande händelse</string>
@@ -206,7 +208,7 @@
     </string-array>
     <string-array name="timer_action">
         <item>Spela In</item>
-        <item>Zappa</item>
+        <item>zappa</item>
     </string-array>
 
     <string name="sleeptimer">Insomningstimer</string>
@@ -218,13 +220,13 @@
     <string name="extras">Extras</string>
     <string name="main_menu">Huvudmeny</string>
     <string name="profiles">Profiler</string>
-    <string name="enable_instant_zap">Snabb zap</string>
-    <string name="enable_instant_zap_long">Snabb zappa vid snabbklick på en tjänst</string>
+    <string name="enable_instant_zap">Snabb-zap</string>
+    <string name="enable_instant_zap_long">Snabb-zappa vid snabbklick på en tjänst</string>
     <string name="wrong_activity">Fel aktivitet påkallad. Uppdatera ny genväg för DreamDroid</string>
     <string name="simple_remote">Enkel fjärrkontroll </string>
     <string name="screenshot_saved">Skärmdump sparad till \'%s\'</string>
     <string name="imdb">IMDB</string>
-    <string name="missing_stream_player">Ingen spelare för Streams finns installerad på denna enheten</string>
+    <string name="missing_stream_player">Ingen spelare för videoströmmar finns installerad på denna enheten</string>
     <string name="edit_profile">Redigera profil</string>
     <string name="searching">Söker &#8230;</string>
     <string name="searching_known_devices">Söker efter dreamboxar i det lokala nätverket. Det här kan ta en liten stund &#8230;</string>
@@ -240,5 +242,5 @@
     <string name="sent_as">Skickad som</string>
     <string name="watch_on_dream">Visa på Dreambox</string>
     <string name="sent_from_dreamdroid">Skickad från dreamDroid %s</string>
-    <string name="no_profile_available">Ingen anslutnings profil kunde hittas, Skapa en via huvudapplikationen</string>
+    <string name="no_profile_available">Ingen anslutningsprofil kunde hittas, Skapa en via huvudapplikationen</string>
 </resources>

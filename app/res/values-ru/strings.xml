@@ -17,6 +17,9 @@
 
     <string name="timer">Таймер</string>
     <string name="mediaplayer">Медиаплейер</string>
+    <string name="navigation_back_media">Назад</string>
+    <string name="home_media">Домой</string>
+    <string name="stop_media">Стоп</string>
     <string name="service">Сервис</string>
     <string name="afterevent">Следующее событие</string>
     <string name="location">Позиция</string>

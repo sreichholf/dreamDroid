@@ -20,6 +20,7 @@
     <string name="play">Odtwarzaj</string>
     <string name="add_to_playlist">Dodaj do listy odtwarzania</string>
     <string name="navigation_back_media">Wstecz</string>
+    <string name="home_media">Menu Główne Media</string>
     <string name="close_media">Zamknij Mediaplayer</string>
     <string name="next_media">Następny</string>
     <string name="play_media">Odtwarzaj</string>
@@ -29,13 +30,13 @@
     <string name="filebrowser">Przeglądarka plików</string>
     <string name="delete_from_playlist">Usuń z listy odtwarzania</string>
     <string name="service">Kanał</string>
-    <string name="afterevent">Po zdarzeniu</string>
+    <string name="afterevent">Po Wydarzeniu</string>
     <string name="location">Lokalizacja</string>
 
     <string-array name="afterevents">
         <item>Nic</item>
         <item>Czuwanie</item>
-        <item>Głębokie czuwanie</item>
+        <item>Głębokie Czuwanie</item>
         <item>Automatycznie</item>
     </string-array>
 
@@ -43,7 +44,7 @@
     <string name="repeatings">Powtarzanie</string>
     <string name="end_time">Czas zakończenia</string>
     <string name="services">Kanały</string>
-    <string name="movies">Filmy</string>
+    <string name="movies">Nagrania</string>
     <string name="device_info">Informacje o urządzeniu</string>
     <string name="send_message">Wyślij wiadomość</string>
     <string name="save">Zapisz</string>
@@ -117,9 +118,9 @@
     <string name="hdds">Dyski twarde</string>
     <string name="hdd_capacity">%1$s (%2$s wolne)</string>
     <string name="not_implemented">Ta funkcja nie jest jeszcze zaimplementowana</string>
-    <string name="current_event">Aktualne zdarzenie</string>
-    <string name="timeout">Limit czasu</string>
-    <string name="seconds">sekundy</string>
+    <string name="current_event">Aktualne Wydarzenie</string>
+    <string name="timeout">Czasu wyświetlania</string>
+    <string name="seconds">sek.</string>
     <string name="message">Wiadomość</string>
     <string name="message_text_hint">Wprowadź treść wiadomości</string>
     <string name="send">Wyślij</string>
@@ -129,7 +130,7 @@
         <item>Tak/Nie</item>
         <item>Ostrzeżenie</item>
         <item>Info</item>
-        <item/>
+        <item>Błąd</item>
     </string-array>
 
     <string name="virtual_remote">Pilot</string>
@@ -202,7 +203,7 @@
     <string name="stream_host">Nazwa hosta/IP strumieniowania</string>
     <string name="stream_host_long">Host/IP dla strumieniowania (opcjonalne)</string>
     <string name="stream_current">Strumieniuj</string>
-    <string name="similar">Podobne wydarzenia</string>
+    <string name="similar">Podobne Wydarzenia</string>
 
     <string-array name="timer_state">
         <item>oczekiwanie...</item>
@@ -252,7 +253,7 @@
     <string name="leave_confirm">Zamknij program</string>
     <string name="leave_confirm_long">Naprawdę chcesz opuścić dreamDroid?</string>
     <string name="sent_as">Wyślij jako %s</string>
-    <string name="watch_on_dream">zobacz na Dreambox</string>
+    <string name="watch_on_dream">Zobacz na Dreambox`ie</string>
     <string name="sent_from_dreamdroid">Wyślij z dreaDroid na %s</string>
     <string name="no_profile_available">Brak profilu połącznia! Proszę skonfigurować profil by używać aplikacji!</string>
     <string name="confirm_app_close">Pytaj o potwierdzenie przy wyjściu z aplikacji</string>
@@ -262,26 +263,76 @@
     <string name="login_live">Login (na żywo)</string>
     <string name="appearance">Wygląd</string>
     <string name="usability">Użyteczność</string>
-    <string name="use_picons">Używaj picon</string>
-<string name="use_picons_long">Włącz używanie picon w wybranych obszarach.
-\nWymaga picon w folderze /{ExternalStorageDir}/dreamDroid/picons</string>
-    <string name="sync_picons">Synchronizuj picony</string>
-    <string name="sync_picons_long">Synchronizcuj picony do folderu /{ExternalStorageDir}/dreamDroid/picons używając aktualnie skonfigurowanego profilu połączenia</string>
-    <string name="sync_picons_path">Picony - ścieżka zdalna</string>
-    <string name="sync_picons_path_long">Ścieżka do folderu z piconami na Twoim dreamboxie</string>
-    <string name="connecting">Łączenie</string>
+    <string name="use_picons">Używaj pikon</string>
+<string name="use_picons_long">Włącz używanie pikon w wybranych obszarach.
+\nWymaga pikon w folderze /{ExternalStorageDir}/dreamDroid/picons</string>
+    <string name="sync_picons">Synchronizuj pikon</string>
+    <string name="sync_picons_long">Synchronizuj pikony do folderu /{ExternalStorageDir}/dreamDroid/picons używając aktualnie skonfigurowanego profilu połączenia</string>
+    <string name="sync_picons_path">Pikony - ścieżka zdalna</string>
+    <string name="sync_picons_path_long">Ścieżka do folderu z pikonami na Twoim dreambox`ie</string>
+    <string name="connecting">Łączenie...</string>
     <string name="connected">Połączono</string>
     <string name="logged_in">Zalogowano</string>
     <string name="getting_list_of_files">Pobieranie listy plików</string>
-    <string name="picon_sync_finished">Pobrano %s picon</string>
+    <string name="picon_sync_finished">Pobrano %s pikon</string>
+    <string name="drawer_open">Otwórz szufladę nawigacji</string>
+    <string name="drawer_close">Zamknij szufladę nawigacji</string>
     <string name="enable_animations_long">Włącz dodatkowe animacje widoku</string>
     <string name="enable_animations">Włącz animacje</string>
-    <string name="use_name_as_picon_filename_long">Używaj nazwy kanału jako nazwę picon</string>
-    <string name="use_name_as_picon_filename">Picony z nazw kanałów</string>
-    <string name="picons">Picony</string>
+    <string name="use_name_as_picon_filename_long">Używaj nazwy kanału jako nazwę pikon</string>
+    <string name="use_name_as_picon_filename">Pikony z nazw kanałów</string>
+    <string name="picons">Pikony</string>
     <string name="developer_settings">Ustawienia programisty</string>
     <string name="dump_xml">Zrzuć zawartość xml</string>
     <string name="dump_xml_long">Zrzuć zawartość xml na pamięć zewnętrzną</string>
     <string name="enable">Włącz</string>
     <string name="disable">Wyłącz</string>
+    <string name="epg_sync">Synchronizacja EPG</string>
+    <string name="epg_sync_finished">EPG zostało zsynchronizowane</string>
+    <string name="disable_fab_reload">Wyłącz pływający przycisk odświeżenia</string>
+    <string name="disable_fab_reload_long">Odświeżone zostaną umieszczone w pasku działań</string>
+    <string name="reset_default">Przywróć ustawienia domyślne</string>
+    <string name="max_grid_cols">Maks.liczba kolumn w liście kanałów</string>
+    <string name="max_grid_cols_long">Liczba kolumn wyświetlana w liście kanałów</string>
+    <string name="default_to_full_vrm_long">Użyj jako domyślny prosty układ wirtualnego pilota</string>
+    <string name="default_to_full_vrm">Prosty pilot jako domyślny</string>
+    <string name="donate_sum">Dotacja %s</string>
+    <string name="donate">Dotacja</string>
+    <string name="donation_thanks">Dziękuję Ci bardzo za dotację!</string>
+    <string name="donation_error">Twoja dotacja nie powiodła się! Przepraszam za to! (%s)</string>
+    <string name="share">Dziel</string>
+    <string name="restart">Zrestartować ?</string>
+    <string name="theme_change_restart">Aby zastosować zmieniony motyw wymagany jest restart. Uruchomić ponownie dreamDroid ?</string>
+    <string name="more">Więcej</string>
+    <string name="host_not_found">Host nieznaleziony</string>
+    <string name="auth_error">Niepowodzenie autoryzacji (Sprawdź użytkownika / hasło ?)</string>
+    <string name="developer_settings_enable">Włącz ustawienia programisty</string>
+    <string name="use_fake_picon">Użyj fałszywego Pikona</string>
+    <string name="use_fake_picon_long">Użyj fałszywego Pikona (picon_default.png), aby uniknąć problemów praw autorskich na zrzutach ekranu.</string>
+    <string name="host_unreach">Nie można połączyć się z hostem</string>
+    <string name="allow_tracking_long">Pozwól zbierać anonimowe statystyki użytkowania</string>
+    <string name="allow_tracking">Statystyki użytkowania</string>
+<string name="privacy_statement">DreamDroid zawiera moduł zbierania danych statystycznych o użytkowaniu, które zbierają następujące informacje:
+\n
+\n&#8226; Anonimowe adresy IP
+\n&#8226; Otwierane "Strony" (jak Lista Kanałów, Nagrania itp), w tym czas trwania.
+\n&#8226; Awarie
+\n
+\nDane unikatowe oraz pełne adresy IP nie są zbierane oraz przekazywane osobom trzecim.
+\n
+\nCzy zgadzasz się przesyłać anonimowe statystyki ?</string>
+    <string name="privacy_statement_title">Polityka prywatności</string>
+    <string name="privacy">Prywatność</string>
+    <string name="next_event">Następne Wydarzenie</string>
+    <string name="use_encoder">Użyj enkodera dla strimu</string>
+    <string name="encoder_path">Ścieżka strimu</string>
+    <string name="audio_bitrate">Szybkość Transmisji Dźwięku</string>
+    <string name="video_bitrate">Szybkość Transmisji Wideo</string>
+    <string name="encoder_port">Port strimu</string>
+    <string name="settings_and_about">USTAWIENIA I INFORMACJE</string>
+    <string name="tools">NARZĘDZIA</string>
+    <string name="control">STEROWANIE</string>
+    <string name="picon_sync_started">Synchronizacja Pikon rozpoczęta. Zobacz obszar powiadomień po szczegóły.</string>
+    <string name="picon_sync_running">Wciąż jest uruchomiona inna synchronizacja Pikon!</string>
+    <string name="streaming">Strumieniowanie</string>
 </resources>

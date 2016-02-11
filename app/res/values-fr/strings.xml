@@ -21,6 +21,7 @@
     <string name="add_to_playlist">Ajouter a Playlist</string>
     <string name="navigation_back_media">Retour</string>
     <string name="home_media">Debut</string>
+    <string name="close_media">Fermer Mediaplayer</string>
     <string name="next_media">Suivant</string>
     <string name="play_media">Lecture</string>
     <string name="previous_media">Precedent</string>
@@ -59,6 +60,7 @@
     <string name="ssl_enabled">Activer SSL</string>
     <string name="host">Nom Hôte/IP</string>
     <string name="port">Port</string>
+    <string name="live">Direct</string>
     <string name="port_stream_live">Port (Direct)</string>
     <string name="port_stream_file">Port (Film)</string>
     <string name="settings">Réglages</string>
@@ -114,9 +116,11 @@
     <string name="frontends">Début de processus</string>
     <string name="nics">Interfaces Réseau</string>
     <string name="hdds">Disques Durs</string>
+    <string name="hdd_capacity">%1$s (%2$s libres)</string>
     <string name="not_implemented">Cette fonction n\'est pas encore développée!</string>
     <string name="current_event">Evènement Courant</string>
     <string name="timeout">Interruption</string>
+    <string name="seconds">secondes</string>
     <string name="message">Message</string>
     <string name="message_text_hint">Entrez votre message</string>
     <string name="send">Envoi</string>
@@ -130,6 +134,7 @@
     </string-array>
 
     <string name="virtual_remote">Télécommande</string>
+    <string name="login">Nom d'\utilisateur</string>
     <string name="login_enabled">Connexion par nom d\'utilisateur et mot de passe</string>
     <string name="wait_request_finished">Merci de patienter jusqu\'a ce que la requête soit terminé!</string>
     <string name="current_service">Actuellement</string>
@@ -149,6 +154,7 @@
     <string name="profile_not_deleted">Erreur de suppression du profil</string>
     <string name="profile_deleted">Profil supprimé</string>
     <string name="profile">Profil</string>
+    <string name="profile_name">Nom Profil</string>
     <string name="profile_updated">Profil mis à jour</string>
     <string name="profile_added">Profil ajouté</string>
     <string name="profile_add">Ajout Profil</string>
@@ -177,6 +183,7 @@
 \nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Code source disponible: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Profil actif</string>
+    <string name="connection">Connexion</string>
     <string name="connection_state">Etat de connexion</string>
     <string name="not_available">Non disponible</string>
     <string name="checking">Vérification&#8230;</string>
@@ -217,7 +224,8 @@
     <string name="download">Téléchargement</string>
     <string name="extras">Extras</string>
     <string name="main_menu">Menu principal</string>
-    <string name="profiles">Profiles</string>
+    <string name="profiles">Profils</string>
+    <string name="profiles_long">Configurer les profils de connexion</string>
     <string name="enable_instant_zap">Zap maintenant</string>
     <string name="enable_instant_zap_long">Zapper instantanément quand appuis court sur service</string>
     <string name="wrong_activity">Mauvaise activité lancée! Recrée tous les raccourcis que vous avez créer pour la dreamDroid</string>
@@ -235,4 +243,15 @@
     <string name="autodiscover_dreamboxes">Dreambox trouvée !</string>
     <string name="autodiscovery_failed">Ne peut pas trouver de Dreambox sur votre réseau local</string>
     <string name="add_all">Tout ajouter</string>
+    <string name="enabled">Activé</string>
+    <string name="connecting">Connexion en cours</string>
+    <string name="connected">Connecté</string>
+    <string name="logged_in">Identifié</string>
+    <string name="picons">Picons</string>
+    <string name="enable">Activer</string>
+    <string name="disable">Désactiver</string>
+    <string name="donate_sum">Don de %s</string>
+    <string name="donate">Donation</string>
+    <string name="donation_thanks">Merci beaucoup pour votre don!</string>
+    <string name="donation_error">Votre don a échoué! Désolé! (%s)</string>
 </resources>

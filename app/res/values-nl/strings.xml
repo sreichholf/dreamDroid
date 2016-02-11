@@ -16,8 +16,21 @@
     </string-array>
 
     <string name="timer">Timer</string>
+    <string name="mediaplayer">Mediaspeler</string>
+    <string name="play">Afspelen</string>
+    <string name="add_to_playlist">Voeg aan afspeellijst toe</string>
+    <string name="navigation_back_media">Terug</string>
+    <string name="home_media">Home</string>
+    <string name="close_media">Mediaspeler afsluiten</string>
+    <string name="next_media">Volgende</string>
+    <string name="play_media">Afspelen</string>
+    <string name="previous_media">Vorige</string>
+    <string name="stop_media">Stop</string>
+    <string name="playlist">Afspeellijst</string>
+    <string name="filebrowser">Bestand verkenner</string>
+    <string name="delete_from_playlist">Wissen uit Afspeellijst</string>
     <string name="service">Kanaal</string>
-    <string name="afterevent">Afterevent</string>
+    <string name="afterevent">Afsluiten met</string>
     <string name="location">Lokatie</string>
 
     <string-array name="afterevents">
@@ -61,9 +74,9 @@
     <string name="saving">Opslaan. Even geduld&#8230;</string>
     <string name="deleting">Verwijderen. Even geduld&#8230;</string>
     <string name="delete_confirm">Echt verwijderen?</string>
-    <string name="set_timer">Aktiveer timer</string>
+    <string name="set_timer">Activeer timer</string>
     <string name="home">Beginpagina</string>
-    <string name="pick_action">Kies een aktie</string>
+    <string name="pick_action">Kies een actie</string>
     <string name="set_time_begin">Startdatum en uur</string>
     <string name="set_time_end">Einddatum en uur</string>
     <string name="apply">Uitvoeren</string>
@@ -102,9 +115,11 @@
     <string name="frontends">Frontends</string>
     <string name="nics">Netwerkinterfaces</string>
     <string name="hdds">Harddisks</string>
+    <string name="hdd_capacity">%1$s(%2$s beschikbaar)</string>
     <string name="not_implemented">Deze functie is nog niet aanwezig!</string>
     <string name="current_event">Huidige gebeurtenis</string>
     <string name="timeout">Timeout</string>
+    <string name="seconds">seconden</string>
     <string name="message">Bericht</string>
     <string name="message_text_hint">Voer je berichttekst in</string>
     <string name="send">Zend</string>
@@ -118,6 +133,7 @@
     </string-array>
 
     <string name="virtual_remote">Virtuele afstandsbediening</string>
+    <string name="login">Inloggen</string>
     <string name="login_enabled">Login toestaan</string>
     <string name="wait_request_finished">Wacht aub. tot de lopende aanvraag afgelopen is!</string>
     <string name="current_service">Huidige</string>
@@ -130,20 +146,21 @@
     <string name="quickzap">SnelZap layout</string>
     <string name="no_epg_available">Er is momenteel geen gids informatie beschikbaar voor dit kanaal!</string>
     <string name="ok">OK</string>
-    <string name="activate">Aktiveer</string>
+    <string name="activate">Activeer</string>
     <string name="confirm_delete_profile">Wilt U dit profiel echt verwijderen?</string>
-    <string name="profile_activated">Geaktiveerd profiel</string>
-    <string name="profile_not_activated">Fout bij aktiveren profiel</string>
+    <string name="profile_activated">Geactiveerd profiel</string>
+    <string name="profile_not_activated">Fout bij activeren profiel</string>
     <string name="profile_not_deleted">Fout bij verwijderen profiel</string>
     <string name="profile_deleted">Verwijderd profiel</string>
     <string name="profile">Profiel</string>
+    <string name="profile_name">Naam profiel</string>
     <string name="profile_updated">Profiel aangepast</string>
     <string name="profile_added">Profiel toegevoegd</string>
     <string name="profile_add">Profiel toevoegen</string>
     <string name="profile_not_added">Kan profiel niet toevoegen</string>
-    <string name="profile_not_updated">Kan profiel niet aanpassen</string>
+    <string name="profile_not_updated">Kan profiel niet bijwerken</string>
     <string name="no_list_item">Geen gegevens toonbaar&#8230;</string>
-    <string name="locations_default_fallback">Fout in laden lokaties, val terug op standaard:</string>
+    <string name="locations_default_fallback">Fout in laden locaties, val terug op standaard:</string>
     <string name="tags">Tags</string>
     <string name="screenshot">Schermdump</string>
     <string name="host_empty">De hostnaam mag niet leeg zijn!</string>
@@ -161,9 +178,12 @@
     <string name="default_bouquet_not_set">Standaardboeket kan niet ingesteld worden!</string>
     <string name="loading">Laden&#8230;</string>
     <string name="about">Over</string>
-    <string name="license">Licentie:\nGelicentieerd onder de Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="changelog">wijzigingslog </string>
+<string name="license">Licentie:
+\nGelicentieerd onder de Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Broncode beschikbaar op http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Aktief profiel</string>
+    <string name="active_profile">Actief profiel</string>
+    <string name="connection">Verbinding</string>
     <string name="connection_state">Verbindingsstatus</string>
     <string name="not_available">Niet beschikbaar</string>
     <string name="checking">controleren&#8230;</string>
@@ -200,11 +220,12 @@
     <string name="current_volume">Volume is nu %s</string>
     <string name="muted">Gedempt</string>
     <string name="enable_volume_control">Inschakelen volume controle</string>
-    <string name="enable_volume_control_long">Inschakelen directe volume controle met behulp van H/W-knoppen</string>
+    <string name="enable_volume_control_long">Inschakelen directe volume controle met behulp van hardware-knoppen</string>
     <string name="download">Download</string>
     <string name="extras">Extras</string>
     <string name="main_menu">Hoofdmenu</string>
     <string name="profiles">Profielen</string>
+    <string name="profiles_long">Profielen configureren</string>
     <string name="enable_instant_zap">Onmiddelijk zappen</string>
     <string name="enable_instant_zap_long">Onmiddelijk zappen bij het kort aanklikken van een service</string>
     <string name="wrong_activity">Verkeerde activiteit aangeroepen! Hercreëer de snelkoppeling voor dreamDroid!</string>
@@ -212,10 +233,9 @@
     <string name="screenshot_saved">Screenshot opgeslagen als \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Geen speler voor videostreams geinstalleerd op dit apparaat!</string>
-    <string name="mediaplayer">Mediaspeler</string>
     <string name="edit_profile">Bewerk Profiel</string>
-    <string name="force_tablet_layout_long">Forceer tablet geoptimaliseerde layout</string>
-    <string name="force_tablet_layout">Forceer tablet layout</string>
+    <string name="force_tablet_layout_long">Forceer tablet-geoptimaliseerde layout</string>
+    <string name="force_tablet_layout">Forceer tablet-layout</string>
     <string name="mobile_imdb">Gebruik mobiele versie van www.imdb.com</string>
     <string name="mobile_imdb_long">Gebruik m.imdb.com ipv. www.imdb.com</string>
     <string name="searching">Zoeken&#8230;</string>
@@ -239,4 +259,30 @@
     <string name="login_movies">Login (Films)</string>
     <string name="ssl_movies">https (Films)</string>
     <string name="login_live">Login (live)</string>
+    <string name="appearance">Uiterlijk</string>
+    <string name="usability">Bruikbaarheid</string>
+    <string name="use_picons">Gebruik Picons</string>
+    <string name="sync_picons">Picons synchroniseren</string>
+    <string name="sync_picons_long">Synchroniseer Picons naar /{ExternalStorageDir}/dreamDroid/picons met gebruik van het huidige verbindingsprofiel</string>
+    <string name="sync_picons_path_long">Pad waar Picons op de dreambox staan</string>
+    <string name="connecting">Verbinden ...</string>
+    <string name="connected">Verbonden</string>
+    <string name="logged_in">Ingelogd</string>
+    <string name="getting_list_of_files">Bestandenlijst wordt gehaald</string>
+    <string name="picon_sync_finished">Met succes %s picons opgehaald</string>
+    <string name="enable_animations">Animaties toestaan</string>
+    <string name="use_name_as_picon_filename_long">Gebruik kanaalnaam als bestandsnaam voor picons</string>
+    <string name="use_name_as_picon_filename">Picons op kanaal gesorteerd</string>
+    <string name="developer_settings">Ontwikkelaarsinstellingen</string>
+    <string name="enable">Toestaan</string>
+    <string name="disable">Uitzetten</string>
+    <string name="epg_sync">EPG wordt bijgewerkt</string>
+    <string name="epg_sync_finished">EPG is bijgewerkt</string>
+    <string name="disable_fab_reload">Zwevende herlaadknop uitzetten</string>
+    <string name="max_grid_cols">Max. kolommen kanaallijst</string>
+    <string name="max_grid_cols_long">Maximum aantal kolommen in de kanaallijst</string>
+    <string name="donate_sum">Doneer %s</string>
+    <string name="donate">Doneer</string>
+    <string name="donation_thanks">Hartelijk dank voor uw donatie!</string>
+    <string name="donation_error">Donatie mislukt! Spijtig! (%s)</string>
 </resources>

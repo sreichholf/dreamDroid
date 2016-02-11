@@ -16,6 +16,7 @@
     </string-array>
 
     <string name="timer">Časovač</string>
+    <string name="mediaplayer">Mediaplayer</string>
     <string name="service">Služba</string>
     <string name="afterevent">Po události</string>
     <string name="location">Umístění</string>
@@ -161,7 +162,8 @@
     <string name="default_bouquet_not_set">Výchozí bouquet nelze nastavit!</string>
     <string name="loading">Načítání...</string>
     <string name="about">O dreamdroid</string>
-    <string name="license">LICENCE:\nLicencováno pod Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+<string name="license">LICENCE:
+\nLicencováno pod Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Zdrojový kód dostupný na: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktivní profil</string>
     <string name="connection_state">Stav připojení</string>
@@ -212,7 +214,6 @@
     <string name="screenshot_saved">Screenshot uložen do \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Na zařízení není nainstalován žádný přehrávač pro sledování videa ze sítě!</string>
-    <string name="mediaplayer">Mediaplayer</string>
     <string name="edit_profile">Upravit profil</string>
     <string name="force_tablet_layout_long">Vynutit vzhled optimalizovaný pro tablet</string>
     <string name="force_tablet_layout">Vynutit vzhled pro tablet</string>
