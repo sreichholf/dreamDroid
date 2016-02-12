@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/content_horz_padding"
     android:paddingTop="@dimen/content_vert_padding">
 
-    <net.reichholf.dreamdroid.widget.CheckableLinearLayout
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -57,7 +57,6 @@
                     android:id="@+id/EditTextHost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-
                     android:hint="@string/host_long"
                     android:singleLine="true"/>
             </android.support.design.widget.TextInputLayout>
@@ -379,6 +378,6 @@
                     android:text="@string/ssl_enabled"/>
             </LinearLayout>
         </LinearLayout>
-    </net.reichholf.dreamdroid.widget.CheckableLinearLayout>
+    </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>
