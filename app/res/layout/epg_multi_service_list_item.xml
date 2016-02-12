@@ -24,7 +24,9 @@
             android:layout_alignParentTop="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="3dp"
-            android:layout_marginTop="5dp"/>
+            android:layout_marginTop="5dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginEnd="3dp"/>
 
 
         <LinearLayout
@@ -32,7 +34,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/picon"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_toEndOf="@id/picon">
 
             <TextView
                 android:id="@+id/event_title"
@@ -73,8 +76,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="5dip"
                 android:layout_weight="1"
-                android:gravity="right"
-                android:textAppearance="@android:style/TextAppearance.Small"/>
+                android:gravity="end"
+                android:textAppearance="@android:style/TextAppearance.Small"
+                android:layout_marginEnd="5dip"/>
         </LinearLayout>
 
         <TextView

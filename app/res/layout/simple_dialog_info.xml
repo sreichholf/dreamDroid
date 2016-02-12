@@ -18,6 +18,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dip"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_marginStart="10dip"/>
 
 </LinearLayout>

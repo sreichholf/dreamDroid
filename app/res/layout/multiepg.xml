@@ -18,7 +18,8 @@
         android:layout_height="50dp"
         android:fillViewport="true"
         android:paddingLeft="50dp"
-        android:scrollbars="none">
+        android:scrollbars="none"
+        android:paddingStart="50dp">
 
         <LinearLayout
             android:id="@+id/header"

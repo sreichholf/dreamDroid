@@ -2,8 +2,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="?attr/actionBarSize"
-    android:gravity="right"
-    android:layout_gravity="right"
+    android:gravity="end"
+    android:layout_gravity="end"
     android:minHeight="?attr/actionBarSize"
     android:orientation="horizontal"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
@@ -19,7 +19,8 @@
         android:padding="5dp"
         android:textAlignment="gravity"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white"
+        android:layout_marginEnd="5dp"/>
 
     <TextView
         android:id="@+id/textViewTime"

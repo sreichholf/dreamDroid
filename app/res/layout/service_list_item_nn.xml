@@ -43,7 +43,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="56dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:layout_marginEnd="56dp"/>
 
             <net.reichholf.dreamdroid.view.MaterialProgressBar
                 android:id="@+id/service_progress"
@@ -52,7 +53,8 @@
                 android:layout_height="8dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="-54dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:layout_marginStart="-54dp"/>
         </LinearLayout>
 
         <ImageView
@@ -62,7 +64,8 @@
             android:layout_below="@id/service"
             android:layout_centerVertical="true"
             android:layout_marginRight="3dp"
-            android:layout_marginTop="5dp"/>
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="3dp"/>
 
         <LinearLayout
             android:id="@+id/event_now"
@@ -70,14 +73,16 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/service"
             android:layout_toRightOf="@id/picon"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_toEndOf="@id/picon">
 
             <TextView
                 android:id="@+id/event_now_start"
                 style="@style/CardText"
                 android:layout_width="45dip"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="-45dip"/>
+                android:layout_marginRight="-45dip"
+                android:layout_marginEnd="-45dip"/>
 
             <TextView
                 android:id="@+id/event_now_title"
@@ -87,7 +92,9 @@
                 android:layout_marginLeft="45dip"
                 android:layout_marginRight="55dip"
                 android:ellipsize="end"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:layout_marginEnd="55dip"
+                android:layout_marginStart="45dip"/>
 
             <TextView
                 android:id="@+id/event_now_duration"
@@ -95,8 +102,9 @@
                 android:layout_width="50dip"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="-55dip"
-                android:gravity="right"
-                android:minHeight="0dip"/>
+                android:gravity="end"
+                android:minHeight="0dip"
+                android:layout_marginStart="-55dip"/>
         </LinearLayout>
 
         <LinearLayout
@@ -105,14 +113,16 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/event_now"
             android:layout_toRightOf="@id/picon"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_toEndOf="@id/picon">
 
             <TextView
                 android:id="@+id/event_next_start"
                 style="@style/CardText"
                 android:layout_width="45dip"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="-45dip"/>
+                android:layout_marginRight="-45dip"
+                android:layout_marginEnd="-45dip"/>
 
             <TextView
                 android:id="@+id/event_next_title"
@@ -122,7 +132,9 @@
                 android:layout_marginLeft="45dip"
                 android:layout_marginRight="55dip"
                 android:ellipsize="end"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:layout_marginEnd="55dip"
+                android:layout_marginStart="45dip"/>
 
             <TextView
                 android:id="@+id/event_next_duration"
@@ -130,8 +142,9 @@
                 android:layout_width="50dip"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="-55dip"
-                android:gravity="right"
-                android:minHeight="0dip"/>
+                android:gravity="end"
+                android:minHeight="0dip"
+                android:layout_marginStart="-55dip"/>
         </LinearLayout>
 
     </RelativeLayout>

@@ -53,7 +53,8 @@
                 android:layout_height="50dp"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="3dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1"
+                android:layout_marginEnd="3dp"/>
 
             <TextView
                 android:id="@+id/service_name"
@@ -78,7 +79,8 @@
                 style="@style/CardText"
                 android:layout_width="45dip"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="-45dip"/>
+                android:layout_marginRight="-45dip"
+                android:layout_marginEnd="-45dip"/>
 
             <TextView
                 android:id="@+id/event_now_title"
@@ -88,7 +90,9 @@
                 android:layout_marginLeft="45dip"
                 android:layout_marginRight="55dip"
                 android:ellipsize="end"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:layout_marginEnd="55dip"
+                android:layout_marginStart="45dip"/>
 
             <TextView
                 android:id="@+id/event_now_duration"
@@ -96,8 +100,9 @@
                 android:layout_width="50dip"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="-55dip"
-                android:gravity="right"
-                android:minHeight="0dip"/>
+                android:gravity="end"
+                android:minHeight="0dip"
+                android:layout_marginStart="-55dip"/>
         </LinearLayout>
 
         <LinearLayout
@@ -112,7 +117,8 @@
                 style="@style/CardText"
                 android:layout_width="45dip"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="-45dip"/>
+                android:layout_marginRight="-45dip"
+                android:layout_marginEnd="-45dip"/>
 
             <TextView
                 android:id="@+id/event_next_title"
@@ -122,7 +128,9 @@
                 android:layout_marginLeft="45dip"
                 android:layout_marginRight="55dip"
                 android:ellipsize="end"
-                android:maxLines="1"/>
+                android:maxLines="1"
+                android:layout_marginEnd="55dip"
+                android:layout_marginStart="45dip"/>
 
             <TextView
                 android:id="@+id/event_next_duration"
@@ -130,8 +138,9 @@
                 android:layout_width="50dip"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="-55dip"
-                android:gravity="right"
-                android:minHeight="0dip"/>
+                android:gravity="end"
+                android:minHeight="0dip"
+                android:layout_marginStart="-55dip"/>
         </LinearLayout>
 
     </RelativeLayout>

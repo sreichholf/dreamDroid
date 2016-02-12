@@ -51,7 +51,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="5dip"
                 android:layout_weight="1"
-                android:gravity="right"/>
+                android:gravity="end"
+                android:layout_marginEnd="5dip"/>
         </LinearLayout>
 
         <TextView

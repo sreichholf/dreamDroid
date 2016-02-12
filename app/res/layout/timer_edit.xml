@@ -6,7 +6,9 @@
     android:paddingBottom="@dimen/content_vert_padding"
     android:paddingLeft="@dimen/content_horz_padding"
     android:paddingRight="@dimen/content_horz_padding"
-    android:paddingTop="@dimen/content_vert_padding">
+    android:paddingTop="@dimen/content_vert_padding"
+    android:paddingStart="@dimen/content_horz_padding"
+    android:paddingEnd="@dimen/content_horz_padding">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -41,7 +43,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="30dp"
-                android:text="@string/zap"/>
+                android:text="@string/zap"
+                android:layout_marginStart="30dp"/>
         </LinearLayout>
 
         <android.support.design.widget.TextInputLayout
@@ -83,7 +86,9 @@
                 android:paddingRight="3dp"
                 android:paddingTop="8dp"
                 android:text="..."
-                android:textAppearance="@android:style/TextAppearance.Medium"/>
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:paddingStart="3dp"
+                android:paddingEnd="3dp"/>
 
             <TextView
                 android:id="@+id/TextViewBeginTime"
@@ -98,7 +103,9 @@
                 android:paddingRight="3dp"
                 android:paddingTop="8dp"
                 android:text="..."
-                android:textAppearance="@android:style/TextAppearance.Medium"/>
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -134,7 +141,9 @@
                 android:paddingRight="3dp"
                 android:paddingTop="8dp"
                 android:text="..."
-                android:textAppearance="@android:style/TextAppearance.Medium"/>
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:paddingStart="3dp"
+                android:paddingEnd="3dp"/>
 
             <TextView
                 android:id="@+id/TextViewEndTime"
@@ -149,7 +158,9 @@
                 android:paddingRight="3dp"
                 android:paddingTop="8dp"
                 android:text="..."
-                android:textAppearance="@android:style/TextAppearance.Medium"/>
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:paddingEnd="3dp"
+                android:paddingStart="3dp"/>
         </LinearLayout>
 
         <TextView
@@ -171,7 +182,9 @@
             android:paddingRight="3dp"
             android:paddingTop="8dp"
             android:text="@+id/TextViewRepeated"
-            android:textAppearance="@android:style/TextAppearance.Medium"/>
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:paddingEnd="3dp"
+            android:paddingStart="3dp"/>
 
         <TextView
             android:id="@+id/TextViewServiceTitle"
@@ -192,7 +205,9 @@
             android:paddingRight="3dp"
             android:paddingTop="8dp"
             android:text="@+id/TextViewService"
-            android:textAppearance="@android:style/TextAppearance.Medium"/>
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"/>
 
         <TextView
             android:id="@+id/TextViewAfterEvent"
@@ -209,7 +224,9 @@
             android:paddingBottom="8dp"
             android:paddingLeft="3dp"
             android:paddingRight="3dp"
-            android:paddingTop="8dp"/>
+            android:paddingTop="8dp"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"/>
 
         <TextView
             android:id="@+id/TextViewLocation"
@@ -226,7 +243,9 @@
             android:paddingBottom="8dp"
             android:paddingLeft="3dp"
             android:paddingRight="3dp"
-            android:paddingTop="8dp"/>
+            android:paddingTop="8dp"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"/>
 
         <TextView
             android:id="@+id/TextViewTagsTitle"
@@ -246,7 +265,9 @@
             android:paddingRight="3dp"
             android:paddingTop="8dp"
             android:text="@+id/TextViewTags"
-            android:textAppearance="@android:style/TextAppearance.Medium"/>
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:paddingEnd="3dp"
+            android:paddingStart="3dp"/>
 
     </LinearLayout>
 

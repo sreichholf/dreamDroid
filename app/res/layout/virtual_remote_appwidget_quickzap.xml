@@ -12,7 +12,7 @@
         android:id="@+id/profile_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
+        android:layout_gravity="end"
         android:background="#33333333"
         android:textAppearance="?android:attr/textAppearanceSmall"/>
 
