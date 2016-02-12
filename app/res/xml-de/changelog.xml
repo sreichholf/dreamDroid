@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<changelog>
+<changelog>#
+    <release version="1.1 beta 5" versioncode="359">
+        <change>Aktualisierte Übersetzungen</change>
+        <change>FIX: Fehlerhaft positionierte Texte in Toasts</change>
+        <change>FIX: "Überlagernder Hinweis" bei leerem Titel oder leerer Beschreibung eines Timers</change>
+        <change>FIX: Fehlerhafter Hintergrund von Profil-/Timerlisteneinträgen, besonders beim dunklen Stil</change>
+    </release>
     <release version="1.1 beta 4.3" versioncode="357">
         <change>FIX: Speichern/Neu Button in Listen reagiert nicht</change>
         <change>IMPROVE: Grid basierte Ansichten verschönert</change>

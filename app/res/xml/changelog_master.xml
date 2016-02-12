@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 5" versioncode="359">
+        <change>Update Translations</change>
+        <change>FIX: Wrongly positioned textt in Toasts</change>
+        <change>FIX: Ugly "doubled" when timer description/title is empty</change>
+        <change>FIX: Ugly "doubled" when timer description/title is empty</change>
+        <change>FIX: Broken timer-/profile list item background (clearly visible with the dark style)</change>
+    </release>
     <release version="1.1 beta 4.3" versioncode="357">
         <change>FIX: Save/New FAB broken</change>
         <change>IMPROVE: Grid based layouts look better now</change>
