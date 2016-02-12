@@ -12,7 +12,7 @@
             <item
                 android:drawable="@drawable/list_background_activated_light"
                 android:state_activated="true"/>
-            <item android:drawable="@drawable/list_background_light"/>
+            <item android:drawable="@drawable/list_background_neutral"/>
 
         </selector>
     </item>
