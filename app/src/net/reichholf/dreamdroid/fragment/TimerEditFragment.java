@@ -403,11 +403,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	protected void reload() {
 		// Name
 		mName.setText(mTimer.getString(Timer.KEY_NAME));
-		mName.setHint(R.string.title);
-
-		// Description
 		mDescription.setText(mTimer.getString(Timer.KEY_DESCRIPTION));
-		mDescription.setHint(R.string.description);
 
 		// Enabled
 		int disabled = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_DISABLED));
