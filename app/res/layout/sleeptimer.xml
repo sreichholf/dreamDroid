@@ -29,8 +29,8 @@
             android:id="@+id/NumberPicker"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
-            app:npSeparatorColor="@color/colorAccent"
-            app:npTextColor="@color/colorPrimary"
+            app:npSeparatorColor="?attr/colorAccent"
+            app:npTextColor="?attr/colorPrimary"
             app:npTextSize="25sp">
         </biz.kasual.materialnumberpicker.MaterialNumberPicker>
 

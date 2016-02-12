@@ -15,7 +15,6 @@ import android.widget.RadioGroup;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.michaelnovakjr.numberpicker.NumberPicker;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -23,6 +22,8 @@ import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 
 import java.util.HashMap;
+
+import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 
 /**
  * @author sre
@@ -63,11 +64,11 @@ public class SleepTimerDialog extends AbstractDialog {
 					@Override
 					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 						View view = dialog.getCustomView();
-						NumberPicker time = (NumberPicker) view.findViewById(R.id.NumberPicker);
+						MaterialNumberPicker time = (MaterialNumberPicker) view.findViewById(R.id.NumberPicker);
 						CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
 						RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);
 
-						String t = Integer.valueOf(time.getCurrent()).toString();
+						String t = Integer.valueOf(time.getValue()).toString();
 						int id = action.getCheckedRadioButtonId();
 						String a = SleepTimer.ACTION_STANDBY;
 
@@ -81,11 +82,12 @@ public class SleepTimerDialog extends AbstractDialog {
 		final MaterialDialog dialog = builder.build();
 		View view = dialog.getCustomView();
 
-		final NumberPicker time = (NumberPicker) view.findViewById(R.id.NumberPicker);
+		final MaterialNumberPicker time = (MaterialNumberPicker) view.findViewById(R.id.NumberPicker);
 		final CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
 		final RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);
 
-		time.setRange(0, 999);
+		time.setMinValue(0);
+		time.setMaxValue(999);
 
 		int min = 90;
 		try {
@@ -96,7 +98,7 @@ public class SleepTimerDialog extends AbstractDialog {
 		boolean enable = Python.TRUE.equals(mSleepTimer.getString(SleepTimer.KEY_ENABLED));
 		String act = mSleepTimer.getString(SleepTimer.KEY_ACTION);
 
-		time.setCurrent(min);
+		time.setValue(min);
 		enabled.setChecked(enable);
 
 		if (SleepTimer.ACTION_SHUTDOWN.equals(act)) {
