@@ -12,7 +12,9 @@
         android:paddingBottom="@dimen/content_vert_padding"
         android:paddingLeft="@dimen/content_horz_padding"
         android:paddingRight="@dimen/content_horz_padding"
-        android:paddingTop="@dimen/content_vert_padding">
+        android:paddingTop="@dimen/content_vert_padding"
+        android:paddingStart="@dimen/content_horz_padding"
+        android:paddingEnd="@dimen/content_horz_padding">
 
         <EditText
             android:id="@+id/EditTextMessage"
@@ -33,7 +35,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="8dp"
-                android:text="@string/type"/>
+                android:text="@string/type"
+                android:layout_marginEnd="8dp"/>
 
             <Spinner
                 android:id="@+id/SpinnerMessageType"
@@ -53,7 +56,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginRight="8dp"
-                android:text="@string/timeout"/>
+                android:text="@string/timeout"
+                android:layout_marginEnd="8dp"/>
 
             <EditText
                 android:id="@+id/EditTextTimeout"
@@ -68,7 +72,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginRight="8dp"
-                android:text="@string/seconds"/>
+                android:text="@string/seconds"
+                android:layout_marginEnd="8dp"/>
         </LinearLayout>
     </LinearLayout>
 

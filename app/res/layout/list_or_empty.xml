@@ -4,7 +4,9 @@
               android:layout_height="fill_parent"
               android:orientation="vertical"
               android:paddingLeft="1dp"
-              android:paddingRight="1dp">
+              android:paddingRight="1dp"
+              android:paddingStart="1dp"
+              android:paddingEnd="1dp">
 
     <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
         android:id="@+id/ptr_layout"

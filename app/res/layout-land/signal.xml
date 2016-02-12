@@ -9,7 +9,8 @@
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_centerVertical="true"
-        android:layout_marginRight="20dp" />
+        android:layout_marginRight="20dp"
+        android:layout_marginEnd="20dp"/>
 
     <LinearLayout
         android:id="@+id/layout_snrdb"
@@ -17,7 +18,8 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/gauge_view1"
         android:layout_marginTop="30dp"
-        android:layout_toRightOf="@id/gauge_view1" >
+        android:layout_toRightOf="@id/gauge_view1"
+        android:layout_toEndOf="@id/gauge_view1">
 
         <TextView
             android:id="@+id/text_snrdb_title"
@@ -39,7 +41,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/layout_snrdb"
-        android:layout_toRightOf="@id/gauge_view1" >
+        android:layout_toRightOf="@id/gauge_view1"
+        android:layout_toEndOf="@id/gauge_view1">
 
         <TextView
             android:id="@+id/text_ber_title"
@@ -61,7 +64,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/layout_ber"
-        android:layout_toRightOf="@id/gauge_view1" >
+        android:layout_toRightOf="@id/gauge_view1"
+        android:layout_toEndOf="@id/gauge_view1">
 
         <TextView
             android:id="@+id/text_agc_title"
@@ -83,7 +87,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
 
     <CheckBox
         android:id="@+id/check_accoustic_feedback"
@@ -92,6 +97,7 @@
         android:layout_alignRight="@+id/layout_agc"
         android:layout_below="@+id/layout_agc"
         android:layout_marginTop="15dp"
-        android:text="@string/accoustic_feedback" />
+        android:text="@string/accoustic_feedback"
+        android:layout_alignEnd="@+id/layout_agc"/>
 
 </RelativeLayout>

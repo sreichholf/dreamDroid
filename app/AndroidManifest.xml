@@ -32,7 +32,8 @@
         android:killAfterRestore="true"
         android:label="@string/app_name"
         android:theme="@style/Theme.DreamDroid.Light"
-        android:uiOptions="splitActionBarWhenNarrow">
+        android:uiOptions="splitActionBarWhenNarrow"
+        android:supportsRtl="true">
         <activity android:name=".activities.TabbedNavigationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

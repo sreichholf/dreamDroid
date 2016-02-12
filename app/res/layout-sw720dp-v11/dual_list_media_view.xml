@@ -20,7 +20,7 @@
         android:layout_below="@+id/detailView"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
-        android:gravity="top|left"
+        android:gravity="top|start"
         android:textAppearance="@android:style/TextAppearance.Large"
         android:textStyle="bold" />
 
@@ -33,7 +33,9 @@
         android:layout_marginLeft="10dp"
         android:layout_marginTop="20dp"
         android:layout_toRightOf="@id/listView2Header"
-        android:background="#999" />
+        android:background="#999"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@id/listView2Header"/>
 
     <ListView
         android:id="@android:id/list"
@@ -53,7 +55,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
-            android:text="@string/loading" />
+            android:text="@string/loading"
+            android:layout_marginStart="5dp"/>
     </LinearLayout>
 
 </RelativeLayout>

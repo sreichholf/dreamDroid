@@ -72,7 +72,8 @@
                 android:layout_marginTop="?attr/actionBarSize"
                 android:orientation="horizontal"
                 app:layout_anchor="@+id/detail_view"
-                app:layout_anchorGravity="top|end"/>
+                app:layout_anchorGravity="top|end"
+                android:layout_marginEnd="@dimen/fab_margin_right"/>
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/fab_reload"

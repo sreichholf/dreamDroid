@@ -7,7 +7,9 @@
     android:paddingBottom="@dimen/content_vert_padding"
     android:paddingLeft="@dimen/content_horz_padding"
     android:paddingRight="@dimen/content_horz_padding"
-    android:paddingTop="@dimen/content_vert_padding">
+    android:paddingTop="@dimen/content_vert_padding"
+    android:paddingStart="@dimen/content_horz_padding"
+    android:paddingEnd="@dimen/content_horz_padding">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -51,7 +53,8 @@
             <android.support.design.widget.TextInputLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="80dp">
+                android:layout_marginRight="80dp"
+                android:layout_marginEnd="80dp">
 
                 <EditText
                     android:id="@+id/EditTextHost"
@@ -64,7 +67,8 @@
             <android.support.design.widget.TextInputLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="-80dp">
+                android:layout_marginLeft="-80dp"
+                android:layout_marginStart="-80dp">
 
                 <EditText
                     android:id="@+id/EditTextPort"
@@ -303,7 +307,9 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:paddingLeft="6dp"
-                android:paddingRight="6dp">
+                android:paddingRight="6dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp">
 
                 <TextView
                     style="@style/SimpleHeader"
@@ -341,7 +347,9 @@
                 android:layout_weight="1"
                 android:orientation="vertical"
                 android:paddingLeft="6dp"
-                android:paddingRight="6dp">
+                android:paddingRight="6dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp">
 
                 <TextView
                     style="@style/SimpleHeader"

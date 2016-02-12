@@ -25,6 +25,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.+'
     compile 'com.android.support:cardview-v7:23.+'
     compile 'com.android.support:support-annotations:23.+'
+    compile 'biz.kasual:materialnumberpicker:1.2.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.+'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.3'
     compile 'com.wdullaer:materialdatetimepicker:2.1.1'
@@ -34,7 +35,6 @@ dependencies {
     compile files('libs/signpost-core-1.2.1.1.jar')
     compile project(':libraries:ckChangeLog')
     compile project(':libraries:gaugeview-library')
-    compile project(':libraries:numberpicker')
     compile project(':libraries:MemorizingTrustManager')
 }
 

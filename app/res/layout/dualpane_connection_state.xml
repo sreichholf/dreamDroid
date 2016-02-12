@@ -11,7 +11,9 @@
     android:paddingBottom="2dp"
     android:paddingLeft="4dp"
     android:paddingRight="4dp"
-    android:paddingTop="2dp">
+    android:paddingTop="2dp"
+    android:paddingEnd="4dp"
+    android:paddingStart="4dp">
 
     <TextView
         android:id="@+id/TextViewProfile"
@@ -29,7 +31,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="right"
+        android:gravity="end"
         android:text="@string/loading"
         android:textAllCaps="true"
         android:textColor="#888"

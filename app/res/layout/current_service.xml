@@ -13,7 +13,9 @@
         android:paddingBottom="@dimen/content_vert_padding"
         android:paddingLeft="@dimen/content_horz_padding"
         android:paddingRight="@dimen/content_horz_padding"
-        android:paddingTop="@dimen/content_vert_padding">
+        android:paddingTop="@dimen/content_vert_padding"
+        android:paddingStart="@dimen/content_horz_padding"
+        android:paddingEnd="@dimen/content_horz_padding">
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -39,7 +41,9 @@
                     android:layout_height="fill_parent"
                     android:layout_marginLeft="3dp"
                     android:layout_marginRight="3dp"
-                    android:visibility="gone"/>
+                    android:visibility="gone"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="3dp"/>
 
                 <TextView
                     android:id="@+id/service_name"
@@ -111,7 +115,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="right"
+                        android:gravity="end"
                         android:text="@string/loading"
                         android:textAppearance="@android:style/TextAppearance.Small"/>
                 </LinearLayout>
@@ -169,7 +173,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="right"
+                        android:gravity="end"
                         android:text="@string/loading"
                         android:textAppearance="@android:style/TextAppearance.Small"/>
                 </LinearLayout>
@@ -192,7 +196,8 @@
                 android:layout_marginTop="6dp"
                 android:drawableLeft="?attr/ic_menu_movie"
                 android:gravity="center_vertical"
-                android:text="@string/stream_current"/>
+                android:text="@string/stream_current"
+                android:drawableStart="?attr/ic_menu_movie"/>
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
