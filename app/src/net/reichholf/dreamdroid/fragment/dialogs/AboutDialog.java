@@ -42,7 +42,6 @@ public class AboutDialog extends ActionDialog {
 		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
 		builder.title(R.string.about)
 				.content(text)
-				.neutralText(R.string.donate)
 				.positiveText(R.string.privacy)
 		.callback(new MaterialDialog.ButtonCallback() {
 			@Override
@@ -57,6 +56,8 @@ public class AboutDialog extends ActionDialog {
 				finishDialog(Statics.ACTION_SHOW_PRIVACY_STATEMENT, null);
 			}
 		});
+		if(!getActivity().getApplicationContext().getPackageName().endsWith("amazon"))
+			builder.neutralText(R.string.donate);
 
 		MaterialDialog dialog = builder.build();
 		Linkify.addLinks(dialog.getContentView(), Linkify.EMAIL_ADDRESSES|Linkify.WEB_URLS);

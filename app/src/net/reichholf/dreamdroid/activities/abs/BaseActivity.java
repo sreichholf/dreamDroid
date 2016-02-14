@@ -102,7 +102,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			overridePendingTransition(R.anim.activity_open_translate, R.anim.activity_close_scale);
 		}
 
-		initIAB();
+		if(!getApplicationContext().getPackageName().endsWith("amazon"))
+			initIAB();
 		initPiwik();
 	}
 
