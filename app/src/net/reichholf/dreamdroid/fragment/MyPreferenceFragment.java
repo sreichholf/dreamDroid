@@ -1,9 +1,6 @@
 package net.reichholf.dreamdroid.fragment;
 
 
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
@@ -16,11 +13,10 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.helpers.PiconSyncService;
+import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 
 /**
  * Created by Stephan on 08.04.2015.
@@ -90,13 +86,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 
 
 	public void startPiconSync() {
-		if (isSyncServiceRunning()) {
-			Toast.makeText(getActivity(), R.string.picon_sync_running, Toast.LENGTH_LONG).show();
-			return;
-		}
-		Intent piconSyncItent = new Intent(getActivity(), PiconSyncService.class);
-		getActivity().startService(piconSyncItent);
-		Toast.makeText(getActivity(), R.string.picon_sync_started, Toast.LENGTH_LONG).show();
+		((BaseActivity) getActivity()).startPiconSync();
 	}
 
 	@Override
@@ -114,16 +104,6 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		return false;
-	}
-
-	private boolean isSyncServiceRunning() {
-		ActivityManager manager = (ActivityManager) getActivity().getSystemService(Activity.ACTIVITY_SERVICE);
-		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-			if (PiconSyncService.class.getName().equals(service.service.getClassName())) {
-				return true;
-			}
-		}
 		return false;
 	}
 }

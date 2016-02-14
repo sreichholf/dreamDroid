@@ -1,9 +1,15 @@
 package net.reichholf.dreamdroid.activities.abs;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +19,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.PiconSyncService;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.util.IabException;
 import net.reichholf.dreamdroid.util.IabHelper;
@@ -37,6 +44,7 @@ import de.duenndns.ssl.MemorizingTrustManager;
  * Created by Stephan on 06.11.13.
  */
 public class BaseActivity extends AppCompatActivity implements ActionDialog.DialogActionListener {
+	public static int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
 	private static String TAG = BaseActivity.class.getSimpleName();
 
 	private MemorizingTrustManager mTrustManager;
@@ -249,4 +257,39 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			initPiwik();
 		}
 	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		if(requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE)
+			callPiconSyncIntent();
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+	}
+
+	public void startPiconSync() {
+		if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+			callPiconSyncIntent();
+		else
+			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+	}
+
+	protected void callPiconSyncIntent() {
+		if (isSyncServiceRunning()) {
+			Toast.makeText(this, R.string.picon_sync_running, Toast.LENGTH_LONG).show();
+			return;
+		}
+		Intent piconSyncIntent = new Intent(this, PiconSyncService.class);
+		startService(piconSyncIntent);
+		Toast.makeText(this, R.string.picon_sync_started, Toast.LENGTH_LONG).show();
+	}
+
+	private boolean isSyncServiceRunning() {
+		ActivityManager manager = (ActivityManager) getSystemService(Activity.ACTIVITY_SERVICE);
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+			if (PiconSyncService.class.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

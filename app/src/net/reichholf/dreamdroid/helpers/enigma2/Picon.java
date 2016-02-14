@@ -31,14 +31,12 @@ public class Picon {
 	private static AnimateImageDisplayListener sAnimateImageDisplayListener = new AnimateImageDisplayListener();
 
 	public static String getBasepath(Context context){
+		if(!Environment.getExternalStorageDirectory().canWrite())
+			return String.format("%s%spicons%s", context.getFilesDir().getAbsolutePath(), File.separator, File.separator);
+
 		String basePath = String.format("%s%sdreamDroid%spicons%s", Environment.getExternalStorageDirectory()
 				.getAbsolutePath(), File.separator, File.separator, File.separator);
-		File f = new File(basePath);
-		if(!f.canWrite()) {
-			basePath = String.format("%s%spicons%s", context.getFilesDir().getAbsolutePath(), File.separator, File.separator);
-		}
 		return basePath;
-
 	}
 
 	public static class AnimateImageDisplayListener extends SimpleImageLoadingListener {

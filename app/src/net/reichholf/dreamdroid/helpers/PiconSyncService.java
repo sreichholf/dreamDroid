@@ -24,9 +24,6 @@ import it.sauronsoftware.ftp4j.FTPFile;
  * Created by Stephan on 05.02.2016.
  */
 public class PiconSyncService extends IntentService {
-	public static final String EXTRA_LOCAL_PATH = "local_path";
-	public static final String EXTRA_REMOTE_PATH = "remote_path";
-
 	private static final String TAG = PiconSyncService.class.getSimpleName();
 	int mId = 0x9923;
 
@@ -78,7 +75,7 @@ public class PiconSyncService extends IntentService {
 	protected void syncPicons() {
 		String localPath = Picon.getBasepath(getApplicationContext());
 		String remotePath = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon");
-
+		Log.i(TAG, String.format("Syncing from %s to %s", remotePath, localPath));
 		FTPClient client = new FTPClient();
 		Profile p = DreamDroid.getCurrentProfile();
 		try {
@@ -181,7 +178,7 @@ public class PiconSyncService extends IntentService {
 			mNotificationBuilder.setContentText(message).setProgress(mDownloadProgress.totalFiles, mDownloadProgress.downloadedFiles, false).setOngoing(true);
 		else
 			mNotificationBuilder.setContentText(message).setOngoing(true);
-		if(eventid == DownloadProgress.EVENT_ID_FINISHED)
+		if (eventid == DownloadProgress.EVENT_ID_FINISHED)
 			mNotificationBuilder.setOngoing(false);
 		mNotifyManager.notify(mId, mNotificationBuilder.build());
 
