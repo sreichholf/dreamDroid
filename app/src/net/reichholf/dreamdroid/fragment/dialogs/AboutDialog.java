@@ -6,24 +6,20 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
+import android.app.Dialog;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.text.util.Linkify;
+
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
-
-import android.app.Dialog;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.text.util.Linkify;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.TextView;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 
 /**
  * @author sre
@@ -43,7 +39,6 @@ public class AboutDialog extends ActionDialog {
 		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
 		builder.title(R.string.about)
 				.content(text)
-				.neutralText(R.string.donate)
 				.positiveText(R.string.privacy)
 				.onNeutral(new MaterialDialog.SingleButtonCallback() {
 					@Override
@@ -60,8 +55,10 @@ public class AboutDialog extends ActionDialog {
 					}
 				});
 
+		if (!getActivity().getApplicationContext().getPackageName().endsWith("amazon"))
+			builder.neutralText(R.string.donate);
 		MaterialDialog dialog = builder.build();
-		Linkify.addLinks(dialog.getContentView(), Linkify.EMAIL_ADDRESSES|Linkify.WEB_URLS);
+		Linkify.addLinks(dialog.getContentView(), Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
 		return dialog;
 	}
 }

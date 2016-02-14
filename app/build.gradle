@@ -50,6 +50,15 @@ android {
         }
     }
 
+    productFlavors {
+        google {
+            applicationId "net.reichholf.dreamdroid"
+        }
+        amazon {
+            applicationId "net.reichholf.dreamdroid.amazon"
+        }
+    }
+
     buildTypes {
         debug {
             versionNameSuffix "-DEBUG"

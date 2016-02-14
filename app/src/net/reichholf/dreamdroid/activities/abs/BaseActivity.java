@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.activities.abs;
 
-import android.app.DialogFragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -27,7 +26,6 @@ import org.piwik.sdk.PiwikApplication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -107,6 +105,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	private void initIAB() {
+		if (getApplicationContext().getPackageName().endsWith("amazon"))
+			return;
 		mInventory = null;
 		mIabReady = false;
 		mIabHelper = new IabHelper(this, DreamDroid.IAB_PUB_KEY);
@@ -136,12 +136,12 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	private void initPiwik() {
-		if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, false)) {
+		if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, false)) {
 			showPrivacyStatement();
 			return;
 		}
 
-		if(!DreamDroid.isTrackingEnabled(this))
+		if (!DreamDroid.isTrackingEnabled(this))
 			return;
 		// do not send http requests
 		((PiwikApplication) getApplication()).getGlobalSettings().setDryRun(false);
@@ -170,7 +170,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		}
 
 		ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
-		if(mInventory == null) {
+		if (mInventory == null) {
 			try {
 				mInventory = mIabHelper.queryInventory(true, skuList);
 			} catch (IabException e) {
@@ -183,7 +183,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 		for (String sku : skuList) {
 			SkuDetails details = mInventory.getSkuDetails(sku);
-			if(details == null) {
+			if (details == null) {
 				Log.w(TAG, String.format("Missing SKU Details for %s", sku));
 				continue;
 			}
@@ -200,7 +200,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	public void consumeAll(Inventory inventory) {
-		if(inventory == null || mIabHelper == null)
+		if (inventory == null || mIabHelper == null)
 			return;
 		ArrayList<Purchase> purchases = new ArrayList<>();
 		for (String sku : DreamDroid.SKU_LIST) {
@@ -240,7 +240,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		if(action == Statics.ACTION_STATISTICS_AGREED || action == Statics.ACTION_STATISTICS_DENIED) {
+		if (action == Statics.ACTION_STATISTICS_AGREED || action == Statics.ACTION_STATISTICS_DENIED) {
 			boolean enabled = action == Statics.ACTION_STATISTICS_AGREED;
 			SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(this).edit();
 			prefs.putBoolean(DreamDroid.PREFS_KEY_ALLOW_TRACKING, enabled);
