@@ -63,7 +63,7 @@ public class GenericSaxParser implements DataParser {
 
 
 	protected String stripNonValidXMLCharacters(String in) {
-		return in.replaceAll("\\p{Cc}", "").replaceAll("&nbsp;", " ");
+		return in.replaceAll("\\p{C}", "").replaceAll("&nbsp;", " ");
 	}
 
 	/*

@@ -152,9 +152,9 @@ public class E2EventListHandler extends E2ListHandler {
 			} else if (inTitle) {
 				mEvent.putOrConcat(Event.KEY_EVENT_TITLE, value.trim());
 			} else if (inDescription) {
-				mEvent.putOrConcat(Event.KEY_EVENT_DESCRIPTION, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_DESCRIPTION, value);
 			} else if (inDescriptionEx) {
-				mEvent.putOrConcat(Event.KEY_EVENT_DESCRIPTION_EXTENDED, value.trim());
+				mEvent.putOrConcat(Event.KEY_EVENT_DESCRIPTION_EXTENDED, value);
 			} else if (inServiceRef) {
 				mEvent.putOrConcat(Event.KEY_SERVICE_REFERENCE, value.trim());
 			} else if (inServiceName) {

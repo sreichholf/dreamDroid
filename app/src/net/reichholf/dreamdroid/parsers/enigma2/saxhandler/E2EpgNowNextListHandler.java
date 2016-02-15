@@ -169,9 +169,9 @@ public class E2EpgNowNextListHandler extends E2ListHandler {
 			} else if (inTitle) {
 				mEvent.putOrConcat(prefix, Event.KEY_EVENT_TITLE, value.trim());
 			} else if (inDescription) {
-				mEvent.putOrConcat(prefix, Event.KEY_EVENT_DESCRIPTION, value.trim());
+				mEvent.putOrConcat(prefix, Event.KEY_EVENT_DESCRIPTION, value);
 			} else if (inDescriptionEx) {
-				mEvent.putOrConcat(prefix, Event.KEY_EVENT_DESCRIPTION_EXTENDED, value.trim());
+				mEvent.putOrConcat(prefix, Event.KEY_EVENT_DESCRIPTION_EXTENDED, value);
 			} else if (inServiceRef) {
 				if(isFirst)
 					mEvent.putOrConcat(Event.KEY_SERVICE_REFERENCE, value.trim());
