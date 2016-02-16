@@ -71,6 +71,8 @@ public class GenericSaxParser implements DataParser {
 	@Override
 	public boolean parse(String input) {
 		try {
+			input = input.replace("\\p{C}", "").replaceAll("&nbsp;", " ");
+
 			mError = false;
 			mErrorText = null;
 			// InputSource is = new InputSource(input);
