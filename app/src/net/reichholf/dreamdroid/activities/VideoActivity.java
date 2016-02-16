@@ -15,7 +15,9 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -91,6 +93,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		mPlayer = new VLCPlayer();
 		mPlayer.attach(mVideoSurface);
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
+		VLCPlayer.getMediaPlayer().setEventListener(mOverlayFragment);
 		if (getIntent().getAction() == Intent.ACTION_VIEW) {
 			mPlayer.playUri(getIntent().getData());
 		}
@@ -102,6 +105,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		mPlayer = null;
 		mVideoSurface = null;
 		VLCPlayer.getMediaPlayer().getVLCVout().removeCallback(this);
+		VLCPlayer.getMediaPlayer().setEventListener(null);
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.remove(mOverlayFragment);
@@ -165,12 +169,10 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	public void onSurfacesCreated(IVLCVout vlcVout) {
-
 	}
 
 	@Override
 	public void onSurfacesDestroyed(IVLCVout vlcVout) {
-
 	}
 
 	public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener {
@@ -185,7 +187,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			super.onCreate(savedInstanceState);
 			mServiceName = getArguments().getString(TITLE);
 			HashMap<String, Object> serviceInfo = (HashMap<String, Object>) getArguments().get("serviceInfo");
-			if(serviceInfo != null)
+			if (serviceInfo != null)
 				mServiceInfo = new ExtendedHashMap(serviceInfo);
 			else
 				mServiceInfo = null;
@@ -206,7 +208,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			TextView serviceName = (TextView) view.findViewById(R.id.service_name);
 			serviceName.setText(mServiceName);
 
-
 			if (mServiceInfo != null) {
 				TextView eventTitle = (TextView) view.findViewById(R.id.event_title);
 				//TextView eventDescription = (TextView) view.findViewById(R.id.event_description);
@@ -214,6 +215,15 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 				eventTitle.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
 				//eventDescription.setText(mServiceInfo.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED));
 			}
+
+			ImageButton stop = (ImageButton) view.findViewById(R.id.close);
+			stop.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					getActivity().finish();
+				}
+			});
+
 			return view;
 		}
 
@@ -290,8 +300,24 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 		@Override
 		public void onEvent(MediaPlayer.Event event) {
-			switch(event.type) {
-				case MediaPlayer.Event.Opening:
+			switch (event.type) {
+				case MediaPlayer.Event.Opening: {
+					View progressView = getView().findViewById(R.id.progress);
+					fadeInView(progressView);
+					break;
+				}
+				case MediaPlayer.Event.Playing: {
+					View progressView = getView().findViewById(R.id.progress);
+					fadeOutView(progressView);
+					break;
+				}
+				case MediaPlayer.Event.EncounteredError:
+					Toast.makeText(getActivity(), R.string.playback_failed, Toast.LENGTH_LONG).show();
+					break;
+				case MediaPlayer.Event.EndReached:
+				case MediaPlayer.Event.Stopped:
+					getActivity().finish();
+				default:
 					break;
 			}
 		}

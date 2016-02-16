@@ -56,7 +56,7 @@ public class VLCPlayer {
 	}
 
 	public void play() {
-		if(mCurrentMedia == null)
+		if (mCurrentMedia == null)
 			return;
 		getMediaPlayer().setMedia(mCurrentMedia);
 		getMediaPlayer().play();
