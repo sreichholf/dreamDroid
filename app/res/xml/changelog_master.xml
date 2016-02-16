@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.0.4" versioncode="293">
+        <change>Fix some issues with "EPG"</change>
+    </release>
     <release version="1.0.3" versioncode="292">
         <change>Fixes two crashes, especially one only happening on Android &lt; 4.1</change>
     </release>
