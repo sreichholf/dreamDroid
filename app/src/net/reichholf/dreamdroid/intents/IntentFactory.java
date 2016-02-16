@@ -52,28 +52,37 @@ public class IntentFactory {
 		return getStreamServiceIntent(context, ref, title, null);
 	}
 
-	public static Intent getStreamServiceIntent(Context context, String ref, String title, ExtendedHashMap serviceInfo) {
-		Intent intent = new Intent(context, VideoActivity.class);
+	private static Intent getVideoIntent(Context context, String uriString) {
+		Intent intent;
+		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true))
+			intent = new Intent(context, VideoActivity.class);
+		else
+			intent = new Intent();
 		intent.setAction(Intent.ACTION_VIEW);
+		Uri uri = Uri.parse(uriString);
+		intent.setDataAndType(uri, "video/*");
+
+		return intent;
+	}
+
+	public static Intent getStreamServiceIntent(Context context, String ref, String title, ExtendedHashMap serviceInfo) {
 		String uriString = SimpleHttpClient.getInstance().buildStreamUrl(ref, title);
 		Log.i(DreamDroid.LOG_TAG, "Service-Streaming URL set to '" + uriString + "'");
 
-		Uri uri = Uri.parse(uriString);
-		intent.setDataAndType(uri, "video/*");
+		Intent intent = getVideoIntent(context, uriString);
 		intent.putExtra("title", title);
 		intent.putExtra("serviceInfo", (Parcelable) serviceInfo);
 		return intent;
 	}
 
-	public static Intent getStreamFileIntent(String fileName, String title) {
-		Intent intent = new Intent(Intent.ACTION_VIEW);
+	public static Intent getStreamFileIntent(Context context, String fileName, String title) {
 		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("file", fileName));
-		Uri uri = Uri.parse(shc.buildFileStreamUrl(URIStore.FILE, params));
-		Log.i(DreamDroid.LOG_TAG, "Streaming file: " + uri.getEncodedQuery());
+		String uriString = shc.buildFileStreamUrl(URIStore.FILE, params);
+		Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '" + uriString + "'");
 
-		intent.setDataAndType(uri, "video/*");
+		Intent intent = getVideoIntent(context, uriString);
 		intent.putExtra("title", title);
 		return intent;
 	}

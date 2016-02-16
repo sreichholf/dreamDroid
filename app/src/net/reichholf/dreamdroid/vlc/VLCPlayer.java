@@ -34,10 +34,16 @@ public class VLCPlayer {
 		return sMediaPlayer;
 	}
 
-	public void setVideoView(SurfaceView surfaceView) {
+	public void attach(SurfaceView surfaceView) {
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.setVideoView(surfaceView);
 		vlcVout.attachViews();
+	}
+
+	public void detach() {
+		stop();
+		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
+		vlcVout.detachViews();
 	}
 
 	public void setWindowSize(int width, int height) {

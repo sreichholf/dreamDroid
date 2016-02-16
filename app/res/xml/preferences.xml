@@ -12,6 +12,11 @@
         android:key="category_usability"
         android:title="@string/usability">
         <CheckBoxPreference
+            android:key="integrated_video_player"
+            android:summary="@string/integrated_video_player_long"
+            android:title="@string/integrated_video_player"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
             android:key="volume_control"
             android:summary="@string/enable_volume_control_long"
             android:title="@string/enable_volume_control"/>

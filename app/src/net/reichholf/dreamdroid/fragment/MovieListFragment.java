@@ -362,7 +362,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Actio
 
 			case R.id.menu_stream:
 				try {
-					startActivity(IntentFactory.getStreamFileIntent(mMovie.getString(Movie.KEY_FILE_NAME),
+					startActivity(IntentFactory.getStreamFileIntent(getAppCompatActivity(), mMovie.getString(Movie.KEY_FILE_NAME),
 							mMovie.getString(Movie.KEY_TITLE)));
 				} catch (ActivityNotFoundException e) {
 					showToast(getText(R.string.missing_stream_player));

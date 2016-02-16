@@ -325,4 +325,6 @@
     <string name="picon_sync_started">Picon synchronization started. See notifaction area for details.</string>
     <string name="picon_sync_running">There is still another picon synchronization running!</string>
     <string name="streaming">Streaming</string>
+    <string name="integrated_video_player">Integrated video player</string>
+    <string name="integrated_video_player_long">Use integrated videoplayer when playing streams</string>
 </resources>

@@ -34,6 +34,8 @@ import java.util.HashMap;
 
 
 public class VideoActivity extends AppCompatActivity implements IVLCVout.Callback {
+	static float sOverlayAlpha = 0.7f;
+
 	SurfaceView mVideoSurface;
 	VLCPlayer mPlayer;
 	VideoOverlayFragment mOverlayFragment;
@@ -87,7 +89,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 		mVideoSurface = (SurfaceView) findViewById(R.id.video_surface);
 		mPlayer = new VLCPlayer();
-		mPlayer.setVideoView(mVideoSurface);
+		mPlayer.attach(mVideoSurface);
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
 		if (getIntent().getAction() == Intent.ACTION_VIEW) {
 			mPlayer.playUri(getIntent().getData());
@@ -96,10 +98,11 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	protected void onPause() {
-		mPlayer.stop();
+		mPlayer.detach();
 		mPlayer = null;
 		mVideoSurface = null;
 		VLCPlayer.getMediaPlayer().getVLCVout().removeCallback(this);
+
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.remove(mOverlayFragment);
 		ft.commit();
@@ -182,12 +185,15 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			super.onCreate(savedInstanceState);
 			mServiceName = getArguments().getString(TITLE);
 			HashMap<String, Object> serviceInfo = (HashMap<String, Object>) getArguments().get("serviceInfo");
-			mServiceInfo = new ExtendedHashMap(serviceInfo);
+			if(serviceInfo != null)
+				mServiceInfo = new ExtendedHashMap(serviceInfo);
+			else
+				mServiceInfo = null;
 			mHandler = new Handler();
 			mAutoHideRunnable = new Runnable() {
 				@Override
 				public void run() {
-					hideOverlay();
+					hideOverlays();
 				}
 			};
 			autohide();
@@ -211,20 +217,38 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			return view;
 		}
 
+		@Override
+		public void onResume() {
+			super.onResume();
+			final View snroot = getView().findViewById(R.id.service_name_root);
+			final View sdroot = getView().findViewById(R.id.service_detail_root);
+			snroot.setVisibility(View.GONE);
+			sdroot.setVisibility(View.GONE);
+			showOverlays();
+		}
+
+		@Override
+		public void onPause() {
+			mHandler.removeCallbacks(mAutoHideRunnable);
+			super.onPause();
+		}
+
 		public void autohide() {
 			mHandler.postDelayed(mAutoHideRunnable, 10000);
 		}
 
-		public void showOverlay() {
+		public void showOverlays() {
 			final View snroot = getView().findViewById(R.id.service_name_root);
 			final View sdroot = getView().findViewById(R.id.service_detail_root);
 			fadeInView(snroot);
 			if (mServiceInfo != null)
 				fadeInView(sdroot);
+			else
+				sdroot.setVisibility(View.GONE);
 			autohide();
 		}
 
-		public void hideOverlay() {
+		public void hideOverlays() {
 			mHandler.removeCallbacks(mAutoHideRunnable);
 			final View snroot = getView().findViewById(R.id.service_name_root);
 			final View sdroot = getView().findViewById(R.id.service_detail_root);
@@ -237,10 +261,10 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 				return;
 			v.setVisibility(View.VISIBLE);
 			v.setAlpha(0.0f);
-			v.animate().alpha(1.0f).setListener(new AnimatorListenerAdapter() {
+			v.animate().alpha(sOverlayAlpha).setListener(new AnimatorListenerAdapter() {
 				@Override
 				public void onAnimationEnd(Animator animation) {
-					v.setAlpha(1.0f);
+					v.setAlpha(sOverlayAlpha);
 				}
 			});
 		}
@@ -259,14 +283,17 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		public void toggleViews() {
 			View snroot = getView().findViewById(R.id.service_name_root);
 			if (snroot.getVisibility() == View.VISIBLE)
-				hideOverlay();
+				hideOverlays();
 			else
-				showOverlay();
+				showOverlays();
 		}
 
 		@Override
 		public void onEvent(MediaPlayer.Event event) {
-
+			switch(event.type) {
+				case MediaPlayer.Event.Opening:
+					break;
+			}
 		}
 	}
 }
