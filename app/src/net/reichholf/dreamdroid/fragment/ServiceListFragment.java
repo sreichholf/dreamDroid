@@ -582,7 +582,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment implement
 						break;
 					case R.id.menu_stream:
 						try {
-							startActivity(IntentFactory.getStreamServiceIntent(ref, name));
+							startActivity(IntentFactory.getStreamServiceIntent(getAppCompatActivity(), ref, name, mCurrentService));
 						} catch (ActivityNotFoundException e) {
 							showToast(getText(R.string.missing_stream_player));
 						}

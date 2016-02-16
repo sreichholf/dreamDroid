@@ -22,7 +22,7 @@
         <change>FIX: Umschalten - Layout war kaputt, Reload-FAB wurde fälschlicher Weise angezeigt</change>
         <change>FIX: Virutelle Fernbedienugn zeigte Toasts bei Erfolgereichem Tastendruck</change>
         <change>NEW: Durchsichtige Statusbar für Geräte mit Lollipop oder neuer</change>
-    </release>
+    </release>git l
     <release version="1.1 beta 4" versioncode="354">
         <change>ANMERKUNG: IN 1.1 Beta 4 gab es haufenweise interne Umbauten, so dass wir uns nun wieder in einem richtigen Betatest befinden!</change>
         <change>Mehr Material Design!</change>

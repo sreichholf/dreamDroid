@@ -142,7 +142,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
 		String name = mMapList.get(position).getString(Service.KEY_NAME);
 		try {
-			startActivity(IntentFactory.getStreamServiceIntent(ref, name));
+			startActivity(IntentFactory.getStreamServiceIntent(getAppCompatActivity(), ref, name));
 		} catch (ActivityNotFoundException e) {
 			showToast(getText(R.string.missing_stream_player));
 		}

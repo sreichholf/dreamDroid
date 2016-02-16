@@ -270,7 +270,7 @@ public class CurrentServiceFragment extends BaseHttpFragment implements ActionDi
 	 *            A ServiceReference
 	 */
 	private void streamService(String ref, String name) {
-		Intent intent = IntentFactory.getStreamServiceIntent(ref, name);
+		Intent intent = IntentFactory.getStreamServiceIntent(getAppCompatActivity(), ref, name);
 		startActivity(intent);
 	}
 
