@@ -221,7 +221,7 @@ public class DreamDroid extends PiwikApplication {
 //		dbh.exportDB();
 		ArrayList<Profile> profiles = dbh.getProfiles();
 		if (profiles.isEmpty()) {
-			String host = sp.getString("host", "dm8000");
+			String host = sp.getString("host", "dreamdroid.org");
 			String streamHost = sp.getString("host", "");
 
 			int port = Integer.valueOf(sp.getString("port", "80"));
@@ -231,7 +231,7 @@ public class DreamDroid extends PiwikApplication {
 			boolean login = sp.getBoolean("login", false);
 			boolean ssl = sp.getBoolean("ssl", false);
 
-			Profile p = new Profile(-1, "Default", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
+			Profile p = new Profile(-1, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
 					false, false, "", "", "", "");
 			dbh.addProfile(p);
 			SharedPreferences.Editor editor = sp.edit();
@@ -243,7 +243,7 @@ public class DreamDroid extends PiwikApplication {
 		if (!setCurrentProfile(context, profileId)) {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
-			sProfile = new Profile(-1, "Default", "dm8000", "", 80, 8001, 80, false, "", "", false, false, false, false,
+			sProfile = new Profile(-1, "Demo", "dreamdroid.org", "", 80, 8001, 80, false, "", "", false, false, false, false,
 					false, "", "", "", "");
 		}
 	}
