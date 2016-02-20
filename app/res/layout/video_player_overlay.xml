@@ -6,46 +6,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <app:android.support.v7.widget.CardView
-        android:id="@+id/service_name_root"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/previous"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:orientation="vertical"
-        app:cardBackgroundColor="?attr/colorPrimary"
-        app:cardCornerRadius="4dp"
-        app:cardElevation="0dp"
-        app:contentPadding="8dp">
+        android:text="@string/previous_lower"
+        android:visibility="gone"/>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/service_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:singleLine="true"
-                android:textAlignment="center"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textSize="32sp"/>
-
-            <ImageButton
-                android:id="@+id/close"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
-                android:background="@null"
-                android:padding="0dp"
-                android:scaleType="centerInside"
-                android:src="?attr/ic_menu_close"/>
-        </RelativeLayout>
-    </app:android.support.v7.widget.CardView>
+    <Button
+        android:id="@+id/next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/next_lower"
+        android:visibility="gone"/>
 
     <ProgressBar
-        android:id="@+id/progress"
+        android:id="@+id/video_load_progress"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_centerInParent="true"
@@ -58,24 +38,131 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="vertical"
+        android:visibility="gone"
         app:cardBackgroundColor="?attr/colorPrimary"
         app:cardCornerRadius="4dp"
         app:cardElevation="0dp"
         app:contentPadding="8dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <RelativeLayout
+            android:id="@+id/parent_service"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/event_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textSize="32sp"/>
+            <net.reichholf.dreamdroid.view.MaterialProgressBar
+                android:id="@+id/service_progress"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="8dp"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="center_vertical"/>
 
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/service"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/service_progress"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/picon"
+                    android:layout_width="90dp"
+                    android:layout_height="50dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/service_name"
+                    android:layout_width="fill_parent"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/event_now"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/service"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/event_now_start"
+                    android:layout_width="45dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="-45dip"
+                    android:layout_marginRight="-45dip"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/event_now_title"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="55dip"
+                    android:layout_marginLeft="45dip"
+                    android:layout_marginRight="55dip"
+                    android:layout_marginStart="45dip"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"/>
+
+                <TextView
+                    android:id="@+id/event_now_duration"
+                    android:layout_width="50dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="-55dip"
+                    android:layout_marginStart="-55dip"
+                    android:layout_weight="0"
+                    android:gravity="end"
+                    android:minHeight="0dip"
+                    android:text="ABCDDEDG"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/event_next"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/event_now"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/event_next_start"
+                    android:layout_width="45dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="-45dip"
+                    android:layout_marginRight="-45dip"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/event_next_title"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="55dip"
+                    android:layout_marginLeft="45dip"
+                    android:layout_marginRight="55dip"
+                    android:layout_marginStart="45dip"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"/>
+
+                <TextView
+                    android:id="@+id/event_next_duration"
+                    android:layout_width="50dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="-55dip"
+                    android:layout_marginStart="-55dip"
+                    android:layout_weight="2"
+                    android:gravity="end"
+                    android:minHeight="0dip"/>
+            </LinearLayout>
+
+        </RelativeLayout>
     </app:android.support.v7.widget.CardView>
 </RelativeLayout>

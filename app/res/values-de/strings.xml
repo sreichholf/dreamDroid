@@ -327,4 +327,9 @@
     <string name="use_encoder">Encoder zum Streamen nutzen</string>
     <string name="video_bitrate">Video Bitrate</string>
     <string name="audio_bitrate">Audio Bitrate</string>
+    <string name="integrated_video_player">Integrierter Videoplayer</string>
+    <string name="integrated_video_player_long">Zum Abspielen von Streams den integrierten Videoplayer benutzen</string>
+    <string name="next_lower">nächster</string>
+    <string name="playback_failed">Wiedergabe fehlgeschlagen!</string>
+    <string name="previous_lower">vorheriger</string>
 </resources>

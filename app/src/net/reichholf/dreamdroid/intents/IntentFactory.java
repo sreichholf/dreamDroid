@@ -49,7 +49,7 @@ public class IntentFactory {
 	}
 
 	public static Intent getStreamServiceIntent(Context context, String ref, String title) {
-		return getStreamServiceIntent(context, ref, title, null);
+		return getStreamServiceIntent(context, ref, title, null, null);
 	}
 
 	private static Intent getVideoIntent(Context context, String uriString) {
@@ -65,13 +65,17 @@ public class IntentFactory {
 		return intent;
 	}
 
-	public static Intent getStreamServiceIntent(Context context, String ref, String title, ExtendedHashMap serviceInfo) {
+	public static Intent getStreamServiceIntent(Context context, String ref, String title, String bouquetRef, ExtendedHashMap serviceInfo) {
 		String uriString = SimpleHttpClient.getInstance().buildStreamUrl(ref, title);
 		Log.i(DreamDroid.LOG_TAG, "Service-Streaming URL set to '" + uriString + "'");
 
 		Intent intent = getVideoIntent(context, uriString);
 		intent.putExtra("title", title);
-		intent.putExtra("serviceInfo", (Parcelable) serviceInfo);
+		intent.putExtra("serviceRef", ref);
+		if(bouquetRef != null)
+			intent.putExtra("bouquetRef", bouquetRef);
+		if(serviceInfo != null)
+			intent.putExtra("serviceInfo", (Parcelable) serviceInfo);
 		return intent;
 	}
 

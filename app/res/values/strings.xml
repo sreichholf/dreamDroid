@@ -328,4 +328,6 @@
     <string name="integrated_video_player">Integrated video player</string>
     <string name="integrated_video_player_long">Use integrated videoplayer when playing streams</string>
     <string name="playback_failed">Playback failed!</string>
+    <string name="previous_lower">previous</string>
+    <string name="next_lower">next</string>
 </resources>
