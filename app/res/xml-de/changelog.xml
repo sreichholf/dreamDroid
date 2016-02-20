@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<changelog>#
+<changelog>
+    <release version="1.1 beta 6" versioncode="360">
+        <change>NEU: Integrierter Videoplayer mit Infobar und Zap-Funktion</change>
+        <change>FIX: Picons wurden nie auf den "Speicher" synchronisiert selbst wenn es hätte sein sollen. Auf einigen Geräten müssen die Picons einmalig neu synchronisiert werden!</change>
+    </release>
     <release version="1.1 beta 5" versioncode="359">
         <change>Aktualisierte Übersetzungen</change>
         <change>FIX: Fehlerhaft positionierte Texte in Toasts</change>

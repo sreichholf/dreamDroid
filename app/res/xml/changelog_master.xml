@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 6" versioncode="360">
+        <change>NEW: Integrated Videoplayer with Infobar and zap functionality</change>
+        <change>FIX: Picons have never been synced to default "storage", even if they should've. You may have to resync your picons!</change>
+    </release>
     <release version="1.1 beta 5" versioncode="359">
         <change>Update Translations</change>
         <change>FIX: Wrongly positioned textt in Toasts</change>
