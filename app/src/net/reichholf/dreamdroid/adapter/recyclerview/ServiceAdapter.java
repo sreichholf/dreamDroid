@@ -56,6 +56,7 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 				holder.markerName.setText(service.getString(Event.KEY_SERVICE_NAME));
 				return;
 			}
+			Event.supplementReadables(service);
 			Picon.setPiconForView(mContext, holder.picon, service);
 			holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
 			holder.root.setClickable(false);

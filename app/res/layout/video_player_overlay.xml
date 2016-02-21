@@ -6,24 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/previous"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/previous_lower"
-        android:visibility="gone"/>
-
-    <Button
-        android:id="@+id/next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/next_lower"
-        android:visibility="gone"/>
-
     <ProgressBar
         android:id="@+id/video_load_progress"
         android:layout_width="60dp"
@@ -37,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="vertical"
+        android:layout_weight="1"
         android:visibility="gone"
         app:cardBackgroundColor="?attr/colorPrimary"
         app:cardCornerRadius="4dp"
@@ -164,5 +146,25 @@
             </LinearLayout>
 
         </RelativeLayout>
+    </app:android.support.v7.widget.CardView>
+
+    <app:android.support.v7.widget.CardView
+        android:id="@+id/servicelist_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/service_detail_root"
+        android:layout_marginBottom="8dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        app:cardBackgroundColor="?attr/colorPrimary"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="0dp"
+        app:contentPadding="2dp">
+
+        <net.reichholf.dreamdroid.widget.AutofitRecyclerView
+            android:id="@+id/servicelist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnWidth="290dp"/>
     </app:android.support.v7.widget.CardView>
 </RelativeLayout>

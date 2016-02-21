@@ -13,6 +13,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -27,6 +29,7 @@ import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -42,6 +45,9 @@ import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.vlc.VLCPlayer;
+import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
+import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
+import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.MediaPlayer;
@@ -201,10 +207,11 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
-			LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>> {
+			LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener {
+
 		private static final String TAG = "VideoOverlayFragment";
 		private final int[] sOverlayViews = {R.id.service_detail_root};
-		private final int[] sZapOverlayViews = {R.id.previous, R.id.next};
+		private final int[] sZapOverlayViews = {R.id.servicelist_root};
 
 		public final String TITLE = "title";
 		public final String SERVICE_INFO = "serviceInfo";
@@ -217,10 +224,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		protected ArrayList<ExtendedHashMap> mServiceList;
 		protected ExtendedHashMap mServiceInfo;
 
-
 		protected Handler mHandler;
 		protected Runnable mAutoHideRunnable;
 		protected Runnable mIssueReloadRunnable;
+
+		protected AutofitRecyclerView mServicesView;
+		protected ItemClickSupport mItemClickSupport;
 
 		@Override
 		public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -269,12 +278,22 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 					next();
 				}
 			});
+			mServicesView = (AutofitRecyclerView) view.findViewById(R.id.servicelist);
+			mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+			mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
+			mItemClickSupport = ItemClickSupport.addTo(mServicesView);
+			mItemClickSupport.setOnItemClickListener(this);
+
+			ServiceAdapter adapter = new ServiceAdapter(getActivity(), mServiceList);
+			mServicesView.setAdapter(adapter);
+
 			return view;
 		}
 
 		@Override
 		public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 			super.onViewCreated(view, savedInstanceState);
+
 			serviceInfoChanged();
 		}
 
@@ -293,12 +312,19 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			if (data.isError())
 				return;
 			mServiceList.clear();
+			mServicesView.getAdapter().notifyDataSetChanged();
 			mServiceList.addAll(data.getResult());
 			for (ExtendedHashMap service : mServiceList) {
-				if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef))
+				if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef)) {
+					ExtendedHashMap oldServiceInfo = mServiceInfo;
 					mServiceInfo = service;
+					String eventid = mServiceInfo.getString(Event.KEY_EVENT_ID, "-1");
+					if (!eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
+						serviceInfoChanged();
+				}
+				mServicesView.getAdapter().notifyDataSetChanged();
+				serviceInfoChanged();
 			}
-			serviceInfoChanged();
 		}
 
 		@Override
@@ -321,7 +347,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 				previous();
 			} else {
 				zap();
-				serviceInfoChanged();
 			}
 		}
 
@@ -332,6 +357,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			getArguments().getString(BOUQUET_REFERENCE, mBouquetRef);
 			getArguments().putSerializable(SERVICE_INFO, mServiceInfo);
 			((VideoActivity) getActivity()).handleIntent(streamingIntent);
+			serviceInfoChanged();
+			hideZapOverlays();
 		}
 
 		private void next() {
@@ -349,7 +376,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 				next();
 			} else {
 				zap();
-				serviceInfoChanged();
 			}
 		}
 
@@ -370,13 +396,20 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			showOverlays();
 			if (mServiceInfo == null)
 				return;
-			long eventStart = Double.valueOf(mServiceInfo.getString(Event.KEY_EVENT_START)).longValue() * 1000;
-			long eventEnd = eventStart + (Double.valueOf(mServiceInfo.getString(Event.KEY_EVENT_DURATION)).longValue() * 1000);
-			long now = new Date().getTime();
-			long updateAt = SystemClock.uptimeMillis() + eventEnd - now;
-
 			mHandler.removeCallbacks(mIssueReloadRunnable);
-			mHandler.postAtTime(mIssueReloadRunnable, +updateAt);
+			//let's see if we have any info about when the current event ends
+			String start = mServiceInfo.getString(Event.KEY_EVENT_START);
+			String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
+			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
+				long eventStart = Double.valueOf(start).longValue() * 1000;
+				long eventEnd = eventStart + (Double.valueOf(duration).longValue() * 1000);
+				long now = new Date().getTime();
+				long updateAt = SystemClock.uptimeMillis() + eventEnd - now;
+				mHandler.postAtTime(mIssueReloadRunnable, updateAt);
+			} else {
+				Log.i(TAG, "No Eventinfo present, will update in 5 Minutes!");
+				mHandler.postDelayed(mIssueReloadRunnable, 300000); //update in 5 minutes
+			}
 		}
 
 		public void reload() {
@@ -426,10 +459,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 					}
 				}
 
-				serviceProgress.setVisibility(View.VISIBLE);
 				if (max > 0 && cur >= 0) {
+					serviceProgress.setVisibility(View.VISIBLE);
 					serviceProgress.setMax((int) max);
 					serviceProgress.setProgress((int) cur);
+				} else {
+					serviceProgress.setVisibility(View.GONE);
 				}
 
 				parentNow.setVisibility(View.VISIBLE);
@@ -453,13 +488,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 				parentNow.setVisibility(View.GONE);
 				parentNext.setVisibility(View.GONE);
 			}
+			mServicesView.getAdapter().notifyDataSetChanged();
 		}
 
 		@Override
 		public void onResume() {
 			super.onResume();
-
-
 			showOverlays();
 			reload();
 		}
@@ -558,6 +592,14 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 				default:
 					break;
 			}
+		}
+
+		@Override
+		public void onItemClick(RecyclerView parent, View view, int position, long id) {
+			mServiceInfo = mServiceList.get(position);
+			mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
+			mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+			zap();
 		}
 	}
 }
