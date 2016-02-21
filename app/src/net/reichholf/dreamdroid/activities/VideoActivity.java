@@ -495,6 +495,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		}
 
 		public void showOverlays() {
+			mHandler.removeCallbacks(mAutoHideRunnable);
 			updateViews();
 			for (int id : sOverlayViews)
 				fadeInView(getView().findViewById(id));
