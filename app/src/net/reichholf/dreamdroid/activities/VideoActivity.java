@@ -264,20 +264,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 			View view = inflater.inflate(R.layout.video_player_overlay, container, false);
-			Button btnPrevious = (Button) view.findViewById(R.id.previous);
-			btnPrevious.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					previous();
-				}
-			});
-			Button btnNext = (Button) view.findViewById(R.id.next);
-			btnNext.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					next();
-				}
-			});
 			mServicesView = (AutofitRecyclerView) view.findViewById(R.id.servicelist);
 			mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 			mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
