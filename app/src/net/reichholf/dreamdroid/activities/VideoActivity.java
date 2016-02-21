@@ -99,6 +99,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(mOverlayFragment);
 		handleIntent(getIntent());
+		setFullScreen();
 	}
 
 	public void handleIntent(Intent intent) {
@@ -249,6 +250,16 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 			ServiceAdapter adapter = new ServiceAdapter(getActivity(), mServiceList);
 			mServicesView.setAdapter(adapter);
+			mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+				@Override
+				public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+					super.onScrollStateChanged(recyclerView, newState);
+					if (newState == RecyclerView.SCROLL_STATE_IDLE)
+						autohide();
+					else
+						mHandler.removeCallbacks(mAutoHideRunnable);
+				}
+			});
 
 			view.findViewById(R.id.overlay_root).setOnTouchListener(new View.OnTouchListener() {
 				private static final int MAX_CLICK_DURATION = 200;
