@@ -21,7 +21,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -89,28 +88,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		super.onResume();
 		mOverlayFragment = new VideoOverlayFragment();
 		mOverlayFragment.setArguments(getIntent().getExtras());
-
-		findViewById(R.id.overlay).setOnTouchListener(new View.OnTouchListener() {
-			private static final int MAX_CLICK_DURATION = 200;
-			private long startClickTime;
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				switch (event.getAction()) {
-					case MotionEvent.ACTION_DOWN: {
-						startClickTime = Calendar.getInstance().getTimeInMillis();
-						break;
-					}
-					case MotionEvent.ACTION_UP: {
-						long clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
-						if (clickDuration < MAX_CLICK_DURATION) {
-							mOverlayFragment.toggleViews();
-						}
-					}
-				}
-				return true;
-			}
-		});
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.replace(R.id.overlay, mOverlayFragment);
@@ -272,6 +249,28 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 			ServiceAdapter adapter = new ServiceAdapter(getActivity(), mServiceList);
 			mServicesView.setAdapter(adapter);
+
+			view.findViewById(R.id.overlay_root).setOnTouchListener(new View.OnTouchListener() {
+				private static final int MAX_CLICK_DURATION = 200;
+				private long mStartClickTime;
+
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+					switch (event.getAction()) {
+						case MotionEvent.ACTION_DOWN: {
+							mStartClickTime = Calendar.getInstance().getTimeInMillis();
+							break;
+						}
+						case MotionEvent.ACTION_UP: {
+							long clickDuration = Calendar.getInstance().getTimeInMillis() - mStartClickTime;
+							if (clickDuration < MAX_CLICK_DURATION) {
+								mOverlayFragment.toggleViews();
+							}
+						}
+					}
+					return true;
+				}
+			});
 
 			return view;
 		}
