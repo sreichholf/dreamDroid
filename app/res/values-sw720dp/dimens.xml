@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="grid_column_width">150dp</dimen>
+    <dimen name="zap_grid_item_height">105dp</dimen>
+    <dimen name="content_margin_horizontal">55dp</dimen>
+</resources>
