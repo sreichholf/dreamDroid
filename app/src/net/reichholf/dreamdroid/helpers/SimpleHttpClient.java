@@ -110,7 +110,7 @@ public class SimpleHttpClient {
 	 * @param title
 	 * @return
 	 */
-	public String buildEncoderStreamUrl(String ref, String title) {
+	public String buildEncoderStreamUrl(String ref) {
 		try {
 			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
 		} catch (UnsupportedEncodingException e) {
@@ -132,19 +132,18 @@ public class SimpleHttpClient {
 		return url;
 	}
 
-	public String buildStreamUrl(String ref, String title) {
+	public String buildStreamUrl(String ref) {
 		if(mProfile.isEncoderStream())
-			return buildEncoderStreamUrl(ref, title);
+			return buildEncoderStreamUrl(ref);
 		else
-			return buildServiceStreamUrl(ref, title);
+			return buildServiceStreamUrl(ref);
 	}
 
 	/**
 	 * @param ref
-	 * @param title
 	 * @return
 	 */
-	public String buildServiceStreamUrl(String ref, String title) {
+	public String buildServiceStreamUrl(String ref) {
 		try {
 			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
 		} catch (UnsupportedEncodingException e) {
@@ -157,19 +156,18 @@ public class SimpleHttpClient {
 		return url;
 	}
 
-	/**
-	 * @param uri
-	 * @param parameters
-	 * @return
-	 */
-	public String buildFileStreamUrl(String uri, List<NameValuePair> parameters) {
+	public String buildFileStreamUrl(String ref, String fileName) {
+		if(mProfile.isEncoderStream() && ref.startsWith("1:"))
+			return buildEncoderStreamUrl(ref);
 
-		String parms = NameValuePair.toString(parameters);
+		ArrayList<NameValuePair> params = new ArrayList<>();
+		params.add(new NameValuePair("file", fileName));
+		String parms = NameValuePair.toString(params);
 		String fileAuthString = "";
 		if (mProfile.isFileLogin())
 			fileAuthString = mProfile.getUser() + ":" + mProfile.getPass() + "@";
 
-		String url = mFilePrefix + fileAuthString + mProfile.getStreamHost() + ":" + mProfile.getFilePortString() + uri + parms;
+		String url = mFilePrefix + fileAuthString + mProfile.getStreamHost() + ":" + mProfile.getFilePortString() + URIStore.FILE + parms;
 		return url;
 	}
 

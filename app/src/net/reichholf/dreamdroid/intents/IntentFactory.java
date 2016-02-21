@@ -66,7 +66,7 @@ public class IntentFactory {
 	}
 
 	public static Intent getStreamServiceIntent(Context context, String ref, String title, String bouquetRef, ExtendedHashMap serviceInfo) {
-		String uriString = SimpleHttpClient.getInstance().buildStreamUrl(ref, title);
+		String uriString = SimpleHttpClient.getInstance().buildStreamUrl(ref);
 		Log.i(DreamDroid.LOG_TAG, "Service-Streaming URL set to '" + uriString + "'");
 
 		Intent intent = getVideoIntent(context, uriString);
@@ -79,13 +79,9 @@ public class IntentFactory {
 		return intent;
 	}
 
-	public static Intent getStreamFileIntent(Context context, String fileName, String title) {
-		SimpleHttpClient shc = SimpleHttpClient.getInstance();
-		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new NameValuePair("file", fileName));
-		String uriString = shc.buildFileStreamUrl(URIStore.FILE, params);
+	public static Intent getStreamFileIntent(Context context, String ref, String fileName, String title, ExtendedHashMap fileInfo) {
+		String uriString = SimpleHttpClient.getInstance().buildFileStreamUrl(ref, fileName);
 		Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '" + uriString + "'");
-
 		Intent intent = getVideoIntent(context, uriString);
 		intent.putExtra("title", title);
 		return intent;
