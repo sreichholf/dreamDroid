@@ -20,7 +20,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -173,12 +172,11 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	public void setFullScreen() {
-		int visibility = 0;
-		visibility |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-			visibility |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+		int visibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
+		int navigation = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-			visibility |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+			navigation |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+		visibility |= navigation;
 		getWindow().getDecorView().setSystemUiVisibility(visibility);
 	}
 
@@ -338,16 +336,16 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 		private void next() {
 			int index = getCurrentServiceIndex();
-			if(index < 0)
+			if (index < 0)
 				return;
-			if(index >= mServiceList.size())
+			if (index >= mServiceList.size())
 				index = 0;
 			else
 				index++;
 			mServiceInfo = mServiceList.get(index);
 			mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
 			mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
-			if(Service.isMarker(mServiceRef)) {
+			if (Service.isMarker(mServiceRef)) {
 				next();
 			} else {
 				zap();
@@ -356,11 +354,11 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		}
 
 		private int getCurrentServiceIndex() {
-			if(mServiceList == null || mServiceList.isEmpty())
+			if (mServiceList == null || mServiceList.isEmpty())
 				return -1;
 			int idx = 0;
-			for(ExtendedHashMap service : mServiceList) {
-				if(service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef))
+			for (ExtendedHashMap service : mServiceList) {
+				if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef))
 					return idx;
 				idx++;
 			}
@@ -493,16 +491,16 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		}
 
 		private void showZapOverlays() {
-			if(mServiceList == null || mServiceList.isEmpty()) {
+			if (mServiceList == null || mServiceList.isEmpty()) {
 				hideZapOverlays();
 				return;
 			}
-			for(int id : sZapOverlayViews)
+			for (int id : sZapOverlayViews)
 				fadeInView(getView().findViewById(id));
 		}
 
 		private void hideZapOverlays() {
-			for(int id : sZapOverlayViews)
+			for (int id : sZapOverlayViews)
 				fadeOutView(getView().findViewById(id));
 		}
 
