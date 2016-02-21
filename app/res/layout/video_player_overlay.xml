@@ -24,7 +24,7 @@
         app:cardBackgroundColor="?attr/colorPrimary"
         app:cardCornerRadius="4dp"
         app:cardElevation="0dp"
-        app:contentPadding="8dp">
+        app:contentPadding="4dp">
 
         <RelativeLayout
             android:id="@+id/parent_service"
@@ -41,31 +41,32 @@
                 android:layout_alignParentTop="true"
                 android:layout_gravity="center_vertical"/>
 
+            <ImageView
+                android:id="@+id/picon"
+                android:layout_width="wrap_content"
+                android:layout_height="90dp"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@id/service_progress"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="0dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="7dp"/>
+
             <LinearLayout
                 android:id="@+id/service"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/service_progress"
+                android:layout_toRightOf="@id/picon"
                 android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/picon"
-                    android:layout_width="90dp"
-                    android:layout_height="50dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="3dp"
-                    android:layout_marginRight="3dp"
-                    android:layout_weight="1"/>
 
                 <TextView
                     android:id="@+id/service_name"
                     android:layout_width="fill_parent"
                     android:layout_height="50dp"
-                    android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-
             </LinearLayout>
 
             <LinearLayout
@@ -73,6 +74,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/service"
+                android:layout_toRightOf="@id/picon"
                 android:orientation="horizontal">
 
                 <TextView
@@ -103,8 +105,7 @@
                     android:layout_marginStart="-55dip"
                     android:layout_weight="0"
                     android:gravity="end"
-                    android:minHeight="0dip"
-                    android:text="ABCDDEDG"/>
+                    android:minHeight="0dip"/>
             </LinearLayout>
 
             <LinearLayout
@@ -112,6 +113,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/event_now"
+                android:layout_toRightOf="@id/picon"
                 android:orientation="horizontal">
 
                 <TextView
