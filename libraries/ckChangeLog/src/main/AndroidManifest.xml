@@ -3,7 +3,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="22"></uses-sdk>
+        android:targetSdkVersion="23"></uses-sdk>
     <application />
 
 </manifest>

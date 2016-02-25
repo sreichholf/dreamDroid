@@ -38,12 +38,12 @@
                         android:id="@+id/toolbar_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
                         android:layout_marginRight="10dp"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textColor="@android:color/white"
-                        android:layout_marginEnd="10dp"/>
+                        android:textColor="@android:color/white"/>
 
                     <FrameLayout
                         android:id="@+id/content_header"
@@ -76,7 +76,7 @@
                 android:src="@drawable/ic_action_fab_add"
                 android:visibility="gone"
                 app:elevation="6dp"
-                app:layout_anchor="@+id/coordinator_layout"
+                app:layout_anchor="@+id/detail_view"
                 app:layout_anchorGravity="bottom|end|right"
                 app:pressedTranslationZ="12dp"/>
 
@@ -84,12 +84,12 @@
                 android:id="@+id/fab_layout"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
+                android:layout_marginEnd="@dimen/fab_margin_right"
                 android:layout_marginRight="@dimen/fab_margin_right"
                 android:layout_marginTop="?attr/actionBarSize"
                 android:orientation="horizontal"
                 app:layout_anchor="@+id/detail_view"
-                app:layout_anchorGravity="top|end"
-                android:layout_marginEnd="@dimen/fab_margin_right"/>
+                app:layout_anchorGravity="top|end"/>
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/fab_reload"

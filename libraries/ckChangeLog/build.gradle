@@ -32,7 +32,7 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:23.+'
-    compile('com.github.afollestad.material-dialogs:core:0.8.+@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.5@aar') {
         transitive = true
     }
 }
