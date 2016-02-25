@@ -31,6 +31,8 @@ import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 
 import org.piwik.sdk.PiwikApplication;
@@ -63,6 +65,7 @@ public class DreamDroid extends PiwikApplication {
 	public static final String PREFS_KEY_ALLOW_TRACKING = "allow_tracking";
 	public static final String PREFS_KEY_PRIVACY_STATEMENT_SHOWN = "privacy_statement_shown";
 	public static final String PREFS_KEY_INTEGRATED_PLAYER = "integrated_video_player";
+	public static final String PREFS_KEY_THEME_TYPE = "theme_type";
 
 	public static final String IAB_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wvbGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpnaEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR888CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB";
 
@@ -378,29 +381,33 @@ public class DreamDroid extends PiwikApplication {
 		}
 	}
 
-	public static boolean isLightTheme(Context context) {
+	public static int getThemeType(Context context) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-		return sp.getBoolean("light_theme", true);
+		return Integer.parseInt(sp.getString("theme_type", "0"));
 	}
 
 	public static void setTheme(Context context) {
-		if (!isLightTheme(context)) {
-			context.setTheme(R.style.Theme_DreamDroid);
-			context.getApplicationContext().setTheme(R.style.Theme_DreamDroid);
-		} else {
-			context.setTheme(R.style.Theme_DreamDroid_Light);
-			context.getApplicationContext().setTheme(R.style.Theme_DreamDroid_Light);
+		int mode;
+		switch(getThemeType(context)){
+			case 0:
+				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
+				break;
+			case 1:
+				mode = AppCompatDelegate.MODE_NIGHT_NO;
+				break;
+			case 2:
+				mode = AppCompatDelegate.MODE_NIGHT_YES;
+				break;
+			case 3:
+				mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+				break;
+			default:
+				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
 		}
-	}
-
-	public static void setDialogTheme(Context context, DialogFragment dialogFragment) {
-		dialogFragment.setStyle(DialogFragment.STYLE_NORMAL, getDialogTheme(context));
+		AppCompatDelegate.setDefaultNightMode(mode);
 	}
 
 	public static int getDialogTheme(Context context) {
-		if (isLightTheme(context))
-			return R.style.Theme_DreamDroid_Light_Dialog;
-		else
 			return R.style.Theme_DreamDroid_Dialog;
 	}
 

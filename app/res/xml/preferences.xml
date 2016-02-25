@@ -42,12 +42,15 @@
     <PreferenceCategory
         android:key="category_appearance"
         android:title="@string/appearance">
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:enabled="true"
-            android:key="light_theme"
-            android:summary="@string/use_light_theme_long"
-            android:title="@string/use_light_theme"/>
+
+        <ListPreference
+            android:defaultValue="@integer/theme_default"
+            android:dialogTitle="@string/theme"
+            android:entries="@array/theme_option_entries"
+            android:entryValues="@array/theme_option_values"
+            android:key="theme_type"
+            android:summary="@string/theme"
+            android:title="@string/theme_long"/>
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="disable_fab_reload"

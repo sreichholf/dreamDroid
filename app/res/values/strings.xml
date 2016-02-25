@@ -330,4 +330,12 @@
     <string name="playback_failed">Playback failed!</string>
     <string name="previous_lower">previous</string>
     <string name="next_lower">next</string>
+    <string-array name="theme_option_entries">
+        <item>Auto</item>
+        <item>Day</item>
+        <item>Night</item>
+        <item>Follow System</item>
+    </string-array>
+    <string name="theme">Day/Night Theme</string>
+    <string name="theme_long">Day/Night Theme choices</string>
 </resources>

@@ -20,8 +20,7 @@ public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		if (!DreamDroid.isLightTheme(this))
-			setTheme(R.style.Theme_DreamDroid_NoTitle);
+		setTheme(R.style.Theme_DreamDroid_NoTitle);
 		mThemeSet = true;
 		super.onCreate(savedInstanceState);
 	}

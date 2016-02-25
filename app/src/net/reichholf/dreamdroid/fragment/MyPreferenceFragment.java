@@ -45,6 +45,8 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 				return true;
 			}
 		});
+		updateThemeSummary();
+
 	}
 
 	@Override
@@ -82,8 +84,18 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
+		if(DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)){
+			updateThemeSummary();
+		}
 	}
 
+	protected void updateThemeSummary() {
+		if(getActivity() == null)
+			return;
+		int idx = DreamDroid.getThemeType(getActivity());
+		Preference themePref = findPreference(DreamDroid.PREFS_KEY_THEME_TYPE);
+		themePref.setSummary(getResources().getStringArray(R.array.theme_option_entries)[idx]);
+	}
 
 	public void startPiconSync() {
 		((BaseActivity) getActivity()).startPiconSync();
