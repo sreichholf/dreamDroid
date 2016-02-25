@@ -107,19 +107,10 @@ public class DreamDroid extends PiwikApplication {
 		}
 	}
 
-// PIWIK
-@Override
+	// PIWIK
+	@Override
 	public String getTrackerUrl() {
 		return "https://reichholf.net/piwik/piwik.php";
-	}
-
-	/**
-	 * AuthToken is deprecated in Piwik >= 2.8.0 due to security reasons.
-	 * @return token or null
-	 */
-	@Override
-	public String getAuthToken() {
-		return null;
 	}
 
 	@Override
