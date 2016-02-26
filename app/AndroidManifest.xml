@@ -4,6 +4,7 @@
           android:installLocation="auto"
           android:versionCode="361"
           android:versionName="1.1 beta 6.1">
+
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="23"/>
@@ -60,6 +61,18 @@
         <activity
             android:name=".activities.ShareActivity"
             android:theme="@style/Theme.DreamDroid.Dialog">
+
+            <intent-filter android:label="@string/watch_on_dream">
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data android:scheme="rtsp"/>
+                <data android:scheme="rtmp"/>
+                <data android:scheme="mms"/>
+            </intent-filter>
+
             <intent-filter android:label="@string/watch_on_dream">
                 <action android:name="android.intent.action.VIEW"/>
 
@@ -68,17 +81,31 @@
 
                 <data android:mimeType="video/*"/>
                 <data android:mimeType="audio/*"/>
+                <data android:mimeType="*/avi"/>
+                <data android:mimeType="*/mkv"/>
+                <data android:mimeType="application/mp4"/>
+                <data android:mimeType="application/mpeg*"/>
+                <data android:mimeType="application/vnd.3gp*"/>
+                <data android:mimeType="application/vnd.apple.mpegurl"/>
+                <data android:mimeType="application/x-extension-mp4"/>
+                <data android:mimeType="application/x-flac"/>
+                <data android:mimeType="application/x-matroska"/>
+                <data android:mimeType="application/x-mpegURL"/>
+                <data android:mimeType="application/x-ogg"/>
                 <data android:scheme="http"/>
                 <data android:scheme="https"/>
                 <data android:scheme="rtsp"/>
                 <data android:scheme="rtmp"/>
                 <data android:scheme="mms"/>
+
             </intent-filter>
         </activity>
         <activity android:name=".activities.MainActivity">
         </activity>
 
-        <activity android:name=".activities.VideoActivity" android:theme="@style/Theme.DreamDroid.Player"></activity>
+        <activity
+            android:name=".activities.VideoActivity"
+            android:theme="@style/Theme.DreamDroid.Player"></activity>
 
         <activity
             android:name=".appwidget.VirtualRemoteWidgetConfiguration"
