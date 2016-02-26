@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -45,7 +46,8 @@ import de.duenndns.ssl.MemorizingTrustManager;
  * Created by Stephan on 06.11.13.
  */
 public class BaseActivity extends AppCompatActivity implements ActionDialog.DialogActionListener {
-	public static int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+	public static final int REQUEST_PERMISSION_ACCESS_COARSE_LOCATION = 1;
 	private static String TAG = BaseActivity.class.getSimpleName();
 
 	private MemorizingTrustManager mTrustManager;
@@ -111,6 +113,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 		initIAB();
 		initPiwik();
+		initPermissions();
 	}
 
 	private void initIAB() {
@@ -158,6 +161,19 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		papp.getTracker()
 				.setDispatchInterval(5)
 				.trackAppDownload(papp, Tracker.ExtraIdentifier.APK_CHECKSUM);
+	}
+
+	private void initPermissions() {
+		// Here, thisActivity is the current activity
+		if (ContextCompat.checkSelfPermission(this,
+				Manifest.permission.ACCESS_COARSE_LOCATION)
+				!= PackageManager.PERMISSION_GRANTED) {
+
+			ActivityCompat.requestPermissions(this,
+					new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+					REQUEST_PERMISSION_ACCESS_COARSE_LOCATION);
+		}
+
 	}
 
 	@Override
@@ -217,10 +233,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 				Log.i(TAG, String.format("Consuming %s", sku));
 			}
 		}
-//		if (inventory.hasPurchase("android.test.purchased")) {
-//			purchases.add(inventory.getPurchase("android.test.purchased"));
-//			Log.i(TAG, "Consuming android.test.purchased");
-//		}
 		mIabHelper.consumeAsync(purchases, mConsumeMultiFinishedListener);
 	}
 
@@ -260,8 +272,16 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-		if(requestCode == REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE)
-			callPiconSyncIntent();
+		switch (requestCode) {
+			case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
+				callPiconSyncIntent();
+				break;
+			case REQUEST_PERMISSION_ACCESS_COARSE_LOCATION:
+				recreate();
+				break;
+			default:
+				break;
+		}
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 	}
 

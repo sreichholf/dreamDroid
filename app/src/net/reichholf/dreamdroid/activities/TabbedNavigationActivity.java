@@ -7,11 +7,12 @@
 package net.reichholf.dreamdroid.activities;
 
 import net.reichholf.dreamdroid.DreamDroid;
-import android.app.Activity;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
-public class TabbedNavigationActivity extends Activity {
+public class TabbedNavigationActivity extends AppCompatActivity {
 	/* (non-Javadoc)
 	 * @see android.app.ActivityGroup#onCreate(android.os.Bundle)
 	 */

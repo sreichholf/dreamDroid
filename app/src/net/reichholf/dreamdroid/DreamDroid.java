@@ -386,9 +386,9 @@ public class DreamDroid extends PiwikApplication {
 		return Integer.parseInt(sp.getString("theme_type", "0"));
 	}
 
-	public static void setTheme(Context context) {
+	public static void setTheme(AppCompatActivity activity) {
 		int mode;
-		switch(getThemeType(context)){
+		switch(getThemeType(activity)){
 			case 0:
 				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
 				break;
@@ -405,6 +405,7 @@ public class DreamDroid extends PiwikApplication {
 				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
 		}
 		AppCompatDelegate.setDefaultNightMode(mode);
+		activity.getDelegate().setLocalNightMode(mode);
 	}
 
 	public static int getDialogTheme(Context context) {
