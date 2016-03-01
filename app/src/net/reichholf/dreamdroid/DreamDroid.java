@@ -24,12 +24,16 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHan
 
 import android.app.Application;
 
+import android.app.UiModeManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
@@ -151,7 +155,7 @@ public class DreamDroid extends PiwikApplication {
 		loadCurrentProfile(this);
 
 		initImageLoader(getApplicationContext());
-
+		setApplicationTheme(null);
 	}
 
 	public static void initImageLoader(Context context) {
@@ -386,8 +390,31 @@ public class DreamDroid extends PiwikApplication {
 		return Integer.parseInt(sp.getString("theme_type", "0"));
 	}
 
+
+	public void setApplicationTheme(@Nullable AppCompatActivity activity) {
+		final int mode;
+		switch(getThemeType(getApplicationContext())){
+			case 0:
+				mode = UiModeManager.MODE_NIGHT_AUTO;
+				break;
+			case 1:
+				mode = UiModeManager.MODE_NIGHT_NO;
+				break;
+			case 2:
+				mode = UiModeManager.MODE_NIGHT_YES;
+				break;
+			default:
+				mode = UiModeManager.MODE_NIGHT_AUTO;
+		}
+		UiModeManager uiManager = (UiModeManager) getSystemService(Context.UI_MODE_SERVICE);
+		uiManager.setNightMode(mode);
+		if(activity != null)
+			setTheme(activity);
+	}
+
+
 	public static void setTheme(AppCompatActivity activity) {
-		int mode;
+		final int mode;
 		switch(getThemeType(activity)){
 			case 0:
 				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
