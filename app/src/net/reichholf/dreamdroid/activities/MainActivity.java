@@ -689,7 +689,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
-			((DreamDroid) getApplication()).setApplicationTheme(this);
+			DreamDroid.setTheme(this);
 			recreate();
 			return;
 		}
