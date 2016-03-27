@@ -62,6 +62,69 @@
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
     </style>
 
+    <style name="Theme.DreamDroid.Night" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:listSelector">@drawable/list_selector_dark</item>
+        <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
+        <item name="cardPreventCornerOverlap">true</item>
+        <item name="cardBackgroundColor">@color/cardview_dark_background</item>
+        <item name="navigation_item_selector">@color/navigation_item_selector_dark</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground</item>
+        <item name="actionModeShareDrawable">@drawable/ic_action_share</item>
+        <item name="actionModeBackground">@color/material_blue_grey_800</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="md_dark_theme">true</item>
+        <item name="buttonBarStyle">?attr/buttonBarStyle</item>
+        <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/buttonBarNeutralButtonStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/buttonBarPositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/buttonBarNegativeButtonStyle</item>
+        <item name="detailsElementBackground">@color/details_element_background_dark</item>
+        <item name="colorPrimary">@color/primary_dreamdroid</item>
+        <item name="colorPrimaryDark">@color/primary_material_dark</item>
+        <item name="colorAccent">@color/material_blue_500</item>
+        <item name="android:textColorLink">@color/material_blue_500</item>
+        <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
+        <item name="simpleHeaderBackground">@android:color/transparent</item>
+        <item name="lightBackgroundColor">#333</item>
+        <item name="darkBackgroundColor">#111</item>
+        <item name="listItemBackground">@drawable/list_item_selector_dark</item>
+        <item name="cardListView">@style/CardListView</item>
+        <item name="ic_media_play">@drawable/ic_media_play_dark</item>
+        <item name="ic_media_pause">@drawable/ic_media_pause_dark</item>
+        <item name="ic_media_stop">@drawable/ic_media_stop_dark</item>
+        <item name="ic_media_previous">@drawable/ic_media_previous_dark</item>
+        <item name="ic_media_next">@drawable/ic_media_next_dark</item>
+        <item name="ic_menu_about">@drawable/ic_menu_about_dark</item>
+        <item name="ic_menu_changelog">@drawable/ic_menu_changelog_dark</item>
+        <item name="ic_menu_clear_playlist">@drawable/ic_menu_close_dark</item>
+        <item name="ic_menu_clock">@drawable/ic_menu_clock_dark</item>
+        <item name="ic_menu_close">@drawable/ic_menu_close_dark</item>
+        <item name="ic_menu_device">@drawable/ic_menu_device_dark</item>
+        <item name="ic_menu_current">@drawable/ic_menu_current_dark</item>
+        <item name="ic_menu_epg">@drawable/ic_menu_epg_dark</item>
+        <item name="ic_menu_info">@drawable/ic_menu_info_dark</item>
+        <item name="ic_menu_list">@drawable/ic_menu_list_dark</item>
+        <item name="ic_menu_mail">@drawable/ic_menu_mail_dark</item>
+        <item name="ic_menu_movie">@drawable/ic_menu_movie_dark</item>
+        <item name="ic_menu_music">@drawable/ic_menu_music_dark</item>
+        <item name="ic_menu_picture">@drawable/ic_menu_picture_dark</item>
+        <item name="ic_menu_power_off">@drawable/ic_menu_power_dark</item>
+        <item name="ic_menu_profiles">@drawable/ic_menu_profiles_dark</item>
+        <item name="ic_menu_remote">@drawable/ic_menu_remote_dark</item>
+        <item name="ic_menu_save">@drawable/ic_menu_save_dark</item>
+        <item name="ic_menu_send">@drawable/ic_menu_send_dark</item>
+        <item name="ic_menu_services">@drawable/ic_menu_services_dark</item>
+        <item name="ic_menu_settings">@drawable/ic_menu_settings_dark</item>
+        <item name="ic_menu_signal">@drawable/ic_menu_signal_dark</item>
+        <item name="ic_menu_sleeptimer">@drawable/ic_menu_sleeptimer_dark</item>
+        <item name="ic_menu_timer">@drawable/ic_menu_timer_dark</item>
+        <item name="ic_menu_zap">@drawable/ic_menu_zap_dark</item>
+        <item name="text_color">#ffb0b0b0</item>
+        <item name="title_color">#ffd6d6d6</item>
+        <item name="navigation_footer">@drawable/navigation_footer_dark</item>
+    </style>
+
     <style name="Theme.DreamDroid.Dialog" parent="Theme.AppCompat.DayNight.Dialog">
         <item name="colorAccent">@color/material_blue_600</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
