@@ -387,42 +387,28 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	public static void setTheme(AppCompatActivity activity) {
-//		int mode;
-//		switch(getThemeType(activity)){
-//			case 0:
-//				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
-//				break;
-//			case 1:
-//				mode = AppCompatDelegate.MODE_NIGHT_NO;
-//				break;
-//			case 2:
-//				mode = AppCompatDelegate.MODE_NIGHT_YES;
-//				break;
-//			case 3:
-//				mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-//				break;
-//			default:
-//				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
-//		}
-//        AppCompatDelegate.setDefaultNightMode(mode);
-//        activity.getDelegate().setLocalNightMode(mode);
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        activity.getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+		int mode;
 		switch(getThemeType(activity)){
-			case 2: {
-				activity.setTheme(R.style.Theme_DreamDroid_Night);
-				activity.getApplicationContext().setTheme(R.style.Theme_DreamDroid_Night);
+			case 0:
+				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
 				break;
-			}
-			default: {
-				activity.setTheme(R.style.Theme_DreamDroid);
-				activity.getApplicationContext().setTheme(R.style.Theme_DreamDroid);
-			}
+			case 1:
+				mode = AppCompatDelegate.MODE_NIGHT_NO;
+				break;
+			case 2:
+				mode = AppCompatDelegate.MODE_NIGHT_YES;
+				break;
+			case 3:
+				mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+				break;
+			default:
+				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
 		}
+		AppCompatDelegate.setDefaultNightMode(mode);
+		activity.getDelegate().setLocalNightMode(mode);
 	}
 
 	public static int getDialogTheme(Context context) {
-
 			return R.style.Theme_DreamDroid_Dialog;
 	}
 
