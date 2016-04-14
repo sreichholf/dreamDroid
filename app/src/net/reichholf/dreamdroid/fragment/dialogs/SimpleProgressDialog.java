@@ -10,6 +10,8 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+
 import net.reichholf.dreamdroid.DreamDroid;
 
 /**
@@ -41,10 +43,6 @@ public class SimpleProgressDialog extends ActionDialog {
 		getProgressDialog().setMessage(message);
 	}
 
-	public void setIndeterminate(boolean indeterminate) {
-		getProgressDialog().setIndeterminate(indeterminate);
-	}
-
 	public void setMax(int max) {
 		getProgressDialog().setMax(max);
 	}
@@ -52,10 +50,6 @@ public class SimpleProgressDialog extends ActionDialog {
 	public void setProgress(int value) {
 		getProgressDialog().setProgress(value);
 
-	}
-
-	public void setProgressSystle(int style) {
-		getProgressDialog().setProgressStyle(style);
 	}
 
 	private ProgressDialog getProgressDialog() {
@@ -66,12 +60,11 @@ public class SimpleProgressDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-		final ProgressDialog dialog = new ProgressDialog(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		dialog.setTitle(mTitle);
-		dialog.setMessage(mMessage);
-		dialog.setIndeterminate(true);
-		dialog.setCancelable(false);
-
-		return dialog;
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
+        builder.progress(true, 0)
+                .cancelable(false)
+                .title(mTitle)
+                .content(mMessage);
+        return builder.build();
 	}
 }
