@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.1.0-beta1'
     }
 }
 apply plugin: 'com.android.application'
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.5@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.8@aar') {
         transitive = true
     }
     compile 'com.android.support:support-v4:23.+'
@@ -29,11 +29,10 @@ dependencies {
     compile 'com.github.chrisbanes.photoview:library:1.2.+'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.3'
     compile 'com.wdullaer:materialdatetimepicker:2.1.1'
-    compile "de.mrmaffen:vlc-android-sdk:3.0.0"
+    compile 'de.mrmaffen:vlc-android-sdk:3.0.0'
     compile 'org.piwik.sdk:piwik-sdk:0.0.4'
     compile files('libs/ftp4j-1.7.2.jar')
     compile files('libs/jmdns-3.4.1.jar')
-    compile files('libs/PiwikAndroidSdk.jar')
     compile files('libs/signpost-core-1.2.1.1.jar')
     compile project(':libraries:ckChangeLog')
     compile project(':libraries:gaugeview-library')
@@ -71,5 +70,9 @@ android {
     }
     lintOptions {
         abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
