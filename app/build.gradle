@@ -29,7 +29,7 @@ dependencies {
     compile 'com.github.chrisbanes.photoview:library:1.2.+'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.3'
     compile 'com.wdullaer:materialdatetimepicker:2.1.1'
-    compile 'de.mrmaffen:vlc-android-sdk:3.0.0'
+    compile "de.mrmaffen:vlc-android-sdk:1.9.0"
     compile 'org.piwik.sdk:piwik-sdk:0.0.4'
     compile files('libs/ftp4j-1.7.2.jar')
     compile files('libs/jmdns-3.4.1.jar')
