@@ -43,8 +43,9 @@ import org.piwik.sdk.PiwikApplication;
 public class DreamDroid extends PiwikApplication {
 	public static final int INITIAL_SERVICELIST_PANE = 1;
 	public static final int INITIAL_VIRTUAL_REMOTE = 2;
+    public static final String PREFS_KEY_HWACCEL = "video_hardware_acceleration";
 
-	public static String VERSION_STRING;
+    public static String VERSION_STRING;
 
 	public static final String ACTION_CREATE = "dreamdroid.intent.action.NEW";
 	public static final String LOG_TAG = "DreamDroid";

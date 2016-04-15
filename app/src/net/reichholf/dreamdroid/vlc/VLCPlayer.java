@@ -17,6 +17,11 @@ public class VLCPlayer {
 	static LibVLC sLibVLC = new LibVLC();
 	static MediaPlayer sMediaPlayer;
 
+
+    public final static int MEDIA_HWACCEL_DISABLED = 0x00;
+    public final static int MEDIA_HWACCEL_ENABLED = 0x01;
+    public final static int MEDIA_HWACCEL_FORCE = 0x02;
+
 	protected Media mCurrentMedia;
 
 	static {
@@ -50,8 +55,11 @@ public class VLCPlayer {
 		getMediaPlayer().getVLCVout().setWindowSize(width, height);
 	}
 
-	public void playUri(Uri uri) {
+	public void playUri(Uri uri, int flags) {
 		mCurrentMedia = new Media(getLibVLC(), uri);
+        boolean isHwAccel = (flags & MEDIA_HWACCEL_ENABLED) > 0;
+        boolean isHwAccelForce = (flags & MEDIA_HWACCEL_FORCE) > 0;
+        mCurrentMedia.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce );
 		play();
 	}
 

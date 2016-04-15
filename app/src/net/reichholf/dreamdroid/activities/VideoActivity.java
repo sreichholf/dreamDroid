@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -62,6 +63,7 @@ import java.util.HashMap;
 
 
 public class VideoActivity extends AppCompatActivity implements IVLCVout.Callback {
+    public static final String TAG = VideoActivity.class.getSimpleName();
 	static float sOverlayAlpha = 0.85f;
 
 	SurfaceView mVideoSurface;
@@ -105,7 +107,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	public void handleIntent(Intent intent) {
 		setIntent(intent);
 		if (intent.getAction() == Intent.ACTION_VIEW) {
-			mPlayer.playUri(intent.getData());
+            int accel = Integer.parseInt( PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)) );
+			mPlayer.playUri(intent.getData(), accel);
 		}
 	}
 
@@ -178,13 +181,21 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	public void onSurfacesCreated(IVLCVout vlcVout) {
+        //TODO onSurfacesCreated
 	}
 
 	@Override
 	public void onSurfacesDestroyed(IVLCVout vlcVout) {
+        //TODO onSurfacesDestroyed
 	}
 
-	public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
+
+    @Override
+    public void onHardwareAccelerationError(IVLCVout vlcVout) {
+        //TODO onHardwareAccelerationError
+    }
+
+    public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
 			LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener {
 
 		private static final String TAG = "VideoOverlayFragment";

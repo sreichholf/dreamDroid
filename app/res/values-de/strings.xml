@@ -264,8 +264,7 @@
     <string name="appearance">Erscheinungsbild</string>
     <string name="usability">Usability</string>
     <string name="use_picons">Picons benutzen</string>
-<string name="use_picons_long">Wo möglich werden Picons angezeigt.
-\nErfordert Picons in /{Speicher}/dreamDroid/picons</string>
+    <string name="use_picons_long">Wo möglich werden Picons angezeigt.\nErfordert Picons in /{Speicher}/dreamDroid/picons</string>
     <string name="sync_picons">Picons synchronisieren</string>
     <string name="sync_picons_long">Picons auf Basis des aktiven Verbindungsprofiles nach /{Speicher}/dreamDroid/picons synchronisieren</string>
     <string name="sync_picons_path">Picons - Entfernter Pfad</string>
@@ -332,4 +331,23 @@
     <string name="next_lower">nächster</string>
     <string name="playback_failed">Wiedergabe fehlgeschlagen!</string>
     <string name="previous_lower">vorheriger</string>
+
+    <string-array name="theme_option_entries">
+        <item>Auto</item>
+        <item>Tag</item>
+        <item>Nacht</item>
+        <item>Wie System</item>
+    </string-array>
+    <string name="theme">Tag/Nacht Thema</string>
+    <string name="theme_long">Tag/Nacht Thema wählen</string>
+
+    <string-array name="hw_accel_entries">
+        <item>Deaktiviert</item>
+        <item>Automatisch</item>
+        <item>Erzwungen</item>
+    </string-array>
+    <string name="video_use_hw_accel">Hardware Beschleunigung</string>
+    <string name="use_hw_accel">Bechleunigtes dekodieren</string>
+    <string name="use_hw_accel_long">Hardware Beschleunigung zum dekodieren von Videos verwenden (%s)</string>
+    <string name="video_player">Video Player</string>
 </resources>

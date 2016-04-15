@@ -17,6 +17,7 @@ import android.view.View;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
+import net.reichholf.dreamdroid.vlc.VLCPlayer;
 
 /**
  * Created by Stephan on 08.04.2015.
@@ -35,7 +36,8 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		getActivity().setTitle(R.string.settings);
 
 		PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
-		PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
 		Preference syncPref = findPreference("sync_picons");
 		syncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -46,7 +48,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 			}
 		});
 		updateThemeSummary();
-
+        updateHwAccelSummary(prefs);
 	}
 
 	@Override
@@ -84,9 +86,10 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
-		if(DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)){
+		if(DreamDroid.PREFS_KEY_THEME_TYPE.equals(key))
 			updateThemeSummary();
-		}
+		else if (DreamDroid.PREFS_KEY_HWACCEL.equals(key))
+            updateHwAccelSummary(prefs);
 	}
 
 	protected void updateThemeSummary() {
@@ -96,6 +99,14 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		Preference themePref = findPreference(DreamDroid.PREFS_KEY_THEME_TYPE);
 		themePref.setSummary(getResources().getStringArray(R.array.theme_option_entries)[idx]);
 	}
+
+    protected void updateHwAccelSummary(SharedPreferences prefs) {
+        if(getActivity() == null)
+            return;
+        int idx = Integer.parseInt( prefs.getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)) );
+        Preference themePref = findPreference(DreamDroid.PREFS_KEY_HWACCEL);
+        themePref.setSummary(getString(R.string.use_hw_accel_long, getResources().getStringArray(R.array.hw_accel_entries)[idx]));
+    }
 
 	public void startPiconSync() {
 		((BaseActivity) getActivity()).startPiconSync();

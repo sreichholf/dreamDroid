@@ -9,13 +9,26 @@
         android:title="@string/allow_tracking"/>
 
     <PreferenceCategory
-        android:key="category_usability"
-        android:title="@string/usability">
+        android:key="category_videoplayer"
+        android:title="@string/video_player">
         <CheckBoxPreference
+            android:defaultValue="true"
             android:key="integrated_video_player"
             android:summary="@string/integrated_video_player_long"
-            android:title="@string/integrated_video_player"
-            android:defaultValue="true"/>
+            android:title="@string/integrated_video_player"/>
+        <ListPreference
+            android:defaultValue="@integer/hw_accel_default"
+            android:dependency="integrated_video_player"
+            android:dialogTitle="@string/video_use_hw_accel"
+            android:entries="@array/hw_accel_entries"
+            android:entryValues="@array/hw_accel_values"
+            android:key="video_hardware_acceleration"
+            android:summary="@string/use_hw_accel_long"
+            android:title="@string/use_hw_accel"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="category_usability"
+        android:title="@string/usability">
         <CheckBoxPreference
             android:key="volume_control"
             android:summary="@string/enable_volume_control_long"

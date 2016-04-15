@@ -338,4 +338,13 @@
     </string-array>
     <string name="theme">Day/Night Theme</string>
     <string name="theme_long">Day/Night Theme choices</string>
+    <string-array name="hw_accel_entries">
+        <item>Disabled</item>
+        <item>Auto</item>
+        <item>Force</item>
+    </string-array>
+    <string name="video_use_hw_accel">Hardware Acceleration</string>
+    <string name="use_hw_accel">Accelerated decoding</string>
+    <string name="use_hw_accel_long">Use Hardware acceleration for video decoding (%s)</string>
+    <string name="video_player">Video Player</string>
 </resources>
