@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 6.2" versioncode="362">
+        <change>NEU: Hardwarebschleunigung des Videoplayers ist nun einstellbar</change>
+        <change>NEU: Statt hell/dunkel gibt es nun Tag/Nacht Themen mit der Option auf automatisches Umschalten je nach Tageszeit</change>
+    </release>
     <release version="1.1 beta 6.1" versioncode="361">
         <change>NEU: Integrierter Videoplayer jetzt mit voller Kanalliste zum zappen</change>
         <change>FIX: Diverse kleinere Fehler im integrierten VideoPlayer</change>

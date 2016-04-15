@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 6.2" versioncode="362">
+        <change>NEW: Configureable Hardware Acceleration for Video Player</change>
+        <change>NEU: Change bright/dark to day/night themes and add the option to auto-toggle the theme depending on time</change>
+    </release>
     <release version="1.1 beta 6.1" versioncode="361">
         <change>NEW: Integrated Videoplayer now with full service list for more convenient zapping</change>
         <change>FIX: Several smaller bugs in the Videoplayer</change>
