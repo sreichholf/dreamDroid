@@ -305,7 +305,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		Fragment detailFragment = getCurrentDetailFragment();
-		if (detailFragment != null) {
+		if (detailFragment != null && !detailFragment.isVisible()) {
 			showFragment(ft, R.id.detail_view, detailFragment);
 		}
 
@@ -337,6 +337,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (mDetailFragment != null && !fragment.isVisible()) {
 				ft.hide(mDetailFragment);
 			}
+			if (DreamDroid.isTrackingEnabled(this) && !fragment.isVisible())
+				((PiwikApplication) getApplication()).getTracker().trackScreenView(fragment.getClass().getSimpleName(), fragment.getClass().getSimpleName());
 			ft.show(fragment);
 		} else {
 			Log.i(TAG, "Fragment " + ((Object) fragment).getClass().getSimpleName() + " not added, adding");
@@ -496,6 +498,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
+		if(fragment.isVisible())
+			return;
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		if (mDetailFragment != null
 				&& mDetailFragment.isVisible()
@@ -511,8 +515,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			ft.addToBackStack(null);
 		}
 		ft.commit();
-		if (DreamDroid.isTrackingEnabled(this))
-			((PiwikApplication) getApplication()).getTracker().trackScreenView(fragment.getClass().getSimpleName(), fragment.getClass().getSimpleName());
 	}
 
 	public void unregisterFab(int id) {
