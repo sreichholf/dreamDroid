@@ -64,7 +64,7 @@ import java.util.HashMap;
 
 
 public class VideoActivity extends AppCompatActivity implements IVLCVout.Callback {
-    public static final String TAG = VideoActivity.class.getSimpleName();
+	public static final String TAG = VideoActivity.class.getSimpleName();
 	static float sOverlayAlpha = 0.85f;
 
 	SurfaceView mVideoSurface;
@@ -80,16 +80,58 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-        getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+		getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 		setFullScreen();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.video_player);
 	}
 
 
+	public void handleIntent(Intent intent) {
+		setIntent(intent);
+		if (intent.getAction() == Intent.ACTION_VIEW) {
+			int accel = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));
+			mPlayer.playUri(intent.getData(), accel);
+		}
+	}
+
+	protected boolean isMarshmallowOrEarlier() {
+		boolean isMarshmallowOrEarlier = Build.VERSION.SDK_INT <= 23;
+		if (Build.VERSION.SDK_INT >= 23)
+			isMarshmallowOrEarlier &= Build.VERSION.PREVIEW_SDK_INT == 0;
+		return isMarshmallowOrEarlier;
+	}
+
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		if (!isMarshmallowOrEarlier())
+			initialize();
+	}
+
 	@Override
 	protected void onResume() {
+		if (isMarshmallowOrEarlier())
+			initialize();
 		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		if (isMarshmallowOrEarlier())
+			cleanup();
+		super.onPause();
+	}
+
+	@Override
+	protected void onStop() {
+		if (!isMarshmallowOrEarlier())
+			cleanup();
+		super.onStop();
+	}
+
+	private void initialize() {
 		mOverlayFragment = new VideoOverlayFragment();
 		mOverlayFragment.setArguments(getIntent().getExtras());
 
@@ -106,16 +148,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		setFullScreen();
 	}
 
-	public void handleIntent(Intent intent) {
-		setIntent(intent);
-		if (intent.getAction() == Intent.ACTION_VIEW) {
-            int accel = Integer.parseInt( PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)) );
-			mPlayer.playUri(intent.getData(), accel);
-		}
-	}
-
-	@Override
-	protected void onPause() {
+	private void cleanup() {
 		mPlayer.detach();
 		mPlayer = null;
 		mVideoSurface = null;
@@ -125,7 +158,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.remove(mOverlayFragment);
 		ft.commit();
-		super.onPause();
 	}
 
 	protected void setupVideoSurface() {
@@ -183,21 +215,21 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	public void onSurfacesCreated(IVLCVout vlcVout) {
-        //TODO onSurfacesCreated
+		//TODO onSurfacesCreated
 	}
 
 	@Override
 	public void onSurfacesDestroyed(IVLCVout vlcVout) {
-        //TODO onSurfacesDestroyed
+		//TODO onSurfacesDestroyed
 	}
 
 
-    @Override
-    public void onHardwareAccelerationError(IVLCVout vlcVout) {
-        //TODO onHardwareAccelerationError
-    }
+	@Override
+	public void onHardwareAccelerationError(IVLCVout vlcVout) {
+		//TODO onHardwareAccelerationError
+	}
 
-    public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
+	public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
 			LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener {
 
 		private static final String TAG = "VideoOverlayFragment";
