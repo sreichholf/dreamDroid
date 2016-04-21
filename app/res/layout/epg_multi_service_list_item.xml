@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView
-    android:id="@+id/service_list_item_nn"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/service_list_item_nn"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:foreground="?attr/selectableItemBackground"
@@ -21,39 +21,37 @@
             android:layout_width="48dp"
             android:layout_height="36dp"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_centerVertical="true"
+            android:layout_marginEnd="3dp"
             android:layout_marginRight="3dp"
-            android:layout_marginTop="5dp"
-            android:layout_alignParentStart="true"
-            android:layout_marginEnd="3dp"/>
+            android:layout_marginTop="5dp"/>
 
 
         <LinearLayout
             android:id="@+id/linearLayoutTitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/picon"
             android:layout_toRightOf="@id/picon"
-            android:orientation="vertical"
-            android:layout_toEndOf="@id/picon">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/event_title"
+                style="@style/CardTitle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:ellipsize="end"
-                android:singleLine="true"
-                android:textAppearance="@android:style/TextAppearance.Medium"
-                android:textStyle="bold"/>
+                android:singleLine="true"/>
 
             <TextView
                 android:id="@+id/service_name"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:textStyle="bold"/>
+                android:textAppearance="@android:style/TextAppearance.Small"/>
         </LinearLayout>
 
         <LinearLayout
@@ -65,33 +63,32 @@
 
             <TextView
                 android:id="@+id/event_start"
+                style="@style/CardText"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAppearance="@android:style/TextAppearance.Small"/>
+                android:layout_weight="1"/>
 
             <TextView
                 android:id="@+id/event_duration"
+                style="@style/CardText"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="5dip"
                 android:layout_marginRight="5dip"
                 android:layout_weight="1"
-                android:gravity="end"
-                android:textAppearance="@android:style/TextAppearance.Small"
-                android:layout_marginEnd="5dip"/>
+                android:gravity="end"/>
         </LinearLayout>
 
         <TextView
             android:id="@+id/event_short"
+            style="@style/CardText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/LinearLayoutEventTime"
             android:layout_gravity="center_vertical"
             android:ellipsize="end"
             android:maxLines="2"
-            android:singleLine="false"
-            android:textAppearance="@android:style/TextAppearance.Small"
-            android:textStyle="bold"/>
+            android:singleLine="false"/>
 
     </RelativeLayout>
 </android.support.v7.widget.CardView>
