@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 6.3" versioncode="363">
+        <change>TRYFIX: Don't stop video on when going into windowed mode on Android N</change>
+        <change>FIX: Smaller fixes</change>
+    </release>
     <release version="1.1 beta 6.2" versioncode="362">
         <change>NEW: Configureable Hardware Acceleration for Video Player</change>
         <change>NEU: Change bright/dark to day/night themes and add the option to auto-toggle the theme depending on time</change>
