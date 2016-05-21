@@ -309,7 +309,7 @@ public class DreamDroid extends PiwikApplication {
 	/**
 	 * @param shc
 	 */
-	public static boolean loadLocations(SimpleHttpClient shc) {
+	public static synchronized boolean loadLocations(SimpleHttpClient shc) {
 		sLocations.clear();
 
 		boolean gotLoc = false;
@@ -338,7 +338,7 @@ public class DreamDroid extends PiwikApplication {
 	/**
 	 * @param shc
 	 */
-	public static boolean loadTags(SimpleHttpClient shc) {
+	public static synchronized boolean loadTags(SimpleHttpClient shc) {
 		sTags.clear();
 		boolean gotTags = false;
 
