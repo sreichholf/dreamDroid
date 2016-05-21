@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.loader.AsyncFavListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.view.recyclerview.DividerItemDecoration;
 
 import java.util.ArrayList;
 
@@ -44,6 +45,7 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment {
 		mAdapter = new SimpleTextAdapter(mMapList, android.R.layout.simple_list_item_1,
 				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
 		getRecyclerView().setAdapter(mAdapter);
+		getRecyclerView().addItemDecoration(new DividerItemDecoration(getAppCompatActivity(), null));
 	}
 
 	@Override

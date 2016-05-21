@@ -43,7 +43,7 @@ public class AsyncFavListLoader extends AsyncListLoader {
 
 	public ArrayList<ExtendedHashMap> loadBouquet(String ref){
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new NameValuePair("bRef", ref));
+		params.add(new NameValuePair("sRef", ref));
 
 		ArrayList<ExtendedHashMap> list = new ArrayList<>();
 		String xml = mListRequestHandler.getList(mShc, params);
