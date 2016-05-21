@@ -5,6 +5,6 @@
         android:id="@+id/menu_share"
         android:title="@string/share"
         dreamDroid:actionProviderClass="android.support.v7.widget.ShareActionProvider"
-        dreamDroid:showAsAction="always" />
+        dreamDroid:showAsAction="always|withText"/>
 
 </menu>

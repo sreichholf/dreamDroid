@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
+      xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
 
     <item
         android:id="@+id/menu_home_media"
         android:icon="@drawable/ic_action_home"
         android:title="@string/home_media"
-        dreamDroid:showAsAction="ifRoom"/>
+        dreamDroid:showAsAction="ifRoom|withText"/>
     <item
         android:id="@+id/menu_navigation_back_media"
         android:icon="@drawable/ic_action_back"
         android:title="@string/navigation_back_media"
-        dreamDroid:showAsAction="ifRoom"/>
+        dreamDroid:showAsAction="ifRoom|withText"/>
     <item
         android:id="@+id/menu_close_media"
         android:icon="@drawable/ic_action_close"
         android:title="@string/close_media"
-        dreamDroid:showAsAction="ifRoom"/>
+        dreamDroid:showAsAction="ifRoom|withText"/>
 
 </menu>
