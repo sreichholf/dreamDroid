@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 7" versioncode="364">
+        <change>FIX: Doppelte Einträge bei Filmordnern und in der EPG Bouquetwahl</change>
+        <change>Update der libvlc (bringt x86 und amd64 support)</change>
+    </release>
     <release version="1.1 beta 6.3" versioncode="363">
         <change>TRYFIX: Abspielen von Videos wird nicht mehr unterbrochen wenn unter Android N der Fokus auf ein anderes Fenster übergeht</change>
         <change>FIX: Kleinere Fehlerbehebungen</change>

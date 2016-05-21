@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 7" versioncode="364">
+        <change>FIX: Duplicated entries in Locations and EPG Bouquet Selection</change>
+        <change>Update libvlc (adds x86 and amd64 support)</change>
+    </release>
     <release version="1.1 beta 6.3" versioncode="363">
         <change>TRYFIX: Don't stop video on when going into windowed mode on Android N</change>
         <change>FIX: Smaller fixes</change>
