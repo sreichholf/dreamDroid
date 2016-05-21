@@ -89,6 +89,7 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 	private TextView mService;
 	private TextView mRepeatings;
 	private TextView mTags;
+	private ProgressDialog mLoadProgress;
 	private ProgressDialog mProgress;
 
 	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
@@ -97,8 +98,6 @@ public class TimerEditFragment extends AbstractHttpFragment implements MultiChoi
 	private int mEnd;
 
 	private class GetLocationsAndTagsTask extends AsyncTask<Void, String, Boolean> {
-
-		private ProgressDialog mLoadProgress;
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
