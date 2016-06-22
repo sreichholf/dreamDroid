@@ -408,9 +408,7 @@ public class DreamDroid extends PiwikApplication {
 			default:
 				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
 		}
-		if (ContextCompat.checkSelfPermission(activity,
-				Manifest.permission.ACCESS_COARSE_LOCATION)
-				!= PackageManager.PERMISSION_GRANTED) {
+		if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && mode == AppCompatDelegate.MODE_NIGHT_AUTO) {
 			mode = AppCompatDelegate.MODE_NIGHT_NO;
 		}
 
