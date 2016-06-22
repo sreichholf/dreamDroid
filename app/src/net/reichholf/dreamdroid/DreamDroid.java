@@ -22,15 +22,18 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
 
+import android.Manifest;
 import android.app.Application;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
@@ -405,6 +408,12 @@ public class DreamDroid extends PiwikApplication {
 			default:
 				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
 		}
+		if (ContextCompat.checkSelfPermission(activity,
+				Manifest.permission.ACCESS_COARSE_LOCATION)
+				!= PackageManager.PERMISSION_GRANTED) {
+			mode = AppCompatDelegate.MODE_NIGHT_NO;
+		}
+
 		AppCompatDelegate.setDefaultNightMode(mode);
 		activity.getDelegate().setLocalNightMode(mode);
 	}

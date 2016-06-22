@@ -272,12 +272,15 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
 		switch (requestCode) {
 			case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
-				callPiconSyncIntent();
+				if( granted )
+					callPiconSyncIntent();
 				break;
 			case REQUEST_PERMISSION_ACCESS_COARSE_LOCATION:
-				recreate();
+				if( granted )
+					recreate();
 				break;
 			default:
 				break;
