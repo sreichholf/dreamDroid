@@ -1,9 +1,10 @@
 buildscript {
     repositories {
         jcenter()
+        maven { url 'https://dl.bintray.com/drummer-aidan/maven' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.android.tools.build:gradle:2.1.2'
     }
 }
 
@@ -11,7 +12,6 @@ apply plugin: 'com.android.library'
 
 repositories {
     jcenter()
-    maven { url "https://jitpack.io" }
 }
 
 android {
@@ -31,10 +31,8 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.+'
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.8@aar') {
-        transitive = true
-    }
+    compile 'com.android.support:appcompat-v7:24.+'
+    compile 'com.afollestad.material-dialogs:core:0.8.5.9'
 }
 
 
