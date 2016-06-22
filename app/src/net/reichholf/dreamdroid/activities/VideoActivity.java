@@ -119,8 +119,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	protected void onPause() {
-		if (isMarshmallowOrEarlier())
+		if (isMarshmallowOrEarlier()) {
 			cleanup();
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+			ft.remove(mOverlayFragment);
+			ft.commit();
+		}
 		super.onPause();
 	}
 
@@ -154,10 +158,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		mVideoSurface = null;
 		VLCPlayer.getMediaPlayer().getVLCVout().removeCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(null);
-
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.remove(mOverlayFragment);
-		ft.commit();
 	}
 
 	protected void setupVideoSurface() {
