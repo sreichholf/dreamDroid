@@ -10,10 +10,13 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -113,7 +116,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 		initIAB();
 		initPiwik();
-		initPermissions();
+		initPermissions(false);
 	}
 
 	private void initIAB() {
@@ -163,11 +166,18 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 				.trackAppDownload(papp, Tracker.ExtraIdentifier.APK_CHECKSUM);
 	}
 
-	private void initPermissions() {
+	private void initPermissions(boolean rationaleShown) {
 		// Here, thisActivity is the current activity
 		if (ContextCompat.checkSelfPermission(this,
 				Manifest.permission.ACCESS_COARSE_LOCATION)
 				!= PackageManager.PERMISSION_GRANTED) {
+
+			if( ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION) && !rationaleShown) {
+				PositiveNegativeDialog rationale = PositiveNegativeDialog.newInstance(getString(R.string.location_rationale_title), R.string.location_rationale, R.string.ok, Statics.ACTION_LOCATION_RATIONALE_DONE);
+				FragmentManager fm = getSupportFragmentManager();
+				rationale.show(fm, "location_rationale");
+				return;
+			}
 
 			ActivityCompat.requestPermissions(this,
 					new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
@@ -267,6 +277,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			prefs.putBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, true);
 			prefs.commit();
 			initPiwik();
+		} else if (action == Statics.ACTION_LOCATION_RATIONALE_DONE) {
+			initPermissions(true);
 		}
 	}
 

@@ -347,4 +347,6 @@
     <string name="use_hw_accel">Accelerated decoding</string>
     <string name="use_hw_accel_long">Use Hardware acceleration for video decoding (%s)</string>
     <string name="video_player">Video Player</string>
+    <string name="location_rationale_title">Location required</string>
+    <string name="location_rationale">DreamDroid requires the coarse location for automatic day/night Theme switching.\nThe location is not part of any logging, nor will it be used for anything else but theme switching!</string>
 </resources>

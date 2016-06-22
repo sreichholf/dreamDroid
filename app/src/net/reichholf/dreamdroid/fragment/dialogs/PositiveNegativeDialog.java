@@ -34,6 +34,10 @@ public class PositiveNegativeDialog extends ActionDialog {
 	private static String KEY_NEGATIVE_TEXT = "negativeText";
 	private static String KEY_NEGATIVE_ID = "negativeId";
 
+	public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId) {
+		return newInstance(title, messageId, positiveText, positiveId, -1, -1);
+	}
+
 	public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId,
 			int negativeText, int negativeId) {
 
@@ -71,19 +75,21 @@ public class PositiveNegativeDialog extends ActionDialog {
 				.title(getArguments().getString("title"))
 				.cancelable(false)
 				.positiveText(mPositiveText)
-				.negativeText(mNegativeText)
 				.onPositive(new MaterialDialog.SingleButtonCallback() {
 					@Override
 					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
 						finishDialog(mPositiveId, null);
 					}
-				})
-				.onNegative(new MaterialDialog.SingleButtonCallback() {
-					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-						finishDialog(mNegativeId, null);
-					}
 				});
+		if(mNegativeId > 0 && mNegativeText > 0) {
+			builder.negativeText(mNegativeText)
+					.onNegative(new MaterialDialog.SingleButtonCallback() {
+						@Override
+						public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+							finishDialog(mNegativeId, null);
+						}
+					});
+		}
 		return builder.build();
 	}
 }
