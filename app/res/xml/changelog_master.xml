@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 8" versioncode="365">
+        <change>FIX: Try to fix Android N MultiWindow handling again (blindly though)</change>
+        <change>FIX: Handle denied permissions properly (fixes "blackscreen" after location permission denial)</change>
+        <change>IMPROVE: Show rationale when requesting coarse location permissions</change>
+        <change>Built with SDK 24 (aka Android N) and latest tools and libraries</change>
+    </release>
     <release version="1.1 beta 7" versioncode="364">
         <change>FIX: Duplicated entries in Locations and EPG Bouquet Selection</change>
         <change>Update libvlc (adds x86 and amd64 support)</change>

@@ -2,12 +2,12 @@
 <manifest package="net.reichholf.dreamdroid"
           xmlns:android="http://schemas.android.com/apk/res/android"
           android:installLocation="auto"
-          android:versionCode="364"
-          android:versionName="1.1 beta 7">
+          android:versionCode="365"
+          android:versionName="1.1 beta 8">
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="23"/>
+        android:targetSdkVersion="24"/>
 
     <supports-screens
         android:anyDensity="true"

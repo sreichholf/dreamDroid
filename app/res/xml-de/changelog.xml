@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1 beta 8" versioncode="365">
+        <change>FIX: Weiter Versuch Android N MultiWindow zu fixen</change>
+        <change>FIX: Abgelehnte Berechtigungsanfragen werden korrekt behandelt (behebt Probleme wenn z.B. keine Berechtigung für Standort gewährt wurde)</change>
+        <change>IMPROVE: Es wird nun erklärt wofür der ungefähre Standort benötigt wird</change>
+        <change>Gebaut mit SDK 24 (aka Android N) und den neuesten Tools und Bibliotheken</change>
+    </release>
     <release version="1.1 beta 7" versioncode="364">
         <change>FIX: Doppelte Einträge bei Filmordnern und in der EPG Bouquetwahl</change>
         <change>Update der libvlc (bringt x86 und amd64 support)</change>
