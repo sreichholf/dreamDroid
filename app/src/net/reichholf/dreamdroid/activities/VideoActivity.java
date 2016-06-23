@@ -254,6 +254,10 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		protected AutofitRecyclerView mServicesView;
 		protected ItemClickSupport mItemClickSupport;
 
+		public VideoOverlayFragment()
+		{
+		}
+
 		@Override
 		public void onCreate(@Nullable Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
