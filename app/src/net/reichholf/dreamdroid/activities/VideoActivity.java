@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -84,6 +85,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		setFullScreen();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.video_player);
+		initializeOverlay();
 	}
 
 
@@ -102,54 +104,66 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		return isMarshmallowOrEarlier;
 	}
 
-
 	@Override
 	protected void onStart() {
 		super.onStart();
-		if (!isMarshmallowOrEarlier())
-			initialize();
+		initialize();
 	}
 
 	@Override
 	protected void onResume() {
-		if (isMarshmallowOrEarlier())
-			initialize();
 		super.onResume();
+		mOverlayFragment.showOverlays();
 	}
 
 	@Override
 	protected void onPause() {
-		if (isMarshmallowOrEarlier()) {
-			cleanup();
-			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.remove(mOverlayFragment);
-			ft.commit();
-		}
+		mOverlayFragment.hideOverlays();
 		super.onPause();
 	}
 
 	@Override
 	protected void onStop() {
-		if (!isMarshmallowOrEarlier())
-			cleanup();
+		cleanup();
 		super.onStop();
 	}
 
+	@Override
+	public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+		super.onMultiWindowModeChanged(isInMultiWindowMode);
+		setupVideoSurface();
+	}
+
+	@Override
+	public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+		super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+		setupVideoSurface();
+	}
+
 	private void initialize() {
-		mOverlayFragment = new VideoOverlayFragment();
-		mOverlayFragment.setArguments(getIntent().getExtras());
-
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.replace(R.id.overlay, mOverlayFragment);
-		ft.commit();
-
 		mVideoSurface = (SurfaceView) findViewById(R.id.video_surface);
-		mPlayer = new VLCPlayer();
+		if(mPlayer == null)
+			mPlayer = new VLCPlayer();
 		mPlayer.attach(mVideoSurface);
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(mOverlayFragment);
 		handleIntent(getIntent());
 		setFullScreen();
+	}
+
+	private void initializeOverlay() {
+		if(mOverlayFragment != null)
+			return;
+
+		mOverlayFragment = (VideoOverlayFragment) getSupportFragmentManager().findFragmentByTag("video_overlay_fragment");
+		if(mOverlayFragment != null)
+			return;
+
+		mOverlayFragment = new VideoOverlayFragment();
+		mOverlayFragment.setArguments(getIntent().getExtras());
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		ft.replace(R.id.overlay, mOverlayFragment, "video_overlay_fragment");
+		ft.commit();
 	}
 
 	private void cleanup() {
@@ -158,6 +172,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		mVideoSurface = null;
 		VLCPlayer.getMediaPlayer().getVLCVout().removeCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(null);
+	}
+
+	private void cleanupOverlay() {
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		ft.remove(mOverlayFragment);
+		ft.commit();
 	}
 
 	protected void setupVideoSurface() {

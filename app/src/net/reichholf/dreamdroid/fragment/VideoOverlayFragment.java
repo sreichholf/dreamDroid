@@ -82,6 +82,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
+		setRetainInstance(true);
 		super.onCreate(savedInstanceState);
 		mServiceName = getArguments().getString(TITLE);
 		mServiceRef = getArguments().getString(SERVICE_REFERENCE);
