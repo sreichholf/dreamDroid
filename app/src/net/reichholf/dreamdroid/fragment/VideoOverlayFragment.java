@@ -377,18 +377,24 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	public void showOverlays() {
+		View view = getView();
+		if (view == null)
+			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
 		updateViews();
 		for (int id : sOverlayViews)
-			fadeInView(getView().findViewById(id));
+			fadeInView(view.findViewById(id));
 		showZapOverlays();
 		autohide();
 	}
 
 	public void hideOverlays() {
+		View view = getView();
+		if (view == null)
+			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
 		for (int id : sOverlayViews)
-			fadeOutView(getView().findViewById(id));
+			fadeOutView(view.findViewById(id));
 		hideZapOverlays();
 	}
 
@@ -397,17 +403,23 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			hideZapOverlays();
 			return;
 		}
+		View view = getView();
+		if (view == null)
+			return;
 		for (int id : sZapOverlayViews)
-			fadeInView(getView().findViewById(id));
+			fadeInView(view.findViewById(id));
 	}
 
 	private void hideZapOverlays() {
+		View view = getView();
+		if (view == null)
+			return;
 		for (int id : sZapOverlayViews)
-			fadeOutView(getView().findViewById(id));
+			fadeOutView(view.findViewById(id));
 	}
 
 	private void fadeInView(final View v) {
-		if (v.getVisibility() == View.VISIBLE)
+		if (v == null || v.getVisibility() == View.VISIBLE)
 			return;
 		v.setVisibility(View.VISIBLE);
 		v.setAlpha(0.0f);
@@ -420,7 +432,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void fadeOutView(final View v) {
-		if (v.getVisibility() == View.GONE)
+		if (v == null || v.getVisibility() == View.GONE)
 			return;
 		v.animate().alpha(0.0f).setListener(new AnimatorListenerAdapter() {
 			@Override
