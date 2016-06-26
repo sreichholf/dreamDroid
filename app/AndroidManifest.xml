@@ -102,12 +102,13 @@
 
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MainActivity">
-        </activity>
+        <activity
+            android:name=".activities.MainActivity" />
 
         <activity
             android:name=".activities.VideoActivity"
-            android:theme="@style/Theme.DreamDroid.Player"></activity>
+            android:theme="@style/Theme.DreamDroid.Player"
+            android:configChanges="orientation|screenSize" />
 
         <activity
             android:name=".appwidget.VirtualRemoteWidgetConfiguration"

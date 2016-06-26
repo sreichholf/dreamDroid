@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.activities;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -140,9 +141,14 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		setupVideoSurface();
 	}
 
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		setupVideoSurface();
+	}
+
 	private void initialize() {
 		mVideoSurface = (SurfaceView) findViewById(R.id.video_surface);
-		if(mPlayer == null)
+		if (mPlayer == null)
 			mPlayer = new VLCPlayer();
 		mPlayer.attach(mVideoSurface);
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
@@ -152,11 +158,11 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	private void initializeOverlay() {
-		if(mOverlayFragment != null)
+		if (mOverlayFragment != null)
 			return;
 
 		mOverlayFragment = (VideoOverlayFragment) getSupportFragmentManager().findFragmentByTag("video_overlay_fragment");
-		if(mOverlayFragment != null)
+		if (mOverlayFragment != null)
 			return;
 
 		mOverlayFragment = new VideoOverlayFragment();
@@ -174,12 +180,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		VLCPlayer.getMediaPlayer().setEventListener(null);
 	}
 
-	private void cleanupOverlay() {
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.remove(mOverlayFragment);
-		ft.commit();
-	}
-
 	protected void setupVideoSurface() {
 		int surfaceWidth;
 		int surfaceHeight;
@@ -194,8 +194,16 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		}
 
 		double videoAspect, videoWith, displayAspect, displayWidth, displayHeight;
-		displayWidth = surfaceWidth;
-		displayHeight = surfaceHeight;
+
+		//We have to reverse width/height after orientation change (we don't let android handle it to keep the video running)
+		boolean isPortraitMode = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+		if (isPortraitMode && surfaceWidth > surfaceHeight || !isPortraitMode && surfaceWidth < surfaceHeight) {
+			displayWidth = surfaceHeight;
+			displayHeight = surfaceWidth;
+		} else {
+			displayWidth = surfaceWidth;
+			displayHeight = surfaceHeight;
+		}
 
 		videoWith = mVideoVisibleWidth * (double) mSarNum / mSarDen;
 		videoAspect = videoWith / (double) mVideoVisibleHeight;
