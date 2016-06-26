@@ -1,72 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1 beta 9.1" versioncode="369">
-        <change>FIX: MultiWindow Bugs im Video Player</change>
-    </release>
-    <release version="1.1 beta 9" versioncode="368">
-        <change>FIX: Dialog-Farben im "Nacht" Modus</change>
-        <change>FIX: MultiWindow Bug behoben</change>
-    </release>
-    <release version="1.1 beta 8.2" versioncode="367">
-        <change>FIX: MultiWindow Bug behoben</change>
-    </release>
-    <release version="1.1 beta 8" versioncode="365">
-        <change>FIX: Weiter Versuch Android N MultiWindow zu fixen</change>
-        <change>FIX: Abgelehnte Berechtigungsanfragen werden korrekt behandelt (behebt Probleme wenn z.B. keine Berechtigung für Standort gewährt wurde)</change>
-        <change>IMPROVE: Es wird nun erklärt wofür der ungefähre Standort benötigt wird</change>
-        <change>Gebaut mit SDK 24 (aka Android N) und den neuesten Tools und Bibliotheken</change>
-    </release>
-    <release version="1.1 beta 7" versioncode="364">
-        <change>FIX: Doppelte Einträge bei Filmordnern und in der EPG Bouquetwahl</change>
-        <change>Update der libvlc (bringt x86 und amd64 support)</change>
-    </release>
-    <release version="1.1 beta 6.3" versioncode="363">
-        <change>TRYFIX: Abspielen von Videos wird nicht mehr unterbrochen wenn unter Android N der Fokus auf ein anderes Fenster übergeht</change>
-        <change>FIX: Kleinere Fehlerbehebungen</change>
-    </release>
-    <release version="1.1 beta 6.2" versioncode="362">
-        <change>NEU: Hardwarebschleunigung des Videoplayers ist nun einstellbar</change>
-        <change>NEU: Statt hell/dunkel gibt es nun Tag/Nacht Themen mit der Option auf automatisches Umschalten je nach Tageszeit</change>
-    </release>
-    <release version="1.1 beta 6.1" versioncode="361">
-        <change>NEU: Integrierter Videoplayer jetzt mit voller Kanalliste zum zappen</change>
-        <change>FIX: Diverse kleinere Fehler im integrierten VideoPlayer</change>
-        <change>FIX: Encoder wird nun auch bei Aufnahmen benutzt</change>
-        <change>FIX: Kleinere, optische Verbesserungen für 7" Geräte</change>
-    </release>
-    <release version="1.1 beta 6" versioncode="360">
-        <change>NEU: Integrierter Videoplayer mit Infobar und Zap-Funktion</change>
-        <change>FIX: Picons wurden nie auf den "Speicher" synchronisiert selbst wenn es hätte sein sollen. Auf einigen Geräten müssen die Picons einmalig neu synchronisiert werden!</change>
-    </release>
-    <release version="1.1 beta 5" versioncode="359">
-        <change>Aktualisierte Übersetzungen</change>
-        <change>FIX: Fehlerhaft positionierte Texte in Toasts</change>
-        <change>FIX: "Überlagernder Hinweis" bei leerem Titel oder leerer Beschreibung eines Timers</change>
-        <change>FIX: Fehlerhafter Hintergrund von Profil-/Timerlisteneinträgen, besonders beim dunklen Stil</change>
-    </release>
-    <release version="1.1 beta 4.3" versioncode="357">
-        <change>FIX: Speichern/Neu Button in Listen reagiert nicht</change>
-        <change>IMPROVE: Grid basierte Ansichten verschönert</change>
-        <change>FIX: Code aufgeräumt</change>
-    </release>
-    <release version="1.1 beta 4.2" versioncode="356">
-        <change>FIX: Fehlenden Punkt "Nächste Sendung" in der Kanalliste</change>
-        <change>FIX: Optik und Handling von Bookmarks in der Kanalliste</change>
-        <change>FIX: Crash beim Berühren der Reload-Anzeige</change>
-    </release>
-    <release version="1.1 beta 4.1" versioncode="355">
-        <change>FIX: Maximale Anzahl an Spalten in der Kanalliste wurden nicht beachtet</change>
-        <change>FIX: Absturz beim Nutzen der EPG-Suc he</change>
-        <change>FIX: Umschalten - Layout war kaputt, Reload-FAB wurde fälschlicher Weise angezeigt</change>
-        <change>FIX: Virutelle Fernbedienugn zeigte Toasts bei Erfolgereichem Tastendruck</change>
-        <change>NEW: Durchsichtige Statusbar für Geräte mit Lollipop oder neuer</change>
-    </release>git l
-    <release version="1.1 beta 4" versioncode="354">
-        <change>ANMERKUNG: IN 1.1 Beta 4 gab es haufenweise interne Umbauten, so dass wir uns nun wieder in einem richtigen Betatest befinden!</change>
-        <change>Mehr Material Design!</change>
-        <change>Erhebliche interne Umbauten um technisch wieder auf dem aktuellen Stand zu sein</change>
-        <change>Interne Änderungen die durch das Android 6.0 SDK notwendig wurden</change>
-        <change>"EPG"-Fixes mit älteren Versionen des WebInterface</change>
-        <change>Einstellung zum Streamen über den eingebauten Encoder der DM7080 HD oder DM820 HD via rtsp</change>
+    <release version="1.1" versioncode="370">
+        <change>NEU: Integrierter Videoplayer auf VLC-Basis</change>
+        <change>NEU: Support für Encoder-basierte Streams auf DM820 und DM7080</change>
+        <change>NEU: Unterstützung der Android 6.x Berechtigungen</change>
+        <change>NEU: Automatisches Tag/Nacht Thema (Einstellbar, Automatik benötigt ungefähren Standort zur Tag/Nacht-Berechnung)</change>
+        <change>NEU: Android N MultiWindow Unterstützung</change>
+        <change>UPD: UI wurde auf aktuelle Technologien aktualisiert (GROSSE interne Änderungen)</change>
+        <change>FIX: Diverse Fehlerbehbungen (defekter EPG auf älteren Dreamboxen, doppelte Tags, ...)</change>
+        <change>NEU: Fehler die wir noch nicht gefunden haben ;)</change>
     </release>
 </changelog>

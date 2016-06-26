@@ -1,72 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1 beta 9.1" versioncode="369">
-        <change>FIX: MultiWindow Bugs in Video Player</change>
-    </release>
-    <release version="1.1 beta 9" versioncode="368">
-        <change>FIX: Dialog colors in night mode</change>
-        <change>FIX: MultiWindow Bug</change>
-    </release>
-    <release version="1.1 beta 8.2" versioncode="367">
-        <change>FIX: MultiWindow related bugfix</change>
-    </release>
-    <release version="1.1 beta 8" versioncode="365">
-        <change>FIX: Try to fix Android N MultiWindow handling again (blindly though)</change>
-        <change>FIX: Handle denied permissions properly (fixes "blackscreen" after location permission denial)</change>
-        <change>IMPROVE: Show rationale when requesting coarse location permissions</change>
-        <change>Built with SDK 24 (aka Android N) and latest tools and libraries</change>
-    </release>
-    <release version="1.1 beta 7" versioncode="364">
-        <change>FIX: Duplicated entries in Locations and EPG Bouquet Selection</change>
-        <change>Update libvlc (adds x86 and amd64 support)</change>
-    </release>
-    <release version="1.1 beta 6.3" versioncode="363">
-        <change>TRYFIX: Don't stop video on when going into windowed mode on Android N</change>
-        <change>FIX: Smaller fixes</change>
-    </release>
-    <release version="1.1 beta 6.2" versioncode="362">
-        <change>NEW: Configureable Hardware Acceleration for Video Player</change>
-        <change>NEU: Change bright/dark to day/night themes and add the option to auto-toggle the theme depending on time</change>
-    </release>
-    <release version="1.1 beta 6.1" versioncode="361">
-        <change>NEW: Integrated Videoplayer now with full service list for more convenient zapping</change>
-        <change>FIX: Several smaller bugs in the Videoplayer</change>
-        <change>FIX: Use encoder for recordings, too</change>
-        <change>FIX: Small, visual improvements for 7" devices</change>
-    </release>
-    <release version="1.1 beta 6" versioncode="360">
-        <change>NEW: Integrated Videoplayer with Infobar and zap functionality</change>
-        <change>FIX: Picons have never been synced to default "storage", even if they should've. You may have to resync your picons!</change>
-    </release>
-    <release version="1.1 beta 5" versioncode="359">
-        <change>Update Translations</change>
-        <change>FIX: Wrongly positioned textt in Toasts</change>
-        <change>FIX: Ugly "doubled" when timer description/title is empty</change>
-        <change>FIX: Broken timer-/profile list item background (clearly visible with the dark style)</change>
-    </release>
-    <release version="1.1 beta 4.3" versioncode="357">
-        <change>FIX: Save/New FAB broken</change>
-        <change>IMPROVE: Grid based layouts look better now</change>
-        <change>FIX: Code cleanup</change>
-    </release>
-    <release version="1.1 beta 4.2" versioncode="356">
-        <change>FIX: Missing "Next Event" in the service list</change>
-        <change>FIX: Style and handling fo bookmarks in the service list</change>
-        <change>FIX: Crash when touching the reload indicator</change>
-    </release>
-    <release version="1.1 beta 4.1" versioncode="355">
-        <change>FIX: Honor Servicelist max columns setting again</change>
-        <change>FIX: Don't crash when using EPG search</change>
-        <change>FIX: Zap Layout issues, don't show reload button in zap mode</change>
-        <change>FIX: Don't show toasts in VirtualRemote on success</change>
-        <change>NEW: Set Statusbar translucent on Lollipop and above</change>
-    </release>
-    <release version="1.1 beta 4" versioncode="354">
-        <change>NOTE: IN beta 4 there have been lots and lots of internal changes, please be aware that we're be back to real beta testing now!</change>
-        <change>More Material Design!</change>
-        <change>Extensive internal changes so we're back on the latest state of the art</change>
-        <change>Internal changes required for building with android 6.0 SDK</change>
-        <change>"EPG" fixes with older versions of the WebInterface</change>
-        <change>Setting for streaming using the builtin encoder of DM7080 HD or DM820HD using rtsp</change>
+    <release version="1.1" versioncode="370">
+        <change>NEW: Add an integrated VideoPlayer based on VLC</change>
+        <change>NEW: Support for Encoder-based streams on DM7080 and DM820</change>
+        <change>NEW: Proper Android 6.x permission support</change>
+        <change>NEW: Automatic Day/Night Theme switching (configurable in settings, requires coarse location)</change>
+        <change>NEW: Android N MultiWindow support</change>
+        <change>UPD: Latest state-of-the art UI and external libraries (HUGE internal changes!)</change>
+        <change>FIX: Some smaller fixes (e.g. broken EPG with older devices, doubled location/tag entries, ...)</change>
+        <change>NEW: Bugs we haven't yet discovered ;)</change>
     </release>
 </changelog>
