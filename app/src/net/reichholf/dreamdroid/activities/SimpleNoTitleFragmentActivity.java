@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.activities;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.WindowManager;
 
@@ -22,6 +23,8 @@ public class SimpleNoTitleFragmentActivity extends SimpleFragmentActivity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setTheme(R.style.Theme_DreamDroid_NoTitle);
 		mThemeSet = true;
+		if(!getResources().getBoolean(R.bool.is_tablet))
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 		super.onCreate(savedInstanceState);
 	}
 }
