@@ -270,6 +270,10 @@ public class SimpleHttpClient {
 			e.printStackTrace();
 			mError = true;
 			mErrorText = e.getLocalizedMessage();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+			mError = true;
+			mErrorText = e.getLocalizedMessage();
 		} finally {
 			if (conn != null)
 				conn.disconnect();
