@@ -17,13 +17,14 @@ import android.view.View;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.vlc.VLCPlayer;
 
 /**
  * Created by Stephan on 08.04.2015.
  */
 public class MyPreferenceFragment extends PreferenceFragmentCompat implements
-		SharedPreferences.OnSharedPreferenceChangeListener, ActivityCallbackHandler {
+		SharedPreferences.OnSharedPreferenceChangeListener, ActivityCallbackHandler, ActionDialog.DialogActionListener {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -128,6 +129,10 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
+	}
+
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
 	}
 }
 
