@@ -181,6 +181,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	protected void setupVideoSurface() {
+		if(mPlayer == null)
+			return;
 		int surfaceWidth;
 		int surfaceHeight;
 
