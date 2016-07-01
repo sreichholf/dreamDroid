@@ -50,7 +50,7 @@ import java.util.ArrayList;
  */
 
 
-public class ProfileListFragment extends BaseRecyclerFragment implements ActionDialog.DialogActionListener, DetectDevicesTask.DetectDevicesTaskHandler {
+public class ProfileListFragment extends BaseRecyclerFragment implements DetectDevicesTask.DetectDevicesTaskHandler {
 
 	private boolean mIsActionMode;
 	private boolean mIsActionModeRequired;

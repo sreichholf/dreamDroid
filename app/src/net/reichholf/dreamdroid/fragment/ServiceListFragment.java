@@ -76,7 +76,7 @@ import java.util.HashMap;
  *
  * @author sreichholf
  */
-public class ServiceListFragment extends BaseHttpRecyclerEventFragment implements ActionDialog.DialogActionListener {
+public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	private static final int LOADER_BOUQUETLIST_ID = 1;
 
 	public static final String SERVICE_REF_ROOT = "root";

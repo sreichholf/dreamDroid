@@ -22,6 +22,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
@@ -32,7 +33,7 @@ import net.reichholf.dreamdroid.helpers.Statics;
  * @author sre
  */
 
-public abstract class BaseFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment {
+public abstract class BaseFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment, ActionDialog.DialogActionListener {
 	private FragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
 	protected boolean mHasFabReload = false;
@@ -198,5 +199,9 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 				return true;
 			}
 		});
+	}
+
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
 	}
 }

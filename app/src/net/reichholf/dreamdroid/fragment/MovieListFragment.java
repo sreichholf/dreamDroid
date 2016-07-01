@@ -54,8 +54,7 @@ import java.util.Arrays;
  *
  * @author sreichholf
  */
-public class MovieListFragment extends BaseHttpRecyclerFragment implements ActionDialog.DialogActionListener,
-		MultiChoiceDialog.MultiChoiceDialogListener {
+public class MovieListFragment extends BaseHttpRecyclerFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private String mCurrentLocation;
 	private int mSelectedLocationPosition;

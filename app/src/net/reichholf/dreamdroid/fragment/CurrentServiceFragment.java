@@ -45,7 +45,7 @@ import android.widget.TextView;
  * @author sreichholf
  * 
  */
-public class CurrentServiceFragment extends BaseHttpFragment implements ActionDialog.DialogActionListener {
+public class CurrentServiceFragment extends BaseHttpFragment {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "CurrentServiceFragment";
 

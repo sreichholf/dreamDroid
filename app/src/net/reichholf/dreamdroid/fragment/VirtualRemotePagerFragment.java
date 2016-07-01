@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 /**
@@ -88,4 +89,9 @@ public class VirtualRemotePagerFragment extends BaseHttpFragment {
 
 		return view;
 	}
+
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
+	}
+
 }

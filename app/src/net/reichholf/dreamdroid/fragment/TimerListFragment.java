@@ -46,7 +46,7 @@ import java.util.ArrayList;
  *
  * @author sreichholf
  */
-public class TimerListFragment extends BaseHttpRecyclerFragment implements ActionDialog.DialogActionListener {
+public class TimerListFragment extends BaseHttpRecyclerFragment {
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
 		// Called when the action mode is created; startActionMode() was called
