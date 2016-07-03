@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1" versioncode="370">
+    <release version="1.1-372" versioncode="372">
+        <change>FIX: Serveral smaller errors that caused crashes</change>
+        <change>FIX: The is a lot smaller again</change>
+    </release>
+    <release version="1.1" versioncode="371">
         <change>NEW: Add an integrated VideoPlayer based on VLC</change>
         <change>NEW: Support for Encoder-based streams on DM7080 and DM820</change>
         <change>NEW: Proper Android 6.x permission support</change>

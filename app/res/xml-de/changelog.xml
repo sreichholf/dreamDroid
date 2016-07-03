@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1" versioncode="370">
+    <release version="1.1-372" versioncode="372">
+        <change>FIX: Diverse kleinere Fehler behoben die unter gewissen Umständen zu Abstürzen führten</change>
+        <change>FIX: Die App ist nun wieder deutlich kleiner</change>
+    </release>
+    <release version="1.1" versioncode="371">
         <change>NEU: Integrierter Videoplayer auf VLC-Basis</change>
         <change>NEU: Support für Encoder-basierte Streams auf DM820 und DM7080</change>
         <change>NEU: Unterstützung der Android 6.x Berechtigungen</change>
