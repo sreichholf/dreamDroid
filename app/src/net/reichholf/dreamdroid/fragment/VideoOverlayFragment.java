@@ -54,6 +54,8 @@ import java.util.HashMap;
 public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener {
 
+	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
+
 	private static final String TAG = "VideoOverlayFragment";
 	private final int[] sOverlayViews = {R.id.service_detail_root};
 	private final int[] sZapOverlayViews = {R.id.servicelist_root};
@@ -161,8 +163,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		serviceInfoChanged();
+		onServiceInfoChanged(true);
 	}
 
 	@Override
@@ -188,11 +189,17 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				mServiceInfo = service;
 				String eventid = mServiceInfo.getString(Event.KEY_EVENT_ID, "-1");
 				if (!eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
-					serviceInfoChanged();
+					onServiceInfoChanged(false);
+					if(isServiceDetailVisible())
+						showZapOverlays();
 			}
 			mServicesView.getAdapter().notifyDataSetChanged();
-			serviceInfoChanged();
 		}
+	}
+
+	private boolean isServiceDetailVisible() {
+		View root = getView();
+		return root != null && root.findViewById(R.id.service_detail_root).getVisibility() == View.VISIBLE;
 	}
 
 	@Override
@@ -225,8 +232,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		getArguments().getString(BOUQUET_REFERENCE, mBouquetRef);
 		getArguments().putSerializable(SERVICE_INFO, mServiceInfo);
 		((VideoActivity) getActivity()).handleIntent(streamingIntent);
-		serviceInfoChanged();
-		hideZapOverlays();
+		onServiceInfoChanged(true);
 	}
 
 	private void next() {
@@ -259,9 +265,12 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		return -1;
 	}
 
-	private void serviceInfoChanged() {
+	private void onServiceInfoChanged(boolean doShowOverlay) {
 		Log.w(TAG, "service info changed!");
-		showOverlays();
+		if(doShowOverlay)
+			showOverlays(false);
+		else
+			updateViews();
 		if (mServiceInfo == null)
 			return;
 		mHandler.removeCallbacks(mIssueReloadRunnable);
@@ -362,7 +371,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onResume() {
 		super.onResume();
-		showOverlays();
+		showOverlays(false);
 		reload();
 	}
 
@@ -374,10 +383,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	public void autohide() {
-		mHandler.postDelayed(mAutoHideRunnable, 10000);
+		mHandler.postDelayed(mAutoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT);
 	}
 
-	public void showOverlays() {
+	public void showOverlays(boolean doShowZapOverlays) {
 		View view = getView();
 		if (view == null)
 			return;
@@ -385,8 +394,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		updateViews();
 		for (int id : sOverlayViews)
 			fadeInView(view.findViewById(id));
-		showZapOverlays();
-		autohide();
+		if(doShowZapOverlays)
+			showZapOverlays();
+		else
+			autohide();
 	}
 
 	public void hideOverlays() {
@@ -409,6 +420,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		for (int id : sZapOverlayViews)
 			fadeInView(view.findViewById(id));
+		autohide();
 	}
 
 	private void hideZapOverlays() {
@@ -448,7 +460,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (sdroot.getVisibility() == View.VISIBLE)
 			hideOverlays();
 		else
-			showOverlays();
+			showOverlays(true);
 	}
 
 	@Override
@@ -462,6 +474,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			case MediaPlayer.Event.Playing: {
 				View progressView = getView().findViewById(R.id.video_load_progress);
 				fadeOutView(progressView);
+				hideOverlays();
 				break;
 			}
 			case MediaPlayer.Event.EncounteredError:

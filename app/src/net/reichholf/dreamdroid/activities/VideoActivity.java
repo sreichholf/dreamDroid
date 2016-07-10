@@ -98,13 +98,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		}
 	}
 
-	protected boolean isMarshmallowOrEarlier() {
-		boolean isMarshmallowOrEarlier = Build.VERSION.SDK_INT <= 23;
-		if (Build.VERSION.SDK_INT >= 23)
-			isMarshmallowOrEarlier &= Build.VERSION.PREVIEW_SDK_INT == 0;
-		return isMarshmallowOrEarlier;
-	}
-
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -114,7 +107,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mOverlayFragment.showOverlays();
+		mOverlayFragment.showOverlays(true);
 	}
 
 	@Override
