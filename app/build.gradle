@@ -88,6 +88,9 @@ android {
     buildTypes {
         debug {
             versionNameSuffix "-DEBUG"
+            jackOptions {
+                enabled false
+            }
         }
         release {
             debuggable false
@@ -97,7 +100,7 @@ android {
         abortOnError false
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
