@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
@@ -57,7 +58,7 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 				return;
 			}
 			Event.supplementReadables(service);
-			Picon.setPiconForView(mContext, holder.picon, service);
+			Picon.setPiconForView(mContext, holder.picon, service, Statics.TAG_PICON);
 			holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
 			holder.root.setClickable(false);
 			holder.parentService.setVisibility(View.VISIBLE);

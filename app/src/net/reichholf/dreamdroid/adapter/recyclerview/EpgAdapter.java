@@ -4,6 +4,7 @@ import android.widget.ImageView;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 
 import java.util.ArrayList;
@@ -21,6 +22,6 @@ public class EpgAdapter extends SimpleTextAdapter {
 		super.onBindViewHolder(holder, position);
 		ImageView picon = (ImageView) holder.itemView.findViewById(R.id.picon);
 		ExtendedHashMap service = mData.get(position);
-		Picon.setPiconForView(holder.itemView.getContext(), picon, service);
+		Picon.setPiconForView(holder.itemView.getContext(), picon, service, Statics.TAG_PICON);
 	}
 }

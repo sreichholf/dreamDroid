@@ -6,13 +6,22 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.content.Loader;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -26,18 +35,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventId
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import android.app.ProgressDialog;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.content.Loader;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Shows some information about the service currently running on TV
@@ -222,7 +222,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 
 			ImageView piconView = (ImageView) getView().findViewById(R.id.picon);
-			Picon.setPiconForView(getAppCompatActivity(), piconView, mService);
+			Picon.setPiconForView(getAppCompatActivity(), piconView, mService, Statics.TAG_PICON);
 		} else {
 			showToast(getText(R.string.not_available));
 		}

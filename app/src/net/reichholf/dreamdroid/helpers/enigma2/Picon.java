@@ -7,16 +7,12 @@
 package net.reichholf.dreamdroid.helpers.enigma2;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.squareup.picasso.Picasso;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -27,8 +23,6 @@ import java.io.File;
  * @author sre
  */
 public class Picon {
-	private static DisplayImageOptions sDisplayOptions = new DisplayImageOptions.Builder().resetViewBeforeLoading(true).cacheInMemory(true).build();
-	private static AnimateImageDisplayListener sAnimateImageDisplayListener = new AnimateImageDisplayListener();
 
 	public static String getBasepath(Context context){
 		if(!Environment.getExternalStorageDirectory().canWrite())
@@ -37,18 +31,6 @@ public class Picon {
 		String basePath = String.format("%s%sdreamDroid%spicons%s", Environment.getExternalStorageDirectory()
 				.getAbsolutePath(), File.separator, File.separator, File.separator);
 		return basePath;
-	}
-
-	public static class AnimateImageDisplayListener extends SimpleImageLoadingListener {
-		@Override
-		public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-			if (!PreferenceManager.getDefaultSharedPreferences(view.getContext()).getBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-				return;
-			if (loadedImage != null) {
-				ImageView imageView = (ImageView) view;
-				FadeInBitmapDisplayer.animate(imageView, 200);
-			}
-		}
 	}
 
 	public static String getPiconFileName(Context context, ExtendedHashMap service, boolean useName) {
@@ -75,13 +57,7 @@ public class Picon {
 		return fileName;
 	}
 
-	public static void setPiconForView(Context context, ImageView piconView,
-									   ExtendedHashMap service) {
-		setPiconForView(context, piconView, service, sAnimateImageDisplayListener);
-	}
-
-	public static void setPiconForView(Context context, ImageView piconView,
-									   ExtendedHashMap service, AnimateImageDisplayListener animateImageDisplayListener) {
+	public static void setPiconForView(Context context, ImageView piconView, ExtendedHashMap service, String tag) {
 		if (piconView == null) {
 			return;
 		}
@@ -99,10 +75,9 @@ public class Picon {
 		if (piconView.getVisibility() != View.VISIBLE)
 			piconView.setVisibility(View.VISIBLE);
 
-		ImageLoader.getInstance().displayImage("file://" + fileName, piconView, sDisplayOptions, animateImageDisplayListener);
+		Picasso.with(context).load(String.format("file://%s", fileName)).fit().centerInside().tag(tag).into(piconView);
 	}
 
 	public static void clearCache() {
-		ImageLoader.getInstance().clearMemoryCache();
 	}
 }

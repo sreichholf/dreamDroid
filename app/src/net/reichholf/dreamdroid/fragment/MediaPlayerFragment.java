@@ -44,7 +44,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
+import com.squareup.picasso.Picasso;
 
 /**
  * Activity to show a list of all existing media files of the target device
@@ -60,7 +60,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	private int mMediaIndex;
 	private SimpleChoiceDialog mChoice;
 	private ArrayList<NameValuePair> mFileListParams;
-	protected ImageLoader mImageLoader = ImageLoader.getInstance();
 	static int PLAY_MODE = 0;
 	static int STOP_MODE = 1;
 	int mMode = STOP_MODE;
@@ -283,7 +282,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
 				// String imageUrl =
 				// "http://192.168.2.100/file?file=/tmp/.id3coverart";
-				mImageLoader.displayImage(imageUrl, imageView);
+				Picasso.with(getContext()).load(imageUrl).fit().centerInside().into(imageView);
 			}
 
 			// check for changes in options menu
@@ -655,7 +654,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				params.add(new NameValuePair("file", "/tmp/.id3coverart"));
 
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
-				mImageLoader.displayImage(imageUrl, imageView);
+				Picasso.with(getContext()).load(imageUrl).fit().centerInside().into(imageView);
 
 				getCurrentMediaInfo();
 			}

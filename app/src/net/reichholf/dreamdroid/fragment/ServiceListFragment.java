@@ -29,8 +29,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
-
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -38,7 +36,6 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -196,7 +193,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 
 		mNavList.setFastScrollEnabled(true);
 		//TODO Detaillist FastScroll??!
-		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(ImageLoader.getInstance(), true, true);
+		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
 		mDetailList.addOnScrollListener(listener);
 
 		mSlidingPane = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);

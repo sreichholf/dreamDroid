@@ -30,6 +30,7 @@ import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
@@ -310,7 +311,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 		if (mServiceInfo != null) {
 			ImageView picon = (ImageView) view.findViewById(R.id.picon);
-			Picon.setPiconForView(getActivity(), picon, mServiceInfo);
+			Picon.setPiconForView(getActivity(), picon, mServiceInfo, Statics.TAG_PICON);
 
 			TextView nowStart = (TextView) view.findViewById(R.id.event_now_start);
 			TextView nowDuration = (TextView) view.findViewById(R.id.event_now_duration);

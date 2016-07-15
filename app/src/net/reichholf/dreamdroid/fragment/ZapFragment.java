@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ZapAdapter;
@@ -23,6 +21,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
+import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
@@ -68,7 +67,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 
 		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
 		recyclerView.setLayoutManager(new GridLayoutManager(getAppCompatActivity(), 3));
-		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(ImageLoader.getInstance(), true, true);
+		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
 		recyclerView.addOnScrollListener(listener);
 
 		restoreState(savedInstanceState);

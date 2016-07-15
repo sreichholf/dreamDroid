@@ -95,4 +95,5 @@ public class Statics {
 
 
 	public static final String INTENT_ACTION_PICK_BOUQUET = "pick_bouquet";
+	public static final String TAG_PICON = "picon";
 }

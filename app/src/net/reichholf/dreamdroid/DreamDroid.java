@@ -6,39 +6,30 @@
 
 package net.reichholf.dreamdroid;
 
+import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
+import android.util.Log;
+
+import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
+
+import org.piwik.sdk.PiwikApplication;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
-
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
-
-import android.Manifest;
-import android.app.Application;
-
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
-import android.util.Log;
-
-import org.piwik.sdk.PiwikApplication;
 
 /**
  * @author sre
@@ -153,26 +144,6 @@ public class DreamDroid extends PiwikApplication {
 		sLocations = new ArrayList<>();
 		sTags = new ArrayList<>();
 		loadCurrentProfile(this);
-
-		initImageLoader(getApplicationContext());
-
-	}
-
-	public static void initImageLoader(Context context) {
-		if (ImageLoader.getInstance().isInited())
-			return;
-		// This configuration tuning is custom. You can tune every option, you may tune some of them,
-		// or you can create default configuration by
-		//  ImageLoaderConfiguration.createDefault(this);
-		// method.
-		ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
-				.threadPoolSize(java.lang.Runtime.getRuntime().availableProcessors())
-				.threadPriority(Thread.NORM_PRIORITY - 2)
-				.discCacheFileNameGenerator(new Md5FileNameGenerator())
-				.tasksProcessingOrder(QueueProcessingType.FIFO)
-				.build();
-		// Initialize ImageLoader with configuration.
-		ImageLoader.getInstance().init(config);
 	}
 
 	public static void disableNowNext() {
