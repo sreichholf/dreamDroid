@@ -68,8 +68,8 @@ public class PositiveNegativeDialog extends ActionDialog {
 		setRetainInstance(true);
 		init();
 		MaterialDialog.Builder builder;
-		ContextThemeWrapper context = new ContextThemeWrapper(getActivity(), DreamDroid.getDialogTheme(getActivity()));
-		builder = new MaterialDialog.Builder(context);
+
+		builder = new MaterialDialog.Builder(getActivity());
 
 		builder.content(getString(mMessageId))
 				.title(getArguments().getString("title"))
