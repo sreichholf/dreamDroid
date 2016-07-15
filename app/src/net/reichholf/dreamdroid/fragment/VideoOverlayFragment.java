@@ -2,7 +2,9 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -10,9 +12,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -48,7 +53,6 @@ import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 import org.videolan.libvlc.MediaPlayer;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -57,7 +61,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
 
-	private static final String TAG = "VideoOverlayFragment";
+	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
 	private final int[] sOverlayViews = {R.id.service_detail_root};
 	private final int[] sZapOverlayViews = {R.id.servicelist_root};
 	static float sOverlayAlpha = 0.85f;
@@ -66,6 +70,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	public final String SERVICE_INFO = "serviceInfo";
 	public final String BOUQUET_REFERENCE = "bouquetRef";
 	public final String SERVICE_REFERENCE = "serviceRef";
+
+	protected int mSurfaceHeight;
+	protected int mSurfaceWidth;
+
 	protected String mServiceName;
 	protected String mServiceRef;
 	protected String mBouquetRef;
@@ -79,6 +87,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	protected AutofitRecyclerView mServicesView;
 	protected ItemClickSupport mItemClickSupport;
+	private GestureDetectorCompat mGestureDector;
+	private AudioManager mAudioManager;
+	private int mAudioMaxVol;
+	private float mVolume;
 
 	public VideoOverlayFragment() {
 	}
@@ -109,6 +121,12 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				reload();
 			}
 		};
+
+		mAudioManager = (AudioManager) getActivity().getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+		mAudioMaxVol = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+
+		mVolume = -1f;
+
 		autohide();
 		reload();
 	}
@@ -136,29 +154,55 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			}
 		});
 
-		view.findViewById(R.id.overlay_root).setOnTouchListener(new View.OnTouchListener() {
-			private static final int MAX_CLICK_DURATION = 200;
-			private long mStartClickTime;
+		mGestureDector = new GestureDetectorCompat(view.findViewById(R.id.overlay_root).getContext(), new GestureDetector.SimpleOnGestureListener(){
+			@Override
+			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+				Log.d(LOG_TAG, String.format("distanceY=%s, DeltaY=%s", distanceY, e1.getY() - e2.getY()));
+				if(Math.abs(distanceY) > Math.abs(distanceX )&& distanceY != 0f)
+					onVolumeTouch(distanceY);
+				return true;
+			}
 
 			@Override
+			public boolean onSingleTapUp(MotionEvent e) {
+				toggleViews();
+				return true;
+			}
+		});
+
+		view.findViewById(R.id.overlay_root).setOnTouchListener(new View.OnTouchListener() {
+			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				switch (event.getAction()) {
-					case MotionEvent.ACTION_DOWN: {
-						mStartClickTime = Calendar.getInstance().getTimeInMillis();
-						break;
-					}
-					case MotionEvent.ACTION_UP: {
-						long clickDuration = Calendar.getInstance().getTimeInMillis() - mStartClickTime;
-						if (clickDuration < MAX_CLICK_DURATION) {
-							toggleViews();
-						}
-					}
-				}
+				DisplayMetrics metrics = new DisplayMetrics();
+				getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+				if (mSurfaceHeight == 0)
+					mSurfaceHeight = Math.min(metrics.widthPixels, metrics.heightPixels);
+				if(mSurfaceWidth == 0)
+					mSurfaceWidth = Math.max(metrics.widthPixels, metrics.heightPixels);
+				mGestureDector.onTouchEvent(event);
 				return true;
 			}
 		});
 
 		return view;
+	}
+
+	private void onVolumeTouch(float distance_y) {
+		float delta = (distance_y / mSurfaceHeight) * 100;
+		float currentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / mAudioMaxVol * 100;
+		if(mVolume > 0)
+			currentVolume = mVolume;
+
+		currentVolume += delta;
+		currentVolume = Math.max(Math.min(currentVolume, 100f), 0f);
+		mVolume = currentVolume;
+		setVolume((int)(currentVolume / 100 * mAudioMaxVol));
+	}
+
+	protected void setVolume(int volume) {
+		int currentVol = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		if(volume != currentVol)
+			mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI);
 	}
 
 	@Override
@@ -267,7 +311,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void onServiceInfoChanged(boolean doShowOverlay) {
-		Log.w(TAG, "service info changed!");
+		Log.d(LOG_TAG, "service info changed!");
 		if(doShowOverlay)
 			showOverlays(false);
 		else
@@ -285,7 +329,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			long updateAt = SystemClock.uptimeMillis() + eventEnd - now;
 			mHandler.postAtTime(mIssueReloadRunnable, updateAt);
 		} else {
-			Log.i(TAG, "No Eventinfo present, will update in 5 Minutes!");
+			Log.i(LOG_TAG, "No Eventinfo present, will update in 5 Minutes!");
 			mHandler.postDelayed(mIssueReloadRunnable, 300000); //update in 5 minutes
 		}
 	}
