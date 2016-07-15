@@ -387,10 +387,6 @@ public class DreamDroid extends PiwikApplication {
 		activity.getDelegate().setLocalNightMode(mode);
 	}
 
-	public static int getDialogTheme(Context context) {
-			return R.style.Theme_DreamDroid_Dialog;
-	}
-
 	public static boolean checkInitial(Context context, int which) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		int mask = sp.getInt(PREFS_KEY_INITIALBITS, 0);
