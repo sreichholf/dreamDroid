@@ -48,7 +48,7 @@ import de.duenndns.ssl.MemorizingTrustManager;
 /**
  * Created by Stephan on 06.11.13.
  */
-public class BaseActivity extends AppCompatActivity implements ActionDialog.DialogActionListener {
+public class BaseActivity extends AppCompatActivity implements ActionDialog.DialogActionListener, SharedPreferences.OnSharedPreferenceChangeListener {
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
 	public static final int REQUEST_PERMISSION_ACCESS_COARSE_LOCATION = 1;
 	private static String TAG = BaseActivity.class.getSimpleName();
@@ -167,12 +167,13 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	private void initPermissions(boolean rationaleShown) {
-		// Here, thisActivity is the current activity
-		if (ContextCompat.checkSelfPermission(this,
-				Manifest.permission.ACCESS_COARSE_LOCATION)
-				!= PackageManager.PERMISSION_GRANTED) {
-
-			if( ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION) && !rationaleShown) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+		sp.registerOnSharedPreferenceChangeListener(this);
+		int currentTheme = Integer.parseInt(sp.getString("theme_type", "0"));
+		if (currentTheme != 0)
+			return;
+		 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+			if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION) && !rationaleShown) {
 				PositiveNegativeDialog rationale = PositiveNegativeDialog.newInstance(getString(R.string.location_rationale_title), R.string.location_rationale, R.string.ok, Statics.ACTION_LOCATION_RATIONALE_DONE);
 				FragmentManager fm = getSupportFragmentManager();
 				rationale.show(fm, "location_rationale");
@@ -266,6 +267,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		super.onDestroy();
 		if (mIabHelper != null) mIabHelper.dispose();
 		mIabHelper = null;
+		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
 	}
 
 	@Override
@@ -287,11 +289,11 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
 		switch (requestCode) {
 			case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
-				if( granted )
+				if (granted)
 					callPiconSyncIntent();
 				break;
 			case REQUEST_PERMISSION_ACCESS_COARSE_LOCATION:
-				if( granted )
+				if (granted)
 					recreate();
 				break;
 			default:
@@ -301,7 +303,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	public void startPiconSync() {
-		if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
 			callPiconSyncIntent();
 		else
 			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
@@ -327,4 +329,9 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		return false;
 	}
 
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key))
+			initPermissions(false);
+	}
 }
