@@ -22,6 +22,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -154,12 +156,22 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			}
 		});
 
-		mGestureDector = new GestureDetectorCompat(view.findViewById(R.id.overlay_root).getContext(), new GestureDetector.SimpleOnGestureListener(){
+		mGestureDector = new GestureDetectorCompat(view.findViewById(R.id.overlay_root).getContext(), new GestureDetector.SimpleOnGestureListener() {
 			@Override
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 				Log.d(LOG_TAG, String.format("distanceY=%s, DeltaY=%s", distanceY, e1.getY() - e2.getY()));
-				if(Math.abs(distanceY) > Math.abs(distanceX )&& distanceY != 0f)
-					onVolumeTouch(distanceY);
+				DisplayMetrics metrics = new DisplayMetrics();
+				getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+				boolean isRight = e1.getRawX() > (4 * metrics.widthPixels / 7);
+				boolean isLeft = e1.getRawX() < (3 * metrics.widthPixels / 7);
+
+				if (Math.abs(distanceY) > Math.abs(distanceX) && distanceY != 0f) {
+					if (isRight)
+						onVolumeTouch(distanceY);
+					else if (isLeft)
+						onBrightnessTouch(distanceY);
+				}
+
 				return true;
 			}
 
@@ -177,7 +189,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 				if (mSurfaceHeight == 0)
 					mSurfaceHeight = Math.min(metrics.widthPixels, metrics.heightPixels);
-				if(mSurfaceWidth == 0)
+				if (mSurfaceWidth == 0)
 					mSurfaceWidth = Math.max(metrics.widthPixels, metrics.heightPixels);
 				mGestureDector.onTouchEvent(event);
 				return true;
@@ -190,20 +202,30 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private void onVolumeTouch(float distance_y) {
 		float delta = (distance_y / mSurfaceHeight) * 100;
 		float currentVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / mAudioMaxVol * 100;
-		if(mVolume > 0)
+		if (mVolume > 0)
 			currentVolume = mVolume;
 
 		currentVolume += delta;
 		currentVolume = Math.max(Math.min(currentVolume, 100f), 0f);
 		mVolume = currentVolume;
-		setVolume((int)(currentVolume / 100 * mAudioMaxVol));
+		setVolume((int) (currentVolume / 100 * mAudioMaxVol));
 	}
 
 	protected void setVolume(int volume) {
 		int currentVol = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-		if(volume != currentVol)
+		if (volume != currentVol)
 			mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI);
 	}
+
+	private void onBrightnessTouch(float distance_y) {
+		float delta = distance_y / mSurfaceHeight;
+
+		Window window = getActivity().getWindow();
+		WindowManager.LayoutParams layoutParams = window.getAttributes();
+		layoutParams.screenBrightness = Math.min(Math.max(layoutParams.screenBrightness + delta, 0.01f), 1f);
+		window.setAttributes(layoutParams);
+	}
+
 
 	@Override
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -235,8 +257,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				String eventid = mServiceInfo.getString(Event.KEY_EVENT_ID, "-1");
 				if (!eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
 					onServiceInfoChanged(false);
-					if(isServiceDetailVisible())
-						showZapOverlays();
+				if (isServiceDetailVisible())
+					showZapOverlays();
 			}
 			mServicesView.getAdapter().notifyDataSetChanged();
 		}
@@ -312,7 +334,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	private void onServiceInfoChanged(boolean doShowOverlay) {
 		Log.d(LOG_TAG, "service info changed!");
-		if(doShowOverlay)
+		if (doShowOverlay)
 			showOverlays(false);
 		else
 			updateViews();
@@ -439,7 +461,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		updateViews();
 		for (int id : sOverlayViews)
 			fadeInView(view.findViewById(id));
-		if(doShowZapOverlays)
+		if (doShowZapOverlays)
 			showZapOverlays();
 		else
 			autohide();
