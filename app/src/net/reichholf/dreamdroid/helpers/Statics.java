@@ -62,6 +62,7 @@ public class Statics {
 	public static final int ITEM_PICK_END_DATE = 0x6029;
 	public static final int ITEM_PICK_REPEATED = 0x6030;
 	public static final int ITEM_PICK_TAGS = 0x6031;
+	public static final int ITEM_SELECT_LOCATION = 0x6033;
 	public static final int ITEM_OVERVIEW = R.id.menu_overview;
 	public static final int ITEM_SET_DEFAULT = R.id.menu_default;
     public static final int ITEM_SYNC_EPG = R.id.menu_sync_epg;
@@ -96,4 +97,5 @@ public class Statics {
 
 	public static final String INTENT_ACTION_PICK_BOUQUET = "pick_bouquet";
 	public static final String TAG_PICON = "picon";
+
 }

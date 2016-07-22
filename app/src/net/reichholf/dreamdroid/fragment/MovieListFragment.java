@@ -14,24 +14,21 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBar.OnNavigationListener;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -57,7 +54,6 @@ import java.util.Arrays;
 public class MovieListFragment extends BaseHttpRecyclerFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private String mCurrentLocation;
-	private int mSelectedLocationPosition;
 
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
@@ -66,28 +62,32 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 
 	private ExtendedHashMap mMovie;
 	private ProgressDialog mProgress;
-	private ArrayAdapter<String> mLocationAdapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
 		mEnableReload = true;
+		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
 
-		mCurrentLocation = "/hdd/movie/";
-		mSelectedLocationPosition = 0;
+		mCurrentLocation = "/media/hdd/movie/";
 
 		if (savedInstanceState == null) {
 			mSelectedTags = new ArrayList<>();
 			mOldTags = new ArrayList<>();
 			mReload = true;
+			if(!(DreamDroid.getLocations().indexOf(mCurrentLocation) >= 0)) {
+				for (String location : DreamDroid.getLocations()) {
+					mCurrentLocation = location;
+					break;
+				}
+			}
 		} else {
 			mMovie = savedInstanceState.getParcelable("movie");
 			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
 			mOldTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
 			mCurrentLocation = savedInstanceState.getString("currentLocation");
-			mSelectedLocationPosition = savedInstanceState.getInt("selectedLocationPosition", 0);
 		}
 	}
 
@@ -102,51 +102,20 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	}
 
 	@Override
-	public void onResume() {
-		setupListNavigation();
-		super.onResume();
-	}
-
-	public void setupListNavigation() {
-		ActionBar actionBar = getAppCompatActivity().getSupportActionBar();
-		if (actionBar.getNavigationMode() == ActionBar.NAVIGATION_MODE_LIST)
-			return;
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-
-		mLocationAdapter = new ArrayAdapter<>(actionBar.getThemedContext(),
-				R.layout.support_simple_spinner_dropdown_item);
-
-		for (String location : DreamDroid.getLocations()) {
-			mLocationAdapter.add(location);
-		}
-
-		int pos = mLocationAdapter.getPosition(mCurrentLocation);
-		if (pos < 0)
-			pos = 0;
-		if (pos != mSelectedLocationPosition)
-			mSelectedLocationPosition = pos;
-
-		actionBar.setListNavigationCallbacks(mLocationAdapter, new OnNavigationListener() {
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		registerFab(R.id.fab_main, R.string.choose_location, R.drawable.ic_action_home, new View.OnClickListener() {
 			@Override
-			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-				mSelectedLocationPosition = itemPosition;
-				if (DreamDroid.getLocations().size() > itemPosition) {
-					String selectedLoc = mLocationAdapter.getItem(itemPosition);
-					if (!selectedLoc.equals(mCurrentLocation)) {
-						mCurrentLocation = selectedLoc;
-						reload();
-					}
-				}
-				return true;
+			public void onClick(View v) {
+				onItemSelected(Statics.ITEM_SELECT_LOCATION);
 			}
 		});
-		actionBar.setSelectedNavigationItem(mSelectedLocationPosition);
 	}
 
 	@Override
-	public void onPause() {
-		getAppCompatActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-		super.onPause();
+	public void onResume() {
+		super.onResume();
+		reload();
 	}
 
 	@Override
@@ -177,7 +146,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		}
 		outState.putStringArray("oldTags", oldTags);
 		outState.putString("currentLocation", mCurrentLocation);
-		outState.putInt("selectedLocationPosition", mSelectedLocationPosition);
 
 		super.onSaveInstanceState(outState);
 	}
@@ -188,6 +156,8 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 			case Statics.ITEM_TAGS:
 				pickTags();
 				return true;
+			case Statics.ITEM_SELECT_LOCATION:
+				selectLocation();
 			default:
 				return super.onItemSelected(id);
 		}
@@ -200,9 +170,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		int tc = 0;
 		for (String tag : DreamDroid.getTags()) {
 			tags[tc] = tag;
-
 			selectedTags[tc] = mSelectedTags.contains(tag);
-
 			tc++;
 		}
 
@@ -214,6 +182,19 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 				R.string.cancel);
 
 		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
+	}
+
+	protected void selectLocation() {
+		int len = DreamDroid.getLocations().size();
+		CharSequence[] locations = new CharSequence[len];
+		int[] locationIds = new int[locations.length];
+		for(int i=0; i<len;++i){
+			locations[i] = DreamDroid.getLocations().get(i);
+			locationIds[i] = i;
+		}
+
+		SimpleChoiceDialog f = SimpleChoiceDialog.newInstance(getString(R.string.choose_location), locations, locationIds);
+		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_location");
 	}
 
 	@Override
@@ -230,7 +211,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	private void onMovieItemClick(View view, int position, boolean isLong) {
 	mMovie = mMapList.get(position);
 		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
-				"instant_zap", false);
+				DreamDroid.PREFS_KEY_INSTANT_ZAP, false);
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
 		} else {
@@ -310,18 +291,25 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		if (!isResumed())
 			return;
 		super.onLoadFinished(loader, result);
-
-		mLocationAdapter.clear();
-		for (String location : DreamDroid.getLocations()) {
-			mLocationAdapter.add(location);
-		}
-
-		mSelectedLocationPosition = mLocationAdapter.getPosition(mCurrentLocation);
-		getAppCompatActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedLocationPosition);
+		getAppCompatActivity().setTitle(mCurrentLocation);
 	}
 
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		if("dialog_pick_location".equals(dialogTag)) {
+			String selectedLoc = DreamDroid.getLocations().get(action);
+			if (!selectedLoc.equals(mCurrentLocation)) {
+				mCurrentLocation = selectedLoc;
+				reload();
+			}
+			return;
+		}
+
 		onMovieAction(action);
+	}
+
+	@Override
+	protected void reload() {
+		super.reload();
 	}
 
 	public boolean onMovieAction(int action) {
