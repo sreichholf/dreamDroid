@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1-373" versioncode="373">
+        <change>NEU: Gesten für Helligkeit und Lautstärke im Videoplayer (Helligkeit links, Lautstärke rechts)</change>
+        <change>FIX: Unter Android >= 6.0 wir die Berechtigung für den Standort jetzt erst angefragt wenn das Thema manuell auf "Auto" gestellt wird. Neues Standard Thema ist "Tag"</change>
+        <change>BESSER: Das Verhalten des Videoplayers in Sachen "was wird angezeigt und was nicht" wurde verbessert</change>
+        <change>BESSER: Die Ordnerwahl in der Filmliste basiert nun auf einem Floating Action Button</change>
+        <change>TEC: Wechsel von UniversalImageLoader zu Picasso</change>
+        <change>TEC: Cleanups und Aktualisierung externer Bibliotheken</change>
+    </release>
     <release version="1.1-372" versioncode="372">
         <change>FIX: Diverse kleinere Fehler behoben die unter gewissen Umständen zu Abstürzen führten</change>
         <change>FIX: Die App ist nun wieder deutlich kleiner</change>

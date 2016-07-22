@@ -43,7 +43,9 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 372
+        versionCode 373
+        versionName="1.1-373"
+
         jackOptions {
             enabled true
         }
