@@ -10,6 +10,8 @@ import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 
+import java.util.ArrayList;
+
 /**
  * @author sreichholf
  * 
@@ -71,5 +73,24 @@ public class Event{
 				event.put(prefix.concat(KEY_EVENT_TITLE), "N/A");
 			}
 		}
+	}
+
+	public static ExtendedHashMap fromNext(ExtendedHashMap serviceNowNext) {
+		ExtendedHashMap event = new ExtendedHashMap(serviceNowNext);
+		Object[] keys = event.keySet().toArray();
+		ArrayList<String> converted = new ArrayList<>();
+		for (int i=0; i<keys.length; ++i) {
+			String key = (String) keys[i];
+			if (key.startsWith(Event.PREFIX_NEXT)) {
+				String value = (String) event.get(key);
+				event.remove(key);
+				key = key.replaceFirst(Event.PREFIX_NEXT, "");
+				event.put(key, value);
+				converted.add(key);
+			} else if (!key.equals(Event.KEY_SERVICE_NAME) && !key.equals(Event.KEY_SERVICE_REFERENCE) && !converted.contains(key)) {
+				event.remove(key);
+			}
+		}
+		return event;
 	}
 }

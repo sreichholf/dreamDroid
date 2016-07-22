@@ -690,29 +690,24 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		return !(mDetailReference == null) && !"".equals(mDetailReference.trim());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.reichholf.dreamdroid.fragment.dialogs.PrimitiveDialog.
-	 * DialogActionListener#onDialogAction(int)
-	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		if(action < Statics.ACTION_SET_TIMER || action > Statics.ACTION_FIND_SIMILAR)
+			return;
+		boolean isNext = (Boolean) details;
+		ExtendedHashMap event = isNext ? Event.fromNext(mCurrentService) : mCurrentService;
 		switch (action) {
 			case Statics.ACTION_SET_TIMER:
-				setTimerById(mCurrentService);
+				setTimerById(event);
 				break;
-
 			case Statics.ACTION_EDIT_TIMER:
-				setTimerByEventData(mCurrentService);
+				setTimerByEventData(event);
 				break;
-
 			case Statics.ACTION_FIND_SIMILAR:
-				mHttpHelper.findSimilarEvents(mCurrentService);
+				mHttpHelper.findSimilarEvents(event);
 				break;
-
 			case Statics.ACTION_IMDB:
-				IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentService);
+				IntentFactory.queryIMDb(getAppCompatActivity(), event);
 				break;
 		}
 	}
