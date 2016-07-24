@@ -82,7 +82,7 @@ public class Event{
 		for (int i=0; i<keys.length; ++i) {
 			String key = (String) keys[i];
 			if (key.startsWith(Event.PREFIX_NEXT)) {
-				String value = (String) event.get(key);
+				String value = event.getString(key);
 				event.remove(key);
 				key = key.replaceFirst(Event.PREFIX_NEXT, "");
 				event.put(key, value);
