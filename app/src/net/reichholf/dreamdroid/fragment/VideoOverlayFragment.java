@@ -25,7 +25,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +48,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestH
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.vlc.VLCPlayer;
 import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
@@ -366,6 +367,16 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		getLoaderManager().restartLoader(1, args, this);
 	}
 
+	private void seek(int pos) {
+		MediaPlayer player = VLCPlayer.getMediaPlayer();
+		if (player == null)
+			return;
+		float fpos = (float)pos;
+		if(player.getLength() > 0)
+			fpos = fpos / player.getLength() * 100;
+		player.setPosition(fpos / 100f);
+	}
+
 	private void updateViews() {
 		View view = getView();
 		TextView serviceName = (TextView) view.findViewById(R.id.service_name);
@@ -373,7 +384,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 		View parentNow = view.findViewById(R.id.event_now);
 		View parentNext = view.findViewById(R.id.event_next);
-		ProgressBar serviceProgress = (ProgressBar) view.findViewById(R.id.service_progress);
 
 		if (mServiceInfo != null) {
 			ImageView picon = (ImageView) view.findViewById(R.id.picon);
@@ -388,28 +398,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			nowStart.setText(mServiceInfo.getString(Event.KEY_EVENT_START_TIME_READABLE));
 			nowTitle.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
 			nowDuration.setText(mServiceInfo.getString(Event.KEY_EVENT_DURATION_READABLE));
-
-			long max = -1;
-			long cur = -1;
-			String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
-			String start = mServiceInfo.getString(Event.KEY_EVENT_START);
-
-			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
-				try {
-					max = Double.valueOf(duration).longValue() / 60;
-					cur = max - DateTime.getRemaining(duration, start);
-				} catch (Exception e) {
-					Log.e(DreamDroid.LOG_TAG, e.toString());
-				}
-			}
-
-			if (max > 0 && cur >= 0) {
-				serviceProgress.setVisibility(View.VISIBLE);
-				serviceProgress.setMax((int) max);
-				serviceProgress.setProgress((int) cur);
-			} else {
-				serviceProgress.setVisibility(View.GONE);
-			}
 
 			parentNow.setVisibility(View.VISIBLE);
 
@@ -428,11 +416,77 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				parentNext.setVisibility(View.GONE);
 			}
 		} else {
-			serviceProgress.setVisibility(View.GONE);
 			parentNow.setVisibility(View.GONE);
 			parentNext.setVisibility(View.GONE);
 		}
+		updateProgress();
 		mServicesView.getAdapter().notifyDataSetChanged();
+	}
+
+	protected void updateProgress() {
+		SeekBar serviceProgress = (SeekBar) getView().findViewById(R.id.service_progress);
+		boolean isSeekable = VLCPlayer.getMediaPlayer().isSeekable();
+		if (isSeekable) {
+			serviceProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+				@Override
+				public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+					if (fromUser) {
+						seek(progress);
+					}
+				}
+
+				@Override
+				public void onStartTrackingTouch(SeekBar seekBar) {
+
+				}
+
+				@Override
+				public void onStopTrackingTouch(SeekBar seekBar) {
+
+				}
+			});
+			serviceProgress.setOnTouchListener(null);
+		} else {
+			serviceProgress.setOnTouchListener(new View.OnTouchListener() {
+				@Override
+				public boolean onTouch(View view, MotionEvent motionEvent) {
+					return true;
+				}
+			});
+		}
+		long max = -1;
+		long cur = -1;
+		if (mServiceInfo != null) {
+			String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
+			String start = mServiceInfo.getString(Event.KEY_EVENT_START);
+
+			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
+				try {
+					max = Double.valueOf(duration).longValue();
+					cur = max - DateTime.getRemaining(duration, start) * 60;
+				} catch (Exception e) {
+					Log.e(DreamDroid.LOG_TAG, e.toString());
+				}
+			}
+		}
+		if (max <= 0) {
+			max = VLCPlayer.getMediaPlayer().getLength();
+			cur = (long) VLCPlayer.getMediaPlayer().getPosition();
+		}
+
+		if (max <= 0 && isSeekable) {
+			max = 100;
+			cur = 0;
+		}
+
+		if (max > 0 && cur >= 0) {
+			serviceProgress.setEnabled(true);
+			serviceProgress.setVisibility(View.VISIBLE);
+			serviceProgress.setMax((int) max);
+			serviceProgress.setProgress((int) cur);
+		} else {
+			serviceProgress.setEnabled(false);
+		}
 	}
 
 	@Override
@@ -541,9 +595,13 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			case MediaPlayer.Event.Playing: {
 				View progressView = getView().findViewById(R.id.video_load_progress);
 				fadeOutView(progressView);
+				updateProgress();
 				hideOverlays();
 				break;
 			}
+			case MediaPlayer.Event.PositionChanged:
+				updateProgress();
+				break;
 			case MediaPlayer.Event.EncounteredError:
 				Toast.makeText(getActivity(), R.string.playback_failed, Toast.LENGTH_LONG).show();
 				break;
