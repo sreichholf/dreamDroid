@@ -53,6 +53,7 @@ import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
+import org.piwik.sdk.PiwikApplication;
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.MediaPlayer;
 
@@ -87,6 +88,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.video_player);
 		initializeOverlay();
+		if (DreamDroid.isTrackingEnabled(this))
+			((PiwikApplication) getApplication()).getTracker().trackScreenView(getClass().getSimpleName(), getClass().getSimpleName());
 	}
 
 
