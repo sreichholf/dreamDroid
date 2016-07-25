@@ -16,6 +16,12 @@
             android:key="integrated_video_player"
             android:summary="@string/integrated_video_player_long"
             android:title="@string/integrated_video_player"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="integrated_video_player"
+            android:key="video_enable_gestures"
+            android:summary="@string/video_enable_gestures_long"
+            android:title="@string/video_enable_gestures"/>
         <ListPreference
             android:defaultValue="@integer/hw_accel_default"
             android:dependency="integrated_video_player"

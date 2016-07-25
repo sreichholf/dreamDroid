@@ -352,4 +352,6 @@
     <string name="video_player">Video Player</string>
     <string name="location_rationale_title">Standort wird benötigt</string>
     <string name="location_rationale">DreamDroid benötigt den ungefähren Standort für die automatische Tag/Nacht Schaltung des Themas.\nDie Standortdaten werden ausschließlich zur Wahl des richtigen Themas benutzt und nicht aufgezeichnet oder weitergeleitet!</string>
+    <string name="video_enable_gestures_long">Gesten zur Steuerung von Lautstärke und Helligkeit aktivieren</string>
+    <string name="video_enable_gestures">Gesten aktivieren</string>
 </resources>

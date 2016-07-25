@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.GestureDetectorCompat;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -160,6 +161,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mGestureDector = new GestureDetectorCompat(view.findViewById(R.id.overlay_root).getContext(), new GestureDetector.SimpleOnGestureListener() {
 			@Override
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+				boolean isGesturesEnabled = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true);
+				if(!isGesturesEnabled)
+					return true;
+
 				Log.d(LOG_TAG, String.format("distanceY=%s, DeltaY=%s", distanceY, e1.getY() - e2.getY()));
 				DisplayMetrics metrics = new DisplayMetrics();
 				getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -172,7 +177,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 					else if (isLeft)
 						onBrightnessTouch(distanceY);
 				}
-
 				return true;
 			}
 
