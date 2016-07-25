@@ -1,0 +1,11 @@
+-keep class android.support.v4.internal.** { *; }
+-keep interface android.support.v4.internal.** { *; }
+-keep class android.support.v7.internal.** { *; }
+-keep interface android.support.v7.internal.** { *; }
+-keep class android.support.design.widget.** { *; }
+-keep interface android.support.design.widget.** { *; }
+-keep class uk.co.senab.photoview.** { *; }
+-keep interface uk.co.senab.photoview.** { *; }
+-dontwarn android.support.design.**
+-dontwarn android.support.v7.**
+-dontwarn android.support.v4.**
