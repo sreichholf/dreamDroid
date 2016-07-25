@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1-373" versioncode="373">
-        <change>NEW: Add Brightness and Volume Gestures to Video Player (Brightnes left half, Volume right half)</change>
-        <change>IMP: Improve Videoplayer behaviour in terms of showing/hiding the the services</change>
+    <release version="1.1-374" versioncode="374">
+        <change>NEW: Add brightness and volume gestures to video player (brightness left half, volume right half)</change>
+        <change>IMP: Improve video player behaviour in terms of showing/hiding the the services</change>
+        <change>NEW: Add basic "seek" functionality to video player</change>
         <change>FIX: Request location permission only if actually required. Make the default Theme settings "Day" so it's not required as a default (Android >= 6.0)</change>
-        <change>IMP: Movielist Folder selection now uses a Floating Action Button</change>
-        <change>TEC: Switch from UniversalImageLoader to Picasso</change>
+        <change>IMP: Movie list folder selection now uses a Floating Action Button</change>
+        <change>TEC: Switch from Universal Image Loader to Picasso</change>
         <change>TEC: Update some external libraries and cleanup some stuff</change>
     </release>
     <release version="1.1-372" versioncode="372">
@@ -13,7 +14,7 @@
         <change>FIX: The app is a lot smaller again</change>
     </release>
     <release version="1.1" versioncode="371">
-        <change>NEW: Add an integrated VideoPlayer based on VLC</change>
+        <change>NEW: Add an integrated video player based on VLC</change>
         <change>NEW: Support for Encoder-based streams on DM7080 and DM820</change>
         <change>NEW: Proper Android 6.x permission support</change>
         <change>NEW: Automatic Day/Night Theme switching (configurable in settings, requires coarse location)</change>
