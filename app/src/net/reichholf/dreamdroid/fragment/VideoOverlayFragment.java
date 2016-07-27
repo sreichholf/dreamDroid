@@ -176,6 +176,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 						onVolumeTouch(distanceY);
 					else if (isLeft)
 						onBrightnessTouch(distanceY);
+				} else if (Math.abs(distanceX) > Math.abs(distanceY) && distanceX != 0f) {
+					//TODO: prev/next gesture handling)
 				}
 				return true;
 			}
@@ -290,14 +292,12 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mServiceInfo = mServiceList.get(index);
 		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
 		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
-		if (Service.isMarker(mServiceRef)) {
-			previous();
-		} else {
-			zap();
-		}
+		zap();
 	}
 
 	private void zap() {
+		if(Service.isMarker(mServiceRef))
+			return;
 		Intent streamingIntent = IntentFactory.getStreamServiceIntent(getActivity(), mServiceRef, mServiceName, mBouquetRef, mServiceInfo);
 		getArguments().putString(TITLE, mServiceRef);
 		getArguments().getString(SERVICE_REFERENCE, mServiceRef);
@@ -318,11 +318,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mServiceInfo = mServiceList.get(index);
 		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
 		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
-		if (Service.isMarker(mServiceRef)) {
-			next();
-		} else {
-			zap();
-		}
+		zap();
 	}
 
 	private int getCurrentServiceIndex() {
@@ -619,8 +615,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
+		String serviceRef =  mServiceList.get(position).getString(Event.KEY_SERVICE_REFERENCE);
+		if(Service.isMarker(serviceRef))
+			return;
 		mServiceInfo = mServiceList.get(position);
-		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
+		mServiceRef = serviceRef;
 		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
 		zap();
 	}
