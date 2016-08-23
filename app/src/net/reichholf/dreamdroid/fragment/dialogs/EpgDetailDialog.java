@@ -14,10 +14,16 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.BottomSheetDialog;
+import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -27,8 +33,9 @@ import com.afollestad.materialdialogs.MaterialDialog;
  * @author sre
  * 
  */
-public class EpgDetailDialog extends ActionDialog {
+public class EpgDetailDialog extends BottomSheetActionDialog {
 	private ExtendedHashMap mCurrentItem;
+	private BottomSheetBehavior mBottomSheetBehavior;
 
 	public EpgDetailDialog() {
 	}
@@ -49,6 +56,8 @@ public class EpgDetailDialog extends ActionDialog {
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		final Dialog dialog;
+
 		Bundle args = getArguments();
 		mCurrentItem = new ExtendedHashMap((HashMap<String, Object>) args.get("currentItem"));
 		final boolean isNext = args.getBoolean("showNext", false);
@@ -57,24 +66,21 @@ public class EpgDetailDialog extends ActionDialog {
 		if(isNext)
 			prefix = Event.PREFIX_NEXT;
 
-		String servicename = mCurrentItem.getString(prefix + Event.KEY_SERVICE_NAME);
+		String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
 		String title = mCurrentItem.getString(prefix + Event.KEY_EVENT_TITLE);
 		String date = mCurrentItem.getString(prefix + Event.KEY_EVENT_START_READABLE);
 
-		MaterialDialog dialog = null;
 		if (!"N/A".equals(title) && date != null) {
+			dialog = super.onCreateDialog(savedInstanceState);
 			date = date.concat(" (" + mCurrentItem.getString(prefix + Event.KEY_EVENT_DURATION_READABLE) + " "
 					+ getText(R.string.minutes_short) + ")");
 			String descShort = mCurrentItem.getString(prefix + Event.KEY_EVENT_DESCRIPTION, "");
 			String descEx = mCurrentItem.getString(prefix + Event.KEY_EVENT_DESCRIPTION_EXTENDED);
 
-			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-			builder.title(title)
-					.autoDismiss(true)
-					.customView(R.layout.epg_item_dialog, false);
+			View view = View.inflate(getContext(), R.layout.epg_item_dialog, null);
 
-			dialog = builder.build();
-			View view = dialog.getCustomView();
+			Toolbar tb = (Toolbar) view.findViewById(R.id.toolbar_epg_detail);
+			tb.setTitle(title);
 
 			TextView textServiceName = (TextView) view.findViewById(R.id.service_name);
 			textServiceName.setText(servicename);
@@ -121,6 +127,12 @@ public class EpgDetailDialog extends ActionDialog {
 					finishDialog(Statics.ACTION_FIND_SIMILAR, isNext);
 				}
 			});
+			dialog.setContentView(view);
+
+			mBottomSheetBehavior = BottomSheetBehavior.from(((View) view.getParent()));
+			if (mBottomSheetBehavior != null) {
+				mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+			}
 		} else {
 			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
 			builder.title(R.string.not_available)
