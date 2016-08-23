@@ -104,7 +104,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		registerFab(R.id.fab_main, R.string.choose_location, R.drawable.ic_action_home, new View.OnClickListener() {
+		registerFab(R.id.fab_main, R.string.choose_location, R.drawable.ic_action_folder, new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				onItemSelected(Statics.ITEM_SELECT_LOCATION);

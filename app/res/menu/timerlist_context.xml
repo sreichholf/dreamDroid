@@ -8,7 +8,7 @@
         android:title="@string/delete"/>
     <item
         android:id="@+id/menu_toggle_enabled"
-        android:icon="@drawable/ic_action_disable"
+        android:icon="@drawable/ic_action_enabled"
         dreamDroid:showAsAction="ifRoom|withText"
         android:title="@string/disable"/>
 </menu>

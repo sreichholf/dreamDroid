@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/menu_home_media"
-        android:icon="@drawable/ic_action_home"
+        android:icon="@drawable/ic_action_folder"
         android:title="@string/home_media"
         dreamDroid:showAsAction="ifRoom|withText"/>
     <item
