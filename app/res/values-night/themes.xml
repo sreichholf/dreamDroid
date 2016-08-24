@@ -62,5 +62,6 @@
         <item name="text_color">#ffb0b0b0</item>
         <item name="title_color">#ffd6d6d6</item>
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.Design.BottomSheetDialog</item>
     </style>
 </resources>
