@@ -29,7 +29,11 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginBottom="96dip"
-        android:padding="20dp">
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="0dp"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:id="@+id/LinearLayoutMain"
@@ -69,7 +73,7 @@
         android:layout_marginBottom="@dimen/dialog_button_bar_height"
         android:layout_marginTop="-96dp"
         android:dividerPadding="0dip"
-        android:minHeight="48dip"
+        android:minHeight="@dimen/dialog_button_bar_height"
         android:orientation="vertical">
 
         <LinearLayout

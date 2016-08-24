@@ -83,10 +83,10 @@
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="buttonBarButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
-    <style name="buttonBarNeutralButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
-    <style name="buttonBarPositiveButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
-    <style name="buttonBarNegativeButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored">
+    <style name="buttonBarButtonStyle" parent="Base.Widget.AppCompat.Button.Colored"/>
+    <style name="buttonBarNeutralButtonStyle" parent="Base.Widget.AppCompat.Button.Colored"/>
+    <style name="buttonBarPositiveButtonStyle" parent="Base.Widget.AppCompat.Button.Colored"/>
+    <style name="buttonBarNegativeButtonStyle" parent="Base.Widget.AppCompat.Button.Colored">
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
