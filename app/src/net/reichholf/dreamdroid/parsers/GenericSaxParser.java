@@ -8,6 +8,10 @@ package net.reichholf.dreamdroid.parsers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -28,6 +32,7 @@ import android.util.Log;
  * 
  */
 public class GenericSaxParser implements DataParser {
+	private static String LOG_TAG = GenericSaxParser.class.getSimpleName();
 	private DefaultHandler mHandler;
 	private boolean mError;
 	private String mErrorText;
@@ -63,7 +68,21 @@ public class GenericSaxParser implements DataParser {
 
 
 	protected String stripNonValidXMLCharacters(String in) {
-		return in.replaceAll("\\p{Co}", "").replaceAll("\\p{Cs}", "").replaceAll("\\p{Cn}", "").replaceAll("&nbsp;", " ");
+		/*
+		Pattern ctrl = Pattern.compile("\\p{C}");
+		Matcher m = ctrl.matcher(in);
+		HashSet<Integer> cchars = new HashSet<>();
+
+		while(m.find()){
+			String s = m.group();
+			int val = (int) s.charAt(0);
+			if(val != 0x000a && val != 0x0009)
+				cchars.add(Integer.valueOf(val));
+		}
+		for(Integer c : cchars)
+			Log.w(LOG_TAG, String.format("Invalid Hex Control Character in xml: %04x", c.intValue()));
+		*/
+		return in.replaceAll("\\p{Co}|\\p{Cs}|\\p{Cn}|", "").replaceAll("\\u008A", "\n").replaceAll("&nbsp;", " ");
 	}
 
 	/*
