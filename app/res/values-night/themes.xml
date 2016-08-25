@@ -63,5 +63,6 @@
         <item name="title_color">#ffd6d6d6</item>
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
         <item name="bottomSheetDialogTheme">@style/Theme.Design.BottomSheetDialog</item>
+        <item name="mdtp_theme_dark">true</item>
     </style>
 </resources>

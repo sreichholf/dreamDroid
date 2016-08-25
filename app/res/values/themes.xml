@@ -61,6 +61,7 @@
         <item name="title_color">#ff737373</item>
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
         <item name="bottomSheetDialogTheme">@style/Theme.Design.Light.BottomSheetDialog</item>
+        <item name="mdtp_theme_dark">false</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.AppCompat.DayNight.Dialog">
