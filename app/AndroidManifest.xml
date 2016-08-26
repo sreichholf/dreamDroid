@@ -106,7 +106,7 @@
         <activity
             android:name=".activities.VideoActivity"
             android:theme="@style/Theme.DreamDroid.Player"
-            android:configChanges="orientation|screenSize" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|uiMode|smallestScreenSize" />
 
         <activity
             android:name=".appwidget.VirtualRemoteWidgetConfiguration"
