@@ -31,7 +31,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.TextView;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -160,7 +159,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		DreamDroid.setTheme(this);
-		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
 
 		mIsDrawerOpen = false;
@@ -344,23 +342,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			Log.i(TAG, "Fragment " + ((Object) fragment).getClass().getSimpleName() + " not added, adding");
 			ft.replace(viewId, fragment, ((Object) fragment).getClass().getSimpleName());
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see net.reichholf.dreamdroid.abstivities.AbstractHttpListActivity#
-	 * onSaveInstanceState(android.os.Bundle)
-	 */
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		// TODO getSupportFragmentManager().putFragment(outState, "navigation", mNavigationHelper);
-		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
 	}
 
 	@Override
