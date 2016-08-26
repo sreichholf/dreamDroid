@@ -93,12 +93,12 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
 		mAdapter = new SimpleTextAdapter(mMapList, R.layout.movie_list_item, new String[]{
 				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
 				Movie.KEY_LENGTH}, new int[]{R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
 				R.id.event_duration});
 		getRecyclerView().setAdapter(mAdapter);
+		super.onActivityCreated(savedInstanceState);
 	}
 
 	@Override
@@ -110,12 +110,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 				onItemSelected(Statics.ITEM_SELECT_LOCATION);
 			}
 		});
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		reload();
 	}
 
 	@Override
@@ -305,11 +299,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		}
 
 		onMovieAction(action);
-	}
-
-	@Override
-	protected void reload() {
-		super.reload();
 	}
 
 	public boolean onMovieAction(int action) {

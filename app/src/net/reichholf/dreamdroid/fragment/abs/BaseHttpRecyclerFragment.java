@@ -294,6 +294,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	protected void reload() {
+		mReload = false;
 		reload(HttpFragmentHelper.LOADER_DEFAULT_ID);
 	}
 

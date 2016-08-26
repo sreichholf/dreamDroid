@@ -56,6 +56,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		mName = getArguments().getString(Event.KEY_SERVICE_NAME);
 		mTime = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
 		mWaitingForPicker = false;
+		mReload = true;
 	}
 
 	@Override
@@ -100,11 +101,10 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
 		setAdapter();
 		if (mMapList.size() <= 0)
 			Log.w(LOG_TAG, String.format("%s", mTime));
-		reload();
+		super.onActivityCreated(savedInstanceState);
 	}
 
 	@Override
