@@ -1,21 +1,23 @@
 package net.reichholf.dreamdroid.fragment;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.recyclerview.ZapAdapter;
-import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
@@ -37,15 +39,13 @@ import java.util.ArrayList;
  * As a GridView is also using a ListAdapter, this avoids having to copy existing code
  */
 
-public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetListTask.GetBoquetListTaskHandler {
+public class ZapFragment extends BaseHttpRecyclerFragment {
 	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
-	private GetBouquetListTask mGetBouquetListTask;
 	private ArrayList<ExtendedHashMap> mBouquetList;
-	private ArrayAdapter<String> mBouquetListAdapter;
 	private ExtendedHashMap mCurrentBouquet;
-	private int mSelectedBouquetPosition;
+	private boolean mWaitingForPicker;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -57,6 +57,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 		mCurrentBouquet = new ExtendedHashMap();
 		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
 		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
+		mWaitingForPicker = false;
 
 		restoreState(savedInstanceState);
 	}
@@ -116,19 +117,11 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 	}
 
 	@Override
-	public void onResume() {
-		setupListNavigation();
-		super.onResume();
+	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.createOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.epgbouquet, menu);
 	}
 
-	@Override
-	public void onPause() {
-		if (mGetBouquetListTask != null)
-			mGetBouquetListTask.cancel(true);
-		mGetBouquetListTask = null;
-		getAppCompatActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-		super.onPause();
-	}
 
 	@Override
 	public void onItemClick(RecyclerView rv, View v, int position, long id) {
@@ -162,15 +155,23 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 	}
 
 	@Override
+	protected void reload() {
+		if(mCurrentBouquet != null && !mCurrentBouquet.isEmpty())
+			super.reload();
+		else if(!mWaitingForPicker)
+			pickBouquet();
+	}
+
+	@Override
+	public String getLoadFinishedTitle() {
+		if(mCurrentBouquet != null)
+			return mCurrentBouquet.getString(Service.KEY_NAME, super.getLoadFinishedTitle());
+		return super.getLoadFinishedTitle();
+	}
+
+	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
-
-		if (mGetBouquetListTask != null) {
-			mGetBouquetListTask.cancel(true);
-			mGetBouquetListTask = null;
-		}
-		mGetBouquetListTask = new GetBouquetListTask(this);
-		mGetBouquetListTask.execute();
 
 		mMapList.clear();
 		mAdapter.notifyDataSetChanged();
@@ -204,73 +205,48 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetBouquetL
 		}
 	}
 
-	public void setupListNavigation() {
-		ActionBar actionBar = getAppCompatActivity().getSupportActionBar();
-		if (actionBar.getNavigationMode() == ActionBar.NAVIGATION_MODE_LIST)
-			return;
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-
-		mBouquetListAdapter = new ArrayAdapter<>(actionBar.getThemedContext(),
-				R.layout.support_simple_spinner_dropdown_item);
-
-		actionBar.setListNavigationCallbacks(mBouquetListAdapter, new ActionBar.OnNavigationListener() {
-			@Override
-			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-				mSelectedBouquetPosition = itemPosition;
-				if (mBouquetList.size() > itemPosition) {
-					String selectedBouquet = mBouquetListAdapter.getItem(itemPosition);
-					if (mCurrentBouquet == null || !selectedBouquet.equals(mCurrentBouquet.getString(Service.KEY_NAME))) {
-						mCurrentBouquet = mBouquetList.get(itemPosition);
-						reload();
-					}
-				}
+	@Override
+	protected boolean onItemSelected(int id) {
+		switch (id) {
+			case R.id.menu_pick_bouquet:
+				pickBouquet();
 				return true;
-			}
-		});
-		ArrayList<ExtendedHashMap> list = new ArrayList<>(mBouquetList);
-		applyBouquetList(list);
-		mBouquetListAdapter.notifyDataSetChanged();
-	}
-
-	public void onBouquetListReady(boolean result, ArrayList<ExtendedHashMap> list, String errorText) {
-		if (result)
-			applyBouquetList(list);
-		else
-			showToast(errorText);
-	}
-
-	private void applyBouquetList(ArrayList<ExtendedHashMap> list) {
-		mBouquetListAdapter.clear();
-		mBouquetList.clear();
-
-		String defaultRef = DreamDroid.getCurrentProfile().getDefaultRef();
-		boolean isDefaultMissing = true;
-
-		int position = mSelectedBouquetPosition = 0;
-		for (ExtendedHashMap service : list) {
-			mBouquetList.add(service);
-			mBouquetListAdapter.add(service.getString(Service.KEY_NAME));
-			if (defaultRef != null && !"".equals(defaultRef) && service.getString(Service.KEY_REFERENCE).equals(defaultRef))
-				isDefaultMissing = false;
-			if (service.getString(Service.KEY_REFERENCE).equals(mCurrentBouquet.getString(Service.KEY_REFERENCE)))
-				mSelectedBouquetPosition = position;
-			position++;
 		}
-		if (isDefaultMissing) {
-			addDefaultBouquetToList();
-		}
-		getAppCompatActivity().getSupportActionBar().setSelectedNavigationItem(mSelectedBouquetPosition);
-		mBouquetListAdapter.notifyDataSetChanged();
+		return super.onItemSelected(id);
 	}
 
-	private void addDefaultBouquetToList() {
-		ExtendedHashMap defaultBouquet = new ExtendedHashMap();
-		String defaultRef = DreamDroid.getCurrentProfile().getDefaultRef();
-		if ("".equals(defaultRef))
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode != Activity.RESULT_OK)
 			return;
-		defaultBouquet.put(Service.KEY_REFERENCE, defaultRef);
-		defaultBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
-		mBouquetList.add(0, defaultBouquet);
-		mBouquetListAdapter.insert(defaultBouquet.getString(Service.KEY_NAME), 0);
+		switch (requestCode) {
+			case Statics.REQUEST_PICK_BOUQUET:
+				ExtendedHashMap bouquet = data.getParcelableExtra(PickServiceFragment.KEY_BOUQUET);
+				String reference = bouquet.getString(Service.KEY_REFERENCE, "");
+				if (!reference.equals(mCurrentBouquet.getString(Service.KEY_REFERENCE))) {
+					mCurrentBouquet = bouquet;
+					getRecyclerView().smoothScrollToPosition(0);
+				}
+				reload();
+				mWaitingForPicker = false;
+				break;
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	private void pickBouquet() {
+		mWaitingForPicker = true;
+		PickServiceFragment f = new PickServiceFragment();
+		Bundle args = new Bundle();
+
+		ExtendedHashMap data = new ExtendedHashMap();
+		data.put(Service.KEY_REFERENCE, "default");
+
+		args.putSerializable(sData, data);
+		args.putString("action", Statics.INTENT_ACTION_PICK_BOUQUET);
+
+		f.setArguments(args);
+		f.setTargetFragment(this, Statics.REQUEST_PICK_BOUQUET);
+		((MultiPaneHandler) getAppCompatActivity()).showDetails(f, true);
 	}
 }
