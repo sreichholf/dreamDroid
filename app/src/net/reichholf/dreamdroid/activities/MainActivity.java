@@ -195,17 +195,23 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onResume() {
 		super.onResume();
-		mIsPaused = false;
-		//TODO preserve/restore mNavigationHelper properly
-		mNavigationHelper = new NavigationHelper(this);
-		onProfileChanged(DreamDroid.getCurrentProfile());
-		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+		// There's several cases where onResume will be called twice without onPause in between which causes some unnecessary double reinits.
+		// To catch that we check if mNavigationHelper is actually null, which it'll only be on first start or after onPause has been called.
+		if(mNavigationHelper == null) {
+			mIsPaused = false;
+			//TODO preserve/restore mNavigationHelper properly
+			mNavigationHelper = new NavigationHelper(this);
+			onProfileChanged(DreamDroid.getCurrentProfile());
+			PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+		}
 	}
 
 	@Override
 	public void onPause() {
-		if (mCheckProfileTask != null)
+		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
+			mCheckProfileTask = null;
+		}
 		mIsPaused = true;
 		//TODO preserve/restore mNavigationHelper properly
 		mNavigationHelper = null;
@@ -294,11 +300,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-		}
-
-		//TODO recover mNavigationHelper
-		if (mNavigationHelper == null || !((Object) mNavigationHelper).getClass().equals(NavigationHelper.class)) {
-			mNavigationHelper = new NavigationHelper(this);
 		}
 
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -414,13 +415,16 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		if (mIsPaused)
 			return;
 		setProfileName();
-		if (mCheckProfileTask != null) {
-			mCheckProfileTask.cancel(true);
+		if(p.getCachedDeviceInfo() == null ) {
+			if (mCheckProfileTask != null) {
+				mCheckProfileTask.cancel(true);
+				mCheckProfileTask = null;
+			}
+			mCheckProfileTask = new CheckProfileTask(p, this);
+			mCheckProfileTask.execute();
+		} else {
+			onProfileChecked(new CheckProfile().checkProfile(p, this));
 		}
-
-		mCheckProfileTask = new CheckProfileTask(p, this);
-		mCheckProfileTask.execute();
-
 		if (mNavigationHelper != null)
 			mNavigationHelper.onProfileChanged();
 		if (mDetailFragment != null && mDetailFragment instanceof IHttpBase)

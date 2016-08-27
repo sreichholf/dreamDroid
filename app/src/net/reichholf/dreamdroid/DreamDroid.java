@@ -185,12 +185,15 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	public static void loadCurrentProfile(Context context) {
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+		int profileId = sp.getInt(CURRENT_PROFILE, 1);
+		if(sProfile != null && sProfile.getId() == profileId)
+			return;
+
+		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
+		ArrayList<Profile> profiles = dbh.getProfiles();
 		// the profile-table is initial - let's migrate the current config as
 		// default Profile
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
-//		dbh.exportDB();
-		ArrayList<Profile> profiles = dbh.getProfiles();
 		if (profiles.isEmpty()) {
 			String host = sp.getString("host", "dreamdroid.org");
 			String streamHost = sp.getString("host", "");
@@ -210,7 +213,6 @@ public class DreamDroid extends PiwikApplication {
 			editor.commit();
 		}
 
-		int profileId = sp.getInt(CURRENT_PROFILE, 1);
 		if (!setCurrentProfile(context, profileId)) {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
@@ -257,6 +259,10 @@ public class DreamDroid extends PiwikApplication {
 			Log.w(DreamDroid.LOG_TAG, "no profile with given id [" + id + "] found");
 		}
 		return false;
+	}
+
+	public static void setCurrentProfile(Profile profile) {
+		sProfile = profile;
 	}
 
 	public static void profileChanged(Context context, Profile p) {

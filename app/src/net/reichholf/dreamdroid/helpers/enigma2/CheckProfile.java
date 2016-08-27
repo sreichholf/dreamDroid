@@ -56,7 +56,6 @@ public class CheckProfile {
 		checkResult.put(KEY_RESULT_LIST, resultList);
 		setError(checkResult, false, -1);
 
-		SimpleHttpClient shc = SimpleHttpClient.getInstance();
 		String host = profile.getHost();
 
 		if (host != null) {
@@ -64,13 +63,17 @@ public class CheckProfile {
 				addEntry(resultList, R.string.host, false, host);
 
 				int port = profile.getPort();
-
 				if (port > 0 && port <= 65535) {
 					addEntry(resultList, R.string.port, false, Integer.toString(port));
 					DeviceInfoRequestHandler dirh = new DeviceInfoRequestHandler();
-					String xml = dirh.get(shc);
+
+					SimpleHttpClient shc = SimpleHttpClient.getInstance();
+					String xml = profile.getCachedDeviceInfo();
+					if(xml == null)
+						xml = dirh.get(shc);
 
 					if (xml != null && !shc.hasError()) {
+						profile.setCachedDeviceInfo(xml);
 						ExtendedHashMap deviceInfo = new ExtendedHashMap();
 
 						if (dirh.parse(xml, deviceInfo)) {

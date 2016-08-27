@@ -48,6 +48,8 @@ public class Profile implements Serializable {
 	private String mDefaultRef2Name;
 	private String mSessionId;
 
+	private String mCachedDeviceInfo;
+
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
@@ -67,6 +69,8 @@ public class Profile implements Serializable {
 					  String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
 		mId = id;
 		mSessionId = null;
+		mCachedDeviceInfo = null;
+
 		setName(name);
 		setHost(host);
 		setStreamHost(streamHost);
@@ -392,6 +396,14 @@ public class Profile implements Serializable {
 
 	public String getSessionId() {
 		return mSessionId;
+	}
+
+	public void setCachedDeviceInfo(String deviceInfo) {
+		mCachedDeviceInfo = deviceInfo;
+	}
+
+	public String getCachedDeviceInfo() {
+		return mCachedDeviceInfo;
 	}
 
 	public boolean equals(Profile p) {
