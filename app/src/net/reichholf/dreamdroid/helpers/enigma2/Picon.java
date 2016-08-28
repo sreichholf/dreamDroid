@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -58,6 +59,10 @@ public class Picon {
 	}
 
 	public static void setPiconForView(Context context, ImageView piconView, ExtendedHashMap service, String tag) {
+		setPiconForView(context, piconView, service, tag, null);
+	}
+
+	public static void setPiconForView(Context context, ImageView piconView, ExtendedHashMap service, String tag, Callback callback) {
 		if (piconView == null) {
 			return;
 		}
@@ -75,7 +80,10 @@ public class Picon {
 		if (piconView.getVisibility() != View.VISIBLE)
 			piconView.setVisibility(View.VISIBLE);
 
-		Picasso.with(context).load(String.format("file://%s", fileName)).fit().centerInside().tag(tag).into(piconView);
+		if(callback == null)
+			Picasso.with(context).load(String.format("file://%s", fileName)).fit().centerInside().tag(tag).into(piconView);
+		else
+			Picasso.with(context).load(String.format("file://%s", fileName)).fit().centerInside().tag(tag).into(piconView, callback);
 	}
 
 	public static void clearCache() {

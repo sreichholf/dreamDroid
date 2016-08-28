@@ -2,11 +2,14 @@ package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Callback;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
  * Created by Stephan on 03.02.2016.
  */
 public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
+	private static String TAG = ZapAdapter.class.getSimpleName();
 	private Context mContext;
 
 	public ZapAdapter(Context context, ArrayList<ExtendedHashMap> data) {
@@ -42,18 +46,32 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 		if (service != null) {
 			holder.serviceName.setVisibility(View.VISIBLE);
 			holder.serviceName.setText(service.getString(Service.KEY_NAME));
-			Picon.setPiconForView(mContext, holder.picon, service, Statics.TAG_PICON);
+			Picon.setPiconForView(mContext, holder.picon, service, Statics.TAG_PICON, holder.piconCallback);
 		}
 	}
 
 	static class ZapViewHolder extends RecyclerView.ViewHolder {
 		ImageView picon;
 		TextView serviceName;
+		Callback piconCallback;
 
 		public ZapViewHolder(View itemView) {
 			super(itemView);
 			picon = (ImageView) itemView.findViewById(R.id.picon);
 			serviceName = (TextView) itemView.findViewById(android.R.id.text1);
+			piconCallback = new Callback() {
+				@Override
+				public void onSuccess() {
+					serviceName.setVisibility(View.GONE);
+					picon.setVisibility(View.VISIBLE);
+				}
+				@Override
+				public void onError() {
+					Log.w(TAG, String.format("Error loading picon for %s", serviceName.getText()));
+					serviceName.setVisibility(View.VISIBLE);
+					picon.setVisibility(View.GONE);
+				}
+			};
 		}
 	}
 }
