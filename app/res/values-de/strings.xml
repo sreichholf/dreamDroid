@@ -354,4 +354,6 @@
     <string name="location_rationale">DreamDroid benötigt den ungefähren Standort für die automatische Tag/Nacht Schaltung des Themas.\nDie Standortdaten werden ausschließlich zur Wahl des richtigen Themas benutzt und nicht aufgezeichnet oder weitergeleitet!</string>
     <string name="video_enable_gestures_long">Gesten zur Steuerung von Lautstärke und Helligkeit aktivieren</string>
     <string name="video_enable_gestures">Gesten aktivieren</string>
+    <string name="online_picons">Online Picons</string>
+    <string name="online_picons_long">Picons über das Netzwerk beziehen statt snychronisierte zu nutzen. Erhöht den Traffic ggf. merklich!</string>
 </resources>

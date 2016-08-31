@@ -351,4 +351,6 @@
     <string name="location_rationale">DreamDroid requires the coarse location for automatic day/night Theme switching.\nThe location is not part of any logging, nor will it be used for anything else but theme switching!</string>
     <string name="video_enable_gestures_long">Enable gestures for volume and brightness control</string>
     <string name="video_enable_gestures">Enable gestures</string>
+    <string name="online_picons">Use "online" picons</string>
+    <string name="online_picons_long">Don\'t use synced picons but load them directly via http(s). May cause consinderable traffic!</string>
 </resources>

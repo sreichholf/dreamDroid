@@ -6,6 +6,7 @@ import android.app.ActivityManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -13,10 +14,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.UrlConnectionDownloader;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -35,6 +38,8 @@ import net.reichholf.dreamdroid.util.SkuDetails;
 import org.piwik.sdk.PiwikApplication;
 import org.piwik.sdk.Tracker;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -105,6 +110,20 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			sc.init(null, new X509TrustManager[]{mTrustManager},
 					new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			Picasso.Builder builder = new Picasso.Builder(this);
+			builder.downloader(new UrlConnectionDownloader(this){
+				@Override
+				protected HttpURLConnection openConnection(Uri path) throws IOException {
+					HttpURLConnection connection = super.openConnection(path);
+					String userinfo = path.getUserInfo();
+					if(!userinfo.isEmpty()) {
+						connection.setRequestProperty("Authorization", "Basic " +
+								Base64.encodeToString(userinfo.getBytes(), Base64.NO_WRAP));
+					}
+					return connection;
+				}
+			});
+			Picasso.setSingletonInstance(builder.build());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

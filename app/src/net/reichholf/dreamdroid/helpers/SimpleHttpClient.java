@@ -93,6 +93,7 @@ public class SimpleHttpClient {
 		Authenticator.setDefault(null);
 	}
 
+
 	/**
 	 * @param uri
 	 * @param parameters
@@ -105,11 +106,17 @@ public class SimpleHttpClient {
 		return mPrefix + mProfile.getHost() + ":" + mProfile.getPortString() + uri + parms;
 	}
 
-	/**
-	 * @param ref
-	 * @param title
-	 * @return
-	 */
+	public String buildAuthedUrl(String uri, List<NameValuePair> parameters) {
+		String parms = NameValuePair.toString(parameters);
+		if(!uri.contains("?"))
+			uri += "?";
+		String loginString = "";
+		if (mProfile.isLogin())
+			loginString = String.format("%s:%s@", mProfile.getUser(), mProfile.getPass());
+
+		return mPrefix + loginString + mProfile.getHost() + ":" + mProfile.getPortString() + uri + parms;
+	}
+
 	public String buildEncoderStreamUrl(String ref) {
 		try {
 			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
