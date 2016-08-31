@@ -1,5 +1,5 @@
 <changelog>
-    <release version="1.1-376" versioncode="376">
+    <release version="1.1-377" versioncode="377">
         <change>NEU: EPG Infos werden nun nicht mehr in einem Popup sondern in einem "Bottom Sheet" angzeigt</change>
         <change>BESSER: Das Verhalten des Videoplayers in Sachen "was wird angezeigt und was nicht" wurde verbessert</change>
         <change>NEU: Videoplayer kann nun in Aufnahmen springen, leider ist es derzeit nicht möglich den Fortschritt anzuzeigen :(</change>

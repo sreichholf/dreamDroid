@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1-376" versioncode="376">
+    <release version="1.1-377" versioncode="377">
         <change>NEW: Change EPG Info from Popup to Bottom Sheet</change>
         <change>IMP: Improve video player behaviour in terms of showing/hiding the the services</change>
         <change>NEW: Add brightness and volume gestures to video player (brightness left half, volume right half)</change>
