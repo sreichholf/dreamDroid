@@ -64,6 +64,10 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 			if (dev != null) //Already removed?
 				getPreferenceScreen().removePreference(dev);
 		}
+
+		View header = getActivity().findViewById(R.id.content_header);
+		if (header != null)
+			header.setVisibility(View.GONE);
 	}
 
 	@Override
