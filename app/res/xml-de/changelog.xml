@@ -1,4 +1,9 @@
 <changelog>
+    <release version="1.1-378" versioncode="378">
+        <change>NEW: Picons können nun direkt über http(s) geladen werden und müssen nicht mehr vorab synchronisiert werden (Vorsicht wg. Datenvolumen!)</change>
+        <change>FIX: Profil-Namen konnten nicht mehr geändert werden da das Feld nicht zu sehen war</change>
+        <change>FIX: Beim Wechsel von "EPG" nach "Einstellungen" blieb die Datums/Zeitwahl des EPG stehen</change>
+    </release>
     <release version="1.1-377" versioncode="377">
         <change>NEU: EPG Infos werden nun nicht mehr in einem Popup sondern in einem "Bottom Sheet" angzeigt</change>
         <change>BESSER: Das Verhalten des Videoplayers in Sachen "was wird angezeigt und was nicht" wurde verbessert</change>
