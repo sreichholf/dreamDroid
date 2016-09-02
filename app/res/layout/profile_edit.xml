@@ -23,9 +23,8 @@
             <EditText
                 android:id="@+id/EditTextProfile"
                 android:layout_width="fill_parent"
-                android:layout_height="0dip"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
-                android:layout_weight="1"
                 android:hint="@string/profile_name"
                 android:singleLine="true"/>
         </android.support.design.widget.TextInputLayout>
