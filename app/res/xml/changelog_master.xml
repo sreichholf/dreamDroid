@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1-379" versioncode="379">
+        <change>FIX: Profile Name fix was actually missing</change>
+    </release>
     <release version="1.1-378" versioncode="378">
         <change>NEW: Picons can now be loaded on-demand via http(s) without syncing them before (beware your traffic!)</change>
         <change>FIX: Profile name was not visible for editing anymore</change>
