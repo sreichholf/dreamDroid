@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.1-381" versioncode="381">
+        <change>FIX: "Lade..." wurde nach rotation in einer Liste angezeigt</change>
+    </release>
     <release version="1.1-380" versioncode="380">
         <change>FIX: Fehlerbehandlung in diversen Listen verbessert</change>
         <change>FIX: Workaround für die Probleme mit der Funktion "EPG" in Verbindung mit älteren Dreamboxen</change>

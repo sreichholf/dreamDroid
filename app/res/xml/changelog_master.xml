@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1-381" versioncode="381">
+        <change>FIX: "loading..." showed up after rotation when a list was visible</change>
+    </release>
     <release version="1.1-380" versioncode="380">
         <change>FIX: Improve error handling in some of the lists</change>
         <change>FIX: Workaround for issues with "EPG" on older dreambox models</change>
