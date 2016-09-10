@@ -110,7 +110,7 @@ public class ProfileEditFragment extends BaseFragment {
 		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
 			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
 			if (mCurrentProfile == null)
-				mCurrentProfile = Profile.DEFAULT;
+				mCurrentProfile = Profile.getDefault();
 			assignProfile();
 		}
 		onIsLoginChanged(mLogin.isChecked());

@@ -6,9 +6,12 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import android.util.Log;
+
+import net.reichholf.dreamdroid.Profile;
+
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -16,16 +19,13 @@ import java.util.Locale;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
-import net.reichholf.dreamdroid.Profile;
-import android.util.Log;
-
 /**
  * @author sre
  * 
  */
 public class DeviceDetector {
 	public static String LOG_TAG = DeviceDetector.class.getName();
-	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2", "dm500hdsev2", "dm7020hdv2", "dm7080" };
+	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2", "dm500hdsev2", "dm7020hdv2", "dm7080", "dm820", "dm520", "dm525" };
 
 	public static ArrayList<Profile> getAvailableHosts() {
 		ArrayList<Profile> profiles = new ArrayList<>();
@@ -37,7 +37,7 @@ public class DeviceDetector {
 				boolean simpleRemote = false;
 				String ip = host.getHostAddress();
 
-				Profile p = Profile.DEFAULT;
+				Profile p = Profile.getDefault();
 				p.setName(hostname);
 				p.setHost(ip);
 				p.setStreamHost(ip);
@@ -60,7 +60,7 @@ public class DeviceDetector {
 					String address = s.getHostAddresses()[0];
 					int port = s.getPort();
 					boolean simpleRemote = false;
-					Profile p = Profile.DEFAULT;
+					Profile p = Profile.getDefault();
 					p.setName(s.getName());
 					p.setHost(address);
 					p.setStreamHost(address);

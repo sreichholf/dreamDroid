@@ -15,8 +15,6 @@ import java.io.Serializable;
  * @author sre
  */
 public class Profile implements Serializable {
-
-	public static final Profile DEFAULT = new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
 	private static final long serialVersionUID = 8176949133234868302L;
 	private int mId;
 	private String mName;
@@ -49,6 +47,10 @@ public class Profile implements Serializable {
 	private String mSessionId;
 
 	private String mCachedDeviceInfo;
+
+	public static Profile getDefault() {
+		return new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
+	}
 
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,

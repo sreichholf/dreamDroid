@@ -239,7 +239,7 @@ public class DreamDroid extends PiwikApplication {
 
 		Profile oldProfile = sProfile;
 		if (oldProfile == null)
-			oldProfile = Profile.DEFAULT;
+			oldProfile = Profile.getDefault();
 
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
 		sProfile = dbh.getProfile(id);

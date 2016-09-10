@@ -81,7 +81,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 				}
 				// TODO Add error handling
 				reloadProfiles();
-				mProfile = Profile.DEFAULT;
+				mProfile = Profile.getDefault();
 				mAdapter.notifyDataSetChanged();
 				break;
 		}
@@ -239,7 +239,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 
 		mProfiles = new ArrayList<>();
 		mProfileMapList = new ArrayList<>();
-		mProfile = Profile.DEFAULT;
+		mProfile = Profile.getDefault();
 	}
 
 	@Override
