@@ -244,7 +244,7 @@ public class VirtualRemoteFragment extends BaseHttpFragment {
 		}
 
 		if (getHttpClient().hasError()) {
-			toastText = toastText + "\n" + getHttpClient().getErrorText();
+			toastText = toastText + "\n" + getHttpClient().getErrorText(getContext());
 			hasError = true;
 		} else if (Python.FALSE.equals(state)) {
 			hasError = true;

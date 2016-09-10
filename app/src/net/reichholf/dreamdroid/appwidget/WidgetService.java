@@ -59,8 +59,8 @@ public class WidgetService extends HttpIntentService {
 				showToast(errorText);
 			}
 		} else if (shc.hasError()) {
-			Log.w(TAG, shc.getErrorText());
-			showToast(shc.getErrorText());
+			Log.w(TAG, shc.getErrorText(getBaseContext()));
+			showToast(shc.getErrorText(getBaseContext()));
 		}
 	}
 

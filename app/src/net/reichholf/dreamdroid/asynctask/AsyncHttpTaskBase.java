@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.asynctask;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import net.reichholf.dreamdroid.R;
@@ -29,7 +30,7 @@ public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncT
 			return null;
 		String errorText;
 		if (getHttpClient().hasError())
-			errorText = resultHandler.getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText();
+			errorText = resultHandler.getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText(resultHandler.getContext());
 		else
 			errorText = resultHandler.getString(R.string.get_content_error);
 		return errorText;
@@ -37,5 +38,6 @@ public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncT
 
 	public interface AsyncHttpTaskBaseHandler {
 		String getString(int resId);
+		Context getContext();
 	}
 }

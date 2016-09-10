@@ -70,7 +70,7 @@ public class AsyncByteLoader extends AsyncTaskLoader<LoaderResult<byte[]>> {
 			result.set(data);
 		} else {
 			if (mShc.hasError())
-				result.set(mShc.getErrorText());
+				result.set(mShc.getErrorText(getContext()));
 			else
 				result.set(getContext().getString(R.string.error));
 		}

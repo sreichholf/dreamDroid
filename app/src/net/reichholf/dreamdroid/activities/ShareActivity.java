@@ -24,6 +24,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -169,7 +170,7 @@ public class ShareActivity extends ListActivity implements SimpleResultTask.Simp
 			mTitle = "...";
 		String toastText = getString(R.string.sent_as, mTitle);
 		if (mShc.hasError()) {
-			toastText = mShc.getErrorText();
+			toastText = mShc.getErrorText(this);
 		}
 
 		showToast(toastText);
@@ -179,5 +180,11 @@ public class ShareActivity extends ListActivity implements SimpleResultTask.Simp
 	public void showToast(String text) {
 		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
 		toast.show();
+	}
+
+
+	@Override
+	public Context getContext() {
+		return this;
 	}
 }

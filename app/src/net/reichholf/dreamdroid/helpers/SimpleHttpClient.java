@@ -344,14 +344,6 @@ public class SimpleHttpClient {
 	}
 
 
-
-	/**
-	 * @return
-	 */
-	public String getErrorText() {
-		return mErrorText;
-	}
-
 	public String getErrorText(Context context){
 		if(mErrorTextId > 0)
 			return context.getString(mErrorTextId);

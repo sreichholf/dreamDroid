@@ -115,7 +115,12 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         return null;
     }
 
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+	@Override
+	public Context getContext() {
+		return getAppCompatActivity();
+	}
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean("volume_control", false)) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_VOLUME_UP:
@@ -182,7 +187,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         if (stateText != null && !"".equals(stateText)) {
             toastText = stateText;
         } else if (mShc.hasError()) {
-            toastText = mShc.getErrorText();
+            toastText = mShc.getErrorText(getContext());
         }
 
         if(mShowToastOnSimpleResult)

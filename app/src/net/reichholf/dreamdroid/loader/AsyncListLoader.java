@@ -94,7 +94,7 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 				result.set(getContext().getString(R.string.error_parsing));
 		} else {
 			if (mShc.hasError())
-				result.set(mShc.getErrorText());
+				result.set(mShc.getErrorText(getContext()));
 			else
 				result.set(getContext().getString(R.string.error));
 		}

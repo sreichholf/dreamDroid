@@ -295,6 +295,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 
 	protected void reload() {
 		mReload = false;
+		setEmptyText(getText(R.string.loading));
 		reload(HttpFragmentHelper.LOADER_DEFAULT_ID);
 	}
 
@@ -308,10 +309,11 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {
+			mAdapter.notifyDataSetChanged();
 			setEmptyText(result.getErrorText());
 			return;
 		}
-
+		setEmptyText(null);
 		ArrayList<ExtendedHashMap> list = result.getResult();
 		setCurrentTitle(getLoadFinishedTitle());
 		getAppCompatActivity().setTitle(getCurrentTitle());

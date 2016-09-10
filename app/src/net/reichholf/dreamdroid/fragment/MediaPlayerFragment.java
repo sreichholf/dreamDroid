@@ -422,7 +422,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				title = getString(R.string.get_content_error);
 
 				if (getHttpClient().hasError()) {
-					showToast(getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText());
+					showToast(getString(R.string.get_content_error) + "\n" + getHttpClient().getErrorText(getContext()));
 				}
 			}
 

@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import net.reichholf.dreamdroid.R;
@@ -203,11 +204,12 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		return (RecyclerView) getView().findViewById(android.R.id.list);
 	}
 
-	protected void setEmptyText(String errorText) {
-	}
-
-
-	protected void setEmptyText(CharSequence text) {
+	protected void setEmptyText(CharSequence emptyText) {
+		TextView textView = (TextView) getView().findViewById(android.R.id.empty);
+		if(emptyText == null)
+			textView.setText("");
+		else
+			textView.setText(emptyText);
 	}
 
 	@Override

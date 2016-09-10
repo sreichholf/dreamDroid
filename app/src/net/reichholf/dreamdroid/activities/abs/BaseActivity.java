@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.activities.abs;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -352,5 +353,9 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key))
 			initPermissions(false);
+	}
+
+	public Context getContext() {
+		return this;
 	}
 }

@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.fragment.helper;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -358,7 +359,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
         if (stateText != null && !"".equals(stateText)) {
             toastText = stateText;
         } else if (mShc.hasError()) {
-            toastText = mShc.getErrorText();
+            toastText = mShc.getErrorText(getContext());
         }
 
         showToast(toastText);
@@ -428,4 +429,9 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
         }
         onNavigationItemClick(action);
     }
+
+	@Override
+	public Context getContext() {
+		return getMainActivity();
+	}
 }
