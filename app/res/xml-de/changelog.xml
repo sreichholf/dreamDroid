@@ -1,4 +1,8 @@
 <changelog>
+    <release version="1.1-380" versioncode="380">
+        <change>FIX: Fehlerbehandlung in diversen Listen verbessert</change>
+        <change>FIX: Workaround für die Probleme mit der Funktion "EPG" in Verbindung mit älteren Dreamboxen</change>
+    </release>
     <release version="1.1-379" versioncode="379">
         <change>FIX: der fix für Profilnamen ist nun tats. enthalten</change>
     </release>

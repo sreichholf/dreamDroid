@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1-380" versioncode="380">
+        <change>FIX: Improve error handling in some of the lists</change>
+        <change>FIX: Workaround for issues with "EPG" on older dreambox models</change>
+    </release>
     <release version="1.1-379" versioncode="379">
         <change>FIX: Profile Name fix was actually missing</change>
     </release>
