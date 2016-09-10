@@ -67,7 +67,7 @@ public class GenericSaxParser implements DataParser {
 	}
 
 
-	protected String stripNonValidXMLCharacters(String in) {
+	protected String stripNonValidXMLCharacters(String in, boolean aggressive) {
 		/*
 		Pattern ctrl = Pattern.compile("\\p{C}");
 		Matcher m = ctrl.matcher(in);
@@ -82,7 +82,10 @@ public class GenericSaxParser implements DataParser {
 		for(Integer c : cchars)
 			Log.w(LOG_TAG, String.format("Invalid Hex Control Character in xml: %04x", c.intValue()));
 		*/
-		return in.replaceAll("\\p{Co}|\\p{Cs}|\\p{Cn}|", "").replaceAll("\\u008A", "\n").replaceAll("&nbsp;", " ");
+		if(aggressive)
+			return in.replaceAll("\\p{C}", "").replaceAll("&nbsp;", " ");
+		else
+			return in.replaceAll("\\p{Co}|\\p{Cs}|\\p{Cn}|", "").replaceAll("\\u008A", "\n").replaceAll("&nbsp;", " ");
 	}
 
 	/*
@@ -92,10 +95,10 @@ public class GenericSaxParser implements DataParser {
 	 * net.reichholf.dreamdroid.dataProviders.interfaces.DataParser#parse(java
 	 * .lang.String)
 	 */
-	@Override
-	public boolean parse(String input) {
+
+	protected boolean parse(String input, boolean isRetry) {
 		try {
-			input = stripNonValidXMLCharacters(input);
+			input = stripNonValidXMLCharacters(input, isRetry);
 			mError = false;
 			mErrorText = null;
 			// InputSource is = new InputSource(input);
@@ -118,12 +121,20 @@ public class GenericSaxParser implements DataParser {
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			// TODO Auto-generated catch block
 			Log.e(DreamDroid.LOG_TAG, e.toString());
-			mError = true;
-			mErrorText = e.toString();
-			e.printStackTrace();
+			if(isRetry) {
+				mError = true;
+				mErrorText = e.toString();
+			} else {
+				Log.w(DreamDroid.LOG_TAG, "Retrying with aggressive character filtering!");
+				return parse(input, true);
+			}
 		}
-
 		return false;
+	}
+
+	@Override
+	public boolean parse(String input) {
+		return parse(input, false);
 	}
 	
 	/**

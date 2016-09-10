@@ -23,13 +23,6 @@ public abstract class AbstractDataProvider {
 	}
 
 	/**
-	 * @param dp
-	 */
-	public void setParser(DataParser dp) {
-		mParser = dp;
-	}
-
-	/**
 	 * @return
 	 */
 	public DataParser getParser() {
