@@ -24,6 +24,7 @@ Officially supported are the following devices:
 * Dreambox DM 7080 HD
 * Dreambox DM 820 HD
 * Dreambox DM 520 HD
+* Dreambox DM 525 HD
 * Dreambox DM 7020 HD
 * Dreambox DM 8000 HD PVR
 * Dreambox DM 800 HD se
