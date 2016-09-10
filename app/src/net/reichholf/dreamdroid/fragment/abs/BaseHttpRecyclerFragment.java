@@ -95,7 +95,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		mHttpHelper.onActivityCreated();
 
 		try {
-			setEmptyText(getText(R.string.loading));
+			setEmptyText(null);
 		} catch (IllegalStateException e) {
 		}
 
