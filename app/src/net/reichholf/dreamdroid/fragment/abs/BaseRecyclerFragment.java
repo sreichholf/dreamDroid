@@ -206,10 +206,15 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 
 	protected void setEmptyText(CharSequence emptyText) {
 		TextView textView = (TextView) getView().findViewById(android.R.id.empty);
-		if(emptyText == null)
+		if (textView == null)
+			return;
+		if(emptyText == null) {
 			textView.setText("");
-		else
+			textView.setVisibility(View.GONE);
+		} else {
 			textView.setText(emptyText);
+			textView.setVisibility(View.VISIBLE);
+		}
 	}
 
 	@Override

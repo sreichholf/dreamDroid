@@ -295,7 +295,10 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 
 	protected void reload() {
 		mReload = false;
-		setEmptyText(getText(R.string.loading));
+		if(mMapList.isEmpty())
+			setEmptyText(getText(R.string.loading));
+		else
+			setEmptyText(null);
 		reload(HttpFragmentHelper.LOADER_DEFAULT_ID);
 	}
 
