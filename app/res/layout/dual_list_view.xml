@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.SlidingPaneLayout
-    android:id="@+id/sliding_pane"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sliding_pane"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="0dp"
@@ -21,49 +20,38 @@
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_weight="1">
 
-        <RelativeLayout
+        <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
+            android:id="@+id/ptr_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
-                android:id="@+id/ptr_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <net.reichholf.dreamdroid.widget.AutofitRecyclerView
-                    android:id="@+id/list2"
-                    style="?attr/cardListView"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:clipToPadding="false"
-                    android:columnWidth="290dp"
-                    android:gravity="center"
-                    android:scrollbars="vertical"/>
-
-            </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
-        </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_below="@id/ptr_layout"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@android:id/empty"
-                android:layout_width="wrap_content"
+            <net.reichholf.dreamdroid.widget.AutofitRecyclerView
+                android:id="@+id/list2"
+                style="?attr/cardListView"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="@string/loading"
-                android:layout_marginStart="5dp"/>
-        </LinearLayout>
-    </LinearLayout>
+                android:clipToPadding="false"
+                android:columnWidth="290dp"
+                android:gravity="center"
+                android:scrollbars="vertical"/>
+
+        </net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
+
+        <TextView
+            android:id="@android:id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawableTop="@drawable/ic_warning_48dp"
+            android:gravity="center"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:visibility="gone"/>
+
+    </FrameLayout>
 
 </android.support.v4.widget.SlidingPaneLayout>
