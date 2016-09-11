@@ -179,6 +179,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 			setEmptyText(result.getErrorText());
 			return;
 		}
+		setEmptyText(null);
 
 		ArrayList<ExtendedHashMap> list = result.getResult();
 		setCurrentTitle(getLoadFinishedTitle());
@@ -194,15 +195,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		}
 		mAdapter.notifyDataSetChanged();
 		mHttpHelper.onLoadFinished();
-	}
-
-	@Override
-	public void setEmptyText(CharSequence text) {
-		TextView emptyView = (TextView) getView().findViewById(android.R.id.empty);
-		if (emptyView != null) {
-			emptyView.setText(text);
-			emptyView.setVisibility(View.GONE);
-		}
 	}
 
 	@Override
