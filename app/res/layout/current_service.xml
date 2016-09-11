@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout
+<android.support.v4.widget.SwipeRefreshLayout
     android:id="@+id/ptr_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -201,4 +201,4 @@
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
-</net.reichholf.dreamdroid.widget.ToolbarAwareSwipeRefreshLayout>
+</android.support.v4.widget.SwipeRefreshLayout>
