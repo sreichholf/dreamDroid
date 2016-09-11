@@ -205,9 +205,14 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	protected void setEmptyText(CharSequence emptyText) {
+		setEmptyText(emptyText, R.drawable.ic_warning_48dp);
+	}
+
+	protected void setEmptyText(CharSequence emptyText, int topDrawable) {
 		TextView textView = (TextView) getView().findViewById(android.R.id.empty);
 		if (textView == null)
 			return;
+		textView.setCompoundDrawablesWithIntrinsicBounds(0, topDrawable, 0, 0);
 		if(emptyText == null) {
 			textView.setText("");
 			textView.setVisibility(View.GONE);

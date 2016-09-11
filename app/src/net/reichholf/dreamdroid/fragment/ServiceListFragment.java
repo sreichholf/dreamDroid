@@ -601,7 +601,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		if (mDetailReference != null && !"".equals(mDetailReference)) {
 			// Hide ListView show empty/progress
 			if (!keepCurrent) {
-				setEmptyText(getString(R.string.loading));
+				setEmptyText(getString(R.string.loading), R.drawable.ic_loading_48dp);
 				mEmpty.setVisibility(View.VISIBLE);
 				mDetailList.setVisibility(View.GONE);
 				getAppCompatActivity().setTitle(mDetailName);
