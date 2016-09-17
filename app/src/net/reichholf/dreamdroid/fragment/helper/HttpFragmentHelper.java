@@ -115,12 +115,14 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         return null;
     }
 
-	@Override
-	public Context getContext() {
-		return getAppCompatActivity();
-	}
+    @Override
+    public Context getContext() {
+        return getAppCompatActivity();
+    }
 
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(getAppCompatActivity() == null) //not attached to activity
+            return false;
         if (PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean("volume_control", false)) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_VOLUME_UP:

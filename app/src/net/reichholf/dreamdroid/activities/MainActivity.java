@@ -646,13 +646,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		return false;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog.
-	 * SleepTimerDialogActionListener#setSleepTimer(java.lang.String,
-	 * java.lang.String, boolean)
-	 */
 	@Override
 	public void onSetSleepTimer(String time, String action, boolean enabled) {
 		if (mNavigationHelper != null)
@@ -660,16 +653,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 					enabled);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog.
-	 * SendMessageDialogActionListener#onSendMessage(java.lang.String,
-	 * java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void onSendMessage(String text, String type, String timeout) {
-		mNavigationHelper.onSendMessage(text, type, timeout);
+		if (mNavigationHelper != null)
+			mNavigationHelper.onSendMessage(text, type, timeout);
 	}
 
 	@Override
