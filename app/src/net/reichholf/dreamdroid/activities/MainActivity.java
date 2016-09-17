@@ -631,7 +631,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		} else if (action == Statics.ACTION_NONE) {
 			return;
 		} else if (isNavigationDialog(dialogTag)) {
-			mNavigationHelper.onDialogAction(action, details, dialogTag);
+			if(mNavigationHelper != null)
+				mNavigationHelper.onDialogAction(action, details, dialogTag);
 		} else if (mDetailFragment != null) {
 			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
 		}
@@ -672,8 +673,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
 		if (isNavigationDialog(dialogTag)) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogSelection(dialogTag,
-					dialog, selected);
+			if(mNavigationHelper != null)
+				((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogSelection(dialogTag, dialog, selected);
 		} else if (mDetailFragment != null) {
 			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment).onMultiChoiceDialogSelection(dialogTag,
 					dialog, selected);
@@ -683,8 +684,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
 		if (isNavigationDialog(dialogTag)) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogFinish(dialogTag,
-					result);
+			if(mNavigationHelper != null)
+				((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogFinish(dialogTag, result);
 		} else if (mDetailFragment != null) {
 			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment)
 					.onMultiChoiceDialogFinish(dialogTag, result);
