@@ -125,6 +125,13 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	@Override
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		if(hasFocus)
+			setFullScreen();
+	}
+
+	@Override
 	protected void onPause() {
 		mOverlayFragment.hideOverlays();
 		super.onPause();
