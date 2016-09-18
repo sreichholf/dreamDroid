@@ -243,12 +243,17 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.video, menu);
+		MediaPlayer player = VLCPlayer.getMediaPlayer();
+		if (player.getAudioTracksCount() <= 0)
+			menu.removeItem(R.id.menu_audio_track);
+		if (player.getSpuTracksCount() <= 0)
+			menu.removeItem(R.id.menu_subtitle);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
+		switch (item.getItemId()) {
 			case R.id.menu_audio_track:
 				onSelectAudioTrack();
 				return true;
@@ -271,11 +276,16 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		showTrackSelection(getString(R.string.subtitles), player.getSpuTracks(), DIALOG_TAG_SUBTITLE_TRACK);
 	}
 
-	private void showTrackSelection( String title, MediaPlayer.TrackDescription[] descriptions,String dialog_tag) {
+	private void showTrackSelection(String title, MediaPlayer.TrackDescription[] descriptions, String dialog_tag) {
+		//this should actually never be true, but just to be sure we do it anyways
+		if (descriptions == null || descriptions.length == 0) {
+			Toast.makeText(getContext(), R.string.no_tracks, Toast.LENGTH_SHORT).show();
+			return;
+		}
 		CharSequence[] actions = new CharSequence[descriptions.length];
 		int[] ids = new int[descriptions.length];
-		int i=0;
-		for(MediaPlayer.TrackDescription description : descriptions) {
+		int i = 0;
+		for (MediaPlayer.TrackDescription description : descriptions) {
 			actions[i] = description.name;
 			ids[i] = description.id;
 			i++;
@@ -610,7 +620,9 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 					public void onAnimationEnd(Animator animation) {
 						if (mIsHiding) {
 							mIsHiding = false;
-							getActionBar().hide();
+							ActionBar actionBar = getActionBar();
+							if (actionBar != null)
+								actionBar.hide();
 						}
 						super.onAnimationEnd(animation);
 					}
@@ -702,6 +714,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Override
 	public void onEvent(MediaPlayer.Event event) {
+		getActivity().supportInvalidateOptionsMenu();
 		switch (event.type) {
 			case MediaPlayer.Event.Opening: {
 				View progressView = getView().findViewById(R.id.video_load_progress);
@@ -743,7 +756,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		MediaPlayer player = VLCPlayer.getMediaPlayer();
-		if(DIALOG_TAG_AUDIO_TRACK.equals(dialogTag)) {
+		if (DIALOG_TAG_AUDIO_TRACK.equals(dialogTag)) {
 			player.setAudioTrack(action);
 		} else if (DIALOG_TAG_SUBTITLE_TRACK.equals(dialogTag)) {
 			player.setSpuTrack(action);
