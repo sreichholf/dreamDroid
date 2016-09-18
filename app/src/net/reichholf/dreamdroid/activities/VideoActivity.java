@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,8 +20,12 @@ import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -34,6 +39,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -67,10 +73,11 @@ import java.util.HashMap;
  */
 
 
-public class VideoActivity extends AppCompatActivity implements IVLCVout.Callback {
+public class VideoActivity extends AppCompatActivity implements IVLCVout.Callback, ActionDialog.DialogActionListener {
 	public static final String TAG = VideoActivity.class.getSimpleName();
 
 	SurfaceView mVideoSurface;
+	SurfaceView mSubtitlesSurface;
 	VLCPlayer mPlayer;
 	VideoOverlayFragment mOverlayFragment;
 
@@ -87,11 +94,15 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		setFullScreen();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.video_player);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
+		setTitle("");
 		initializeOverlay();
 		if (DreamDroid.isTrackingEnabled(this))
 			((PiwikApplication) getApplication()).getTracker().trackScreenView(getClass().getSimpleName(), getClass().getSimpleName());
 	}
-
 
 	public void handleIntent(Intent intent) {
 		setIntent(intent);
@@ -137,6 +148,15 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		setupVideoSurface();
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if(item.getItemId() == android.R.id.home) {
+			finish();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		setupVideoSurface();
@@ -144,9 +164,14 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	private void initialize() {
 		mVideoSurface = (SurfaceView) findViewById(R.id.video_surface);
+		mSubtitlesSurface = (SurfaceView) findViewById(R.id.subtitles_surface);
+		mSubtitlesSurface.setZOrderMediaOverlay(true);
+		mSubtitlesSurface.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+
+
 		if (mPlayer == null)
 			mPlayer = new VLCPlayer();
-		mPlayer.attach(mVideoSurface);
+		mPlayer.attach(mVideoSurface, mSubtitlesSurface);
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(mOverlayFragment);
 		handleIntent(getIntent());
@@ -215,7 +240,9 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		layoutParams.width = (int) Math.floor(displayWidth * mVideoWidth / mVideoVisibleWidth);
 		layoutParams.height = (int) Math.floor(displayHeight * mVideoHeight / mVideoVisibleHeight);
 		mVideoSurface.setLayoutParams(layoutParams);
+		mSubtitlesSurface.setLayoutParams(layoutParams);
 		mVideoSurface.invalidate();
+		mSubtitlesSurface.invalidate();
 	}
 
 	public void setFullScreen() {
@@ -253,5 +280,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	@Override
 	public void onHardwareAccelerationError(IVLCVout vlcVout) {
 		//TODO onHardwareAccelerationError
+	}
+
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
+		if(mOverlayFragment == null)
+			return;
+		mOverlayFragment.onDialogAction(action, details, dialogTag);
 	}
 }

@@ -26,6 +26,7 @@ public class SimpleChoiceDialog extends ActionDialog {
 
 	private int[] mActionIds;
 	private CharSequence[] mActions;
+	private String mTitle;
 
 	public static SimpleChoiceDialog newInstance(String title, CharSequence[] actions, int[] actionIds) {
 		SimpleChoiceDialog fragment = new SimpleChoiceDialog();
@@ -39,6 +40,7 @@ public class SimpleChoiceDialog extends ActionDialog {
 
 	private void init() {
 		Bundle args = getArguments();
+		mTitle = args.getString(KEY_TITLE);
 		mActions = BundleHelper.toCharSequenceArray(args.getStringArrayList(KEY_ACTIONS));
 		mActionIds = args.getIntArray(KEY_ACTION_IDS);
 	}
@@ -49,7 +51,7 @@ public class SimpleChoiceDialog extends ActionDialog {
 		init();
 		MaterialDialog.Builder builder;
 		builder = new MaterialDialog.Builder(getActivity());
-		builder.title(getText(R.string.pick_action))
+		builder.title(mTitle)
 			.items(mActions)
 			.itemsCallback(new MaterialDialog.ListCallback() {
 				@Override

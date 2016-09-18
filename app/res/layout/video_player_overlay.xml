@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
-    android:id="@+id/overlay_root"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/overlay_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -27,8 +27,8 @@
         app:contentPadding="4dp">
 
         <RelativeLayout
-            android:id="@+id/parent_service"
             xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/parent_service"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -37,9 +37,9 @@
                 android:id="@+id/service_progress"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:enabled="false"
                 android:layout_alignParentTop="true"
-                android:layout_gravity="center_vertical"/>
+                android:layout_gravity="center_vertical"
+                android:enabled="false"/>
 
             <ImageView
                 android:id="@+id/picon"
@@ -150,23 +150,15 @@
         </RelativeLayout>
     </app:android.support.v7.widget.CardView>
 
-    <app:android.support.v7.widget.CardView
-        android:id="@+id/servicelist_root"
+    <net.reichholf.dreamdroid.widget.AutofitRecyclerView
+        android:id="@+id/servicelist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/service_detail_root"
         android:layout_marginBottom="8dp"
         android:layout_weight="1"
-        android:visibility="gone"
-        app:cardBackgroundColor="?attr/colorPrimary"
-        app:cardCornerRadius="4dp"
-        app:cardElevation="0dp"
-        app:contentPadding="2dp">
-
-        <net.reichholf.dreamdroid.widget.AutofitRecyclerView
-            android:id="@+id/servicelist"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:columnWidth="290dp"/>
-    </app:android.support.v7.widget.CardView>
+        android:clipToPadding="false"
+        android:columnWidth="290dp"
+        android:paddingTop="?attr/actionBarSize"
+        android:visibility="gone"/>
 </RelativeLayout>

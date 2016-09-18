@@ -13,13 +13,19 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.GestureDetectorCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +40,8 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.VideoActivity;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -61,13 +69,16 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener, ActionDialog.DialogActionListener {
+
+	public static final String DIALOG_TAG_AUDIO_TRACK = "dialog_audio_track";
+	public static final String DIALOG_TAG_SUBTITLE_TRACK = "dialog_subtitle_track";
 
 	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
 
 	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
 	private final int[] sOverlayViews = {R.id.service_detail_root};
-	private final int[] sZapOverlayViews = {R.id.servicelist_root};
+	private final int[] sZapOverlayViews = {R.id.servicelist};
 	static float sOverlayAlpha = 0.85f;
 
 	public final String TITLE = "title";
@@ -95,6 +106,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private AudioManager mAudioManager;
 	private int mAudioMaxVol;
 	private float mVolume;
+	private boolean mIsHiding;
 
 	public VideoOverlayFragment() {
 	}
@@ -102,6 +114,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		setRetainInstance(true);
+		setHasOptionsMenu(true);
 		super.onCreate(savedInstanceState);
 		mServiceName = getArguments().getString(TITLE);
 		mServiceRef = getArguments().getString(SERVICE_REFERENCE);
@@ -131,6 +144,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 		mVolume = -1f;
 
+		getActionBar().setShowHideAnimationEnabled(true);
+
 		autohide();
 		reload();
 	}
@@ -142,6 +157,24 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mServicesView = (AutofitRecyclerView) view.findViewById(R.id.servicelist);
 		mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 		mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
+
+		mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+			int sTreshold = 20;
+			int mTotalDistance = 0;
+
+			@Override
+			public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+				super.onScrolled(recyclerView, dx, dy);
+				mTotalDistance += dy;
+				if (mTotalDistance < 0 - sTreshold) {
+					mTotalDistance = 0;
+					showToolbar();
+				} else if (mTotalDistance > sTreshold) {
+					mTotalDistance = 0;
+					hideToolbar();
+				}
+			}
+		});
 		mItemClickSupport = ItemClickSupport.addTo(mServicesView);
 		mItemClickSupport.setOnItemClickListener(this);
 
@@ -162,7 +195,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			@Override
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 				boolean isGesturesEnabled = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true);
-				if(!isGesturesEnabled)
+				if (!isGesturesEnabled)
 					return true;
 
 				Log.d(LOG_TAG, String.format("distanceY=%s, DeltaY=%s", distanceY, e1.getY() - e2.getY()));
@@ -204,6 +237,51 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		});
 
 		return view;
+	}
+
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.video, menu);
+		super.onCreateOptionsMenu(menu, inflater);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+			case R.id.menu_audio_track:
+				onSelectAudioTrack();
+				return true;
+			case R.id.menu_subtitle:
+				onSelectSubtitleTrack();
+				return true;
+			default:
+				break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void onSelectAudioTrack() {
+		MediaPlayer player = VLCPlayer.getMediaPlayer();
+		showTrackSelection(getString(R.string.audio_tracks), player.getAudioTracks(), DIALOG_TAG_AUDIO_TRACK);
+	}
+
+	private void onSelectSubtitleTrack() {
+		MediaPlayer player = VLCPlayer.getMediaPlayer();
+		showTrackSelection(getString(R.string.subtitles), player.getSpuTracks(), DIALOG_TAG_SUBTITLE_TRACK);
+	}
+
+	private void showTrackSelection( String title, MediaPlayer.TrackDescription[] descriptions,String dialog_tag) {
+		CharSequence[] actions = new CharSequence[descriptions.length];
+		int[] ids = new int[descriptions.length];
+		int i=0;
+		for(MediaPlayer.TrackDescription description : descriptions) {
+			actions[i] = description.name;
+			ids[i] = description.id;
+			i++;
+		}
+		SimpleChoiceDialog choice = SimpleChoiceDialog.newInstance(title, actions, ids);
+		choice.show(getFragmentManager(), dialog_tag);
 	}
 
 	private void onVolumeTouch(float distance_y) {
@@ -296,7 +374,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void zap() {
-		if(Service.isMarker(mServiceRef))
+		if (Service.isMarker(mServiceRef))
 			return;
 		Intent streamingIntent = IntentFactory.getStreamServiceIntent(getActivity(), mServiceRef, mServiceName, mBouquetRef, mServiceInfo);
 		getArguments().putString(TITLE, mServiceRef);
@@ -371,8 +449,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		MediaPlayer player = VLCPlayer.getMediaPlayer();
 		if (player == null)
 			return;
-		float fpos = (float)pos;
-		if(player.getLength() > 0)
+		float fpos = (float) pos;
+		if (player.getLength() > 0)
 			fpos = fpos / player.getLength() * 100;
 		player.setPosition(fpos / 100f);
 	}
@@ -503,6 +581,42 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		super.onPause();
 	}
 
+
+	public ActionBar getActionBar() {
+		return ((AppCompatActivity) getActivity()).getSupportActionBar();
+	}
+
+	public Toolbar getToolbar() {
+		return (Toolbar) getActivity().findViewById(R.id.toolbar);
+	}
+
+	private void showToolbar() {
+		if (getActionBar().isShowing())
+			return;
+		mIsHiding = false;
+		getActionBar().show();
+		getToolbar().animate().translationY(0);
+	}
+
+	private void hideToolbar() {
+		if (mIsHiding)
+			return;
+		mIsHiding = true;
+		getToolbar()
+				.animate()
+				.translationY(-getToolbar().getHeight())
+				.setListener(new AnimatorListenerAdapter() {
+					@Override
+					public void onAnimationEnd(Animator animation) {
+						if (mIsHiding) {
+							mIsHiding = false;
+							getActionBar().hide();
+						}
+						super.onAnimationEnd(animation);
+					}
+				});
+	}
+
 	public void autohide() {
 		mHandler.postDelayed(mAutoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT);
 	}
@@ -513,6 +627,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
 		updateViews();
+		showToolbar();
 		for (int id : sOverlayViews)
 			fadeInView(view.findViewById(id));
 		if (doShowZapOverlays)
@@ -526,6 +641,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (view == null)
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
+		hideToolbar();
 		for (int id : sOverlayViews)
 			fadeOutView(view.findViewById(id));
 		hideZapOverlays();
@@ -615,12 +731,23 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
-		String serviceRef =  mServiceList.get(position).getString(Event.KEY_SERVICE_REFERENCE);
-		if(Service.isMarker(serviceRef))
+		String serviceRef = mServiceList.get(position).getString(Event.KEY_SERVICE_REFERENCE);
+		if (Service.isMarker(serviceRef))
 			return;
 		mServiceInfo = mServiceList.get(position);
 		mServiceRef = serviceRef;
 		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
 		zap();
+	}
+
+	@Override
+	public void onDialogAction(int action, Object details, String dialogTag) {
+		MediaPlayer player = VLCPlayer.getMediaPlayer();
+		if(DIALOG_TAG_AUDIO_TRACK.equals(dialogTag)) {
+			player.setAudioTrack(action);
+		} else if (DIALOG_TAG_SUBTITLE_TRACK.equals(dialogTag)) {
+			player.setSpuTrack(action);
+		}
+
 	}
 }

@@ -353,4 +353,8 @@
     <string name="video_enable_gestures">Enable gestures</string>
     <string name="online_picons">Use "online" picons</string>
     <string name="online_picons_long">Don\'t use synced picons but load them directly via http(s). May cause consinderable traffic!</string>
+    <string name="audio_track">Audio Track</string>
+    <string name="subtitle">Subtitle</string>
+    <string name="audio_tracks">Audio Tracks</string>
+    <string name="subtitles">Subtitles</string>
 </resources>
