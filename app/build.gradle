@@ -43,7 +43,7 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 381
+        versionCode 382
         versionName="1.1-".concat(new Integer(versionCode).toString());
 
         jackOptions {
