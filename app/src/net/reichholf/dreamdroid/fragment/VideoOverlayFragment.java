@@ -748,6 +748,5 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		} else if (DIALOG_TAG_SUBTITLE_TRACK.equals(dialogTag)) {
 			player.setSpuTrack(action);
 		}
-
 	}
 }
