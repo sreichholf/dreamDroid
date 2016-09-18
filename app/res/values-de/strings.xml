@@ -356,4 +356,9 @@
     <string name="video_enable_gestures">Gesten aktivieren</string>
     <string name="online_picons">Online Picons</string>
     <string name="online_picons_long">Picons über das Netzwerk beziehen statt snychronisierte zu nutzen. Erhöht den Traffic ggf. merklich!</string>
+    <string name="audio_track">Tonspur</string>
+    <string name="audio_tracks">Tonspuren</string>
+    <string name="streaming">Streaming</string>
+    <string name="subtitle">Untertitel</string>
+    <string name="subtitles">Untertitel</string>
 </resources>
