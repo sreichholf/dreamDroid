@@ -593,7 +593,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 
 	public ActionBar getActionBar() {
-		return ((AppCompatActivity) getActivity()).getSupportActionBar();
+		AppCompatActivity act = (AppCompatActivity) getActivity();
+		if(act != null)
+			return act.getSupportActionBar();
+		return null;
 	}
 
 	public Toolbar getToolbar() {
