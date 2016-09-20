@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.1-383" versioncode="383">
+    <release version="1.1-384" versioncode="384">
         <change>NEW: Audio/Subtitle track selection in video player</change>
         <change>FIX: some crashes</change>
         <change>IMP: minor ui improvements</change>
