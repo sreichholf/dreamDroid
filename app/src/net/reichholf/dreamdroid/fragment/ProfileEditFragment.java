@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -270,7 +271,12 @@ public class ProfileEditFragment extends BaseFragment {
 		mCurrentProfile.setEncoderVideoBitrate(Integer.valueOf(mEncoderVideoBitrate.getText().toString()));
 
 
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
+		Context ctx = getContext();
+		if(ctx == null) { //FIMXE: why/how does this happen?
+			showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getName() + "'");
+			return;
+		}
+		DatabaseHelper dbh = DatabaseHelper.getInstance(ctx);
 		if (mCurrentProfile.getId() > 0) {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
 				showToast(getText(R.string.host_empty));
