@@ -1,72 +1,28 @@
 package net.reichholf.dreamdroid.activities;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.preference.PreferenceManager;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.ViewTreeObserver;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.helpers.DateTime;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.NameValuePair;
-import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.Picon;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
-import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.vlc.VLCPlayer;
-import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
-import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
-import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
 import org.piwik.sdk.PiwikApplication;
 import org.videolan.libvlc.IVLCVout;
-import org.videolan.libvlc.MediaPlayer;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 
 /**
  * Created by reichi on 16/02/16.
@@ -102,6 +58,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		initializeOverlay();
 		if (DreamDroid.isTrackingEnabled(this))
 			((PiwikApplication) getApplication()).getTracker().trackScreenView(getClass().getSimpleName(), getClass().getSimpleName());
+		getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+			@Override
+			public void onGlobalLayout() {
+				setupVideoSurface();
+			}
+		});
 	}
 
 	public void handleIntent(Intent intent) {
@@ -144,18 +106,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	@Override
-	public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
-		super.onMultiWindowModeChanged(isInMultiWindowMode);
-		setupVideoSurface();
-	}
-
-	@Override
-	public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
-		super.onPictureInPictureModeChanged(isInPictureInPictureMode);
-		setupVideoSurface();
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if(item.getItemId() == android.R.id.home) {
 			finish();
@@ -164,17 +114,11 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		return super.onOptionsItemSelected(item);
 	}
 
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		setupVideoSurface();
-	}
-
 	private void initialize() {
 		mVideoSurface = (SurfaceView) findViewById(R.id.video_surface);
 		mSubtitlesSurface = (SurfaceView) findViewById(R.id.subtitles_surface);
 		mSubtitlesSurface.setZOrderMediaOverlay(true);
 		mSubtitlesSurface.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-
 
 		if (mPlayer == null)
 			mPlayer = new VLCPlayer();
@@ -224,16 +168,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		}
 
 		double videoAspect, videoWith, displayAspect, displayWidth, displayHeight;
-
-		//We have to reverse width/height after orientation change (we don't let android handle it to keep the video running)
-		boolean isPortraitMode = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-		if (isPortraitMode && surfaceWidth > surfaceHeight || !isPortraitMode && surfaceWidth < surfaceHeight) {
-			displayWidth = surfaceHeight;
-			displayHeight = surfaceWidth;
-		} else {
-			displayWidth = surfaceWidth;
-			displayHeight = surfaceHeight;
-		}
+		displayWidth = surfaceWidth;
+		displayHeight = surfaceHeight;
 
 		videoWith = mVideoVisibleWidth * (double) mSarNum / mSarDen;
 		videoAspect = videoWith / (double) mVideoVisibleHeight;
