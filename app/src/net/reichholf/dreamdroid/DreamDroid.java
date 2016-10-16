@@ -417,4 +417,8 @@ public class DreamDroid extends PiwikApplication {
 	{
 		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PREFS_KEY_ALLOW_TRACKING, true);
 	}
+
+	public static boolean isTV(Context context) {
+		return context.getResources().getBoolean(R.bool.is_television);
+	}
 }

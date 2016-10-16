@@ -18,6 +18,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -32,7 +33,7 @@ public class Picon {
 
 	public static String getBasepath(Context context){
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-		if(sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)) {
+		if(sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
 			return String.format("%s/", sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"), "/");
 		}
 
@@ -78,7 +79,7 @@ public class Picon {
 		}
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED,
-				false)) {
+				DreamDroid.isTV(context))) {
 			piconView.setVisibility(View.GONE);
 			return;
 		}
@@ -92,12 +93,12 @@ public class Picon {
 			piconView.setVisibility(View.VISIBLE);
 
 		String uri = getPiconUri(context, fileName);
-		Picasso.with(context).load(uri).fit().centerInside().tag(tag).into(piconView, callback);
+		Picasso.with(context).load(uri).fit().centerInside().tag(tag).error(R.drawable.dreamdroid_logo_simple).into(piconView, callback);
 	}
 
 	public static String getPiconUri(Context context, String fileName) {
 		//https://dm7080/file?file=%2F%2Fmedia%2Fhdd%2Fmovie%2F20160822%202245%20-%20BR%20Fernsehen%20S%C3%BCd%20HD%20-%20Irgendwie%20und%20Sowieso%20(12)%20-%20Miteinander%20-%20Auseinander%20-%2030-J%C3%84HRIGES%20JUBIL%C3%84UM.ts
-		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)) {
+		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
 			ArrayList<NameValuePair> params = new ArrayList<>();
 			params.add(new NameValuePair("file", fileName));
 			return SimpleHttpClient.getInstance().buildAuthedUrl(URIStore.FILE, params);

@@ -22,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -352,8 +353,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				String eventid = mServiceInfo.getString(Event.KEY_EVENT_ID, "-1");
 				if (!eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
 					onServiceInfoChanged(false);
-				if (isServiceDetailVisible())
-					showZapOverlays();
 			}
 			mServicesView.getAdapter().notifyDataSetChanged();
 		}
@@ -638,6 +637,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	public void showOverlays(boolean doShowZapOverlays) {
 		View view = getView();
+		doShowZapOverlays &= !DreamDroid.isTV(getContext());
 		if (view == null)
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
@@ -708,11 +708,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	public void toggleViews() {
-		View sdroot = getView().findViewById(R.id.service_detail_root);
-		if (sdroot.getVisibility() == View.VISIBLE)
+		if (isOverlaysVisible())
 			hideOverlays();
 		else
 			showOverlays(true);
+	}
+
+	protected boolean isOverlaysVisible() {
+		View sdroot = getView().findViewById(R.id.service_detail_root);
+		return sdroot.getVisibility() == View.VISIBLE;
 	}
 
 	@Override
@@ -764,5 +768,20 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		} else if (DIALOG_TAG_SUBTITLE_TRACK.equals(dialogTag)) {
 			player.setSpuTrack(action);
 		}
+	}
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if ((keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_BUTTON_B)) {
+			if(isOverlaysVisible()) {
+				hideOverlays();
+				return true;
+			}
+			return false;
+		}
+		if(!isOverlaysVisible()) {
+			showOverlays(true);
+			return true;
+		}
+		return false;
 	}
 }

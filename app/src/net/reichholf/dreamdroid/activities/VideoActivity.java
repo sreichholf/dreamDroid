@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
@@ -117,6 +118,13 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			int accel = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));
 			mPlayer.playUri(intent.getData(), accel);
 		}
+	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if(!mOverlayFragment.onKeyDown(keyCode, event))
+			return super.onKeyDown(keyCode, event);
+		return true;
 	}
 
 	private void initialize() {

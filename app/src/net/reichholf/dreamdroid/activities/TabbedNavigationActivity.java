@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.activities;
 
 import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,7 +21,13 @@ public class TabbedNavigationActivity extends AppCompatActivity {
 		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
 
-		Intent intent = new Intent(this, MainActivity.class);
+
+		Intent intent;
+		if(DreamDroid.isTV(this)) {
+			intent = new Intent(this, net.reichholf.dreamdroid.tv.activities.MainActivity.class);
+		} else {
+			intent = new Intent(this, MainActivity.class);
+		}
 		startActivity(intent);
 		finish();
 	}

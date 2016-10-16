@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="net.reichholf.dreamdroid"
-          xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="net.reichholf.dreamdroid"
           android:installLocation="auto">
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="24"/>
+        android:targetSdkVersion="24"
+        tools:overrideLibrary="android.support.v17.leanback"/>
+
+    <uses-feature android:name="android.software.leanback"
+                  android:required="false" />
 
     <supports-screens
         android:anyDensity="true"
@@ -28,17 +33,18 @@
         android:backupAgent="DreamDroidBackupAgent"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
+        android:banner="@drawable/dreamdroid_banner"
         android:killAfterRestore="true"
         android:label="@string/app_name"
-        android:theme="@style/Theme.DreamDroid"
+        android:resizeableActivity="true"
         android:supportsRtl="true"
-        android:resizeableActivity="true">
+        android:theme="@style/Theme.DreamDroid">
         <activity android:name=".activities.TabbedNavigationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER"/>
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".activities.SimpleFragmentActivity">
@@ -58,6 +64,10 @@
             android:name="android.app.default_searchable"
             android:value=".activities.SimpleFragmentActivity"/>
 
+        <activity
+            android:name=".tv.activities.MainActivity"
+            android:theme="@style/Theme.Leanback">
+        </activity>
         <activity
             android:name=".activities.ShareActivity"
             android:theme="@style/Theme.DreamDroid.Dialog">
@@ -101,7 +111,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.MainActivity" />
+            android:name=".activities.MainActivity"/>
 
         <activity
             android:name=".activities.VideoActivity"

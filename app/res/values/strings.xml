@@ -5,6 +5,7 @@
     <string name="title">Title</string>
     <string name="mo">Mo</string>
     <string name="app_name">DreamDroid</string>
+    <string name="app_name_tv">dreamDroidTV</string>
 
     <string-array name="servicelist">
         <item>Bouquets (TV)</item>
