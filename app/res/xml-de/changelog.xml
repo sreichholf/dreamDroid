@@ -1,4 +1,8 @@
 <changelog>
+    <release version="1.1-385" versioncode="385">
+        <change>FIX: Abstürze unter Android 7.0</change>
+        <change>FIX: Kaputte Apspekt-Ratio im VideoPlayer in Verbindung mit Rotation/MultiWindow</change>
+    </release>
     <release version="1.1-384" versioncode="384">
         <change>NEU: Tonspur/Untertitel Auswahl im Videoplayer</change>
         <change>FIX: Ein paar (mögliche) Abstürze</change>

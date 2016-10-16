@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.1-385" versioncode="385">
+        <change>FIX: Some android 7.0 related crashes</change>
+        <change>FIX: Some video player issues where rotation/multiwindow was messing up the aspect ratio</change>
+    </release>
     <release version="1.1-384" versioncode="384">
         <change>NEW: Audio/Subtitle track selection in video player</change>
         <change>FIX: some crashes</change>
