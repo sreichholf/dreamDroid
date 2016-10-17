@@ -66,14 +66,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		});
 	}
 
-	public void handleIntent(Intent intent) {
-		setIntent(intent);
-		if (intent.getAction() == Intent.ACTION_VIEW) {
-			int accel = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));
-			mPlayer.playUri(intent.getData(), accel);
-		}
-	}
-
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -112,6 +104,19 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		handleIntent(intent);
+	}
+
+	public void handleIntent(Intent intent) {
+		setIntent(intent);
+		if (intent.getAction() == Intent.ACTION_VIEW) {
+			int accel = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));
+			mPlayer.playUri(intent.getData(), accel);
+		}
 	}
 
 	private void initialize() {

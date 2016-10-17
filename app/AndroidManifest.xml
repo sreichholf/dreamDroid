@@ -106,6 +106,7 @@
         <activity
             android:name=".activities.VideoActivity"
             android:theme="@style/Theme.DreamDroid.Player"
+            android:launchMode="singleTop"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|uiMode|smallestScreenSize" />
 
         <activity

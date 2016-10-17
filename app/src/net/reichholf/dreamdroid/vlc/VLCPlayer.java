@@ -41,6 +41,8 @@ public class VLCPlayer {
 
 	public void attach(SurfaceView surfaceView, SurfaceView subtitleSurfaceView) {
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
+		if(vlcVout.areViewsAttached())
+			detach();
 		vlcVout.setVideoView(surfaceView);
 		vlcVout.setSubtitlesView(subtitleSurfaceView);
 		vlcVout.attachViews();
