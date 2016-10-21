@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.1-386" versioncode="386">
+        <change>FIX: Abstürze im VideoPlayer</change>
+    </release>
     <release version="1.1-385" versioncode="385">
         <change>FIX: Abstürze unter Android 7.0</change>
         <change>FIX: Kaputte Apspekt-Ratio im VideoPlayer in Verbindung mit Rotation/MultiWindow</change>
