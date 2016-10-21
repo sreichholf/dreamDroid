@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.fragment.abs;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -54,12 +53,6 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	public BaseRecyclerFragment() {
 		super();
 		mHelper = new FragmentHelper();
-	}
-
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		mHelper.onAttach(activity);
 	}
 
 	@Override

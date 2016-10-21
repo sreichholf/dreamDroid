@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment.helper;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -57,9 +56,6 @@ public class FragmentHelper {
 			header.setVisibility(View.VISIBLE);
 		else
 			header.setVisibility(View.GONE);
-	}
-
-	public void onAttach(Activity activity) {
 	}
 
 	public void onResume() {
