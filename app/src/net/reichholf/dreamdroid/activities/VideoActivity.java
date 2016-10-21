@@ -150,6 +150,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	private void cleanup() {
+		if(mPlayer == null)
+			return;
 		mPlayer.detach();
 		mPlayer = null;
 		mVideoSurface = null;
@@ -235,5 +237,11 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		if(mOverlayFragment == null)
 			return;
 		mOverlayFragment.onDialogAction(action, details, dialogTag);
+	}
+
+	@Override
+	public void finish() {
+		super.finish();
+		cleanup();
 	}
 }
