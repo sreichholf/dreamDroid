@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 
 import org.xml.sax.Attributes;
@@ -156,9 +157,7 @@ public class E2MovieListHandler extends E2ListHandler {
 			} else if (inDescriptionEx) {
 				mMovie.putOrConcat(Movie.KEY_DESCRIPTION_EXTENDED, value);
 			} else if (inName) {
-				mMovie.putOrConcat(Movie.KEY_SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "")); // remove
-																								// illegal
-																								// chars
+				mMovie.putOrConcat(Movie.KEY_SERVICE_NAME, value.replaceAll("\\p{Cntrl}", "")); // remove illegal chars
 			} else if (inTime) {
 				mMovie.putOrConcat(Movie.KEY_TIME, value);
 				mMovie.putOrConcat(Movie.KEY_TIME_READABLE, DateTime.getDateTimeString(value));
@@ -170,6 +169,8 @@ public class E2MovieListHandler extends E2ListHandler {
 				mMovie.putOrConcat(Movie.KEY_FILE_NAME, value);
 			} else if (inFilesize) {
 				mMovie.putOrConcat(Movie.KEY_FILE_SIZE, value);
+				if(Python.NONE.equals(value))
+					value = "0";
 				Long size = Long.valueOf(value);
 				size /= (1024 * 1024);
 				String size_readable = size + " MB";
