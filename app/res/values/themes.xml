@@ -90,4 +90,11 @@
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
+    <style name="Theme.Dreamdroid.LeanbackPreferences" parent="Theme.Leanback">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:colorPrimary">@color/primary_material_dark</item>
+    </style>
 </resources>

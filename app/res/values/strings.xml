@@ -359,4 +359,5 @@
     <string name="audio_tracks">Audio Tracks</string>
     <string name="subtitles">Subtitles</string>
     <string name="no_tracks">No tracks available!</string>
+    <string name="preferences">Preferences</string>
 </resources>

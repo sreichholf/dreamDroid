@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
@@ -24,6 +25,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.tv.activities.PreferenceActivity;
 import net.reichholf.dreamdroid.tv.fragment.abs.BaseHttpBrowseFragment;
 import net.reichholf.dreamdroid.tv.presenter.CardPresenter;
 
@@ -45,7 +47,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 
 	ExtendedHashMap mLoadingBouquet;
 	ExtendedHashMap mSelectedBouquet;
-	ExtendedHashMap mSelectedItem;
+	ExtendedHashMap mSelectedService;
 
 	public RootBrowseFragment() {
 	}
@@ -70,7 +72,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		if(mRowsAdapter == null) {
+		if (mRowsAdapter == null) {
 			mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
 			setAdapter(mRowsAdapter);
 		}
@@ -133,9 +135,20 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 		mRowsAdapter.clear();
 	}
 
+	protected void addSettingsRow() {
+		ExtendedHashMap settings = new ExtendedHashMap();
+		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter(true));
+		listRowAdapter.add(settings);
+
+		HeaderItem header = new HeaderItem(mRowsAdapter.size(), getString(R.string.preferences));
+		mRowsAdapter.add(new ListRow(header, listRowAdapter));
+	}
+
 	public void loadNextBouquet() {
-		if(mBouquetQueue.isEmpty())
+		if (mBouquetQueue.isEmpty()) {
+			addSettingsRow();
 			return;
+		}
 		mLoadingBouquet = mBouquetQueue.get(0);
 		mBouquetQueue.remove(0);
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -147,9 +160,8 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 	}
 
 	public void onLoadServicesFinished(ArrayList<ExtendedHashMap> services) {
-		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(
-				new CardPresenter());
-		for(ExtendedHashMap service : services) {
+		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter());
+		for (ExtendedHashMap service : services) {
 			listRowAdapter.add(service);
 		}
 		HeaderItem header = new HeaderItem(mRowsAdapter.size(), mLoadingBouquet.getString(Service.KEY_NAME));
@@ -159,8 +171,17 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 		loadNextBouquet();
 	}
 
+	protected boolean isSettingsRow(Row row) {
+		return row.getHeaderItem().getId() >= mBouquets.size();
+	}
+
 	@Override
 	public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
+		if(isSettingsRow(row)) {
+			Intent intent = new Intent(getContext(), PreferenceActivity.class);
+			startActivity(intent);
+			return;
+		}
 		ExtendedHashMap event = (ExtendedHashMap) item;
 		String ref = event.getString(Event.KEY_SERVICE_REFERENCE);
 		String name = event.getString(Event.KEY_EVENT_TITLE);
@@ -169,11 +190,16 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 
 	@Override
 	public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-		mSelectedItem = (ExtendedHashMap) item;
+		if (isSettingsRow(row)) {
+			mSelectedService = null;
+			mSelectedBouquet = null;
+			return;
+		}
+		mSelectedService = (ExtendedHashMap) item;
 		long index = row.getHeaderItem().getId();
 
-		if(index >= 0 && index < mBouquets.size())
-			mSelectedBouquet = mBouquets.get((int)index);
+		if (index >= 0 && index < mBouquets.size())
+			mSelectedBouquet = mBouquets.get((int) index);
 		else
 			mSelectedBouquet = new ExtendedHashMap();
 	}

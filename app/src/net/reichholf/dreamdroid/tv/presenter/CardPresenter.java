@@ -48,13 +48,29 @@ public class CardPresenter extends Presenter {
 	private int mDefaultBackgroundColor = -1;
 	private Drawable mDefaultCardImage;
 
+	private boolean mSettingsMode;
+
+	public CardPresenter() {
+		super();
+		mSettingsMode = false;
+	}
+
+	public CardPresenter(boolean isSettings) {
+		super();
+		mSettingsMode = isSettings;
+	}
+
+
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent) {
 		mDefaultBackgroundColor =
 				ContextCompat.getColor(parent.getContext(), R.color.primary_dreamdroid);
 		mSelectedBackgroundColor =
 				ContextCompat.getColor(parent.getContext(), R.color.primary_material_dark);
-		mDefaultCardImage = parent.getResources().getDrawable(R.drawable.dreamdroid_logo_simple, null);
+		if (mSettingsMode)
+			mDefaultCardImage = parent.getResources().getDrawable(R.drawable.ic_settings_badge, null);
+		else
+			mDefaultCardImage = parent.getResources().getDrawable(R.drawable.dreamdroid_logo_simple, null);
 
 		ImageCardView cardView = new ImageCardView(parent.getContext()) {
 			@Override
@@ -81,6 +97,24 @@ public class CardPresenter extends Presenter {
 
 	@Override
 	public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
+		if (mSettingsMode)
+			bindSettingsViewHolder(viewHolder, item);
+		else
+			bindServiceViewHolder(viewHolder, item);
+	}
+
+	protected void bindSettingsViewHolder(Presenter.ViewHolder viewHolder, Object item) {
+		ImageCardView cardView = (ImageCardView) viewHolder.view;
+		cardView.setTitleText(cardView.getContext().getString(R.string.settings));
+		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
+		Resources res = cardView.getResources();
+		int width = res.getDimensionPixelSize(R.dimen.card_width);
+		int height = res.getDimensionPixelSize(R.dimen.card_height);
+		cardView.setMainImageDimensions(width, height);
+		cardView.setMainImage(mDefaultCardImage);
+	}
+
+	protected void bindServiceViewHolder(Presenter.ViewHolder viewHolder, Object item) {
 		ExtendedHashMap event = (ExtendedHashMap) item;
 		String title = event.getString(Event.KEY_SERVICE_NAME);
 		String eventTitle = event.getString(Event.KEY_EVENT_TITLE);

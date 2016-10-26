@@ -7,7 +7,7 @@
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="24"
-        tools:overrideLibrary="android.support.v17.leanback"/>
+        tools:overrideLibrary="android.support.v17.leanback, android.support.v17.preference"/>
 
     <uses-feature android:name="android.software.leanback"
                   android:required="false" />
@@ -66,8 +66,12 @@
 
         <activity
             android:name=".tv.activities.MainActivity"
-            android:theme="@style/Theme.Leanback">
+            android:theme="@style/Theme.Leanback" />
+        <activity
+            android:name=".tv.activities.PreferenceActivity"
+            android:theme="@style/Theme.Dreamdroid.LeanbackPreferences">
         </activity>
+
         <activity
             android:name=".activities.ShareActivity"
             android:theme="@style/Theme.DreamDroid.Dialog">

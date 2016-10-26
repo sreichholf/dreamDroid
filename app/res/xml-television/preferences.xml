@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orderingFromXml="true">
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="allow_tracking"
+        android:summary="@string/allow_tracking_long"
+        android:title="@string/allow_tracking"/>
+
+    <PreferenceCategory
+        android:key="category_videoplayer"
+        android:title="@string/video_player">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="integrated_video_player"
+            android:summary="@string/integrated_video_player_long"
+            android:title="@string/integrated_video_player"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="integrated_video_player"
+            android:key="video_enable_gestures"
+            android:summary="@string/video_enable_gestures_long"
+            android:title="@string/video_enable_gestures"/>
+        <ListPreference
+            android:defaultValue="@integer/hw_accel_default"
+            android:dependency="integrated_video_player"
+            android:dialogTitle="@string/video_use_hw_accel"
+            android:entries="@array/hw_accel_entries"
+            android:entryValues="@array/hw_accel_values"
+            android:key="video_hardware_acceleration"
+            android:summary="@string/use_hw_accel_long"
+            android:title="@string/use_hw_accel"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="category_appearance"
+        android:title="@string/appearance">
+
+        <ListPreference
+            android:defaultValue="@integer/max_grid_col_default"
+            android:dialogTitle="@string/max_grid_cols"
+            android:entries="@array/max_grid_col_entries"
+            android:entryValues="@array/max_grid_col_values"
+            android:key="grid_max_cols"
+            android:summary="@string/max_grid_cols_long"
+            android:title="@string/max_grid_cols"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="category_picons"
+        android:title="@string/picons">
+<!--
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="picons"
+            android:summary="@string/use_picons_long"
+            android:title="@string/use_picons"/>
+-->
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="picons_online"
+            android:summary="@string/online_picons_long"
+            android:title="@string/online_picons"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="use_name_as_picon_filename"
+            android:summary="@string/use_name_as_picon_filename_long"
+            android:title="@string/use_name_as_picon_filename"/>
+
+        <Preference
+            android:key="sync_picons"
+            android:summary="@string/sync_picons_long"
+            android:title="@string/sync_picons"/>
+
+        <EditTextPreference
+            android:defaultValue="/usr/share/enigma2/picon"
+            android:key="sync_picons_path"
+            android:summary="@string/sync_picons_path_long"
+            android:title="@string/sync_picons_path"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="developer"
+        android:title="@string/developer_settings">
+
+        <CheckBoxPreference
+            android:key="enable_developer"
+            android:title="@string/developer_settings_enable"/>
+
+        <CheckBoxPreference
+            android:dependency="enable_developer"
+            android:key="fake_picon"
+            android:summary="@string/use_fake_picon_long"
+            android:title="@string/use_fake_picon"/>
+
+        <CheckBoxPreference
+            android:dependency="enable_developer"
+            android:key="xml_debug"
+            android:summary="@string/dump_xml_long"
+            android:title="@string/dump_xml"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
