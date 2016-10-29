@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v17.leanback.system.Settings;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
@@ -137,8 +138,16 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 
 	protected void addSettingsRow() {
 		ExtendedHashMap settings = new ExtendedHashMap();
+		settings.put("title", getString(R.string.settings));
+		settings.put(SettingsFragment.KEY_PREFS_TYPE, SettingsFragment.PREFS_TYPE_GENERIC);
+
+		ExtendedHashMap profile = new ExtendedHashMap();
+		profile.put("title", getString(R.string.profile));
+		profile.put(SettingsFragment.KEY_PREFS_TYPE, SettingsFragment.PREFS_TYPE_PROFILE);
+
 		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter(true));
 		listRowAdapter.add(settings);
+		listRowAdapter.add(profile);
 
 		HeaderItem header = new HeaderItem(mRowsAdapter.size(), getString(R.string.preferences));
 		mRowsAdapter.add(new ListRow(header, listRowAdapter));
@@ -177,8 +186,11 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 
 	@Override
 	public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-		if(isSettingsRow(row)) {
+		if (isSettingsRow(row)) {
+			ExtendedHashMap it = (ExtendedHashMap) item;
+			String type = it.getString(SettingsFragment.KEY_PREFS_TYPE);
 			Intent intent = new Intent(getContext(), PreferenceActivity.class);
+			intent.putExtra(SettingsFragment.KEY_PREFS_TYPE, type);
 			startActivity(intent);
 			return;
 		}

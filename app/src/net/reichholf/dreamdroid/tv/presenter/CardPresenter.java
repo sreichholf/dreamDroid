@@ -104,8 +104,9 @@ public class CardPresenter extends Presenter {
 	}
 
 	protected void bindSettingsViewHolder(Presenter.ViewHolder viewHolder, Object item) {
+		ExtendedHashMap it = (ExtendedHashMap) item;
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
-		cardView.setTitleText(cardView.getContext().getString(R.string.settings));
+		cardView.setTitleText(it.getString("title"));
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
 		Resources res = cardView.getResources();
 		int width = res.getDimensionPixelSize(R.dimen.card_width);

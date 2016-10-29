@@ -13,9 +13,17 @@ import android.support.v7.preference.PreferenceScreen;
  */
 
 public class SettingsFragment extends LeanbackSettingsFragment {
+	public static String PREFS_TYPE_GENERIC = "generic";
+	public static String PREFS_TYPE_PROFILE = "profile";
+	public static String KEY_PREFS_TYPE = "type";
+
 	@Override
 	public void onPreferenceStartInitialScreen() {
-		startPreferenceFragment(new PrefsFragment());
+		String type = getActivity().getIntent().getStringExtra(KEY_PREFS_TYPE);
+		if(PREFS_TYPE_GENERIC.equals(type))
+			startPreferenceFragment(new PrefsFragment());
+		else
+			startPreferenceFragment(new ProfileFragment());
 	}
 
 	@Override

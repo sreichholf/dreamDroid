@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:defaultValue="Default"
+        android:key="profile"
+        android:title="@string/profile_name"/>
+
+    <EditTextPreference
+        android:defaultValue="dm.reichholf.net"
+        android:key="host"
+        android:title="@string/host"/>
+
+    <EditTextPreference
+        android:defaultValue="80"
+        android:inputType="number"
+        android:key="port"
+        android:numeric="integer"
+        android:title="@string/port"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="ssl"
+        android:title="@string/ssl_enabled"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="login"
+        android:title="@string/login_enabled"/>
+
+    <EditTextPreference
+        android:defaultValue="true"
+        android:dependency="login"
+        android:key="user"
+        android:title="@string/user"/>
+
+    <EditTextPreference
+        android:defaultValue="true"
+        android:dependency="login"
+        android:inputType="textPassword"
+        android:key="pass"
+        android:password="true"
+        android:title="@string/pass"/>
+</PreferenceScreen>

@@ -158,7 +158,7 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	public static boolean featureNowNext() {
-		return sFeatureNowNext;
+		return sFeatureNowNext || true;
 	}
 
 	public static boolean featurePostRequest() {
@@ -241,8 +241,21 @@ public class DreamDroid extends PiwikApplication {
 		if (oldProfile == null)
 			oldProfile = Profile.getDefault();
 
-		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
-		sProfile = dbh.getProfile(id);
+		if(isTV(context)) {
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+			String name = sp.getString(DatabaseHelper.KEY_PROFILE_PROFILE, "Demo");
+			String host = sp.getString(DatabaseHelper.KEY_PROFILE_HOST, "dreamdroid.org");
+			int port = Integer.parseInt(sp.getString(DatabaseHelper.KEY_PROFILE_PORT, "80"));
+			boolean  ssl = sp.getBoolean(DatabaseHelper.KEY_PROFILE_SSL, false);
+			boolean login = sp.getBoolean(DatabaseHelper.KEY_PROFILE_LOGIN, false);
+			String user = sp.getString(DatabaseHelper.KEY_PROFILE_USER, "root");
+			String pass = sp.getString(DatabaseHelper.KEY_PROFILE_PASS, "dreambox");
+			sProfile = new Profile(-1, name, host, host, port, 8001, port, login, user, pass, ssl, false, false, false,
+					false, "", "", "", "");
+		} else {
+			DatabaseHelper dbh = DatabaseHelper.getInstance(context);
+			sProfile = dbh.getProfile(id);
+		}
 		if (sProfile != null) {
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 			editor.putInt(CURRENT_PROFILE, id);
