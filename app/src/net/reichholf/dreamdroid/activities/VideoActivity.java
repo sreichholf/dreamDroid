@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.vlc.VLCPlayer;
 
 import org.piwik.sdk.PiwikApplication;
+import org.piwik.sdk.TrackHelper;
 import org.videolan.libvlc.IVLCVout;
 
 /**
@@ -58,7 +59,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		setTitle("");
 		initializeOverlay();
 		if (DreamDroid.isTrackingEnabled(this))
-			((PiwikApplication) getApplication()).getTracker().trackScreenView(getClass().getSimpleName(), getClass().getSimpleName());
+			TrackHelper.track().screen("/" + getClass().getSimpleName()).title(getClass().getSimpleName()).with((PiwikApplication) getApplication());
 		getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {

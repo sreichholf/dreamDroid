@@ -56,6 +56,8 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 
 import org.piwik.sdk.PiwikApplication;
+import org.piwik.sdk.TrackHelper;
+import org.piwik.sdk.Tracker;
 
 import java.util.Arrays;
 import java.util.List;
@@ -337,7 +339,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				ft.hide(mDetailFragment);
 			}
 			if (DreamDroid.isTrackingEnabled(this) && !fragment.isVisible())
-				((PiwikApplication) getApplication()).getTracker().trackScreenView(fragment.getClass().getSimpleName(), fragment.getClass().getSimpleName());
+				TrackHelper.track().screen("/" + fragment.getClass().getSimpleName()).title(fragment.getClass().getSimpleName()).with((PiwikApplication) getApplication());
 			ft.show(fragment);
 		} else {
 			Log.i(TAG, "Fragment " + ((Object) fragment).getClass().getSimpleName() + " not added, adding");
