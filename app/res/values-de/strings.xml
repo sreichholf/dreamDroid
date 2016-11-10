@@ -210,7 +210,7 @@
         <item>vorbereiten&#8230;</item>
         <item>läuft&#8230;</item>
         <item>beendet</item>
-        <item>deaktviert</item>
+        <item>deaktiviert</item>
     </string-array>
     <string-array name="timer_action">
         <item>aufnehmen</item>
