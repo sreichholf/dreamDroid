@@ -2,15 +2,14 @@ package net.reichholf.dreamdroid.tv.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v17.leanback.system.Settings;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
-import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v4.content.Loader;
+import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -31,6 +30,7 @@ import net.reichholf.dreamdroid.tv.fragment.abs.BaseHttpBrowseFragment;
 import net.reichholf.dreamdroid.tv.presenter.CardPresenter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by Stephan on 16.10.2016.
@@ -38,6 +38,8 @@ import java.util.ArrayList;
 
 public class RootBrowseFragment extends BaseHttpBrowseFragment {
 	public static int LOADER_BOUQUETLIST_ID = 1;
+	public static int REQUEST_CODE_PROFILE;
+	public static int ROW_SETTINGS_ID = 65535;
 
 	public static String BOUQUETS_TV = "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM BOUQUET \\\"bouquets.tv\\\" ORDER BY bouquet";
 
@@ -63,20 +65,15 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 			mBouquets = new ArrayList<>();
 		if (mBouquetQueue == null)
 			mBouquetQueue = new ArrayList<>();
-		mRowsAdapter = null;
 		setHeadersState(HEADERS_ENABLED);
 		setBrandColor(getResources().getColor(R.color.primary_dreamdroid));
 		setBadgeDrawable(getResources().getDrawable(R.drawable.dreamdroid_banner));
+		addSettingsRow();
 	}
-
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		if (mRowsAdapter == null) {
-			mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
-			setAdapter(mRowsAdapter);
-		}
 		load();
 	}
 
@@ -103,18 +100,47 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
-		if (loader.getId() == LOADER_BOUQUETLIST_ID)
+		if (data.isError()) {
+			Toast.makeText(getContext(), data.getErrorText(), Toast.LENGTH_LONG).show();
+			return;
+		}
+		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
 			onLoadBouquetsFinished(data.getResult());
-		else
+		} else
 			onLoadServicesFinished(data.getResult());
 	}
 
+	protected void resetRows() {
+		//Remove everything but settings
+		mRowsAdapter.removeItems(0, mRowsAdapter.size() - 1);
+	}
+
+	protected void addSettingsRow() {
+		ExtendedHashMap settings = new ExtendedHashMap();
+		settings.put("title", getString(R.string.settings));
+		settings.put("icon", R.drawable.ic_settings_badge);
+		settings.put(SettingsFragment.KEY_PREFS_TYPE, SettingsFragment.PREFS_TYPE_GENERIC);
+
+		ExtendedHashMap profile = new ExtendedHashMap();
+		profile.put("title", getString(R.string.profile));
+		profile.put("icon", R.drawable.ic_profiles_badge);
+		profile.put(SettingsFragment.KEY_PREFS_TYPE, SettingsFragment.PREFS_TYPE_PROFILE);
+
+		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter(true));
+		listRowAdapter.add(settings);
+		listRowAdapter.add(profile);
+
+		HeaderItem header = new HeaderItem(ROW_SETTINGS_ID, getString(R.string.preferences));
+		mRowsAdapter.add(new ListRow(header, listRowAdapter));
+	}
+
 	protected void load() {
-		clearRows();
+		resetRows();
+		Toast.makeText(getContext(), R.string.loading, Toast.LENGTH_LONG).show();
 		mBouquetQueue.clear();
 		mBouquets.clear();
+		mListRowAdapters.clear();
 		mLoadingBouquet = null;
-
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("bRef", BOUQUETS_TV));
 		Bundle args = new Bundle();
@@ -129,33 +155,13 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 	public void onLoadBouquetsFinished(ArrayList<ExtendedHashMap> bouquets) {
 		mBouquets.addAll(bouquets);
 		mBouquetQueue.addAll(bouquets);
+		Collections.reverse(mBouquetQueue);
 		loadNextBouquet();
-	}
-
-	protected void clearRows() {
-		mRowsAdapter.clear();
-	}
-
-	protected void addSettingsRow() {
-		ExtendedHashMap settings = new ExtendedHashMap();
-		settings.put("title", getString(R.string.settings));
-		settings.put(SettingsFragment.KEY_PREFS_TYPE, SettingsFragment.PREFS_TYPE_GENERIC);
-
-		ExtendedHashMap profile = new ExtendedHashMap();
-		profile.put("title", getString(R.string.profile));
-		profile.put(SettingsFragment.KEY_PREFS_TYPE, SettingsFragment.PREFS_TYPE_PROFILE);
-
-		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter(true));
-		listRowAdapter.add(settings);
-		listRowAdapter.add(profile);
-
-		HeaderItem header = new HeaderItem(mRowsAdapter.size(), getString(R.string.preferences));
-		mRowsAdapter.add(new ListRow(header, listRowAdapter));
 	}
 
 	public void loadNextBouquet() {
 		if (mBouquetQueue.isEmpty()) {
-			addSettingsRow();
+			setSelectedPosition(0);
 			return;
 		}
 		mLoadingBouquet = mBouquetQueue.get(0);
@@ -174,14 +180,13 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 			listRowAdapter.add(service);
 		}
 		HeaderItem header = new HeaderItem(mRowsAdapter.size(), mLoadingBouquet.getString(Service.KEY_NAME));
-		mRowsAdapter.add(new ListRow(header, listRowAdapter));
-		mRowsAdapter.notifyArrayItemRangeChanged(0, mRowsAdapter.size());
+		mRowsAdapter.add(0, new ListRow(header, listRowAdapter));
 		mListRowAdapters.add(listRowAdapter);
 		loadNextBouquet();
 	}
 
 	protected boolean isSettingsRow(Row row) {
-		return row.getHeaderItem().getId() >= mBouquets.size();
+		return row.getHeaderItem().getId() == ROW_SETTINGS_ID;
 	}
 
 	@Override
@@ -191,13 +196,21 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 			String type = it.getString(SettingsFragment.KEY_PREFS_TYPE);
 			Intent intent = new Intent(getContext(), PreferenceActivity.class);
 			intent.putExtra(SettingsFragment.KEY_PREFS_TYPE, type);
-			startActivity(intent);
+			startActivityForResult(intent, REQUEST_CODE_PROFILE);
 			return;
 		}
 		ExtendedHashMap event = (ExtendedHashMap) item;
 		String ref = event.getString(Event.KEY_SERVICE_REFERENCE);
 		String name = event.getString(Event.KEY_EVENT_TITLE);
 		startActivity(IntentFactory.getStreamServiceIntent(getActivity(), ref, name, mSelectedBouquet.getString(Event.KEY_SERVICE_REFERENCE, null), event));
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (REQUEST_CODE_PROFILE == requestCode)
+			load();
+		else
+			super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@Override

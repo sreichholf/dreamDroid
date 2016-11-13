@@ -67,10 +67,7 @@ public class CardPresenter extends Presenter {
 				ContextCompat.getColor(parent.getContext(), R.color.primary_dreamdroid);
 		mSelectedBackgroundColor =
 				ContextCompat.getColor(parent.getContext(), R.color.primary_material_dark);
-		if (mSettingsMode)
-			mDefaultCardImage = parent.getResources().getDrawable(R.drawable.ic_settings_badge, null);
-		else
-			mDefaultCardImage = parent.getResources().getDrawable(R.drawable.dreamdroid_logo_simple, null);
+		mDefaultCardImage = parent.getResources().getDrawable(R.drawable.dreamdroid_logo_simple, null);
 
 		ImageCardView cardView = new ImageCardView(parent.getContext()) {
 			@Override
@@ -107,12 +104,17 @@ public class CardPresenter extends Presenter {
 		ExtendedHashMap it = (ExtendedHashMap) item;
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
 		cardView.setTitleText(it.getString("title"));
+
+		Integer mainImageId = (int) it.get("icon");
+		if(mainImageId != null)
+			cardView.setMainImage(cardView.getResources().getDrawable(mainImageId, null));
+		else
+			cardView.setMainImage(mDefaultCardImage);
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
 		Resources res = cardView.getResources();
 		int width = res.getDimensionPixelSize(R.dimen.card_width);
 		int height = res.getDimensionPixelSize(R.dimen.card_height);
 		cardView.setMainImageDimensions(width, height);
-		cardView.setMainImage(mDefaultCardImage);
 	}
 
 	protected void bindServiceViewHolder(Presenter.ViewHolder viewHolder, Object item) {

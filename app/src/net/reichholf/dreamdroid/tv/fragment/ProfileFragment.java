@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.fragment;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v17.preference.LeanbackPreferenceFragment;
@@ -40,7 +41,6 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 			if(pref instanceof EditTextPreference && !pref.getKey().equals(DatabaseHelper.KEY_PROFILE_PASS))
 				pref.setSummary(((EditTextPreference)pref).getText());
 		}
+		getActivity().setResult(Activity.RESULT_OK);
 	}
-
-
 }

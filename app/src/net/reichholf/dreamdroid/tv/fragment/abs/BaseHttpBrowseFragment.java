@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.tv.fragment.abs;
 
+import android.os.Bundle;
 import android.support.v17.leanback.app.BrowseSupportFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
+import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.OnItemViewSelectedListener;
 import android.support.v4.app.LoaderManager;
@@ -22,7 +24,13 @@ public abstract class BaseHttpBrowseFragment extends BrowseSupportFragment imple
 
 	public static int LOADER_DEFAULT_ID = HttpFragmentHelper.LOADER_DEFAULT_ID;
 
-	protected ArrayObjectAdapter mRowsAdapter;
+	protected ArrayObjectAdapter mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setAdapter(mRowsAdapter);
+	}
 
 	@Override
 	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
