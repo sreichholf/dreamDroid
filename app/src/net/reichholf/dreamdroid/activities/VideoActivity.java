@@ -70,6 +70,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	protected void onStart() {
+		VLCPlayer.init(this);
 		super.onStart();
 		initialize();
 	}
@@ -96,6 +97,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	@Override
 	protected void onStop() {
 		cleanup();
+		VLCPlayer.deinit();
 		super.onStop();
 	}
 

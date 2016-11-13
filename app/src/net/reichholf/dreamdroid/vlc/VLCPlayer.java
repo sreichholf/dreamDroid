@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.vlc;
 
+import android.content.Context;
 import android.net.Uri;
 import android.view.SurfaceView;
 
@@ -14,8 +15,8 @@ import java.util.ArrayList;
  * Created by reichi on 16/02/16.
  */
 public class VLCPlayer {
-	static LibVLC sLibVLC = new LibVLC();
-	static MediaPlayer sMediaPlayer;
+	static LibVLC sLibVLC = null;
+	static MediaPlayer sMediaPlayer = null;
 
 
     public final static int MEDIA_HWACCEL_DISABLED = 0x00;
@@ -24,15 +25,16 @@ public class VLCPlayer {
 
 	protected Media mCurrentMedia;
 
-	static {
+	public static void init(Context context) {
 		ArrayList<String> options = new ArrayList<>();
 		options.add("--http-reconnect");
-		sLibVLC = new LibVLC(options);
+		sLibVLC = new LibVLC(context, options);
 		sMediaPlayer = new MediaPlayer(sLibVLC);
 	}
 
-	public static LibVLC getLibVLC() {
-		return sLibVLC;
+	public static void deinit() {
+		sLibVLC = null;
+		sMediaPlayer = null;
 	}
 
 	public static MediaPlayer getMediaPlayer() {
@@ -40,6 +42,8 @@ public class VLCPlayer {
 	}
 
 	public void attach(SurfaceView surfaceView, SurfaceView subtitleSurfaceView) {
+		if(sLibVLC == null || sMediaPlayer == null)
+			init(surfaceView.getContext());
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.setVideoView(surfaceView);
 		vlcVout.setSubtitlesView(subtitleSurfaceView);
@@ -57,7 +61,7 @@ public class VLCPlayer {
 	}
 
 	public void playUri(Uri uri, int flags) {
-		mCurrentMedia = new Media(getLibVLC(), uri);
+		mCurrentMedia = new Media(sLibVLC, uri);
         boolean isHwAccel = (flags & MEDIA_HWACCEL_ENABLED) > 0;
         boolean isHwAccelForce = (flags & MEDIA_HWACCEL_FORCE) > 0;
         mCurrentMedia.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce );

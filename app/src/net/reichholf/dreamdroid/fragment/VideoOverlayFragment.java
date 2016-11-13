@@ -512,7 +512,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	protected void updateProgress() {
 		SeekBar serviceProgress = (SeekBar) getView().findViewById(R.id.service_progress);
-		boolean isSeekable = VLCPlayer.getMediaPlayer().isSeekable();
+		boolean isSeekable = VLCPlayer.getMediaPlayer() != null && VLCPlayer.getMediaPlayer().isSeekable();
 		if (isSeekable) {
 			serviceProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 				@Override
