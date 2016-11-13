@@ -28,13 +28,13 @@
         android:title="@string/login_enabled"/>
 
     <EditTextPreference
-        android:defaultValue="true"
+        android:defaultValue="root"
         android:dependency="login"
         android:key="user"
         android:title="@string/user"/>
 
     <EditTextPreference
-        android:defaultValue="true"
+        android:defaultValue="dreambox"
         android:dependency="login"
         android:inputType="textPassword"
         android:key="pass"
