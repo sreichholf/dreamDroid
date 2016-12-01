@@ -38,6 +38,8 @@ public abstract class HttpIntentService extends IntentService{
 				sc.init(null, new X509TrustManager[] { mTrustManager },
 						new java.security.SecureRandom());
 				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+				HttpsURLConnection.setDefaultHostnameVerifier(
+						mTrustManager.wrapHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier()));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

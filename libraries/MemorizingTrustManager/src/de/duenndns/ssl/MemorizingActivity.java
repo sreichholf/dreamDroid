@@ -1,5 +1,3 @@
-package de.duenndns.ssl;
-
 /* MemorizingTrustManager - a TrustManager which asks the user about invalid
  *  certificates and memorizes their decision.
  *
@@ -23,65 +21,63 @@ package de.duenndns.ssl;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package de.duenndns.ssl;
 
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.*;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.util.Log;
 
-import de.duenndns.ssl.R;
-
-
-public class MemorizingDialogFragment extends DialogFragment
+public class MemorizingActivity extends Activity
 		implements OnClickListener,OnCancelListener {
-	final static String TAG = "MemorizingDialogFragment";
+
+	private final static Logger LOGGER = Logger.getLogger(MemorizingActivity.class.getName());
 
 	int decisionId;
-	String app;
-	String cert;
 
-	public static MemorizingDialogFragment getInstance(Intent i) {
-		MemorizingDialogFragment f = new MemorizingDialogFragment();
-
-		Bundle args = new Bundle();
-		args.putString(MemorizingTrustManager.DECISION_INTENT_APP, i.getStringExtra(MemorizingTrustManager.DECISION_INTENT_APP));
-		args.putInt(MemorizingTrustManager.DECISION_INTENT_ID, i.getIntExtra(MemorizingTrustManager.DECISION_INTENT_ID, MTMDecision.DECISION_INVALID));
-		args.putString(MemorizingTrustManager.DECISION_INTENT_CERT, i.getStringExtra(MemorizingTrustManager.DECISION_INTENT_CERT));
-		f.setArguments(args);
-		return f;
+	AlertDialog dialog;
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		LOGGER.log(Level.FINE, "onCreate");
+		super.onCreate(savedInstanceState);
 	}
 
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState){
-		Bundle args = getArguments();
-		app = args.getString(MemorizingTrustManager.DECISION_INTENT_APP);
-		decisionId = args.getInt(MemorizingTrustManager.DECISION_INTENT_ID);
-		cert = args.getString(MemorizingTrustManager.DECISION_INTENT_CERT);
+	public void onResume() {
+		super.onResume();
+		Intent i = getIntent();
+		decisionId = i.getIntExtra(MemorizingTrustManager.DECISION_INTENT_ID, MTMDecision.DECISION_INVALID);
+		int titleId = i.getIntExtra(MemorizingTrustManager.DECISION_TITLE_ID, R.string.mtm_accept_cert);
+		String cert = i.getStringExtra(MemorizingTrustManager.DECISION_INTENT_CERT);
+		LOGGER.log(Level.FINE, "onResume with " + i.getExtras() + " decId=" + decisionId + " data: " + i.getData());
+		dialog = new AlertDialog.Builder(this).setTitle(titleId)
+			.setMessage(cert)
+			.setPositiveButton(R.string.mtm_decision_always, this)
+			.setNeutralButton(R.string.mtm_decision_once, this)
+			.setNegativeButton(R.string.mtm_decision_abort, this)
+			.setOnCancelListener(this)
+			.create();
+		dialog.show();
+	}
 
-		return new AlertDialog.Builder(getActivity()).setTitle(R.string.mtm_accept_cert)
-				.setMessage(cert)
-				.setPositiveButton(R.string.mtm_decision_always, this)
-				//.setNeutralButton(R.string.mtm_decision_once, this)
-				.setNegativeButton(R.string.mtm_decision_abort, this)
-				.setOnCancelListener(this)
-				.create();
+	@Override
+	protected void onPause() {
+		if (dialog.isShowing())
+			dialog.dismiss();
+		super.onPause();
 	}
 
 	void sendDecision(int decision) {
-		if(getActivity() == null)
-			return;
-		Log.d(TAG, "Sending decision to " + app + ": " + decision);
-		Intent i = new Intent(MemorizingTrustManager.DECISION_INTENT + "/" + app);
-		i.putExtra(MemorizingTrustManager.DECISION_INTENT_ID, decisionId);
-		i.putExtra(MemorizingTrustManager.DECISION_INTENT_CHOICE, decision);
-		getActivity().sendBroadcast(i);
-		getDialog().dismiss();
+		LOGGER.log(Level.FINE, "Sending decision: " + decision);
+		MemorizingTrustManager.interactResult(decisionId, decision);
+		finish();
 	}
 
 	// react on AlertDialog button press

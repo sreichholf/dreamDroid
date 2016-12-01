@@ -79,13 +79,6 @@ public class SimpleHttpClient {
 	}
 
 	private void init() {
-		//TODO Do not trust all hosts without asking the user
-		HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-			public boolean verify(String hostname, SSLSession session) {
-				return true;
-			}
-		});
-
 		applyConfig();
 	}
 

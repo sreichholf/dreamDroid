@@ -47,10 +47,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.X509TrustManager;
 
+import de.duenndns.ssl.JULHandler;
 import de.duenndns.ssl.MemorizingTrustManager;
 
 /**
@@ -106,13 +109,24 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	public void onCreate(Bundle savedInstanceState) {
 		try {
 			// set location of the keystore
-			MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
+			JULHandler.initialize();
+			JULHandler.setDebugLogSettings(new JULHandler.DebugLogSettings() {
+				@Override
+				public boolean isDebugLogEnabled() {
+					return false;
+				}
+			});
 			// register MemorizingTrustManager for HTTPS
-			SSLContext sc = SSLContext.getInstance("TLS");
+			MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
 			mTrustManager = new MemorizingTrustManager(this);
+
+			SSLContext sc = SSLContext.getInstance("TLS");
 			sc.init(null, new X509TrustManager[]{mTrustManager},
 					new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			HttpsURLConnection.setDefaultHostnameVerifier(
+					mTrustManager.wrapHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier()));
+			HttpsURLConnection.setFollowRedirects(false);
 			Picasso.Builder builder = new Picasso.Builder(this);
 			builder.downloader(new UrlConnectionDownloader(this){
 				@Override

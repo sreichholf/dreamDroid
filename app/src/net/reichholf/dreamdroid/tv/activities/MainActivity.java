@@ -40,6 +40,8 @@ public class MainActivity extends FragmentActivity {
 			sc.init(null, new X509TrustManager[]{mTrustManager},
 					new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			HttpsURLConnection.setDefaultHostnameVerifier(
+					mTrustManager.wrapHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier()));
 			Picasso.Builder builder = new Picasso.Builder(this);
 			builder.downloader(new UrlConnectionDownloader(this){
 				@Override

@@ -131,6 +131,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="de.duenndns.ssl.MemorizingActivity"
+                  android:theme="@style/Theme.DreamDroid.Dialog"/>
+
         <receiver android:name=".appwidget.VirtualRemoteWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
