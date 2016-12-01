@@ -29,4 +29,7 @@ android {
 		}
 	}
 
+	lintOptions {
+		abortOnError false
+	}
 }
