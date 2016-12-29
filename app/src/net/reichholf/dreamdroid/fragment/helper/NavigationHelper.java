@@ -13,7 +13,9 @@ import android.widget.Toast;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
+import net.reichholf.dreamdroid.activities.SimpleFragmentActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
+import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.asynctask.SetPowerStateTask;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.asynctask.SleepTimerTask;
@@ -54,7 +56,7 @@ import java.util.ArrayList;
  * Created by Stephan on 25.12.2015.
  */
 public class NavigationHelper implements NavigationView.OnNavigationItemSelectedListener, SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
-    protected static int[] sDialogItemIds = {R.id.menu_navigation_remote, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
+    protected static int[] sDialogItemIds = {R.id.menu_navigation_remote, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
 
     MainActivity mActivity;
     protected SetPowerStateTask mSetPowerStateTask;
@@ -194,7 +196,15 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 break;
 
             case R.id.menu_navigation_settings:
-                getMainActivity().showDetails(MyPreferenceFragment.class);
+                if (!isTablet()) {
+                    intent = new Intent(mActivity, SimpleToolbarFragmentActivity.class);
+                    intent.putExtra("fragmentClass", MyPreferenceFragment.class);
+                    intent.putExtra("titleResource", R.string.settings);
+                    mActivity.startActivity(intent);
+                } else {
+                    clearBackStack();
+                    getMainActivity().showDetails(MyPreferenceFragment.class);
+                }
                 break;
 
             case R.id.menu_navigation_message:

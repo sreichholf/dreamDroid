@@ -60,7 +60,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 		initViews(initFragment);
 	}
 
-	private void initViews(boolean initFragment) {
+	protected void initViews(boolean initFragment) {
 		setContentView(R.layout.simple_layout);
 		if (initFragment) {
 			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
