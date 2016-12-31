@@ -58,7 +58,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestH
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.dreamdroid.vlc.VLCPlayer;
+import net.reichholf.dreamdroid.video.VLCPlayer;
+import net.reichholf.dreamdroid.video.VideoPlayer;
+import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
@@ -244,10 +246,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.video, menu);
-		MediaPlayer player = VLCPlayer.getMediaPlayer();
+		VideoPlayer player = VideoPlayerFactory.getInstance();
 		if (player.getAudioTracksCount() <= 0)
 			menu.removeItem(R.id.menu_audio_track);
-		if (player.getSpuTracksCount() <= 0)
+		if (player.getSubtitleTracksCount() <= 0)
 			menu.removeItem(R.id.menu_subtitle);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
@@ -455,10 +457,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void seek(int pos) {
-		MediaPlayer player = VLCPlayer.getMediaPlayer();
+		VideoPlayer player = VideoPlayerFactory.getInstance();
 		if (player == null)
 			return;
 		float fpos = (float) pos;
+
 		if (player.getLength() > 0)
 			fpos = fpos / player.getLength() * 100;
 		player.setPosition(fpos / 100f);
@@ -512,7 +515,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	protected void updateProgress() {
 		SeekBar serviceProgress = (SeekBar) getView().findViewById(R.id.service_progress);
-		boolean isSeekable = VLCPlayer.getMediaPlayer() != null && VLCPlayer.getMediaPlayer().isSeekable();
+		VideoPlayer player = VideoPlayerFactory.getInstance();
+		boolean isSeekable = player != null && player.isSeekable();
 		if (isSeekable) {
 			serviceProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 				@Override
@@ -557,8 +561,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			}
 		}
 		if (max <= 0) {
-			max = VLCPlayer.getMediaPlayer().getLength();
-			cur = (long) VLCPlayer.getMediaPlayer().getPosition();
+			max = player.getLength();
+			cur = (long) player.getPosition();
 		}
 
 		if (max <= 0 && isSeekable) {
@@ -593,7 +597,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	public ActionBar getActionBar() {
 		AppCompatActivity act = (AppCompatActivity) getActivity();
-		if(act != null)
+		if (act != null)
 			return act.getSupportActionBar();
 		return null;
 	}
@@ -772,13 +776,13 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if ((keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_BUTTON_B)) {
-			if(isOverlaysVisible()) {
+			if (isOverlaysVisible()) {
 				hideOverlays();
 				return true;
 			}
 			return false;
 		}
-		if(!isOverlaysVisible()) {
+		if (!isOverlaysVisible()) {
 			showOverlays(true);
 			return true;
 		}

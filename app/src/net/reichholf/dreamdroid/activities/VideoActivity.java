@@ -20,7 +20,9 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.vlc.VLCPlayer;
+import net.reichholf.dreamdroid.video.VLCPlayer;
+import net.reichholf.dreamdroid.video.VideoPlayer;
+import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 
 import org.piwik.sdk.PiwikApplication;
 import org.piwik.sdk.TrackHelper;
@@ -36,7 +38,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	SurfaceView mVideoSurface;
 	SurfaceView mSubtitlesSurface;
-	VLCPlayer mPlayer;
+	VideoPlayer mPlayer;
 	VideoOverlayFragment mOverlayFragment;
 
 	int mVideoWidth;
@@ -70,7 +72,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 	@Override
 	protected void onStart() {
-		VLCPlayer.init(this);
+		VideoPlayerFactory.init(this);
 		super.onStart();
 		initialize();
 	}
@@ -97,7 +99,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	@Override
 	protected void onStop() {
 		cleanup();
-		VLCPlayer.deinit();
+		VideoPlayerFactory.deinit();
 		super.onStop();
 	}
 
@@ -137,10 +139,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 		mSubtitlesSurface.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
 		if (mPlayer == null)
-			mPlayer = new VLCPlayer();
+			mPlayer = VideoPlayerFactory.getInstance();
 		mPlayer.attach(mVideoSurface, mSubtitlesSurface);
+
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(mOverlayFragment);
+
 		handleIntent(getIntent());
 		setFullScreen();
 	}

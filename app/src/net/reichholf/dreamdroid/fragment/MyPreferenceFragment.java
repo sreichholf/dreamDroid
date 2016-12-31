@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.vlc.VLCPlayer;
+import net.reichholf.dreamdroid.video.VLCPlayer;
 
 /**
  * Created by Stephan on 08.04.2015.
