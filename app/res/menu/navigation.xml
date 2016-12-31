@@ -93,11 +93,6 @@
             <menu>
                 <group android:checkableBehavior="single">
                     <item
-                        android:id="@+id/menu_navigation_profiles"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_profiles"
-                        android:title="@string/profiles"/>
-                    <item
                         android:id="@+id/menu_navigation_settings"
                         android:checked="false"
                         android:icon="?attr/ic_menu_settings"

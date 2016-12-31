@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -298,6 +299,18 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				}
 			};
 			mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+            NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+            View navHeader = navigationView.getHeaderView(0);
+            View profileChooser = navHeader.findViewById(R.id.drawer_profile);
+            profileChooser.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
+                }
+            });
+            mActiveProfile = (TextView) navHeader.findViewById(R.id.drawer_profile_name);
+            mConnectionState = (TextView) navHeader.findViewById(R.id.drawer_profile_status);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
@@ -309,11 +322,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 
 		ft.commit();
-		mActiveProfile = (TextView) findViewById(R.id.TextViewProfile);
+
 		if (mActiveProfile == null) {
 			mActiveProfile = new TextView(this);
 		}
-		mConnectionState = (TextView) findViewById(R.id.TextViewConnectionState);
 		if (mConnectionState == null) {
 			mConnectionState = new TextView(this);
 		}
@@ -423,7 +435,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			mCheckProfileTask = new CheckProfileTask(p, this);
 			mCheckProfileTask.execute();
 		} else {
-			onProfileChecked(new CheckProfile().checkProfile(p, this));
+			onProfileChecked(CheckProfile.checkProfile(p, this));
 		}
 		if (mNavigationHelper != null)
 			mNavigationHelper.onProfileChanged();
@@ -439,7 +451,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	/**
-	 * @param state
+	 * @param state String representing the current connection state
 	 */
 	private void setConnectionState(String state, boolean finished) {
 		mConnectionState.setText(state);
@@ -666,7 +678,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			DreamDroid.setTheme(this);
 			recreate();
-			return;
 		}
 	}
 
