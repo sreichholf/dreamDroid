@@ -54,7 +54,7 @@ import java.util.ArrayList;
  * Created by Stephan on 25.12.2015.
  */
 public class NavigationHelper implements NavigationView.OnNavigationItemSelectedListener, SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
-    protected static int[] sDialogItemIds = {R.id.menu_navigation_remote, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
+    protected static int[] sDialogItemIds = {R.id.menu_navigation_profiles, R.id.menu_navigation_remote, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
 
     MainActivity mActivity;
     protected SetPowerStateTask mSetPowerStateTask;

@@ -1,18 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/navigation_header_height"
-    android:background="?attr/colorPrimary"
-    android:paddingTop="@dimen/navigation_header_padding_top">
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="0dp"
-        android:padding="0dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/dreamdroid_logo_simple"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark">
-    </ImageView>
+        android:src="@drawable/drawer_background" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/navigation_header_padding_top"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/dreamdroid_logo_simple" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/md_btn_selector_ripple"
+            android:paddingBottom="@dimen/list_padding"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="@dimen/list_padding"
+            android:id="@+id/drawer_profile">
+
+            <TextView
+                android:id="@+id/drawer_profile_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginEnd="@dimen/md_icon_margin"
+                android:layout_marginRight="@dimen/md_icon_margin"
+                android:layout_toLeftOf="@+id/imageView2"
+                android:layout_toStartOf="@+id/imageView2"
+                android:text="Name"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+            <TextView
+                android:id="@+id/drawer_profile_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/drawer_profile_name"
+                android:layout_marginEnd="@dimen/md_icon_margin"
+                android:layout_marginRight="@dimen/md_icon_margin"
+                android:layout_marginTop="@dimen/recylcerview_content_margin"
+                android:layout_toLeftOf="@+id/imageView2"
+                android:layout_toStartOf="@+id/imageView2"
+                android:text="Status"
+                android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/drawer_profile_status"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignTop="@id/drawer_profile_name"
+                android:tint="#fff"
+                app:srcCompat="@drawable/ic_menu_profiles_light" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
 </FrameLayout>
