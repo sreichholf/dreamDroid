@@ -57,6 +57,9 @@
             android:theme="@style/Theme.DreamDroid.NoTitle"
             android:uiOptions=""/>
 
+        <activity
+            android:name=".activities.SimpleToolbarFragmentActivity" />
+
         <meta-data
             android:name="com.google.android.backup.api_key"
             android:value="AEdPqrEAAAAIpJ1ddymOdlswxM_S0SOTS9GK0WKiqESIKU7KLw"/>
