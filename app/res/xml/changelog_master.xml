@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.2-389" versioncode="389">
+        <change>NEW: Initiale support for Android TV</change>
+        <change>NEW: Minor internal updates and fixes</change>
+        <change>NEW: Some cool improvements to the navigation by F. Edelmann</change>
+    </release>
     <release version="1.1-386" versioncode="386">
         <change>FIX: Crashing VideoPlayer</change>
     </release>

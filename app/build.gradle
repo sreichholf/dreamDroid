@@ -45,14 +45,12 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 387
-        versionName="1.1-".concat(new Integer(versionCode).toString());
+        versionCode 389
+        versionName="1.2-".concat(new Integer(versionCode).toString());
 
         jackOptions {
             enabled true
         }
-
-        vectorDrawables.useSupportLibrary = true
 
         sourceSets {
             main {

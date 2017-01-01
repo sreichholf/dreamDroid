@@ -1,4 +1,9 @@
 <changelog>
+    <release version="1.2-389" versioncode="389">
+        <change>NEU: Initiale Unterstützung von Android TV</change>
+        <change>NEU: Kleinere interne Updates und Anpassungen</change>
+        <change>NEU: Einige coole Verbesserungen der Navigation durch F. Edelmann</change>
+    </release>
     <release version="1.1-386" versioncode="386">
         <change>FIX: Abstürze im VideoPlayer</change>
     </release>
