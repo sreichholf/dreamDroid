@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/navigation_header_height"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
@@ -10,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@drawable/drawer_background" />
+        android:src="@drawable/drawer_background"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,45 +22,45 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:scaleType="centerInside"
-            app:srcCompat="@drawable/dreamdroid_logo_simple" />
+            android:src="@drawable/dreamdroid_logo_simple"/>
 
         <RelativeLayout
+            android:id="@+id/drawer_profile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/md_btn_selector_ripple"
+            android:background="@drawable/md_btn_selector"
             android:paddingBottom="@dimen/list_padding"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:paddingTop="@dimen/list_padding"
-            android:id="@+id/drawer_profile">
+            android:paddingTop="@dimen/list_padding">
 
             <TextView
                 android:id="@+id/drawer_profile_name"
+                style="@style/TextAppearance.AppCompat.Body2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:layout_marginEnd="@dimen/md_icon_margin"
-                android:layout_marginRight="@dimen/md_icon_margin"
+                android:layout_marginEnd="@dimen/icon_margin"
+                android:layout_marginRight="@dimen/icon_margin"
                 android:layout_toLeftOf="@+id/imageView2"
                 android:layout_toStartOf="@+id/imageView2"
-                android:text="Name"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+                android:text="Name"/>
 
             <TextView
                 android:id="@+id/drawer_profile_status"
+                style="@style/TextAppearance.AppCompat.Caption"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/drawer_profile_name"
-                android:layout_marginEnd="@dimen/md_icon_margin"
-                android:layout_marginRight="@dimen/md_icon_margin"
+                android:layout_marginEnd="@dimen/icon_margin"
+                android:layout_marginRight="@dimen/icon_margin"
                 android:layout_marginTop="@dimen/recylcerview_content_margin"
                 android:layout_toLeftOf="@+id/imageView2"
                 android:layout_toStartOf="@+id/imageView2"
-                android:text="Status"
-                android:textAppearance="@style/TextAppearance.AppCompat.Caption" />
+                android:text="Status"/>
 
             <ImageView
                 android:id="@+id/imageView2"
@@ -71,8 +70,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignTop="@id/drawer_profile_name"
-                android:tint="#fff"
-                app:srcCompat="@drawable/ic_menu_profiles_light" />
+                android:src="@drawable/ic_menu_profiles_light"
+                android:tint="#fff"/>
         </RelativeLayout>
 
 

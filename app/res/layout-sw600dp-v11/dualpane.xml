@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <net.reichholf.dreamdroid.widget.DrawerLayout
-    android:id="@+id/drawer_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="@bool/requireTranslucentStatusbar">
@@ -38,7 +38,7 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textColor="@android:color/white" />
+                    android:textColor="@android:color/white"/>
 
                 <FrameLayout
                     android:id="@+id/content_header"
@@ -47,7 +47,7 @@
                     android:layout_margin="0dp"
                     android:gravity="end"
                     android:padding="0dp"
-                    android:visibility="gone" />
+                    android:visibility="gone"/>
             </android.support.v7.widget.Toolbar>
 
         </android.support.design.widget.AppBarLayout>
@@ -61,19 +61,19 @@
             android:layout_marginStart="@dimen/content_margin_horizontal"
             android:layout_marginTop="0dp"
             android:background="?attr/cardBackgroundColor"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin_right"
+            android:src="@drawable/ic_action_fab_add"
             android:visibility="gone"
             app:elevation="6dp"
             app:layout_anchor="@+id/detail_view"
             app:layout_anchorGravity="bottom|end|right"
-            app:pressedTranslationZ="12dp"
-            app:srcCompat="@drawable/ic_action_fab_add" />
+            app:pressedTranslationZ="12dp"/>
 
         <LinearLayout
             android:id="@+id/fab_layout"
@@ -84,21 +84,21 @@
             android:layout_marginTop="?attr/actionBarSize"
             android:orientation="horizontal"
             app:layout_anchor="@+id/detail_view"
-            app:layout_anchorGravity="top|end" />
+            app:layout_anchorGravity="top|end"/>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab_reload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin_right"
+            android:src="@drawable/ic_action_refresh"
             android:visibility="gone"
             app:elevation="6dp"
             app:fabSize="mini"
             app:layout_anchor="@+id/fab_layout"
             app:layout_anchorGravity="bottom|end"
             app:layout_behavior="net.reichholf.dreamdroid.widget.behaviour.ScrollAwareFABBehavior"
-            app:pressedTranslationZ="12dp"
-            app:srcCompat="@drawable/ic_action_refresh" />
+            app:pressedTranslationZ="12dp"/>
 
     </android.support.design.widget.CoordinatorLayout>
 
@@ -110,6 +110,6 @@
         app:headerLayout="@layout/navigation_header"
         app:itemIconTint="?attr/navigation_item_selector"
         app:itemTextColor="?attr/navigation_item_selector"
-        app:menu="@menu/navigation" />
+        app:menu="@menu/navigation"/>
 
 </net.reichholf.dreamdroid.widget.DrawerLayout>
