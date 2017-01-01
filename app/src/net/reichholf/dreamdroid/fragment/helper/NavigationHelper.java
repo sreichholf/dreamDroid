@@ -136,6 +136,10 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     protected void setSelectedItem(int itemId) {
         if (isDialogItem(itemId))
             return;
+        if(itemId == R.id.menu_navigation_profiles) {
+            getNavigationView().setCheckedItem(R.id.menu_none);
+            return;
+        }
         getNavigationView().setCheckedItem(itemId);
         mSelectedItemId = itemId;
     }
@@ -441,8 +445,8 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
         onNavigationItemClick(action);
     }
 
-	@Override
-	public Context getContext() {
-		return getMainActivity();
-	}
+    @Override
+    public Context getContext() {
+        return getMainActivity();
+    }
 }

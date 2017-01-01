@@ -52,6 +52,8 @@ android {
             enabled true
         }
 
+        vectorDrawables.useSupportLibrary = true
+
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
