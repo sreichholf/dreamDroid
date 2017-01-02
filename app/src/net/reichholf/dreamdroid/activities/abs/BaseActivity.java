@@ -69,6 +69,10 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	private Inventory mInventory;
 	private boolean mIabReady;
 
+	static {
+		MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
+	}
+
 	IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
 		@Override
 		public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
@@ -117,7 +121,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 				}
 			});
 			// register MemorizingTrustManager for HTTPS
-			MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
+
 			mTrustManager = new MemorizingTrustManager(this);
 
 			SSLContext sc = SSLContext.getInstance("TLS");

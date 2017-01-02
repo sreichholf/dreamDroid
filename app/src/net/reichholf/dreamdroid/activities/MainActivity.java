@@ -94,6 +94,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private Snackbar mSnackbar;
 
+	private Profile mCurrentProfile;
+
 	private void dismissSnackbar() {
 		if (mSnackbar != null) {
 			mSnackbar.dismiss();
@@ -165,6 +167,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		super.onCreate(savedInstanceState);
 
 		mIsDrawerOpen = false;
+		mCurrentProfile = Profile.getDefault();
 
 		DreamDroid.setCurrentProfileChangedListener(this);
 		initViews();
@@ -211,15 +214,19 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onPause() {
-		if (mCheckProfileTask != null) {
-			mCheckProfileTask.cancel(true);
-			mCheckProfileTask = null;
-		}
 		mIsPaused = true;
 		//TODO preserve/restore mNavigationHelper properly
 		mNavigationHelper = null;
 		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
 		super.onPause();
+	}
+
+	@Override
+	public void onStop(){
+		if (mCheckProfileTask != null) {
+			mCheckProfileTask.cancel(true);
+			mCheckProfileTask = null;
+		}
 	}
 
 	@Override
@@ -428,8 +435,12 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	public void onProfileChanged(Profile p) {
 		if (mIsPaused)
 			return;
+
 		setProfileName();
 		if(p.getCachedDeviceInfo() == null ) {
+			if(p.equals(mCurrentProfile) && mCheckProfileTask != null)
+				return;
+			mCurrentProfile = p;
 			if (mCheckProfileTask != null) {
 				mCheckProfileTask.cancel(true);
 				mCheckProfileTask = null;
