@@ -227,6 +227,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			mCheckProfileTask.cancel(true);
 			mCheckProfileTask = null;
 		}
+		super.onStop();
 	}
 
 	@Override
