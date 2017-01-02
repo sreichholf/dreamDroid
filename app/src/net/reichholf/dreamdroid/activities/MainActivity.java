@@ -634,6 +634,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
+		getCurrentDetailFragment(); //FIXME find the real cause for mDetailFragment being null and fix that
 		if ("connection_error".equals(dialogTag)) {
 			if (action != ConnectionErrorDialog.ACTION_EDIT_PROFILE)
 				return;
