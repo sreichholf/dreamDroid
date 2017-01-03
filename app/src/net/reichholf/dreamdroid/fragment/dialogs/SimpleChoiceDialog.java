@@ -7,17 +7,14 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.View;
+import android.support.v7.app.AlertDialog;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-
-import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.BundleHelper;
 
 /**
  * @author sre
- * 
  */
 public class SimpleChoiceDialog extends ActionDialog {
 	private static final String KEY_TITLE = "title";
@@ -49,17 +46,15 @@ public class SimpleChoiceDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-		MaterialDialog.Builder builder;
-		builder = new MaterialDialog.Builder(getActivity());
-		builder.title(mTitle)
-			.items(mActions)
-			.itemsCallback(new MaterialDialog.ListCallback() {
-				@Override
-				public void onSelection(MaterialDialog materialDialog, View view, int i, CharSequence charSequence) {
-					finishDialog(mActionIds[i], null);
-				}
-			});
-
-		return builder.build();
+		AlertDialog.Builder builder;
+		builder = new AlertDialog.Builder(getActivity());
+		builder.setItems(mActions, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				finishDialog(mActionIds[which], null);
+				dialog.dismiss();
+			}
+		}).setTitle(mTitle);
+		return builder.create();
 	}
 }
