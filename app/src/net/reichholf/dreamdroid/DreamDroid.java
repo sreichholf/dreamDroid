@@ -82,8 +82,8 @@ public class DreamDroid extends PiwikApplication {
 
 	public static boolean DATE_LOCALE_WO;
 
-	private static boolean sFeatureSleeptimer = false;
-	private static boolean sFeatureNowNext = false;
+	private static boolean sFeatureSleeptimer = true;
+	private static boolean sFeatureNowNext = true;
 	private static boolean sDumpXml = false;
 
 	private static Profile sProfile;
@@ -158,7 +158,7 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	public static boolean featureNowNext() {
-		return sFeatureNowNext || true;
+		return sFeatureNowNext;
 	}
 
 	public static boolean featurePostRequest() {

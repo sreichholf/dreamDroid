@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.tv.fragment;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v17.preference.LeanbackPreferenceFragment;
-import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.Preference;
 

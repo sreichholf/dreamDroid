@@ -15,5 +15,5 @@ public interface DataParser {
 	 * @param input
 	 * @return
 	 */
-	public boolean parse(String input);
+	boolean parse(String input);
 }

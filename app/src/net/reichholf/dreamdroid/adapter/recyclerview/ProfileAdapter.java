@@ -24,7 +24,7 @@ public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder
 
 	public ProfileAdapter(Context context, ArrayList<ExtendedHashMap> data) {
 		super(data);
-		mActiveColor = context.getResources().getColor(R.color.active_profile_color);
+		mActiveColor = context.getResources().getColor(R.color.active_profile_color, context.getTheme());
 	}
 
 	@Override

@@ -6,10 +6,10 @@
 
 package net.reichholf.dreamdroid.helpers;
 
-import java.util.HashMap;
-
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.HashMap;
 
 /**
  * @author sreichholf

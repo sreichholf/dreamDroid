@@ -117,7 +117,7 @@ public class PiconDownloadTask extends AsyncTask<String, Integer, Void> {
 	}
 
 	public interface PiconDownloadProgressListener {
-		public void updatePiconDownloadProgress(int eventid, DownloadProgress progress);
+		void updatePiconDownloadProgress(int eventid, DownloadProgress progress);
 	}
 
 	public class DownloadProgress {

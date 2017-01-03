@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -40,9 +39,8 @@ public class Picon {
 		if(!Environment.getExternalStorageDirectory().canWrite())
 			return String.format("%s%spicons%s", context.getFilesDir().getAbsolutePath(), File.separator, File.separator);
 
-		String basePath = String.format("%s%sdreamDroid%spicons%s", Environment.getExternalStorageDirectory()
+		return String.format("%s%sdreamDroid%spicons%s", Environment.getExternalStorageDirectory()
 				.getAbsolutePath(), File.separator, File.separator, File.separator);
-		return basePath;
 	}
 
 	public static String getPiconFileName(Context context, ExtendedHashMap service, boolean useName) {

@@ -49,7 +49,7 @@ public class SleepTimerDialog extends AbstractDialog {
 	}
 
 	public interface SleepTimerDialogActionListener {
-		public void onSetSleepTimer(String time, String action, boolean enabled);
+		void onSetSleepTimer(String time, String action, boolean enabled);
 	}
 
 	@Override

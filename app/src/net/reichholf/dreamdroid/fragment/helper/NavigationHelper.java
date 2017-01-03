@@ -13,7 +13,6 @@ import android.widget.Toast;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
-import net.reichholf.dreamdroid.activities.SimpleFragmentActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.asynctask.SetPowerStateTask;

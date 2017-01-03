@@ -6,11 +6,11 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
-import java.util.ArrayList;
-
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 import org.xml.sax.helpers.DefaultHandler;
+
+import java.util.ArrayList;
 
 /**
  * @author sre

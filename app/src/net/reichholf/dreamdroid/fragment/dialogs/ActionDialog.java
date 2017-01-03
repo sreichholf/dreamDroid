@@ -19,6 +19,6 @@ public abstract class ActionDialog extends AbstractDialog {
 	}
 
 	public interface DialogActionListener {
-		public void onDialogAction(int action, Object details, String dialogTag);
+		void onDialogAction(int action, Object details, String dialogTag);
 	}
 }

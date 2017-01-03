@@ -6,15 +6,15 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import android.util.Log;
+
+import net.reichholf.dreamdroid.DreamDroid;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Locale;
-
-import net.reichholf.dreamdroid.DreamDroid;
-import android.util.Log;
 
 /**
  * Provides static methods for Date and Time parsing
@@ -90,9 +90,7 @@ public class DateTime {
 		}
 
 		d = (d / 60);
-		String retVal = durationPrefix + (d);
-
-		return retVal;
+		return durationPrefix + (d);
 	}
 
 	/**
@@ -148,9 +146,7 @@ public class DateTime {
 		try {
 			long s = Double.valueOf(timestamp).longValue();
 			s = s * 1000;
-			Date date = new Date(s);
-
-			return date;
+			return new Date(s);
 		} catch (NumberFormatException e) {
 			return null;
 		}

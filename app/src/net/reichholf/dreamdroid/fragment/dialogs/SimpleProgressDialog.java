@@ -12,8 +12,6 @@ import android.os.Bundle;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import net.reichholf.dreamdroid.DreamDroid;
-
 /**
  * @author sre
  * 

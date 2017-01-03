@@ -6,11 +6,10 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import android.os.Bundle;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-
-import android.os.Bundle;
 
 /**
  * @author sre

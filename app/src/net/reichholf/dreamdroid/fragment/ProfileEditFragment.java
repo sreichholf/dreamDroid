@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -176,6 +177,7 @@ public class ProfileEditFragment extends BaseFragment {
 		return true;
 	}
 
+	@SuppressLint("SetTextI18n")
 	private void onSslChanged(boolean checked) {
 		if (checked)
 			mPort.setText("443");

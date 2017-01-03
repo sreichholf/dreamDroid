@@ -6,10 +6,10 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -20,10 +20,10 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * @author sreichholf
@@ -66,7 +66,7 @@ public class Timer {
 	public static final int STATE_RUNNING = 2;
 	public static final int STATE_ENDED = 3;	
 	
-	public static enum Afterevents {
+	public enum Afterevents {
 		NOTHING(0), STANDBY(1), DEEP_STANDBY(2), AUTO(3);
 
 		private int value;

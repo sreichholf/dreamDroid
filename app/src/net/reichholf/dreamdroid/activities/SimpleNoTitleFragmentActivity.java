@@ -6,12 +6,11 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
-
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.WindowManager;
+
+import net.reichholf.dreamdroid.R;
 
 /**
  * @author sre

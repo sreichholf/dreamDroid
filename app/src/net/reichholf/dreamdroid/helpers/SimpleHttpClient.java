@@ -34,10 +34,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
-
 /**
  * @author sreichholf
  */
@@ -119,7 +115,7 @@ public class SimpleHttpClient {
 		if (mProfile.isEncoderLogin())
 			streamLoginString = mProfile.getEncoderUser() + ":" + mProfile.getEncoderPass() + "@";
 
-		String url = String.format(
+		return String.format(
 				"rtsp://%s%s:%s/%s?ref=%s&video_bitrate=%s&audio_bitrate=%s",
 				streamLoginString,
 				mProfile.getStreamHost(),
@@ -129,7 +125,6 @@ public class SimpleHttpClient {
 				mProfile.getEncoderVideoBitrate(),
 				mProfile.getEncoderAudioBitrate()
 		);
-		return url;
 	}
 
 	public String buildStreamUrl(String ref) {
@@ -152,8 +147,7 @@ public class SimpleHttpClient {
 		if (mProfile.isStreamLogin())
 			streamLoginString = mProfile.getUser() + ":" + mProfile.getPass() + "@";
 
-		String url = "http://" + streamLoginString + mProfile.getStreamHost() + ":" + mProfile.getStreamPortString() + "/" + ref;
-		return url;
+		return "http://" + streamLoginString + mProfile.getStreamHost() + ":" + mProfile.getStreamPortString() + "/" + ref;
 	}
 
 	public String buildFileStreamUrl(String ref, String fileName) {
@@ -167,8 +161,7 @@ public class SimpleHttpClient {
 		if (mProfile.isFileLogin())
 			fileAuthString = mProfile.getUser() + ":" + mProfile.getPass() + "@";
 
-		String url = mFilePrefix + fileAuthString + mProfile.getStreamHost() + ":" + mProfile.getFilePortString() + URIStore.FILE + parms;
-		return url;
+		return mFilePrefix + fileAuthString + mProfile.getStreamHost() + ":" + mProfile.getFilePortString() + URIStore.FILE + parms;
 	}
 
 	public boolean fetchPageContent(String uri) {

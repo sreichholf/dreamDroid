@@ -66,8 +66,8 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 		if (mBouquetQueue == null)
 			mBouquetQueue = new ArrayList<>();
 		setHeadersState(HEADERS_ENABLED);
-		setBrandColor(getResources().getColor(R.color.primary_dreamdroid));
-		setBadgeDrawable(getResources().getDrawable(R.drawable.dreamdroid_banner));
+		setBrandColor(getResources().getColor(R.color.primary_dreamdroid, getActivity().getTheme()));
+		setBadgeDrawable(getResources().getDrawable(R.drawable.dreamdroid_banner, getActivity().getTheme()));
 		addSettingsRow();
 	}
 

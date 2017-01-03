@@ -15,25 +15,25 @@ import android.support.v4.app.Fragment;
  * 
  */
 public interface MultiPaneHandler {
-	public void showDetails(Fragment fragment);
+	void showDetails(Fragment fragment);
 
-	public void showDetails(Fragment fragment, boolean addToBackStack);
+	void showDetails(Fragment fragment, boolean addToBackStack);
 
-	public void showDetails(Class<? extends Fragment> fragmentClass);
+	void showDetails(Class<? extends Fragment> fragmentClass);
 
-	public void onFragmentResume(Fragment fragment);
+	void onFragmentResume(Fragment fragment);
 
-	public void onFragmentPause(Fragment fragment);
+	void onFragmentPause(Fragment fragment);
 
-	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag);
+	void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag);
 
-	public void showDialogFragment(DialogFragment fragment, String tag);
+	void showDialogFragment(DialogFragment fragment, String tag);
 
-	public void showDialogFragment(android.app.DialogFragment fragment, String tag);
+	void showDialogFragment(android.app.DialogFragment fragment, String tag);
 
-	public boolean isMultiPane();
+	boolean isMultiPane();
 
-	public boolean isDrawerOpen();
+	boolean isDrawerOpen();
 
-	public void finish();
+	void finish();
 }

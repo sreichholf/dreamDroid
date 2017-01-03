@@ -6,7 +6,24 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SlidingPaneLayout;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.MediaListAdapter;
@@ -27,24 +44,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MediaplayerListRe
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.SlidingPaneLayout;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import com.squareup.picasso.Picasso;
+import java.util.ArrayList;
 
 /**
  * Activity to show a list of all existing media files of the target device

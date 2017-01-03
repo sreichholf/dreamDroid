@@ -6,8 +6,6 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
-import java.util.ArrayList;
-
 import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -16,6 +14,8 @@ import net.reichholf.dreamdroid.parsers.GenericSaxParser;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2ListHandler;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleHandler;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleListHandler;
+
+import java.util.ArrayList;
 
 /**
  * @author sre

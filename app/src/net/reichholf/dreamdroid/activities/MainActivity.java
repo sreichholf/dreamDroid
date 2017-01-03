@@ -58,7 +58,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 
 import org.piwik.sdk.PiwikApplication;
 import org.piwik.sdk.TrackHelper;
-import org.piwik.sdk.Tracker;
 
 import java.util.Arrays;
 import java.util.List;
@@ -308,7 +307,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 						callbackHandler.onDrawerOpened();
 				}
 			};
-			mDrawerLayout.setDrawerListener(mDrawerToggle);
+			mDrawerLayout.addDrawerListener(mDrawerToggle);
 
             NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
             View navHeader = navigationView.getHeaderView(0);

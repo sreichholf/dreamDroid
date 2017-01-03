@@ -11,5 +11,5 @@ package net.reichholf.dreamdroid;
  *
  */
 public interface ProfileChangedListener{
-	public void onProfileChanged(Profile p);
+	void onProfileChanged(Profile p);
 }

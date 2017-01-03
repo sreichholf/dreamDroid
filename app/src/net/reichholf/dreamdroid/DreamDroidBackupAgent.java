@@ -6,11 +6,9 @@
 
 package net.reichholf.dreamdroid;
 
-import android.annotation.TargetApi;
 import android.app.backup.BackupAgentHelper;
 import android.app.backup.FileBackupHelper;
 import android.app.backup.SharedPreferencesBackupHelper;
-import android.os.Build;
 
 /**
  * @author sre

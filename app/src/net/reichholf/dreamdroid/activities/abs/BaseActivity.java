@@ -39,7 +39,6 @@ import net.reichholf.dreamdroid.util.SkuDetails;
 import org.piwik.sdk.DownloadTracker;
 import org.piwik.sdk.PiwikApplication;
 import org.piwik.sdk.TrackHelper;
-import org.piwik.sdk.Tracker;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -47,10 +46,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.X509TrustManager;
 
 import de.duenndns.ssl.JULHandler;

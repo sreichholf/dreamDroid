@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.video;
 
 import android.content.Context;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.SurfaceView;
 
 import org.videolan.libvlc.IVLCVout;

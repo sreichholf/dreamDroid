@@ -13,6 +13,6 @@ public class TintHelper extends MDTintHelper {
 		TypedValue typedValue = new TypedValue();
 		context.getTheme().resolveAttribute(attrId, typedValue, true);
 
-		return context.getResources().getColor(typedValue.resourceId);
+		return context.getResources().getColor(typedValue.resourceId, context.getTheme());
 	}
 }

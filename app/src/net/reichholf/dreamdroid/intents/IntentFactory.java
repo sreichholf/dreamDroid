@@ -17,12 +17,8 @@ import android.util.Log;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.activities.VideoActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-
-import java.util.ArrayList;
 
 /**
  * @author sre

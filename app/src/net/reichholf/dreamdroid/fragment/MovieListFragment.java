@@ -77,12 +77,11 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 			mSelectedTags = new ArrayList<>();
 			mOldTags = new ArrayList<>();
 			mReload = true;
-			if(!(DreamDroid.getLocations().indexOf(mCurrentLocation) >= 0)) {
+			if(!(DreamDroid.getLocations().indexOf(mCurrentLocation) >= 0))
 				for (String location : DreamDroid.getLocations()) {
 					mCurrentLocation = location;
 					break;
 				}
-			}
 		} else {
 			mMovie = savedInstanceState.getParcelable("movie");
 			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));

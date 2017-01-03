@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.v4.app.DialogFragment;
 
 /**
  * Created by reichi on 22/08/16.

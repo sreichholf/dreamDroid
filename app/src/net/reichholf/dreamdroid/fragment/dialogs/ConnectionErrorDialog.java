@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 

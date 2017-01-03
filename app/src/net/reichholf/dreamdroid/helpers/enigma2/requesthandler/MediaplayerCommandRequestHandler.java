@@ -6,11 +6,11 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
-import java.util.ArrayList;
-
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+
+import java.util.ArrayList;
 
 /**
  * @author sre

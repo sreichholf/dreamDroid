@@ -31,13 +31,8 @@ import android.widget.ImageView;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.NameValuePair;
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-
-import java.util.ArrayList;
 
 /*
  * A CardPresenter is used to generate Views and bind Objects to them on demand.

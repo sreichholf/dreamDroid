@@ -19,7 +19,7 @@ import static android.os.Build.VERSION_CODES.HONEYCOMB;
 public class ItemSelectionSupport {
 	public static final int INVALID_POSITION = -1;
 
-	public static enum ChoiceMode {
+	public enum ChoiceMode {
 		NONE,
 		SINGLE,
 		MULTIPLE
@@ -50,7 +50,7 @@ public class ItemSelectionSupport {
 		final int count = mRecyclerView.getChildCount();
 		for (int i = 0; i < count; i++) {
 			final View child = mRecyclerView.getChildAt(i);
-			final int position = mRecyclerView.getChildPosition(child);
+			final int position = mRecyclerView.getChildAdapterPosition(child);
 			setViewChecked(child, mCheckedStates.get(position));
 		}
 	}

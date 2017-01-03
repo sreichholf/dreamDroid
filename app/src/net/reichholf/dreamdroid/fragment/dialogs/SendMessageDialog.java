@@ -27,7 +27,7 @@ public class SendMessageDialog extends AbstractDialog {
 	}
 
 	public interface SendMessageDialogActionListener {
-		public void onSendMessage(String text, String type, String timeout);
+		void onSendMessage(String text, String type, String timeout);
 	}
 
 	@Override

@@ -47,7 +47,7 @@ public class EnhancedHorizontalScrollView extends HorizontalScrollView {
 		mScrollChangedListeners.remove(listener);
 	}
 
-	public static interface OnScrollChangedListener {
-		public void onScrollChanged(int x, int y);
+	public interface OnScrollChangedListener {
+		void onScrollChanged(int x, int y);
 	}
 }

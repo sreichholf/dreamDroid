@@ -6,7 +6,10 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
+import android.app.SearchManager;
+import android.os.Bundle;
+import android.support.v4.content.Loader;
+import android.view.View;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.EpgAdapter;
@@ -19,10 +22,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestH
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
-import android.app.SearchManager;
-import android.os.Bundle;
-import android.support.v4.content.Loader;
-import android.view.View;
+import java.util.ArrayList;
 
 /**
  * @author sre

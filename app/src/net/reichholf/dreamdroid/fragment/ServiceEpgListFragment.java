@@ -6,7 +6,8 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import java.util.ArrayList;
+import android.os.Bundle;
+import android.support.v4.content.Loader;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
@@ -18,10 +19,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestH
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
-import android.os.Bundle;
-import android.support.v4.content.Loader;
-import android.view.Menu;
-import android.view.MenuInflater;
+import java.util.ArrayList;
 
 /**
  * Shows the EPG of a service. Timers can be set via integrated detail dialog
