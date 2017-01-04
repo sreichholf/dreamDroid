@@ -6,13 +6,13 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import android.app.Activity;
+import android.content.Intent;
+import android.support.v4.app.Fragment;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.TimerEditFragment;
 import net.reichholf.dreamdroid.helpers.DateTime;
@@ -20,18 +20,18 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * @author sreichholf
- * 
  */
 public class Timer {
 	public static final String DATA = "data";
-	
+
 	public static final String KEY_REFERENCE = "reference";
 	public static final String KEY_SERVICE_NAME = "servicename";
 	public static final String KEY_EIT = "eit";
@@ -60,12 +60,12 @@ public class Timer {
 	public static final String KEY_DONT_SAVE = "dontsave";
 	public static final String KEY_CANCELED = "canceled";
 	public static final String KEY_TOGGLE_DISABLED = "toggledisabled";
-	
+
 	public static final int STATE_WAITING = 0;
 	public static final int STATE_PREPARED = 1;
 	public static final int STATE_RUNNING = 2;
-	public static final int STATE_ENDED = 3;	
-	
+	public static final int STATE_ENDED = 3;
+
 	public static enum Afterevents {
 		NOTHING(0), STANDBY(1), DEEP_STANDBY(2), AUTO(3);
 
@@ -138,7 +138,7 @@ public class Timer {
 
 		return timer;
 	}
-	
+
 	public static ArrayList<NameValuePair> getSaveParams(ExtendedHashMap timer, ExtendedHashMap timerOld){
 		/*
 		 * URL to create /web/timerchange? sRef= &begin= &end= &name=
@@ -170,19 +170,19 @@ public class Timer {
 		} else {
 			params.add(new NameValuePair("deleteOldOnSave", "0"));
 		}
-		
+
 		return params;
 	}
-	
+
 	public static ArrayList<NameValuePair> getEventIdParams(ExtendedHashMap event){
 		ArrayList<NameValuePair> params = new ArrayList<>();
 
 		params.add(new NameValuePair("sRef", event.getString(Event.KEY_SERVICE_REFERENCE)));
 		params.add(new NameValuePair("eventid", event.getString(Event.KEY_EVENT_ID)));
-		
+
 		return params;
 	}
-	
+
 	public static ArrayList<NameValuePair> getDeleteParams(ExtendedHashMap timer){
 		// URL - web/timerdelete?sRef=&begin=&end=
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -190,42 +190,37 @@ public class Timer {
 		params.add(new NameValuePair("sRef", timer.getString(KEY_REFERENCE)));
 		params.add(new NameValuePair("begin", timer.getString(KEY_BEGIN)));
 		params.add(new NameValuePair("end", timer.getString(KEY_END)));
-		
+
 		return params;
 	}
-	
-	
-	
+
+
+
 	/**
 	 * @param mph - A MultiPaneHandler instance
-	 * @param timer - A timer (ExtendedHashMap)
+	 * @param event - A timer (ExtendedHashMap)
 	 * @param target - The target fragment (after saving/cancellation)
 	 */
 	public static void editUsingEvent(MultiPaneHandler mph, ExtendedHashMap event, Fragment target){
 		Timer.edit(mph, Timer.createByEvent(event), target, true);
 	}
-	
+
 	/**
 	 * @param mph - A MultiPaneHandler instance
 	 * @param timer - A timer (ExtendedHashMap)
 	 * @param target - The target fragment (after saving/cancellation)
 	 * @param create - set to true if a new timer should be created instead of editing an existing one
 	 */
-	public static void edit(MultiPaneHandler mph, ExtendedHashMap timer, Fragment target, boolean create){
-		ExtendedHashMap data = new ExtendedHashMap();
-		
-		TimerEditFragment f = new TimerEditFragment();
-		Bundle args = new Bundle();
-		data.put("timer", timer);
-		args.putSerializable(DATA, data);
-		
-		String action = create ? DreamDroid.ACTION_CREATE : Intent.ACTION_EDIT;
-		args.putString("action", action);
-		
-		f.setArguments(args);
-		if(target != null){
-			f.setTargetFragment(target, Statics.REQUEST_EDIT_TIMER);
-		}
-		mph.showDetails(f, true);
+	public static void edit(MultiPaneHandler mph, ExtendedHashMap timer, Fragment target, boolean create) {
+        ExtendedHashMap data = new ExtendedHashMap();
+        data.put("timer", timer);
+        data.put("action", create ? DreamDroid.ACTION_CREATE : Intent.ACTION_EDIT);
+
+        Intent intent = new Intent(target.getContext(), SimpleToolbarFragmentActivity.class);
+        intent.putExtra("fragmentClass", TimerEditFragment.class);
+        intent.putExtra("titleResource", create ? R.string.new_timer : R.string.edit_timer);
+        //intent.putExtra("menuResource", R.menu.save);
+        intent.putExtra("serializableData", (Serializable) data);
+        target.getActivity().startActivityForResult(intent, Statics.REQUEST_EDIT_TIMER);
 	}
 }

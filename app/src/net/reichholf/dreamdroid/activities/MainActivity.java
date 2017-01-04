@@ -44,6 +44,7 @@ import net.reichholf.dreamdroid.asynctask.CheckProfileTask;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
+import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
@@ -308,7 +309,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 						callbackHandler.onDrawerOpened();
 				}
 			};
-			mDrawerLayout.setDrawerListener(mDrawerToggle);
+			mDrawerLayout.addDrawerListener(mDrawerToggle);
 
             NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
             View navHeader = navigationView.getHeaderView(0);
@@ -641,15 +642,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 			if (mDetailFragment != null && ProfileEditFragment.class.equals(mDetailFragment.getClass()))
 				return;
-			Bundle args = new Bundle();
-			args.putString("action", Intent.ACTION_EDIT);
-			args.putSerializable("profile", DreamDroid.getCurrentProfile());
 
-			Fragment f = new ProfileEditFragment();
-			f.setArguments(args);
-			if (mDetailFragment != null)
-				f.setTargetFragment(mDetailFragment, Statics.REQUEST_EDIT_PROFILE);
-			showDetails(f, true);
+			ProfileListFragment.openProfileEditActivity(this, DreamDroid.getCurrentProfile());
 			return;
 		}
 
