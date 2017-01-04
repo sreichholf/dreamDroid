@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +29,12 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
+
+import java.util.HashMap;
+
+import static net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment.sData;
 
 /**
  * Used to edit connection profiles
@@ -108,8 +114,11 @@ public class ProfileEditFragment extends BaseFragment {
 		mLayoutStream = (LinearLayout) view.findViewById(R.id.linearLayoutStream);
 		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LoginLayout);
 
-		if (Intent.ACTION_EDIT.equals(getArguments().getString("action"))) {
-			mCurrentProfile = (Profile) getArguments().getSerializable("profile");
+		HashMap extras = (HashMap) getArguments().getSerializable(sData);
+		assert extras != null;
+
+		if (Intent.ACTION_EDIT.equals(extras.get("action"))) {
+			mCurrentProfile = (Profile) extras.get("profile");
 			if (mCurrentProfile == null)
 				mCurrentProfile = Profile.getDefault();
 			assignProfile();
@@ -159,7 +168,7 @@ public class ProfileEditFragment extends BaseFragment {
 
 	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.cancel, menu);
+		inflater.inflate(R.menu.save, menu);
 	}
 
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -176,6 +185,7 @@ public class ProfileEditFragment extends BaseFragment {
 		return true;
 	}
 
+	@SuppressLint("SetTextI18n")
 	private void onSslChanged(boolean checked) {
 		if (checked)
 			mPort.setText("443");

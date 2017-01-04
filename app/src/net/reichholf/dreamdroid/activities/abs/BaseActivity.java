@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -228,10 +229,20 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		Log.i(TAG, "onActivityResult(" + requestCode + "," + resultCode + "," + data);
-		if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
+		if (mIabHelper == null) {
+			Log.i(TAG, "IABUtil not yet initialized.");
+		} else if (!mIabHelper.handleActivityResult(requestCode, resultCode, data)) {
 			super.onActivityResult(requestCode, resultCode, data);
 		} else {
 			Log.i(TAG, "onActivityResult handled by IABUtil.");
+		}
+
+		List<Fragment> fragments = getSupportFragmentManager().getFragments();
+		for (Fragment fragment : fragments) {
+			if (fragment == null)
+				continue;
+
+			fragment.onActivityResult(requestCode, resultCode, data);
 		}
 	}
 

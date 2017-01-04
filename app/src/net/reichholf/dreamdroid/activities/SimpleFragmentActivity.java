@@ -6,14 +6,6 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.BaseActivity;
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,7 +17,17 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
+
+import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.BaseActivity;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
+
+import java.util.List;
 
 /**
  * @author sre
@@ -42,7 +44,6 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	public void onCreate(Bundle savedInstanceState) {
 		if (!mThemeSet)
 			DreamDroid.setTheme(this);
-		supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		super.onCreate(savedInstanceState);
 
 
@@ -58,6 +59,14 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 		}
 
 		initViews(initFragment);
+		handleExtras(getIntent().getExtras());
+	}
+
+	protected void handleExtras(Bundle extras) {
+		Bundle args = new Bundle();
+		args.putSerializable(BaseHttpFragment.sData, extras.getSerializable("serializableData"));
+		args.putString("action", extras.getString("action"));
+		mFragment.setArguments(args);
 	}
 
 	protected void initViews(boolean initFragment) {
@@ -71,6 +80,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 				Class<Fragment> c = (Class<Fragment>) getIntent().getExtras().get("fragmentClass");
 				Bundle args = new Bundle();
 				try {
+					//noinspection ConstantConditions
 					f = c.newInstance();
 					args.putAll(getIntent().getExtras());
 					f.setArguments(args);
@@ -94,8 +104,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		return true;
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
@@ -197,9 +206,8 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 
 	@Override
 	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
-		DialogFragment f = null;
 		try {
-			f = fragmentClass.newInstance();
+			DialogFragment f = fragmentClass.newInstance();
 			f.setArguments(args);
 			showDialogFragment(f, tag);
 		} catch (InstantiationException | IllegalAccessException e) {

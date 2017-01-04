@@ -35,6 +35,7 @@ import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
@@ -115,11 +116,19 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		super.onCreate(savedInstanceState);
 		mCurrentTitle = getString(R.string.services);
 		mReload = true;
-		Bundle args = getArguments();
+		mExtras = getArguments();
 		String mode = null;
 
-		if (args != null) {
-			mode = args.getString("action");
+		if (mExtras != null) {
+			mode = mExtras.getString("action");
+
+			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable(sData);
+			if (map != null) {
+				mData = new ExtendedHashMap();
+				mData.putAll(map);
+			}
+		} else {
+			mExtras = new Bundle();
 		}
 
 		mPickMode = Intent.ACTION_PICK.equals(mode);
@@ -146,7 +155,6 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 
 				mHistory.add(map);
 
-				mExtras = getArguments();
 				mNavItems = new ArrayList<>();
 				mDetailItems = new ArrayList<>();
 			}
@@ -160,16 +168,6 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		if( mNavReference == null ){
 			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
 			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
-		}
-
-		if (mExtras != null) {
-			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
-			if (map != null) {
-				mData = new ExtendedHashMap();
-				mData.putAll(map);
-			}
-		} else {
-			mExtras = new Bundle();
 		}
 	}
 

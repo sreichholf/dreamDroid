@@ -6,13 +6,12 @@
 
 package net.reichholf.dreamdroid.fragment;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
@@ -32,15 +31,16 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.adapter.recyclerview.ProfileAdapter;
 import net.reichholf.dreamdroid.asynctask.DetectDevicesTask;
 import net.reichholf.dreamdroid.fragment.abs.BaseRecyclerFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -48,8 +48,6 @@ import java.util.ArrayList;
  *
  * @author sre
  */
-
-
 public class ProfileListFragment extends BaseRecyclerFragment implements DetectDevicesTask.DetectDevicesTaskHandler {
 
 	private boolean mIsActionMode;
@@ -268,12 +266,11 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		reloadProfiles();
 		if (savedInstanceState != null) {
 			int pos = savedInstanceState.getInt("cursorPosition");
-			if (pos < mProfiles.size())
+			if (pos < mProfiles.size()) {
 				mProfile = mProfiles.get(pos);
+			}
 		}
 
-		SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
-		swipeRefreshLayout.setEnabled(false);
 	}
 
 
@@ -295,7 +292,10 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		return true;
 	}
 
-
+	@Override
+	public void onRefresh() {
+		reloadProfiles();
+	}
 
 	private void reloadProfiles() {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
@@ -318,6 +318,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 			mProfileMapList.add(map);
 		}
 		mAdapter.notifyDataSetChanged();
+		mSwipeRefreshLayout.setRefreshing(false);
 	}
 
 	protected boolean onListItemLongClick(AdapterView<?> a, View v, int position, long id) {
@@ -350,7 +351,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 
 	/**
 	 * @param id The id of the selected menu item (<code>MENU_*</code> statics)
-	 * @return
+	 * @return true if click was handled, false otherwise
 	 */
 	protected boolean onItemClicked(int id) {
 		switch (id) {
@@ -376,6 +377,21 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		return true;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see android.support.v4.app.Fragment#onActivityResult(int, int,
+	 * android.content.Intent)
+	 */
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == Statics.REQUEST_EDIT_PROFILE) {
+			if (resultCode == Activity.RESULT_OK) {
+				reloadProfiles();
+			}
+		}
+	}
+
 	/**
 	 * Activates the selected profile
 	 */
@@ -392,27 +408,34 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	 * Opens a <code>ProfileEditActivity</code> for the selected profile
 	 */
 	private void editProfile() {
-		Bundle args = new Bundle();
-		args.putString("action", Intent.ACTION_EDIT);
-		args.putSerializable("profile", mProfile);
-
-		Fragment f = new ProfileEditFragment();
-		f.setArguments(args);
-		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
-		getMultiPaneHandler().showDetails(f, true);
+		openProfileEditActivity(getActivity(), mProfile);
 	}
 
 	/**
 	 * Opens a <code>ProfileEditActivity</code> for creating a new profile
 	 */
 	private void createProfile() {
-		Bundle args = new Bundle();
-		args.putString("action", Intent.ACTION_EDIT);
+		openProfileEditActivity(getActivity(), null);
+	}
 
-		Fragment f = new ProfileEditFragment();
-		f.setArguments(args);
-		f.setTargetFragment(this, Statics.REQUEST_EDIT_PROFILE);
-		getMultiPaneHandler().showDetails(f, true);
+	/**
+	 * Opens a <code>ProfileEditActivity</code>.
+	 * @param activity The calling activity
+	 * @param profile The selected profile that should be edited, null if a new one should be created instead.
+	 */
+	public static void openProfileEditActivity(Activity activity, Profile profile) {
+		ExtendedHashMap data = new ExtendedHashMap();
+		data.put("action", Intent.ACTION_EDIT);
+
+		if (profile != null) {
+			data.put("profile", profile);
+		}
+
+		Intent intent = new Intent(activity, SimpleToolbarFragmentActivity.class);
+		intent.putExtra("fragmentClass", ProfileEditFragment.class);
+		intent.putExtra("titleResource", profile == null ? R.string.profile_add : R.string.edit_profile);
+		intent.putExtra("serializableData", (Serializable) data);
+		activity.startActivityForResult(intent, Statics.REQUEST_EDIT_PROFILE);
 	}
 
 	/**
