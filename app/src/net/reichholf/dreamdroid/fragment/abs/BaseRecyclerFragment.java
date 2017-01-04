@@ -33,7 +33,7 @@ import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
 /**
- * Created by Stephan on 03.05.2015.
+ * @author Stephan
  */
 public abstract class BaseRecyclerFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment, ItemClickSupport.OnItemClickListener, ItemClickSupport.OnItemLongClickListener, SwipeRefreshLayout.OnRefreshListener, ActionDialog.DialogActionListener {
 
@@ -49,6 +49,8 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	protected ActionMode mActionMode;
 	protected boolean mIsActionMode;
 	protected boolean mIsActionModeRequired;
+
+	protected SwipeRefreshLayout mSwipeRefreshLayout;
 
 	public BaseRecyclerFragment() {
 		super();
@@ -84,14 +86,13 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		super.onViewCreated(view, savedInstanceState);
 		setFabEnabled(R.id.fab_reload, mEnableReload);
 		setFabEnabled(R.id.fab_main, mHasFabMain);
-
-		getAppCompatActivity().findViewById(R.id.ptr_layout).setEnabled(mEnableReload);
-		SwipeRefreshLayout srl = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
-		srl.setOnRefreshListener(this);
 	}
 
 	protected void setFabEnabled(int id, boolean enabled) {
 		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		if (fab == null)
+			return;
+
 		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
 		if (enabled) {
 			fab.show();
@@ -104,6 +105,9 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		//noinspection ConstantConditions
+		mSwipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.ptr_layout);
+		mSwipeRefreshLayout.setOnRefreshListener(this);
 		mHelper.onActivityCreated(savedInstanceState);
 	}
 
@@ -194,6 +198,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	public RecyclerView getRecyclerView() {
+		//noinspection ConstantConditions
 		return (RecyclerView) getView().findViewById(android.R.id.list);
 	}
 
@@ -202,6 +207,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	protected void setEmptyText(CharSequence emptyText, int topDrawable) {
+		//noinspection ConstantConditions
 		TextView textView = (TextView) getView().findViewById(android.R.id.empty);
 		if (textView == null)
 			return;
@@ -226,8 +232,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 
 	@Override
 	public void onRefresh() {
-		SwipeRefreshLayout srl = (SwipeRefreshLayout) getAppCompatActivity().findViewById(R.id.ptr_layout);
-		srl.setRefreshing(false);
+		mSwipeRefreshLayout.setRefreshing(false);
 	}
 
 	@Override

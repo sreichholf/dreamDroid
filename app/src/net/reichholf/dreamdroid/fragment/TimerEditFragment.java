@@ -34,7 +34,7 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
@@ -49,6 +49,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,7 +179,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			mTimer = new ExtendedHashMap();
 			mTimer.putAll((HashMap<String, Object>) data.get("timer"));
 
-			if (Intent.ACTION_EDIT.equals(getArguments().get("action"))) {
+			if (Intent.ACTION_EDIT.equals(data.get("action"))) {
 				mTimerOld = mTimer.clone();
 			} else {
 				mTimerOld = null;
@@ -212,7 +213,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	}
 
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.cancel, menu);
+		inflater.inflate(R.menu.save, menu);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -278,10 +279,6 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		getMultiPaneHandler().showDialogFragment(f, "dialog_select_tags");
 	}
 
-	/**
-	 * @param v
-	 * @param id
-	 */
 	protected void registerOnClickListener(View v, final int id) {
 		v.setOnClickListener(new OnClickListener() {
 			@Override
@@ -291,9 +288,6 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		});
 	}
 
-	/**
-	 * @param id
-	 */
 	protected boolean onItemSelected(int id) {
 		boolean consumed;
 		Calendar calendar;
@@ -378,22 +372,16 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		return consumed;
 	}
 
-	/**
-	 *
-	 */
 	private void pickService() {
-		ServiceListFragment f = new ServiceListFragment();
-		Bundle args = new Bundle();
-
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put(Service.KEY_REFERENCE, "default");
 
-		args.putSerializable(sData, data);
-		args.putString("action", Intent.ACTION_PICK);
-
-		f.setArguments(args);
-		f.setTargetFragment(this, Statics.REQUEST_PICK_SERVICE);
-		((MultiPaneHandler) getAppCompatActivity()).showDetails(f, true);
+		Intent intent = new Intent(getContext(), SimpleToolbarFragmentActivity.class);
+		intent.putExtra("fragmentClass", ServiceListFragment.class);
+		intent.putExtra("titleResource", R.string.service);
+		intent.putExtra("action", Intent.ACTION_PICK);
+		intent.putExtra("serializableData", (Serializable) data);
+		getActivity().startActivityForResult(intent, Statics.REQUEST_PICK_SERVICE);
 	}
 
 	/**
@@ -467,6 +455,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		try {
 			repeatedValue = DateTime.parseTimestamp(mTimer.getString(Timer.KEY_REPEATED));
 		} catch (NumberFormatException ex) {
+			ex.printStackTrace();
 		}
 
 		String repeatedText = getRepeated(repeatedValue);
@@ -585,8 +574,8 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				mProgress.dismiss();
 			}
 		}
-		Activity activtiy = getAppCompatActivity();
-		mProgress = ProgressDialog.show(activtiy, "", getText(R.string.saving), true);
+		Activity activity = getAppCompatActivity();
+		mProgress = ProgressDialog.show(activity, "", getText(R.string.saving), true);
 
 		applyViewValues();
 		ArrayList<NameValuePair> params = Timer.getSaveParams(mTimer, mTimerOld);

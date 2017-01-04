@@ -36,7 +36,7 @@ import java.util.ArrayList;
 public abstract class BaseHttpFragment extends BaseFragment implements
 		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, IHttpBase, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
 
-	protected final String sData = "data";
+	public static final String sData = "data";
 	protected HttpFragmentHelper mHttpHelper;
 	protected boolean mReload = false;
 

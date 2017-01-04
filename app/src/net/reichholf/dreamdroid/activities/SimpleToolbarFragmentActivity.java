@@ -14,17 +14,25 @@ public class SimpleToolbarFragmentActivity extends SimpleFragmentActivity {
     }
 
     @Override
-    @SuppressWarnings("ConstantConditions") // titleResource must not be null
     protected void initViews(boolean initFragment) {
         super.initViews(initFragment);
 
         setContentView(R.layout.simple_layout_with_toolbar);
-        Integer titleResource = (Integer) getIntent().getExtras().get("titleResource");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //noinspection ConstantConditions
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(titleResource);
+    }
+
+    @Override
+    protected void handleExtras(Bundle extras) {
+        super.handleExtras(extras);
+
+        if (extras.getInt("titleResource", -1) != -1) {
+            //noinspection ConstantConditions
+            getSupportActionBar().setTitle(extras.getInt("titleResource"));
+        }
     }
 }
