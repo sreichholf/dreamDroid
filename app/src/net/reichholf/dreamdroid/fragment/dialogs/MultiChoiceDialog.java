@@ -11,8 +11,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-
-import com.afollestad.materialdialogs.MaterialDialog;
+import android.support.v7.app.AlertDialog;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.BundleHelper;
@@ -34,9 +33,9 @@ public class MultiChoiceDialog extends DialogFragment {
 	private int mPositiveStringId;
 
 	public interface MultiChoiceDialogListener {
-		public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected);
+		void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected);
 
-		public void onMultiChoiceDialogFinish(String dialogTag, int result);
+		void onMultiChoiceDialogFinish(String dialogTag, int result);
 	}
 
 	@Override
@@ -64,7 +63,7 @@ public class MultiChoiceDialog extends DialogFragment {
 	}
 
 	public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems,
-	                                            int positiveStringId, int negativeStringId) {
+												int positiveStringId, int negativeStringId) {
 
 		MultiChoiceDialog fragment = new MultiChoiceDialog();
 		Bundle args = new Bundle();
@@ -92,28 +91,30 @@ public class MultiChoiceDialog extends DialogFragment {
 			if (checked != null)
 				mCheckedItems = checked;
 		}
-		ArrayList<Integer> selectedList = new ArrayList<>();
-		for (int i = 0; i < mCheckedItems.length; ++i) {
-			if (mCheckedItems[i])
-				selectedList.add(i);
-		}
-		Integer[] selected = new Integer[selectedList.size()];
-		selectedList.toArray(selected);
 
-		MaterialDialog.Builder builder;
-		builder = new MaterialDialog.Builder(getActivity());
-		builder.title(mTitleId)
-				.items(mItems)
-				.itemsCallbackMultiChoice(selected, new MaterialDialog.ListCallbackMultiChoice() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle(mTitleId)
+				.setMultiChoiceItems(mItems, mCheckedItems, new DialogInterface.OnMultiChoiceClickListener() {
 					@Override
-					public boolean onSelection(MaterialDialog materialDialog, Integer[] selected, CharSequence[] charSequences) {
-						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogSelection(getTag(), materialDialog, selected);
-						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
-						return true;
+					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+						mCheckedItems[which] = isChecked;
 					}
 				})
-				.positiveText(mPositiveStringId);
-
-		return builder.build();
+				.setPositiveButton(mPositiveStringId, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						ArrayList<Integer> selectedList = new ArrayList<>();
+						for (int i = 0; i < mCheckedItems.length; ++i) {
+							if (mCheckedItems[i])
+								selectedList.add(i);
+						}
+						Integer[] selected = new Integer[selectedList.size()];
+						selectedList.toArray(selected);
+						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogSelection(getTag(), dialog, selected);
+						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
+						dialog.dismiss();
+					}
+				});
+		return builder.create();
 	}
 }

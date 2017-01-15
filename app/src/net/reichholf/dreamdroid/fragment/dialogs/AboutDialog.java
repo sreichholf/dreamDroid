@@ -7,12 +7,12 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.text.util.Linkify;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
+import android.widget.TextView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -36,29 +36,34 @@ public class AboutDialog extends ActionDialog {
 		String text = String.format("%s\n\n%s\n\n%s", DreamDroid.VERSION_STRING, getString(R.string.license),
 				getString(R.string.source_code_link));
 
-		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.title(R.string.about)
-				.content(text)
-				.positiveText(R.string.privacy)
-				.onNeutral(new MaterialDialog.SingleButtonCallback() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+		builder.setTitle(R.string.about)
+				.setMessage(text)
+				.setCancelable(true)
+				.setNeutralButton(R.string.donate, new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+					public void onClick(DialogInterface dialog, int which) {
 						ExtendedHashMap skus = ((BaseActivity) getActivity()).getIabItems();
 						DonationDialog d = DonationDialog.newInstance(skus);
 						((MultiPaneHandler) getActivity()).showDialogFragment(d, "donate_dialog");
 					}
-				})
-				.onPositive(new MaterialDialog.SingleButtonCallback() {
-					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-						finishDialog(Statics.ACTION_SHOW_PRIVACY_STATEMENT, null);
-					}
 				});
-
-		if (!getActivity().getApplicationContext().getPackageName().endsWith("amazon"))
-			builder.neutralText(R.string.donate);
-		MaterialDialog dialog = builder.build();
-		Linkify.addLinks(dialog.getContentView(), Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
+		if (!getActivity().getApplicationContext().getPackageName().endsWith("amazon")) {
+			builder.setPositiveButton(R.string.privacy, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					finishDialog(Statics.ACTION_SHOW_PRIVACY_STATEMENT, null);
+				}
+			});
+		}
+		AlertDialog dialog = builder.create();
+		dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+			@Override
+			public void onShow(DialogInterface dialog) {
+				TextView message = (TextView) getDialog().findViewById(android.R.id.message);
+				Linkify.addLinks(message, Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
+			}
+		});
 		return dialog;
 	}
 }

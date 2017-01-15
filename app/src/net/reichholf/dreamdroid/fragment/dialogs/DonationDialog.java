@@ -1,10 +1,9 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.View;
-
-import com.afollestad.materialdialogs.MaterialDialog;
+import android.support.v7.app.AlertDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -26,7 +25,7 @@ public class DonationDialog extends ActionDialog {
 		super();
 	}
 
-	public static DonationDialog newInstance(ExtendedHashMap items){
+	public static DonationDialog newInstance(ExtendedHashMap items) {
 		DonationDialog d = new DonationDialog();
 		Bundle args = new Bundle();
 		args.putParcelable(KEY_ITEMS, items);
@@ -34,7 +33,7 @@ public class DonationDialog extends ActionDialog {
 		return d;
 	}
 
-	protected void init(){
+	protected void init() {
 		mItems = getArguments().getParcelable(KEY_ITEMS);
 		int i = 0;
 		mActions = new CharSequence[mItems.size()];
@@ -42,7 +41,7 @@ public class DonationDialog extends ActionDialog {
 
 		for (String sku : DreamDroid.SKU_LIST) {
 			String price = mItems.getString(sku);
-			if(price == null)
+			if (price == null)
 				continue;
 			mActions[i] = getString(R.string.donate_sum, price);
 			mActionIds[i] = i;
@@ -54,20 +53,16 @@ public class DonationDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-		MaterialDialog.Builder builder;
-		builder = new MaterialDialog.Builder(getActivity());
-		builder.title(getText(R.string.donate))
-				.items(mActions)
-				.itemsCallback(new MaterialDialog.ListCallback() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+		builder.setTitle(R.string.donate)
+				.setItems(mActions, new DialogInterface.OnClickListener() {
 					@Override
-					public void onSelection(MaterialDialog materialDialog, View view, int i, CharSequence charSequence) {
+					public void onClick(DialogInterface dialog, int which) {
 						BaseActivity ba = (BaseActivity) getActivity();
-						ba.purchase(DreamDroid.SKU_LIST[i]);
-						//ba.purchase("android.test.purchased");
+						ba.purchase(DreamDroid.SKU_LIST[which]);
 						finishDialog(Statics.ACTION_NONE, null);
 					}
 				});
-
-		return builder.build();
+		return builder.create();
 	}
 }

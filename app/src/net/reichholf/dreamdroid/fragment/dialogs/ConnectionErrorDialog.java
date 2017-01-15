@@ -1,11 +1,11 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
+
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
+import android.support.v7.app.AlertDialog;
 
 import net.reichholf.dreamdroid.R;
 
@@ -19,7 +19,7 @@ public class ConnectionErrorDialog extends ActionDialog {
 	public static int ACTION_POSITIVE = 0x00;
 	public static int ACTION_EDIT_PROFILE = 0x01;
 
-	public static ConnectionErrorDialog newInstance(String title, String text){
+	public static ConnectionErrorDialog newInstance(String title, String text) {
 		Bundle args = new Bundle();
 		args.putString(KEY_TITLE, title);
 		args.putString(KEY_TEXT, text);
@@ -36,25 +36,20 @@ public class ConnectionErrorDialog extends ActionDialog {
 		String title = args.getString(KEY_TITLE);
 		String text = args.getString(KEY_TEXT);
 
-		Dialog dialog = new MaterialDialog.Builder(getActivity())
-				.title(title)
-				.content(text)
-				.contentColorRes(R.color.material_red_500)
-				.positiveText(R.string.ok)
-				.neutralText(R.string.edit_profile)
-				.onPositive(new MaterialDialog.SingleButtonCallback() {
+		return new AlertDialog.Builder(getContext())
+				.setTitle(title)
+				.setMessage(text)
+				.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+					public void onClick(DialogInterface dialog, int which) {
 						finishDialog(ACTION_POSITIVE, null);
 					}
 				})
-				.onNeutral(new MaterialDialog.SingleButtonCallback() {
+				.setNeutralButton(R.string.edit_profile, new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+					public void onClick(DialogInterface dialog, int which) {
 						finishDialog(ACTION_EDIT_PROFILE, null);
 					}
-				})
-				.build();
-		return dialog;
+				}).create();
 	}
 }

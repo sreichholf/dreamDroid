@@ -9,12 +9,12 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
 /**
  * @author sre
- * 
  */
 public class SimpleProgressDialog extends ActionDialog {
 	private static final String KEY_TITLE = "title";
@@ -58,11 +58,11 @@ public class SimpleProgressDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-        MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-        builder.progress(true, 0)
-                .cancelable(false)
-                .title(mTitle)
-                .content(mMessage);
-        return builder.build();
+		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
+		builder.progress(true, 0)
+				.cancelable(false)
+				.title(mTitle)
+				.content(mMessage);
+		return builder.build();
 	}
 }

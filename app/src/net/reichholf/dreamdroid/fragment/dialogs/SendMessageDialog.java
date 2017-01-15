@@ -7,14 +7,13 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.R;
 
@@ -32,29 +31,29 @@ public class SendMessageDialog extends AbstractDialog {
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.customView(R.layout.send_message_dialog, true)
-				.title(R.string.send_message)
-				.positiveText(R.string.send)
-				.negativeText(R.string.cancel)
-				.onPositive(new MaterialDialog.SingleButtonCallback() {
-					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-						View view = dialog.getCustomView();
-						EditText text = (EditText) view.findViewById(R.id.EditTextMessage);
-						EditText timeout = (EditText) view.findViewById(R.id.EditTextTimeout);
-
-						Spinner type = (Spinner) view.findViewById(R.id.SpinnerMessageType);
-						String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
-
-						((SendMessageDialogActionListener) getActivity()).onSendMessage(text.getText().toString(), t, timeout.getText().toString());
-					}
-				});
-		final MaterialDialog dialog = builder.build();
-
-		Spinner spinnerType = (Spinner) dialog.getCustomView().findViewById(R.id.SpinnerMessageType);
+		final View view = LayoutInflater.from(getContext()).inflate(R.layout.send_message_dialog, null);
+		Spinner spinnerType = (Spinner) view.findViewById(R.id.SpinnerMessageType);
 		spinnerType.setSelection(2);
 
-		return dialog;
+		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+		builder.setTitle(R.string.send_message)
+				.setView(view)
+				.setPositiveButton(R.string.send, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						EditText text = (EditText) view.findViewById(R.id.EditTextMessage);
+						EditText timeout = (EditText) view.findViewById(R.id.EditTextTimeout);
+						Spinner type = (Spinner) view.findViewById(R.id.SpinnerMessageType);
+						String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
+						((SendMessageDialogActionListener) getActivity()).onSendMessage(text.getText().toString(), t, timeout.getText().toString());
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dismiss();
+					}
+				});
+		return builder.create();
 	}
 }

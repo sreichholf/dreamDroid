@@ -7,14 +7,13 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RadioGroup;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -55,33 +54,7 @@ public class SleepTimerDialog extends AbstractDialog {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		init();
-		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.customView(R.layout.sleeptimer, true)
-				.title(R.string.sleeptimer)
-				.positiveText(R.string.save)
-				.negativeText(R.string.cancel)
-				.onPositive(new MaterialDialog.SingleButtonCallback() {
-					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-						View view = dialog.getCustomView();
-						MaterialNumberPicker time = (MaterialNumberPicker) view.findViewById(R.id.NumberPicker);
-						CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
-						RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);
-
-						String t = Integer.valueOf(time.getValue()).toString();
-						int id = action.getCheckedRadioButtonId();
-						String a = SleepTimer.ACTION_STANDBY;
-
-						if (id == R.id.RadioButtonShutdown) {
-							a = SleepTimer.ACTION_SHUTDOWN;
-						}
-
-						((SleepTimerDialogActionListener) getActivity()).onSetSleepTimer(t, a, enabled.isChecked());
-					}
-				});
-		final MaterialDialog dialog = builder.build();
-		View view = dialog.getCustomView();
-
+		final View view = LayoutInflater.from(getContext()).inflate(R.layout.sleeptimer, null);
 		final MaterialNumberPicker time = (MaterialNumberPicker) view.findViewById(R.id.NumberPicker);
 		final CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
 		final RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);
@@ -101,12 +74,38 @@ public class SleepTimerDialog extends AbstractDialog {
 		time.setValue(min);
 		enabled.setChecked(enable);
 
-		if (SleepTimer.ACTION_SHUTDOWN.equals(act)) {
+		if (SleepTimer.ACTION_SHUTDOWN.equals(act))
 			action.check(R.id.RadioButtonShutdown);
-		} else {
+		else
 			action.check(R.id.RadioButtonStandby);
-		}
 
-		return dialog;
+		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+		builder.setTitle(R.string.sleeptimer)
+				.setView(view)
+				.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						MaterialNumberPicker time = (MaterialNumberPicker) view.findViewById(R.id.NumberPicker);
+						CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
+						RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);
+
+						String t = Integer.valueOf(time.getValue()).toString();
+						int id = action.getCheckedRadioButtonId();
+						String a = SleepTimer.ACTION_STANDBY;
+
+						if (id == R.id.RadioButtonShutdown) {
+							a = SleepTimer.ACTION_SHUTDOWN;
+						}
+
+						((SleepTimerDialogActionListener) getActivity()).onSetSleepTimer(t, a, enabled.isChecked());
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dismiss();
+					}
+				});
+		return builder.create();
 	}
 }

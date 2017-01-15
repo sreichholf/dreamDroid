@@ -7,17 +7,15 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
+import android.support.v7.app.AlertDialog;
 
 /**
  * @author sre
- * 
  */
 public class PositiveNegativeDialog extends ActionDialog {
+	private String mTitle;
 	private int mMessageId;
 	private int mPositiveText;
 	private int mPositiveId;
@@ -36,7 +34,7 @@ public class PositiveNegativeDialog extends ActionDialog {
 	}
 
 	public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId,
-			int negativeText, int negativeId) {
+													 int negativeText, int negativeId) {
 
 		PositiveNegativeDialog fragment = new PositiveNegativeDialog();
 		Bundle args = new Bundle();
@@ -53,6 +51,7 @@ public class PositiveNegativeDialog extends ActionDialog {
 
 	private void init() {
 		Bundle args = getArguments();
+		mTitle = args.getString(KEY_TITLE);
 		mMessageId = args.getInt(KEY_MESSAGE_ID);
 		mPositiveText = args.getInt(KEY_POSITIVE_TEXT);
 		mPositiveId = args.getInt(KEY_POSITIVE_ID);
@@ -64,29 +63,23 @@ public class PositiveNegativeDialog extends ActionDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
-		MaterialDialog.Builder builder;
 
-		builder = new MaterialDialog.Builder(getActivity());
-
-		builder.content(getString(mMessageId))
-				.title(getArguments().getString("title"))
-				.cancelable(false)
-				.positiveText(mPositiveText)
-				.onPositive(new MaterialDialog.SingleButtonCallback() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+		builder.setTitle(mTitle)
+				.setPositiveButton(mPositiveText, new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+					public void onClick(DialogInterface dialog, int which) {
 						finishDialog(mPositiveId, null);
 					}
 				});
-		if(mNegativeId > 0 && mNegativeText > 0) {
-			builder.negativeText(mNegativeText)
-					.onNegative(new MaterialDialog.SingleButtonCallback() {
-						@Override
-						public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-							finishDialog(mNegativeId, null);
-						}
-					});
+		if (mNegativeId > 0 && mNegativeText > 0) {
+			builder.setNegativeButton(mNegativeText, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					finishDialog(mNegativeId, null);
+				}
+			});
 		}
-		return builder.build();
+		return builder.create();
 	}
 }

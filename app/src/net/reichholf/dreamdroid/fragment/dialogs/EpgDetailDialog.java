@@ -27,11 +27,9 @@ import java.util.HashMap;
 
 /**
  * @author sre
- * 
  */
 public class EpgDetailDialog extends BottomSheetActionDialog {
 	private ExtendedHashMap mCurrentItem;
-	private BottomSheetBehavior mBottomSheetBehavior;
 
 	public EpgDetailDialog() {
 	}
@@ -42,7 +40,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 			getDialog().setDismissMessage(null);
 		super.onDestroyView();
 	}
-	
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
@@ -59,7 +57,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 		final boolean isNext = args.getBoolean("showNext", false);
 
 		String prefix = "";
-		if(isNext)
+		if (isNext)
 			prefix = Event.PREFIX_NEXT;
 
 		String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
@@ -82,7 +80,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 			textServiceName.setText(servicename);
 
 			TextView textShort = (TextView) view.findViewById(R.id.epg_short);
-			if("".equals(descShort))
+			if ("".equals(descShort))
 				textShort.setVisibility(View.GONE);
 			else
 				textShort.setText(descShort);
@@ -125,9 +123,9 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 			});
 			dialog.setContentView(view);
 
-			mBottomSheetBehavior = BottomSheetBehavior.from(((View) view.getParent()));
-			if (mBottomSheetBehavior != null) {
-				mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+			BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(((View) view.getParent()));
+			if (bottomSheetBehavior != null) {
+				bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 			}
 		} else {
 			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
