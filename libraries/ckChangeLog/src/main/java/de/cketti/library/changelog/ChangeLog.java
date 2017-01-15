@@ -40,18 +40,16 @@ package de.cketti.library.changelog;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.XmlResourceParser;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.util.SparseArray;
 import android.webkit.WebView;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -61,8 +59,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import de.cketti.library.changelog.R;
 
 
 /**
@@ -295,33 +291,24 @@ public class ChangeLog {
      */
     protected Dialog getDialog(boolean full) {
         WebView wv = new WebView(mContext);
-        //wv.setBackgroundColor(0); // transparent
         wv.loadDataWithBaseURL(null, getLog(full), "text/html", "UTF-8", null);
-
-        MaterialDialog.Builder builder = new MaterialDialog.Builder(mContext);
-        builder.title(
-                mContext.getResources().getString(
-                        full ? R.string.changelog_full_title : R.string.changelog_title))
-                .customView(wv, false)
-                .positiveText(mContext.getResources().getString(R.string.changelog_ok_button))
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
+                .setTitle(full ? R.string.changelog_full_title : R.string.changelog_title)
+                .setView(wv)
+                .setPositiveButton(R.string.changelog_ok_button, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    public void onClick(DialogInterface dialog, int which) {
                         updateVersionInPreferences();
                     }
-                })
-                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                });
+        if (!full)
+                builder.setNeutralButton(R.string.changelog_show_full, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    public void onClick(DialogInterface dialog, int which) {
                         getFullLogDialog().show();
                     }
                 });
-        if (!full) {
-            // Show "More…" button if we're only displaying a partial change log.
-            builder.negativeText(R.string.changelog_show_full);
-        }
-
-        return builder.build();
+        return builder.create();
     }
 
     /**

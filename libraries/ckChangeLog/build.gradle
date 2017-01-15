@@ -32,7 +32,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:25.+'
-    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
 }
 
 
