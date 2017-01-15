@@ -1,7 +1,7 @@
 <changelog>
-    <release version="1.2-389" versioncode="389">
+    <release version="1.2-393" versioncode="393">
         <change>NEU: Initiale Unterstützung von Android TV</change>
-        <change>NEU: Kleinere interne Updates und Anpassungen</change>
+        <change>NEU: Interne Updates und Anpassungen</change>
         <change>NEU: Einige coole Verbesserungen der Navigation durch F. Edelmann</change>
     </release>
     <release version="1.1-386" versioncode="386">
