@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.view.helper;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 
 import com.afollestad.materialdialogs.internal.MDTintHelper;
@@ -13,6 +14,6 @@ public class TintHelper extends MDTintHelper {
 		TypedValue typedValue = new TypedValue();
 		context.getTheme().resolveAttribute(attrId, typedValue, true);
 
-		return context.getResources().getColor(typedValue.resourceId, context.getTheme());
+		return ContextCompat.getColor(context, typedValue.resourceId);
 	}
 }

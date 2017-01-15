@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
@@ -92,7 +93,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         mSwipeRefreshLayout.setProgressViewOffset(false, 0, getAppCompatActivity().getResources().getDimensionPixelSize(typed_value.resourceId));
 
         ctx.getTheme().resolveAttribute(R.attr.colorAccent, typed_value, true);
-        int accent = ctx.getResources().getColor(typed_value.resourceId, ctx.getTheme());
+        int accent = ContextCompat.getColor(ctx, typed_value.resourceId);
         mSwipeRefreshLayout.setColorSchemeColors(accent);
     }
 

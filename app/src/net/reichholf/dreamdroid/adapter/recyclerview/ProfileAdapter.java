@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +25,7 @@ public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder
 
 	public ProfileAdapter(Context context, ArrayList<ExtendedHashMap> data) {
 		super(data);
-		mActiveColor = context.getResources().getColor(R.color.active_profile_color, context.getTheme());
+		mActiveColor = ContextCompat.getColor(context, R.color.active_profile_color);
 	}
 
 	@Override
