@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout
-    android:id="@+id/LinearLayoutMain"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/LinearLayoutMain"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:minWidth="150dip"
@@ -29,11 +29,11 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginBottom="96dip"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:paddingTop="0dp"
+        android:clipToPadding="false"
         android:paddingBottom="0dp"
-        android:clipToPadding="false">
+        android:paddingEnd="10dp"
+        android:paddingStart="10dp"
+        android:paddingTop="0dp">
 
         <LinearLayout
             android:id="@+id/LinearLayoutMain"
