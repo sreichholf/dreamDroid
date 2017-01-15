@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,7 +33,6 @@ import net.reichholf.dreamdroid.fragment.ZapFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleProgressDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -64,13 +62,10 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     protected SimpleResultTask mSimpleResultTask;
     protected SimpleHttpClient mShc;
 
-    protected DialogFragment mSleepTimerProgress;
     protected int mSelectedItemId;
 
     public NavigationHelper(MainActivity activity) {
         mActivity = activity;
-        mSleepTimerProgress = null;
-
         mSelectedItemId = -1;
         getNavigationView().setNavigationItemSelectedListener(this);
     }
@@ -330,20 +325,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     }
 
     @Override
-    public void onSleepTimerProgressUpdate(String title, String text) {
-        if (mSleepTimerProgress == null) {
-            mSleepTimerProgress = SimpleProgressDialog.newInstance(getString(R.string.sleeptimer),
-                    getString(R.string.loading));
-            getMainActivity().showDialogFragment(mSleepTimerProgress, "sleeptimer_progress_dialog");
-        }
-    }
-
-    @Override
     public void onSleepTimerSet(boolean success, ExtendedHashMap result, boolean openDialog, String errorText) {
-        if (mSleepTimerProgress != null) {
-            mSleepTimerProgress.dismiss();
-            mSleepTimerProgress = null;
-        }
         if (success) {
             if (openDialog) {
                 getMainActivity().showDialogFragment(SleepTimerDialog.newInstance(result), "sleeptimer_dialog");

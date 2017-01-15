@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.asynctask;
 
-import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
@@ -42,13 +41,6 @@ public class SleepTimerTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, 
 	}
 
 	@Override
-	protected void onProgressUpdate(Void... progress) {
-		SleepTimerTaskHandler resultHandler = (SleepTimerTaskHandler) mTaskHandler.get();
-		if (resultHandler != null)
-			resultHandler.onSleepTimerProgressUpdate(resultHandler.getString(R.string.sleeptimer), resultHandler.getString(R.string.loading));
-	}
-
-	@Override
 	protected void onPostExecute(Boolean result) {
 		SleepTimerTaskHandler resultHandler = (SleepTimerTaskHandler) mTaskHandler.get();
 		if (isCancelled() || resultHandler == null)
@@ -62,7 +54,5 @@ public class SleepTimerTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, 
 
 	public interface SleepTimerTaskHandler extends AsyncHttpTaskBaseHandler {
 		void onSleepTimerSet(boolean success, ExtendedHashMap result, boolean openDialog, String errorText);
-
-		void onSleepTimerProgressUpdate(String title, String text);
 	}
 }

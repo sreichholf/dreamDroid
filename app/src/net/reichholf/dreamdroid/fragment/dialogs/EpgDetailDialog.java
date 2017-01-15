@@ -7,16 +7,16 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-
-import com.afollestad.materialdialogs.MaterialDialog;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -128,13 +128,16 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 				bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 			}
 		} else {
-			MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-			builder.title(R.string.not_available)
-					.autoDismiss(true)
-					.positiveText(R.string.close)
-					.content(R.string.no_epg_available);
+			dialog = new AlertDialog.Builder(getContext())
+					.setTitle(R.string.not_available)
+					.setMessage(R.string.no_epg_available)
+					.setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dismiss();
+						}
+					}).create();
 
-			dialog = builder.build();
 		}
 		return dialog;
 	}
