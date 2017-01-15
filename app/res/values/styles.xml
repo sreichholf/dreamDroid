@@ -60,7 +60,6 @@
 
     <style name="RemoteButton.Big" parent="RemoteButton">
         <item name="android:layout_margin">5dp</item>
-
     </style>
 
 
@@ -83,12 +82,10 @@
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="buttonBarButtonStyle" parent="Base.Widget.AppCompat.Button.Colored"/>
-    <style name="buttonBarNeutralButtonStyle" parent="Base.Widget.AppCompat.Button.Colored"/>
-    <style name="buttonBarPositiveButtonStyle" parent="Base.Widget.AppCompat.Button.Colored"/>
-    <style name="buttonBarNegativeButtonStyle" parent="Base.Widget.AppCompat.Button.Colored">
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-    </style>
+    <style name="buttonBarButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless"/>
+    <style name="buttonBarNeutralButtonStyle" parent="Base.Widget.AppCompat.Button"/>
+    <style name="buttonBarPositiveButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
+    <style name="buttonBarNegativeButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless"/>
 
     <style name="Preference_TextAppearanceMaterialBody2">
         <item name="android:textSize">14sp</item>
