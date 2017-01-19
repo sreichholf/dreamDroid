@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.parsers;
 
 import android.util.Log;
 
-import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.dataProviders.interfaces.DataParser;
 
 import org.xml.sax.InputSource;
@@ -18,6 +17,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -32,6 +32,8 @@ public class GenericSaxParser implements DataParser {
 	private DefaultHandler mHandler;
 	private boolean mError;
 	private String mErrorText;
+
+	static Pattern sControlPatternAggressive = Pattern.compile("\\p{C}");
 
 	/**
 	 * 
@@ -64,25 +66,42 @@ public class GenericSaxParser implements DataParser {
 
 
 	protected String stripNonValidXMLCharacters(String in, boolean aggressive) {
-		/*
-		Pattern ctrl = Pattern.compile("\\p{C}");
-		Matcher m = ctrl.matcher(in);
-		HashSet<Integer> cchars = new HashSet<>();
-
-		while(m.find()){
-			String s = m.group();
-			int val = (int) s.charAt(0);
-			if(val != 0x000a && val != 0x0009)
-				cchars.add(Integer.valueOf(val));
-		}
-		for(Integer c : cchars)
-			Log.w(LOG_TAG, String.format("Invalid Hex Control Character in xml: %04x", c.intValue()));
-		*/
 		if(aggressive)
-			return in.replaceAll("\\p{C}", "").replaceAll("&nbsp;", " ");
+			return sControlPatternAggressive.matcher(in).replaceAll("").replace("&nbsp;", " ");
 		else
-			return in.replaceAll("\\p{Co}|\\p{Cs}|\\p{Cn}|", "").replaceAll("\\u008A", "\n").replaceAll("&nbsp;", " ");
+			return stripControlCharacters(in).replace("\u008A", "\n").replace("&nbsp;", " ");
 	}
+
+	/*
+	 * this is based on https://github.com/GreyCat/java-string-benchmark/blob/master/src/ru/greycat/algorithms/strip/RatchetFreak2EdStaub1GreyCat1.java
+	 * and is about a zillion lightyears faster than replaceAll... (defeats noticable lag between load finish and parse finish)
+	 */
+	public String stripControlCharacters(String s) {
+		int length = s.length();
+		char[] oldChars = new char[length +1];
+		s.getChars(0, length, oldChars, 0);
+		oldChars[length] = '\0'; // avoiding explicit bound check in while
+
+		int newLen = 0;
+		// find first non-printable,
+		// if there are none it ends on the null char I appended
+		while (true) {
+			++newLen;
+			char ch = oldChars[newLen];
+			if(! (ch > ' ' || Character.isWhitespace(ch)) )
+				break;
+		}
+
+		for (int j = newLen; j < length; j++) {
+			char ch = oldChars[j];
+			if (ch > ' ' || Character.isWhitespace(ch)) {
+				oldChars[newLen] = ch; // the while avoids repeated overwriting here when newLen==j
+				newLen++;
+			}
+		}
+		return new String(oldChars, 0, newLen);
+	}
+
 
 	/*
 	 * (non-Javadoc)
@@ -116,12 +135,12 @@ public class GenericSaxParser implements DataParser {
 			return true;
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			// TODO Auto-generated catch block
-			Log.e(DreamDroid.LOG_TAG, e.toString());
+			Log.e(LOG_TAG, e.toString());
 			if(isRetry) {
 				mError = true;
 				mErrorText = e.toString();
 			} else {
-				Log.w(DreamDroid.LOG_TAG, "Retrying with aggressive character filtering!");
+				Log.w(LOG_TAG, "Retrying with aggressive character filtering!");
 				return parse(input, true);
 			}
 		}
