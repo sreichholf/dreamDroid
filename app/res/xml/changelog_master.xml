@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.2-393" versioncode="393">
+    <release version="1.2-394" versioncode="394">
         <change>NEW: Initial support for Android TV</change>
         <change>NEW: Internal updates and fixes</change>
         <change>NEW: Some cool improvements to the navigation by F. Edelmann</change>
+        <change>NEW: Lot's of visual changes and improvements</change>
+        <change>FIX: Issues with certificates</change>
+        <change>IMP: Performance improvements</change>
     </release>
     <release version="1.1-386" versioncode="386">
         <change>FIX: Crashing VideoPlayer</change>
