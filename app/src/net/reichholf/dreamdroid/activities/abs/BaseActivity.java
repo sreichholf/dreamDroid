@@ -129,8 +129,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			HttpsURLConnection.setDefaultHostnameVerifier(
 					mTrustManager.wrapHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier()));
 			HttpsURLConnection.setFollowRedirects(false);
-			Picasso.Builder builder = new Picasso.Builder(this);
-			builder.downloader(new UrlConnectionDownloader(this){
+			Picasso.Builder builder = new Picasso.Builder(getApplicationContext());
+			builder.downloader(new UrlConnectionDownloader(getApplicationContext()){
 				@Override
 				protected HttpURLConnection openConnection(Uri path) throws IOException {
 					HttpURLConnection connection = super.openConnection(path);
@@ -142,7 +142,9 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 					return connection;
 				}
 			});
-			Picasso.setSingletonInstance(builder.build());
+			try {
+				Picasso.setSingletonInstance(builder.build());
+			} catch (IllegalStateException ignored) {}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
