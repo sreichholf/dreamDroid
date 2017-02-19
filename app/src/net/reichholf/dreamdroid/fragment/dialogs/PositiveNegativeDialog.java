@@ -66,6 +66,7 @@ public class PositiveNegativeDialog extends ActionDialog {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 		builder.setTitle(mTitle)
+				.setMessage(mMessageId)
 				.setPositiveButton(mPositiveText, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
