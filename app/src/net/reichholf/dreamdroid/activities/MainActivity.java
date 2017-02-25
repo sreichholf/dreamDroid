@@ -204,6 +204,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		// There's several cases where onResume will be called twice without onPause in between which causes some unnecessary double reinits.
 		// To catch that we check if mNavigationHelper is actually null, which it'll only be on first start or after onPause has been called.
 		checkNavigationHelper();
+		DreamDroid.setTheme(this);
+		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 	}
 
 	private void checkNavigationHelper() {
@@ -212,7 +214,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			//TODO preserve/restore mNavigationHelper properly
 			mNavigationHelper = new NavigationHelper(this);
 			onProfileChanged(DreamDroid.getCurrentProfile());
-			PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+
 		}
 	}
 
@@ -690,7 +692,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		Log.w(DreamDroid.LOG_TAG, key);
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			DreamDroid.setTheme(this);
-			recreate();
+			if(!mIsPaused)
+				recreate();
 		}
 	}
 
