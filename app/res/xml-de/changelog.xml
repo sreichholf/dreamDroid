@@ -1,4 +1,8 @@
 <changelog>
+    <release version="1.2-396" versioncode="396">
+        <change>FIX: Diverse Abstürze</change>
+        <change>FIX: Eine Änderung des Themes trat erst nach einem Neustart der App in Effekt</change>
+    </release>
     <release version="1.2-395" versioncode="395">
         <change>FIX: Crash bei "Timer Bearbeiten" aus der EPG-Liste</change>
         <change>FIX: Fehlender Text bei Ja/Nein Dialogen</change>

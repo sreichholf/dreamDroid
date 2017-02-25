@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.2-396" versioncode="396">
+        <change>FIX: Several crashes (hopefully the worst ones)</change>
+        <change>FIX: Theme changes weren't applied until the app was restarted</change>
+    </release>
     <release version="1.2-395" versioncode="395">
         <change>FIX: Crash when choosing to "Edit Timer" out of the EPG list</change>
         <change>FIX: Missing text on yes/no dialogs</change>
