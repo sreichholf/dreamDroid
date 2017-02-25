@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.2-395" versioncode="395">
+        <change>FIX: Crash when choosing to "Edit Timer" out of the EPG list</change>
+        <change>FIX: Missing text on yes/no dialogs</change>
+    </release>
     <release version="1.2-394" versioncode="394">
         <change>NEW: Initial support for Android TV</change>
         <change>NEW: Internal updates and fixes</change>

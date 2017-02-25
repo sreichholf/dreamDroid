@@ -1,4 +1,8 @@
 <changelog>
+    <release version="1.2-395" versioncode="395">
+        <change>FIX: Crash bei "Timer Bearbeiten" aus der EPG-Liste</change>
+        <change>FIX: Fehlender Text bei Ja/Nein Dialogen</change>
+    </release>
     <release version="1.2-394" versioncode="394">
         <change>NEU: Initiale Unterstützung von Android TV</change>
         <change>NEU: Interne Updates und Anpassungen</change>
