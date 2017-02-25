@@ -112,6 +112,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	public void onProfileChecked(final ExtendedHashMap result) {
+		checkNavigationHelper();
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
 		if (isFirstStart)
@@ -168,9 +169,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		mIsDrawerOpen = false;
 		mCurrentProfile = Profile.getDefault();
-
-		DreamDroid.setCurrentProfileChangedListener(this);
 		initViews();
+		DreamDroid.setCurrentProfileChangedListener(this);
 		showChangeLogIfNeeded(true);
 	}
 
@@ -203,6 +203,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		super.onResume();
 		// There's several cases where onResume will be called twice without onPause in between which causes some unnecessary double reinits.
 		// To catch that we check if mNavigationHelper is actually null, which it'll only be on first start or after onPause has been called.
+		checkNavigationHelper();
+	}
+
+	private void checkNavigationHelper() {
 		if(mNavigationHelper == null) {
 			mIsPaused = false;
 			//TODO preserve/restore mNavigationHelper properly
@@ -316,6 +320,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
             profileChooser.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+					checkNavigationHelper();
                     mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
                 }
             });
