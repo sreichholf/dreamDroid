@@ -8,6 +8,7 @@ import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.widget.Toast;
 
@@ -66,8 +67,9 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 		if (mBouquetQueue == null)
 			mBouquetQueue = new ArrayList<>();
 		setHeadersState(HEADERS_ENABLED);
-		setBrandColor(getResources().getColor(R.color.primary_dreamdroid, getActivity().getTheme()));
-		setBadgeDrawable(getResources().getDrawable(R.drawable.dreamdroid_banner, getActivity().getTheme()));
+
+		setBrandColor(ContextCompat.getColor(getContext(), R.color.primary_dreamdroid));
+		setBadgeDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dreamdroid_banner));
 		addSettingsRow();
 	}
 
