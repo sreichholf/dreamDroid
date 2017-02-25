@@ -209,12 +209,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	private void checkNavigationHelper() {
-		if(mNavigationHelper == null) {
+		if (mNavigationHelper == null) {
 			mIsPaused = false;
 			//TODO preserve/restore mNavigationHelper properly
 			mNavigationHelper = new NavigationHelper(this);
 			onProfileChanged(DreamDroid.getCurrentProfile());
-
 		}
 	}
 
@@ -228,7 +227,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public void onStop(){
+	public void onStop() {
 		if (mCheckProfileTask != null) {
 			mCheckProfileTask.cancel(true);
 			mCheckProfileTask = null;
@@ -316,18 +315,18 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			};
 			mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-            NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-            View navHeader = navigationView.getHeaderView(0);
-            View profileChooser = navHeader.findViewById(R.id.drawer_profile);
-            profileChooser.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+			NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+			View navHeader = navigationView.getHeaderView(0);
+			View profileChooser = navHeader.findViewById(R.id.drawer_profile);
+			profileChooser.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
 					checkNavigationHelper();
-                    mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
-                }
-            });
-            mActiveProfile = (TextView) navHeader.findViewById(R.id.drawer_profile_name);
-            mConnectionState = (TextView) navHeader.findViewById(R.id.drawer_profile_status);
+					mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
+				}
+			});
+			mActiveProfile = (TextView) navHeader.findViewById(R.id.drawer_profile_name);
+			mConnectionState = (TextView) navHeader.findViewById(R.id.drawer_profile_status);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
@@ -445,8 +444,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			return;
 
 		setProfileName();
-		if(p.getCachedDeviceInfo() == null ) {
-			if(p.equals(mCurrentProfile) && mCheckProfileTask != null)
+		if (p.getCachedDeviceInfo() == null) {
+			if (p.equals(mCurrentProfile) && mCheckProfileTask != null)
 				return;
 			mCurrentProfile = p;
 			if (mCheckProfileTask != null) {
@@ -516,7 +515,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void showDetails(Fragment fragment, boolean addToBackStack) {
-		if(fragment.isVisible())
+		if (fragment.isVisible())
 			return;
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		if (mDetailFragment != null
@@ -658,7 +657,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		} else if (action == Statics.ACTION_NONE) {
 			return;
 		} else if (isNavigationDialog(dialogTag)) {
-			if(mNavigationHelper != null)
+			if (mNavigationHelper != null)
 				mNavigationHelper.onDialogAction(action, details, dialogTag);
 		} else if (mDetailFragment != null) {
 			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
@@ -692,7 +691,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		Log.w(DreamDroid.LOG_TAG, key);
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			DreamDroid.setTheme(this);
-			if(!mIsPaused)
+			if (!mIsPaused)
 				recreate();
 		}
 	}
@@ -700,7 +699,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
 		if (isNavigationDialog(dialogTag)) {
-			if(mNavigationHelper != null)
+			if (mNavigationHelper != null)
 				((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogSelection(dialogTag, dialog, selected);
 		} else if (mDetailFragment != null) {
 			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment).onMultiChoiceDialogSelection(dialogTag,
@@ -711,7 +710,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onMultiChoiceDialogFinish(String dialogTag, int result) {
 		if (isNavigationDialog(dialogTag)) {
-			if(mNavigationHelper != null)
+			if (mNavigationHelper != null)
 				((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogFinish(dialogTag, result);
 		} else if (mDetailFragment != null) {
 			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment)

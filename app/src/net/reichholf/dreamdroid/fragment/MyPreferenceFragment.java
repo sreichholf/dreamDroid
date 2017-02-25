@@ -49,7 +49,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 			}
 		});
 		updateThemeSummary();
-        updateHwAccelSummary(prefs);
+		updateHwAccelSummary(prefs);
 	}
 
 	@Override
@@ -103,29 +103,28 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
-		if(DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
+		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			updateThemeSummary();
 			DreamDroid.setTheme((AppCompatActivity) getActivity());
-		}
-		else if (DreamDroid.PREFS_KEY_HWACCEL.equals(key))
-            updateHwAccelSummary(prefs);
+		} else if (DreamDroid.PREFS_KEY_HWACCEL.equals(key))
+			updateHwAccelSummary(prefs);
 	}
 
 	protected void updateThemeSummary() {
-		if(getActivity() == null)
+		if (getActivity() == null)
 			return;
 		int idx = DreamDroid.getThemeType(getActivity());
 		Preference themePref = findPreference(DreamDroid.PREFS_KEY_THEME_TYPE);
 		themePref.setSummary(getResources().getStringArray(R.array.theme_option_entries)[idx]);
 	}
 
-    protected void updateHwAccelSummary(SharedPreferences prefs) {
-        if(getActivity() == null)
-            return;
-        int idx = Integer.parseInt( prefs.getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)) );
-        Preference themePref = findPreference(DreamDroid.PREFS_KEY_HWACCEL);
-        themePref.setSummary(getString(R.string.use_hw_accel_long, getResources().getStringArray(R.array.hw_accel_entries)[idx]));
-    }
+	protected void updateHwAccelSummary(SharedPreferences prefs) {
+		if (getActivity() == null)
+			return;
+		int idx = Integer.parseInt(prefs.getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));
+		Preference themePref = findPreference(DreamDroid.PREFS_KEY_HWACCEL);
+		themePref.setSummary(getString(R.string.use_hw_accel_long, getResources().getStringArray(R.array.hw_accel_entries)[idx]));
+	}
 
 	public void startPiconSync() {
 		((BaseActivity) getActivity()).startPiconSync();
