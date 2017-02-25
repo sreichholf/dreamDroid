@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceManager;
@@ -38,7 +39,6 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 
 		PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        prefs.registerOnSharedPreferenceChangeListener(this);
 
 		Preference syncPref = findPreference("sync_picons");
 		syncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -71,6 +71,18 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+		PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
+	}
+
+	@Override
+	public void onPause() {
+		PreferenceManager.getDefaultSharedPreferences(getActivity()).unregisterOnSharedPreferenceChangeListener(this);
+		super.onPause();
+	}
+
+	@Override
 	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		setFabEnabled(R.id.fab_reload, false);
@@ -91,8 +103,10 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
-		if(DreamDroid.PREFS_KEY_THEME_TYPE.equals(key))
+		if(DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			updateThemeSummary();
+			DreamDroid.setTheme((AppCompatActivity) getActivity());
+		}
 		else if (DreamDroid.PREFS_KEY_HWACCEL.equals(key))
             updateHwAccelSummary(prefs);
 	}
