@@ -55,9 +55,9 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 			mFragment = getSupportFragmentManager().findFragmentById(R.id.content);
 			initFragment = false;
 		}
-
 		initViews(initFragment);
-		handleExtras(getIntent().getExtras());
+		if(initFragment)
+			handleExtras(getIntent().getExtras());
 	}
 
 	protected void handleExtras(Bundle extras) {
