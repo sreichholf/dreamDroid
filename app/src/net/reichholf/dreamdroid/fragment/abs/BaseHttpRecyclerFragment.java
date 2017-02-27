@@ -22,7 +22,6 @@ import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -62,13 +61,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 			mHttpHelper.bindToFragment(this);
 		setHasOptionsMenu(true);
 		mExtras = getArguments();
-		mMapList = null;
-
-		if (savedInstanceState != null) {
-			mMapList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_LIST);
-		} else {
-			mMapList = new ArrayList<>();
-		}
+		mMapList = new ArrayList<>();
 
 		if (mExtras != null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
@@ -105,7 +98,6 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putSerializable(BUNDLE_KEY_LIST, mMapList);
 	}
 
 	@Override
