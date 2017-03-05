@@ -39,7 +39,13 @@ public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
 		}
 
 		if (dyConsumed > 0 && child.getVisibility() == View.VISIBLE) {
-			child.hide();
+			child.hide(new FloatingActionButton.OnVisibilityChangedListener() {
+				@Override
+				public void onHidden(FloatingActionButton fab) {
+					super.onShown(fab);
+					fab.setVisibility(View.INVISIBLE);
+				}
+			});
 		} else if (dyConsumed < 0 && child.getVisibility() != View.VISIBLE) {
 			child.show();
 		}
