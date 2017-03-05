@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.2-397" versioncode="397">
+        <change>FIX: Crashes when leaving big lists (e.g. when using Edit Timer from full service EPG)</change>
+    </release>
     <release version="1.2-396" versioncode="396">
         <change>FIX: Several crashes (hopefully the worst ones)</change>
         <change>FIX: Theme changes weren't applied until the app was restarted</change>

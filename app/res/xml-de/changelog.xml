@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.2-397" versioncode="397">
+        <change>FIX: Abstürze beim Verlassen langer Listen (z.B. Timer Bearbeiten aus dem Sender-EPG)</change>
+    </release>
     <release version="1.2-396" versioncode="396">
         <change>FIX: Diverse Abstürze</change>
         <change>FIX: Eine Änderung des Themes trat erst nach einem Neustart der App in Effekt</change>
