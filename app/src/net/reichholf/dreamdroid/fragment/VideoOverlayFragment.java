@@ -147,8 +147,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 		mVolume = -1f;
 
-		getActionBar().setShowHideAnimationEnabled(true);
-
 		autohide();
 		reload();
 	}
@@ -610,7 +608,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (getActionBar().isShowing())
 			return;
 		mIsHiding = false;
-		getActionBar().show();
+		ActionBar actionBar = getActionBar();
+		if (actionBar != null) {
+			getActionBar().setShowHideAnimationEnabled(true);
+			actionBar.show();
+		}
 		getToolbar().animate().translationY(0);
 	}
 
@@ -627,8 +629,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 						if (mIsHiding) {
 							mIsHiding = false;
 							ActionBar actionBar = getActionBar();
-							if (actionBar != null)
+							if (actionBar != null) {
+								getActionBar().setShowHideAnimationEnabled(true);
 								actionBar.hide();
+							}
 						}
 						super.onAnimationEnd(animation);
 					}
