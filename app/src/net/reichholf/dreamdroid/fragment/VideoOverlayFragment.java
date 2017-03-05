@@ -244,12 +244,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.video, menu);
+		super.onCreateOptionsMenu(menu, inflater);
 		VideoPlayer player = VideoPlayerFactory.getInstance();
+		if(player == null)
+			return;
 		if (player.getAudioTracksCount() <= 0)
 			menu.removeItem(R.id.menu_audio_track);
 		if (player.getSubtitleTracksCount() <= 0)
 			menu.removeItem(R.id.menu_subtitle);
-		super.onCreateOptionsMenu(menu, inflater);
+
 	}
 
 	@Override

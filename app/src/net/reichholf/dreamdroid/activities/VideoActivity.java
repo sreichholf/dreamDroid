@@ -118,6 +118,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	public void handleIntent(Intent intent) {
+		if(mPlayer == null)
+			return;
 		setIntent(intent);
 		if (intent.getAction() == Intent.ACTION_VIEW) {
 			int accel = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));
