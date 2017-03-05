@@ -237,6 +237,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		}
 
 		List<Fragment> fragments = getSupportFragmentManager().getFragments();
+		if(fragments == null)
+			return;
 		for (Fragment fragment : fragments) {
 			if (fragment == null)
 				continue;
