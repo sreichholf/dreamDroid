@@ -32,6 +32,7 @@
         android:allowClearUserData="true"
         android:backupAgent="DreamDroidBackupAgent"
         android:hardwareAccelerated="true"
+        android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"
         android:banner="@drawable/dreamdroid_banner"
         android:killAfterRestore="true"
