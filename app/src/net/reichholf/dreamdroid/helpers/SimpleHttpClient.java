@@ -176,6 +176,10 @@ public class SimpleHttpClient {
 		}
 	}
 
+	private boolean isSessionLess(String uri) {
+		return URIStore.SCREENSHOT.equals(uri);
+	}
+
 	/**
 	 * @param uri
 	 * @param parameters
@@ -195,7 +199,7 @@ public class SimpleHttpClient {
 
 		HttpURLConnection conn = null;
 		try {
-			if(mProfile.getSessionId() != null)
+			if(mProfile.getSessionId() != null && !isSessionLess(uri))
 				parameters.add(new NameValuePair("sessionid", mProfile.getSessionId()));
 			URL url = new URL(buildUrl(uri, parameters));
 			conn = (HttpURLConnection) url.openConnection();

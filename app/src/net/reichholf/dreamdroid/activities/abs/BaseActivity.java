@@ -58,8 +58,9 @@ import de.duenndns.ssl.MemorizingTrustManager;
  * Created by Stephan on 06.11.13.
  */
 public class BaseActivity extends AppCompatActivity implements ActionDialog.DialogActionListener, SharedPreferences.OnSharedPreferenceChangeListener {
-	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
-	public static final int REQUEST_PERMISSION_ACCESS_COARSE_LOCATION = 1;
+	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON = 0;
+	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT = 1;
+	public static final int REQUEST_PERMISSION_ACCESS_COARSE_LOCATION = 2;
 	private static String TAG = BaseActivity.class.getSimpleName();
 
 	private MemorizingTrustManager mTrustManager;
@@ -338,7 +339,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
 		switch (requestCode) {
-			case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE:
+			case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON:
 				if (granted)
 					callPiconSyncIntent();
 				break;
@@ -347,7 +348,10 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 					recreate();
 				break;
 			default:
-				break;
+				Fragment details = getSupportFragmentManager().findFragmentById(R.id.detail_view);
+				if (details != null) {
+					details.onRequestPermissionsResult(requestCode, permissions, grantResults);
+				}
 		}
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 	}
@@ -356,7 +360,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
 			callPiconSyncIntent();
 		else
-			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE);
+			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON);
 	}
 
 	protected void callPiconSyncIntent() {

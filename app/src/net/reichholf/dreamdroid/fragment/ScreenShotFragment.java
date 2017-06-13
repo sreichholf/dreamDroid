@@ -7,7 +7,9 @@
 package net.reichholf.dreamdroid.fragment;
 
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
@@ -15,7 +17,10 @@ import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -33,6 +38,7 @@ import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -123,7 +129,6 @@ public class ScreenShotFragment extends BaseFragment implements
 		Bundle args = new Bundle();
 		args.putBoolean(BUNDLE_KEY_RETAIN, retainInstance);
 		setArguments(args);
-
 	}
 
 	@Override
@@ -160,8 +165,8 @@ public class ScreenShotFragment extends BaseFragment implements
 		}
 
 		mType = extras.getInt(KEY_TYPE, TYPE_ALL);
-		mFormat = extras.getInt(KEY_FORMAT, FORMAT_PNG);
-		mSize = extras.getInt(KEY_SIZE, 720);
+		mFormat = extras.getInt(KEY_FORMAT, mType == TYPE_OSD ? FORMAT_PNG : FORMAT_JPG);
+		mSize = extras.getInt(KEY_SIZE, -1);
 		mFilename = extras.getString(KEY_FILENAME);
 
 		if (savedInstanceState != null) {
@@ -187,7 +192,10 @@ public class ScreenShotFragment extends BaseFragment implements
 		mScannerConn.connect();
 
 		if (mRawImage.length == 0) {
-			reload();
+			if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+				reload();
+			else
+				ActivityCompat.requestPermissions(getAppCompatActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, BaseActivity.REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT);
 		} else {
 			onScreenshotAvailable(mRawImage);
 		}
@@ -204,6 +212,17 @@ public class ScreenShotFragment extends BaseFragment implements
 	public void onDestroy() {
 		super.onDestroy();
 		mAttacher.cleanup();
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+		if(requestCode == BaseActivity.REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT) {
+			if(granted)
+				reload();
+			return;
+		}
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 	}
 
 	@Override
@@ -225,8 +244,7 @@ public class ScreenShotFragment extends BaseFragment implements
 				return;
 			}
 			file.setReadable(true, false);
-			Uri uri = Uri.fromFile(file);
-
+			Uri uri = FileProvider.getUriForFile(getContext(), getContext().getApplicationContext().getPackageName() + ".provider", file);
 			Intent intent = new Intent(Intent.ACTION_SEND);
 			intent.putExtra(Intent.EXTRA_STREAM, uri);
 			intent.setType(String.format("image/%s", getFileExtension()));
@@ -281,11 +299,11 @@ public class ScreenShotFragment extends BaseFragment implements
 
 		switch (mType) {
 			case (TYPE_OSD):
-				params.add(new NameValuePair("o", ""));
-				params.add(new NameValuePair("n", ""));
+				params.add(new NameValuePair("o", " "));
+				params.add(new NameValuePair("n", " "));
 				break;
 			case (TYPE_VIDEO):
-				params.add(new NameValuePair("v", ""));
+				params.add(new NameValuePair("v", " "));
 				break;
 			case (TYPE_ALL):
 				break;
@@ -300,12 +318,12 @@ public class ScreenShotFragment extends BaseFragment implements
 				break;
 		}
 
-		params.add(new NameValuePair("r", String.valueOf(mSize)));
+		if(mSize > 0)
+			params.add(new NameValuePair("r", String.valueOf(mSize)));
 
-		if (mFilename == null) {
-			long ts = (new GregorianCalendar().getTimeInMillis()) / 1000;
-			mFilename = "/tmp/dreamDroid-" + ts;
-		}
+		long ts = (new GregorianCalendar().getTimeInMillis()) / 1000;
+		mFilename = "/tmp/dreamDroid-" + ts;
+
 		params.add(new NameValuePair("filename", mFilename));
 
 		Bundle args = new Bundle();
