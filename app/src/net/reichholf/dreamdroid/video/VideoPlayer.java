@@ -3,8 +3,6 @@ package net.reichholf.dreamdroid.video;
 import android.net.Uri;
 import android.view.SurfaceView;
 
-import org.videolan.libvlc.IVLCVout;
-
 /**
  * Created by Stephan on 26.12.2016.
  */
@@ -12,7 +10,7 @@ import org.videolan.libvlc.IVLCVout;
 public interface VideoPlayer {
 	void deinit();
 
-	void attach(SurfaceView surfaceView, SurfaceView subtitleSurfaceView, IVLCVout.OnNewVideoLayoutListener onNewVideoLayoutListener);
+	void attach(SurfaceView surfaceView, SurfaceView subtitleSurfaceView);
 
 	void detach();
 

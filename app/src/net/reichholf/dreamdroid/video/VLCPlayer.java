@@ -41,13 +41,13 @@ public class VLCPlayer implements VideoPlayer {
 		return sMediaPlayer;
 	}
 
-	public void attach(SurfaceView surfaceView, SurfaceView subtitleSurfaceView, IVLCVout.OnNewVideoLayoutListener listener) {
+	public void attach(SurfaceView surfaceView, SurfaceView subtitleSurfaceView) {
 		if (sLibVLC == null || sMediaPlayer == null)
 			init(surfaceView.getContext());
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.setVideoView(surfaceView);
 		vlcVout.setSubtitlesView(subtitleSurfaceView);
-		vlcVout.attachViews(listener);
+		vlcVout.attachViews();
 	}
 
 	public void detach() {

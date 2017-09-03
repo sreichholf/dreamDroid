@@ -33,7 +33,7 @@ import org.videolan.libvlc.IVLCVout;
  */
 
 
-public class VideoActivity extends AppCompatActivity implements IVLCVout.Callback, IVLCVout.OnNewVideoLayoutListener, ActionDialog.DialogActionListener {
+public class VideoActivity extends AppCompatActivity implements IVLCVout.Callback, ActionDialog.DialogActionListener {
 	public static final String TAG = VideoActivity.class.getSimpleName();
 
 	SurfaceView mVideoSurface;
@@ -142,7 +142,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 
 		if (mPlayer == null)
 			mPlayer = VideoPlayerFactory.getInstance();
-		mPlayer.attach(mVideoSurface, mSubtitlesSurface, this);
+		mPlayer.attach(mVideoSurface, mSubtitlesSurface);
 
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(mOverlayFragment);
@@ -222,7 +222,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 	@Override
-	public void onNewVideoLayout(IVLCVout vlcVout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen) {
+	public void onNewLayout(IVLCVout vlcVout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen) {
 		mVideoWidth = width;
 		mVideoHeight = height;
 		mVideoVisibleWidth = visibleWidth;
@@ -244,10 +244,10 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.Callbac
 	}
 
 
-//	@Override
-//	public void onHardwareAccelerationError(IVLCVout vlcVout) {
-//		//TODO onHardwareAccelerationError
-//	}
+	@Override
+	public void onHardwareAccelerationError(IVLCVout vlcVout) {
+		//TODO onHardwareAccelerationError
+	}
 
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
