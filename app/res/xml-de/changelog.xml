@@ -1,5 +1,8 @@
 <changelog>
-    <release version="1.2-399" versioncode="399">
+    <release version="1.2-400" versioncode="400">
+        <change>FIX: Screenshots</change>
+    </release>
+    <release version="1.2-398" versioncode="398">
         <change>FIX: Diverse Abstürze</change>
         <change>FIX: Reload Button</change>
     </release>
