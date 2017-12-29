@@ -223,7 +223,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 	}
 
 	@Override
-	public void onTimeSet(RadialPickerLayout radialPickerLayout, int hourOfDay, int minute, int second) {
+	public void onTimeSet(TimePickerDialog timePickerDialog, int hourOfDay, int minute, int second) {
 		Calendar cal = getCalendar();
 		if (cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
 			return;

@@ -33,8 +33,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.github.chrisbanes.photoview.PhotoView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -52,8 +53,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-
-import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
  * Allows fetching and showing the actual TV-Screen content
@@ -77,14 +76,13 @@ public class ScreenShotFragment extends BaseFragment implements
 
 	private boolean mSetTitle;
 	private boolean mActionsEnabled;
-	private ImageView mImageView;
+	private PhotoView mImageView;
 	private int mType;
 	private int mFormat;
 	private int mSize;
 	private String mFilename;
 	private byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
-	private PhotoViewAttacher mAttacher;
 	private HttpFragmentHelper mHttpHelper;
 
 	private ShareActionProvider mShareActionProvider;
@@ -155,7 +153,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.screenshot, null);
 
-		mImageView = (ImageView) view.findViewById(R.id.screenshoot);
+		mImageView = view.findViewById(R.id.screenshoot);
 		mImageView.setBackgroundColor(Color.BLACK);
 
 		Bundle extras = getArguments();
@@ -174,7 +172,6 @@ public class ScreenShotFragment extends BaseFragment implements
 		} else if (mRawImage == null) {
 			mRawImage = new byte[0];
 		}
-		mAttacher = new PhotoViewAttacher(mImageView);
 		return view;
 	}
 
@@ -211,7 +208,6 @@ public class ScreenShotFragment extends BaseFragment implements
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		mAttacher.cleanup();
 	}
 
 	@Override
@@ -289,7 +285,7 @@ public class ScreenShotFragment extends BaseFragment implements
 			return;
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
-		mAttacher.update();
+		mImageView.getAttacher().update();
 		setShareIntent();
 	}
 

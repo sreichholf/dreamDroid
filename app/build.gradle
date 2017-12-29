@@ -5,31 +5,30 @@ buildscript {
             dirs 'libs'
         }
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
-    }
 }
 apply plugin: 'com.android.application'
 
 repositories {
+    google()
     jcenter()
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
     compile 'com.afollestad.material-dialogs:core:0.9.0.2'
-    compile 'com.android.support:support-v4:25.+'
-    compile 'com.android.support:preference-v14:25.+'
-    compile 'com.android.support:preference-v7:25.+'
-    compile 'com.android.support:design:25.+'
-    compile 'com.android.support:recyclerview-v7:25.+'
-    compile 'com.android.support:cardview-v7:25.+'
-    compile 'com.android.support:leanback-v17:25.+'
-    compile 'com.android.support:preference-leanback-v17:25.+'
-    compile 'com.android.support:support-annotations:25.+'
+    compile 'com.android.support:support-v4:27.+'
+    compile 'com.android.support:preference-v14:27.+'
+    compile 'com.android.support:preference-v7:27.+'
+    compile 'com.android.support:design:27.+'
+    compile 'com.android.support:recyclerview-v7:27.+'
+    compile 'com.android.support:cardview-v7:27.+'
+    compile 'com.android.support:leanback-v17:27.+'
+    compile 'com.android.support:preference-leanback-v17:27.+'
+    compile 'com.android.support:support-annotations:27.+'
     compile 'biz.kasual:materialnumberpicker:1.2.1'
-    compile 'com.github.chrisbanes.photoview:library:1.2.+'
+    compile 'com.github.chrisbanes:PhotoView:2.0.+'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.wdullaer:materialdatetimepicker:2.5.0'
+    compile 'com.wdullaer:materialdatetimepicker:3.5.0'
     compile 'org.piwik.sdk:piwik-sdk:1.0.2'
     compile files('libs/ftp4j-1.7.2.jar')
     compile files('libs/jmdns-3.4.1.jar')
@@ -45,12 +44,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 400
+        versionCode 401
         versionName="1.2-".concat(new Integer(versionCode).toString());
-
-        jackOptions {
-            enabled true
-        }
 
         sourceSets {
             main {
@@ -60,16 +55,17 @@ android {
             }
         }
     }
-
+    flavorDimensions "distribution"
     productFlavors {
         google {
+            dimension "distribution"
             applicationId "net.reichholf.dreamdroid"
         }
         amazon {
+            dimension "distribution"
             applicationId "net.reichholf.dreamdroid.amazon"
         }
     }
-
     splits {
         abi {
             enable true
@@ -92,9 +88,6 @@ android {
     buildTypes {
         debug {
             versionNameSuffix "-DEBUG"
-            jackOptions {
-                enabled false
-            }
         }
         release {
             minifyEnabled false
@@ -106,7 +99,7 @@ android {
         abortOnError false
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }

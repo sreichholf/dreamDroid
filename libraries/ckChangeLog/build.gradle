@@ -3,15 +3,13 @@ buildscript {
         jcenter()
         maven { url 'https://dl.bintray.com/drummer-aidan/maven' }
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
-    }
 }
 
 apply plugin: 'com.android.library'
 
 repositories {
     jcenter()
+    google()
 }
 
 android {
@@ -31,7 +29,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:25.+'
+    compile 'com.android.support:appcompat-v7:27.+'
 }
 
 

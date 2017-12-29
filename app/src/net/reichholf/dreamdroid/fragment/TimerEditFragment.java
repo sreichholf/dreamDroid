@@ -321,12 +321,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 			case Statics.ITEM_PICK_BEGIN_TIME:
 				calendar = getCalendar(mBegin);
-				TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
-					@Override
-					public void onTimeSet(RadialPickerLayout view, int hour, int minute, int second) {
-						TimerEditFragment.this.onTimeSet(true, hour, minute);
-					}
-				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
+				TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance((timePickerDialog, hour, minute, second) -> TimerEditFragment.this.onTimeSet(true, hour, minute), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialogBegin, "dialog_pick_begin_time");
 				consumed = true;
 				break;
@@ -345,12 +340,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 			case Statics.ITEM_PICK_END_TIME:
 				calendar = getCalendar(mEnd);
-				TimePickerDialog timePickerDialogEnd = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
-					@Override
-					public void onTimeSet(RadialPickerLayout view, int hour, int minute, int second) {
-						TimerEditFragment.this.onTimeSet(false, hour, minute);
-					}
-				}, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
+				TimePickerDialog timePickerDialogEnd = TimePickerDialog.newInstance((timePickerDialog, hour, minute, second) -> TimerEditFragment.this.onTimeSet(false, hour, minute), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialogEnd, "dialog_pick_end_time");
 				consumed = true;
 				break;
