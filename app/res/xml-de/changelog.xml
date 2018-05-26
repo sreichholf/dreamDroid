@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.2-403" versioncode="403">
+        <change>FIX: Update auf neusten VLC, hilft hoffentlich Video/Audio Probleme zu beseitigen</change>
+    </release>
     <release version="1.2-400" versioncode="400">
         <change>FIX: Screenshots</change>
     </release>

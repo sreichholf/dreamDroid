@@ -1,9 +1,14 @@
 buildscript {
     repositories {
+        mavenCentral()
         jcenter()
         flatDir{
             dirs 'libs'
         }
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.1.2'
     }
 }
 apply plugin: 'com.android.application'
@@ -15,28 +20,39 @@ repositories {
 }
 
 dependencies {
-    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
-    compile 'com.android.support:support-v4:27.+'
-    compile 'com.android.support:preference-v14:27.+'
-    compile 'com.android.support:preference-v7:27.+'
-    compile 'com.android.support:design:27.+'
-    compile 'com.android.support:recyclerview-v7:27.+'
-    compile 'com.android.support:cardview-v7:27.+'
-    compile 'com.android.support:leanback-v17:27.+'
-    compile 'com.android.support:preference-leanback-v17:27.+'
-    compile 'com.android.support:support-annotations:27.+'
-    compile 'biz.kasual:materialnumberpicker:1.2.1'
-    compile 'com.github.chrisbanes:PhotoView:2.0.+'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.wdullaer:materialdatetimepicker:3.5.0'
-    compile 'org.piwik.sdk:piwik-sdk:1.0.2'
-    compile files('libs/ftp4j-1.7.2.jar')
-    compile files('libs/jmdns-3.4.1.jar')
-    compile files('libs/signpost-core-1.2.1.1.jar')
-    compile project(':libraries:ckChangeLog')
-    compile project(':libraries:gaugeview-library')
-    compile project(':libraries:MemorizingTrustManager')
-    compile project(':libraries:vlc-android-sdk')
+    implementation ('com.afollestad.material-dialogs:core:0.9.6.0') {
+        exclude group: 'com.android.support'
+        exclude module: 'support-v4'
+        exclude module: 'preference-v7'
+        exclude module: 'preference-v14'
+    }
+    implementation 'com.android.support:support-v4:27.+'
+    implementation 'com.android.support:preference-v14:27.+'
+    implementation 'com.android.support:preference-v7:27.+'
+    implementation 'com.android.support:design:27.+'
+    implementation 'com.android.support:recyclerview-v7:27.+'
+    implementation 'com.android.support:cardview-v7:27.+'
+    implementation 'com.android.support:leanback-v17:27.+'
+    implementation 'com.android.support:preference-leanback-v17:27.+'
+    implementation 'com.android.support:support-annotations:27.+'
+    implementation "com.butterproject:vlc-android-sdk:3.0.+"
+    implementation 'biz.kasual:materialnumberpicker:1.2.1'
+    implementation 'com.github.chrisbanes:PhotoView:2.0.+'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation ('com.wdullaer:materialdatetimepicker:3.6.0'){
+        exclude group: 'com.android.support'
+        exclude module: 'support-v4'
+        exclude module: 'appcompat-v7'
+        exclude module: 'support-v13'
+    }
+
+    implementation 'org.piwik.sdk:piwik-sdk:1.0.2'
+    implementation files('libs/ftp4j-1.7.2.jar')
+    implementation files('libs/jmdns-3.4.1.jar')
+    implementation files('libs/signpost-core-1.2.1.1.jar')
+    implementation project(':libraries:ckChangeLog')
+    implementation project(':libraries:gaugeview-library')
+    implementation project(':libraries:MemorizingTrustManager')
 }
 
 android {
@@ -44,7 +60,7 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 401
+        versionCode 403
         versionName="1.2-".concat(new Integer(versionCode).toString());
 
         sourceSets {
@@ -70,7 +86,7 @@ android {
         abi {
             enable true
             reset()
-            include 'x86', 'x86_64', 'mips', 'armeabi', 'armeabi-v7a', 'arm64-v8a' //select ABIs to build APKs for
+            include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a' //select ABIs to build APKs for
             universalApk true //generate an additional APK that contains all the ABIs
         }
     }

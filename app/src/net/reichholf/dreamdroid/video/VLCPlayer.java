@@ -29,6 +29,8 @@ public class VLCPlayer implements VideoPlayer {
 		options.add("--http-reconnect");
 		sLibVLC = new LibVLC(context, options);
 		sMediaPlayer = new MediaPlayer(sLibVLC);
+		sMediaPlayer.setAspectRatio(null);
+		sMediaPlayer.setScale(0);
 	}
 
 	public void deinit() {
@@ -41,13 +43,14 @@ public class VLCPlayer implements VideoPlayer {
 		return sMediaPlayer;
 	}
 
-	public void attach(SurfaceView surfaceView, SurfaceView subtitleSurfaceView) {
+	@Override
+	public void attach(IVLCVout.OnNewVideoLayoutListener newVideoLayoutListener,SurfaceView surfaceView, SurfaceView subtitleSurfaceView) {
 		if (sLibVLC == null || sMediaPlayer == null)
 			init(surfaceView.getContext());
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.setVideoView(surfaceView);
 		vlcVout.setSubtitlesView(subtitleSurfaceView);
-		vlcVout.attachViews();
+		vlcVout.attachViews(newVideoLayoutListener);
 	}
 
 	public void detach() {

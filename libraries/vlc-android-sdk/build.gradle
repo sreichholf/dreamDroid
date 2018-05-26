@@ -1,2 +1,0 @@
-configurations.maybeCreate("default")
-artifacts.add("default", file('vlc-android-sdk-2.0.6.aar'))

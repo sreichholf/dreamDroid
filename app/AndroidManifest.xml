@@ -5,8 +5,8 @@
           android:installLocation="auto">
 
     <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="24"
+        android:minSdkVersion="16"
+        android:targetSdkVersion="27"
         tools:overrideLibrary="android.support.v17.leanback, android.support.v17.preference"/>
 
     <uses-feature android:name="android.software.leanback"
