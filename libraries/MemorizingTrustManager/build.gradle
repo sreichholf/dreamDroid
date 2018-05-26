@@ -5,7 +5,7 @@ android {
 	buildToolsVersion project.BUILD_TOOLS_VERSION
 	defaultConfig {
 		minSdkVersion 7
-		targetSdkVersion 25
+		targetSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
 	}
 
 	sourceSets {
