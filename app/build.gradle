@@ -60,7 +60,7 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 403
+        versionCode 404
         versionName="1.2-".concat(new Integer(versionCode).toString());
 
         sourceSets {
