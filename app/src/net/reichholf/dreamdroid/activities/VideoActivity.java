@@ -24,8 +24,8 @@ import net.reichholf.dreamdroid.video.VLCPlayer;
 import net.reichholf.dreamdroid.video.VideoPlayer;
 import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 
-import org.piwik.sdk.PiwikApplication;
-import org.piwik.sdk.TrackHelper;
+import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
 import org.videolan.libvlc.IVLCVout;
 
 /**

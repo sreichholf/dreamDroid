@@ -22,7 +22,10 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
 
-import org.piwik.sdk.PiwikApplication;
+import org.piwik.sdk.TrackerConfig;
+import org.piwik.sdk.extra.DownloadTracker;
+import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -108,17 +111,10 @@ public class DreamDroid extends PiwikApplication {
 		}
 	}
 
-	// PIWIK
 	@Override
-	public String getTrackerUrl() {
-		return "https://reichholf.net/piwik/piwik.php";
+	public TrackerConfig onCreateTrackerConfig() {
+		return TrackerConfig.createDefault("https://reichholf.net/piwik/", 2);
 	}
-
-	@Override
-	public Integer getSiteId() {
-		return 2;
-	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -143,10 +139,15 @@ public class DreamDroid extends PiwikApplication {
 		} catch (Exception e) {
 			DATE_LOCALE_WO = false;
 		}
-
+		initPiwik();
 		sLocations = new ArrayList<>();
 		sTags = new ArrayList<>();
 		loadCurrentProfile(this);
+	}
+
+	private void initPiwik() {
+		if (isTrackingEnabled(this))
+			TrackHelper.track().download().identifier(new DownloadTracker.Extra.ApkChecksum(this)).with(getTracker());
 	}
 
 	public static void disableNowNext() {

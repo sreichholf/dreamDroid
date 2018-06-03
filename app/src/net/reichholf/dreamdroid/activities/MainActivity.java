@@ -57,8 +57,8 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 
-import org.piwik.sdk.PiwikApplication;
-import org.piwik.sdk.TrackHelper;
+import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
 
 import java.util.Arrays;
 import java.util.List;

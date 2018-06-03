@@ -37,10 +37,6 @@ import net.reichholf.dreamdroid.util.Inventory;
 import net.reichholf.dreamdroid.util.Purchase;
 import net.reichholf.dreamdroid.util.SkuDetails;
 
-import org.piwik.sdk.DownloadTracker;
-import org.piwik.sdk.PiwikApplication;
-import org.piwik.sdk.TrackHelper;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -196,13 +192,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			showPrivacyStatement();
 			return;
 		}
-
-		if (!DreamDroid.isTrackingEnabled(this))
-			return;
-		// do not send http requests
-		PiwikApplication papp = (PiwikApplication) getApplication();
-		papp.getPiwik().setDryRun(false);
-		TrackHelper.track().download().identifier(DownloadTracker.Extra.APK_CHECKSUM).with(papp.getTracker());
 	}
 
 	private void initPermissions(boolean rationaleShown) {
