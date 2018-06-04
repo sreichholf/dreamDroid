@@ -7,11 +7,14 @@
 package net.reichholf.dreamdroid;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -140,9 +143,30 @@ public class DreamDroid extends PiwikApplication {
 			DATE_LOCALE_WO = false;
 		}
 		initPiwik();
+		initChannels();
 		sLocations = new ArrayList<>();
 		sTags = new ArrayList<>();
+
 		loadCurrentProfile(this);
+	}
+
+	private void initChannels() {
+		if (Build.VERSION.SDK_INT < 26) {
+			return;
+		}
+		NotificationManager notificationManager =
+				(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		NotificationChannel channel = new NotificationChannel("dreamdroid_picon_sync",
+				getString(R.string.picons),
+				NotificationManager.IMPORTANCE_LOW);
+		channel.setDescription(getString(R.string.sync_picons));
+		notificationManager.createNotificationChannel(channel);
+
+		channel = new NotificationChannel("dreamdroid_epg_sync",
+				getString(R.string.epg),
+				NotificationManager.IMPORTANCE_LOW);
+		channel.setDescription(getString(R.string.epg_sync));
+		notificationManager.createNotificationChannel(channel);
 	}
 
 	private void initPiwik() {

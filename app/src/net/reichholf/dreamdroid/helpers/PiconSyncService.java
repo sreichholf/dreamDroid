@@ -146,7 +146,7 @@ public class PiconSyncService extends IntentService {
 	public void initNotifications() {
 		Context context = getApplicationContext();
 		mNotifyManager = NotificationManagerCompat.from(context);
-		mNotificationBuilder = new NotificationCompat.Builder(context);
+		mNotificationBuilder = new NotificationCompat.Builder(context, "dreamdroid_picon_sync");
 
 		Bitmap bm = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
 		mNotificationBuilder.setContentTitle(context.getString(R.string.sync_picons))

@@ -34,7 +34,7 @@ public class EpgDatabase {
     public void syncBouquet(Context context, String reference){
         mNotifyManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mBuilder = new NotificationCompat.Builder(context);
+        mBuilder = new NotificationCompat.Builder(context, "dreamdroid_picon_sync");
 
         Bitmap bm = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
         mBuilder.setContentTitle(context.getString(R.string.epg_sync))
