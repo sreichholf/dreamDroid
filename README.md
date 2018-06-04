@@ -3,7 +3,7 @@
 >© Stephan Reichholf (stephan at reichholf dot net)
 
 # Functionality
-Remotely control your enigma2 based Dreambox with any Android Device (running android >= 2.1)!
+Remotely control your enigma2 based Dreambox with any Android Device (running android >= 4.1)!
 
 dreamDroid has a fragment-based layout which is optimized for all common device sizes.
 
@@ -11,6 +11,8 @@ dreamDroid has a fragment-based layout which is optimized for all common device 
 dreamDroid is built for use with genuine Dreamboxes and the included genuine WebInterface.
 Officially supported are the following devices:
 
+* Dreambox DM 900 ultraHD
+* Dreambox DM 920 ultraHD
 * Dreambox DM 7080 HD
 * Dreambox DM 820 HD
 * Dreambox DM 520 HD
@@ -25,7 +27,7 @@ Officially supported are the following devices:
 # Requirements
 
 * The target dreamboxes should be running a WebInterface with Version 1.6.8 or later.
-* dreamDroid requires at least Android 4.0
+* dreamDroid requires at least Android 4.1
 
 # Developing / building dreamDroid with AndroidStudio
 
