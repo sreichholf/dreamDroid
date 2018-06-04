@@ -45,11 +45,9 @@ dependencies {
         exclude module: 'appcompat-v7'
         exclude module: 'support-v13'
     }
-
+    implementation 'commons-net:commons-net:3.6'
+    implementation 'org.openhab.jmdns:jmdns:3.4.2'
     implementation 'org.piwik.sdk:piwik-sdk:3.0.2'
-    implementation files('libs/ftp4j-1.7.2.jar')
-    implementation files('libs/jmdns-3.4.1.jar')
-    implementation files('libs/signpost-core-1.2.1.1.jar')
     implementation project(':libraries:ckChangeLog')
     implementation project(':libraries:gaugeview-library')
     implementation project(':libraries:MemorizingTrustManager')
