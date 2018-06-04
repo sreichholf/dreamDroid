@@ -1,4 +1,9 @@
 apply plugin: 'com.android.library'
+
+repositories {
+    jcenter()
+}
+
 android {
     compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
     buildToolsVersion project.BUILD_TOOLS_VERSION
@@ -14,8 +19,4 @@ android {
         abortOnError false
     }
 }
-dependencies {
-}
-repositories {
-    jcenter()
-}
+
