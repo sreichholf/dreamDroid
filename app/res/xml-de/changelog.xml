@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.2-405" versioncode="405">
+        <change>FIX: Sync-Benachrichtigungen unter Android >= Oreo</change>
+    </release>
     <release version="1.2-404" versioncode="404">
         <change>Adaptives Icon für Android >= Oreo</change>
     </release>

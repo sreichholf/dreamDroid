@@ -58,7 +58,7 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 404
+        versionCode 405
         versionName="1.2-".concat(new Integer(versionCode).toString());
 
         sourceSets {
