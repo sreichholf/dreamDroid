@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.UrlConnectionDownloader;
 
+import net.reichholf.dreamdroid.BuildConfig;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
@@ -157,7 +158,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	private void initIAB() {
-		if (getApplicationContext().getPackageName().endsWith("amazon"))
+		if (!BuildConfig.FLAVOR.equals("google"))
 			return;
 		mInventory = null;
 		mIabReady = false;

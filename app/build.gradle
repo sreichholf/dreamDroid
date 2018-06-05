@@ -54,14 +54,16 @@ dependencies {
     implementation project(':libraries:MemorizingTrustManager')
 }
 
+def version=407
+def versionString= new Integer(version).toString()
+
 android {
     compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 406
-        versionName="1.2-".concat(new Integer(versionCode).toString());
-
+        versionCode version
+        versionName="1.2-".concat(versionString)
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
@@ -75,10 +77,17 @@ android {
         google {
             dimension "distribution"
             applicationId "net.reichholf.dreamdroid"
+            versionName="1.2-$version-google"
+        }
+        fdroid {
+            dimension "distribution"
+            applicationId "net.reichholf.dreamdroid"
+            versionName="1.2-$version-fdroid"
         }
         amazon {
             dimension "distribution"
             applicationId "net.reichholf.dreamdroid.amazon"
+            versionName="1.2-$version-amazon"
         }
     }
     splits {
