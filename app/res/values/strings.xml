@@ -181,7 +181,7 @@
     <string name="loading">Loading&#8230;</string>
     <string name="about">About</string>
     <string name="changelog">Changelog</string>
-    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="license_gplv3">LICENSE:\nDreamDroid is free Software!\nLicensed under the GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.html</string>
     <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Profile</string>
     <string name="connection">Connection</string>

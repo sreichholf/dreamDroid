@@ -180,8 +180,7 @@
     <string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
     <string name="loading">Lade&#8230;</string>
     <string name="about">Über</string>
-<string name="license">Lizenz:
-\nLizensiert unter Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="license_gplv3">Lizenz:\nDreamdroid ist freie Software!\nLizensiert unter GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.de.html</string>
     <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktives Profil</string>
     <string name="connection">Verbindung</string>

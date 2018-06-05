@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.2-406" versioncode="406">
+        <change>DreamDroid ist jetzt freie Software, lizensiert unter GPLv3</change>
+    </release>
     <release version="1.2-405" versioncode="405">
         <change>FIX: Sync-Benachrichtigungen unter Android >= Oreo</change>
     </release>

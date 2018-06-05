@@ -33,7 +33,7 @@ public class AboutDialog extends ActionDialog {
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		String text = String.format("%s\n\n%s\n\n%s", DreamDroid.VERSION_STRING, getString(R.string.license),
+		String text = String.format("%s\n\n%s\n\n%s", DreamDroid.VERSION_STRING, getString(R.string.license_gplv3),
 				getString(R.string.source_code_link));
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
