@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.2-407" versioncode="407">
+    <release version="1.2.409" versioncode="409">
         <change>DreamDroid is now free Software, licensed under GPLv3</change>
+        <change>Some changes for releasing on f-droid</change>
     </release>
     <release version="1.2-405" versioncode="405">
         <change>FIX: Sync-Notifications on Android >= Oreo</change>

@@ -54,16 +54,13 @@ dependencies {
     implementation project(':libraries:MemorizingTrustManager')
 }
 
-def version=408
-def versionString= new Integer(version).toString()
-
 android {
     compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode version
-        versionName="1.2.".concat(versionString)
+        versionCode 409
+        versionName="1.2.409"
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
