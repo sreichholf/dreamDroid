@@ -9,10 +9,8 @@ package net.reichholf.dreamdroid;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -33,6 +31,8 @@ import org.piwik.sdk.extra.TrackHelper;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -100,18 +100,11 @@ public class DreamDroid extends PiwikApplication {
 
 	private static boolean sFeaturePostRequest = true;
 
-	/**
-	 * @param context
-	 * @return
-	 */
-	public static String getVersionString(Context context) {
-		try {
-			ComponentName comp = new ComponentName(context, context.getClass());
-			PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
-			return String.format("dreamDroid %s (%s)\n© Stephan Reichholf\nstephan@reichholf.net", pinfo.versionName, pinfo.versionCode);
-		} catch (android.content.pm.PackageManager.NameNotFoundException e) {
-			return "dreamDroid\n© 2013 Stephan Reichholf\nstephan@reichholf.net";
-		}
+	public static String getVersionString() {
+		String buildDate = "<debug-no-date>";
+		if (BuildConfig.BUILD_TIME > 0)
+			buildDate = Instant.ofEpochMilli(BuildConfig.BUILD_TIME).atZone(ZoneId.systemDefault()).toLocalDateTime().toString();
+		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, Build.SUPPORTED_ABIS[0], buildDate);
 	}
 
 	@Override
@@ -132,7 +125,7 @@ public class DreamDroid extends PiwikApplication {
 		// http://code.google.com/p/android/issues/detail?id=9453
 		SimpleDateFormat sdf = new SimpleDateFormat("E");
 		Date date = GregorianCalendar.getInstance().getTime();
-		VERSION_STRING = getVersionString(this);
+		VERSION_STRING = getVersionString();
 
 		try {
 			String s = sdf.format(date);
