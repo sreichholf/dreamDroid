@@ -235,7 +235,6 @@ public class SimpleHttpClient {
 				mError = true;
 				return false;
 			}
-
 			BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			int read = 0;
@@ -244,6 +243,8 @@ public class SimpleHttpClient {
 			while ((read = bis.read(buffer)) != -1) {
 				bos.write(buffer, 0, read);
 			}
+			bis.close();
+			bos.close();
 
 			mBytes = bos.toByteArray();
 			if (DreamDroid.dumpXml())
