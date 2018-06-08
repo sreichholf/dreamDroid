@@ -20,7 +20,7 @@ public class EpgAdapter extends SimpleTextAdapter {
 	@Override
 	public void onBindViewHolder(SimpleViewHolder holder, int position) {
 		super.onBindViewHolder(holder, position);
-		ImageView picon = (ImageView) holder.itemView.findViewById(R.id.picon);
+		ImageView picon = holder.itemView.findViewById(R.id.picon);
 		ExtendedHashMap service = mData.get(position);
 		Picon.setPiconForView(holder.itemView.getContext(), picon, service, Statics.TAG_PICON);
 	}

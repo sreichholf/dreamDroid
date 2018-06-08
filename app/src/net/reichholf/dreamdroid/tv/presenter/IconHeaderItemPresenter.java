@@ -34,11 +34,11 @@ public class IconHeaderItemPresenter extends Presenter {
 		HeaderItem headerItem = ((ListRow) o).getHeaderItem();
 		View rootView = viewHolder.view;
 
-		ImageView iconView = (ImageView) rootView.findViewById(R.id.header_icon);
+		ImageView iconView = rootView.findViewById(R.id.header_icon);
 		Drawable icon = rootView.getResources().getDrawable(R.drawable.ic_action_folder, null);
 		iconView.setImageDrawable(icon);
 
-		TextView label = (TextView) rootView.findViewById(R.id.header_label);
+		TextView label = rootView.findViewById(R.id.header_label);
 		label.setText(headerItem.getName());
 	}
 

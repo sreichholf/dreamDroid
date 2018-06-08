@@ -122,19 +122,19 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.timer_edit, container, false);
 
-		mName = (EditText) view.findViewById(R.id.EditTextTitle);
-		mDescription = (EditText) view.findViewById(R.id.EditTextDescription);
-		mEnabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
-		mZap = (CheckBox) view.findViewById(R.id.CheckBoxZap);
-		mAfterevent = (Spinner) view.findViewById(R.id.SpinnerAfterEvent);
-		mLocation = (Spinner) view.findViewById(R.id.SpinnerLocation);
-		mStartDate = (TextView) view.findViewById(R.id.TextViewBeginDate);
-		mStartTime = (TextView) view.findViewById(R.id.TextViewBeginTime);
-		mEndDate = (TextView) view.findViewById(R.id.TextViewEndDate);
-		mEndTime = (TextView) view.findViewById(R.id.TextViewEndTime);
-		mRepeatings = (TextView) view.findViewById(R.id.TextViewRepeated);
-		mService = (TextView) view.findViewById(R.id.TextViewService);
-		mTags = (TextView) view.findViewById(R.id.TextViewTags);
+		mName = view.findViewById(R.id.EditTextTitle);
+		mDescription = view.findViewById(R.id.EditTextDescription);
+		mEnabled = view.findViewById(R.id.CheckBoxEnabled);
+		mZap = view.findViewById(R.id.CheckBoxZap);
+		mAfterevent = view.findViewById(R.id.SpinnerAfterEvent);
+		mLocation = view.findViewById(R.id.SpinnerLocation);
+		mStartDate = view.findViewById(R.id.TextViewBeginDate);
+		mStartTime = view.findViewById(R.id.TextViewBeginTime);
+		mEndDate = view.findViewById(R.id.TextViewEndDate);
+		mEndTime = view.findViewById(R.id.TextViewEndTime);
+		mRepeatings = view.findViewById(R.id.TextViewRepeated);
+		mService = view.findViewById(R.id.TextViewService);
+		mTags = view.findViewById(R.id.TextViewTags);
 
 		// onClickListeners
 		registerOnClickListener(mService, Statics.ITEM_PICK_SERVICE);

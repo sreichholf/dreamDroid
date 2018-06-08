@@ -145,13 +145,13 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 					reload();
 				}
 			}, listView, true);
-			FloatingActionButton fab_reload = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
+			FloatingActionButton fab_reload = getAppCompatActivity().findViewById(R.id.fab_reload);
 			fab_reload.hide();
 		}
 	}
 
 	public void detachFabReload() {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
+		FloatingActionButton fab = getAppCompatActivity().findViewById(R.id.fab_reload);
 		if (fab != null) {
 			fab.setVisibility(View.GONE);
 			((MainActivity)getAppCompatActivity()).unregisterFab(R.id.fab_reload);

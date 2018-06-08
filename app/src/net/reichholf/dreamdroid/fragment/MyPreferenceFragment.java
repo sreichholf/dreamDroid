@@ -90,7 +90,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	}
 
 	protected void setFabEnabled(int id, boolean enabled) {
-		FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(id);
+		FloatingActionButton fab = getActivity().findViewById(id);
 		if (fab == null)
 			return;
 		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);

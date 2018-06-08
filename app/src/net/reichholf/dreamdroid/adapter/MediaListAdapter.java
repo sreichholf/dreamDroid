@@ -43,7 +43,7 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 
 		ExtendedHashMap media = getItem(position);
 		if (media != null) {
-			TextView textView = (TextView) view.findViewById(android.R.id.text1);
+			TextView textView = view.findViewById(android.R.id.text1);
 			String root = media.getString(Mediaplayer.KEY_ROOT);
 			String isDirectory = media.getString(Mediaplayer.KEY_IS_DIRECTORY);
 			String reference = media.getString(Mediaplayer.KEY_SERVICE_REFERENCE);

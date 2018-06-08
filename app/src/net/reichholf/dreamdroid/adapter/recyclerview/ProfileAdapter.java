@@ -61,9 +61,9 @@ public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder
 
 		public ProfileViewHolder(View itemView) {
 			super(itemView);
-			text1 = (TextView) itemView.findViewById(android.R.id.text1);
-			text2 = (TextView) itemView.findViewById(android.R.id.text2);
-			indicator = (TextView) itemView.findViewById(R.id.activeIndicator);
+			text1 = itemView.findViewById(android.R.id.text1);
+			text2 = itemView.findViewById(android.R.id.text2);
+			indicator = itemView.findViewById(R.id.activeIndicator);
 		}
 	}
 }

@@ -54,7 +54,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		setFullScreen();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.video_player);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
@@ -135,8 +135,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	private void initialize() {
-		mVideoSurface = (SurfaceView) findViewById(R.id.video_surface);
-		mSubtitlesSurface = (SurfaceView) findViewById(R.id.subtitles_surface);
+		mVideoSurface = findViewById(R.id.video_surface);
+		mSubtitlesSurface = findViewById(R.id.subtitles_surface);
 		mSubtitlesSurface.setZOrderMediaOverlay(true);
 		mSubtitlesSurface.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 

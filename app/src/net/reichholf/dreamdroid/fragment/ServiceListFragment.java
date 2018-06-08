@@ -176,8 +176,8 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		View v = inflater.inflate(R.layout.dual_list_view, container, false);
 		mEmpty = v.findViewById(android.R.id.empty);
 
-		mNavList = (ListView) v.findViewById(android.R.id.list);
-		mDetailList = (RecyclerView) v.findViewById(R.id.list2);
+		mNavList = v.findViewById(android.R.id.list);
+		mDetailList = v.findViewById(R.id.list2);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		((AutofitRecyclerView) mDetailList).setMaxSpanCount(
@@ -194,7 +194,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
 		mDetailList.addOnScrollListener(listener);
 
-		mSlidingPane = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
+		mSlidingPane = v.findViewById(R.id.sliding_pane);
 		mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
 			@Override
 			public void onPanelSlide(View panel, float slideOffset) {

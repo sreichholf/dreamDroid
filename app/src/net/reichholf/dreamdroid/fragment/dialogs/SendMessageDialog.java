@@ -32,7 +32,7 @@ public class SendMessageDialog extends AbstractDialog {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		final View view = LayoutInflater.from(getContext()).inflate(R.layout.send_message_dialog, null);
-		Spinner spinnerType = (Spinner) view.findViewById(R.id.SpinnerMessageType);
+		Spinner spinnerType = view.findViewById(R.id.SpinnerMessageType);
 		spinnerType.setSelection(2);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -41,9 +41,9 @@ public class SendMessageDialog extends AbstractDialog {
 				.setPositiveButton(R.string.send, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						EditText text = (EditText) view.findViewById(R.id.EditTextMessage);
-						EditText timeout = (EditText) view.findViewById(R.id.EditTextTimeout);
-						Spinner type = (Spinner) view.findViewById(R.id.SpinnerMessageType);
+						EditText text = view.findViewById(R.id.EditTextMessage);
+						EditText timeout = view.findViewById(R.id.EditTextTimeout);
+						Spinner type = view.findViewById(R.id.SpinnerMessageType);
 						String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
 						((SendMessageDialogActionListener) getActivity()).onSendMessage(text.getText().toString(), t, timeout.getText().toString());
 					}

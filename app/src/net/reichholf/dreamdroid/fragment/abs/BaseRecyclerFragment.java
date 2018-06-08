@@ -89,7 +89,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	protected void setFabEnabled(int id, boolean enabled) {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		FloatingActionButton fab = getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
 
@@ -106,7 +106,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		//noinspection ConstantConditions
-		mSwipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.ptr_layout);
+		mSwipeRefreshLayout = getView().findViewById(R.id.ptr_layout);
 		mSwipeRefreshLayout.setOnRefreshListener(this);
 		mHelper.onActivityCreated(savedInstanceState);
 	}
@@ -211,7 +211,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		View view = getView();
 		if(view == null)
 			return;
-		TextView textView = (TextView) view.findViewById(android.R.id.empty);
+		TextView textView = view.findViewById(android.R.id.empty);
 		if (textView == null)
 			return;
 		textView.setCompoundDrawablesWithIntrinsicBounds(0, topDrawable, 0, 0);
@@ -270,7 +270,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	protected void registerFab(int id, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, boolean topAligned) {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		FloatingActionButton fab = getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
 

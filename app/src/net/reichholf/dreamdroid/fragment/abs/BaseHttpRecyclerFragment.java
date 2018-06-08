@@ -123,7 +123,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	public void detachFabReload() {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(R.id.fab_reload);
+		FloatingActionButton fab = getAppCompatActivity().findViewById(R.id.fab_reload);
 		if (fab != null) {
 			setFabEnabled(fab.getId(), false);
 		}

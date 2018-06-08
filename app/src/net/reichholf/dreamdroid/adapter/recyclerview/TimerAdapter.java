@@ -89,13 +89,13 @@ public class TimerAdapter extends BaseAdapter<TimerAdapter.TimerViewHolder> {
 
 		public TimerViewHolder(View itemView){
 			super(itemView);
-			name = (TextView) itemView.findViewById(R.id.timer_name);
-			service = (TextView) itemView.findViewById(R.id.service_name);
-			begin = (TextView) itemView.findViewById(R.id.timer_start);
-			end = (TextView) itemView.findViewById(R.id.timer_end);
-			action = (TextView) itemView.findViewById(R.id.timer_action);
-			state = (TextView) itemView.findViewById(R.id.timer_state);
-			stateIndicator = (TextView) itemView.findViewById(R.id.timer_state_indicator);
+			name = itemView.findViewById(R.id.timer_name);
+			service = itemView.findViewById(R.id.service_name);
+			begin = itemView.findViewById(R.id.timer_start);
+			end = itemView.findViewById(R.id.timer_end);
+			action = itemView.findViewById(R.id.timer_action);
+			state = itemView.findViewById(R.id.timer_state);
+			stateIndicator = itemView.findViewById(R.id.timer_state_indicator);
 		}
 	}
 }

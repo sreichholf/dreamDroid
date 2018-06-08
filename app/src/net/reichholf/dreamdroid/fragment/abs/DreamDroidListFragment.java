@@ -103,7 +103,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 
 	@Override
 	public void setEmptyText(CharSequence text) {
-		TextView emptyView = (TextView) getView().findViewById(android.R.id.empty);
+		TextView emptyView = getView().findViewById(android.R.id.empty);
 		if (emptyView != null)
 			emptyView.setText(text);
 		else
@@ -212,7 +212,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	}
 
 	protected void registerFab(int id, View view, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, AbsListView listView, boolean topAligned) {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		FloatingActionButton fab = getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
 

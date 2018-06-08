@@ -76,7 +76,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
+        mSwipeRefreshLayout = view.findViewById(R.id.ptr_layout);
         if (mSwipeRefreshLayout != null) {
             // Now setup the SwipeRefreshLayout
             mSwipeRefreshLayout.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) mFragment);

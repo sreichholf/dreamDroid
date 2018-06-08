@@ -63,7 +63,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	}
 
 	protected void setFabEnabled(int id, boolean enabled) {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		FloatingActionButton fab = getAppCompatActivity().findViewById(id);
 		if(fab == null)
 			return;
 		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
@@ -176,7 +176,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	}
 
 	protected void registerFab(int id, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
-		FloatingActionButton fab = (FloatingActionButton) getAppCompatActivity().findViewById(id);
+		FloatingActionButton fab = getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
 

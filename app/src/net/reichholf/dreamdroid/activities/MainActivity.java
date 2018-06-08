@@ -274,7 +274,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private void initViews() {
 		setContentView(R.layout.dualpane);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -284,7 +284,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 			getSupportActionBar().setHomeButtonEnabled(true);
 
-			mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+			mDrawerLayout = findViewById(R.id.drawer_layout);
 			mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
 					mDrawerLayout, /* DrawerLayout object */
 					R.string.drawer_open, /* "open drawer" description for accessibility */
@@ -317,7 +317,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			};
 			mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-			NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+			NavigationView navigationView = findViewById(R.id.navigation_view);
 			View navHeader = navigationView.getHeaderView(0);
 			View profileChooser = navHeader.findViewById(R.id.drawer_profile);
 			profileChooser.setOnClickListener(new View.OnClickListener() {
@@ -327,8 +327,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 					mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
 				}
 			});
-			mActiveProfile = (TextView) navHeader.findViewById(R.id.drawer_profile_name);
-			mConnectionState = (TextView) navHeader.findViewById(R.id.drawer_profile_status);
+			mActiveProfile = navHeader.findViewById(R.id.drawer_profile_name);
+			mConnectionState = navHeader.findViewById(R.id.drawer_profile_status);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
@@ -351,7 +351,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void setTitle(CharSequence title) {
-		TextView titleView = (TextView) findViewById(R.id.toolbar_title);
+		TextView titleView = findViewById(R.id.toolbar_title);
 		if (titleView != null) {
 			titleView.setText(title);
 			super.setTitle("");
@@ -526,7 +526,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
 			ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
 
-		AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.appbar);
+		AppBarLayout appBarLayout = findViewById(R.id.appbar);
 		if (appBarLayout != null)
 			appBarLayout.setExpanded(true, true);
 		showFragment(ft, R.id.detail_view, fragment);
@@ -537,7 +537,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	public void unregisterFab(int id) {
-		FloatingActionButton fab = (FloatingActionButton) findViewById(id);
+		FloatingActionButton fab = findViewById(id);
 		if (fab == null)
 			return;
 		fab.setOnClickListener(null);

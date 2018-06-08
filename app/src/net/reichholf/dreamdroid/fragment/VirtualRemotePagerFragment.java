@@ -67,11 +67,11 @@ public class VirtualRemotePagerFragment extends BaseHttpFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.virtual_remote_pager, container, false);
 
-		mPager = (ViewPager) view.findViewById(R.id.pager);
+		mPager = view.findViewById(R.id.pager);
 		mPagerAdapter = new RemotePagerAdapter(getChildFragmentManager());
 		mPager.setAdapter(mPagerAdapter);
 
-		ImageButton toggle = (ImageButton) view.findViewById(R.id.toggle_remote);
+		ImageButton toggle = view.findViewById(R.id.toggle_remote);
 		toggle.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

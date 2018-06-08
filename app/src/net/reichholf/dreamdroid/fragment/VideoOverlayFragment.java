@@ -155,7 +155,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.video_player_overlay, container, false);
-		mServicesView = (AutofitRecyclerView) view.findViewById(R.id.servicelist);
+		mServicesView = view.findViewById(R.id.servicelist);
 		mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 		mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
 
@@ -470,19 +470,19 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	private void updateViews() {
 		View view = getView();
-		TextView serviceName = (TextView) view.findViewById(R.id.service_name);
+		TextView serviceName = view.findViewById(R.id.service_name);
 		serviceName.setText(mServiceName);
 
 		View parentNow = view.findViewById(R.id.event_now);
 		View parentNext = view.findViewById(R.id.event_next);
 
 		if (mServiceInfo != null) {
-			ImageView picon = (ImageView) view.findViewById(R.id.picon);
+			ImageView picon = view.findViewById(R.id.picon);
 			Picon.setPiconForView(getActivity(), picon, mServiceInfo, Statics.TAG_PICON);
 
-			TextView nowStart = (TextView) view.findViewById(R.id.event_now_start);
-			TextView nowDuration = (TextView) view.findViewById(R.id.event_now_duration);
-			TextView nowTitle = (TextView) view.findViewById(R.id.event_now_title);
+			TextView nowStart = view.findViewById(R.id.event_now_start);
+			TextView nowDuration = view.findViewById(R.id.event_now_duration);
+			TextView nowTitle = view.findViewById(R.id.event_now_title);
 
 			Event.supplementReadables(mServiceInfo); //update readable values
 
@@ -495,9 +495,9 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			String next = mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
 			boolean hasNext = next != null && !"".equals(next);
 			if (hasNext) {
-				TextView nextStart = (TextView) view.findViewById(R.id.event_next_start);
-				TextView nextDuration = (TextView) view.findViewById(R.id.event_next_duration);
-				TextView nextTitle = (TextView) view.findViewById(R.id.event_next_title);
+				TextView nextStart = view.findViewById(R.id.event_next_start);
+				TextView nextDuration = view.findViewById(R.id.event_next_duration);
+				TextView nextTitle = view.findViewById(R.id.event_next_title);
 
 				nextStart.setText(mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_START_TIME_READABLE)));
 				nextTitle.setText(mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE)));
@@ -515,7 +515,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	protected void updateProgress() {
-		SeekBar serviceProgress = (SeekBar) getView().findViewById(R.id.service_progress);
+		SeekBar serviceProgress = getView().findViewById(R.id.service_progress);
 		VideoPlayer player = VideoPlayerFactory.getInstance();
 		boolean isSeekable = player != null && player.isSeekable();
 		if (isSeekable) {

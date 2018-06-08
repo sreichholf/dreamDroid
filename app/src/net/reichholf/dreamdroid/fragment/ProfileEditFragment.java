@@ -84,35 +84,35 @@ public class ProfileEditFragment extends BaseFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.profile_edit, container, false);
 
-		mProfile = (EditText) view.findViewById(R.id.EditTextProfile);
-		mHost = (EditText) view.findViewById(R.id.EditTextHost);
-		mStreamHost = (EditText) view.findViewById(R.id.EditTextStreamHost);
-		mPort = (EditText) view.findViewById(R.id.EditTextPort);
-		mStreamPort = (EditText) view.findViewById(R.id.EditTextStreamPort);
-		mFilePort = (EditText) view.findViewById(R.id.EditTextFilePort);
-		mSsl = (CheckBox) view.findViewById(R.id.CheckBoxSsl);
-		mLogin = (CheckBox) view.findViewById(R.id.CheckBoxLogin);
-		mStreamLogin = (CheckBox) view.findViewById(R.id.CheckBoxLoginStream);
-		mUser = (EditText) view.findViewById(R.id.EditTextUser);
-		mPass = (EditText) view.findViewById(R.id.EditTextPass);
-		mSimpleRemote = (CheckBox) view.findViewById(R.id.CheckBoxSimpleRemote);
-		mFileSsl = (CheckBox) view.findViewById(R.id.CheckBoxSslFileStream);
-		mFileLogin = (CheckBox) view.findViewById(R.id.CheckBoxLoginFileStream);
+		mProfile = view.findViewById(R.id.EditTextProfile);
+		mHost = view.findViewById(R.id.EditTextHost);
+		mStreamHost = view.findViewById(R.id.EditTextStreamHost);
+		mPort = view.findViewById(R.id.EditTextPort);
+		mStreamPort = view.findViewById(R.id.EditTextStreamPort);
+		mFilePort = view.findViewById(R.id.EditTextFilePort);
+		mSsl = view.findViewById(R.id.CheckBoxSsl);
+		mLogin = view.findViewById(R.id.CheckBoxLogin);
+		mStreamLogin = view.findViewById(R.id.CheckBoxLoginStream);
+		mUser = view.findViewById(R.id.EditTextUser);
+		mPass = view.findViewById(R.id.EditTextPass);
+		mSimpleRemote = view.findViewById(R.id.CheckBoxSimpleRemote);
+		mFileSsl = view.findViewById(R.id.CheckBoxSslFileStream);
+		mFileLogin = view.findViewById(R.id.CheckBoxLoginFileStream);
 
 		//Encoder
-		mEncoderStream = (CheckBox) view.findViewById(R.id.CheckBoxEncoder);
-		mEncoderPath = (EditText) view.findViewById(R.id.EditTextEncoderPath);
-		mEncoderPort = (EditText) view.findViewById(R.id.EditTextEncoderPort);
-		mEncoderLogin = (CheckBox) view.findViewById(R.id.CheckBoxEncoderLogin);
-		mEncoderUser = (EditText) view.findViewById(R.id.EditTextEncodermUser);
-		mEncoderPass = (EditText) view.findViewById(R.id.EditTextEncoderPass);
-		mEncoderVideoBitrate = (EditText) view.findViewById(R.id.EditTextVideoBitrate);
-		mEncoderAudioBitrate = (EditText) view.findViewById(R.id.EditTextAudioBitrate);
+		mEncoderStream = view.findViewById(R.id.CheckBoxEncoder);
+		mEncoderPath = view.findViewById(R.id.EditTextEncoderPath);
+		mEncoderPort = view.findViewById(R.id.EditTextEncoderPort);
+		mEncoderLogin = view.findViewById(R.id.CheckBoxEncoderLogin);
+		mEncoderUser = view.findViewById(R.id.EditTextEncodermUser);
+		mEncoderPass = view.findViewById(R.id.EditTextEncoderPass);
+		mEncoderVideoBitrate = view.findViewById(R.id.EditTextVideoBitrate);
+		mEncoderAudioBitrate = view.findViewById(R.id.EditTextAudioBitrate);
 
-		mLayoutEncoder = (LinearLayout) view.findViewById(R.id.linearLayoutEncoder);
-		mLayoutEncoderLogin = (LinearLayout) view.findViewById(R.id.linearLayoutEncoderLogin);
-		mLayoutStream = (LinearLayout) view.findViewById(R.id.linearLayoutStream);
-		mLayoutLogin = (LinearLayout) view.findViewById(R.id.LoginLayout);
+		mLayoutEncoder = view.findViewById(R.id.linearLayoutEncoder);
+		mLayoutEncoderLogin = view.findViewById(R.id.linearLayoutEncoderLogin);
+		mLayoutStream = view.findViewById(R.id.linearLayoutStream);
+		mLayoutLogin = view.findViewById(R.id.LoginLayout);
 
 		HashMap extras = (HashMap) getArguments().getSerializable(sData);
 		assert extras != null;

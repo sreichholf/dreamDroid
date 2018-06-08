@@ -57,8 +57,8 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 
 		public ZapViewHolder(View itemView) {
 			super(itemView);
-			picon = (ImageView) itemView.findViewById(R.id.picon);
-			serviceName = (TextView) itemView.findViewById(android.R.id.text1);
+			picon = itemView.findViewById(R.id.picon);
+			serviceName = itemView.findViewById(android.R.id.text1);
 			piconCallback = new Callback() {
 				@Override
 				public void onSuccess() {

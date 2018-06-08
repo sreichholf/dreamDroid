@@ -118,17 +118,17 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 		public ServiceViewHolder(View itemView) {
 			super(itemView);
 
-			root = (CardView) itemView.findViewById(R.id.service_list_item_nn);
-			picon = (ImageView) itemView.findViewById(R.id.picon);
-			progress = (ProgressBar) itemView.findViewById(R.id.service_progress);
-			serviceName = (TextView) itemView.findViewById(R.id.service_name);
-			eventNowTitle = (TextView) itemView.findViewById(R.id.event_now_title);
-			eventNowStart = (TextView) itemView.findViewById(R.id.event_now_start);
-			eventNowDuration = (TextView) itemView.findViewById(R.id.event_now_duration);
-			eventNextTitle = (TextView) itemView.findViewById(R.id.event_next_title);
-			eventNextStart = (TextView) itemView.findViewById(R.id.event_next_start);
-			eventNextDuration = (TextView) itemView.findViewById(R.id.event_next_duration);
-			markerName = (TextView) itemView.findViewById(R.id.marker_name);
+			root = itemView.findViewById(R.id.service_list_item_nn);
+			picon = itemView.findViewById(R.id.picon);
+			progress = itemView.findViewById(R.id.service_progress);
+			serviceName = itemView.findViewById(R.id.service_name);
+			eventNowTitle = itemView.findViewById(R.id.event_now_title);
+			eventNowStart = itemView.findViewById(R.id.event_now_start);
+			eventNowDuration = itemView.findViewById(R.id.event_now_duration);
+			eventNextTitle = itemView.findViewById(R.id.event_next_title);
+			eventNextStart = itemView.findViewById(R.id.event_next_start);
+			eventNextDuration = itemView.findViewById(R.id.event_next_duration);
+			markerName = itemView.findViewById(R.id.marker_name);
 			parentService = itemView.findViewById(R.id.parent_service);
 			parentMarker = itemView.findViewById(R.id.parent_marker);
 			parentNext = itemView.findViewById(R.id.event_next);

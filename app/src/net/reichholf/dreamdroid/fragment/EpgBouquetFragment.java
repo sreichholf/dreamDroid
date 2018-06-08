@@ -68,7 +68,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		SimpleDateFormat today = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat now = new SimpleDateFormat("HH:mm");
 
-		mDateView = (TextView) header.findViewById(R.id.textViewDate);
+		mDateView = header.findViewById(R.id.textViewDate);
 		mDateView.setText(today.format(cal.getTime()));
 		mDateView.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -80,7 +80,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 			}
 		});
 
-		mTimeView = (TextView) header.findViewById(R.id.textViewTime);
+		mTimeView = header.findViewById(R.id.textViewTime);
 		mTimeView.setText(now.format(cal.getTime()));
 		mTimeView.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -91,7 +91,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 			}
 		});
 
-		FrameLayout frame = (FrameLayout) getAppCompatActivity().findViewById(R.id.content_header);
+		FrameLayout frame = getAppCompatActivity().findViewById(R.id.content_header);
 		frame.removeAllViews();
 		frame.addView(header);
 

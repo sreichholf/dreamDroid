@@ -66,15 +66,15 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		mInflater = getLayoutInflater(savedInstanceState);
 		View view = mInflater.inflate(R.layout.device_info, null);
 
-		mGuiVersion = (TextView) view.findViewById(R.id.GuiVersion);
-		mImageVersion = (TextView) view.findViewById(R.id.ImageVersion);
-		mInterfaceVersion = (TextView) view.findViewById(R.id.InterfaceVersion);
-		mFrontprocessorVersion = (TextView) view.findViewById(R.id.FrontprocessorVersion);
-		mDeviceName = (TextView) view.findViewById(R.id.DeviceName);
+		mGuiVersion = view.findViewById(R.id.GuiVersion);
+		mImageVersion = view.findViewById(R.id.ImageVersion);
+		mInterfaceVersion = view.findViewById(R.id.InterfaceVersion);
+		mFrontprocessorVersion = view.findViewById(R.id.FrontprocessorVersion);
+		mDeviceName = view.findViewById(R.id.DeviceName);
 		
-		mFrontendsList = (LinearLayout) view.findViewById(R.id.FrontendsList);
-		mNicsList = (LinearLayout) view.findViewById(R.id.NicsList);
-		mHddsList = (LinearLayout) view.findViewById(R.id.HddsList);
+		mFrontendsList = view.findViewById(R.id.FrontendsList);
+		mNicsList = view.findViewById(R.id.NicsList);
+		mHddsList = view.findViewById(R.id.HddsList);
 
 		if (mInfo == null || mInfo.isEmpty()) {
 			mReload = true;
@@ -103,10 +103,10 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		for (int i=0; i<mFrontends.size(); i++) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
 			
-			TextView title = (TextView) item.findViewById(android.R.id.text1);
+			TextView title = item.findViewById(android.R.id.text1);
 			title.setText((String) mFrontends.get(i).get(DeviceInfo.KEY_FRONTEND_NAME));
 			
-			TextView desc = (TextView) item.findViewById(android.R.id.text2);
+			TextView desc = item.findViewById(android.R.id.text2);
 			desc.setText((String) mFrontends.get(i).get(DeviceInfo.KEY_FRONTEND_MODEL));
 			
 			mFrontendsList.addView(item);
@@ -120,10 +120,10 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		for (int i=0; i<mNics.size(); i++) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
 			
-			TextView title = (TextView) item.findViewById(android.R.id.text1);
+			TextView title = item.findViewById(android.R.id.text1);
 			title.setText((String) mNics.get(i).get(DeviceInfo.KEY_NIC_NAME));
 			
-			TextView desc = (TextView) item.findViewById(android.R.id.text2);
+			TextView desc = item.findViewById(android.R.id.text2);
 			desc.setText((String) mNics.get(i).get(DeviceInfo.KEY_NIC_IP));
 			
 			mNicsList.addView(item);
@@ -137,10 +137,10 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		for (int i=0; i<mHdds.size(); i++) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
 			
-			TextView title = (TextView) item.findViewById(android.R.id.text1);
+			TextView title = item.findViewById(android.R.id.text1);
 			title.setText((String) mHdds.get(i).get(DeviceInfo.KEY_HDD_MODEL));
 			
-			TextView desc = (TextView) item.findViewById(android.R.id.text2);
+			TextView desc = item.findViewById(android.R.id.text2);
 			desc.setText(String.format(getString(R.string.hdd_capacity),
 					mHdds.get(i).get(DeviceInfo.KEY_HDD_CAPACITY),
 					mHdds.get(i).get(DeviceInfo.KEY_HDD_FREE_SPACE)));

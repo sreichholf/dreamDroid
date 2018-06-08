@@ -93,19 +93,19 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.current_service, container, false);
 
-		mServiceName = (TextView) view.findViewById(R.id.service_name);
-		mProvider = (TextView) view.findViewById(R.id.provider);
-		mNowStart = (TextView) view.findViewById(R.id.event_now_start);
-		mNowTitle = (TextView) view.findViewById(R.id.event_now_title);
-		mNowDesc = (TextView) view.findViewById(R.id.event_now_desc);
-		mNowDuration = (TextView) view.findViewById(R.id.event_now_duration);
-		mNextStart = (TextView) view.findViewById(R.id.event_next_start);
-		mNextTitle = (TextView) view.findViewById(R.id.event_next_title);
-		mNextDesc = (TextView) view.findViewById(R.id.event_next_desc);
-		mNextDuration = (TextView) view.findViewById(R.id.event_next_duration);
-		mStream = (Button) view.findViewById(R.id.ButtonStream);
-		mNowLayout = (LinearLayout) view.findViewById(R.id.layout_now);
-		mNextLayout = (LinearLayout) view.findViewById(R.id.layout_next);
+		mServiceName = view.findViewById(R.id.service_name);
+		mProvider = view.findViewById(R.id.provider);
+		mNowStart = view.findViewById(R.id.event_now_start);
+		mNowTitle = view.findViewById(R.id.event_now_title);
+		mNowDesc = view.findViewById(R.id.event_now_desc);
+		mNowDuration = view.findViewById(R.id.event_now_duration);
+		mNextStart = view.findViewById(R.id.event_next_start);
+		mNextTitle = view.findViewById(R.id.event_next_title);
+		mNextDesc = view.findViewById(R.id.event_next_desc);
+		mNextDuration = view.findViewById(R.id.event_next_duration);
+		mStream = view.findViewById(R.id.ButtonStream);
+		mNowLayout = view.findViewById(R.id.layout_now);
+		mNextLayout = view.findViewById(R.id.layout_next);
 
 		registerOnClickListener(mNowLayout, Statics.ITEM_NOW);
 		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
@@ -221,7 +221,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 			mNextDesc.setText(mNext.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED, ""));
 			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
 
-			ImageView piconView = (ImageView) getView().findViewById(R.id.picon);
+			ImageView piconView = getView().findViewById(R.id.picon);
 			Picon.setPiconForView(getAppCompatActivity(), piconView, mService, Statics.TAG_PICON);
 		} else {
 			showToast(getText(R.string.not_available));

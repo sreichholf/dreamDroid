@@ -48,7 +48,7 @@ public class SimpleTextAdapter extends BaseAdapter<SimpleTextAdapter.SimpleViewH
 			super(itemView);
 			mViews = new HashMap<>();
 			for (int id : ids) {
-				mViews.put(id, (TextView) itemView.findViewById(id));
+				mViews.put(id, itemView.findViewById(id));
 			}
 		}
 

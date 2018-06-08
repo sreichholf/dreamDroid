@@ -36,8 +36,8 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.multiepg, null);
 
-		final EnhancedHorizontalScrollView headerScroll = (EnhancedHorizontalScrollView) v.findViewById(R.id.scrollview_header);
-		final EnhancedHorizontalScrollView contentScroll = (EnhancedHorizontalScrollView) v.findViewById(R.id.scrollview_content);
+		final EnhancedHorizontalScrollView headerScroll = v.findViewById(R.id.scrollview_header);
+		final EnhancedHorizontalScrollView contentScroll = v.findViewById(R.id.scrollview_content);
 		headerScroll.addScrollChangedListener(new EnhancedHorizontalScrollView.OnScrollChangedListener() {
 			@Override
 			public void onScrollChanged(int x, int y) {
@@ -51,9 +51,9 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 			}
 		});
 
-		LinearLayout header = (LinearLayout) v.findViewById(R.id.header);
+		LinearLayout header = v.findViewById(R.id.header);
 		header.addView(createTimeLine(inflater));
-		LinearLayout content = (LinearLayout) v.findViewById(R.id.content);
+		LinearLayout content = v.findViewById(R.id.content);
 		for (int i = 0; i < 48; ++i) {
 			LinearLayout row = (LinearLayout) inflater.inflate(R.layout.multiepg_row, null);
 			for (int j = 0; j < 10; ++j) {
@@ -106,7 +106,7 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 		else
 			item = inflater.inflate(R.layout.multiepg_row_item, null);
 
-		TextView tv = (TextView) item.findViewById(android.R.id.text1);
+		TextView tv = item.findViewById(android.R.id.text1);
 		tv.setText(text1);
 		ViewGroup.LayoutParams params = tv.getLayoutParams();
 		params.width = width;

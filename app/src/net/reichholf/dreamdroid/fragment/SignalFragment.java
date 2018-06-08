@@ -86,9 +86,9 @@ public class SignalFragment extends BaseHttpFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.signal, container, false);
 
-		mSnr = (GaugeView) view.findViewById(R.id.gauge_view1);
+		mSnr = view.findViewById(R.id.gauge_view1);
 
-		mEnabled = (ToggleButton) view.findViewById(R.id.toggle_enabled);
+		mEnabled = view.findViewById(R.id.toggle_enabled);
 		mEnabled.setChecked(true);
 		mEnabled.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -100,7 +100,7 @@ public class SignalFragment extends BaseHttpFragment {
 			}
 		});
 
-		mSound = (CheckBox) view.findViewById(R.id.check_accoustic_feedback);
+		mSound = view.findViewById(R.id.check_accoustic_feedback);
 		mSound.setChecked(false);
 		mSound.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -115,9 +115,9 @@ public class SignalFragment extends BaseHttpFragment {
 			}
 		});
 
-		mSnrdb = (TextView) view.findViewById(R.id.text_snrdb);
-		mBer = (TextView) view.findViewById(R.id.text_ber);
-		mAgc = (TextView) view.findViewById(R.id.text_agc);
+		mSnrdb = view.findViewById(R.id.text_snrdb);
+		mBer = view.findViewById(R.id.text_ber);
+		mAgc = view.findViewById(R.id.text_agc);
 		return view;
 	}
 

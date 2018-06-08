@@ -178,7 +178,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
-		SwipeRefreshLayout SwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.ptr_layout);
+		SwipeRefreshLayout SwipeRefreshLayout = view.findViewById(R.id.ptr_layout);
 		SwipeRefreshLayout.setEnabled(false);
 	}
 

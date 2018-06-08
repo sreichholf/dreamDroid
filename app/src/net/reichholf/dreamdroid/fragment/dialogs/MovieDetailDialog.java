@@ -41,31 +41,31 @@ public class MovieDetailDialog extends BottomSheetActionDialog {
 		String descEx = movie.getString(Movie.KEY_DESCRIPTION_EXTENDED, "");
 		String length = movie.getString(Movie.KEY_LENGTH, "");
 
-		Toolbar tb = (Toolbar) dialog.findViewById(R.id.toolbar_epg_detail);
+		Toolbar tb = dialog.findViewById(R.id.toolbar_epg_detail);
 		tb.setTitle(title);
 
-		TextView textServiceName = (TextView) dialog.findViewById(R.id.service_name);
+		TextView textServiceName = dialog.findViewById(R.id.service_name);
 		if ("".equals(servicename))
 			textServiceName.setVisibility(View.GONE);
 		else
 			textServiceName.setText(servicename);
 
-		TextView textShort = (TextView) dialog.findViewById(R.id.epg_short);
+		TextView textShort = dialog.findViewById(R.id.epg_short);
 		if ("".equals(descShort))
 			textShort.setVisibility(View.GONE);
 		else
 			textShort.setText(descShort);
 
-		TextView textLength = (TextView) dialog.findViewById(R.id.movie_length);
+		TextView textLength = dialog.findViewById(R.id.movie_length);
 		if ("".equals(length))
 			textLength.setVisibility(View.GONE);
 		else
 			textLength.setText(length);
 
-		TextView textDescEx = (TextView) dialog.findViewById(R.id.epg_description_extended);
+		TextView textDescEx = dialog.findViewById(R.id.epg_description_extended);
 		textDescEx.setText(descEx);
 
-		FrameLayout bottomSheet = (FrameLayout) dialog.findViewById(android.support.design.R.id.design_bottom_sheet);
+		FrameLayout bottomSheet = dialog.findViewById(android.support.design.R.id.design_bottom_sheet);
 		BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
 		if (bottomSheetBehavior != null) {
 			bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);

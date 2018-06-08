@@ -65,7 +65,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
-		RecyclerView recyclerView = (RecyclerView) view.findViewById(android.R.id.list);
+		RecyclerView recyclerView = view.findViewById(android.R.id.list);
 		recyclerView.setLayoutManager(new GridLayoutManager(getAppCompatActivity(), 3));
 		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
 		recyclerView.addOnScrollListener(listener);

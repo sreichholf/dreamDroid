@@ -55,9 +55,9 @@ public class SleepTimerDialog extends AbstractDialog {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		init();
 		final View view = LayoutInflater.from(getContext()).inflate(R.layout.sleeptimer, null);
-		final MaterialNumberPicker time = (MaterialNumberPicker) view.findViewById(R.id.NumberPicker);
-		final CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
-		final RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);
+		final MaterialNumberPicker time = view.findViewById(R.id.NumberPicker);
+		final CheckBox enabled = view.findViewById(R.id.CheckBoxEnabled);
+		final RadioGroup action = view.findViewById(R.id.RadioGroupAction);
 
 		time.setMinValue(0);
 		time.setMaxValue(999);
@@ -85,9 +85,9 @@ public class SleepTimerDialog extends AbstractDialog {
 				.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						MaterialNumberPicker time = (MaterialNumberPicker) view.findViewById(R.id.NumberPicker);
-						CheckBox enabled = (CheckBox) view.findViewById(R.id.CheckBoxEnabled);
-						RadioGroup action = (RadioGroup) view.findViewById(R.id.RadioGroupAction);
+						MaterialNumberPicker time = view.findViewById(R.id.NumberPicker);
+						CheckBox enabled = view.findViewById(R.id.CheckBoxEnabled);
+						RadioGroup action = view.findViewById(R.id.RadioGroupAction);
 
 						String t = Integer.valueOf(time.getValue()).toString();
 						int id = action.getCheckedRadioButtonId();

@@ -73,24 +73,24 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 
 			View view = View.inflate(getContext(), R.layout.epg_item_dialog, null);
 
-			Toolbar tb = (Toolbar) view.findViewById(R.id.toolbar_epg_detail);
+			Toolbar tb = view.findViewById(R.id.toolbar_epg_detail);
 			tb.setTitle(title);
 
-			TextView textServiceName = (TextView) view.findViewById(R.id.service_name);
+			TextView textServiceName = view.findViewById(R.id.service_name);
 			textServiceName.setText(servicename);
 
-			TextView textShort = (TextView) view.findViewById(R.id.epg_short);
+			TextView textShort = view.findViewById(R.id.epg_short);
 			if ("".equals(descShort))
 				textShort.setVisibility(View.GONE);
 			else
 				textShort.setText(descShort);
-			TextView textTime = (TextView) view.findViewById(R.id.epg_time);
+			TextView textTime = view.findViewById(R.id.epg_time);
 			textTime.setText(date);
 
-			TextView textDescEx = (TextView) view.findViewById(R.id.epg_description_extended);
+			TextView textDescEx = view.findViewById(R.id.epg_description_extended);
 			textDescEx.setText(descEx);
 
-			Button buttonSetTimer = (Button) view.findViewById(R.id.ButtonSetTimer);
+			Button buttonSetTimer = view.findViewById(R.id.ButtonSetTimer);
 			buttonSetTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -98,7 +98,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 				}
 			});
 
-			Button buttonEditTimer = (Button) view.findViewById(R.id.ButtonEditTimer);
+			Button buttonEditTimer = view.findViewById(R.id.ButtonEditTimer);
 			buttonEditTimer.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -106,7 +106,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 				}
 			});
 
-			Button buttonIMDb = (Button) view.findViewById(R.id.ButtonImdb);
+			Button buttonIMDb = view.findViewById(R.id.ButtonImdb);
 			buttonIMDb.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -114,7 +114,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 				}
 			});
 
-			Button buttonSimilar = (Button) view.findViewById(R.id.ButtonSimilar);
+			Button buttonSimilar = view.findViewById(R.id.ButtonSimilar);
 			buttonSimilar.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {

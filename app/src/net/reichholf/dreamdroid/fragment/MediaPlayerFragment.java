@@ -78,8 +78,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		// only if detail view is available the application should have
 		// listeners for the buttons
 		if (isDetailViewAvailable(v)) {
-			ImageButton togglePlaylistButton = (ImageButton) v.findViewById(R.id.toggle_playlist);
-			ListView playList = (ListView) v.findViewById(R.id.playlist);
+			ImageButton togglePlaylistButton = v.findViewById(R.id.toggle_playlist);
+			ListView playList = v.findViewById(R.id.playlist);
 			playList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
@@ -100,36 +100,36 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			togglePlaylistButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					ListView playList = (ListView) getView().findViewById(R.id.playlist);
-					ImageView cover = (ImageView) getView().findViewById(R.id.cover);
+					ListView playList = getView().findViewById(R.id.playlist);
+					ImageView cover = getView().findViewById(R.id.cover);
 					int vis = playList.getVisibility();
 					playList.setVisibility(cover.getVisibility());
 					cover.setVisibility(vis);
 				}
 			});
 
-			ImageButton playButton = (ImageButton) v.findViewById(R.id.imageButtonPlay);
+			ImageButton playButton = v.findViewById(R.id.imageButtonPlay);
 			playButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					play();
 				}
 			});
 
-			ImageButton stopButton = (ImageButton) v.findViewById(R.id.imageButtonStop);
+			ImageButton stopButton = v.findViewById(R.id.imageButtonStop);
 			stopButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					stop();
 				}
 			});
 
-			ImageButton previousButton = (ImageButton) v.findViewById(R.id.imageButtonPrevious);
+			ImageButton previousButton = v.findViewById(R.id.imageButtonPrevious);
 			previousButton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					previous();
 				}
 			});
 
-			ImageButton nextbutton = (ImageButton) v.findViewById(R.id.imageButtonNext);
+			ImageButton nextbutton = v.findViewById(R.id.imageButtonNext);
 			nextbutton.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
 					next();
@@ -137,7 +137,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 			});
 		}
 
-		SlidingPaneLayout spl = (SlidingPaneLayout) v.findViewById(R.id.sliding_pane);
+		SlidingPaneLayout spl = v.findViewById(R.id.sliding_pane);
 		if (spl != null) {
 			spl.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
 				@Override
@@ -275,7 +275,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				setMediaInfo(mMediaInfo);
 
 				// add image to detail view
-				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
+				ImageView imageView = getView().findViewById(R.id.cover);
 
 				ArrayList<NameValuePair> params = new ArrayList<>();
 				params.add(new NameValuePair("file", "/tmp/.id3coverart"));
@@ -432,11 +432,11 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	public void clearMediaInfo() {
-		TextView artist = (TextView) getView().findViewById(R.id.artist);
+		TextView artist = getView().findViewById(R.id.artist);
 		// TextView album = (TextView) getView().findViewById(R.id.album);
 		// TextView year = (TextView) getView().findViewById(R.id.year);
 		// TextView category = (TextView) getView().findViewById(R.id.category);
-		TextView title = (TextView) getView().findViewById(R.id.title);
+		TextView title = getView().findViewById(R.id.title);
 
 		artist.setText("-");
 		// album.setText("-");
@@ -446,8 +446,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	public void setMediaInfo(ExtendedHashMap map) {
-		TextView artist = (TextView) getView().findViewById(R.id.artist);
-		TextView title = (TextView) getView().findViewById(R.id.title);
+		TextView artist = getView().findViewById(R.id.artist);
+		TextView title = getView().findViewById(R.id.title);
 		// TextView album = (TextView) getView().findViewById(R.id.album);
 		// TextView year = (TextView) getView().findViewById(R.id.year);
 		// TextView category = (TextView) getView().findViewById(R.id.category);
@@ -547,7 +547,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		execSimpleResultTask(new MediaplayerCommandRequestHandler(URIStore.MEDIA_PLAYER_CMD), params);
 
 		clearMediaInfo();
-		ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
+		ImageView imageView = getView().findViewById(R.id.cover);
 		imageView.setImageResource(R.drawable.no_cover_art);
 	}
 
@@ -600,7 +600,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		setListAdapter(mAdapter);
 
 		mPlaylistAdapter = new MediaListAdapter(getAppCompatActivity(), mPlaylist);
-		ListView playlistView = (ListView) v.findViewById(R.id.playlist);
+		ListView playlistView = v.findViewById(R.id.playlist);
 		playlistView.setAdapter(mPlaylistAdapter);
 	}
 
@@ -608,7 +608,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	 * Check if DetailView is available for current device
 	 */
 	private boolean isDetailViewAvailable(View v) {
-		LinearLayout detailLayout = (LinearLayout) v.findViewById(R.id.detailView);
+		LinearLayout detailLayout = v.findViewById(R.id.detailView);
 
 		return detailLayout != null;
 	}
@@ -648,7 +648,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 					|| command.equals(MediaplayerCommandRequestHandler.CMD_PLAY)
 					|| command.equals(MediaplayerCommandRequestHandler.CMD_PREVIOUS)) {
 				// add image to detail view
-				ImageView imageView = (ImageView) getView().findViewById(R.id.cover);
+				ImageView imageView = getView().findViewById(R.id.cover);
 
 				ArrayList<NameValuePair> params = new ArrayList<>();
 				params.add(new NameValuePair("file", "/tmp/.id3coverart"));
