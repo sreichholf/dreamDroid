@@ -32,10 +32,12 @@ public class VLCPlayer implements VideoPlayer {
 		sMediaPlayer.setAspectRatio(null);
 		sMediaPlayer.setScale(0);
 		sMediaPlayer.setVideoTrackEnabled(true);
+		sMediaPlayer.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0);
 	}
 
 	public void deinit() {
 		detach();
+		sMediaPlayer.release();
 		sLibVLC = null;
 		sMediaPlayer = null;
 	}
@@ -101,6 +103,11 @@ public class VLCPlayer implements VideoPlayer {
 
 	public void stop() {
 		getMediaPlayer().stop();
+		Media media = sMediaPlayer.getMedia();
+		if (media != null) {
+			media.setEventListener(null);
+			media.release();
+		}
 	}
 
 	public int getAudioTracksCount() {
