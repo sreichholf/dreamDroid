@@ -60,8 +60,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 413
-        versionName="1.2.413"
+        versionCode 414
+        versionName="1.2.414"
         multiDexEnabled true
         sourceSets {
             main {
