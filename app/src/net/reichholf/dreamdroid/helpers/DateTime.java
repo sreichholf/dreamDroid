@@ -115,6 +115,14 @@ public class DateTime {
 	 * @param timestamp
 	 * @return
 	 */
+	public static String getYearDateTimeString(long timestamp) {
+		return getYearDateTimeString(String.valueOf(timestamp));
+	}
+
+	/**
+	 * @param timestamp
+	 * @return
+	 */
 	public static String getYearDateTimeString(String timestamp) {
 		SimpleDateFormat sdfDateTime;
 

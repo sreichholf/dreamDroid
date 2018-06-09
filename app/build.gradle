@@ -116,7 +116,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable false
             // Add build date object to BuildConfig
-            buildConfigField("long", "BUILD_TIME", "" + System.currentTimeMillis() + "L")
+            buildConfigField "long", "BUILD_TIME", "" + System.currentTimeMillis() + "L"
         }
     }
     lintOptions {
