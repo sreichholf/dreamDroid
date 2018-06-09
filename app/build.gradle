@@ -60,8 +60,9 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 410
-        versionName="1.2.410"
+        versionCode 411
+        versionName="1.2.411"
+        multiDexEnabled true
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
