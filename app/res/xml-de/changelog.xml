@@ -1,6 +1,7 @@
 <changelog>
-    <release version="1.2.410" versioncode="410">
+    <release version="1.2.412" versioncode="412">
         <change>Weitere Änderungen am VideoPlayer</change>
+        <change>Schnelles Blättern (FastScroll) funktioniert wieder</change>
     </release>
     <release version="1.2.409" versioncode="409">
         <change>DreamDroid ist jetzt freie Software, lizensiert unter GPLv3</change>
