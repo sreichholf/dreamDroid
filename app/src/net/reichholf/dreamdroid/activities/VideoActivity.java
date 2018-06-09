@@ -352,6 +352,17 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	@Override
+	public boolean isInPictureInPictureMode() {
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && super.isInPictureInPictureMode();
+	}
+
+	@Override
+	public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+		super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+		changeSurfaceLayout();
+	}
+
+	@Override
 	public void onSurfacesDestroyed(IVLCVout vlcVout) {
 	}
 
