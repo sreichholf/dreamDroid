@@ -59,8 +59,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 409
-        versionName="1.2.409"
+        versionCode 410
+        versionName="1.2.410"
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'

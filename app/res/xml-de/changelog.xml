@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.2.410" versioncode="410">
+        <change>Weitere Änderungen am VideoPlayer</change>
+    </release>
     <release version="1.2.409" versioncode="409">
         <change>DreamDroid ist jetzt freie Software, lizensiert unter GPLv3</change>
         <change>Einige Änderungen für die Veröffentlichung auf f-droid</change>
