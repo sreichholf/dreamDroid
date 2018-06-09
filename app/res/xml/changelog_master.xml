@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
-    <release version="1.2.412" versioncode="412">
+    <release version="1.2.413" versioncode="413">
         <change>More Changes to the VideoPlayer</change>
         <change>Fast scrolling is back</change>
     </release>

@@ -1,5 +1,5 @@
 <changelog>
-    <release version="1.2.412" versioncode="412">
+    <release version="1.2.413" versioncode="413">
         <change>Weitere Änderungen am VideoPlayer</change>
         <change>Schnelles Blättern (FastScroll) funktioniert wieder</change>
     </release>
