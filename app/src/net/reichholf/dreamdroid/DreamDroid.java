@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.multidex.MultiDex;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
@@ -33,6 +34,7 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -100,10 +102,20 @@ public class DreamDroid extends PiwikApplication {
 
 	private static boolean sFeaturePostRequest = true;
 
+	@Override
+	protected void attachBaseContext(Context base) {
+		super.attachBaseContext(base);
+		MultiDex.install(this);
+	}
+
 	public static String getVersionString() {
 		String buildDate = "<debug-no-date>";
-		if (BuildConfig.BUILD_TIME > 0)
-			buildDate = Instant.ofEpochMilli(BuildConfig.BUILD_TIME).atZone(ZoneId.systemDefault()).toLocalDateTime().toString();
+		if (BuildConfig.BUILD_TIME > 0) {
+			Instant inst = Instant.ofEpochMilli(BuildConfig.BUILD_TIME);
+			ZoneId zoneId = ZoneId.systemDefault();
+			ZonedDateTime date = inst.atZone(zoneId);
+			buildDate = date.toLocalDateTime().toString();
+		}
 		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, Build.SUPPORTED_ABIS[0], buildDate);
 	}
 

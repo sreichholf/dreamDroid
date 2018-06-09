@@ -26,6 +26,7 @@ dependencies {
         exclude module: 'preference-v7'
         exclude module: 'preference-v14'
     }
+    implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.android.support:support-v4:27.+'
     implementation 'com.android.support:preference-v14:27.+'
     implementation 'com.android.support:preference-v7:27.+'
