@@ -732,7 +732,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Override
 	public void onEvent(MediaPlayer.Event event) {
-		getActivity().supportInvalidateOptionsMenu();
 		switch (event.type) {
 			case MediaPlayer.Event.Opening: {
 				View progressView = getView().findViewById(R.id.video_load_progress);
@@ -752,9 +751,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			case MediaPlayer.Event.EncounteredError:
 				Toast.makeText(getActivity(), R.string.playback_failed, Toast.LENGTH_LONG).show();
 				break;
-			case MediaPlayer.Event.EndReached:
-			case MediaPlayer.Event.Stopped:
-				getActivity().finish();
 			default:
 				break;
 		}

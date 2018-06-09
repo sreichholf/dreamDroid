@@ -32,6 +32,7 @@ import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 import org.videolan.libvlc.IVLCVout;
+import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
 /**
@@ -39,7 +40,7 @@ import org.videolan.libvlc.MediaPlayer;
  */
 
 
-public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVideoLayoutListener, IVLCVout.Callback, ActionDialog.DialogActionListener {
+public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVideoLayoutListener, IVLCVout.Callback, ActionDialog.DialogActionListener, MediaPlayer.EventListener {
 	public static final String TAG = VideoActivity.class.getSimpleName();
 
 	FrameLayout mSurfaceFrame;
@@ -195,7 +196,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		mPlayer.attach(this, mSurfaceView, mSubtitlesSurfaceView);
 
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
-		VLCPlayer.getMediaPlayer().setEventListener(mOverlayFragment);
+		VLCPlayer.getMediaPlayer().setEventListener(this);
 
 		handleIntent(getIntent());
 		setFullScreen();
@@ -278,10 +279,9 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		}
 
 		double dw = sw, dh = sh;
-		boolean isPortrait;
 
 		// getWindow().getDecorView() doesn't always take orientation into account, we have to correct the values
-		isPortrait = mCurrentScreenOrientation == Configuration.ORIENTATION_PORTRAIT;
+		boolean isPortrait = mCurrentScreenOrientation == Configuration.ORIENTATION_PORTRAIT;
 
 		if (sw > sh && isPortrait || sw < sh && !isPortrait) {
 			dw = sh;
@@ -366,5 +366,20 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	public void finish() {
 		super.finish();
 		cleanup();
+	}
+
+	@Override
+	public void onEvent(MediaPlayer.Event event) {
+		invalidateOptionsMenu();
+		switch(event.type){
+			case MediaPlayer.Event.ESSelected:
+				if (event.getEsChangedType() == Media.VideoTrack.Type.Video)
+					changeSurfaceLayout();
+				break;
+			case MediaPlayer.Event.EndReached:
+			case MediaPlayer.Event.Stopped:
+				finish();
+		}
+		mOverlayFragment.onEvent(event);
 	}
 }
