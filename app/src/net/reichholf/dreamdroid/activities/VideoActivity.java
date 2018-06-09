@@ -27,6 +27,7 @@ import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 import org.videolan.libvlc.IVLCVout;
+import org.videolan.libvlc.MediaPlayer;
 
 /**
  * Created by reichi on 16/02/16.
@@ -235,12 +236,14 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 
 	@Override
 	public void onSurfacesCreated(IVLCVout vlcVout) {
-		//TODO onSurfacesCreated
+		MediaPlayer mediaPlayer = VLCPlayer.getMediaPlayer();
+		mediaPlayer.setAspectRatio(null);
+		mediaPlayer.setScale(0);
+		mediaPlayer.setVideoTrackEnabled(true);
 	}
 
 	@Override
 	public void onSurfacesDestroyed(IVLCVout vlcVout) {
-		//TODO onSurfacesDestroyed
 	}
 
 	@Override

@@ -31,6 +31,7 @@ public class VLCPlayer implements VideoPlayer {
 		sMediaPlayer = new MediaPlayer(sLibVLC);
 		sMediaPlayer.setAspectRatio(null);
 		sMediaPlayer.setScale(0);
+		sMediaPlayer.setVideoTrackEnabled(true);
 	}
 
 	public void deinit() {
