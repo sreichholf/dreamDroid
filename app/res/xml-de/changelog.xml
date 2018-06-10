@@ -1,4 +1,7 @@
 <changelog>
+    <release version="1.2.416" versioncode="416">
+        <change>FIX: Absturz beim Start auf Gerät mit älteren Android Versionen (vor Lollipop)</change>
+    </release>
     <release version="1.2.415" versioncode="415">
         <change>Hinweis: Für Nutzer des Google Play Store sind alle Einträge nach Version 1.2-400 gültig!</change>
         <change>FIX: Virtual Remote Widget unter Android >= Oreo</change>

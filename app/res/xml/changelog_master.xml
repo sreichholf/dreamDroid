@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.2.416" versioncode="416">
+        <change>FIX: Startup crash on pre-lollipop devices</change>
+    </release>
     <release version="1.2.415" versioncode="415">
         <change>Note: For users of the play store all changes after 1.2-400 should be taken into account!</change>
         <change>FIX: Virtual Remote Widget on Android >= Oreo</change>
