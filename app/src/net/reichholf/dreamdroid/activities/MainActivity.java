@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.activities;
 
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,6 +24,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -180,13 +182,23 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	public void showChangeLogIfNeeded(boolean onlyOnFirstTime) {
 		ChangeLog cl = new ChangeLog(this);
+		boolean showChanges = false;
 		if (onlyOnFirstTime) {
 			if (cl.isFirstRun()) {
-				cl.getFullLogDialog().show();
+				showChanges = true;
 			}
 		} else {
-			cl.getFullLogDialog().show();
+			showChanges = true;
 		}
+		if (showChanges) {
+			Dialog d = cl.getFullLogDialog();
+			//TODO A
+			d.setOnDismissListener(dialog -> {
+				recreate();
+			});
+			d.show();
+		}
+
 	}
 
 	@Override
