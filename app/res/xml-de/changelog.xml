@@ -1,4 +1,8 @@
 <changelog>
+    <release version="1.2.415" versioncode="415">
+        <change>Hinweis: Für Nutzer des Google Play Store sind alle Einträge nach Version 1.2-400 gültig!</change>
+        <change>FIX: Virtual Remote Widget unter Android >= Oreo</change>
+    </release>
     <release version="1.2.414" versioncode="414">
         <change>Weitere Änderungen am VideoPlayer</change>
         <change>Schnelles Blättern (FastScroll) funktioniert wieder</change>

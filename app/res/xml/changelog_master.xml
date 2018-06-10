@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.2.415" versioncode="415">
+        <change>Note: For users of the play store all changes after 1.2-400 should be taken into account!</change>
+        <change>FIX: Virtual Remote Widget on Android >= Oreo</change>
+    </release>
     <release version="1.2.414" versioncode="414">
-        <change>More Changes to the VideoPlayer</change>
+        <change>More fixes to the VideoPlayer</change>
         <change>Fast scrolling is back</change>
     </release>
     <release version="1.2.409" versioncode="409">
@@ -12,7 +16,7 @@
         <change>FIX: Sync-Notifications on Android >= Oreo</change>
     </release>
     <release version="1.2-404" versioncode="404">
-        <change>Adaptive icon for Android >= Oreo</change>
+        <change>Adaptive icon on Android >= Oreo</change>
     </release>
     <release version="1.2-403" versioncode="403">
         <change>FIX: Update to latest VLC, hopefully fixes all kinds of video/audio playback issues</change>
