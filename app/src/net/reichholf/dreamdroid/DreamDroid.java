@@ -107,10 +107,13 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	public static String getVersionString() {
-		String buildDate = "<debug-no-date>";
+		String buildDate = "<build-no-date>";
 		if (BuildConfig.BUILD_TIME > 0)
 			buildDate = DateTime.getYearDateTimeString(BuildConfig.BUILD_TIME / 1000);
-		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, Build.SUPPORTED_ABIS[0], buildDate);
+		String abi = Build.CPU_ABI;
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+			abi = Build.SUPPORTED_ABIS[0];
+		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, abi, buildDate);
 	}
 
 	@Override
