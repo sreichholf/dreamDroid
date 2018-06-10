@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.service;
 
-import android.app.IntentService;
 import android.os.Handler;
+import android.support.v4.app.JobIntentService;
 import android.widget.Toast;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -13,13 +13,9 @@ import de.duenndns.ssl.MemorizingTrustManager;
 /**
  * Created by Stephan on 04.06.2014.
  */
-public abstract class HttpIntentService extends IntentService{
+public abstract class HttpIntentService extends JobIntentService {
 	protected Handler mHandler;
 	protected MemorizingTrustManager mTrustManager;
-
-	public HttpIntentService(String name) {
-		super(name);
-	}
 
 	@Override
 	public void onCreate() {

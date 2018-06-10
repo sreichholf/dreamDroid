@@ -25,6 +25,8 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="com.android.vending.BILLING"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.BIND_JOB_SERVICE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:name=".DreamDroid"
@@ -142,6 +144,7 @@
         <receiver android:name=".appwidget.VirtualRemoteWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <action android:name="net.reichholf.dreamdroid.appwidget.WidgetService.ACTION_RCU" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -149,6 +152,8 @@
         </receiver>
 
         <service
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true"
             android:name=".appwidget.WidgetService"
             android:enabled="true"/>
         <service
