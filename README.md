@@ -1,6 +1,9 @@
 [![Build Status](https://travis-ci.org/sreichholf/dreamDroid.svg?branch=master)](https://travis-ci.org/sreichholf/dreamDroid)
 
 >© Stephan Reichholf (stephan at reichholf dot net)
+# Changlog
+* [English](app/res/raw/changelog.md)
+* [Deutsch](app/res/raw-de/changelog.md)
 
 # Functionality
 Remotely control your enigma2 based Dreambox with any Android Device (running android >= 4.1)!
