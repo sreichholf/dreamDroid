@@ -39,7 +39,6 @@ import java.util.ArrayList;
  */
 
 public class ZapFragment extends BaseHttpRecyclerFragment {
-	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
 	private ArrayList<ExtendedHashMap> mBouquetList;
@@ -70,35 +69,16 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
 		recyclerView.addOnScrollListener(listener);
 
-		restoreState(savedInstanceState);
 		return view;
 	}
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-	}
-
 	private void restoreState(Bundle savedInstanceState) {
-		boolean reload = false;
-		if (savedInstanceState == null) {
-			mReload = true;
-		} else {
+		mReload = true;
+		if (savedInstanceState != null) {
 			ExtendedHashMap currentBouquet = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_BOUQUET);
 			if (currentBouquet != null)
 				mCurrentBouquet = currentBouquet;
-			else
-				mReload = true;
-
-			ArrayList<ExtendedHashMap> bouquetList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_BOUQUETLIST);
-			if (bouquetList != null)
-				mBouquetList = bouquetList;
-			else
-				mReload = true;
 		}
-
-		if (reload)
-			mReload = true;
 	}
 
 	@Override
@@ -110,8 +90,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable(BUNDLE_KEY_CURRENT_BOUQUET, mCurrentBouquet);
-		outState.putSerializable(BUNDLE_KEY_BOUQUETLIST, mBouquetList);
+		outState.putSerializable(BUNDLE_KEY_CURRENT_BOUQUET, mCurrentBouquet);
 		super.onSaveInstanceState(outState);
 	}
 
