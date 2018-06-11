@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.activities;
 
-import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,7 +23,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -34,6 +32,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import net.reichholf.dreamdroid.BuildConfig;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.ProfileChangedListener;
@@ -46,6 +45,7 @@ import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.ChangelogDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
@@ -62,8 +62,6 @@ import org.piwik.sdk.extra.TrackHelper;
 
 import java.util.Arrays;
 import java.util.List;
-
-import de.cketti.library.changelog.ChangeLog;
 
 /**
  * @author sre
@@ -172,33 +170,25 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		mCurrentProfile = Profile.getDefault();
 		initViews();
 		DreamDroid.setCurrentProfileChangedListener(this);
-		showChangeLogIfNeeded(true);
+		showChangeLog(true);
 	}
 
 	/**
 	 * open the change log dialog
 	 *
-	 * @param onlyOnFirstTime if this is true, the change log will only displayed if it is the first time.
+	 * @param onUpdateOnly if this is true, the change log will only displayed if the app has been updated
 	 */
-	public void showChangeLogIfNeeded(boolean onlyOnFirstTime) {
-		ChangeLog cl = new ChangeLog(this);
-		boolean showChanges = false;
-		if (onlyOnFirstTime) {
-			if (cl.isFirstRun()) {
-				showChanges = true;
-			}
-		} else {
-			showChanges = true;
+	public void showChangeLog(boolean onUpdateOnly) {
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		int lastVersionCode = preferences.getInt(DreamDroid.PREFS_KEY_LAST_VERSION_CODE, 0);
+		boolean updated = lastVersionCode < BuildConfig.VERSION_CODE;
+		if (updated) {
+			SharedPreferences.Editor editor = preferences.edit();
+			editor.putInt(DreamDroid.PREFS_KEY_LAST_VERSION_CODE, BuildConfig.VERSION_CODE);
+			editor.commit();
 		}
-		if (showChanges) {
-			Dialog d = cl.getFullLogDialog();
-			//TODO A
-			d.setOnDismissListener(dialog -> {
-				recreate();
-			});
-			d.show();
-		}
-
+		if (updated || !onUpdateOnly)
+			showDialogFragment(ChangelogDialog.newInstance(), "changelog_dialog");
 	}
 
 	@Override

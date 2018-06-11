@@ -250,7 +250,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 break;
 
             case R.id.menu_navigation_changelog:
-                getMainActivity().showChangeLogIfNeeded(false);
+                getMainActivity().showChangeLog(false);
                 break;
 
             case R.id.menu_navigation_sleeptimer:
