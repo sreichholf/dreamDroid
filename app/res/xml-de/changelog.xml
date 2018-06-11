@@ -1,4 +1,8 @@
 <changelog>
+    <release version="1.2.417" versioncode="417">
+        <change>FIX: Diverse Probleme und Abstürze die durch das Drehen des Handys oder bei einem späteren Aufruf der App enstanden sind</change>
+        <change>IMP: Die Audio Qualität des Signal Meters wurde verbessert. Der Bildschirm bleibt nun dauerhaft an während Es offen ist</change>
+    </release>
     <release version="1.2.416" versioncode="416">
         <change>FIX: Absturz beim Start auf Gerät mit älteren Android Versionen (vor Lollipop)</change>
     </release>

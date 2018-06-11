@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog>
+    <release version="1.2.417" versioncode="417">
+        <change>FIX: A bunch of bugs that caused odd behaviour (empty lists, wrong content) and crashes after rotating or resuming the app</change>
+        <change>IMP: Improve Singal Monitor sound quality, force screen on while it's open</change>
+    </release>
     <release version="1.2.416" versioncode="416">
         <change>FIX: Startup crash on pre-lollipop devices</change>
     </release>
