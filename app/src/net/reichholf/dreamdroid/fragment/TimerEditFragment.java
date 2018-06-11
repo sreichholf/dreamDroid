@@ -169,8 +169,14 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			}
 		});
 
+		if (savedInstanceState != null) {
+			mTimer = savedInstanceState.getParcelable("timer");
+			mTimerOld = savedInstanceState.getParcelable("timerOld");
+			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
+		}
+
 		// Initialize if savedInstanceState won't and instance was not retained
-		if (savedInstanceState == null && mTimer == null && mTimerOld == null) {
+		if (mTimer == null || mTimerOld == null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) getArguments().get(sData);
 			ExtendedHashMap data = new ExtendedHashMap();
 			data.putAll(map);
@@ -190,13 +196,6 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
 				mGetLocationsAndTagsTask.execute();
 			} else {
-				reload();
-			}
-		} else if (savedInstanceState != null) {
-			mTimer = savedInstanceState.getParcelable("timer");
-			mTimerOld = savedInstanceState.getParcelable("timerOld");
-			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
-			if (mTimer != null) {
 				reload();
 			}
 		} else {
