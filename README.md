@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/sreichholf/dreamDroid.svg?branch=master)](https://travis-ci.org/sreichholf/dreamDroid)
 
 >© Stephan Reichholf (stephan at reichholf dot net)
-# Changlog
+# Changelog
 * [English](app/res/raw/changelog.md)
 * [Deutsch](app/res/raw-de/changelog.md)
 
