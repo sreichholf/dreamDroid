@@ -39,6 +39,10 @@ import java.util.Calendar;
  */
 public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 	private static final String LOG_TAG = EpgBouquetFragment.class.getSimpleName();
+	public static final String BUNDLE_KEY_SERVICE_REFERENCE = Event.KEY_SERVICE_REFERENCE;
+	public static final String BUNDLE_KEY_SERVICE_NAME = Event.KEY_SERVICE_NAME;
+	public static final String BUNDLE_KEY_TIME = "time";
+
 	private TextView mDateView;
 	private TextView mTimeView;
 	private int mTime;
@@ -51,9 +55,19 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.epg));
 
-		mReference = getArguments().getString(Event.KEY_SERVICE_REFERENCE);
-		mName = getArguments().getString(Event.KEY_SERVICE_NAME);
-		mTime = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
+		int now = mTime = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
+		if (savedInstanceState != null) {
+			mReference = savedInstanceState.getString(BUNDLE_KEY_SERVICE_REFERENCE);
+			mName = savedInstanceState.getString(BUNDLE_KEY_SERVICE_NAME);
+			mTime = savedInstanceState.getInt(BUNDLE_KEY_TIME);
+			if (mTime < now)
+				mTime = now;
+		}
+		if (mReference == null || mName == null) {
+			mReference = getArguments().getString(Event.KEY_SERVICE_REFERENCE);
+			mName = getArguments().getString(Event.KEY_SERVICE_NAME);
+		}
+
 		mWaitingForPicker = false;
 		mReload = true;
 	}
@@ -64,6 +78,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		View header = inflater.inflate(R.layout.date_time_picker_header, null, false);
 
 		Calendar cal = getCalendar();
+
 		SimpleDateFormat today = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat now = new SimpleDateFormat("HH:mm");
 
@@ -97,6 +112,13 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		return view;
 	}
 
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putString(BUNDLE_KEY_SERVICE_REFERENCE, mReference);
+		outState.putString(BUNDLE_KEY_SERVICE_NAME, mName);
+		outState.putInt(BUNDLE_KEY_TIME, mTime);
+		super.onSaveInstanceState(outState);
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
