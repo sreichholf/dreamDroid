@@ -74,17 +74,15 @@ import java.util.HashMap;
  * @author sreichholf
  */
 public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
+	private static final String TAG = ServiceListFragment.class.getCanonicalName();
 	private static final int LOADER_BOUQUETLIST_ID = 1;
 
 	public static final String SERVICE_REF_ROOT = "root";
-	public static final String BUNDLE_KEY_CURRENT_SERVICE = "currentService";
 	public static final String BUNDLE_KEY_NAVNAME = "navname";
 	public static final String BUNDLE_KEY_NAVREFERENCE = "navreference";
 	public static final String BUNDLE_KEY_DETAILNAME = "detailname";
 	public static final String BUNDLE_KEY_DETAILREFERENCE = "detailreference";
-	public static final String BUNDLE_KEY_HISTORY = "history";
-	public static final String BUNDLE_KEY_NAVITEMS = "navitems";
-	public static final String BUNDLE_KEY_DETAILITEMS = "detailitems";
+	public static final String BUNDLE_KEY_CURRENT_SERVICE = "currentservice";
 
 	private boolean mPickMode;
 	private boolean mReload;
@@ -137,14 +135,18 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 			mNavReference = savedInstanceState.getString(BUNDLE_KEY_NAVREFERENCE);
 			mDetailName = savedInstanceState.getString(BUNDLE_KEY_DETAILNAME);
 			mDetailReference = savedInstanceState.getString(BUNDLE_KEY_DETAILREFERENCE);
-
-			mHistory = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_HISTORY);
-			mNavItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_NAVITEMS);
-			mDetailItems = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_DETAILITEMS);
-
 			mCurrentService = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_SERVICE);
 
-			mReload = false;
+			mHistory = new ArrayList<>();
+			mNavItems = new ArrayList<>();
+			mDetailItems = new ArrayList<>();
+
+			if (!SERVICE_REF_ROOT.equals(mNavReference)) {
+				ExtendedHashMap map = new ExtendedHashMap();
+				map.put(Event.KEY_SERVICE_REFERENCE, mNavReference);
+				map.put(Event.KEY_SERVICE_NAME, mNavName);
+				mHistory.add(map);
+			}
 		} else {
 			mHistory = new ArrayList<>();
 			if (!SERVICE_REF_ROOT.equals(mNavReference)) {
@@ -291,11 +293,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		outState.putString(BUNDLE_KEY_NAVREFERENCE, mNavReference);
 		outState.putString(BUNDLE_KEY_DETAILNAME, mDetailName);
 		outState.putString(BUNDLE_KEY_DETAILREFERENCE, mDetailReference);
-		outState.putSerializable(BUNDLE_KEY_HISTORY, mHistory);
-		outState.putSerializable(BUNDLE_KEY_NAVITEMS, mNavItems);
-		outState.putSerializable(BUNDLE_KEY_DETAILITEMS, mDetailItems);
-		outState.putParcelable(BUNDLE_KEY_CURRENT_SERVICE, mCurrentService);
-
+		outState.putSerializable(BUNDLE_KEY_CURRENT_SERVICE, mCurrentService);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -310,13 +308,12 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		ListAdapter adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
 				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
 		mNavList.setAdapter(adapter);
-		if(mPickMode){
-			SimpleTextAdapter simpleTextAdapter = new SimpleTextAdapter(mDetailItems, R.layout.simple_list_item_1, new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
-			mDetailList.setAdapter(simpleTextAdapter);
-		} else {
-			ServiceAdapter serviceAdapter = new ServiceAdapter(getAppCompatActivity(), mDetailItems);
-			mDetailList.setAdapter(serviceAdapter);
-		}
+		RecyclerView.Adapter detailAdapter;
+		if(mPickMode)
+			detailAdapter = new SimpleTextAdapter(mDetailItems, R.layout.simple_list_item_1, new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
+		else
+			detailAdapter = new ServiceAdapter(getAppCompatActivity(), mDetailItems);
+		mDetailList.setAdapter(detailAdapter);
 	}
 
 	public void checkMenuReload(Menu menu, MenuInflater inflater) {
