@@ -53,6 +53,11 @@ import java.util.Arrays;
  */
 public class MovieListFragment extends BaseHttpRecyclerFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
+	public static final String BUNDLE_KEY_MOVIE = "movie";
+	public static final String BUNDLE_KEY_SELECTED_TAGS = "selectedTags";
+	public static final String BUNDLE_KEY_OLD_TAGS = "oldTags";
+	public static final String BUNDLE_KEY_CURRENT_LOCATION = "currentLocation";
+
 	private String mCurrentLocation;
 
 	private boolean mTagsChanged;
@@ -72,21 +77,20 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		initTitle(getString(R.string.movies));
 
 		mCurrentLocation = "/media/hdd/movie/";
-
+		mReload = true;
 		if (savedInstanceState == null) {
 			mSelectedTags = new ArrayList<>();
 			mOldTags = new ArrayList<>();
-			mReload = true;
 			if(!(DreamDroid.getLocations().indexOf(mCurrentLocation) >= 0))
 				for (String location : DreamDroid.getLocations()) {
 					mCurrentLocation = location;
 					break;
 				}
 		} else {
-			mMovie = savedInstanceState.getParcelable("movie");
-			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
-			mOldTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("oldTags")));
-			mCurrentLocation = savedInstanceState.getString("currentLocation");
+			mMovie = savedInstanceState.getParcelable(BUNDLE_KEY_MOVIE);
+			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray(BUNDLE_KEY_SELECTED_TAGS)));
+			mOldTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray(BUNDLE_KEY_OLD_TAGS)));
+			mCurrentLocation = savedInstanceState.getString(BUNDLE_KEY_CURRENT_LOCATION);
 		}
 	}
 
@@ -119,7 +123,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable("movie", mMovie);
+		outState.putParcelable(BUNDLE_KEY_MOVIE, mMovie);
 
 		String[] selectedTags;
 		if (mSelectedTags != null) {
@@ -128,7 +132,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		} else {
 			selectedTags = new String[0];
 		}
-		outState.putStringArray("selectedTags", selectedTags);
+		outState.putStringArray(BUNDLE_KEY_SELECTED_TAGS, selectedTags);
 
 		String[] oldTags;
 		if (mOldTags != null) {
@@ -137,8 +141,8 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		} else {
 			oldTags = new String[0];
 		}
-		outState.putStringArray("oldTags", oldTags);
-		outState.putString("currentLocation", mCurrentLocation);
+		outState.putStringArray(BUNDLE_KEY_OLD_TAGS, oldTags);
+		outState.putString(BUNDLE_KEY_CURRENT_LOCATION, mCurrentLocation);
 
 		super.onSaveInstanceState(outState);
 	}
