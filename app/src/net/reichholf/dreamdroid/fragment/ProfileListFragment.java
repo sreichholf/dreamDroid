@@ -35,6 +35,7 @@ import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.adapter.recyclerview.ProfileAdapter;
 import net.reichholf.dreamdroid.asynctask.DetectDevicesTask;
 import net.reichholf.dreamdroid.fragment.abs.BaseRecyclerFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.IndeterminateProgress;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -61,7 +62,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	private RecyclerView.Adapter mAdapter;
 	private DetectDevicesTask mDetectDevicesTask;
 
-	private MaterialDialog mProgress;
+	private IndeterminateProgress mProgress;
 
 	private int mCurrentPos;
 
@@ -143,6 +144,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 
 			if (mProgress != null) {
 				mProgress.dismiss();
+				mProgress = null;
 			}
 			MaterialDialog.Builder builder = new MaterialDialog.Builder(getAppCompatActivity());
 			builder.progress(true, 0)
@@ -150,8 +152,8 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 					.title(R.string.searching)
 					.content(R.string.searching_known_devices)
 					.cancelable(false);
-			mProgress = builder.build();
-			mProgress.show();
+			mProgress = IndeterminateProgress.newInstance(R.string.searching, R.string.searching_known_devices);
+			getMultiPaneHandler().showDialogFragment(mProgress, "dialog_devicesearch_indeterminate");
 			mDetectDevicesTask = new DetectDevicesTask(this);
 			mDetectDevicesTask.execute();
 		} else {
@@ -181,7 +183,11 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	 */
 	@Override
 	public void onDevicesDetected(ArrayList<Profile> profiles) {
-		mProgress.dismiss();
+		mProgress = (IndeterminateProgress) getFragmentManager().findFragmentByTag("dialog_devicesearch_indeterminate");
+		if (mProgress != null) {
+			mProgress.dismiss();
+			mProgress = null;
+		}
 		mDetectedProfiles = profiles;
 
 		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
