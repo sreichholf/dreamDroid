@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.helpers;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -12,7 +13,7 @@ import net.reichholf.dreamdroid.service.HttpIntentService;
  */
 public class SyncService extends HttpIntentService {
     @Override
-    protected void onHandleWork(Intent intent) {
+    protected void onHandleWork(@NonNull Intent intent) {
         setupSSL();
         EpgDatabase epgDatabase = new EpgDatabase();
         DreamDroid.loadCurrentProfile(getApplicationContext());

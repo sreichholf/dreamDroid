@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 
 /**
@@ -59,6 +60,7 @@ public class PositiveNegativeDialog extends ActionDialog {
 		mNegativeId = args.getInt(KEY_NEGATIVE_ID);
 	}
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
@@ -67,19 +69,9 @@ public class PositiveNegativeDialog extends ActionDialog {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 		builder.setTitle(mTitle)
 				.setMessage(mMessageId)
-				.setPositiveButton(mPositiveText, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						finishDialog(mPositiveId, null);
-					}
-				});
+				.setPositiveButton(mPositiveText, (dialog, which) -> finishDialog(mPositiveId, null));
 		if (mNegativeId > 0 && mNegativeText > 0) {
-			builder.setNegativeButton(mNegativeText, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					finishDialog(mNegativeId, null);
-				}
-			});
+			builder.setNegativeButton(mNegativeText, (dialog, which) -> finishDialog(mNegativeId, null));
 		}
 		return builder.create();
 	}

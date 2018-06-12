@@ -33,7 +33,7 @@ public class Picon {
 	public static String getBasepath(Context context){
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		if(sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
-			return String.format("%s/", sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"), "/");
+			return String.format("%s/", sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"));
 		}
 
 		if(!Environment.getExternalStorageDirectory().canWrite())

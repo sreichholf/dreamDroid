@@ -39,17 +39,7 @@ public class ConnectionErrorDialog extends ActionDialog {
 		return new AlertDialog.Builder(getContext())
 				.setTitle(title)
 				.setMessage(text)
-				.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						finishDialog(ACTION_POSITIVE, null);
-					}
-				})
-				.setNeutralButton(R.string.edit_profile, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						finishDialog(ACTION_EDIT_PROFILE, null);
-					}
-				}).create();
+				.setPositiveButton(R.string.ok, (dialog, which) -> finishDialog(ACTION_POSITIVE, null))
+				.setNeutralButton(R.string.edit_profile, (dialog, which) -> finishDialog(ACTION_EDIT_PROFILE, null)).create();
 	}
 }

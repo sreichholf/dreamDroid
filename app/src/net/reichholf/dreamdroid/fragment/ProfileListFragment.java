@@ -122,14 +122,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 				return;
 			final RecyclerView rv = getRecyclerView();
 			mSelectionSupport.setItemChecked(mSelectionSupport.getCheckedItemPosition(), false);
-			rv.post(new
-
-							Runnable() {
-								@Override
-								public void run() {
-									mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.NONE);
-								}
-							}
+			rv.post(() -> mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.NONE)
 
 			);
 		}
@@ -204,26 +197,15 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 			builder.positiveText(R.string.reload);
 			builder.negativeText(R.string.add_all);
 
-			builder.itemsCallback(new MaterialDialog.ListCallback() {
-				@Override
-				public void onSelection(MaterialDialog dialog, View itemView, int which, CharSequence text) {
-					mProfile = mDetectedProfiles.get(which);
-					editProfile();
-				}
+			builder.itemsCallback((dialog, itemView, which, text) -> {
+				mProfile = mDetectedProfiles.get(which);
+				editProfile();
 			});
-			builder.onPositive(new MaterialDialog.SingleButtonCallback() {
-				@Override
-				public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-					mDetectedProfiles = null;
-					detectDevices();
-				}
+			builder.onPositive((dialog, which) -> {
+				mDetectedProfiles = null;
+				detectDevices();
 			});
-			builder.onNegative(new MaterialDialog.SingleButtonCallback() {
-				@Override
-				public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-					addAllDetectedDevices();
-				}
-			});
+			builder.onNegative((dialog, which) -> addAllDetectedDevices());
 		} else {
 			builder.content(R.string.autodiscovery_failed);
 			builder.neutralText(android.R.string.ok);
@@ -249,12 +231,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
-		registerFab(R.id.fab_main, R.string.profile_add, R.drawable.ic_action_fab_add, new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				createProfile();
-			}
-		});
+		registerFab(R.id.fab_main, R.string.profile_add, R.drawable.ic_action_fab_add, v -> createProfile());
 		return view;
 	}
 

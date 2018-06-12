@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.view.LayoutInflater;
@@ -80,78 +81,53 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		if (isDetailViewAvailable(v)) {
 			ImageButton togglePlaylistButton = v.findViewById(R.id.toggle_playlist);
 			ListView playList = v.findViewById(R.id.playlist);
-			playList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> adapterView, View v, int position, long id) {
-					ExtendedHashMap item = mPlaylist.get(position);
-					playFile(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE), PLAYLIST_AS_ROOT);
-				}
+			playList.setOnItemClickListener((adapterView, v16, position, id) -> {
+				ExtendedHashMap item = mPlaylist.get(position);
+				playFile(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE), PLAYLIST_AS_ROOT);
 			});
 
-			playList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-				@Override
-				public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-					ExtendedHashMap item = mPlaylist.get(position);
-					deleteFromPlaylist(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
-					return true;
-				}
+			playList.setOnItemLongClickListener((parent, view, position, id) -> {
+				ExtendedHashMap item = mPlaylist.get(position);
+				deleteFromPlaylist(item.getString(Mediaplayer.KEY_SERVICE_REFERENCE));
+				return true;
 			});
 
-			togglePlaylistButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					ListView playList = getView().findViewById(R.id.playlist);
-					ImageView cover = getView().findViewById(R.id.cover);
-					int vis = playList.getVisibility();
-					playList.setVisibility(cover.getVisibility());
-					cover.setVisibility(vis);
-				}
+			togglePlaylistButton.setOnClickListener(v15 -> {
+				ListView playList1 = getView().findViewById(R.id.playlist);
+				ImageView cover = getView().findViewById(R.id.cover);
+				int vis = playList1.getVisibility();
+				playList1.setVisibility(cover.getVisibility());
+				cover.setVisibility(vis);
 			});
 
 			ImageButton playButton = v.findViewById(R.id.imageButtonPlay);
-			playButton.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					play();
-				}
-			});
+			playButton.setOnClickListener(v14 -> play());
 
 			ImageButton stopButton = v.findViewById(R.id.imageButtonStop);
-			stopButton.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					stop();
-				}
-			});
+			stopButton.setOnClickListener(v13 -> stop());
 
 			ImageButton previousButton = v.findViewById(R.id.imageButtonPrevious);
-			previousButton.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					previous();
-				}
-			});
+			previousButton.setOnClickListener(v12 -> previous());
 
 			ImageButton nextbutton = v.findViewById(R.id.imageButtonNext);
-			nextbutton.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					next();
-				}
-			});
+			nextbutton.setOnClickListener(v1 -> next());
 		}
 
 		SlidingPaneLayout spl = v.findViewById(R.id.sliding_pane);
 		if (spl != null) {
 			spl.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
 				@Override
-				public void onPanelSlide(View view, float v) {
+				public void onPanelSlide(@NonNull View view, float v) {
 				}
 
 				@Override
-				public void onPanelOpened(View view) {
+				public void onPanelOpened(@NonNull View view) {
 					getListView().setEnabled(true);
 					getAppCompatActivity().supportInvalidateOptionsMenu();
 				}
 
 				@Override
-				public void onPanelClosed(View view) {
+				public void onPanelClosed(@NonNull View view) {
 					getListView().setEnabled(false);
 					getAppCompatActivity().supportInvalidateOptionsMenu();
 				}
@@ -665,6 +641,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		}
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		return new AsyncListLoader(getAppCompatActivity(), new MediaplayerListRequestHandler(), false, args);

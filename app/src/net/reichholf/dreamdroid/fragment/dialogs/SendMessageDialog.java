@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +30,7 @@ public class SendMessageDialog extends AbstractDialog {
 		void onSendMessage(String text, String type, String timeout);
 	}
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		final View view = LayoutInflater.from(getContext()).inflate(R.layout.send_message_dialog, null);
@@ -38,22 +40,14 @@ public class SendMessageDialog extends AbstractDialog {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 		builder.setTitle(R.string.send_message)
 				.setView(view)
-				.setPositiveButton(R.string.send, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						EditText text = view.findViewById(R.id.EditTextMessage);
-						EditText timeout = view.findViewById(R.id.EditTextTimeout);
-						Spinner type = view.findViewById(R.id.SpinnerMessageType);
-						String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
-						((SendMessageDialogActionListener) getActivity()).onSendMessage(text.getText().toString(), t, timeout.getText().toString());
-					}
+				.setPositiveButton(R.string.send, (dialog, which) -> {
+					EditText text = view.findViewById(R.id.EditTextMessage);
+					EditText timeout = view.findViewById(R.id.EditTextTimeout);
+					Spinner type = view.findViewById(R.id.SpinnerMessageType);
+					String t = Integer.valueOf(type.getSelectedItemPosition()).toString();
+					((SendMessageDialogActionListener) getActivity()).onSendMessage(text.getText().toString(), t, timeout.getText().toString());
 				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dismiss();
-					}
-				});
+				.setNegativeButton(R.string.cancel, (dialog, which) -> dismiss());
 		return builder.create();
 	}
 }

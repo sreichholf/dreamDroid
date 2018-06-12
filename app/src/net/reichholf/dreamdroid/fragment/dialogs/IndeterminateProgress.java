@@ -7,8 +7,6 @@ import android.support.v4.app.DialogFragment;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
-import net.reichholf.dreamdroid.R;
-
 public class IndeterminateProgress extends DialogFragment {
 	public static String ARG_TITLE = "title";
 	public static String ARG_CONTENT = "content";

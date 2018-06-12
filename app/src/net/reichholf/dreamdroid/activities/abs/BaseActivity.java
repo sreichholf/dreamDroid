@@ -87,12 +87,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		}
 	};
 
-	IabHelper.OnConsumeMultiFinishedListener mConsumeMultiFinishedListener = new IabHelper.OnConsumeMultiFinishedListener() {
-		@Override
-		public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results) {
-			Log.w(TAG, "Consuming finished!");
-		}
-	};
+	IabHelper.OnConsumeMultiFinishedListener mConsumeMultiFinishedListener = (purchases, results) -> Log.w(TAG, "Consuming finished!");
 
 	IabHelper.QueryInventoryFinishedListener mQueryInventoryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
 		@Override
@@ -110,12 +105,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		try {
 			// set location of the keystore
 			JULHandler.initialize();
-			JULHandler.setDebugLogSettings(new JULHandler.DebugLogSettings() {
-				@Override
-				public boolean isDebugLogEnabled() {
-					return false;
-				}
-			});
+			JULHandler.setDebugLogSettings(() -> false);
 			// register MemorizingTrustManager for HTTPS
 
 			mTrustManager = new MemorizingTrustManager(this);
@@ -164,22 +154,20 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		mIabReady = false;
 		mIabHelper = new IabHelper(this, DreamDroid.IAB_PUB_KEY);
 		mIabHelper.enableDebugLogging(true);
-		mIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-			public void onIabSetupFinished(IabResult result) {
-				if (!result.isSuccess()) {
-					// Oh noes, there was a problem.
-					Log.d(TAG, "Problem setting up In-app Billing: " + result);
-					String text = result.getMessage();
-					Toast toast = Toast.makeText(BaseActivity.this, text, Toast.LENGTH_LONG);
-					toast.show();
-					mIabReady = false;
-					return;
-				}
-				Log.w(TAG, "In-app Billing is ready!");
-				mIabReady = true;
-				ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
-				mIabHelper.queryInventoryAsync(true, skuList, mQueryInventoryFinishedListener);
+		mIabHelper.startSetup(result -> {
+			if (!result.isSuccess()) {
+				// Oh noes, there was a problem.
+				Log.d(TAG, "Problem setting up In-app Billing: " + result);
+				String text = result.getMessage();
+				Toast toast = Toast.makeText(BaseActivity.this, text, Toast.LENGTH_LONG);
+				toast.show();
+				mIabReady = false;
+				return;
 			}
+			Log.w(TAG, "In-app Billing is ready!");
+			mIabReady = true;
+			ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
+			mIabHelper.queryInventoryAsync(true, skuList, mQueryInventoryFinishedListener);
 		});
 	}
 
@@ -189,10 +177,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	private void initPiwik() {
-		if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, false)) {
+		if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, false))
 			showPrivacyStatement();
-			return;
-		}
 	}
 
 	private void initPermissions(boolean rationaleShown) {

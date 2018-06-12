@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.fragment.abs;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -70,12 +71,12 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.card_recycler_content, container, false);
 	}
 
 	@Override
-	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		RecyclerView rv = getRecyclerView();
 		rv.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 		rv.addItemDecoration(new SpacesItemDecoration(getAppCompatActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
@@ -124,7 +125,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		mHelper.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
 	}
@@ -279,12 +280,9 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		fab.setContentDescription(getString(descriptionId));
 		fab.setImageResource(backgroundResId);
 		fab.setOnClickListener(onClickListener);
-		fab.setOnLongClickListener(new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				Toast.makeText(getAppCompatActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
-				return true;
-			}
+		fab.setOnLongClickListener(v -> {
+			Toast.makeText(getAppCompatActivity(), v.getContentDescription(), Toast.LENGTH_SHORT).show();
+			return true;
 		});
 	}
 

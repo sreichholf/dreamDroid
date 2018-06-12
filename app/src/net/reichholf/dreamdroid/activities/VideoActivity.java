@@ -86,12 +86,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		if (mSurfaceFrame == null || add == (mOnLayoutChangeListener != null)) return;
 		if (add) {
 			mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
-				private final Runnable mRunnable = new Runnable() {
-					@Override
-					public void run() {
-						changeSurfaceLayout();
-					}
-				};
+				private final Runnable mRunnable = () -> changeSurfaceLayout();
 				@Override
 				public void onLayoutChange(View v, int left, int top, int right,
 										   int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -171,7 +166,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		if(mPlayer == null)
 			return;
 		setIntent(intent);
-		if (intent.getAction() == Intent.ACTION_VIEW) {
+		if ( Intent.ACTION_VIEW.equals(intent.getAction()) ) {
 			int accel = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));
 			mPlayer.playUri(intent.getData(), accel);
 		}
@@ -179,9 +174,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if(!mOverlayFragment.onKeyDown(keyCode, event))
-			return super.onKeyDown(keyCode, event);
-		return true;
+		return mOverlayFragment.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event);
 	}
 
 	private void initialize() {

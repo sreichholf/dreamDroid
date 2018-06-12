@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -80,7 +81,7 @@ public class ProfileEditFragment extends BaseFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.profile_edit, container, false);
 
 		mProfile = view.findViewById(R.id.EditTextProfile);
@@ -130,39 +131,14 @@ public class ProfileEditFragment extends BaseFragment {
 	}
 
 	private void registerListeners() {
-		mLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
-				onIsLoginChanged(checked);
-			}
-		});
+		mLogin.setOnCheckedChangeListener((checkbox, checked) -> onIsLoginChanged(checked));
 
-		mSsl.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton checkbox, boolean checked) {
-				onSslChanged(checked);
-			}
-		});
+		mSsl.setOnCheckedChangeListener((checkbox, checked) -> onSslChanged(checked));
 
-		mEncoderStream.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				onIsEncoderStreamChanged(isChecked);
-			}
-		});
+		mEncoderStream.setOnCheckedChangeListener((buttonView, isChecked) -> onIsEncoderStreamChanged(isChecked));
 
-		mEncoderLogin.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				onIsEncoderLoginChanged(isChecked);
-			}
-		});
-		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				save();
-			}
-		});
+		mEncoderLogin.setOnCheckedChangeListener((buttonView, isChecked) -> onIsEncoderLoginChanged(isChecked));
+		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, v -> save());
 	}
 
 	@Override

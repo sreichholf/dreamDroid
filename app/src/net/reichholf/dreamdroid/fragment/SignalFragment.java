@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -82,7 +83,7 @@ public class SignalFragment extends BaseHttpFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.signal, container, false);
 
 		mSnr = view.findViewById(R.id.gauge_view1);
@@ -118,6 +119,7 @@ public class SignalFragment extends BaseHttpFragment {
 		return view;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncSimpleLoader loader = new AsyncSimpleLoader(getAppCompatActivity(), new SignalRequestHandler(), args);
@@ -209,7 +211,7 @@ public class SignalFragment extends BaseHttpFragment {
 		try {
 			audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO,
 					AudioFormat.ENCODING_PCM_16BIT,  numSamples * 2, AudioTrack.MODE_STATIC);
-			Log.w("SignalFragment!!", new Integer(sampleRate).toString());
+			Log.w("SignalFragment!!", Integer.toString(sampleRate));
 		} catch (Exception e) {
 			return;
 		}

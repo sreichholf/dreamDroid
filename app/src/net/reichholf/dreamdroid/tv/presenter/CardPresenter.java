@@ -1,9 +1,5 @@
 package net.reichholf.dreamdroid.tv.presenter;
 
-/**
- * Created by Stephan on 16.10.2016.
- */
-
 /*
  * Copyright (c) 2015 The Android Open Source Project
  *

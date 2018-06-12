@@ -45,8 +45,7 @@ public class CheckProfile {
 	 * @return
 	 */
 	public static ExtendedHashMap checkProfile(Profile profile, Context context) {
-		int[] versionZero = { 0, 0, 0 };
-		CURRENT_VERSION = versionZero;
+		CURRENT_VERSION = new int[]{ 0, 0, 0 };
 		DreamDroid.disableSleepTimer();
 		DreamDroid.disableNowNext();
 
@@ -144,7 +143,6 @@ public class CheckProfile {
 				if ((i + 1) == required.length) {
 					return 0;
 				}
-				continue;
 			} else if (cur > req) {
 				return 1;
 			} else {

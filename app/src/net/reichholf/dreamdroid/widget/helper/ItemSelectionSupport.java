@@ -84,11 +84,8 @@ public class ItemSelectionSupport {
 	 * @see #setChoiceMode(ChoiceMode)
 	 */
 	public boolean isItemChecked(int position) {
-		if (mChoiceMode != ChoiceMode.NONE && mCheckedStates != null) {
-			return mCheckedStates.get(position);
-		}
+		return mChoiceMode != ChoiceMode.NONE && mCheckedStates != null && mCheckedStates.get(position);
 
-		return false;
 	}
 
 	/**

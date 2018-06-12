@@ -122,12 +122,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			setConnectionState(error, true);
 			dismissSnackbar();
 			mSnackbar = Snackbar.make(findViewById(R.id.drawer_layout), error, Snackbar.LENGTH_INDEFINITE)
-					.setAction(R.string.more, new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							showErrorDetails(result);
-						}
-					});
+					.setAction(R.string.more, v -> showErrorDetails(result));
 			mSnackbar.show();
 		} else {
 			dismissSnackbar();
@@ -321,12 +316,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			NavigationView navigationView = findViewById(R.id.navigation_view);
 			View navHeader = navigationView.getHeaderView(0);
 			View profileChooser = navHeader.findViewById(R.id.drawer_profile);
-			profileChooser.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					checkNavigationHelper();
-					mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
-				}
+			profileChooser.setOnClickListener(view -> {
+				checkNavigationHelper();
+				mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
 			});
 			mActiveProfile = navHeader.findViewById(R.id.drawer_profile_name);
 			mConnectionState = navHeader.findViewById(R.id.drawer_profile_status);

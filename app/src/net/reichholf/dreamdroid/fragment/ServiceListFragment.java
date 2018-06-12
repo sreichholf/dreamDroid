@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.support.v7.widget.PopupMenu;
@@ -198,16 +199,16 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		mSlidingPane = v.findViewById(R.id.sliding_pane);
 		mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
 			@Override
-			public void onPanelSlide(View panel, float slideOffset) {
+			public void onPanelSlide(@NonNull View panel, float slideOffset) {
 			}
 
 			@Override
-			public void onPanelOpened(View panel) {
+			public void onPanelOpened(@NonNull View panel) {
 				mNavList.setEnabled(true);
 			}
 
 			@Override
-			public void onPanelClosed(View panel) {
+			public void onPanelClosed(@NonNull View panel) {
 				mNavList.setEnabled(false);
 			}
 		});
@@ -258,12 +259,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		getAppCompatActivity().supportInvalidateOptionsMenu();
 		getAppCompatActivity().setTitle(mCurrentTitle);
 
-		mNavList.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-				onNavItemClick(a, position);
-			}
-		});
+		mNavList.setOnItemClickListener((a, v, position, id) -> onNavItemClick(a, position));
 
 		if (mReload) {
 			if(mNavReference != null && ! "".equals(mNavReference))
@@ -424,6 +420,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		}
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AbstractListRequestHandler handler;
@@ -550,39 +547,36 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
 		menu.getMenu().findItem(R.id.menu_next_event).setVisible(DreamDroid.featureNowNext());
 
-		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem menuItem) {
-				String ref = mCurrentService.getString(Service.KEY_REFERENCE);
-				String name = mCurrentService.getString(Service.KEY_NAME);
-				boolean showNext = false;
-				switch (menuItem.getItemId()) {
-					case R.id.menu_next_event:
-						showNext = true;
-					case R.id.menu_current_event:
-						Bundle args = new Bundle();
-						args.putParcelable("currentItem", mCurrentService);
-						args.putBoolean("showNext", showNext);
-						getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
-						break;
-					case R.id.menu_browse_epg:
-						openEpg(ref, name);
-						break;
-					case R.id.menu_zap:
-						zapTo(ref);
-						break;
-					case R.id.menu_stream:
-						try {
-							startActivity(IntentFactory.getStreamServiceIntent(getAppCompatActivity(), ref, name, mDetailReference, mCurrentService));
-						} catch (ActivityNotFoundException e) {
-							showToast(getText(R.string.missing_stream_player));
-						}
-						break;
-					default:
-						return false;
-				}
-				return true;
+		menu.setOnMenuItemClickListener(menuItem -> {
+			String ref = mCurrentService.getString(Service.KEY_REFERENCE);
+			String name = mCurrentService.getString(Service.KEY_NAME);
+			boolean showNext = false;
+			switch (menuItem.getItemId()) {
+				case R.id.menu_next_event:
+					showNext = true;
+				case R.id.menu_current_event:
+					Bundle args = new Bundle();
+					args.putParcelable("currentItem", mCurrentService);
+					args.putBoolean("showNext", showNext);
+					getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
+					break;
+				case R.id.menu_browse_epg:
+					openEpg(ref, name);
+					break;
+				case R.id.menu_zap:
+					zapTo(ref);
+					break;
+				case R.id.menu_stream:
+					try {
+						startActivity(IntentFactory.getStreamServiceIntent(getAppCompatActivity(), ref, name, mDetailReference, mCurrentService));
+					} catch (ActivityNotFoundException e) {
+						showToast(getText(R.string.missing_stream_player));
+					}
+					break;
+				default:
+					return false;
 			}
+			return true;
 		});
 		menu.show();
 	}

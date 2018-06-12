@@ -41,7 +41,7 @@ public abstract class AbstractListRequestHandler implements ListRequestInterface
 	 * @see net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface#getList(net.reichholf.dreamdroid.helpers.SimpleHttpClient)
 	 */
 	public String getList(SimpleHttpClient shc) {
-		return getList(shc, new ArrayList<NameValuePair>());
+		return getList(shc, new ArrayList<>());
 	}
 	
 	/**

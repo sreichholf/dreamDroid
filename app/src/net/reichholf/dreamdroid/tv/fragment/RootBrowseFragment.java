@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
@@ -86,6 +87,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 		getLoaderManager().destroyLoader(LOADER_BOUQUETLIST_ID);
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AbstractListRequestHandler handler;
@@ -101,7 +103,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
 		if (data.isError()) {
 			Toast.makeText(getContext(), data.getErrorText(), Toast.LENGTH_LONG).show();
 			return;

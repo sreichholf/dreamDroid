@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -38,18 +39,8 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 
 		final EnhancedHorizontalScrollView headerScroll = v.findViewById(R.id.scrollview_header);
 		final EnhancedHorizontalScrollView contentScroll = v.findViewById(R.id.scrollview_content);
-		headerScroll.addScrollChangedListener(new EnhancedHorizontalScrollView.OnScrollChangedListener() {
-			@Override
-			public void onScrollChanged(int x, int y) {
-				contentScroll.scrollTo(x, y);
-			}
-		});
-		contentScroll.addScrollChangedListener(new EnhancedHorizontalScrollView.OnScrollChangedListener() {
-			@Override
-			public void onScrollChanged(int x, int y) {
-				headerScroll.scrollTo(x, y);
-			}
-		});
+		headerScroll.addScrollChangedListener((x, y) -> contentScroll.scrollTo(x, y));
+		contentScroll.addScrollChangedListener((x, y) -> headerScroll.scrollTo(x, y));
 
 		LinearLayout header = v.findViewById(R.id.header);
 		header.addView(createTimeLine(inflater));
@@ -137,6 +128,7 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 		return params;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		return new AsyncListLoader(getAppCompatActivity(), new EventListRequestHandler(

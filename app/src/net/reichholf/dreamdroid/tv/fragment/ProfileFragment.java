@@ -29,25 +29,22 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		setPreferencesFromResource(R.xml.profile_preferences, rootKey);
 		for (String key : sKeys) {
 			Preference pref = findPreference(key);
-			pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-				@Override
-				public boolean onPreferenceChange(Preference preference, Object newValue) {
-					if (DatabaseHelper.KEY_PROFILE_SSL.equals(preference.getKey())) {
-						EditTextPreference portPref = (EditTextPreference) findPreference(DatabaseHelper.KEY_PROFILE_PORT);
-						String condition = "80";
-						String newVal = "443";
-						if (!(Boolean) newValue) {
-							condition = "443";
-							newVal = "80";
-						}
-						if (portPref.getText().equals(condition)) {
-							portPref.setText(newVal);
-							updateSummary(portPref, newVal);
-						}
+			pref.setOnPreferenceChangeListener((preference, newValue) -> {
+				if (DatabaseHelper.KEY_PROFILE_SSL.equals(preference.getKey())) {
+					EditTextPreference portPref = (EditTextPreference) findPreference(DatabaseHelper.KEY_PROFILE_PORT);
+					String condition = "80";
+					String newVal = "443";
+					if (!(Boolean) newValue) {
+						condition = "443";
+						newVal = "80";
 					}
-					updateSummary(preference, newValue);
-					return true;
+					if (portPref.getText().equals(condition)) {
+						portPref.setText(newVal);
+						updateSummary(portPref, newVal);
+					}
 				}
+				updateSummary(preference, newValue);
+				return true;
 			});
 			updateSummary(pref, null);
 		}

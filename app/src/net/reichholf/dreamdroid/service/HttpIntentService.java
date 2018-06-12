@@ -46,11 +46,6 @@ public abstract class HttpIntentService extends JobIntentService {
  * show a toast and take care of calling it on the UI Thread
  */
 	protected void showToast(final String text) {
-		mHandler.post(new Runnable() {
-			@Override
-			public void run() {
-				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-			}
-		});
+		mHandler.post(() -> Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show());
 	}
 }

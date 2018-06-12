@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,12 +59,12 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mFrontends = new ArrayList<>();
 		mNics = new ArrayList<>();
 		mHdds = new ArrayList<>();
 
-		mInflater = getLayoutInflater(savedInstanceState);
+		mInflater = getLayoutInflater();
 		View view = mInflater.inflate(R.layout.device_info, null);
 
 		mGuiVersion = view.findViewById(R.id.GuiVersion);
@@ -155,6 +156,7 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		mDeviceName.setText(mInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		return new AsyncSimpleLoader(getAppCompatActivity(), new DeviceInfoRequestHandler(), args);

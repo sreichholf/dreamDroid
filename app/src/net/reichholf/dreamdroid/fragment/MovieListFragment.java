@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -107,12 +108,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		registerFab(R.id.fab_main, R.string.choose_location, R.drawable.ic_action_folder, new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemSelected(Statics.ITEM_SELECT_LOCATION);
-			}
-		});
+		registerFab(R.id.fab_main, R.string.choose_location, R.drawable.ic_action_folder, v -> onItemSelected(Statics.ITEM_SELECT_LOCATION));
 	}
 
 	@Override
@@ -219,12 +215,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	public void showPopupMenu(View v) {
 		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_movielist, menu.getMenu());
-		menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem menuItem) {
-				return onMovieAction(menuItem.getItemId());
-			}
-		});
+		menu.setOnMenuItemClickListener(menuItem -> onMovieAction(menuItem.getItemId()));
 		menu.show();
 	}
 
@@ -274,6 +265,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		return params;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		return new AsyncListLoader(getAppCompatActivity(), new MovieListRequestHandler(), true, args);

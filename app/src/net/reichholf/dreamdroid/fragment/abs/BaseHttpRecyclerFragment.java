@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -109,12 +110,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (sp.getBoolean("disable_fab_reload", false))
 			return;
-		registerFab(R.id.fab_reload, R.string.reload, R.drawable.ic_action_refresh, new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				reload();
-			}
-		}, true);
+		registerFab(R.id.fab_reload, R.string.reload, R.drawable.ic_action_refresh, v -> reload(), true);
 	}
 
 	@Override
@@ -194,12 +190,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	 *           statics)
 	 */
 	protected void registerOnClickListener(View v, final int id) {
-		v.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemSelected(id);
-			}
-		});
+		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
 	/**
@@ -298,7 +289,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
@@ -320,7 +311,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	@Override
-	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
+	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 	}
 
 	public SimpleHttpClient getHttpClient() {

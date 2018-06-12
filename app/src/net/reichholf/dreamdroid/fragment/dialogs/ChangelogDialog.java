@@ -31,9 +31,7 @@ public class ChangelogDialog extends DialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
 				.setTitle(R.string.changelog)
 				.setMessage(R.string.loading)
-				.setPositiveButton(R.string.close, (dialog, which) -> {
-					dismiss();
-				});
+				.setPositiveButton(R.string.close, (dialog, which) -> dismiss());
 		return builder.create();
 	}
 

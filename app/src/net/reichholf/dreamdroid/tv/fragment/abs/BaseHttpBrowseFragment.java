@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.tv.fragment.abs;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.BrowseSupportFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.ListRowPresenter;
@@ -33,6 +34,6 @@ public abstract class BaseHttpBrowseFragment extends BrowseSupportFragment imple
 	}
 
 	@Override
-	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
+	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 	}
 }

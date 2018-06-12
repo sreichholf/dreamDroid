@@ -79,8 +79,8 @@ public class Event{
 		ExtendedHashMap event = new ExtendedHashMap(serviceNowNext);
 		Object[] keys = event.keySet().toArray();
 		ArrayList<String> converted = new ArrayList<>();
-		for (int i=0; i<keys.length; ++i) {
-			String key = (String) keys[i];
+		for (Object k: keys) {
+			String key = (String) k;
 			if (key.startsWith(Event.PREFIX_NEXT)) {
 				String value = event.getString(key);
 				event.remove(key);

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,7 +42,6 @@ import java.util.ArrayList;
 public class ZapFragment extends BaseHttpRecyclerFragment {
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
-	private ArrayList<ExtendedHashMap> mBouquetList;
 	private ExtendedHashMap mCurrentBouquet;
 	private boolean mWaitingForPicker;
 
@@ -51,7 +51,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		super.onCreate(savedInstanceState);
 		initTitle("");
 
-		mBouquetList = new ArrayList<>();
 		mCurrentBouquet = new ExtendedHashMap();
 		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
 		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
@@ -119,6 +118,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		return true;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle bundle) {
 		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, bundle);

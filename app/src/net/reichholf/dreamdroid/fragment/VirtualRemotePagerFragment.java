@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -64,7 +65,7 @@ public class VirtualRemotePagerFragment extends BaseHttpFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.virtual_remote_pager, container, false);
 
 		mPager = view.findViewById(R.id.pager);
@@ -72,14 +73,11 @@ public class VirtualRemotePagerFragment extends BaseHttpFragment {
 		mPager.setAdapter(mPagerAdapter);
 
 		ImageButton toggle = view.findViewById(R.id.toggle_remote);
-		toggle.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				if (mPager.getCurrentItem() == 0)
-					mPager.setCurrentItem(1);
-				else
-					mPager.setCurrentItem(0);
-			}
+		toggle.setOnClickListener(v -> {
+			if (mPager.getCurrentItem() == 0)
+				mPager.setCurrentItem(1);
+			else
+				mPager.setCurrentItem(0);
 		});
 
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());

@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,8 +34,9 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 
 	}
 
+	@NonNull
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 		View view = convertView;
 		if (view == null) {
 			LayoutInflater li = LayoutInflater.from(getContext());

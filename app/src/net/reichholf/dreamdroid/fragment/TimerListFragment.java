@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
@@ -87,12 +88,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 				return;
 			final RecyclerView rv = getRecyclerView();
 			mSelectionSupport.setItemChecked(mSelectionSupport.getCheckedItemPosition(), false);
-			getRecyclerView().post(new Runnable() {
-				@Override
-				public void run() {
-					mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE);
-				}
-			});
+			getRecyclerView().post(() -> mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE));
 		}
 	};
 	private ExtendedHashMap mTimer;
@@ -117,12 +113,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
-		registerFab(R.id.fab_main, R.string.new_timer, R.drawable.ic_action_fab_add, new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemSelected(Statics.ITEM_NEW_TIMER);
-			}
-		});
+		registerFab(R.id.fab_main, R.string.new_timer, R.drawable.ic_action_fab_add, v -> onItemSelected(Statics.ITEM_NEW_TIMER));
 		return view;
 	}
 
@@ -262,7 +253,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		}
 
 		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.cleaning_timerlist), true);
-		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<NameValuePair>());
+		execSimpleResultTask(new TimerCleanupRequestHandler(), new ArrayList<>());
 	}
 
 	@Override
@@ -276,6 +267,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		reload();
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		return new AsyncListLoader(getAppCompatActivity(), new TimerListRequestHandler(), false, args);

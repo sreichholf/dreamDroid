@@ -165,7 +165,7 @@ public class SimpleHttpClient {
 	}
 
 	public boolean fetchPageContent(String uri) {
-		return fetchPageContent(uri, new ArrayList<NameValuePair>());
+		return fetchPageContent(uri, new ArrayList<>());
 	}
 
 	private void setAuth(HttpURLConnection connection) {

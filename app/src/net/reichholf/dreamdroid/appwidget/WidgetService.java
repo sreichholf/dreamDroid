@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.appwidget;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import net.reichholf.dreamdroid.Profile;
@@ -30,7 +31,7 @@ public class WidgetService extends HttpIntentService {
 	public static final String ACTION_RCU = "net.reichholf.dreamdroid.appwidget.WidgetService.ACTION_RCU";
 
 	@Override
-	public void onHandleWork(Intent intent) {
+	public void onHandleWork(@NonNull Intent intent) {
 		String action = intent.getAction();
 		if(ACTION_RCU.equals(action))
 			doRemoteRequest(intent);

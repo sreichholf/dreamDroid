@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,6 +52,7 @@ public class SleepTimerDialog extends AbstractDialog {
 		void onSetSleepTimer(String time, String action, boolean enabled);
 	}
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		init();
@@ -82,30 +84,22 @@ public class SleepTimerDialog extends AbstractDialog {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 		builder.setTitle(R.string.sleeptimer)
 				.setView(view)
-				.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						MaterialNumberPicker time = view.findViewById(R.id.NumberPicker);
-						CheckBox enabled = view.findViewById(R.id.CheckBoxEnabled);
-						RadioGroup action = view.findViewById(R.id.RadioGroupAction);
+				.setPositiveButton(R.string.save, (dialog, which) -> {
+					MaterialNumberPicker time1 = view.findViewById(R.id.NumberPicker);
+					CheckBox enabled1 = view.findViewById(R.id.CheckBoxEnabled);
+					RadioGroup action1 = view.findViewById(R.id.RadioGroupAction);
 
-						String t = Integer.valueOf(time.getValue()).toString();
-						int id = action.getCheckedRadioButtonId();
-						String a = SleepTimer.ACTION_STANDBY;
+					String t = Integer.valueOf(time1.getValue()).toString();
+					int id = action1.getCheckedRadioButtonId();
+					String a = SleepTimer.ACTION_STANDBY;
 
-						if (id == R.id.RadioButtonShutdown) {
-							a = SleepTimer.ACTION_SHUTDOWN;
-						}
-
-						((SleepTimerDialogActionListener) getActivity()).onSetSleepTimer(t, a, enabled.isChecked());
+					if (id == R.id.RadioButtonShutdown) {
+						a = SleepTimer.ACTION_SHUTDOWN;
 					}
+
+					((SleepTimerDialogActionListener) getActivity()).onSetSleepTimer(t, a, enabled1.isChecked());
 				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dismiss();
-					}
-				});
+				.setNegativeButton(R.string.cancel, (dialog, which) -> dismiss());
 		return builder.create();
 	}
 }

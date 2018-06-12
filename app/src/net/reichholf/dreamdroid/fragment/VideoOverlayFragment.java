@@ -8,6 +8,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -129,18 +130,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		else
 			mServiceInfo = null;
 		mHandler = new Handler();
-		mAutoHideRunnable = new Runnable() {
-			@Override
-			public void run() {
-				hideOverlays();
-			}
-		};
-		mIssueReloadRunnable = new Runnable() {
-			@Override
-			public void run() {
-				reload();
-			}
-		};
+		mAutoHideRunnable = () -> hideOverlays();
+		mIssueReloadRunnable = () -> reload();
 
 		mAudioManager = (AudioManager) getActivity().getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
 		mAudioMaxVol = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
@@ -153,7 +144,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Nullable
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.video_player_overlay, container, false);
 		mServicesView = view.findViewById(R.id.servicelist);
 		mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
@@ -223,18 +214,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			}
 		});
 
-		view.findViewById(R.id.overlay_root).setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				DisplayMetrics metrics = new DisplayMetrics();
-				getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-				if (mSurfaceHeight == 0)
-					mSurfaceHeight = Math.min(metrics.widthPixels, metrics.heightPixels);
-				if (mSurfaceWidth == 0)
-					mSurfaceWidth = Math.max(metrics.widthPixels, metrics.heightPixels);
-				mGestureDector.onTouchEvent(event);
-				return true;
-			}
+		view.findViewById(R.id.overlay_root).setOnTouchListener((v, event) -> {
+			DisplayMetrics metrics = new DisplayMetrics();
+			getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+			if (mSurfaceHeight == 0)
+				mSurfaceHeight = Math.min(metrics.widthPixels, metrics.heightPixels);
+			if (mSurfaceWidth == 0)
+				mSurfaceWidth = Math.max(metrics.widthPixels, metrics.heightPixels);
+			mGestureDector.onTouchEvent(event);
+			return true;
 		});
 
 		return view;
@@ -327,11 +315,12 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 
 	@Override
-	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		onServiceInfoChanged(true);
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AbstractListRequestHandler handler;
@@ -343,7 +332,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
 		if (data.isError())
 			return;
 		mServiceList.clear();
@@ -367,7 +356,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	@Override
-	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
+	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 
 	}
 
@@ -539,12 +528,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			});
 			serviceProgress.setOnTouchListener(null);
 		} else {
-			serviceProgress.setOnTouchListener(new View.OnTouchListener() {
-				@Override
-				public boolean onTouch(View view, MotionEvent motionEvent) {
-					return true;
-				}
-			});
+			serviceProgress.setOnTouchListener((view, motionEvent) -> true);
 		}
 		long max = -1;
 		long cur = -1;
