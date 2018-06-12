@@ -131,6 +131,7 @@ public class PiconSyncService extends IntentService {
 					e.printStackTrace();
 					Log.e(TAG, "Failed to download picon with filename " + fileName);
 				}
+				outputStream.close();
 				mDownloadProgress.downloadedFiles++;
 			}
 
