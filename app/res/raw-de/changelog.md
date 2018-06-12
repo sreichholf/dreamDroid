@@ -1,3 +1,6 @@
+## 1.2.418
+* FIX: Die Picon-Synchronisation schrieb leere Dateien (Picons müssen ggf. erneut synchronisiert werden)
+
 ## 1.2.417
 * NEU: Neuer Dialog für Änderungen
 * FIX: Diverse Probleme und Abstürze die durch das Drehen des Handys oder bei einem späteren Aufruf der App enstanden sind

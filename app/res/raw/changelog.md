@@ -1,3 +1,6 @@
+## 1.2.418
+* FIX: Picon sync was writing empty files (resync to fix picon display)
+
 ## 1.2.417
 * NEW: New dialog for changes
 * FIX: A bunch of bugs that caused odd behaviour (empty lists, wrong content) and crashes after rotating or resuming the app
