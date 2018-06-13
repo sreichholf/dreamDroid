@@ -50,12 +50,7 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.device_info));
-
-		if (savedInstanceState != null) {
-			mInfo = savedInstanceState.getParcelable("info");
-		} else {
-			mInfo = new ExtendedHashMap();
-		}
+		mInfo = new ExtendedHashMap();
 	}
 
 	@Override
@@ -84,11 +79,6 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		}
 
 		return view;
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable("info", mInfo);
 	}
 
 	/**
