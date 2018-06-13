@@ -75,16 +75,16 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		load();
-	}
-
-	@Override
 	public void onPause() {
 		super.onPause();
 		getLoaderManager().destroyLoader(LOADER_DEFAULT_ID);
 		getLoaderManager().destroyLoader(LOADER_BOUQUETLIST_ID);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		load();
 	}
 
 	@NonNull
@@ -207,14 +207,6 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment {
 		String ref = event.getString(Event.KEY_SERVICE_REFERENCE);
 		String name = event.getString(Event.KEY_EVENT_TITLE);
 		startActivity(IntentFactory.getStreamServiceIntent(getActivity(), ref, name, mSelectedBouquet.getString(Event.KEY_SERVICE_REFERENCE, null), event));
-	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (REQUEST_CODE_PROFILE == requestCode)
-			load();
-		else
-			super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@Override

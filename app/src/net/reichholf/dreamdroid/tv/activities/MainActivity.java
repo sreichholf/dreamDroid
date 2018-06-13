@@ -36,7 +36,7 @@ public class MainActivity extends FragmentActivity {
 			MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
 			// register MemorizingTrustManager for HTTPS
 			SSLContext sc = SSLContext.getInstance("TLS");
-			mTrustManager = new MemorizingTrustManager(this);
+			mTrustManager = new MemorizingTrustManager(getApplicationContext());
 			sc.init(null, new X509TrustManager[]{mTrustManager},
 					new java.security.SecureRandom());
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
