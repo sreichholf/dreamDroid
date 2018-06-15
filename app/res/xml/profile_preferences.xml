@@ -40,4 +40,34 @@
         android:key="pass"
         android:password="true"
         android:title="@string/pass"/>
+
+    <EditTextPreference
+        android:defaultValue="80"
+        android:inputType="number"
+        android:key="streamport"
+        android:numeric="integer"
+        android:title="@string/port_stream_live"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="streamlogin"
+        android:title="@string/login_live"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="file_login"
+        android:title="@string/login_movies"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="file_ssl"
+        android:title="@string/ssl_movies"/>
+
+    <EditTextPreference
+        android:defaultValue="80"
+        android:inputType="number"
+        android:key="fileport"
+        android:numeric="integer"
+        android:title="@string/port_stream_file"/>
+
 </PreferenceScreen>
