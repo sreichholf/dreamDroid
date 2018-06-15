@@ -19,9 +19,11 @@ package net.reichholf.dreamdroid.tv.presenter;
 
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.support.v17.leanback.widget.BaseCardView;
 import android.support.v17.leanback.widget.ImageCardView;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v4.content.ContextCompat;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
@@ -30,6 +32,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
+import net.reichholf.dreamdroid.tv.view.TextCardView;
 
 /*
  * A CardPresenter is used to generate Views and bind Objects to them on demand.
@@ -71,13 +74,25 @@ public class CardPresenter extends Presenter {
 				ContextCompat.getColor(parent.getContext(), R.color.primary_material_dark);
 		mDefaultCardImage = parent.getResources().getDrawable(R.drawable.dreamdroid_logo_simple, null);
 
-		ImageCardView cardView = new ImageCardView(parent.getContext()) {
-			@Override
-			public void setSelected(boolean selected) {
-				updateCardBackgroundColor(this, selected);
-				super.setSelected(selected);
-			}
-		};
+
+		BaseCardView cardView;
+		if (mMode == ItemMode.MODE_MOVIES) {
+			cardView = new TextCardView(parent.getContext()) {
+				@Override
+				public void setSelected(boolean selected) {
+					updateCardBackgroundColor(this, selected);
+					super.setSelected(selected);
+				}
+			};
+		} else {
+			cardView = new ImageCardView(parent.getContext()) {
+				@Override
+				public void setSelected(boolean selected) {
+					updateCardBackgroundColor(this, selected);
+					super.setSelected(selected);
+				}
+			};
+		}
 
 		cardView.setFocusable(true);
 		cardView.setFocusableInTouchMode(true);
@@ -85,13 +100,15 @@ public class CardPresenter extends Presenter {
 		return new ViewHolder(cardView);
 	}
 
-	private void updateCardBackgroundColor(ImageCardView view, boolean selected) {
+	private void updateCardBackgroundColor(BaseCardView view, boolean selected) {
 		int color = selected ? mSelectedBackgroundColor : mDefaultBackgroundColor;
 
 		// Both background colors should be set because the view's
 		// background is temporarily visible during animations.
 		view.setBackgroundColor(color);
-		view.findViewById(R.id.info_field).setBackgroundColor(color);
+		View info = view.findViewById(R.id.info_field);
+		if (info != null)
+			info.setBackgroundColor(color);
 	}
 
 	@Override
@@ -149,18 +166,15 @@ public class CardPresenter extends Presenter {
 		ExtendedHashMap movie = (ExtendedHashMap) item;
 		String title = movie.getString(Movie.KEY_TITLE);
 		String description = movie.getString(Movie.KEY_DESCRIPTION);
-		ImageCardView cardView = (ImageCardView) viewHolder.view;
+		TextCardView cardView = (TextCardView) viewHolder.view;
 		cardView.setTitleText(title);
 		cardView.setContentText(description);
-		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
-		Resources res = cardView.getResources();
-		int width = res.getDimensionPixelSize(R.dimen.card_width);
-		int height = res.getDimensionPixelSize(R.dimen.card_height);
-		cardView.setMainImageDimensions(width, height);
 	}
 
 	@Override
 	public void onUnbindViewHolder(Presenter.ViewHolder viewHolder) {
+		if (mMode == ItemMode.MODE_MOVIES)
+			return;
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
 
 		// Remove references to images so that the garbage collector can free up memory.
