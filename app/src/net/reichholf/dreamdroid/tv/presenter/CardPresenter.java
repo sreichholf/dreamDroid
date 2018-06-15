@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 
 /*
@@ -39,16 +40,26 @@ public class CardPresenter extends Presenter {
 	private int mDefaultBackgroundColor = -1;
 	private Drawable mDefaultCardImage;
 
-	private boolean mSettingsMode;
+	private ItemMode mMode;
+
+	public static final int TYPE_SERVICES = 0;
+	public static final int TYPE_SETTINGS = 1;
+	public static final int TYPE_MOVIES = 2;
+
+	public enum ItemMode {
+		MODE_SERVICES,
+		MODE_SETTINGS,
+		MODE_MOVIES,
+	}
 
 	public CardPresenter() {
 		super();
-		mSettingsMode = false;
+		mMode = ItemMode.MODE_SERVICES;
 	}
 
-	public CardPresenter(boolean isSettings) {
+	public CardPresenter(ItemMode mode) {
 		super();
-		mSettingsMode = isSettings;
+		mMode = mode;
 	}
 
 
@@ -85,10 +96,19 @@ public class CardPresenter extends Presenter {
 
 	@Override
 	public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
-		if (mSettingsMode)
-			bindSettingsViewHolder(viewHolder, item);
-		else
-			bindServiceViewHolder(viewHolder, item);
+		switch(mMode) {
+			case MODE_SERVICES:
+				bindServiceViewHolder(viewHolder, item);
+				break;
+			case MODE_SETTINGS:
+				bindSettingsViewHolder(viewHolder, item);
+				break;
+			case MODE_MOVIES:
+				bindMovieViewHolder(viewHolder, item);
+				break;
+			default:
+				break;
+		}
 	}
 
 	protected void bindSettingsViewHolder(Presenter.ViewHolder viewHolder, Object item) {
@@ -118,6 +138,20 @@ public class CardPresenter extends Presenter {
 		Picon.setPiconForView(cardView.getContext(), cardView.getMainImageView(), event, "tv_picon");
 		cardView.setTitleText(title);
 		cardView.setContentText(eventTitle);
+		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
+		Resources res = cardView.getResources();
+		int width = res.getDimensionPixelSize(R.dimen.card_width);
+		int height = res.getDimensionPixelSize(R.dimen.card_height);
+		cardView.setMainImageDimensions(width, height);
+	}
+
+	protected void bindMovieViewHolder(Presenter.ViewHolder viewHolder, Object item) {
+		ExtendedHashMap movie = (ExtendedHashMap) item;
+		String title = movie.getString(Movie.KEY_TITLE);
+		String description = movie.getString(Movie.KEY_DESCRIPTION);
+		ImageCardView cardView = (ImageCardView) viewHolder.view;
+		cardView.setTitleText(title);
+		cardView.setContentText(description);
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
 		Resources res = cardView.getResources();
 		int width = res.getDimensionPixelSize(R.dimen.card_width);
