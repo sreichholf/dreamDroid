@@ -92,11 +92,10 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		p.setFileSsl(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_FILE_SSL, false));
 		DatabaseHelper dbh = DatabaseHelper.getInstance(getContext());
 
-		if(p.getId() >= 0)
-			dbh.updateProfile(p);
-		else
-			dbh.addProfile(p);
-
+		dbh.updateProfile(p);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putInt(DreamDroid.CURRENT_PROFILE, p.getId());
+		editor.commit();
 		DreamDroid.setCurrentProfile(p);
 		super.onPause();
 	}
