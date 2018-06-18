@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.tv.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v17.preference.LeanbackPreferenceFragment;
@@ -32,6 +33,11 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 			DatabaseHelper.KEY_PROFILE_FILE_PORT,
 			DatabaseHelper.KEY_PROFILE_FILE_SSL,
 	};
+
+	@Override
+	public Context getContext() {
+		return getActivity();
+	}
 
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -77,7 +83,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 	@Override
 	public void onPause() {
 		Profile p = DreamDroid.getCurrentProfile();
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		p.setName(prefs.getString(DatabaseHelper.KEY_PROFILE_PROFILE, ""));
 		p.setHost(prefs.getString(DatabaseHelper.KEY_PROFILE_HOST, ""));
 		p.setPort(prefs.getString(DatabaseHelper.KEY_PROFILE_PORT, "80"));
@@ -90,7 +96,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		p.setFileLogin(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_FILE_LOGIN, false));
 		p.setFilePort(prefs.getString(DatabaseHelper.KEY_PROFILE_FILE_PORT, "80"));
 		p.setFileSsl(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_FILE_SSL, false));
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getContext());
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity());
 
 		dbh.updateProfile(p);
 		SharedPreferences.Editor editor = prefs.edit();
