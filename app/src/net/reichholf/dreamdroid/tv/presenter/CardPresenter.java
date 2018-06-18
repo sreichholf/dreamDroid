@@ -32,6 +32,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
+import net.reichholf.dreamdroid.tv.BrowseItem;
 import net.reichholf.dreamdroid.tv.view.TextCardView;
 
 /*
@@ -45,26 +46,15 @@ public class CardPresenter extends Presenter {
 
 	private ItemMode mMode;
 
-	public static final int TYPE_SERVICES = 0;
-	public static final int TYPE_SETTINGS = 1;
-	public static final int TYPE_MOVIES = 2;
-
 	public enum ItemMode {
-		MODE_SERVICES,
-		MODE_SETTINGS,
-		MODE_MOVIES,
-	}
-
-	public CardPresenter() {
-		super();
-		mMode = ItemMode.MODE_SERVICES;
+		MODE_IMAGE,
+		MODE_TEXT,
 	}
 
 	public CardPresenter(ItemMode mode) {
 		super();
 		mMode = mode;
 	}
-
 
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent) {
@@ -76,7 +66,7 @@ public class CardPresenter extends Presenter {
 
 
 		BaseCardView cardView;
-		if (mMode == ItemMode.MODE_MOVIES) {
+		if (mMode == ItemMode.MODE_TEXT) {
 			cardView = new TextCardView(parent.getContext()) {
 				@Override
 				public void setSelected(boolean selected) {
@@ -113,27 +103,30 @@ public class CardPresenter extends Presenter {
 
 	@Override
 	public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
-		switch(mMode) {
-			case MODE_SERVICES:
-				bindServiceViewHolder(viewHolder, item);
+		BrowseItem browseItem = (BrowseItem) item;
+		switch(browseItem.type) {
+			case Service:
+				bindServiceViewHolder(viewHolder, browseItem);
 				break;
-			case MODE_SETTINGS:
-				bindSettingsViewHolder(viewHolder, item);
+			case Movie:
+				bindMovieViewHolder(viewHolder, browseItem);
 				break;
-			case MODE_MOVIES:
-				bindMovieViewHolder(viewHolder, item);
+			case Preferences:
+			case Profile:
+				bindSettingsViewHolder(viewHolder, browseItem);
 				break;
 			default:
 				break;
 		}
 	}
 
-	protected void bindSettingsViewHolder(Presenter.ViewHolder viewHolder, Object item) {
-		ExtendedHashMap it = (ExtendedHashMap) item;
-		ImageCardView cardView = (ImageCardView) viewHolder.view;
-		cardView.setTitleText(it.getString("title"));
+	protected void bindSettingsViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
+		ExtendedHashMap settings = item.data;
 
-		Integer mainImageId = (int) it.get("icon");
+		ImageCardView cardView = (ImageCardView) viewHolder.view;
+		cardView.setTitleText(settings.getString("title"));
+
+		Integer mainImageId = (int) settings.get("icon");
 		if(mainImageId != null)
 			cardView.setMainImage(cardView.getResources().getDrawable(mainImageId, null));
 		else
@@ -145,8 +138,9 @@ public class CardPresenter extends Presenter {
 		cardView.setMainImageDimensions(width, height);
 	}
 
-	protected void bindServiceViewHolder(Presenter.ViewHolder viewHolder, Object item) {
-		ExtendedHashMap event = (ExtendedHashMap) item;
+	protected void bindServiceViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
+
+		ExtendedHashMap event = item.data;
 		String title = event.getString(Event.KEY_SERVICE_NAME);
 		String eventTitle = event.getString(Event.KEY_EVENT_TITLE);
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
@@ -162,8 +156,8 @@ public class CardPresenter extends Presenter {
 		cardView.setMainImageDimensions(width, height);
 	}
 
-	protected void bindMovieViewHolder(Presenter.ViewHolder viewHolder, Object item) {
-		ExtendedHashMap movie = (ExtendedHashMap) item;
+	protected void bindMovieViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
+		ExtendedHashMap movie = item.data;
 		String title = movie.getString(Movie.KEY_TITLE);
 		String description = movie.getString(Movie.KEY_DESCRIPTION);
 		TextCardView cardView = (TextCardView) viewHolder.view;
@@ -173,7 +167,7 @@ public class CardPresenter extends Presenter {
 
 	@Override
 	public void onUnbindViewHolder(Presenter.ViewHolder viewHolder) {
-		if (mMode == ItemMode.MODE_MOVIES)
+		if (mMode == ItemMode.MODE_TEXT)
 			return;
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
 
