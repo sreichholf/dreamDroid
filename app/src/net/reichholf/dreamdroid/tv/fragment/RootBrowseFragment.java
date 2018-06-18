@@ -36,8 +36,10 @@ import net.reichholf.dreamdroid.tv.activities.PreferenceActivity;
 import net.reichholf.dreamdroid.tv.fragment.abs.BaseHttpBrowseFragment;
 import net.reichholf.dreamdroid.tv.presenter.CardPresenter;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * Created by Stephan on 16.10.2016.
@@ -62,8 +64,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	ArrayList<ExtendedHashMap> mBouquets = null;
 	ArrayList<ExtendedHashMap> mBouquetQueue = null;
 
-	ArrayList<String> mLocations;
-	ArrayList<String> mLocationQeue;
+	HashMap<String, ArrayList<ExtendedHashMap>> mLocations;
 	ListRow mLoadingLocation = null;
 
 	ExtendedHashMap mLoadingBouquet;
@@ -84,9 +85,8 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		if (mBouquetQueue == null)
 			mBouquetQueue = new ArrayList<>();
 		if (mLocations == null);
-		 	mLocations = new ArrayList<>();
-		if (mLocationQeue == null)
-			mLocationQeue = new ArrayList<>();
+		 	mLocations = new HashMap<>();
+
 		setHeadersState(HEADERS_ENABLED);
 
 		setBrandColor(ContextCompat.getColor(getContext(), R.color.primary_dreamdroid));
@@ -105,6 +105,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	@Override
 	public void onResume() {
 		super.onResume();
+		mRequireReload = mRequireReload || mBouquets == null || mBouquets.isEmpty() || mLocations == null || mLocations.isEmpty();
 		if (mRequireReload)
 			load();
 	}
@@ -156,7 +157,6 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		Toast.makeText(getContext(), R.string.loading, Toast.LENGTH_LONG).show();
 		mBouquetQueue.clear();
 		mBouquets.clear();
-		mLocationQeue.clear();
 		mLocations.clear();
 		mListRowAdapters.clear();
 		mLoadingBouquet = null;
@@ -201,7 +201,9 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		mBouquets.addAll(bouquets);
 		mBouquetQueue.addAll(bouquets);
 
-		mLocations.addAll(DreamDroid.getLocations());
+		for(String location : DreamDroid.getLocations()) {
+			mLocations.put(location, new ArrayList<>());
+		}
 
 		Collections.reverse(mBouquetQueue);
 		loadNextBouquet();
@@ -224,13 +226,12 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	}
 
 	protected void addLocations() {
-		for(String location : mLocations) {
+		for(String location : mLocations.keySet()) {
 			ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter(CardPresenter.ItemMode.MODE_MOVIES));
 			HeaderItem header = new HeaderItem(ROW_MOVIE_OFFSET_ID + mRowsAdapter.size(), location);
 			//Insert before prefs
 			mRowsAdapter.add(mRowsAdapter.size() - 1, new ListRow(header, listRowAdapter));
 			mListRowAdapters.add(listRowAdapter);
-			mLocationQeue.add(location);
 		}
 	}
 
@@ -246,14 +247,16 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	}
 
 	protected void onLoadMoviesFinished(ArrayList<ExtendedHashMap> movies) {
+		if (mLoadingLocation == null)
+			return;
 		ListRow listRow = (ListRow) mRowsAdapter.get( mRowsAdapter.indexOf(mLoadingLocation) );
 		ArrayObjectAdapter listRowAdapter = (ArrayObjectAdapter) listRow.getAdapter();
 		listRowAdapter.clear();
+		ArrayList<ExtendedHashMap> locs = mLocations.get(mLoadingLocation.getHeaderItem().getName());
 		for (ExtendedHashMap movie : movies) {
 			listRowAdapter.add(movie);
+			locs.add(movie);
 		}
-		mLocationQeue.remove( listRow.getHeaderItem().getName() );
-
 	}
 
 	protected boolean isSettingsRow(Row row) {
@@ -290,6 +293,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 
 	@Override
 	public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
+		mLoadingLocation = null;
 		if (isSettingsRow(row)) {
 			mSelectedService = null;
 			mSelectedBouquet = null;
@@ -297,7 +301,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		}
 		if (isMovieRow(row)) {
 			String dirname = row.getHeaderItem().getName();
-			if (mLocationQeue.indexOf(dirname) >= 0) {
+			if (mLocations.get(dirname).isEmpty()) {
 				ArrayList<NameValuePair> params = new ArrayList<>();
 				params.add(new NameValuePair("dirname", dirname));
 				Bundle args = new Bundle();
