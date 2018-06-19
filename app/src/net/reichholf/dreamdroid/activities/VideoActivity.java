@@ -70,8 +70,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		setContentView(R.layout.video_player);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		getSupportActionBar().setHomeButtonEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(!DreamDroid.isTV(this));
+		getSupportActionBar().setHomeButtonEnabled(!DreamDroid.isTV(this));
 
 		surfaceFrameAddLayoutListener(true);
 		mCurrentScreenOrientation = getResources().getConfiguration().orientation;

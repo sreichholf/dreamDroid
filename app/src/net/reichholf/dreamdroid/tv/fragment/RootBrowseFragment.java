@@ -72,6 +72,19 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	ExtendedHashMap mSelectedBouquet;
 	ExtendedHashMap mSelectedService;
 
+	private class BouquetHeaderItem extends HeaderItem {
+		private ExtendedHashMap mBouquet;
+
+		public BouquetHeaderItem(long id, ExtendedHashMap bouquet) {
+			super(id, bouquet.getString(Service.KEY_NAME));
+			mBouquet = bouquet;
+		}
+
+		public ExtendedHashMap bouquet() {
+			return mBouquet;
+		}
+	}
+
 	private class SettingsRow extends ListRow {
 		public SettingsRow(HeaderItem header, ObjectAdapter adapter) {
 			super(header, adapter);
@@ -268,7 +281,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		for (ExtendedHashMap service : services) {
 			listRowAdapter.add(new BrowseItem(BrowseItem.Type.Service, service));
 		}
-		HeaderItem header = new HeaderItem(mRowsAdapter.size(), mLoadingBouquet.getString(Service.KEY_NAME));
+		HeaderItem header = new BouquetHeaderItem(mRowsAdapter.size(), mLoadingBouquet);
 		mRowsAdapter.add(0, new ServiceRow(header, listRowAdapter));
 		mListRowAdapters.add(listRowAdapter);
 		loadNextBouquet();
@@ -342,12 +355,8 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		} else if (row instanceof ServiceRow) {
 			BrowseItem item = (BrowseItem) it;
 			mSelectedService = item != null ? item.data : null;
-			long index = row.getHeaderItem().getId();
-
-			if (index >= 0 && index < mBouquets.size())
-				mSelectedBouquet = mBouquets.get((int) index);
-			else
-				mSelectedBouquet = new ExtendedHashMap();
+			BouquetHeaderItem headerItem = (BouquetHeaderItem) row.getHeaderItem();
+			mSelectedBouquet = headerItem.bouquet();
 		}
 	}
 

@@ -360,6 +360,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	}
 
+
+
 	private void previous() {
 		int index = getCurrentServiceIndex();
 		if (index < 0)
@@ -762,17 +764,29 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if ((keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_BUTTON_B)) {
-			if (isOverlaysVisible()) {
-				hideOverlays();
-				return true;
-			}
-			return false;
+		boolean ret = false;
+		switch(keyCode) {
+			case KeyEvent.KEYCODE_BACK:
+			case KeyEvent.KEYCODE_BUTTON_B:
+				if (isOverlaysVisible()) {
+					hideOverlays();
+					ret = true;
+				} else
+					return false;
+				break;
+			case KeyEvent.KEYCODE_DPAD_LEFT:
+				previous();
+				ret = true;
+				break;
+			case KeyEvent.KEYCODE_DPAD_RIGHT:
+				next();
+				ret = true;
+				break;
 		}
 		if (!isOverlaysVisible()) {
 			showOverlays(true);
-			return true;
+			ret = true;
 		}
-		return false;
+		return ret;
 	}
 }
