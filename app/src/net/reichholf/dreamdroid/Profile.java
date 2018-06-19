@@ -100,6 +100,10 @@ public class Profile implements Serializable {
 		setEncoderPass(encoderPass);
 	}
 
+	public void setId(int id) {
+		mId = id;
+	}
+
 	public void setPort(int port) {
 		mPort = port;
 	}

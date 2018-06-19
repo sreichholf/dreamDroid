@@ -107,7 +107,6 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		 	mLocations = new HashMap<>();
 
 		setHeadersState(HEADERS_ENABLED);
-
 		setBrandColor(ContextCompat.getColor(getContext(), R.color.primary_dreamdroid));
 		setBadgeDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dreamdroid_banner));
 		addSettingsRow();
@@ -127,6 +126,18 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		mRequireReload = mRequireReload || mBouquets == null || mBouquets.isEmpty() || mLocations == null || mLocations.isEmpty();
 		if (mRequireReload)
 			load();
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		DreamDroid.setCurrentProfileChangedListener(this);
+	}
+
+	@Override
+	public void onStop() {
+		DreamDroid.setCurrentProfileChangedListener(null);
+		super.onStop();
 	}
 
 	@NonNull

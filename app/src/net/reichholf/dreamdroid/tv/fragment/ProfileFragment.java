@@ -35,12 +35,8 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 	};
 
 	@Override
-	public Context getContext() {
-		return getActivity();
-	}
-
-	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+		applyCurrentProfile();
 		setPreferencesFromResource(R.xml.profile_preferences, rootKey);
 		for (String key : sKeys) {
 			Preference pref = findPreference(key);
@@ -56,6 +52,26 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 			updateSummary(pref, null);
 		}
 		getActivity().setResult(Activity.RESULT_OK);
+	}
+
+
+	protected void applyCurrentProfile() {
+		Profile p = DreamDroid.getCurrentProfile();
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(DatabaseHelper.KEY_PROFILE_PROFILE, p.getName());
+		editor.putString(DatabaseHelper.KEY_PROFILE_HOST, p.getHost());
+		editor.putString(DatabaseHelper.KEY_PROFILE_PORT, p.getPortString());
+		editor.putBoolean(DatabaseHelper.KEY_PROFILE_SSL, p.isSsl());
+		editor.putBoolean(DatabaseHelper.KEY_PROFILE_LOGIN, p.isLogin());
+		editor.putString(DatabaseHelper.KEY_PROFILE_USER, p.getUser());
+		editor.putString(DatabaseHelper.KEY_PROFILE_PASS, p.getPass());
+		editor.putBoolean(DatabaseHelper.KEY_PROFILE_STREAM_LOGIN, p.isStreamLogin());
+		editor.putString(DatabaseHelper.KEY_PROFILE_STREAM_PORT, p.getStreamPortString());
+		editor.putBoolean(DatabaseHelper.KEY_PROFILE_FILE_LOGIN, p.isFileLogin());
+		editor.putString(DatabaseHelper.KEY_PROFILE_FILE_PORT, p.getFilePortString());
+		editor.putBoolean(DatabaseHelper.KEY_PROFILE_FILE_SSL, p.isFileSsl());
+		editor.commit();
 	}
 
 	protected void updatePortPreference(boolean newValue, String preferenceKey) {
@@ -96,9 +112,10 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		p.setFileLogin(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_FILE_LOGIN, false));
 		p.setFilePort(prefs.getString(DatabaseHelper.KEY_PROFILE_FILE_PORT, "80"));
 		p.setFileSsl(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_FILE_SSL, false));
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity());
 
+		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity());
 		dbh.updateProfile(p);
+
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt(DreamDroid.CURRENT_PROFILE, p.getId());
 		editor.commit();
