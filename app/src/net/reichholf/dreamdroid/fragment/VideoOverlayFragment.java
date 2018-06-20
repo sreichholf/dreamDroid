@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -81,7 +82,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
 
 	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
-	private final int[] sOverlayViews = {R.id.service_detail_root};
+	private final int[] sOverlayViews = {R.id.service_detail_root, R.id.epg};
 	private final int[] sZapOverlayViews = {R.id.servicelist};
 	static float sOverlayAlpha = 0.85f;
 
@@ -104,6 +105,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected Runnable mAutoHideRunnable;
 	protected Runnable mIssueReloadRunnable;
 
+	protected FrameLayout mEpgView;
 	protected AutofitRecyclerView mServicesView;
 	protected ItemClickSupport mItemClickSupport;
 	private GestureDetectorCompat mGestureDector;
@@ -147,41 +149,44 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.video_player_overlay, container, false);
 		mServicesView = view.findViewById(R.id.servicelist);
-		mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
-		mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
+		if (mServicesView != null) {
+			mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+			mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
 
-		mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-			int sTreshold = 20;
-			int mTotalDistance = 0;
+			mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+				int sTreshold = 20;
+				int mTotalDistance = 0;
 
-			@Override
-			public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-				super.onScrolled(recyclerView, dx, dy);
-				mTotalDistance += dy;
-				if (mTotalDistance < 0 - sTreshold) {
-					mTotalDistance = 0;
-					showToolbar();
-				} else if (mTotalDistance > sTreshold) {
-					mTotalDistance = 0;
-					hideToolbar();
+				@Override
+				public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+					super.onScrolled(recyclerView, dx, dy);
+					mTotalDistance += dy;
+					if (mTotalDistance < 0 - sTreshold) {
+						mTotalDistance = 0;
+						showToolbar();
+					} else if (mTotalDistance > sTreshold) {
+						mTotalDistance = 0;
+						hideToolbar();
+					}
 				}
-			}
-		});
-		mItemClickSupport = ItemClickSupport.addTo(mServicesView);
-		mItemClickSupport.setOnItemClickListener(this);
+			});
+			mItemClickSupport = ItemClickSupport.addTo(mServicesView);
+			mItemClickSupport.setOnItemClickListener(this);
 
-		ServiceAdapter adapter = new ServiceAdapter(getActivity(), mServiceList);
-		mServicesView.setAdapter(adapter);
-		mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-			@Override
-			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-				super.onScrollStateChanged(recyclerView, newState);
-				if (newState == RecyclerView.SCROLL_STATE_IDLE)
-					autohide();
-				else
-					mHandler.removeCallbacks(mAutoHideRunnable);
-			}
-		});
+			ServiceAdapter adapter = new ServiceAdapter(getActivity(), mServiceList);
+			mServicesView.setAdapter(adapter);
+			mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+				@Override
+				public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+					super.onScrollStateChanged(recyclerView, newState);
+					if (newState == RecyclerView.SCROLL_STATE_IDLE)
+						autohide();
+					else
+						mHandler.removeCallbacks(mAutoHideRunnable);
+				}
+			});
+		}
+		mEpgView = view.findViewById(R.id.epg);
 
 		mGestureDector = new GestureDetectorCompat(view.findViewById(R.id.overlay_root).getContext(), new GestureDetector.SimpleOnGestureListener() {
 			@Override
@@ -336,7 +341,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (data.isError())
 			return;
 		mServiceList.clear();
-		mServicesView.getAdapter().notifyDataSetChanged();
+		if (mServicesView != null)
+			mServicesView.getAdapter().notifyDataSetChanged();
 		mServiceList.addAll(data.getResult());
 		for (ExtendedHashMap service : mServiceList) {
 			if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef)) {
@@ -346,7 +352,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				if (!eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
 					onServiceInfoChanged(false);
 			}
-			mServicesView.getAdapter().notifyDataSetChanged();
+			if (mServicesView != null)
+				mServicesView.getAdapter().notifyDataSetChanged();
 		}
 	}
 
@@ -483,6 +490,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 			parentNow.setVisibility(View.VISIBLE);
 
+			if (mEpgView != null) {
+				TextView titleView = mEpgView.findViewById(R.id.epg_title);
+				TextView descriptionView = mEpgView.findViewById(R.id.epg_description);
+				TextView descriptionExView = mEpgView.findViewById(R.id.epg_description_extended);
+				titleView.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
+				descriptionView.setText(mServiceInfo.getString(Event.KEY_EVENT_DESCRIPTION));
+				descriptionExView.setText(mServiceInfo.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED));
+			}
+
 			String next = mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
 			boolean hasNext = next != null && !"".equals(next);
 			if (hasNext) {
@@ -502,7 +518,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			parentNext.setVisibility(View.GONE);
 		}
 		updateProgress();
-		mServicesView.getAdapter().notifyDataSetChanged();
+		if (mServicesView != null)
+			mServicesView.getAdapter().notifyDataSetChanged();
 	}
 
 	protected void updateProgress() {
