@@ -357,11 +357,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		}
 	}
 
-	private boolean isServiceDetailVisible() {
-		View root = getView();
-		return root != null && root.findViewById(R.id.service_detail_root).getVisibility() == View.VISIBLE;
-	}
-
 	@Override
 	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 
@@ -436,11 +431,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
 			long eventStart = Double.valueOf(start).longValue() * 1000;
 			long eventEnd = eventStart + (Double.valueOf(duration).longValue() * 1000);
-			long now = new Date().getTime();
-			long updateAt = SystemClock.uptimeMillis() + eventEnd - now;
-			if (updateAt < now)
-				updateAt = now + 2000; //outdated, reload in few seconds
-			mHandler.postAtTime(mIssueReloadRunnable, updateAt);
+			long now = System.currentTimeMillis();
+			long delay = eventEnd - now;
+			if (eventEnd <= now)
+				delay = now + 2000; //outdated, reload in few seconds
+			mHandler.postDelayed(mIssueReloadRunnable, delay);
 		} else {
 			Log.i(LOG_TAG, "No Eventinfo present, will update in 5 Minutes!");
 			mHandler.postDelayed(mIssueReloadRunnable, 300000); //update in 5 minutes
