@@ -349,7 +349,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				ExtendedHashMap oldServiceInfo = mServiceInfo;
 				mServiceInfo = service;
 				String eventid = mServiceInfo.getString(Event.KEY_EVENT_ID, "-1");
-				if (!eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
+				if (oldServiceInfo == null || !eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
 					onServiceInfoChanged(false);
 			}
 			if (mServicesView != null)
