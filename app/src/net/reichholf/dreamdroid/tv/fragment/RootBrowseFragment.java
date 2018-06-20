@@ -211,6 +211,10 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		load(LOADER_BOUQUETLIST_ID, args);
 	}
 
+	protected void reload() {
+
+	}
+
 	protected void load(int loader, Bundle args) {
 		getLoaderManager().restartLoader(loader, args, this);
 	}
@@ -223,6 +227,11 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 
 	protected void addSettingsRow() {
 		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter(CardPresenter.ItemMode.MODE_IMAGE));
+
+		ExtendedHashMap reload = new ExtendedHashMap();
+		reload.put("title", getString(R.string.reload));
+		reload.put("icon", R.drawable.ic_action_refresh);
+		listRowAdapter.add(new BrowseItem(BrowseItem.Type.Reload, reload));
 
 		ExtendedHashMap preferences = new ExtendedHashMap();
 		preferences.put("title", getString(R.string.settings));
@@ -300,10 +309,15 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		}
 	}
 
+
+
 	@Override
 	public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object it, RowPresenter.ViewHolder rowViewHolder, Row row) {
 		BrowseItem item = (BrowseItem) it;
 		switch (item.type) {
+			case Reload:
+				load();
+				break;
 			case Preferences:
 			case Profile:
 				{

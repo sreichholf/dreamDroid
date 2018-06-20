@@ -6,6 +6,7 @@ import java.io.Serializable;
 
 public class BrowseItem implements Serializable{
 	public enum Type {
+		Reload,
 		Service,
 		Movie,
 		Profile,
