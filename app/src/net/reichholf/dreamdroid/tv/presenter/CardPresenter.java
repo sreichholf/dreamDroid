@@ -111,6 +111,7 @@ public class CardPresenter extends Presenter {
 			case Movie:
 				bindMovieViewHolder(viewHolder, browseItem);
 				break;
+			case Reload:
 			case Preferences:
 			case Profile:
 				bindSettingsViewHolder(viewHolder, browseItem);
