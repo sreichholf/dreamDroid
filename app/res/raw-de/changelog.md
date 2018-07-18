@@ -1,3 +1,8 @@
+## 1.2.419
+* FIX: Verbesserung an der "TV" Version von dreamDroid
+* FIX: Abstürze behoben
+* DEV: Code Cleanups
+
 ## 1.2.418
 * FIX: Die Picon-Synchronisation schrieb leere Dateien (Picons müssen ggf. erneut synchronisiert werden)
 

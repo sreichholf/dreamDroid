@@ -1,3 +1,8 @@
+## 1.2.419
+* FIX: Some improvements for the TV version of dreamDroid
+* FIX: Fix NPEs
+* DEV: Some code cleanups
+
 ## 1.2.418
 * FIX: Picon sync was writing empty files (resync to fix picon display)
 
