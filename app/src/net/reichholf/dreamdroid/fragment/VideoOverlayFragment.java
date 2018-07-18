@@ -434,7 +434,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			long now = System.currentTimeMillis();
 			long delay = eventEnd - now;
 			if (eventEnd <= now)
-				delay = now + 2000; //outdated, reload in few seconds
+				delay = now; //outdated, reload in few seconds
+			delay += 2000;
 			mHandler.postDelayed(mIssueReloadRunnable, delay);
 		} else {
 			Log.i(LOG_TAG, "No Eventinfo present, will update in 5 Minutes!");
