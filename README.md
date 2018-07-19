@@ -1,6 +1,17 @@
-[![Build Status](https://travis-ci.org/sreichholf/dreamDroid.svg?branch=master)](https://travis-ci.org/sreichholf/dreamDroid)
+DreamDroid [![Build Status](https://travis-ci.org/sreichholf/dreamDroid.svg?branch=master)](https://travis-ci.org/sreichholf/dreamDroid)
+==========
+
+Remotely control your enigma2 based Dreambox with any Android Device!
+
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+      alt="Get it on Google Play"
+      height="80">](https://play.google.com/store/apps/details?id=net.reichholf.dreamdroid)
+[<img src="https://f-droid.org/badge/get-it-on.png"
+      alt="Get it on F-Droid"
+      height="80">](https://f-droid.org/packages/net.reichholf.dreamdroid/)
 
 >© Stephan Reichholf (stephan at reichholf dot net)
+
 # Changelog
 * [English](app/res/raw/changelog.md)
 * [Deutsch](app/res/raw-de/changelog.md)
