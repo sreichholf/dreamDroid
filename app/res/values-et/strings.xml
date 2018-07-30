@@ -1,169 +1,363 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <resources>
 
-    <string name="description">Kirjeldus</string>
-    <string name="title">Pealkiri</string>
-    <string name="mo">Mo</string>
-    <string name="app_name">Dreamdroid</string>
+<string name="description">Kirjeldus</string>
+<string name="title">Pealkiri</string>
+<string name="app_name">Dreamdroid</string>
+<string name="app_name_tv">dreamDroidTV</string>
 
-    <string-array name="servicelist">
-        <item>Lemmikud</item>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-    </string-array>
+<string-array name="servicelist">
+<item>Lemmiknimekirjad (TV)</item>
+<item>Levitaja (TV)</item>
+<item>Kõik kanalid (TV)</item>
+<item>Lemmiknimekirjad (Raadio)</item>
+<item>Levitaja (Raadio)</item>
+<item>Kõik (Raadio)</item>
+</string-array>
 
-    <string name="timer">Taimer</string>
-    <string name="mediaplayer">Meediamängija</string>
-    <string name="play">Esita</string>
-    <string name="add_to_playlist">Lisa nimekirja</string>
-    <string name="navigation_back_media">Tagasi</string>
-    <string name="close_media">Sulge meediamängija</string>
-    <string name="next_media">Järgmine</string>
-    <string name="play_media">Esita</string>
-    <string name="previous_media">Eelmine</string>
-    <string name="stop_media">Peata</string>
-    <string name="filebrowser">Faili lehitseja</string>
-    <string name="service">Teenus</string>
-    <string name="location">Asukoht</string>
+<string name="timer">Taimer</string>
+<string name="mediaplayer">Meediapleier</string>
+<string name="play">Esita</string>
+<string name="add_to_playlist">Lisa nimekirja</string>
+<string name="navigation_back_media">Tagasi</string>
+<string name="home_media">Avaleht</string>
+<string name="close_media">Sulge meediapleier</string>
+<string name="next_media">Järgmine</string>
+<string name="play_media">Esita</string>
+<string name="previous_media">Eelmine</string>
+<string name="stop_media">Peata</string>
+<string name="playlist">Pleilist</string>
+<string name="filebrowser">Failihaldur</string>
+<string name="delete_from_playlist">Kustuta pleilistist</string>
+<string name="service">Kanal</string>
+<string name="afterevent">Saate lõpus</string>
+<string name="location">Asukoht</string>
 
-    <string-array name="afterevents">
-        <item>Ära tee midagi</item>
-        <item>Ooterežiim</item>
-        <item>Sügav ooterežiim</item>
-        <item>Automaatne</item>
-    </string-array>
+<string-array name="afterevents">
+<item>Ära tee midagi</item>
+<item>Ooteseisund</item>
+<item>Puhkeseisund</item>
+<item>Automaatne</item>
+</string-array>
 
-    <string name="begin_time">Algusaeg</string>
-    <string name="repeatings">Kordused</string>
-    <string name="end_time">Lõpuaeg</string>
-    <string name="services">Kanalid</string>
-    <string name="movies">Filimid</string>
-    <string name="device_info">Seadme informatsioon</string>
-    <string name="send_message">Saada teade</string>
-    <string name="save">Salvesta</string>
-    <string name="cancel">Tühista</string>
-    <string name="zap">Kanalivahetus</string>
-    <string name="browse_epg">Sela EPG</string>
-    <string name="edit">Muuda</string>
-    <string name="delete">Kustuta</string>
-    <string name="epg">EPG</string>
-    <string name="ssl_enabled">https (ssl lubatud)</string>
-    <string name="port">Port</string>
-    <string name="port_stream_live">Port (Live)</string>
-    <string name="port_stream_file">Port (</string>
-    <string name="settings">Seaded</string>
-    <string name="close">Sulge</string>
-    <string name="minutes_short">min.</string>
-    <string name="user">Kasutaja</string>
-    <string name="user_long">Kasutajanimi</string>
-    <string name="pass">Salasõna</string>
-    <string name="pass_long">Salasõna</string>
-    <string name="saving">Salvesta</string>
-    <string name="deleting">Kustuta</string>
-    <string name="delete_confirm">Soovid kindlasti kustutada?</string>
-    <string name="set_timer">Sea taimer</string>
-    <string name="pick_action">Vali tegevus</string>
-    <string name="set_time_begin">Alguskuupäev ja aeg</string>
-    <string name="set_time_end">Lõpukuupäev ja aeg</string>
-    <string name="reload">Lae uuesti</string>
+<string name="begin_time">Algusaeg</string>
+<string name="repeatings">Kordused</string>
+<string name="end_time">Lõpuaeg</string>
+<string name="services">Kanalid</string>
+<string name="movies">Filmid</string>
+<string name="device_info">Vastuvõtja info</string>
+<string name="send_message">Saada teade</string>
+<string name="save">Salvesta</string>
+<string name="cancel">Tühista</string>
+<string name="fetching_data">Andmete hankimine…</string>
+<string name="parsing">Töötlemine…</string>
+<string name="get_content_error">Viga sisu hankimisel!</string>
+<string name="zap">Kanalivahetus</string>
+<string name="browse_epg">Kanali EPG</string>
+<string name="edit">Muuda</string>
+<string name="delete">Kustuta</string>
+<string name="epg">EPG</string>
+<string name="ssl_enabled">https (ssl lubatud)</string>
+<string name="host">Masinanimi/IP</string>
+<string name="port">Port</string>
+<string name="live">Otse</string>
+<string name="port_stream_live">Port (Live)</string>
+<string name="port_stream_file">Port (Filmid)</string>
+<string name="settings">Seaded</string>
+<string name="host_long">Masinanimi või IP</string>
+<string name="port_long">Kuulatav port</string>
+<string name="close">Sulge</string>
+<string name="minutes_short">min.</string>
+<string name="user">Kasutaja</string>
+<string name="user_long">Kasutajanimi</string>
+<string name="pass">Salasõna</string>
+<string name="pass_long">Salasõna</string>
+<string name="saving">Salvestamine. Oota…</string>
+<string name="deleting">Kustutamine. Oota…</string>
+<string name="delete_confirm">Kas kustutada?</string>
+<string name="set_timer">Sea taimer</string>
+<string name="home">Avaleht</string>
+<string name="pick_action">Vali tegevus</string>
+<string name="set_time_begin">Alguskuupäev ja aeg</string>
+<string name="set_time_end">Lõpukuupäev ja aeg</string>
+<string name="apply">Rakenda</string>
+<string name="reload">Lae uuesti</string>
 
-    <string-array name="weekdays_short">
-        <item>E</item>
-        <item>T</item>
-        <item>K</item>
-        <item>N</item>
-        <item>R</item>
-        <item>L</item>
-        <item>P</item>
-    </string-array>
-    <string-array name="weekdays">
-        <item>Esmaspäev</item>
-        <item>Teisipäev</item>
-        <item>Kolmapäev</item>
-        <item>Neljapäev</item>
-        <item>Reede</item>
-        <item>Laupäev</item>
-        <item>Pühapäev</item>
-    </string-array>
+<string-array name="weekdays_short">
+<item>E</item>
+<item>T</item>
+<item>K</item>
+<item>N</item>
+<item>R</item>
+<item>L</item>
+<item>P</item>
+</string-array>
+<string-array name="weekdays">
+<item>Esmaspäev</item>
+<item>Teisipäev</item>
+<item>Kolmapäev</item>
+<item>Neljapäev</item>
+<item>Reede</item>
+<item>Laupäev</item>
+<item>Pühapäev</item>
+</string-array>
 
-    <string name="choose_days">Vali päevad</string>
-    <string name="mo_to_fr">Esmaspäevast Reedeni</string>
-    <string name="daily">Igapäevaselt</string>
-    <string name="new_timer">Uus taimer</string>
-    <string name="locations">Asukohad</string>
-    <string name="gui_version">GUI versioon</string>
-    <string name="image_version">Image versioon</string>
-    <string name="device_name">Seadme nimi</string>
-    <string name="hdds">Kõvakettad</string>
-    <string name="not_implemented">See funktsioon veel ei tööta!</string>
-    <string name="current_event">Käesolev saade</string>
-    <string name="seconds">sekundid</string>
-    <string name="message">Sõnum</string>
-    <string name="message_text_hint">Sisesta tekst siia</string>
-    <string name="send">Saada</string>
-    <string name="type">Trüki</string>
+<string name="none">Pole</string>
+<string name="choose_days">Vali päevad</string>
+<string name="mo_to_fr">Esmaspäevast reedeni</string>
+<string name="daily">Igapäevaselt</string>
+<string name="new_timer">Uus taimer</string>
+<string name="locations">Asukohad</string>
+<string name="gui_version">GUI versioon</string>
+<string name="image_version">Image versioon</string>
+<string name="interface_version">Veebiliidese versioon</string>
+<string name="front_processor_version">Esiprotsessori versioon</string>
+<string name="device_name">Seadme nimi</string>
+<string name="nics">Võrguliidesed</string>
+<string name="hdds">Kõvakettad</string>
+<string name="hdd_capacity">%1$s (%2$s vaba)</string>
+<string name="not_implemented">See funktsioon veel ei tööta!</string>
+<string name="current_event">Käesolev saade</string>
+<string name="timeout">Aegumine</string>
+<string name="seconds">sekundid</string>
+<string name="message">Sõnum</string>
+<string name="message_text_hint">Sisesta tekst siia</string>
+<string name="send">Saada</string>
+<string name="type">Trüki</string>
 
-    <string-array name="message_types">
-        <item>JahEi</item>
-        <item>Ettevaatust</item>
-        <item>Info</item>
-        <item>Viga</item>
-    </string-array>
+<string-array name="message_types">
+<item>JahEi</item>
+<item>Ettevaatust</item>
+<item>Info</item>
+<item>Viga</item>
+</string-array>
 
-    <string name="login_enabled">Luba sisselogimine</string>
-    <string name="wait_request_finished">Palun oodake kuni </string>
-    <string name="current_service">Hetkel</string>
-    <string name="provider">Teenusepakkuja</string>
-    <string name="now">Käimasolev</string>
-    <string name="next">Järgmine</string>
-    <string name="epg_search">EPG-otsing</string>
-    <string name="epg_search_hint">Otsi EPG</string>
-    <string name="standard">Standartne välimus</string>
-    <string name="quickzap">Lihtne välimus</string>
-    <string name="no_epg_available">Hetkel puudub EPG-info antud kanalil!</string>
-    <string name="ok">OK</string>
-    <string name="activate">Aktiveeri</string>
-    <string name="confirm_delete_profile">Soovid tõesti kustutada antud profiili?</string>
-    <string name="profile_activated">Aktiveeritud profiil</string>
-    <string name="profile_not_activated">Viga profiili aktiveerimisel</string>
-    <string name="profile_not_deleted">Viga profiili kustutamisel</string>
-    <string name="profile_deleted">Kustutatud profiil</string>
-    <string name="profile">Profiil</string>
-    <string name="profile_updated">Uuendatud profiil</string>
-    <string name="profile_added">Lisatud profiil</string>
-    <string name="profile_add">Lisa profiil</string>
-    <string name="profile_not_added">Ei saa profiili lisada</string>
-    <string name="profile_not_updated">Ei saa profiili uuendada</string>
-    <string name="locations_default_fallback">Ei suuda asukohta laadida, pöördun tagasi vaikimisi asukoha juurde</string>
-    <string name="tags">Ülesanded</string>
-    <string name="screenshot">Ekraanitõmmis</string>
-    <string name="reboot">Taaskäivita</string>
-    <string name="shutdown">Lülita välja</string>
+<string name="virtual_remote">Pult</string>
+<string name="login">Sisselogimine</string>
+<string name="login_enabled">Luba sisselogimine</string>
+<string name="wait_request_finished">Palun oodake kuni </string>
+<string name="current_service">Hetkel</string>
+<string name="provider">Levitaja</string>
+<string name="now">Hetkel</string>
+<string name="next">Järgmine</string>
+<string name="epg_search">EPG otsing</string>
+<string name="epg_search_hint">Otsi EPG</string>
+<string name="standard">Standartne välimus</string>
+<string name="quickzap">Lihtne välimus</string>
+<string name="no_epg_available">Antud kanalil EPG info puudub!</string>
+<string name="ok">OK</string>
+<string name="activate">Aktiveeri</string>
+<string name="confirm_delete_profile">Kas kustutada antud profiil?</string>
+<string name="profile_activated">Aktiveeritud profiil</string>
+<string name="profile_not_activated">Viga profiili aktiveerimisel</string>
+<string name="profile_not_deleted">Viga profiili kustutamisel</string>
+<string name="profile_deleted">Kustutatud profiil</string>
+<string name="profile">Profiil</string>
+<string name="profile_name">Profiili nimi</string>
+<string name="profile_updated">Uuendatud profiil</string>
+<string name="profile_added">Lisatud profiil</string>
+<string name="profile_add">Lisa profiil</string>
+<string name="profile_not_added">Profiili lisamine nurjus</string>
+<string name="profile_not_updated">Profiili uuendamine nurjus</string>
+<string name="no_list_item">Kuvatavaid elemente pole…</string>
+<string name="locations_default_fallback">Ei suuda asukohta laadida, pöördun tagasi vaikimisi asukoha juurde</string>
+<string name="tags">Sildid</string>
+<string name="screenshot">Ekraanitõmmis</string>
+<string name="host_empty">Masinanimi ei või ole tühi!</string>
+<string name="standby">Ooteseisund</string>
+<string name="powerup">Käivitus</string>
+<string name="restart_gui">E2 taaskäivitus</string>
+<string name="reboot">Taaskäivitus</string>
+<string name="shutdown">Seiskamine</string>
+<string name="powercontrol">Toide</string>
+<string name="choose_tags">Vali sildid</string>
+<string name="choose_location">Vali asukoht</string>
+<string name="bouquet_overview">Lemmiknimekirjad</string>
+<string name="set_default">Määra vaikimisi</string>
+<string name="default_bouquet_set_to">Vaikimisi lemmiknimekirjaks määrati: </string>
+<string name="default_bouquet_not_set">Vaikimisi lemmiknimekirja määramine nurjus!</string>
+<string name="loading">Laadimine…</string>
+<string name="about">Rakendusest</string>
+<string name="changelog">Muudatused</string>
+<string name="license_gplv3">LITSENTS:
+\nDreamDroid on vaba tarkvara!
+\nAluseks GNU Üldine Avalik Litsents 3 https://www.gnu.org/licenses/gpl-3.0.html</string>
+<string name="source_code_link">Lähtekood on saadaval: http://github.com/sreichholf/dreamDroid</string>
+<string name="active_profile">Profiil</string>
+<string name="connection">Ühendus</string>
+<string name="connection_state">Olek</string>
+<string name="not_available">Pole saadaval</string>
+<string name="checking">kontrollitakse#8230;</string>
+<string name="error">VIGA!</string>
+<string name="check_connectivity">Kontrolli ühenduvust</string>
+<string name="version_too_low">Versioon &lt; 1.6.5</string>
+<string name="connection_error">Ühenduse viga</string>
+<string name="port_out_of_range">Port pole vahemikus 1 - 65535</string>
+<string name="illegal_host">Illegaalne masin</string>
+<string name="edit_timer">Muuda taimerit</string>
+<string name="cleaning_timerlist">Taimeriloendi puhastus</string>
+<string name="cleanup">Puhasta</string>
+<string name="in_standby">Vastuvõtja on ooteseisundis</string>
+<string name="is_running">Vastuvõtja töötab nüüd</string>
+<string name="stream">Voogesitus</string>
+<string name="stream_host">Voogesituse masinanimi/IP</string>
+<string name="stream_host_long">Masin/IP voogesituseks (pole kohustuslik)</string>
+<string name="stream_current">Kanali voogesitus</string>
+<string name="similar">Sarnane</string>
 
-    <string-array name="timer_state">
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-    </string-array>
-    <string-array name="timer_action">
-        <item/>
-        <item/>
-    </string-array>
+<string-array name="timer_state">
+<item>ootel…</item>
+<item>valmis…</item>
+<item>töös…</item>
+<item>lõppenud</item>
+<item>keelatud</item>
+</string-array>
+<string-array name="timer_action">
+<item>salvestus</item>
+<item>kanalivahetus</item>
+</string-array>
 
-    <string name="main_menu">Peamenüü</string>
-    <string name="profiles">Profiilid</string>
-    <string name="enabled">Lubatud</string>
-    <string name="sync_picons_path">Piconid</string>
-    <string name="sync_picons_path_long">Kaust kus asuvad piconid dreamboxis</string>
-    <string name="connecting">Ühendan</string>
-    <string name="connected">Ühendatud</string>
-    <string name="logged_in">Sisselogitud</string>
-    <string name="enable_animations">Luba animatsioonid</string>
-    <string name="enable">Luba</string>
-    <string name="disable">Keela</string>
+<string name="sleeptimer">Unetaimer</string>
+<string name="current_volume">Helitugevus on %s</string>
+<string name="muted">Hääletu</string>
+<string name="enable_volume_control">Luba helitugevuse juhtimine</string>
+<string name="download">Laadi alla</string>
+<string name="extras">Lisad</string>
+<string name="main_menu">Peamenüü</string>
+<string name="profiles">Profiilid</string>
+<string name="profiles_long">Seadista ühenduse profiilid</string>
+<string name="enable_instant_zap">Kohene kanalivahetus</string>
+<string name="enable_instant_zap_long">Kohene kanalivahetus lühikesel koputusel</string>
+<string name="wrong_activity">Vale toiming! Loo kõik dreamDroidi jaoks loodud otseteed uuesti!</string>
+<string name="simple_remote">Lihtsa puldi välimus</string>
+<string name="screenshot_saved">Ekraanitõmmis salvestati asukohta \'%s\'</string>
+<string name="imdb">IMDb</string>
+<string name="missing_stream_player">Videovoogude esituseks puudub mängija</string>
+<string name="edit_profile">Muuda profiili</string>
+<string name="force_tablet_layout_long">Sunnitud tahvelarvutile optimeeritud välimus</string>
+<string name="force_tablet_layout">Sunnitud tahvelarvuti välimus</string>
+<string name="mobile_imdb">Kasuta imdb.com mobiiliversiooni</string>
+<string name="mobile_imdb_long">Kasuta 'www.imdb.com' asemel 'm.imdb.com'</string>
+<string name="searching">Otsitakse…</string>
+<string name="searching_known_devices">Toimub dreamboxide otsing kohtvõrgus. See võib kesta paar minutit…</string>
+<string name="autodiscover_dreamboxes">Dreamboxi automaatne tuvastamine</string>
+<string name="autodiscovery_failed">Kohtvõrgust dreamboxe ei leitud!</string>
+<string name="add_all">Lisa kõik</string>
+<string name="error_parsing">Viga andmete töötlemisel!</string>
+<string name="enabled">Lubatud</string>
+<string name="signal_meter">Signaalimõõdik</string>
+<string name="accoustic_feedback">Helidega tagasiside</string>
+<string name="use_light_theme_long">Kasuta tumeda teema asemel heledat</string>
+<string name="use_light_theme">Kasuta heledat teemat</string>
+<string name="leave_confirm">Kas sulged rakenduse?</string>
+<string name="leave_confirm_long">Kas sulgeda dreamDroid?</string>
+<string name="sent_as">Saada kui %s</string>
+<string name="watch_on_dream">Vaata vastuvõtjas</string>
+<string name="sent_from_dreamdroid">Saatjaks dreamDroid kasutades %s</string>
+<string name="no_profile_available">Ühenduse profiili ei leitud. Rakenduse kasutamiseks seadista vähemalt üks!</string>
+<string name="confirm_app_close">Küsi kinnitust enne rakenduse sulgemist</string>
+<string name="confirm_app_close_long">Küsi kinnitust enne rakenduse sulgemist, kui vajutada "tagasi"</string>
+<string name="login_movies">Sisselogimine (Filmid)</string>
+<string name="ssl_movies">https (Filmid)</string>
+<string name="login_live">Sisselogimine (Otse)</string>
+<string name="appearance">Välimus</string>
+<string name="usability">Kasutatavus</string>
+<string name="use_picons">Kasuta pikoneid</string>
+<string name="use_picons_long">Luba pikonite kasutamine teatud kohtades.
+\nPikonite asukoht  /{SD-kaart}/dreamDroid/picons</string>
+<string name="sync_picons">Impordi pikonid</string>
+<string name="sync_picons_long">Impordi pikonid kataloogi /{SD-kaart}/dreamDroid/picons kasutades seadistatud profiili</string>
+<string name="sync_picons_path">Pikonid - kaugasukoht</string>
+<string name="sync_picons_path_long">Pikonite asukoht vastuvõtjas</string>
+<string name="connecting">Ühendan</string>
+<string name="connected">Ühendatud</string>
+<string name="logged_in">Sisselogitud</string>
+<string name="getting_list_of_files">Faililoendi hankimine</string>
+<string name="picon_sync_finished">Laeti alla %s pikonit</string>
+<string name="drawer_open">Ava navigeerimissahtel</string>
+<string name="drawer_close">Sulge navigeerimissahtel</string>
+<string name="enable_animations_long">Luba lisategevuste animatsioonid</string>
+<string name="enable_animations">Luba animatsioonid</string>
+<string name="use_name_as_picon_filename_long">Kasuta kanalinime pikonite failinimena</string>
+<string name="use_name_as_picon_filename">Pikonid kanalinime järgi (SNP)</string>
+<string name="picons">Pikonid</string>
+<string name="developer_settings">Arendaja seaded</string>
+<string name="dump_xml">Salvesta xml sisu</string>
+<string name="dump_xml_long">Salvesta xml sisu välisele andmekandjale</string>
+<string name="enable">Luba</string>
+<string name="disable">Keela</string>
+<string name="epg_sync">EPG sünkroonimine</string>
+<string name="epg_sync_finished">EPG on sünkroonitud</string>
+<string name="disable_fab_reload">Keela ujuv värskenduse nupp</string>
+<string name="disable_fab_reload_long">Värskenduse nupp paigutatakse tegevusribale</string>
+<string name="reset_default">Taasta vaikeväärtused</string>
+<string name="max_grid_cols">Kanalinimekirja tulpade arv</string>
+<string name="max_grid_cols_long">Suurim tulpade arv kanalinimekirjas </string>
+<string name="default_to_full_vrm_long">Kasuta vaikimisi lihtsat virtuaalpulti</string>
+<string name="default_to_full_vrm">Vaikimisi lihtne pult</string>
+<string name="donate_sum">Anneta %s</string>
+<string name="donate">Anneta</string>
+<string name="donation_thanks">Suur tänu annetuse eest!</string>
+<string name="donation_error">Annetamine nurjus! Väga kahju! (%s)</string>
+<string name="share">Jaga</string>
+<string name="restart">Kas taaskäivitada?</string>
+<string name="theme_change_restart">Teema muutmiseks tuleb dreamDroid taaskäivitada. Kas teha seda kohe?</string>
+<string name="more">Veel</string>
+<string name="host_not_found">Masinat ei leitud</string>
+<string name="auth_error">Autentimine nurjus. Kontrolli kasutajanime/parooli</string>
+<string name="developer_settings_enable">Luba arendaja seaded</string>
+<string name="use_fake_picon">Kasuta vaikepikonit</string>
+<string name="use_fake_picon_long">Kasuta ekraanitõmmistel vaikepikonit (picon_default.png), vältimaks probleeme autoriõigustega</string>
+<string name="host_unreach">Ühendumine masinaga nurjus</string>
+<string name="allow_tracking_long">Luba anonüümse kasutusstatistika kogumine</string>
+<string name="allow_tracking">Kasutusstatistika</string>
+<string name="privacy_statement_title">Privaatsusavaldus</string>
+<string name="privacy">Privaatsus</string>
+<string name="next_event">Järgmine saade</string>
+<string name="use_encoder">Kasuta voogesituseks enkooderit</string>
+<string name="encoder_path">Voo asukoht</string>
+<string name="audio_bitrate">Heli bitikiirus</string>
+<string name="video_bitrate">Video bitikiirus</string>
+<string name="encoder_port">Voogesituse port</string>
+<string name="settings_and_about"><![CDATA[Seaded ja rakenduse info]]></string>
+<string name="tools">Tööriistad</string>
+<string name="control">Juhtimine</string>
+<string name="picon_sync_started">Algas pikonite import. Üksikasju vaata teavitusalast.</string>
+<string name="picon_sync_running">Pikonite import juba toimub</string>
+<string name="streaming">Voogesitus</string>
+<string name="integrated_video_player">Integreeritud videopleier</string>
+<string name="integrated_video_player_long">Kasuta voogesituseks integreeritud videomängijat</string>
+<string name="playback_failed">Taasesitus nurjus!</string>
+<string name="previous_lower">eelmine</string>
+<string name="next_lower">järgmine</string>
+<string-array name="theme_option_entries">
+<item>Automaatne</item>
+<item>Päev</item>
+<item>Öö</item>
+<item>Süsteemi järgi</item>
+</string-array>
+<string name="theme">Päeva/öö teema</string>
+<string name="theme_long">Päeva/öö teema valikud</string>
+<string-array name="hw_accel_entries">
+<item>Keelatud</item>
+<item>Automaatne</item>
+<item>Sunnitud</item>
+</string-array>
+<string name="video_use_hw_accel">Riistvaraline kiirendus</string>
+<string name="use_hw_accel">Kiirendusega dekodeerimine</string>
+<string name="use_hw_accel_long">Kasuta riistvaralist kiirendust video dekodeerimiseks (%s)</string>
+<string name="video_player">Videomängija</string>
+<string name="location_rationale_title">Nõutav on asukoht</string>
+<string name="location_rationale">Päeva/öö teema automaatseks vahetamiseks vajab DreamDroid asukoha tuvastamist.
+\nAsukoht ei kuulu logidesse, seda kasutatakse ainult teema vahetamiseks!</string>
+<string name="video_enable_gestures_long">Luba viiped helitugevuse ja heleduse juhtimiseks</string>
+<string name="video_enable_gestures">Luba viiped</string>
+<string name="online_picons">Kasuta "onlain" pikoneid</string>
+<string name="online_picons_long">Ära kasuta imporditud pikoneid vaid laadi need otse üle http(s). Võib tekitada märkimisväärset võrguliiklust!</string>
+<string name="audio_track">Heliriba</string>
+<string name="subtitle">Subtiiter</string>
+<string name="audio_tracks">Heliribad</string>
+<string name="subtitles">Subtiitrid</string>
+<string name="no_tracks">Pole saadaval!</string>
+<string name="preferences">Eelistused</string>
 </resources>
