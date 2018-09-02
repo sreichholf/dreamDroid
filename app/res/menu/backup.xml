@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:dreamDroid="http://schemas.android.com/apk/res-auto" >
+    <item
+        android:id="@+id/menu_export"
+        android:icon="@drawable/ic_action_tags"
+        dreamDroid:showAsAction="ifRoom|withText"
+        android:title="@string/backup_export"/>
+    <item
+        android:id="@+id/menu_import"
+        android:icon="@drawable/ic_action_settings"
+        dreamDroid:showAsAction="ifRoom|withText"
+        android:title="@string/backup_import"/>
+</menu>

@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.asynctask.SetPowerStateTask;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.asynctask.SleepTimerTask;
+import net.reichholf.dreamdroid.fragment.BackupFragment;
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
@@ -290,6 +291,10 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 EpgBouquetFragment f = new EpgBouquetFragment();
                 f.setArguments(args);
                 getMainActivity().showDetails(f);
+                break;
+            case R.id.menu_navigation_backup:
+                clearBackStack();
+                getMainActivity().showDetails(BackupFragment.class);
                 break;
         }
         getMainActivity().showContent();

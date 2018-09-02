@@ -360,4 +360,12 @@
     <string name="subtitles">Subtitles</string>
     <string name="no_tracks">No tracks available!</string>
     <string name="preferences">Preferences</string>
+    <string name="backup">Backup</string>
+    <string name="backup_current_profile">current</string>
+    <string name="backup_export">Export</string>
+    <string name="backup_import">Import</string>
+    <string name="backup_settings">Settings</string>
+    <string name="backup_profiles">Profiles</string>
+    <string name="backup_export_settings">Export settings</string>
+    <string name="backup_export_profiles">Export profiles</string>
 </resources>
