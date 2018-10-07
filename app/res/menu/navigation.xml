@@ -109,7 +109,8 @@
                     <item
                         android:id="@+id/menu_navigation_backup"
                         android:checked="false"
-                        android:icon="?attr/ic_menu_backup"
+                        android:icon="?attr/ic_menu_set_as"
+
                         android:title="@string/backup"/>
                     <item
                         android:id="@+id/menu_navigation_changelog"

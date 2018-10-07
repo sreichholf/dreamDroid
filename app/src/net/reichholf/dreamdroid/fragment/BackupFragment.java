@@ -53,7 +53,6 @@ public class BackupFragment extends BaseFragment {
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
-		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitles(getString(R.string.backup));

@@ -39,6 +39,7 @@
     <attr name="ic_menu_timer" format="reference"/>
     <attr name="ic_menu_zap" format="reference"/>
     <attr name="ic_menu_backup" format="reference"/>
+    <attr name="ic_menu_set_as" format="reference"/>
     <attr name="text_color" format="color"/>
     <attr name="title_color" format="color"/>
     <attr name="navigation_footer" format="reference"/>
