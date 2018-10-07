@@ -84,11 +84,13 @@ public class BackupFragment extends BaseFragment {
 			case (ITEM_BACKUP_EXPORT):
 				doExport();
                 loadBackupData();
+				showToast(getResources().getString(R.string.backup_export_successful));
 				break;
 			case ITEM_BACKUP_IMPORT:
 				doImport();
-                loadBackupData();
-                refreshView();
+				loadBackupData();
+				refreshView();
+				showToast(getResources().getString(R.string.backup_import_successful));
 				break;
 			default:
 				return false;

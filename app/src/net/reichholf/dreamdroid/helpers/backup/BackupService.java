@@ -52,7 +52,7 @@ public class BackupService {
         String jsonContent = gson.toJson(data);
         PrintWriter out = null;
         try {
-            out = new PrintWriter(new File(getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS), "myBackup.txt"));
+            out = new PrintWriter(new File(getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS), "dreamdroid_backup.json"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
