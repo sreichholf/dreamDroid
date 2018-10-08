@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingBottom="@dimen/content_vert_padding"
+    android:paddingLeft="@dimen/content_horz_padding"
+    android:paddingRight="@dimen/content_horz_padding"
+    android:paddingTop="@dimen/content_vert_padding"
+    android:paddingStart="@dimen/content_horz_padding"
+    android:paddingEnd="@dimen/content_horz_padding">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="4dp"
+            android:text="@string/backup_profiles"/>
+
+        <LinearLayout
+            android:id="@+id/layout_backup_profile_dynamic"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical">
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/layout_backup_setting"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:orientation="vertical">
+            <TextView
+                style="@style/SimpleHeader"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="4dp"
+                android:text="@string/backup_settings"/>
+            <CheckBox
+                android:id="@+id/backup_export_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/backup_export_settings"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>

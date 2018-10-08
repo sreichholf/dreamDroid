@@ -8,7 +8,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.3'
+        classpath 'com.android.tools.build:gradle:3.1.4'
     }
 }
 apply plugin: 'com.android.application'
@@ -54,6 +54,7 @@ dependencies {
     implementation 'ru.noties:markwon:1.0.5'
     implementation project(':libraries:gaugeview-library')
     implementation project(':libraries:MemorizingTrustManager')
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
 
 android {

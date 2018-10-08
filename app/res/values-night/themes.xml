@@ -65,5 +65,8 @@
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
         <item name="bottomSheetDialogTheme">@style/Theme.Design.BottomSheetDialog</item>
         <item name="mdtp_theme_dark">true</item>
+        <item name="ic_import_export">@drawable/ic_import_export_dark</item>
+        <item name="ic_cloud_download">@drawable/ic_cloud_download_dark</item>
+        <item name="ic_cloud_upload">@drawable/ic_cloud_upload_dark</item>
     </style>
 </resources>
