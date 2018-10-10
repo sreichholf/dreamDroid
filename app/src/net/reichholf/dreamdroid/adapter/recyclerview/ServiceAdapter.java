@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -35,15 +36,16 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 	}
 
 
+	@NonNull
 	@Override
-	public ServiceViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+	public ServiceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 		View itemView = inflater.inflate(R.layout.service_list_item_nn, parent, false);
 		return new ServiceViewHolder(itemView);
 	}
 
 	@Override
-	public void onBindViewHolder(ServiceViewHolder holder, int position) {
+	public void onBindViewHolder(@NonNull ServiceViewHolder holder, int position) {
 		ExtendedHashMap service = mData.get(position);
 		String next = service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
 		boolean hasNext = next != null && !"".equals(next);

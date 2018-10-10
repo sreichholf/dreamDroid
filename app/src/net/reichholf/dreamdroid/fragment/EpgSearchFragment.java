@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.app.SearchManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.view.View;
 
@@ -75,6 +76,7 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment {
 		return getBaseTitle() + " - '" + mNeedle + "'";
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		return new AsyncListLoader(getAppCompatActivity(), new EventListRequestHandler(

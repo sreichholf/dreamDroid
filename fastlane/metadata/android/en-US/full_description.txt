@@ -1,0 +1,26 @@
+An opensource client for enigma2 based dreamboxes.
+FAQ: https://dreamdroid.org/faq/
+
+<b>Supported Devices:</b> dm9x0 ultraHD, dm7080hd, dm820hd, dm520hd, dm525hd, dm500hd, dm800, dm800se, dm7020hd, dm7025, dm8000<br>
+<b>Unsupported Devices:</b> This App is not fully compatible with "OpenWebIf"!
+
+Features:
+★ Unlimited connection profiles (number of dreambox you can control using dreamDroid)
+★ Stream your favorite channel or recording using the integrated or any (capable) external Video Player for android (BETA!)
+★ See what's currently running
+★ Browse channels and their EPG
+★ Manage timers and set them using the EPG or create new timers manually
+★ Search the EPG
+★ Browse recorded movies
+★ Use the built-in Signal Meter with accoustic feedback to adjust your Dish or check your receiption quality
+★ Send Messages
+★ Use one of two Virtual Remote Controls (Simple and Full)
+★ Make a Screenshot and save it
+★ Set a shutdown timer
+★ Choose between a dark (default) and a light theme.
+
+
+If you have any questions or issues, please write me an email (german or english).<br>
+
+You'd like to translate dreamDroid to your language?
+Visit https://www.dreamdroid.org/translate/dreamDroid/

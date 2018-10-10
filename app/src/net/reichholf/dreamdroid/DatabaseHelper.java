@@ -299,8 +299,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	public boolean addProfile(Profile p) {
 		SQLiteDatabase db = getWritableDatabase();
-		if (db.insert(PROFILES_TABLE_NAME, null, p2cv(p)) > -1) {
+		long id = db.insert(PROFILES_TABLE_NAME, null, p2cv(p));
+		if (id > -1) {
 			db.close();
+			p.setId((int) id);
 			DreamDroid.scheduleBackup(mContext);
 			return true;
 		}

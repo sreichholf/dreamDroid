@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,8 +32,9 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 		mContext = context;
 	}
 
+	@NonNull
 	@Override
-	public ZapViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+	public ZapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 		View itemView = inflater.inflate(R.layout.zap_grid_item, parent, false);
 		ZapViewHolder zvh = new ZapViewHolder(itemView);
@@ -41,7 +43,7 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 	}
 
 	@Override
-	public void onBindViewHolder(ZapViewHolder holder, int position) {
+	public void onBindViewHolder(@NonNull ZapViewHolder holder, int position) {
 		ExtendedHashMap service = mData.get(position);
 		if (service != null) {
 			holder.serviceName.setVisibility(View.VISIBLE);

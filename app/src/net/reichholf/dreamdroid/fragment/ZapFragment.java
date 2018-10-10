@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,10 +40,8 @@ import java.util.ArrayList;
  */
 
 public class ZapFragment extends BaseHttpRecyclerFragment {
-	public static final String BUNDLE_KEY_BOUQUETLIST = "bouquetList";
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
-	private ArrayList<ExtendedHashMap> mBouquetList;
 	private ExtendedHashMap mCurrentBouquet;
 	private boolean mWaitingForPicker;
 
@@ -52,7 +51,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		super.onCreate(savedInstanceState);
 		initTitle("");
 
-		mBouquetList = new ArrayList<>();
 		mCurrentBouquet = new ExtendedHashMap();
 		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
 		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
@@ -70,35 +68,16 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
 		recyclerView.addOnScrollListener(listener);
 
-		restoreState(savedInstanceState);
 		return view;
 	}
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-	}
-
 	private void restoreState(Bundle savedInstanceState) {
-		boolean reload = false;
-		if (savedInstanceState == null) {
-			mReload = true;
-		} else {
+		mReload = true;
+		if (savedInstanceState != null) {
 			ExtendedHashMap currentBouquet = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_BOUQUET);
 			if (currentBouquet != null)
 				mCurrentBouquet = currentBouquet;
-			else
-				mReload = true;
-
-			ArrayList<ExtendedHashMap> bouquetList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_BOUQUETLIST);
-			if (bouquetList != null)
-				mBouquetList = bouquetList;
-			else
-				mReload = true;
 		}
-
-		if (reload)
-			mReload = true;
 	}
 
 	@Override
@@ -110,8 +89,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable(BUNDLE_KEY_CURRENT_BOUQUET, mCurrentBouquet);
-		outState.putSerializable(BUNDLE_KEY_BOUQUETLIST, mBouquetList);
+		outState.putSerializable(BUNDLE_KEY_CURRENT_BOUQUET, mCurrentBouquet);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -140,6 +118,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		return true;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle bundle) {
 		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, bundle);

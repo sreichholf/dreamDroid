@@ -48,6 +48,15 @@
             android:src="?attr/ic_menu_about"/>
 
         <net.reichholf.dreamdroid.widget.CheckableImageButton
+            android:id="@+id/menu_navigation_backup"
+            style="@style/NavButtonBarButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:contentDescription="@string/backup"
+            android:src="?attr/ic_menu_backup"/>
+
+        <net.reichholf.dreamdroid.widget.CheckableImageButton
             android:id="@+id/menu_navigation_profiles"
             style="@style/NavButtonBarButton"
             android:layout_width="match_parent"

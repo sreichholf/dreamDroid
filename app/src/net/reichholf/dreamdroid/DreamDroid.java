@@ -70,6 +70,7 @@ public class DreamDroid extends PiwikApplication {
 	public static final String PREFS_KEY_THEME_TYPE = "theme_type";
 	public static final String PREFS_KEY_INSTANT_ZAP = "instant_zap";
 	public static final String PREFS_KEY_VIDEO_ENABLE_GESTURES = "video_enable_gestures";
+	public static final String PREFS_KEY_LAST_VERSION_CODE = "last_version_code";
 
 	public static final String IAB_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wvbGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpnaEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR888CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB";
 
@@ -107,10 +108,13 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	public static String getVersionString() {
-		String buildDate = "<debug-no-date>";
+		String buildDate = "<build-no-date>";
 		if (BuildConfig.BUILD_TIME > 0)
 			buildDate = DateTime.getYearDateTimeString(BuildConfig.BUILD_TIME / 1000);
-		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, Build.SUPPORTED_ABIS[0], buildDate);
+		String abi = Build.CPU_ABI;
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+			abi = Build.SUPPORTED_ABIS[0];
+		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, abi, buildDate);
 	}
 
 	@Override
@@ -233,6 +237,7 @@ public class DreamDroid extends PiwikApplication {
 			Profile p = new Profile(-1, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
 					false, false, "", "", "", "");
 			dbh.addProfile(p);
+			profileId = p.getId();
 			SharedPreferences.Editor editor = sp.edit();
 			editor.remove(CURRENT_PROFILE);
 			editor.commit();
@@ -265,21 +270,10 @@ public class DreamDroid extends PiwikApplication {
 		if (oldProfile == null)
 			oldProfile = Profile.getDefault();
 
-		if(isTV(context)) {
-			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-			String name = sp.getString(DatabaseHelper.KEY_PROFILE_PROFILE, "Demo");
-			String host = sp.getString(DatabaseHelper.KEY_PROFILE_HOST, "dreamdroid.org");
-			int port = Integer.parseInt(sp.getString(DatabaseHelper.KEY_PROFILE_PORT, "80"));
-			boolean  ssl = sp.getBoolean(DatabaseHelper.KEY_PROFILE_SSL, false);
-			boolean login = sp.getBoolean(DatabaseHelper.KEY_PROFILE_LOGIN, false);
-			String user = sp.getString(DatabaseHelper.KEY_PROFILE_USER, "root");
-			String pass = sp.getString(DatabaseHelper.KEY_PROFILE_PASS, "dreambox");
-			sProfile = new Profile(-1, name, host, host, port, 8001, port, login, user, pass, ssl, false, false, false,
-					false, "", "", "", "");
-		} else {
-			DatabaseHelper dbh = DatabaseHelper.getInstance(context);
-			sProfile = dbh.getProfile(id);
-		}
+
+		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
+		sProfile = dbh.getProfile(id);
+
 		if (sProfile != null) {
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 			editor.putInt(CURRENT_PROFILE, id);

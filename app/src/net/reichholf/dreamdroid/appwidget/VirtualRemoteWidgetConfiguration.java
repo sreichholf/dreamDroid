@@ -80,16 +80,15 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	}
 
 	public void finish(int profileId, boolean isQuickZap) {
-		Intent data = new Intent();
-		data.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-		setResult(RESULT_OK, data);
 		saveWidgetConfiguration(profileId, !isQuickZap);
-
 		Context context = getApplicationContext();
 		AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 		Profile profile = getWidgetProfile(context, mAppWidgetId);
 		VirtualRemoteWidgetProvider.updateWidget(context, appWidgetManager, mAppWidgetId, profile);
 
+		Intent data = new Intent();
+		data.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+		setResult(RESULT_OK, data);
 		finish();
 	}
 

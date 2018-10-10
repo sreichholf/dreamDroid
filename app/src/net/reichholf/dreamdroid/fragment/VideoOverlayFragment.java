@@ -8,6 +8,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -32,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -80,7 +82,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
 
 	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
-	private final int[] sOverlayViews = {R.id.service_detail_root};
+	private final int[] sOverlayViews = {R.id.service_detail_root, R.id.epg};
 	private final int[] sZapOverlayViews = {R.id.servicelist};
 	static float sOverlayAlpha = 0.85f;
 
@@ -103,6 +105,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected Runnable mAutoHideRunnable;
 	protected Runnable mIssueReloadRunnable;
 
+	protected FrameLayout mEpgView;
 	protected AutofitRecyclerView mServicesView;
 	protected ItemClickSupport mItemClickSupport;
 	private GestureDetectorCompat mGestureDector;
@@ -129,18 +132,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		else
 			mServiceInfo = null;
 		mHandler = new Handler();
-		mAutoHideRunnable = new Runnable() {
-			@Override
-			public void run() {
-				hideOverlays();
-			}
-		};
-		mIssueReloadRunnable = new Runnable() {
-			@Override
-			public void run() {
-				reload();
-			}
-		};
+		mAutoHideRunnable = () -> hideOverlays();
+		mIssueReloadRunnable = () -> reload();
 
 		mAudioManager = (AudioManager) getActivity().getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
 		mAudioMaxVol = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
@@ -153,44 +146,47 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Nullable
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.video_player_overlay, container, false);
 		mServicesView = view.findViewById(R.id.servicelist);
-		mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
-		mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
+		if (mServicesView != null) {
+			mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+			mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
 
-		mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-			int sTreshold = 20;
-			int mTotalDistance = 0;
+			mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+				int sTreshold = 20;
+				int mTotalDistance = 0;
 
-			@Override
-			public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-				super.onScrolled(recyclerView, dx, dy);
-				mTotalDistance += dy;
-				if (mTotalDistance < 0 - sTreshold) {
-					mTotalDistance = 0;
-					showToolbar();
-				} else if (mTotalDistance > sTreshold) {
-					mTotalDistance = 0;
-					hideToolbar();
+				@Override
+				public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+					super.onScrolled(recyclerView, dx, dy);
+					mTotalDistance += dy;
+					if (mTotalDistance < 0 - sTreshold) {
+						mTotalDistance = 0;
+						showToolbar();
+					} else if (mTotalDistance > sTreshold) {
+						mTotalDistance = 0;
+						hideToolbar();
+					}
 				}
-			}
-		});
-		mItemClickSupport = ItemClickSupport.addTo(mServicesView);
-		mItemClickSupport.setOnItemClickListener(this);
+			});
+			mItemClickSupport = ItemClickSupport.addTo(mServicesView);
+			mItemClickSupport.setOnItemClickListener(this);
 
-		ServiceAdapter adapter = new ServiceAdapter(getActivity(), mServiceList);
-		mServicesView.setAdapter(adapter);
-		mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-			@Override
-			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-				super.onScrollStateChanged(recyclerView, newState);
-				if (newState == RecyclerView.SCROLL_STATE_IDLE)
-					autohide();
-				else
-					mHandler.removeCallbacks(mAutoHideRunnable);
-			}
-		});
+			ServiceAdapter adapter = new ServiceAdapter(getActivity(), mServiceList);
+			mServicesView.setAdapter(adapter);
+			mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+				@Override
+				public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+					super.onScrollStateChanged(recyclerView, newState);
+					if (newState == RecyclerView.SCROLL_STATE_IDLE)
+						autohide();
+					else
+						mHandler.removeCallbacks(mAutoHideRunnable);
+				}
+			});
+		}
+		mEpgView = view.findViewById(R.id.epg);
 
 		mGestureDector = new GestureDetectorCompat(view.findViewById(R.id.overlay_root).getContext(), new GestureDetector.SimpleOnGestureListener() {
 			@Override
@@ -223,18 +219,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			}
 		});
 
-		view.findViewById(R.id.overlay_root).setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				DisplayMetrics metrics = new DisplayMetrics();
-				getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-				if (mSurfaceHeight == 0)
-					mSurfaceHeight = Math.min(metrics.widthPixels, metrics.heightPixels);
-				if (mSurfaceWidth == 0)
-					mSurfaceWidth = Math.max(metrics.widthPixels, metrics.heightPixels);
-				mGestureDector.onTouchEvent(event);
-				return true;
-			}
+		view.findViewById(R.id.overlay_root).setOnTouchListener((v, event) -> {
+			DisplayMetrics metrics = new DisplayMetrics();
+			getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+			if (mSurfaceHeight == 0)
+				mSurfaceHeight = Math.min(metrics.widthPixels, metrics.heightPixels);
+			if (mSurfaceWidth == 0)
+				mSurfaceWidth = Math.max(metrics.widthPixels, metrics.heightPixels);
+			mGestureDector.onTouchEvent(event);
+			return true;
 		});
 
 		return view;
@@ -327,11 +320,12 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 
 	@Override
-	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		onServiceInfoChanged(true);
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
 		AbstractListRequestHandler handler;
@@ -343,33 +337,32 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
 		if (data.isError())
 			return;
 		mServiceList.clear();
-		mServicesView.getAdapter().notifyDataSetChanged();
+		if (mServicesView != null)
+			mServicesView.getAdapter().notifyDataSetChanged();
 		mServiceList.addAll(data.getResult());
 		for (ExtendedHashMap service : mServiceList) {
 			if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef)) {
 				ExtendedHashMap oldServiceInfo = mServiceInfo;
 				mServiceInfo = service;
 				String eventid = mServiceInfo.getString(Event.KEY_EVENT_ID, "-1");
-				if (!eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
+				if (oldServiceInfo == null || !eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
 					onServiceInfoChanged(false);
 			}
-			mServicesView.getAdapter().notifyDataSetChanged();
+			if (mServicesView != null)
+				mServicesView.getAdapter().notifyDataSetChanged();
 		}
 	}
 
-	private boolean isServiceDetailVisible() {
-		View root = getView();
-		return root != null && root.findViewById(R.id.service_detail_root).getVisibility() == View.VISIBLE;
-	}
-
 	@Override
-	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
+	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 
 	}
+
+
 
 	private void previous() {
 		int index = getCurrentServiceIndex();
@@ -438,9 +431,12 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
 			long eventStart = Double.valueOf(start).longValue() * 1000;
 			long eventEnd = eventStart + (Double.valueOf(duration).longValue() * 1000);
-			long now = new Date().getTime();
-			long updateAt = SystemClock.uptimeMillis() + eventEnd - now;
-			mHandler.postAtTime(mIssueReloadRunnable, updateAt);
+			long now = System.currentTimeMillis();
+			long delay = eventEnd - now;
+			if (eventEnd <= now)
+				delay = now; //outdated, reload in few seconds
+			delay += 2000;
+			mHandler.postDelayed(mIssueReloadRunnable, delay);
 		} else {
 			Log.i(LOG_TAG, "No Eventinfo present, will update in 5 Minutes!");
 			mHandler.postDelayed(mIssueReloadRunnable, 300000); //update in 5 minutes
@@ -492,6 +488,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 			parentNow.setVisibility(View.VISIBLE);
 
+			if (mEpgView != null) {
+				TextView titleView = mEpgView.findViewById(R.id.epg_title);
+				TextView descriptionView = mEpgView.findViewById(R.id.epg_description);
+				TextView descriptionExView = mEpgView.findViewById(R.id.epg_description_extended);
+				titleView.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
+				descriptionView.setText(mServiceInfo.getString(Event.KEY_EVENT_DESCRIPTION));
+				descriptionExView.setText(mServiceInfo.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED));
+			}
+
 			String next = mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
 			boolean hasNext = next != null && !"".equals(next);
 			if (hasNext) {
@@ -511,7 +516,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			parentNext.setVisibility(View.GONE);
 		}
 		updateProgress();
-		mServicesView.getAdapter().notifyDataSetChanged();
+		if (mServicesView != null)
+			mServicesView.getAdapter().notifyDataSetChanged();
 	}
 
 	protected void updateProgress() {
@@ -539,12 +545,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			});
 			serviceProgress.setOnTouchListener(null);
 		} else {
-			serviceProgress.setOnTouchListener(new View.OnTouchListener() {
-				@Override
-				public boolean onTouch(View view, MotionEvent motionEvent) {
-					return true;
-				}
-			});
+			serviceProgress.setOnTouchListener((view, motionEvent) -> true);
 		}
 		long max = -1;
 		long cur = -1;
@@ -778,17 +779,29 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if ((keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_BUTTON_B)) {
-			if (isOverlaysVisible()) {
-				hideOverlays();
-				return true;
-			}
-			return false;
+		boolean ret = false;
+		switch(keyCode) {
+			case KeyEvent.KEYCODE_BACK:
+			case KeyEvent.KEYCODE_BUTTON_B:
+				if (isOverlaysVisible()) {
+					hideOverlays();
+					ret = true;
+				} else
+					return false;
+				break;
+			case KeyEvent.KEYCODE_DPAD_LEFT:
+				previous();
+				ret = true;
+				break;
+			case KeyEvent.KEYCODE_DPAD_RIGHT:
+				next();
+				ret = true;
+				break;
 		}
 		if (!isOverlaysVisible()) {
 			showOverlays(true);
-			return true;
+			ret = true;
 		}
-		return false;
+		return ret;
 	}
 }

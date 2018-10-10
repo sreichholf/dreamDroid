@@ -41,10 +41,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("sRef", ref));
 		String xml = handler.getList(getHttpClient(), params);
-		if (xml != null && !isCancelled()) {
-			return handler.parseList(xml, mBouquetList);
-		}
-		return false;
+		return xml != null && !isCancelled() && handler.parseList(xml, mBouquetList);
 	}
 
 	@Override

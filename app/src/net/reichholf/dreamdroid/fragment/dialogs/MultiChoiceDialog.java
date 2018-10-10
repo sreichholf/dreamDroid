@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 
@@ -83,6 +84,7 @@ public class MultiChoiceDialog extends DialogFragment {
 		mPositiveStringId = args.getInt(KEY_POSITIVE_STRING_ID);
 	}
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		init();
@@ -94,26 +96,18 @@ public class MultiChoiceDialog extends DialogFragment {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(mTitleId)
-				.setMultiChoiceItems(mItems, mCheckedItems, new DialogInterface.OnMultiChoiceClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-						mCheckedItems[which] = isChecked;
+				.setMultiChoiceItems(mItems, mCheckedItems, (dialog, which, isChecked) -> mCheckedItems[which] = isChecked)
+				.setPositiveButton(mPositiveStringId, (dialog, which) -> {
+					ArrayList<Integer> selectedList = new ArrayList<>();
+					for (int i = 0; i < mCheckedItems.length; ++i) {
+						if (mCheckedItems[i])
+							selectedList.add(i);
 					}
-				})
-				.setPositiveButton(mPositiveStringId, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						ArrayList<Integer> selectedList = new ArrayList<>();
-						for (int i = 0; i < mCheckedItems.length; ++i) {
-							if (mCheckedItems[i])
-								selectedList.add(i);
-						}
-						Integer[] selected = new Integer[selectedList.size()];
-						selectedList.toArray(selected);
-						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogSelection(getTag(), dialog, selected);
-						((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
-						dialog.dismiss();
-					}
+					Integer[] selected = new Integer[selectedList.size()];
+					selectedList.toArray(selected);
+					((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogSelection(getTag(), dialog, selected);
+					((MultiChoiceDialogListener) getActivity()).onMultiChoiceDialogFinish(getTag(), Activity.RESULT_OK);
+					dialog.dismiss();
 				});
 		return builder.create();
 	}

@@ -91,36 +91,16 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 			textDescEx.setText(descEx);
 
 			Button buttonSetTimer = view.findViewById(R.id.ButtonSetTimer);
-			buttonSetTimer.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					finishDialog(Statics.ACTION_SET_TIMER, isNext);
-				}
-			});
+			buttonSetTimer.setOnClickListener(v -> finishDialog(Statics.ACTION_SET_TIMER, isNext));
 
 			Button buttonEditTimer = view.findViewById(R.id.ButtonEditTimer);
-			buttonEditTimer.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					finishDialog(Statics.ACTION_EDIT_TIMER, isNext);
-				}
-			});
+			buttonEditTimer.setOnClickListener(v -> finishDialog(Statics.ACTION_EDIT_TIMER, isNext));
 
 			Button buttonIMDb = view.findViewById(R.id.ButtonImdb);
-			buttonIMDb.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					finishDialog(Statics.ACTION_IMDB, isNext);
-				}
-			});
+			buttonIMDb.setOnClickListener(v -> finishDialog(Statics.ACTION_IMDB, isNext));
 
 			Button buttonSimilar = view.findViewById(R.id.ButtonSimilar);
-			buttonSimilar.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					finishDialog(Statics.ACTION_FIND_SIMILAR, isNext);
-				}
-			});
+			buttonSimilar.setOnClickListener(v -> finishDialog(Statics.ACTION_FIND_SIMILAR, isNext));
 			dialog.setContentView(view);
 
 			BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(((View) view.getParent()));
@@ -131,12 +111,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 			dialog = new AlertDialog.Builder(getContext())
 					.setTitle(R.string.not_available)
 					.setMessage(R.string.no_epg_available)
-					.setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dismiss();
-						}
-					}).create();
+					.setPositiveButton(R.string.close, (dialog1, which) -> dismiss()).create();
 
 		}
 		return dialog;

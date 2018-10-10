@@ -4,6 +4,7 @@ package net.reichholf.dreamdroid.fragment;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -41,12 +42,9 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
 		Preference syncPref = findPreference("sync_picons");
-		syncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(Preference preference) {
-				startPiconSync();
-				return true;
-			}
+		syncPref.setOnPreferenceClickListener(preference -> {
+			startPiconSync();
+			return true;
 		});
 		updateThemeSummary();
 		updateHwAccelSummary(prefs);
@@ -83,7 +81,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	}
 
 	@Override
-	public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		setFabEnabled(R.id.fab_reload, false);
 		setFabEnabled(R.id.fab_main, false);

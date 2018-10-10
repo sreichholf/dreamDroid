@@ -19,9 +19,6 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
 
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-		final int N = appWidgetIds.length;
-
-		// Perform this loop procedure for each App Widget that belongs to this provider
 		for (int appWidgetId : appWidgetIds) {
 			Profile profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(context, appWidgetId);
 			updateWidget(context, appWidgetManager, appWidgetId, profile);
@@ -53,14 +50,21 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
 
 	public static void registerButtons(Context context, RemoteViews remoteViews, int appWidgetId) {
 		for (int[] btn : VirtualRemoteFragment.REMOTE_BUTTONS) {
-			Intent intent = new Intent(context, WidgetService.class);
+			Intent intent = new Intent(context, VirtualRemoteWidgetProvider.class);
 			intent.putExtra(WidgetService.KEY_WIDGETID, appWidgetId);
 			intent.putExtra(WidgetService.KEY_KEYID, Integer.toString(btn[1]));
 			intent.setAction(WidgetService.ACTION_RCU);
 
-			int requestId = Integer.parseInt(Integer.toString(appWidgetId) + Integer.toString(btn[1]));
-			PendingIntent pendingIntent = PendingIntent.getService(context, requestId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+			PendingIntent pendingIntent = PendingIntent.getBroadcast(context, btn[0], intent, 0);
 			remoteViews.setOnClickPendingIntent(btn[0], pendingIntent);
 		}
+	}
+
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		super.onReceive(context, intent);
+		String action = intent.getAction();
+		if (action.equals(WidgetService.ACTION_RCU) || action.equals(WidgetService.ACTION_ZAP))
+			WidgetService.enqueueWork(context, WidgetService.class, WidgetService.JOB_ID, intent);
 	}
 }

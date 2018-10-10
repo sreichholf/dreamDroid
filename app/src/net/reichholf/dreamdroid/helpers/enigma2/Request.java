@@ -23,7 +23,7 @@ import java.util.ArrayList;
  */
 public class Request {
     public static String get(SimpleHttpClient shc, String uri){
-        return get(shc, uri, new ArrayList<NameValuePair>());
+        return get(shc, uri, new ArrayList<>());
     }
 
 	public static String get(SimpleHttpClient shc, String uri, ArrayList<NameValuePair> params) {

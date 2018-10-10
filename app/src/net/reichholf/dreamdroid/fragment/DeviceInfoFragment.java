@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,21 +50,16 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.device_info));
-
-		if (savedInstanceState != null) {
-			mInfo = savedInstanceState.getParcelable("info");
-		} else {
-			mInfo = new ExtendedHashMap();
-		}
+		mInfo = new ExtendedHashMap();
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mFrontends = new ArrayList<>();
 		mNics = new ArrayList<>();
 		mHdds = new ArrayList<>();
 
-		mInflater = getLayoutInflater(savedInstanceState);
+		mInflater = getLayoutInflater();
 		View view = mInflater.inflate(R.layout.device_info, null);
 
 		mGuiVersion = view.findViewById(R.id.GuiVersion);
@@ -83,11 +79,6 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		}
 
 		return view;
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable("info", mInfo);
 	}
 
 	/**
@@ -155,6 +146,7 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		mDeviceName.setText(mInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		return new AsyncSimpleLoader(getAppCompatActivity(), new DeviceInfoRequestHandler(), args);

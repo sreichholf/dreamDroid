@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -16,7 +17,6 @@ import net.reichholf.dreamdroid.helpers.Statics;
  */
 public class DonationDialog extends ActionDialog {
 	private ExtendedHashMap mItems;
-	private int[] mActionIds;
 	private CharSequence[] mActions;
 
 	private static String KEY_ITEMS = "items";
@@ -37,31 +37,27 @@ public class DonationDialog extends ActionDialog {
 		mItems = getArguments().getParcelable(KEY_ITEMS);
 		int i = 0;
 		mActions = new CharSequence[mItems.size()];
-		mActionIds = new int[mItems.size()];
 
 		for (String sku : DreamDroid.SKU_LIST) {
 			String price = mItems.getString(sku);
 			if (price == null)
 				continue;
 			mActions[i] = getString(R.string.donate_sum, price);
-			mActionIds[i] = i;
 			i++;
 		}
 	}
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 		builder.setTitle(R.string.donate)
-				.setItems(mActions, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						BaseActivity ba = (BaseActivity) getActivity();
-						ba.purchase(DreamDroid.SKU_LIST[which]);
-						finishDialog(Statics.ACTION_NONE, null);
-					}
+				.setItems(mActions, (dialog, which) -> {
+					BaseActivity ba = (BaseActivity) getActivity();
+					ba.purchase(DreamDroid.SKU_LIST[which]);
+					finishDialog(Statics.ACTION_NONE, null);
 				});
 		return builder.create();
 	}

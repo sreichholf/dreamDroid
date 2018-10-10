@@ -1,0 +1,32 @@
+Ein quelloffener Client für enigma2 basierte Dreamboxen.
+FAQ: https://dreamdroid.org/faq/ (englisch)
+
+Unterstützte Geräte: dm900/920 ultraHD, dm7080hd, dm820hd, dm520hd, dm525hd, dm500hd, dm800, dm800se, dm7020hd, dm7025, dm8000
+
+Diese App ist nicht vollständig mit dem "OpenWebIf" kompatibel.
+
+Bei technischen Problemen oder Fragen kontaktiere mich bitte per E-Mail.
+
+Features:
+★ Beliebig viele Verbindungsprofile
+★ Sehen was gerade läuft
+★ Kanäle und ihren EPG durchstöbern
+★ Beliebige Aufnahmen oder Live-Sendungen mit dem eingebauten Videoplayer oder z.B. VLC für Android auf dein Android-Gerät streamen
+★ Timer verwalten und via EPG oder manuell erstellen
+★ Den EPG durchsuchen
+★ Aufnahmen durchstöbern
+★ Mit dem eingebauten Signal-Meter mit akkustischem Feedback die Satellitenschüssel ausrichten oder die Empfangsqualität überprüfen
+★ Nachrichten Senden
+★ Eine von zwei virtuellen Fernbedienungen als Ersatz zur echten Fernbedienung nutzen
+★ Screenhots erstellen und speichern
+★ Abschalttimer setzen
+★ Helles oder dunkles (Standard) Theme
+
+Für möglichst stabiles Streamen sind sehr guter WLAN Empfang und die aktuellste Dreambox Firmware sehr wichtig!
+
+Du möchtest dreamDroid gerne in deiner Sprache?
+Besuche https://www.dreamdroid.org/translate/dreamDroid/
+
+Warum benötigt dreamDroid den ungefähren Standort?
+Antwort: Der ungefähre Standort wird lediglich zur Errechnung des aktuellen Tag/Nacht-Zyklus für die automatische Themenumschaltung benötigt. Der Standort wird an keiner anderen Stelle der App weitergegeben oder gespeichert!
+

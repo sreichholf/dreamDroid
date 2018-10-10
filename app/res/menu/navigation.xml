@@ -107,6 +107,11 @@
                         android:icon="?attr/ic_menu_about"
                         android:title="@string/about"/>
                     <item
+                        android:id="@+id/menu_navigation_backup"
+                        android:checked="false"
+                        android:icon="?attr/ic_import_export"
+                        android:title="@string/backup"/>
+                    <item
                         android:id="@+id/menu_navigation_changelog"
                         android:checked="false"
                         android:icon="?attr/ic_menu_changelog"

@@ -17,7 +17,7 @@ import java.util.HashMap;
 public class ExtendedHashMapHelper {
 
 	public static ExtendedHashMap restoreFromBundle(Bundle bundle, String key) {
-		return (ExtendedHashMap) bundle.getParcelable(key);
+		return new ExtendedHashMap((HashMap<String, Object>) bundle.getSerializable(key));
 	}
 
 	public static ArrayList<ExtendedHashMap> restoreListFromBundle(Bundle bundle, String key) {

@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.view;
 
-/**
- * Created by Stephan on 21.03.2015.
- * Based on  https://github.com/JJdeGroot/AutoGridView (improved, though)
+/*
+  Created by Stephan on 21.03.2015.
+  Based on  https://github.com/JJdeGroot/AutoGridView (improved, though)
  */
 
 

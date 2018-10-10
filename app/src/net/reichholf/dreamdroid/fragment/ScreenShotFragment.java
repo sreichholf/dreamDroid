@@ -150,7 +150,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.screenshot, null);
 
 		mImageView = view.findViewById(R.id.screenshoot);
@@ -400,13 +400,14 @@ public class ScreenShotFragment extends BaseFragment implements
 		return false;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
 		return new AsyncByteLoader(getAppCompatActivity(), args);
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<byte[]>> loader, LoaderResult<byte[]> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<byte[]>> loader, LoaderResult<byte[]> result) {
 		mHttpHelper.onLoadFinished();
 		if (!result.isError()) {
 			if (result.getResult().length > 0)
@@ -419,7 +420,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onLoaderReset(Loader<LoaderResult<byte[]>> loader) {
+	public void onLoaderReset(@NonNull Loader<LoaderResult<byte[]>> loader) {
 		mHttpHelper.onLoadFinished();
 	}
 

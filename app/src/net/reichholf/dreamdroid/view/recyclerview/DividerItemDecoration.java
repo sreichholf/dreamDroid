@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.view.recyclerview;
 
-/**
- * Created by Stephan on 21.05.2016.
+/*
+  Created by Stephan on 21.05.2016.
  */
 import android.content.Context;
 import android.content.res.TypedArray;

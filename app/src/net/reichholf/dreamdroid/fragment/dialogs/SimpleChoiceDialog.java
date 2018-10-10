@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 
 import net.reichholf.dreamdroid.helpers.BundleHelper;
@@ -42,18 +43,16 @@ public class SimpleChoiceDialog extends ActionDialog {
 		mActionIds = args.getIntArray(KEY_ACTION_IDS);
 	}
 
+	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		setRetainInstance(true);
 		init();
 		AlertDialog.Builder builder;
 		builder = new AlertDialog.Builder(getActivity());
-		builder.setItems(mActions, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				finishDialog(mActionIds[which], null);
-				dialog.dismiss();
-			}
+		builder.setItems(mActions, (dialog, which) -> {
+			finishDialog(mActionIds[which], null);
+			dialog.dismiss();
 		}).setTitle(mTitle);
 		return builder.create();
 	}

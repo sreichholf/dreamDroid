@@ -105,12 +105,7 @@ public class PiconSyncService extends IntentService {
 			client.changeWorkingDirectory(remotePath);
 			publishProgress(DownloadProgress.EVENT_ID_LISTING);
 
-			FTPFileFilter filter = new FTPFileFilter() {
-				@Override
-				public boolean accept(FTPFile file) {
-					return file.isFile() && file.getName().endsWith(".png");
-				}
-			};
+			FTPFileFilter filter = file -> file.isFile() && file.getName().endsWith(".png");
 			FTPFile[] fileList = client.listFiles(null, filter);
 			mDownloadProgress.totalFiles = fileList.length;
 			publishProgress(DownloadProgress.EVENT_ID_LISTING_READY);
@@ -131,6 +126,7 @@ public class PiconSyncService extends IntentService {
 					e.printStackTrace();
 					Log.e(TAG, "Failed to download picon with filename " + fileName);
 				}
+				outputStream.close();
 				mDownloadProgress.downloadedFiles++;
 			}
 

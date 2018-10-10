@@ -11,14 +11,13 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -36,9 +35,10 @@ import org.codeandmagic.android.gauge.GaugeView;
 public class SignalFragment extends BaseHttpFragment {
 	private static final String TAG = SignalFragment.class.getSimpleName();
 
-	private static int sMaxSnrDb = 17;
-	private static int sMinSnrDb = 7;
-
+	private static int sMaxSnrDb = 20;
+	private static int sMinSnrDb = 5;
+	private static int sMaxDelay = 1000;
+	private static int sMinDelay = 150;
 	GaugeView mSnr;
 	CheckBox mSound;
 	ToggleButton mEnabled;
@@ -56,8 +56,8 @@ public class SignalFragment extends BaseHttpFragment {
 			Double freq = (1650 * mSnrDb * mSnrDb) / 1000 + 200;
 			playSound(freq);
 
-			Double delay = 100 * (Math.pow(sMaxSnrDb, 3) / Math.pow(mSnrDb, 3));
-			delay = delay > 2000 ? 2000 : delay;
+			Double delay = sMinDelay * (Math.pow(sMaxSnrDb, 3) / Math.pow(mSnrDb, 3));
+			delay = delay > sMaxDelay ? sMaxDelay : delay;
 			mHandler.postDelayed(this, delay.longValue());
 		}
 	};
@@ -66,7 +66,7 @@ public class SignalFragment extends BaseHttpFragment {
 		public void run() {
 			if (!mIsUpdating)
 				reload();
-			mHandler.postDelayed(this, 50);
+			mHandler.postDelayed(this, 25);
 		}
 	};
 
@@ -83,44 +83,43 @@ public class SignalFragment extends BaseHttpFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.signal, container, false);
 
 		mSnr = view.findViewById(R.id.gauge_view1);
 
 		mEnabled = view.findViewById(R.id.toggle_enabled);
 		mEnabled.setChecked(true);
-		mEnabled.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					startPolling();
-				} else {
-					stopPolling();
-				}
+		mEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
+			if (isChecked) {
+				startPolling();
+			} else {
+				stopPolling();
 			}
 		});
 
 		mSound = view.findViewById(R.id.check_accoustic_feedback);
 		mSound.setChecked(false);
-		mSound.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					if (mEnabled.isChecked()) {
-						mHandler.removeCallbacks(mPlaySoundTask);
-						mHandler.post(mPlaySoundTask);
-					}
-				} else {
+		mSound.setOnCheckedChangeListener((buttonView, isChecked) -> {
+			if (isChecked) {
+				if (mEnabled.isChecked()) {
 					mHandler.removeCallbacks(mPlaySoundTask);
+					mHandler.post(mPlaySoundTask);
 				}
+			} else {
+				mHandler.removeCallbacks(mPlaySoundTask);
 			}
 		});
 
 		mSnrdb = view.findViewById(R.id.text_snrdb);
 		mBer = view.findViewById(R.id.text_ber);
 		mAgc = view.findViewById(R.id.text_agc);
+		view.setKeepScreenOn(true);
+
 		return view;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		AsyncSimpleLoader loader = new AsyncSimpleLoader(getAppCompatActivity(), new SignalRequestHandler(), args);
@@ -199,14 +198,23 @@ public class SignalFragment extends BaseHttpFragment {
 	}
 
 	void playSound(double freqOfTone) {
-		double duration = 0.1; // seconds
-		int sampleRate = 8000; // a number
+		double duration = 0.075; // seconds
+		int sampleRate = 44100; // a number
 
 		double dnumSamples = duration * sampleRate;
 		dnumSamples = Math.ceil(dnumSamples);
 		int numSamples = (int) dnumSamples;
 		double sample[] = new double[numSamples];
 		byte generatedSnd[] = new byte[2 * numSamples];
+
+		AudioTrack audioTrack = null; // Get audio track
+		try {
+			audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO,
+					AudioFormat.ENCODING_PCM_16BIT,  numSamples * 2, AudioTrack.MODE_STATIC);
+			Log.w("SignalFragment!!", Integer.toString(sampleRate));
+		} catch (Exception e) {
+			return;
+		}
 
 		for (int i = 0; i < numSamples; ++i) { // Fill the sample array
 			sample[i] = Math.sin(freqOfTone * 2 * Math.PI * i / (sampleRate));
@@ -217,7 +225,7 @@ public class SignalFragment extends BaseHttpFragment {
 		int idx = 0;
 		int i = 0;
 
-		int ramp = numSamples / 20; // Amplitude ramp as a percent of sample
+		int ramp = numSamples / 2; // Amplitude ramp as a percent of sample
 		// count
 
 		for (i = 0; i < numSamples; ++i) { // Ramp amplitude up (to avoid
@@ -247,11 +255,7 @@ public class SignalFragment extends BaseHttpFragment {
 			}
 		}
 
-		AudioTrack audioTrack = null; // Get audio track
 		try {
-			audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO,
-					AudioFormat.ENCODING_PCM_16BIT, numSamples * 2, AudioTrack.MODE_STATIC);
-			// Load the track
 			audioTrack.write(generatedSnd, 0, generatedSnd.length);
 			audioTrack.play(); // Play the track
 		} catch (Exception e) {

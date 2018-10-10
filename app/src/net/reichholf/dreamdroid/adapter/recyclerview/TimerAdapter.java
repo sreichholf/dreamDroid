@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,15 +42,16 @@ public class TimerAdapter extends BaseAdapter<TimerAdapter.TimerViewHolder> {
 		mStateColor = context.getResources().getIntArray(R.array.timer_state_color);
 	}
 
+	@NonNull
 	@Override
-	public TimerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+	public TimerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 		View itemView = inflater.inflate(R.layout.timer_list_item, parent, false);
 		return new TimerViewHolder(itemView);
 	}
 
 	@Override
-	public void onBindViewHolder(TimerViewHolder holder, int position) {
+	public void onBindViewHolder(@NonNull TimerViewHolder holder, int position) {
 		ExtendedHashMap timer = mData.get(position);
 		if (timer != null) {
 			holder.name.setText(timer.getString(Timer.KEY_NAME));

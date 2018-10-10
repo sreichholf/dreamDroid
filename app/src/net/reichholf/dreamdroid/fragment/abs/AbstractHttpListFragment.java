@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -139,12 +140,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void connectFabReload(View view, AbsListView listView) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (!sp.getBoolean("disable_fab_reload", false)) {
-			registerFab(R.id.fab_reload, view, R.string.reload, R.drawable.ic_action_refresh, new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					reload();
-				}
-			}, listView, true);
+			registerFab(R.id.fab_reload, view, R.string.reload, R.drawable.ic_action_refresh, v -> reload(), listView, true);
 			FloatingActionButton fab_reload = getAppCompatActivity().findViewById(R.id.fab_reload);
 			fab_reload.hide();
 		}
@@ -223,12 +219,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 *           statics)
 	 */
 	protected void registerOnClickListener(View v, final int id) {
-		v.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemSelected(id);
-			}
-		});
+		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
 	/**
@@ -325,7 +316,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
@@ -347,7 +338,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
-	public void onLoaderReset(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
+	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 	}
 
 	public SimpleHttpClient getHttpClient() {

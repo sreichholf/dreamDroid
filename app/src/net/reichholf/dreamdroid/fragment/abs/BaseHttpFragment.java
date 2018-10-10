@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment.abs;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -91,12 +92,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	 */
 	protected void registerOnClickListener(View v, final int id) {
 		if (v != null) {
-			v.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					onItemSelected(id);
-				}
-			});
+			v.setOnClickListener(v1 -> onItemSelected(id));
 		}
 	}
 
@@ -167,7 +163,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
 		mHttpHelper.onLoadFinished();
 		setCurrentTitle(getLoadFinishedTitle());
 		getAppCompatActivity().setTitle(getCurrentTitle());
@@ -179,7 +175,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onLoaderReset(Loader<LoaderResult<ExtendedHashMap>> loader) {
+	public void onLoaderReset(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader) {
 	}
 
 	/*
@@ -191,6 +187,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	 * android.support.v4.app.LoaderManager.LoaderCallbacks#onCreateLoader(int,
 	 * android.os.Bundle)
 	 */
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		return null;

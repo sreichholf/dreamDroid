@@ -12,6 +12,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -118,7 +119,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.timer_edit, container, false);
 
 		mName = view.findViewById(R.id.EditTextTitle);
@@ -169,8 +170,14 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			}
 		});
 
+		if (savedInstanceState != null) {
+			mTimer = savedInstanceState.getParcelable("timer");
+			mTimerOld = savedInstanceState.getParcelable("timerOld");
+			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
+		}
+
 		// Initialize if savedInstanceState won't and instance was not retained
-		if (savedInstanceState == null && mTimer == null && mTimerOld == null) {
+		if (mTimer == null || mTimerOld == null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) getArguments().get(sData);
 			ExtendedHashMap data = new ExtendedHashMap();
 			data.putAll(map);
@@ -192,22 +199,10 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			} else {
 				reload();
 			}
-		} else if (savedInstanceState != null) {
-			mTimer = savedInstanceState.getParcelable("timer");
-			mTimerOld = savedInstanceState.getParcelable("timerOld");
-			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
-			if (mTimer != null) {
-				reload();
-			}
 		} else {
 			reload();
 		}
-		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemSelected(Statics.ITEM_SAVE);
-			}
-		});
+		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, v -> onItemSelected(Statics.ITEM_SAVE));
 		return view;
 	}
 
@@ -279,12 +274,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	}
 
 	protected void registerOnClickListener(View v, final int id) {
-		v.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemSelected(id);
-			}
-		});
+		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
 	protected boolean onItemSelected(int id) {
@@ -308,12 +298,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 			case Statics.ITEM_PICK_BEGIN_DATE:
 				calendar = getCalendar(mBegin);
-				DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance(new OnDateSetListener() {
-					@Override
-					public void onDateSet(DatePickerDialog view, int year, int month, int day) {
-						TimerEditFragment.this.onDateSet(true, year, month, day);
-					}
-				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+				DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance((view, year, month, day) -> TimerEditFragment.this.onDateSet(true, year, month, day), calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 				getMultiPaneHandler().showDialogFragment(datePickerDialogBegin, "dialog_pick_begin_date");
 				consumed = true;
 				break;
@@ -327,12 +312,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 			case Statics.ITEM_PICK_END_DATE:
 				calendar = getCalendar(mEnd);
-				DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance(new OnDateSetListener() {
-					@Override
-					public void onDateSet(DatePickerDialog view, int year, int month, int day) {
-						TimerEditFragment.this.onDateSet(false, year, month, day);
-					}
-				}, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+				DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance((view, year, month, day) -> TimerEditFragment.this.onDateSet(false, year, month, day), calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
 				getMultiPaneHandler().showDialogFragment(datePickerDialogEnd, "dialog_pick_end_date");
 				consumed = true;
 				break;

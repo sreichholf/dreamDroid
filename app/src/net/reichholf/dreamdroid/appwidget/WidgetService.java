@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.appwidget;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import net.reichholf.dreamdroid.Profile;
@@ -20,18 +21,17 @@ import java.util.ArrayList;
  */
 public class WidgetService extends HttpIntentService {
 	public static String TAG = WidgetService.class.getSimpleName();
+
+	public static final int JOB_ID = 1337;
+
 	public static final String KEY_KEYID = "key_id";
 	public static final String KEY_WIDGETID = "widget_id";
 
-	public static final String ACTION_ZAP = "action_zap";
-	public static final String ACTION_RCU = "action_rcu";
-
-	public WidgetService() {
-		super(WidgetService.class.getCanonicalName());
-	}
+	public static final String ACTION_ZAP = "net.reichholf.dreamdroid.appwidget.WidgetService.ACTION_ZAP";
+	public static final String ACTION_RCU = "net.reichholf.dreamdroid.appwidget.WidgetService.ACTION_RCU";
 
 	@Override
-	public void onHandleIntent(Intent intent) {
+	public void onHandleWork(@NonNull Intent intent) {
 		String action = intent.getAction();
 		if(ACTION_RCU.equals(action))
 			doRemoteRequest(intent);

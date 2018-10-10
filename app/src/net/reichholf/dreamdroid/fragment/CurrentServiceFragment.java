@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -90,7 +91,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		}
 	}
 
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.current_service, container, false);
 
 		mServiceName = view.findViewById(R.id.service_name);
@@ -142,12 +143,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	 *            statics)
 	 */
 	protected void registerOnClickListener(View v, final int id) {
-		v.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onItemSelected(id);
-			}
-		});
+		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
 	/**
@@ -292,6 +288,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		}
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
 		return new AsyncSimpleLoader(getAppCompatActivity(), new CurrentServiceRequestHandler(),

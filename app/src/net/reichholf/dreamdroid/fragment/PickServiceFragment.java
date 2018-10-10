@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -63,6 +64,7 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment {
 		return params;
 	}
 
+	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle args) {
 		return new AsyncFavListLoader(getAppCompatActivity(), args);

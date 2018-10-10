@@ -40,12 +40,9 @@ public class CheckableImageButton extends ImageButton implements Checkable {
 	}
 
 	public void init(){
-		setOnLongClickListener(new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View view) {
-				CheckableImageButton.this.onLongClick(view, Gravity.BOTTOM);
-				return true;
-			}
+		setOnLongClickListener(view -> {
+			CheckableImageButton.this.onLongClick(view, Gravity.BOTTOM);
+			return true;
 		});
 	}
 
