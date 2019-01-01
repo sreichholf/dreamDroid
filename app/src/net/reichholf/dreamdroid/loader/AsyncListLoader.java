@@ -8,7 +8,7 @@ package net.reichholf.dreamdroid.loader;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.content.AsyncTaskLoader;
+import androidx.loader.content.AsyncTaskLoader;
 import android.util.Log;
 
 import net.reichholf.dreamdroid.DreamDroid;

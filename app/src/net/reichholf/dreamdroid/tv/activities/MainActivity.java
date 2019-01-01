@@ -2,8 +2,8 @@ package net.reichholf.dreamdroid.tv.activities;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 import android.util.Base64;
 
 import com.squareup.picasso.Picasso;

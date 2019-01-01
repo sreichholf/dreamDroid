@@ -8,7 +8,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.android.tools.build:gradle:3.2.1'
     }
 }
 apply plugin: 'com.android.application'
@@ -26,16 +26,17 @@ dependencies {
         exclude module: 'preference-v7'
         exclude module: 'preference-v14'
     }
-    implementation 'com.android.support:multidex:1.0.3'
-    implementation 'com.android.support:support-v4:27.1.1'
-    implementation 'com.android.support:preference-v14:27.1.1'
-    implementation 'com.android.support:preference-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.android.support:cardview-v7:27.1.1'
-    implementation 'com.android.support:leanback-v17:27.1.1'
-    implementation 'com.android.support:preference-leanback-v17:27.1.1'
-    implementation 'com.android.support:support-annotations:27.1.1'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
+    implementation 'androidx.preference:preference:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.leanback:leanback:1.0.0'
+    implementation 'androidx.leanback:leanback-preference:1.0.0'
+    implementation 'androidx.annotation:annotation:1.0.1'
+    implementation 'androidx.fragment:fragment:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
     implementation "com.butterproject:vlc-android-sdk:3.0.+"
     implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.18'
     implementation 'biz.kasual:materialnumberpicker:1.2.1'
@@ -64,6 +65,8 @@ android {
     defaultConfig {
         versionCode 420
         versionName="1.2.420"
+        minSdkVersion=17
+        targetSdkVersion=28
         multiDexEnabled true
         sourceSets {
             main {

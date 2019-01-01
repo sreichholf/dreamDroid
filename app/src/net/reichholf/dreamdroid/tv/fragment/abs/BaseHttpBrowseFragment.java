@@ -1,14 +1,14 @@
 package net.reichholf.dreamdroid.tv.fragment.abs;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v17.leanback.app.BrowseSupportFragment;
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.ListRowPresenter;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.OnItemViewSelectedListener;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
+import androidx.annotation.NonNull;
+import androidx.leanback.app.BrowseSupportFragment;
+import androidx.leanback.widget.ArrayObjectAdapter;
+import androidx.leanback.widget.ListRowPresenter;
+import androidx.leanback.widget.OnItemViewClickedListener;
+import androidx.leanback.widget.OnItemViewSelectedListener;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;

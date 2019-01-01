@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.SlidingPaneLayout
+<androidx.slidingpanelayout.widget.SlidingPaneLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/sliding_pane"
@@ -27,7 +27,7 @@
         android:layout_weight="1">
 
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/ptr_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -46,7 +46,7 @@
                 app:fastScrollThumbInactiveColor="@color/grey"
                 app:fastScrollThumbColor="?attr/colorAccent"/>
 
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <TextView
             android:id="@android:id/empty"
@@ -59,4 +59,4 @@
             android:visibility="gone"/>
     </FrameLayout>
 
-</android.support.v4.widget.SlidingPaneLayout>
+</androidx.slidingpanelayout.widget.SlidingPaneLayout>

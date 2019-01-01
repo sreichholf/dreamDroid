@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.view.helper;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.util.TypedValue;
 
 import com.afollestad.materialdialogs.internal.MDTintHelper;

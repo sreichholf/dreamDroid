@@ -2,7 +2,7 @@ package net.reichholf.dreamdroid.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.v7.widget.GridLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import android.util.AttributeSet;
 
 public class AutofitRecyclerView extends com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView {

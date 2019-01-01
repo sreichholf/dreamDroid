@@ -2,8 +2,8 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -65,7 +65,7 @@ public class MovieDetailDialog extends BottomSheetActionDialog {
 		TextView textDescEx = dialog.findViewById(R.id.epg_description_extended);
 		textDescEx.setText(descEx);
 
-		FrameLayout bottomSheet = dialog.findViewById(android.support.design.R.id.design_bottom_sheet);
+		FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
 		BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
 		if (bottomSheetBehavior != null) {
 			bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);

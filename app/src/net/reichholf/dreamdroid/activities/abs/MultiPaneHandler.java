@@ -7,8 +7,8 @@
 package net.reichholf.dreamdroid.activities.abs;
 
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 /**
  * @author sre

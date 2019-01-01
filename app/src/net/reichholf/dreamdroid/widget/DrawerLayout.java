@@ -14,7 +14,7 @@ import android.view.MotionEvent;
  * @author sre
  * 
  */
-public class DrawerLayout extends android.support.v4.widget.DrawerLayout {
+public class DrawerLayout extends androidx.drawerlayout.widget.DrawerLayout {
 
 	/**
 	 * @param context

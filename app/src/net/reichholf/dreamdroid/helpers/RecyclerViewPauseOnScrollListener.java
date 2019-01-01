@@ -1,6 +1,6 @@
 package net.reichholf.dreamdroid.helpers;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 

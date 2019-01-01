@@ -5,8 +5,6 @@
           android:installLocation="auto">
 
     <uses-sdk
-        android:minSdkVersion="16"
-        android:targetSdkVersion="27"
         tools:overrideLibrary="android.support.v17.leanback, android.support.v17.preference"/>
 
     <uses-feature android:name="android.software.leanback"
@@ -170,7 +168,7 @@
             android:enabled="true"/>
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
