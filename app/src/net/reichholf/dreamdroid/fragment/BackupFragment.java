@@ -43,13 +43,12 @@ import static net.reichholf.dreamdroid.helpers.Statics.*;
 public class BackupFragment extends BaseFragment {
 	private static final String TAG = BackupFragment.class.getSimpleName();
 
-	private LayoutInflater mInflater;
-	private BackupService service;
-	private BackupData data;
+	private BackupService mBackupService;
+	private BackupData mBackupData;
 
-	private List<CheckBox> profilesCheckBox = new ArrayList<>();
-	private CheckBox settingsCheckBox;
-	private View backupView;
+	private List<CheckBox> mProfilesCheckBox = new ArrayList<>();
+	private CheckBox mSettingsCheckBox;
+	private View mBackupView;
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,18 +63,17 @@ public class BackupFragment extends BaseFragment {
 	}
 
 	private void loadBackupData() {
-        this.data = service.getBackupData();
+        mBackupData = mBackupService.getBackupData();
     }
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		this.mInflater = getLayoutInflater(savedInstanceState);
-		this.service =  new BackupService(getContext());
-		this.backupView = mInflater.inflate(R.layout.backup, null);
-		settingsCheckBox = this.backupView.findViewById(R.id.backup_export_settings);
+		mBackupService =  new BackupService(getContext());
+		mBackupView = inflater.inflate(R.layout.backup, null);
+		mSettingsCheckBox = mBackupView.findViewById(R.id.backup_export_settings);
 		loadBackupData();
         refreshView();
-		return backupView;
+		return mBackupView;
 	}
 
 	@Override
@@ -100,10 +98,10 @@ public class BackupFragment extends BaseFragment {
 
     private void refreshView() {
 		int currentProfileId = DreamDroid.getCurrentProfile().getId();
-		LinearLayout checkboxLayout = this.backupView.findViewById(R.id.layout_backup_profile_dynamic);
+		LinearLayout checkboxLayout = mBackupView.findViewById(R.id.layout_backup_profile_dynamic);
         checkboxLayout.removeAllViews();
-		profilesCheckBox.clear();
-        for (Profile profile : data.getProfiles()) {
+		mProfilesCheckBox.clear();
+        for (Profile profile : mBackupData.getProfiles()) {
         	int id = profile.getId();
         	String text = profile.getName();
         	if (id==currentProfileId) {
@@ -115,7 +113,7 @@ public class BackupFragment extends BaseFragment {
             ch.setId(id);
             ch.setChecked(true);
             checkboxLayout.addView(ch);
-            profilesCheckBox.add(ch);
+            mProfilesCheckBox.add(ch);
         }
     }
 
@@ -126,13 +124,13 @@ public class BackupFragment extends BaseFragment {
 	}
 
 	private void doExport() {
-		if (!settingsCheckBox.isChecked()) {
-			data.setSettings(null);
+		if (!mSettingsCheckBox.isChecked()) {
+			mBackupData.setSettings(null);
 		}
-		profilesCheckBox.stream().filter(p -> !p.isChecked()).forEach(checkBox -> {
-            data.getProfiles().remove(data.getProfiles().stream().filter(p -> p.getId()== checkBox.getId()).findFirst().get());
+		mProfilesCheckBox.stream().filter(p -> !p.isChecked()).forEach(checkBox -> {
+            mBackupData.getProfiles().remove(mBackupData.getProfiles().stream().filter(p -> p.getId()== checkBox.getId()).findFirst().get());
         });
-		service.doExport(data);
+		mBackupService.doExport(mBackupData);
 	}
 
 	@Override
@@ -151,7 +149,7 @@ public class BackupFragment extends BaseFragment {
 			if (data != null) {
 				Uri uri = data.getData();
 				try {
-					service.doImport(readTextFromUri(uri));
+					mBackupService.doImport(readTextFromUri(uri));
 				} catch (IOException e) {
 					Log.e(TAG, "unable to readTextFromUri:" + uri, e);
 				}
