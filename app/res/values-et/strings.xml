@@ -237,7 +237,7 @@
 <string name="force_tablet_layout_long">Sunnitud tahvelarvutile optimeeritud välimus</string>
 <string name="force_tablet_layout">Sunnitud tahvelarvuti välimus</string>
 <string name="mobile_imdb">Kasuta imdb.com mobiiliversiooni</string>
-<string name="mobile_imdb_long">Kasuta 'www.imdb.com' asemel 'm.imdb.com'</string>
+<string name="mobile_imdb_long">Kasuta \'www.imdb.com\' asemel \'m.imdb.com\'</string>
 <string name="searching">Otsitakse…</string>
 <string name="searching_known_devices">Toimub dreamboxide otsing kohtvõrgus. See võib kesta paar minutit…</string>
 <string name="autodiscover_dreamboxes">Dreamboxi automaatne tuvastamine</string>
