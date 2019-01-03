@@ -1,3 +1,6 @@
+## 1.2.421
+* FIX: unencrypted http
+
 ## 1.2.420
 * NEW: Settings Backup
 * FIX: Some improvements for the TV version of dreamDroid

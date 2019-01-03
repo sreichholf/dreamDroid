@@ -45,7 +45,8 @@
         android:label="@string/app_name"
         android:resizeableActivity="true"
         android:supportsRtl="true"
-        android:theme="@style/Theme.DreamDroid">
+        android:theme="@style/Theme.DreamDroid"
+        android:usesCleartextTraffic="true">
         <activity android:name=".activities.TabbedNavigationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
