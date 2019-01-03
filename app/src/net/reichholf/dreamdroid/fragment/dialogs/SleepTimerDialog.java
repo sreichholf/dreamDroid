@@ -22,7 +22,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 
 import java.util.HashMap;
 
-import biz.kasual.materialnumberpicker.MaterialNumberPicker;
+import com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker;
 
 /**
  * @author sre

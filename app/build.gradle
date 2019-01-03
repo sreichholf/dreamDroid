@@ -39,9 +39,10 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation "com.butterproject:vlc-android-sdk:3.0.+"
     implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.18'
-    implementation 'biz.kasual:materialnumberpicker:1.2.1'
-    implementation 'com.github.chrisbanes:PhotoView:2.0.+'
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.github.StephenVinouze:MaterialNumberPicker:1.0.5'
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.12.1'
+    implementation 'com.squareup.picasso:picasso:2.71828'
     implementation ('com.wdullaer:materialdatetimepicker:3.6.0'){
         exclude group: 'com.android.support'
         exclude module: 'support-v4'
@@ -51,8 +52,8 @@ dependencies {
     implementation 'commons-net:commons-net:3.6'
     implementation 'commons-io:commons-io:2.5'
     implementation 'org.openhab.jmdns:jmdns:3.4.2'
-    implementation 'org.piwik.sdk:piwik-sdk:3.0.2'
-    implementation 'ru.noties:markwon:1.0.5'
+    implementation 'org.matomo.sdk:tracker:4.0.1'
+    implementation 'ru.noties:markwon:2.0.1'
     implementation project(':libraries:gaugeview-library')
     implementation project(':libraries:MemorizingTrustManager')
     implementation 'com.google.code.gson:gson:2.8.5'
@@ -65,8 +66,8 @@ android {
     defaultConfig {
         versionCode 420
         versionName="1.2.420"
-        minSdkVersion=17
-        targetSdkVersion=28
+        minSdkVersion 17
+        targetSdkVersion 28
         multiDexEnabled true
         sourceSets {
             main {

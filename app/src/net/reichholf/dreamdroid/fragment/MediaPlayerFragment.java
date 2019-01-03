@@ -257,7 +257,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
 				// String imageUrl =
 				// "http://192.168.2.100/file?file=/tmp/.id3coverart";
-				Picasso.with(getContext()).load(imageUrl).fit().centerInside().into(imageView);
+				Picasso.get().load(imageUrl).fit().centerInside().into(imageView);
 			}
 
 			// check for changes in options menu
@@ -629,7 +629,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				params.add(new NameValuePair("file", "/tmp/.id3coverart"));
 
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
-				Picasso.with(getContext()).load(imageUrl).fit().centerInside().into(imageView);
+				Picasso.get().load(imageUrl).fit().centerInside().into(imageView);
 
 				getCurrentMediaInfo();
 			}

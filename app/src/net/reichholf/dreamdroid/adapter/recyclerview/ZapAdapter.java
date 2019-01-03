@@ -67,8 +67,9 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 					serviceName.setVisibility(View.GONE);
 					picon.setVisibility(View.VISIBLE);
 				}
+
 				@Override
-				public void onError() {
+				public void onError(Exception e) {
 					Log.w(TAG, String.format("Error loading picon for %s", serviceName.getText()));
 					serviceName.setVisibility(View.VISIBLE);
 					picon.setVisibility(View.GONE);

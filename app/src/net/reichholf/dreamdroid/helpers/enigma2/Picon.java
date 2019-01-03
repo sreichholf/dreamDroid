@@ -91,7 +91,7 @@ public class Picon {
 			piconView.setVisibility(View.VISIBLE);
 
 		String uri = getPiconUri(context, fileName);
-		Picasso.with(context).load(uri).fit().centerInside().tag(tag).error(R.drawable.dreamdroid_logo_simple).into(piconView, callback);
+		Picasso.get().load(uri).fit().centerInside().tag(tag).error(R.drawable.dreamdroid_logo_simple).into(piconView, callback);
 	}
 
 	public static String getPiconUri(Context context, String fileName) {

@@ -1,4 +1,3 @@
 include ':app'
-include ':libraries:ckChangeLog'
 include ':libraries:gaugeview-library'
 include ':libraries:MemorizingTrustManager'

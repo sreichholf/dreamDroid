@@ -29,8 +29,8 @@ import net.reichholf.dreamdroid.video.VLCPlayer;
 import net.reichholf.dreamdroid.video.VideoPlayer;
 import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
+import org.matomo.sdk.extra.MatomoApplication;
+import org.matomo.sdk.extra.TrackHelper;
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
@@ -78,7 +78,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		setTitle("");
 		initializeOverlay();
 		if (DreamDroid.isTrackingEnabled(this))
-			TrackHelper.track().screen("/" + getClass().getSimpleName()).title(getClass().getSimpleName()).with((PiwikApplication) getApplication());
+			TrackHelper.track().screen("/" + getClass().getSimpleName()).title(getClass().getSimpleName()).with((MatomoApplication) getApplication());
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)

@@ -7,21 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
-import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.UrlConnectionDownloader;
 
 import net.reichholf.dreamdroid.BuildConfig;
 import net.reichholf.dreamdroid.DreamDroid;
@@ -38,18 +30,30 @@ import net.reichholf.dreamdroid.util.Inventory;
 import net.reichholf.dreamdroid.util.Purchase;
 import net.reichholf.dreamdroid.util.SkuDetails;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import de.duenndns.ssl.JULHandler;
 import de.duenndns.ssl.MemorizingTrustManager;
+import okhttp3.Credentials;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
+import okhttp3.internal.tls.OkHostnameVerifier;
 
 /**
  * Created by Stephan on 06.11.13.
@@ -100,6 +104,29 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	};
 
 
+    private int responseCount(Response response) {
+        int result = 1;
+        while ((response = response.priorResponse()) != null) {
+            result++;
+        }
+        return result;
+    }
+
+    private static X509TrustManager systemDefaultTrustManager() {
+        try {
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init((KeyStore) null);
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+                throw new IllegalStateException("Unexpected default trust managers:"
+                        + Arrays.toString(trustManagers));
+            }
+            return (X509TrustManager) trustManagers[0];
+        } catch (GeneralSecurityException e) {
+            throw new AssertionError(); // The system has no TLS. Just give up.
+        }
+    }
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		try {
@@ -113,23 +140,27 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			SSLContext sc = SSLContext.getInstance("TLS");
 			sc.init(null, new X509TrustManager[]{mTrustManager},
 					new java.security.SecureRandom());
+			//HttpsURLConnection
 			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 			HttpsURLConnection.setDefaultHostnameVerifier(
 					mTrustManager.wrapHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier()));
 			HttpsURLConnection.setFollowRedirects(false);
-			Picasso.Builder builder = new Picasso.Builder(getApplicationContext());
-			builder.downloader(new UrlConnectionDownloader(getApplicationContext()){
-				@Override
-				protected HttpURLConnection openConnection(Uri path) throws IOException {
-					HttpURLConnection connection = super.openConnection(path);
-					String userinfo = path.getUserInfo();
-					if(!userinfo.isEmpty()) {
-						connection.setRequestProperty("Authorization", "Basic " +
-								Base64.encodeToString(userinfo.getBytes(), Base64.NO_WRAP));
-					}
-					return connection;
-				}
-			});
+			//Picasso w/ OkHttpClient
+            OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+            clientBuilder
+                    .authenticator((route, response) -> {
+                        if (responseCount(response) >= 3) {
+                            return null;
+                        }
+                        String username = response.request().url().username();
+                        String password = response.request().url().password();
+                        String cred = Credentials.basic(username, password);
+                        return response.request().newBuilder().header("Authorization", cred).build();
+                    })
+                    .sslSocketFactory(sc.getSocketFactory(), systemDefaultTrustManager())
+                    .hostnameVerifier(mTrustManager.wrapHostnameVerifier(OkHostnameVerifier.INSTANCE));
+            Picasso.Builder builder = new Picasso.Builder(getApplicationContext());
+            builder.downloader(new OkHttp3Downloader(clientBuilder.build()));
 			try {
 				Picasso.setSingletonInstance(builder.build());
 			} catch (IllegalStateException ignored) {}
