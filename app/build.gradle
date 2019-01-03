@@ -107,7 +107,7 @@ android {
         variant.outputs.each { output ->
             output.versionCodeOverride =
                     project.ext.versionCodes.get(output.getFilter(
-                            com.android.build.OutputFile.ABI), 0) * 10000000 + android.defaultConfig.versionCode
+                            com.android.build.OutputFile.ABI), 99) * 10000000 + android.defaultConfig.versionCode
         }
     }
 
