@@ -1,6 +1,9 @@
-## 1.2.419
+## 1.2.420
+* NEU: Backup der Einstellungen
 * FIX: Verbesserung an der "TV" Version von dreamDroid
 * FIX: Abstürze behoben
+* DEV: Wechsel zu Android SDK 28 und AndroidX
+* DEV: Externe Bibliotheken aktualisiert
 * DEV: Code Cleanups
 
 ## 1.2.418
