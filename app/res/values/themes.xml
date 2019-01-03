@@ -65,8 +65,6 @@
         <item name="mdtp_theme_dark">false</item>
         <item name="md_dark_theme">false</item>
         <item name="ic_import_export">@drawable/ic_import_export_light</item>
-        <item name="ic_cloud_download">@drawable/ic_cloud_download_light</item>
-        <item name="ic_cloud_upload">@drawable/ic_cloud_upload_light</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog" parent="Theme.AppCompat.DayNight.Dialog">

@@ -25,25 +25,25 @@ import static android.os.Environment.*;
  */
 public class BackupService {
     private static final String TAG = BackupService.class.getSimpleName();
-    private final Context context;
-    private final SharedPreferences preferences;
-    private final DatabaseHelper database;
+    private final Context mContext;
+    private final SharedPreferences mPreferences;
+    private final DatabaseHelper mDatabase;
 
     public BackupService(Context context) {
-        this.context = context;
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
-        this.database = DatabaseHelper.getInstance(this.context);
+        mContext = context;
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mDatabase = DatabaseHelper.getInstance(mContext);
     }
 
     public BackupData getBackupData() {
         BackupData export = new BackupData();
-        preferences.getAll().entrySet().stream().forEach((Consumer<Map.Entry<String, ?>>) entry -> {
+        mPreferences.getAll().entrySet().stream().forEach((Consumer<Map.Entry<String, ?>>) entry -> {
             String key = entry.getKey();
             String value = entry.getValue().toString();
             String type = entry.getValue().getClass().getSimpleName();
             export.addGenericSetting(new GenericSetting(key, value, type));
         });
-        this.database.getProfiles().stream().forEach(profile -> export.addProfile(profile));
+        mDatabase.getProfiles().stream().forEach(profile -> export.addProfile(profile));
         return export;
     }
 
@@ -71,12 +71,12 @@ public class BackupService {
         for (Profile profile : profiles) {
             Profile existingProfile = getProfileFromDB(profile.getName());
             if (existingProfile != null) {
-                this.database.deleteProfile(existingProfile);
+                mDatabase.deleteProfile(existingProfile);
             }
-            this.database.addProfile(profile);
+            mDatabase.addProfile(profile);
         }
         List<GenericSetting> settings = backupData.getSettings();
-        Map<String, Object> allPreferences = (Map<String, Object>) preferences.getAll();
+        Map<String, Object> allPreferences = (Map<String, Object>) mPreferences.getAll();
 
         for (GenericSetting setting : settings) {
             allPreferences.put(setting.getKey(), setting.getValue());
@@ -84,7 +84,7 @@ public class BackupService {
     }
 
     private Profile getProfileFromDB(String profileName) {
-        List<Profile> all = this.database.getProfiles();
+        List<Profile> all = mDatabase.getProfiles();
         for (Profile profile : all) {
             if (profile.getName().equals(profileName)) {
                 return profile;

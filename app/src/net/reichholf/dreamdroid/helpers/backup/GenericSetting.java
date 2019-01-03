@@ -5,25 +5,25 @@ package net.reichholf.dreamdroid.helpers.backup;
  */
 public class GenericSetting {
 
-    private final String key;
-    private final String value;
-    private final String type;
+    private final String mKey;
+    private final String mValue;
+    private final String mType;
 
     public GenericSetting(String key, String value, String type) {
-        this.key = key;
-        this.value = value;
-        this.type = type;
+        mKey = key;
+        mValue = value;
+        mType = type;
     }
 
     public String getKey() {
-        return key;
+        return mKey;
     }
 
     public String getType() {
-        return type;
+        return mType;
     }
 
     public String getValue() {
-        return value;
+        return mValue;
     }
 }
