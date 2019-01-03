@@ -7,7 +7,7 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
+import androidx.fragment.app.DialogFragment;
 
 /**
  * @author sre

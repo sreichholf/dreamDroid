@@ -1,6 +1,6 @@
 package net.reichholf.dreamdroid.helpers;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
@@ -29,16 +29,16 @@ public class RecyclerViewPauseOnScrollListener extends RecyclerView.OnScrollList
 	public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
 		switch (newState) {
 			case RecyclerView.SCROLL_STATE_IDLE:
-				Picasso.with(recyclerView.getContext()).resumeTag(mTag);
+				Picasso.get().resumeTag(mTag);
 				break;
 			case RecyclerView.SCROLL_STATE_DRAGGING:
 				if (mPauseOnScroll) {
-					Picasso.with(recyclerView.getContext()).pauseTag(mTag);
+					Picasso.get().pauseTag(mTag);
 				}
 				break;
 			case RecyclerView.SCROLL_STATE_SETTLING:
 				if (mPauseOnSettling) {
-					Picasso.with(recyclerView.getContext()).pauseTag(mTag);
+					Picasso.get().pauseTag(mTag);
 				}
 				break;
 		}

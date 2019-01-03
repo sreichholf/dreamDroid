@@ -1,6 +1,6 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 

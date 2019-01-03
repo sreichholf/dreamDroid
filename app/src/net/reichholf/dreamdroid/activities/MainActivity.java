@@ -13,18 +13,18 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -57,8 +57,8 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
+import org.matomo.sdk.extra.MatomoApplication;
+import org.matomo.sdk.extra.TrackHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -360,13 +360,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				ft.hide(mDetailFragment);
 			}
 			if (DreamDroid.isTrackingEnabled(this) && !fragment.isVisible())
-				TrackHelper.track().screen("/" + fragment.getClass().getSimpleName()).title(fragment.getClass().getSimpleName()).with((PiwikApplication) getApplication());
+				TrackHelper.track().screen("/" + fragment.getClass().getSimpleName()).title(fragment.getClass().getSimpleName()).with((MatomoApplication) getApplication());
 			ft.show(fragment);
 		} else {
 			Log.i(TAG, "Fragment " + ((Object) fragment).getClass().getSimpleName() + " not added, adding");
 			ft.replace(viewId, fragment, ((Object) fragment).getClass().getSimpleName());
 			if (DreamDroid.isTrackingEnabled(this) && !fragment.isVisible())
-				TrackHelper.track().screen("/" + fragment.getClass().getSimpleName()).title(fragment.getClass().getSimpleName()).with((PiwikApplication) getApplication());
+				TrackHelper.track().screen("/" + fragment.getClass().getSimpleName()).title(fragment.getClass().getSimpleName()).with((MatomoApplication) getApplication());
 		}
 	}
 

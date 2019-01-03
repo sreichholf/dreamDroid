@@ -14,7 +14,7 @@
         android:indeterminate="true"
         android:visibility="gone"/>
 
-    <app:android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/service_detail_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -148,7 +148,7 @@
             </LinearLayout>
 
         </RelativeLayout>
-    </app:android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
     <app:android.support.v7.widget.CardView
         android:id="@+id/epg"

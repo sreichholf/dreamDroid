@@ -8,11 +8,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
-import android.support.v7.preference.PreferenceManager;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.PreferenceManager;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -29,8 +29,8 @@ import net.reichholf.dreamdroid.video.VLCPlayer;
 import net.reichholf.dreamdroid.video.VideoPlayer;
 import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
+import org.matomo.sdk.extra.MatomoApplication;
+import org.matomo.sdk.extra.TrackHelper;
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
@@ -78,7 +78,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		setTitle("");
 		initializeOverlay();
 		if (DreamDroid.isTrackingEnabled(this))
-			TrackHelper.track().screen("/" + getClass().getSimpleName()).title(getClass().getSimpleName()).with((PiwikApplication) getApplication());
+			TrackHelper.track().screen("/" + getClass().getSimpleName()).title(getClass().getSimpleName()).with((MatomoApplication) getApplication());
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)

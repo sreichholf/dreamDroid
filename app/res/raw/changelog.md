@@ -1,7 +1,10 @@
-## 1.2.419
+## 1.2.420
+* NEW: Settings Backup
 * FIX: Some improvements for the TV version of dreamDroid
 * FIX: Fix NPEs
-* DEV: Some code cleanups
+* DEV: Switch to Android SDK 28 and AndroidX
+* DEV: Update external libraries
+* DEV: Code cleanups
 
 ## 1.2.418
 * FIX: Picon sync was writing empty files (resync to fix picon display)

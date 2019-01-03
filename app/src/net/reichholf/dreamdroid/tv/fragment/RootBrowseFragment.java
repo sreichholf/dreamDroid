@@ -2,16 +2,16 @@ package net.reichholf.dreamdroid.tv.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.HeaderItem;
-import android.support.v17.leanback.widget.ListRow;
-import android.support.v17.leanback.widget.ObjectAdapter;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.Loader;
+import androidx.annotation.NonNull;
+import androidx.leanback.widget.ArrayObjectAdapter;
+import androidx.leanback.widget.HeaderItem;
+import androidx.leanback.widget.ListRow;
+import androidx.leanback.widget.ObjectAdapter;
+import androidx.leanback.widget.Presenter;
+import androidx.leanback.widget.Row;
+import androidx.leanback.widget.RowPresenter;
+import androidx.core.content.ContextCompat;
+import androidx.loader.content.Loader;
 import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;

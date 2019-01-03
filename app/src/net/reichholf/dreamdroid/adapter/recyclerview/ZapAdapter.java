@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,8 +67,9 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 					serviceName.setVisibility(View.GONE);
 					picon.setVisibility(View.VISIBLE);
 				}
+
 				@Override
-				public void onError() {
+				public void onError(Exception e) {
 					Log.w(TAG, String.format("Error loading picon for %s", serviceName.getText()));
 					serviceName.setVisibility(View.VISIBLE);
 					picon.setVisibility(View.GONE);

@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.tv.fragment;
 
 import android.os.Bundle;
-import android.support.v17.preference.LeanbackPreferenceFragment;
+import androidx.leanback.preference.LeanbackPreferenceFragment;
 
 import net.reichholf.dreamdroid.R;
 

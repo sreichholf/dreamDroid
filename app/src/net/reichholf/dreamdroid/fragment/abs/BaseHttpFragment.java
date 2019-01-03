@@ -7,14 +7,13 @@
 package net.reichholf.dreamdroid.fragment.abs;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.SwipeRefreshLayout;
+import androidx.annotation.NonNull;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;

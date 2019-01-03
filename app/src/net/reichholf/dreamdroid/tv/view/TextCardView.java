@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.tv.view;
 
 import android.content.Context;
-import android.support.v17.leanback.widget.BaseCardView;
+import androidx.leanback.widget.BaseCardView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;

@@ -2,7 +2,7 @@ package net.reichholf.dreamdroid.fragment.abs;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 
 import net.reichholf.dreamdroid.R;

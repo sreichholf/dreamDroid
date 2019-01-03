@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.activities;
 
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.view.WindowManager;
 
 import net.reichholf.dreamdroid.R;

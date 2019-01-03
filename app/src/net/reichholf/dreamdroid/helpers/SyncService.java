@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.helpers;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;

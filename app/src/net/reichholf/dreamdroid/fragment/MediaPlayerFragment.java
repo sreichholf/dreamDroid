@@ -8,16 +8,15 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.SlidingPaneLayout;
+import androidx.annotation.NonNull;
+import androidx.loader.content.Loader;
+import androidx.slidingpanelayout.widget.SlidingPaneLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -258,7 +257,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
 				// String imageUrl =
 				// "http://192.168.2.100/file?file=/tmp/.id3coverart";
-				Picasso.with(getContext()).load(imageUrl).fit().centerInside().into(imageView);
+				Picasso.get().load(imageUrl).fit().centerInside().into(imageView);
 			}
 
 			// check for changes in options menu
@@ -630,7 +629,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				params.add(new NameValuePair("file", "/tmp/.id3coverart"));
 
 				String imageUrl = getHttpClient().buildUrl("/file?", params);
-				Picasso.with(getContext()).load(imageUrl).fit().centerInside().into(imageView);
+				Picasso.get().load(imageUrl).fit().centerInside().into(imageView);
 
 				getCurrentMediaInfo();
 			}

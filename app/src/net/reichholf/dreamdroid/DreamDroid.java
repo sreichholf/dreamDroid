@@ -14,10 +14,10 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.multidex.MultiDex;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
+import androidx.multidex.MultiDex;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import android.util.Log;
 
 import net.reichholf.dreamdroid.helpers.DateTime;
@@ -25,10 +25,11 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
 
-import org.piwik.sdk.TrackerConfig;
-import org.piwik.sdk.extra.DownloadTracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
+
+import org.matomo.sdk.TrackerBuilder;
+import org.matomo.sdk.extra.DownloadTracker;
+import org.matomo.sdk.extra.MatomoApplication;
+import org.matomo.sdk.extra.TrackHelper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -40,7 +41,7 @@ import java.util.GregorianCalendar;
 /**
  * @author sre
  */
-public class DreamDroid extends PiwikApplication {
+public class DreamDroid extends MatomoApplication {
 	public static final int INITIAL_SERVICELIST_PANE = 1;
 	public static final int INITIAL_VIRTUAL_REMOTE = 2;
     public static final String PREFS_KEY_HWACCEL = "video_hardware_acceleration";
@@ -118,8 +119,8 @@ public class DreamDroid extends PiwikApplication {
 	}
 
 	@Override
-	public TrackerConfig onCreateTrackerConfig() {
-		return TrackerConfig.createDefault("https://reichholf.net/piwik/", 2);
+	public TrackerBuilder onCreateTrackerConfig() {
+		return TrackerBuilder.createDefault("https://reichholf.net/piwik/", 2);
 	}
 
 	/*
