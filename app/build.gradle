@@ -57,6 +57,7 @@ dependencies {
     implementation project(':libraries:gaugeview-library')
     implementation project(':libraries:MemorizingTrustManager')
     implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'net.sourceforge.streamsupport:android-retrostreams:1.7.0'
 }
 
 android {

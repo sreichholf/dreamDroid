@@ -16,7 +16,9 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+
+import java9.util.function.Consumer;
+import java9.util.stream.StreamSupport;
 
 import static android.os.Environment.*;
 
@@ -37,13 +39,13 @@ public class BackupService {
 
     public BackupData getBackupData() {
         BackupData export = new BackupData();
-        mPreferences.getAll().entrySet().stream().forEach((Consumer<Map.Entry<String, ?>>) entry -> {
+        StreamSupport.stream(mPreferences.getAll().entrySet()).forEach((Consumer<Map.Entry<String, ?>>) entry -> {
             String key = entry.getKey();
             String value = entry.getValue().toString();
             String type = entry.getValue().getClass().getSimpleName();
             export.addGenericSetting(new GenericSetting(key, value, type));
         });
-        mDatabase.getProfiles().stream().forEach(profile -> export.addProfile(profile));
+        StreamSupport.stream(mDatabase.getProfiles()).forEach(profile -> export.addProfile(profile));
         return export;
     }
 
@@ -55,6 +57,7 @@ public class BackupService {
             out = new PrintWriter(new File(getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS), "dreamdroid_backup.json"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            return;
         }
         Log.i(TAG, "Export content: " + jsonContent);
         out.println(jsonContent);
