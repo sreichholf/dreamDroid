@@ -1,3 +1,10 @@
+## 1.2.422
+* FIX: Abstürze im Einstellungs-Backup
+* FIX: "Eignungstest"-Fehler für AndroidTV
+
+## 1.2.421
+* FIX: unverschlüsseltes http
+
 ## 1.2.420
 * NEU: Backup der Einstellungen
 * FIX: Verbesserung an der "TV" Version von dreamDroid

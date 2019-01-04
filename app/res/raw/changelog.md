@@ -1,3 +1,10 @@
+## 1.2.422
+* FIX: Crashes in settings backup
+* FIX: Some AndroidTV Eligibility issues
+
+## 1.2.421
+* FIX: unencrypted http
+
 ## 1.2.420
 * NEW: Settings Backup
 * FIX: Some improvements for the TV version of dreamDroid

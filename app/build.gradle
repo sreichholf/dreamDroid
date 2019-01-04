@@ -57,6 +57,7 @@ dependencies {
     implementation project(':libraries:gaugeview-library')
     implementation project(':libraries:MemorizingTrustManager')
     implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'net.sourceforge.streamsupport:android-retrostreams:1.7.0'
 }
 
 android {
@@ -64,8 +65,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 420
-        versionName="1.2.420"
+        versionCode 422
+        versionName="1.2.422"
         minSdkVersion 17
         targetSdkVersion 28
         multiDexEnabled true

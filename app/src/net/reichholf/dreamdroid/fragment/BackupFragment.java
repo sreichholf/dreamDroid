@@ -35,6 +35,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static androidx.core.content.PermissionChecker.checkSelfPermission;
 import static net.reichholf.dreamdroid.helpers.Statics.*;
 
 /**
@@ -78,6 +81,12 @@ public class BackupFragment extends BaseFragment {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if (!hasExternalStoragePermission()){
+			Log.w(TAG,"WRITE_EXTERNAL_STORAGE permission not granted");
+			showToast(getResources().getString(R.string.backup_export_missing_permission));
+			return false;
+		}
+
 		switch (item.getItemId()) {
 			case (ITEM_BACKUP_EXPORT):
 				doExport();
@@ -94,6 +103,10 @@ public class BackupFragment extends BaseFragment {
 				return false;
 		}
 		return false;
+	}
+
+	private boolean hasExternalStoragePermission() {
+		return checkSelfPermission(getContext(), WRITE_EXTERNAL_STORAGE) == PERMISSION_GRANTED;
 	}
 
     private void refreshView() {
