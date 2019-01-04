@@ -1,3 +1,7 @@
+## 1.2.422
+* FIX: Crashes in settings backup
+* FIX: Some AndroidTV Eligibility issues
+
 ## 1.2.421
 * FIX: unencrypted http
 
