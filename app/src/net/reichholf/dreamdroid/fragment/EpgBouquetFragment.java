@@ -123,7 +123,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 			return;
 		switch (requestCode) {
 			case Statics.REQUEST_PICK_BOUQUET:
-				ExtendedHashMap service = data.getParcelableExtra(PickServiceFragment.KEY_BOUQUET);
+				ExtendedHashMap service = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
 				String reference = service.getString(Service.KEY_REFERENCE);
 				if (!reference.equals(mReference)) {
 					mReference = reference;

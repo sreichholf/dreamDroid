@@ -48,9 +48,9 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		mEnableReload = false;
 		super.onCreate(savedInstanceState);
-		initTitle("");
-
 		if (mCurrentBouquet == null) {
+			mReload = true;
+			initTitle("");
 			mCurrentBouquet = new ExtendedHashMap();
 			mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
 			mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
@@ -181,7 +181,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 			return;
 		switch (requestCode) {
 			case Statics.REQUEST_PICK_BOUQUET:
-				ExtendedHashMap bouquet = data.getParcelableExtra(PickServiceFragment.KEY_BOUQUET);
+				ExtendedHashMap bouquet = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
 				String reference = bouquet.getString(Service.KEY_REFERENCE, "");
 				if (!reference.equals(mCurrentBouquet.getString(Service.KEY_REFERENCE))) {
 					mCurrentBouquet = bouquet;
