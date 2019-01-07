@@ -1,4 +1,5 @@
 ## 1.3.423
+* FIX: Android TV issues (introduced in 1.2.420)
 * NEW: Add Open Source License Attribution (new button in About)
 * DEV: Internal changes (quite a bit of them) to fix some long pending crash issues (android-state with livefront:bridge)
 * DEV: Workaround an android issue with Map and Parcel ([]https://medium.com/the-wtf-files/the-mysterious-case-of-the-bundle-and-the-map-7b15279a794e])

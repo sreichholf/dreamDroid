@@ -1,4 +1,5 @@
 ## 1.3.423
+* FIX: Android TV Probleme (seit 1.2.420)
 * NEU: Open Source Lizenz-Dialog (Menü -> Über)
 * DEV: Etwas größere interne Änderungen um länger existierende Abstürze zu beheben (android-state mit livefront:bridge)
 * DEV: Workaround für einen Android-Bug mit Map und Parcel ([]https://medium.com/the-wtf-files/the-mysterious-case-of-the-bundle-and-the-map-7b15279a794e])
