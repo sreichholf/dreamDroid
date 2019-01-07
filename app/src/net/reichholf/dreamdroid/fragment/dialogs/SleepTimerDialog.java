@@ -8,21 +8,21 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RadioGroup;
+
+import com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 
-import java.util.HashMap;
-
-import com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 /**
  * @author sre
@@ -34,7 +34,7 @@ public class SleepTimerDialog extends AbstractDialog {
 	public static SleepTimerDialog newInstance(ExtendedHashMap sleepTimer) {
 		SleepTimerDialog f = new SleepTimerDialog();
 		Bundle args = new Bundle();
-		args.putParcelable(KEY_TIMER, sleepTimer);
+		args.putSerializable(KEY_TIMER, sleepTimer);
 		f.setArguments(args);
 		return f;
 	}
@@ -44,7 +44,7 @@ public class SleepTimerDialog extends AbstractDialog {
 
 	@SuppressWarnings("unchecked")
 	private void init() {
-		mSleepTimer = new ExtendedHashMap((HashMap<String, Object>) getArguments().getSerializable(KEY_TIMER));
+		mSleepTimer = ((ExtendedHashMap) getArguments().getSerializable(KEY_TIMER)).clone();
 	}
 
 	public interface SleepTimerDialogActionListener {
@@ -67,6 +67,7 @@ public class SleepTimerDialog extends AbstractDialog {
 		try {
 			min = Integer.parseInt(mSleepTimer.getString(SleepTimer.KEY_MINUTES));
 		} catch (NumberFormatException nfe) {
+			Log.w("bla", nfe.getLocalizedMessage());
 		}
 
 		boolean enable = Python.TRUE.equals(mSleepTimer.getString(SleepTimer.KEY_ENABLED));

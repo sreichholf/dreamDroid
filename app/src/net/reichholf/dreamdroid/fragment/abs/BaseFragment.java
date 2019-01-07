@@ -11,6 +11,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.livefront.bridge.Bridge;
+
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
@@ -47,6 +49,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Bridge.restoreInstanceState(this, savedInstanceState);
 		if (mHelper == null)
 			mHelper = new FragmentHelper(this);
 		else
@@ -99,6 +102,13 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		mHelper.onSaveInstanceState(outState);
 		super.onSaveInstanceState(outState);
+		Bridge.saveInstanceState(this, outState);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Bridge.clear(this);
 	}
 
 	@Override

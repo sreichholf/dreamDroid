@@ -6,43 +6,86 @@
 
 package net.reichholf.dreamdroid.helpers;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * @author sreichholf
  * 
  */
-//public class ExtendedHashMap extends HashMap<String, Object> implements Serializable {
-public class ExtendedHashMap extends HashMap<String, Object> implements Parcelable {
+public class ExtendedHashMap implements Serializable, Cloneable {
 
+	private HashMap<String, Object> mMap;
 	private static final long serialVersionUID = 1391952383782876012L;
 
 	public ExtendedHashMap() {
-		super();
+		mMap = new HashMap<>();
 	}
-	
-	public ExtendedHashMap(Parcel in){
-		super();
-		
-		@SuppressWarnings("unchecked")
-		HashMap<String, Object> map = (HashMap<String,Object>) in.readSerializable();
-		putAll(map);
-	}
-	
+
 	public ExtendedHashMap(HashMap<String,Object> map){
-		super();
+		mMap = new HashMap<>();
 		if(map != null)
 			putAll(map);
 	}
 
+	public ExtendedHashMap(ExtendedHashMap map){
+		mMap = new HashMap<>();
+		if(map != null)
+			putAll(map.getHashMap());
+	}
+
 	@Override
 	public ExtendedHashMap clone() {
-		return (ExtendedHashMap) super.clone();
+		HashMap<String, Object> map = new HashMap<>();
+		map.putAll(mMap);
+		return new ExtendedHashMap(map);
 	}
-	
+
+	public HashMap<String, Object> getHashMap() {
+		return mMap;
+	}
+
+	public boolean containsKey(String key) {
+		return mMap.containsKey(key);
+	}
+
+	public void put(String key, Object value) {
+		mMap.put(key, value);
+	}
+
+	public Object get(String key) {
+		return mMap.get(key);
+	}
+
+	public Object remove(String key) {
+		return mMap.remove(key);
+	}
+
+	public void putAll(HashMap<String,Object> map) {
+		mMap.putAll(map);
+	}
+
+	public void putAll(ExtendedHashMap map) {
+		mMap.putAll(map.getHashMap());
+	}
+
+	public void clear() {
+		mMap.clear();
+	}
+
+	public boolean isEmpty() {
+		return mMap.isEmpty();
+	}
+
+	public int size() {
+		return mMap.size();
+	}
+
+	public Set<String> keySet() {
+		return mMap.keySet();
+	}
+
 	public void putOrConcat(String prefix, String key, Object value){
 		key = prefix.concat(key);
 		putOrConcat(key, value);
@@ -77,19 +120,10 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Parcelab
 		put(key, value);
 	}
 
-	/**
-	 * @param key
-	 * @return
-	 */
 	public String getString(String key) {
 		return (String) get(key);
 	}
 	
-	/**
-	 * @param key
-	 * @param defaultString
-	 * @return
-	 */
 	public String getString(String key, String defaultString) {
 		String retVal = (String) get(key);
 		if(retVal == null){
@@ -98,31 +132,4 @@ public class ExtendedHashMap extends HashMap<String, Object> implements Parcelab
 		return retVal;
 	}
 
-    public static final Parcelable.Creator<ExtendedHashMap> CREATOR
-    = new Parcelable.Creator<ExtendedHashMap>() {
-		public ExtendedHashMap createFromParcel(Parcel in) {
-		    return new ExtendedHashMap(in);
-		}
-		
-		public ExtendedHashMap[] newArray(int size) {
-		    return new ExtendedHashMap[size];
-		}
-		};
-	
-	/* (non-Javadoc)
-	 * @see android.os.Parcelable#describeContents()
-	 */
-	@Override
-	public int describeContents() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
-	 */
-	@Override
-	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeSerializable(this);
-	}
 }

@@ -360,4 +360,17 @@
     <string name="streaming">Streaming</string>
     <string name="subtitle">Untertitel</string>
     <string name="subtitles">Untertitel</string>
+    <string name="license">Lizenze</string>
+    <string name="backup">Backup</string>
+    <string name="backup_current_profile">aktiv</string>
+    <string name="backup_export">Export</string>
+    <string name="backup_export_missing_permission">Bitte Berechtigung für Datenspeicher erteilen</string>
+    <string name="backup_export_profiles">Profile exportieren</string>
+    <string name="backup_export_settings">Einstellungen exportieren</string>
+    <string name="backup_export_successful">Export erfolgreich</string>
+    <string name="backup_import">Import</string>
+    <string name="backup_import_successful">Import erfolgreich</string>
+    <string name="backup_profiles">Profile</string>
+    <string name="backup_settings">Einstellungen</string>
+    <string name="licenses">Lizenzen</string>
 </resources>

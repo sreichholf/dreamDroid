@@ -150,7 +150,7 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <app:android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/epg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -188,5 +188,5 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/epg_description"/>
         </RelativeLayout>
-    </app:android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 </RelativeLayout>

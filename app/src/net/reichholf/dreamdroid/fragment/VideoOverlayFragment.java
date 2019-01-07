@@ -7,19 +7,6 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
-import androidx.core.view.GestureDetectorCompat;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -70,7 +57,19 @@ import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 import org.videolan.libvlc.MediaPlayer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener, ActionDialog.DialogActionListener {
@@ -125,11 +124,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mServiceRef = getArguments().getString(SERVICE_REFERENCE);
 		mBouquetRef = getArguments().getString(BOUQUET_REFERENCE);
 		mServiceList = new ArrayList<>();
-		HashMap<String, Object> serviceInfo = (HashMap<String, Object>) getArguments().get(SERVICE_INFO);
-		if (serviceInfo != null)
-			mServiceInfo = new ExtendedHashMap(serviceInfo);
-		else
-			mServiceInfo = null;
+		mServiceInfo = ((ExtendedHashMap) getArguments().get(SERVICE_INFO)).clone();
 		mHandler = new Handler();
 		mAutoHideRunnable = () -> hideOverlays();
 		mIssueReloadRunnable = () -> reload();

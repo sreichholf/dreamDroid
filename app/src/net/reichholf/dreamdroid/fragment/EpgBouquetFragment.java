@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.evernote.android.state.State;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
@@ -40,14 +41,11 @@ import java.util.Calendar;
  */
 public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 	private static final String LOG_TAG = EpgBouquetFragment.class.getSimpleName();
-	public static final String BUNDLE_KEY_SERVICE_REFERENCE = Event.KEY_SERVICE_REFERENCE;
-	public static final String BUNDLE_KEY_SERVICE_NAME = Event.KEY_SERVICE_NAME;
-	public static final String BUNDLE_KEY_TIME = "time";
 
 	private TextView mDateView;
 	private TextView mTimeView;
-	private int mTime;
 	private boolean mWaitingForPicker;
+	@State public int mTime;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -58,15 +56,12 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 
 		int now = mTime = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
 		if (savedInstanceState != null) {
-			mReference = savedInstanceState.getString(BUNDLE_KEY_SERVICE_REFERENCE);
-			mName = savedInstanceState.getString(BUNDLE_KEY_SERVICE_NAME);
-			mTime = savedInstanceState.getInt(BUNDLE_KEY_TIME);
 			if (mTime < now)
 				mTime = now;
 		}
 		if (mReference == null || mName == null) {
-			mReference = getArguments().getString(Event.KEY_SERVICE_REFERENCE);
-			mName = getArguments().getString(Event.KEY_SERVICE_NAME);
+			mReference = getArguments().getString(Event.KEY_SERVICE_REFERENCE, null);
+			mName = getArguments().getString(Event.KEY_SERVICE_NAME, null);
 		}
 
 		mWaitingForPicker = false;
@@ -108,14 +103,6 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putString(BUNDLE_KEY_SERVICE_REFERENCE, mReference);
-		outState.putString(BUNDLE_KEY_SERVICE_NAME, mName);
-		outState.putInt(BUNDLE_KEY_TIME, mTime);
-		super.onSaveInstanceState(outState);
-	}
-
-	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		setAdapter();
 		if (mMapList.size() <= 0)
@@ -136,7 +123,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 			return;
 		switch (requestCode) {
 			case Statics.REQUEST_PICK_BOUQUET:
-				ExtendedHashMap service = data.getParcelableExtra(PickServiceFragment.KEY_BOUQUET);
+				ExtendedHashMap service = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
 				String reference = service.getString(Service.KEY_REFERENCE);
 				if (!reference.equals(mReference)) {
 					mReference = reference;

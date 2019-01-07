@@ -48,6 +48,10 @@ public class AboutDialog extends ActionDialog {
 				((MultiPaneHandler) getActivity()).showDialogFragment(d, "donate_dialog");
 			});
 		}
+		builder.setNegativeButton(R.string.licenses, (dialog, which) -> {
+			DreamDroidAttributionPresenter.newInstance(getContext()).showDialog(getString(R.string.licenses));
+		});
+
 		AlertDialog dialog = builder.create();
 		dialog.setOnShowListener(dialog1 -> {
 			TextView message = getDialog().findViewById(android.R.id.message);

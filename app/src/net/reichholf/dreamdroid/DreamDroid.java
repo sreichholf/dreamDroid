@@ -13,12 +13,20 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.multidex.MultiDex;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import android.util.Log;
+
+import com.evernote.android.state.StateSaver;
+import com.livefront.bridge.Bridge;
+import com.livefront.bridge.SavedStateHandler;
 
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -146,6 +154,18 @@ public class DreamDroid extends MatomoApplication {
 		} catch (Exception e) {
 			DATE_LOCALE_WO = false;
 		}
+		Bridge.initialize(getApplicationContext(), new SavedStateHandler() {
+			@Override
+			public void saveInstanceState(@NonNull Object target, @NonNull Bundle state) {
+				StateSaver.saveInstanceState(target, state);
+			}
+
+			@Override
+			public void restoreInstanceState(@NonNull Object target, @Nullable Bundle state) {
+				StateSaver.restoreInstanceState(target, state);
+			}
+		});
+
 		initPiwik();
 		initChannels();
 		sLocations = new ArrayList<>();

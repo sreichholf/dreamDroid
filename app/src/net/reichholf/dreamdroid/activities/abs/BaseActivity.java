@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.livefront.bridge.Bridge;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
@@ -168,6 +169,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			e.printStackTrace();
 		}
 		super.onCreate(savedInstanceState);
+		Bridge.restoreInstanceState(this, savedInstanceState);
 		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true)) {
 			overridePendingTransition(R.anim.activity_open_translate, R.anim.activity_close_scale);
@@ -177,6 +179,14 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		initPiwik();
 		initPermissions(false);
 	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		Bridge.saveInstanceState(this, outState);
+	}
+
+
 
 	private void initIAB() {
 		if (!BuildConfig.FLAVOR.equals("google"))
@@ -326,6 +336,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		if (mIabHelper != null) mIabHelper.dispose();
 		mIabHelper = null;
 		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+		Bridge.clear(this);
 	}
 
 	@Override

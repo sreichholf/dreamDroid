@@ -49,7 +49,7 @@ public class VirtualRemotePagerFragment extends BaseHttpFragment {
 
 		@Override
 		public Fragment getItem(int i) {
-			return (Fragment) mItems.get(mItems.keySet().toArray()[i]);
+			return (Fragment) mItems.get((String)mItems.keySet().toArray()[i]);
 		}
 
 		@Override

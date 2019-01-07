@@ -20,7 +20,6 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.recyclerview.ZapAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -49,14 +48,14 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		mEnableReload = false;
 		super.onCreate(savedInstanceState);
-		initTitle("");
-
-		mCurrentBouquet = new ExtendedHashMap();
-		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
-		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
-		mWaitingForPicker = false;
-
-		restoreState(savedInstanceState);
+		if (mCurrentBouquet == null) {
+			mReload = true;
+			initTitle("");
+			mCurrentBouquet = new ExtendedHashMap();
+			mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
+			mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
+			mWaitingForPicker = false;
+		}
 	}
 
 	@Override
@@ -69,15 +68,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		recyclerView.addOnScrollListener(listener);
 
 		return view;
-	}
-
-	private void restoreState(Bundle savedInstanceState) {
-		mReload = true;
-		if (savedInstanceState != null) {
-			ExtendedHashMap currentBouquet = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_BOUQUET);
-			if (currentBouquet != null)
-				mCurrentBouquet = currentBouquet;
-		}
 	}
 
 	@Override
@@ -191,7 +181,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 			return;
 		switch (requestCode) {
 			case Statics.REQUEST_PICK_BOUQUET:
-				ExtendedHashMap bouquet = data.getParcelableExtra(PickServiceFragment.KEY_BOUQUET);
+				ExtendedHashMap bouquet = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
 				String reference = bouquet.getString(Service.KEY_REFERENCE, "");
 				if (!reference.equals(mCurrentBouquet.getString(Service.KEY_REFERENCE))) {
 					mCurrentBouquet = bouquet;

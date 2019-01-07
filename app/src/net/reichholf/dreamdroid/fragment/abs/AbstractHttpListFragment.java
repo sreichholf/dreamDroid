@@ -11,7 +11,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
+
+import com.evernote.android.state.State;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.livefront.bridge.Bridge;
+
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -32,7 +36,6 @@ import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -40,7 +43,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * @author sreichholf
@@ -49,12 +51,10 @@ import java.util.HashMap;
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, IBaseFragment, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
 
-	public static final String BUNDLE_KEY_LIST = "list";
-
 	protected final String sData = "data";
 	protected boolean mReload;
 	protected boolean mEnableReload;
-	protected ArrayList<ExtendedHashMap> mMapList;
+	@State public ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
 	protected BaseAdapter mAdapter;
@@ -72,7 +72,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		Bridge.restoreInstanceState(this, savedInstanceState);
 		if (mHttpHelper == null)
 			mHttpHelper = new HttpFragmentHelper(this);
 		else
@@ -81,19 +81,17 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		mExtras = getArguments();
 		mMapList = null;
 
-		if (savedInstanceState != null) {
-			mMapList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_LIST);
-		} else {
+		if (mMapList == null) {
 			mMapList = new ArrayList<>();
 		}
 
 		if (mExtras != null) {
-			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
-			if (map != null) {
-				mData = new ExtendedHashMap(map);
-			}
+			mData = (ExtendedHashMap) mExtras.getSerializable("data");
 		} else {
 			mExtras = new Bundle();
+		}
+		if (mData == null) {
+			mData = new ExtendedHashMap(mData);
 		}
 		DreamDroid.loadCurrentProfile(getAppCompatActivity());
 	}
@@ -123,7 +121,13 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putSerializable(BUNDLE_KEY_LIST, mMapList);
+		Bridge.saveInstanceState(this, outState);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Bridge.clear(this);
 	}
 
 	@Override

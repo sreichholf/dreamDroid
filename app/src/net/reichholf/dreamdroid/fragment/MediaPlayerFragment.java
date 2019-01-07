@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.evernote.android.state.State;
 import com.squareup.picasso.Picasso;
 
 import net.reichholf.dreamdroid.R;
@@ -56,8 +57,9 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public static int LOADER_PLAYLIST_ID = 1;
 	public static String PLAYLIST_AS_ROOT = "playlist";
 
+	@State public int mMediaIndex = -1;
+
 	private ExtendedHashMap mMedia;
-	private int mMediaIndex;
 	private SimpleChoiceDialog mChoice;
 	private ArrayList<NameValuePair> mFileListParams;
 	static int PLAY_MODE = 0;
@@ -147,10 +149,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		mPlaylist = new ArrayList<>();
 		mMediaInfo = new ExtendedHashMap();
-		if (savedInstanceState != null) {
-			mMediaIndex = savedInstanceState.getInt(STATE_MEDIA_INDEX, -1);
-			if (mMediaIndex < 0)
-				return;
+		if (mMediaIndex >= 0) {
 			mMedia = mMapList.get(mMediaIndex);
 			String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
 			// only navigate into a directory
@@ -159,12 +158,6 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 				setArgs("path", mediaPath);
 			}
 		}
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putInt(STATE_MEDIA_INDEX, mMediaIndex);
-		super.onSaveInstanceState(outState);
 	}
 
 	@Override

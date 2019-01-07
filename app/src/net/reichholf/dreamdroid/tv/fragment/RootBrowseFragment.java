@@ -121,7 +121,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 
 		setHeadersState(HEADERS_ENABLED);
 		setBrandColor(ContextCompat.getColor(getContext(), R.color.primary_dreamdroid));
-		setBadgeDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dreamdroid_banner));
+		setBadgeDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dreamdroid_header));
 		addSettingsRow();
 		mRequireReload = true;
 	}

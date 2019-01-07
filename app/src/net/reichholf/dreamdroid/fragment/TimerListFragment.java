@@ -22,6 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.evernote.android.state.State;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.TimerAdapter;
@@ -91,7 +93,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 			getRecyclerView().post(() -> mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE));
 		}
 	};
-	private ExtendedHashMap mTimer;
+	@State public ExtendedHashMap mTimer;
 	private ProgressDialog mProgress;
 	protected int mCurrentPos;
 
@@ -106,8 +108,6 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		mCurrentPos = -1;
 		mIsActionMode = false;
 		mReload = true;
-		if (savedInstanceState != null)
-			mTimer = savedInstanceState.getParcelable("timer");
 	}
 
 	@Override
@@ -133,12 +133,6 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	public void onDestroyView() {
 		endActionMode();
 		super.onDestroyView();
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable("timer", mTimer);
-		super.onSaveInstanceState(outState);
 	}
 
 	/*

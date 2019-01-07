@@ -10,7 +10,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -71,7 +70,7 @@ public class IntentFactory {
 		if(bouquetRef != null)
 			intent.putExtra("bouquetRef", bouquetRef);
 		if(serviceInfo != null)
-			intent.putExtra("serviceInfo", (Parcelable) serviceInfo);
+			intent.putExtra("serviceInfo", serviceInfo);
 		return intent;
 	}
 

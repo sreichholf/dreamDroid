@@ -244,15 +244,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		reloadProfiles();
-		if (savedInstanceState != null) {
-			int pos = savedInstanceState.getInt("cursorPosition");
-			if (pos < mProfiles.size()) {
-				mProfile = mProfiles.get(pos);
-			}
-		}
-
 	}
 
 
@@ -313,12 +305,6 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		mProfile = mProfiles.get(mCurrentPos);
 		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
 		mSelectionSupport.setItemChecked(mCurrentPos, true);
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putInt("profileId", mProfile.getId());
-		super.onSaveInstanceState(outState);
 	}
 
 	@Override

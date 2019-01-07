@@ -3,10 +3,6 @@ package net.reichholf.dreamdroid.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import androidx.annotation.NonNull;
-import androidx.loader.content.Loader;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 
 import net.reichholf.dreamdroid.R;
@@ -21,6 +17,10 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.view.recyclerview.DividerItemDecoration;
 
 import java.util.ArrayList;
+
+import androidx.annotation.NonNull;
+import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Stephan on 09.11.2014.
@@ -53,7 +53,7 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment {
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
 		mCurrentBouquet = mMapList.get(position);
 		Intent data = new Intent();
-		data.putExtra(KEY_BOUQUET, (Parcelable) mCurrentBouquet);
+		data.putExtra(KEY_BOUQUET, mCurrentBouquet);
 		finish(Activity.RESULT_OK, data);
 	}
 

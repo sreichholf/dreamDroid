@@ -22,7 +22,7 @@ public class MovieDetailDialog extends BottomSheetActionDialog {
 	public static MovieDetailDialog newInstance(ExtendedHashMap movie) {
 		MovieDetailDialog fragment = new MovieDetailDialog();
 		Bundle args = new Bundle();
-		args.putParcelable(KEY_MOVIE, movie);
+		args.putSerializable(KEY_MOVIE, movie);
 		fragment.setArguments(args);
 		return fragment;
 	}
@@ -34,7 +34,7 @@ public class MovieDetailDialog extends BottomSheetActionDialog {
 		View view = LayoutInflater.from(getContext()).inflate(R.layout.movie_epg_dialog, null);
 		dialog.setContentView(view);
 
-		ExtendedHashMap movie = getArguments().getParcelable(KEY_MOVIE);
+		ExtendedHashMap movie = (ExtendedHashMap) getArguments().getSerializable(KEY_MOVIE);
 		String title = movie.getString(Movie.KEY_TITLE, "");
 		String servicename = movie.getString(Movie.KEY_SERVICE_NAME, "");
 		String descShort = movie.getString(Movie.KEY_DESCRIPTION, "");
