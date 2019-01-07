@@ -371,4 +371,6 @@
     <string name="backup_export_successful">Export successful</string>
     <string name="backup_import_successful">Import successful</string>
     <string name="backup_export_missing_permission">Please grant "Storage" permission to use this feature!</string>
+    <string name="licenses">Licenses</string>
+    <string name="license">Lizenz</string>
 </resources>
