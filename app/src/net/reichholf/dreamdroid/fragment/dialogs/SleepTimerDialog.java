@@ -8,23 +8,21 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.RadioGroup;
 
+import com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 
-import java.util.HashMap;
-
-import com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 /**
  * @author sre
@@ -46,7 +44,7 @@ public class SleepTimerDialog extends AbstractDialog {
 
 	@SuppressWarnings("unchecked")
 	private void init() {
-		mSleepTimer = new ExtendedHashMap((HashMap<String, Object>) getArguments().getSerializable(KEY_TIMER));
+		mSleepTimer = ((ExtendedHashMap) getArguments().getSerializable(KEY_TIMER)).clone();
 	}
 
 	public interface SleepTimerDialogActionListener {

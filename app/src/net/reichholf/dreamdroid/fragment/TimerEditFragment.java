@@ -171,12 +171,8 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 		// Initialize if savedInstanceState won't and instance was not retained
 		if (mTimer == null || mTimerOld == null) {
-			HashMap<String, Object> map = (HashMap<String, Object>) getArguments().get(sData);
-			ExtendedHashMap data = new ExtendedHashMap();
-			data.putAll(map);
-
-			mTimer = new ExtendedHashMap();
-			mTimer.putAll((HashMap<String, Object>) data.get("timer"));
+			ExtendedHashMap data = ((ExtendedHashMap) getArguments().get(sData)).clone();
+			mTimer = ((ExtendedHashMap) data.get("timer")).clone();
 
 			if (Intent.ACTION_EDIT.equals(data.get("action"))) {
 				mTimerOld = mTimer.clone();
@@ -208,8 +204,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Statics.REQUEST_PICK_SERVICE) {
 			if (resultCode == Activity.RESULT_OK) {
-				ExtendedHashMap map = new ExtendedHashMap();
-				map.putAll((HashMap<String, Object>) data.getSerializableExtra(sData));
+				ExtendedHashMap map = (ExtendedHashMap) data.getSerializableExtra(sData);
 
 				mTimer.put(Timer.KEY_SERVICE_NAME, map.getString(Service.KEY_NAME));
 				mTimer.put(Timer.KEY_REFERENCE, map.getString(Service.KEY_REFERENCE));

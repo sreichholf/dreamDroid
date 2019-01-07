@@ -65,7 +65,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		mMapList = new ArrayList<>();
 
 		if (mExtras != null) {
-			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
+			ExtendedHashMap map = (ExtendedHashMap) mExtras.getSerializable("data");
 			if (map != null) {
 				mData = new ExtendedHashMap(map);
 			}

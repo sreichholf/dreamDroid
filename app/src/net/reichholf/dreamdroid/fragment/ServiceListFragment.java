@@ -12,11 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import androidx.loader.content.Loader;
-import androidx.slidingpanelayout.widget.SlidingPaneLayout;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import com.evernote.android.state.State;
 
@@ -41,7 +35,6 @@ import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -58,9 +51,13 @@ import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.slidingpanelayout.widget.SlidingPaneLayout;
 
 
 /**
@@ -121,10 +118,9 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		if (mExtras != null) {
 			mode = mExtras.getString("action");
 
-			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable(sData);
+			ExtendedHashMap map = (ExtendedHashMap) mExtras.getSerializable(sData);
 			if (map != null) {
-				mData = new ExtendedHashMap();
-				mData.putAll(map);
+				mData = map.clone();
 			}
 		} else {
 			mExtras = new Bundle();
@@ -137,7 +133,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 			mNavReference = savedInstanceState.getString(BUNDLE_KEY_NAVREFERENCE);
 			mDetailName = savedInstanceState.getString(BUNDLE_KEY_DETAILNAME);
 			mDetailReference = savedInstanceState.getString(BUNDLE_KEY_DETAILREFERENCE);
-			mCurrentService = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_SERVICE);
+			mCurrentService = (ExtendedHashMap) savedInstanceState.getSerializable(BUNDLE_KEY_CURRENT_SERVICE);
 
 			mHistory = new ArrayList<>();
 			mNavItems = new ArrayList<>();

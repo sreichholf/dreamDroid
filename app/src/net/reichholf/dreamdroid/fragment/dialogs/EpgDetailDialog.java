@@ -51,7 +51,7 @@ public class EpgDetailDialog extends BottomSheetActionDialog {
 		final Dialog dialog;
 
 		Bundle args = getArguments();
-		mCurrentItem = new ExtendedHashMap((HashMap<String, Object>) args.get("currentItem"));
+		mCurrentItem = (ExtendedHashMap) args.getSerializable("currentItem");
 		final boolean isNext = args.getBoolean("showNext", false);
 
 		String prefix = "";

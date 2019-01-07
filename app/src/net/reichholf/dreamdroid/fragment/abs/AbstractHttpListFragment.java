@@ -36,7 +36,6 @@ import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -44,7 +43,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * @author sreichholf
@@ -86,15 +84,15 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		mMapList = null;
 
 		if (savedInstanceState != null) {
-			mMapList = ExtendedHashMapHelper.restoreListFromBundle(savedInstanceState, BUNDLE_KEY_LIST);
+			mMapList = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable(BUNDLE_KEY_LIST);
 		} else {
 			mMapList = new ArrayList<>();
 		}
 
 		if (mExtras != null) {
-			HashMap<String, Object> map = (HashMap<String, Object>) mExtras.getSerializable("data");
-			if (map != null) {
-				mData = new ExtendedHashMap(map);
+			mData = (ExtendedHashMap) mExtras.getSerializable("data");
+			if (mData == null) {
+				mData = new ExtendedHashMap(mData);
 			}
 		} else {
 			mExtras = new Bundle();

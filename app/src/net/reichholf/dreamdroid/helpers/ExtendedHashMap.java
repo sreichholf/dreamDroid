@@ -24,11 +24,13 @@ public class ExtendedHashMap implements Serializable, Cloneable {
 	}
 
 	public ExtendedHashMap(HashMap<String,Object> map){
+		mMap = new HashMap<>();
 		if(map != null)
 			putAll(map);
 	}
 
 	public ExtendedHashMap(ExtendedHashMap map){
+		mMap = new HashMap<>();
 		if(map != null)
 			putAll(map.getHashMap());
 	}

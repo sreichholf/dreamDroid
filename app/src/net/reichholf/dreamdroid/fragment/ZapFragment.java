@@ -20,7 +20,6 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.recyclerview.ZapAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMapHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -74,7 +73,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	private void restoreState(Bundle savedInstanceState) {
 		mReload = true;
 		if (savedInstanceState != null) {
-			ExtendedHashMap currentBouquet = ExtendedHashMapHelper.restoreFromBundle(savedInstanceState, BUNDLE_KEY_CURRENT_BOUQUET);
+			ExtendedHashMap currentBouquet = (ExtendedHashMap) savedInstanceState.getSerializable(BUNDLE_KEY_CURRENT_BOUQUET);
 			if (currentBouquet != null)
 				mCurrentBouquet = currentBouquet;
 		}
