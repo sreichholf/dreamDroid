@@ -10,10 +10,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Checkable;
 import android.widget.Filter;
+
 import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ThemedSpinnerAdapter;
 
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
@@ -22,10 +22,10 @@ import java.util.List;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
+import androidx.appcompat.widget.ThemedSpinnerAdapter;
 
 public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filterable, ThemedSpinnerAdapter {
 	private final LayoutInflater mInflater;
-
 	private int[] mTo;
 	private String[] mFrom;
 	private android.widget.SimpleAdapter.ViewBinder mViewBinder;
@@ -35,7 +35,9 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	private int mResource;
 	private int mDropDownResource;
 
-	/** Layout inflater used for {@link #getDropDownView(int, View, ViewGroup)}. */
+	/**
+	 * Layout inflater used for {@link #getDropDownView(int, View, ViewGroup)}.
+	 */
 	private LayoutInflater mDropDownInflater;
 
 	private SimpleFilter mFilter;
@@ -44,20 +46,20 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	/**
 	 * Constructor
 	 *
-	 * @param context The context where the View associated with this SimpleAdapter is running
-	 * @param data A List of Maps. Each entry in the List corresponds to one row in the list. The
-	 *        Maps contain the data for each row, and should include all the entries specified in
-	 *        "from"
+	 * @param context  The context where the View associated with this SimpleAdapter is running
+	 * @param data     A List of Maps. Each entry in the List corresponds to one row in the list. The
+	 *                 Maps contain the data for each row, and should include all the entries specified in
+	 *                 "from"
 	 * @param resource Resource identifier of a view layout that defines the views for this list
-	 *        item. The layout file should include at least those named views defined in "to"
-	 * @param from A list of column names that will be added to the Map associated with each
-	 *        item.
-	 * @param to The views that should display column in the "from" parameter. These should all be
-	 *        TextViews. The first N views in this list are given the values of the first N columns
-	 *        in the from parameter.
+	 *                 item. The layout file should include at least those named views defined in "to"
+	 * @param from     A list of column names that will be added to the Map associated with each
+	 *                 item.
+	 * @param to       The views that should display column in the "from" parameter. These should all be
+	 *                 TextViews. The first N views in this list are given the values of the first N columns
+	 *                 in the from parameter.
 	 */
 	public SimpleExtendedHashMapAdapter(Context context, List<ExtendedHashMap> data,
-						 @LayoutRes int resource, String[] from, @IdRes int[] to) {
+										@LayoutRes int resource, String[] from, @IdRes int[] to) {
 		mData = data;
 		mResource = mDropDownResource = resource;
 		mFrom = from;
@@ -212,7 +214,6 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * Returns the {@link android.widget.SimpleAdapter.ViewBinder} used to bind data to views.
 	 *
 	 * @return a ViewBinder or null if the binder does not exist
-	 *
 	 * @see #setViewBinder(android.widget.SimpleAdapter.ViewBinder)
 	 */
 	public android.widget.SimpleAdapter.ViewBinder getViewBinder() {
@@ -223,8 +224,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * Sets the binder used to bind data to views.
 	 *
 	 * @param viewBinder the binder used to bind data to views, can be null to
-	 *        remove the existing binder
-	 *
+	 *                   remove the existing binder
 	 * @see #getViewBinder()
 	 */
 	public void setViewBinder(android.widget.SimpleAdapter.ViewBinder viewBinder) {
@@ -235,13 +235,12 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * Called by bindView() to set the image for an ImageView but only if
 	 * there is no existing ViewBinder or if the existing ViewBinder cannot
 	 * handle binding to an ImageView.
-	 *
+	 * <p>
 	 * This method is called instead of {@link #setViewImage(ImageView, String)}
 	 * if the supplied data is an int or Integer.
 	 *
-	 * @param v ImageView to receive an image
+	 * @param v     ImageView to receive an image
 	 * @param value the value retrieved from the data set
-	 *
 	 * @see #setViewImage(ImageView, String)
 	 */
 	public void setViewImage(ImageView v, int value) {
@@ -252,17 +251,16 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * Called by bindView() to set the image for an ImageView but only if
 	 * there is no existing ViewBinder or if the existing ViewBinder cannot
 	 * handle binding to an ImageView.
-	 *
+	 * <p>
 	 * By default, the value will be treated as an image resource. If the
 	 * value cannot be used as an image resource, the value is used as an
 	 * image Uri.
-	 *
+	 * <p>
 	 * This method is called instead of {@link #setViewImage(ImageView, int)}
 	 * if the supplied data is not an int or Integer.
 	 *
-	 * @param v ImageView to receive an image
+	 * @param v     ImageView to receive an image
 	 * @param value the value retrieved from the data set
-	 *
 	 * @see #setViewImage(ImageView, int)
 	 */
 	public void setViewImage(ImageView v, String value) {
@@ -278,7 +276,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * there is no existing ViewBinder or if the existing ViewBinder cannot
 	 * handle binding to a TextView.
 	 *
-	 * @param v TextView to receive text
+	 * @param v    TextView to receive text
 	 * @param text the text to be set for the TextView
 	 */
 	public void setViewText(TextView v, String text) {
@@ -295,7 +293,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	/**
 	 * This class can be used by external clients of SimpleAdapter to bind
 	 * values to views.
-	 *
+	 * <p>
 	 * You should use this class to bind values to views that are not
 	 * directly supported by SimpleAdapter or to change the way binding
 	 * occurs for views supported by SimpleAdapter.
@@ -307,17 +305,16 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	public static interface ViewBinder {
 		/**
 		 * Binds the specified data to the specified view.
-		 *
+		 * <p>
 		 * When binding is handled by this ViewBinder, this method must return true.
 		 * If this method returns false, SimpleAdapter will attempts to handle
 		 * the binding on its own.
 		 *
-		 * @param view the view to bind the data to
-		 * @param data the data to bind to the view
+		 * @param view               the view to bind the data to
+		 * @param data               the data to bind to the view
 		 * @param textRepresentation a safe String representation of the supplied data:
-		 *        it is either the result of data.toString() or an empty String but it
-		 *        is never null
-		 *
+		 *                           it is either the result of data.toString() or an empty String but it
+		 *                           is never null
 		 * @return true if the data was bound to the view, false otherwise
 		 */
 		boolean setViewValue(View view, Object data, String textRepresentation);
@@ -356,8 +353,8 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 
 						int len = mTo.length;
 
-						for (int j=0; j<len; j++) {
-							String str =  (String)h.get(mFrom[j]);
+						for (int j = 0; j < len; j++) {
+							String str = (String) h.get(mFrom[j]);
 
 							String[] words = str.split(" ");
 							int wordCount = words.length;
