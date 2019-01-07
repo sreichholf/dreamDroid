@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +35,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import java9.util.stream.StreamSupport;
 
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -133,15 +136,20 @@ public class BackupFragment extends BaseFragment {
     private void doImport() {
 		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 		intent.setType("*/*");
-		getActivity().startActivityForResult(intent, REQUEST_BACKUP_IMPORT);
+		try {
+			getActivity().startActivityForResult(intent, REQUEST_BACKUP_IMPORT);
+		} catch (ActivityNotFoundException e) {
+			showToast(e.getLocalizedMessage());
+		}
+
 	}
 
 	private void doExport() {
 		if (!mSettingsCheckBox.isChecked()) {
 			mBackupData.setSettings(null);
 		}
-		mProfilesCheckBox.stream().filter(p -> !p.isChecked()).forEach(checkBox -> {
-            mBackupData.getProfiles().remove(mBackupData.getProfiles().stream().filter(p -> p.getId()== checkBox.getId()).findFirst().get());
+		StreamSupport.stream(mProfilesCheckBox).filter(p -> !p.isChecked()).forEach(checkBox -> {
+            mBackupData.getProfiles().remove(StreamSupport.stream(mBackupData.getProfiles()).filter(p -> p.getId()== checkBox.getId()).findFirst().get());
         });
 		mBackupService.doExport(mBackupData);
 	}
