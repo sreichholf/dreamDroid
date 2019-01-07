@@ -35,6 +35,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleExtendedHashMapAdapter;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
@@ -291,7 +292,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	 *
 	 */
 	private void setAdapter() {
-		ListAdapter adapter = new SimpleAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
+		ListAdapter adapter = new SimpleExtendedHashMapAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
 				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
 		mNavList.setAdapter(adapter);
 		RecyclerView.Adapter detailAdapter;

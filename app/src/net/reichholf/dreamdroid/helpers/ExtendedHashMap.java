@@ -8,12 +8,13 @@ package net.reichholf.dreamdroid.helpers;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * @author sreichholf
  * 
  */
-public class ExtendedHashMap implements Serializable {
+public class ExtendedHashMap implements Serializable, Cloneable {
 
 	private HashMap<String, Object> mMap;
 	private static final long serialVersionUID = 1391952383782876012L;
@@ -25,6 +26,18 @@ public class ExtendedHashMap implements Serializable {
 	public ExtendedHashMap(HashMap<String,Object> map){
 		if(map != null)
 			putAll(map);
+	}
+
+	public ExtendedHashMap(ExtendedHashMap map){
+		if(map != null)
+			putAll(map.getHashMap());
+	}
+
+	@Override
+	public ExtendedHashMap clone() {
+		HashMap<String, Object> map = new HashMap<>();
+		map.putAll(mMap);
+		return new ExtendedHashMap(map);
 	}
 
 	public HashMap<String, Object> getHashMap() {
@@ -43,6 +56,10 @@ public class ExtendedHashMap implements Serializable {
 		return mMap.get(key);
 	}
 
+	public Object remove(String key) {
+		return mMap.remove(key);
+	}
+
 	public void putAll(HashMap<String,Object> map) {
 		mMap.putAll(map);
 	}
@@ -55,12 +72,18 @@ public class ExtendedHashMap implements Serializable {
 		mMap.clear();
 	}
 
-	public ExtendedHashMap clone() {
-		HashMap<String, Object> map = new HashMap<>();
-		map.putAll(mMap);
-		return new ExtendedHashMap(map);
+	public boolean isEmpty() {
+		return mMap.isEmpty();
 	}
-	
+
+	public int size() {
+		return mMap.size();
+	}
+
+	public Set<String> keySet() {
+		return mMap.keySet();
+	}
+
 	public void putOrConcat(String prefix, String key, Object value){
 		key = prefix.concat(key);
 		putOrConcat(key, value);

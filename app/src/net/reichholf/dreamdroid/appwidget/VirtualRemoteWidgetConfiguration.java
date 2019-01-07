@@ -16,6 +16,7 @@ import android.widget.Toast;
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleExtendedHashMapAdapter;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	private ArrayList<ExtendedHashMap> mProfileMapList;
 	private ArrayList<Profile> mProfiles;
-	private SimpleAdapter mAdapter;
+	private SimpleExtendedHashMapAdapter mAdapter;
 	private int mAppWidgetId;
 
 	@Override
@@ -59,7 +60,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 				mProfileMapList.add(map);
 			}
 
-			mAdapter = new SimpleAdapter(this, mProfileMapList, android.R.layout.two_line_list_item, new String[]{
+			mAdapter = new SimpleExtendedHashMapAdapter(this, mProfileMapList, android.R.layout.two_line_list_item, new String[]{
 					DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1,
 					android.R.id.text2});
 			setListAdapter(mAdapter);
