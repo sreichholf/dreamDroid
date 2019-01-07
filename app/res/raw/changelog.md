@@ -1,3 +1,7 @@
+## 1.3.424
+* FIX: Crash on Profile edit
+* FIX: Crashes on devices with Android < 8 (Servicelist, Backup)
+
 ## 1.3.423
 * FIX: Android TV issues (introduced in 1.2.420)
 * NEW: Add Open Source License Attribution (new button in About)

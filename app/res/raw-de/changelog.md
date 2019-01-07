@@ -1,3 +1,7 @@
+## 1.3.424
+* FIX: Absturz beim Bearbeiten eines Profils
+* FIX: Abstürze auf Geräten mit Android < 8 (Kanalliste, Backup)
+
 ## 1.3.423
 * FIX: Android TV Probleme (seit 1.2.420)
 * NEU: Open Source Lizenz-Dialog (Menü -> Über)
