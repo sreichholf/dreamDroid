@@ -28,6 +28,8 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import com.evernote.android.state.State;
+
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -89,20 +91,20 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	private ListView mNavList;
 	private RecyclerView mDetailList;
 	private View mEmpty;
+	private SlidingPaneLayout mSlidingPane;
 
-	private String mCurrentTitle;
-	private String mNavReference;
-	private String mNavName;
-	private String mDetailReference;
-	private String mDetailName;
+	@State public String mCurrentTitle;
+	@State public String mNavReference;
+	@State public String mNavName;
+	@State public String mDetailReference;
+	@State public String mDetailName;
+	@State public ExtendedHashMap mCurrentService;
 
 	private ArrayList<ExtendedHashMap> mHistory;
 	private Bundle mExtras;
 	private ExtendedHashMap mData;
 	private ArrayList<ExtendedHashMap> mNavItems;
 	private ArrayList<ExtendedHashMap> mDetailItems;
-	private ExtendedHashMap mCurrentService;
-	private SlidingPaneLayout mSlidingPane;
 	private ArrayList<NameValuePair> mNavHttpParams;
 	private ArrayList<NameValuePair> mDetailHttpParams;
 
@@ -279,16 +281,6 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
 		onDetailItemClick(parent, view, position, true);
 		return true;
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putString(BUNDLE_KEY_NAVNAME, mNavName);
-		outState.putString(BUNDLE_KEY_NAVREFERENCE, mNavReference);
-		outState.putString(BUNDLE_KEY_DETAILNAME, mDetailName);
-		outState.putString(BUNDLE_KEY_DETAILREFERENCE, mDetailReference);
-		outState.putSerializable(BUNDLE_KEY_CURRENT_SERVICE, mCurrentService);
-		super.onSaveInstanceState(outState);
 	}
 
 	public String genWindowTitle(String title) {
@@ -526,7 +518,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 			map.put(Event.KEY_SERVICE_NAME, nam);
 
 			Intent intent = new Intent();
-			intent.putExtra(sData, (Serializable) map);
+			intent.putExtra(sData, map);
 			finish(Activity.RESULT_OK, intent);
 		} else {
 			boolean instantZap = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
@@ -554,7 +546,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 					showNext = true;
 				case R.id.menu_current_event:
 					Bundle args = new Bundle();
-					args.putParcelable("currentItem", mCurrentService);
+					args.putSerializable("currentItem", mCurrentService);
 					args.putBoolean("showNext", showNext);
 					getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
 					break;

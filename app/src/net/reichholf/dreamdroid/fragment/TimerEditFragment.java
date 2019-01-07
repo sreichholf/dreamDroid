@@ -27,6 +27,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.evernote.android.state.State;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
@@ -72,10 +73,10 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	private boolean[] mCheckedDays = {false, false, false, false, false, false, false};
 
 	private boolean mTagsChanged;
-	private ArrayList<String> mSelectedTags;
 
-	private ExtendedHashMap mTimer;
-	private ExtendedHashMap mTimerOld;
+	@State public ArrayList<String> mSelectedTags;
+	@State public ExtendedHashMap mTimer;
+	@State public ExtendedHashMap mTimerOld;
 
 	private EditText mName;
 	private EditText mDescription;
@@ -168,12 +169,6 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			}
 		});
 
-		if (savedInstanceState != null) {
-			mTimer = savedInstanceState.getParcelable("timer");
-			mTimerOld = savedInstanceState.getParcelable("timerOld");
-			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray("selectedTags")));
-		}
-
 		// Initialize if savedInstanceState won't and instance was not retained
 		if (mTimer == null || mTimerOld == null) {
 			HashMap<String, Object> map = (HashMap<String, Object>) getArguments().get(sData);
@@ -225,24 +220,11 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable("timer", mTimer);
-		outState.putParcelable("timerOld", mTimerOld);
-
-		String[] selectedTags;
-		if (mSelectedTags != null) {
-			selectedTags = new String[mSelectedTags.size()];
-			mSelectedTags.toArray(selectedTags);
-		} else {
-			selectedTags = new String[0];
-		}
-		outState.putStringArray("selectedTags", selectedTags);
-
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
 			}
 		}
-
 		super.onSaveInstanceState(outState);
 	}
 

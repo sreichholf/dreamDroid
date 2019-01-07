@@ -37,7 +37,7 @@ import java.util.HashMap;
  */
 public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment implements
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, SimpleResultTask.SimpleResultTaskHandler, ActionDialog.DialogActionListener {
-	public static final String BUNDLE_KEY_LIST = "list";
+
 	protected final String sData = "data";
 
 	protected boolean mReload;

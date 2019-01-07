@@ -316,12 +316,6 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putInt("profileId", mProfile.getId());
-		super.onSaveInstanceState(outState);
-	}
-
-	@Override
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.profiles, menu);
 	}

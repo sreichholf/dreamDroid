@@ -19,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.evernote.android.state.State;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
@@ -49,8 +51,6 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "CurrentServiceFragment";
 
-	private ExtendedHashMap mCurrent;
-
 	private TextView mServiceName;
 	private TextView mProvider;
 	private TextView mNowStart;
@@ -69,8 +69,10 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	private ExtendedHashMap mService;
 	private ExtendedHashMap mNow;
 	private ExtendedHashMap mNext;
-	private ExtendedHashMap mCurrentItem;
 	private boolean mCurrentServiceReady;
+
+	@State public ExtendedHashMap mCurrent;
+	@State public ExtendedHashMap mCurrentItem;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -79,15 +81,6 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		initTitles(getString(R.string.current_service));
 
 		mCurrentServiceReady = false;
-		if (savedInstanceState != null) {
-			// currents service data
-			HashMap<String, Object> current = savedInstanceState.getParcelable("current");
-			mCurrent = new ExtendedHashMap(current);
-			// currently selected item (now or next dialog)
-			HashMap<String, Object> currentItem = savedInstanceState
-					.getParcelable("currentItem");
-			mCurrentItem = new ExtendedHashMap(currentItem);
-		}
 	}
 
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -122,13 +115,6 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		super.onViewCreated(view, savedInstanceState);
 		if(!mReload)
 			applyData(0, mCurrent);
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable("currentItem", mCurrentItem);
-		outState.putParcelable("current", mCurrent);
-		super.onSaveInstanceState(outState);
 	}
 
 	/**
@@ -181,7 +167,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		if (event != null) {
 			mCurrentItem = event;
 			Bundle args = new Bundle();
-			args.putParcelable("currentItem", mCurrentItem);
+			args.putSerializable("currentItem", mCurrentItem);
 			((MultiPaneHandler) getAppCompatActivity()).showDialogFragment(EpgDetailDialog.class, args,
 					"current_epg_detail_dialog");
 		}

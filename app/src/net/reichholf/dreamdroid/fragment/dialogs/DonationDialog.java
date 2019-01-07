@@ -27,13 +27,13 @@ public class DonationDialog extends ActionDialog {
 	public static DonationDialog newInstance(ExtendedHashMap items) {
 		DonationDialog d = new DonationDialog();
 		Bundle args = new Bundle();
-		args.putParcelable(KEY_ITEMS, items);
+		args.putSerializable(KEY_ITEMS, items);
 		d.setArguments(args);
 		return d;
 	}
 
 	protected void init() {
-		mItems = getArguments().getParcelable(KEY_ITEMS);
+		mItems = (ExtendedHashMap) getArguments().getSerializable(KEY_ITEMS);
 		int i = 0;
 		mActions = new CharSequence[mItems.size()];
 

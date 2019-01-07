@@ -35,6 +35,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.evernote.android.state.State;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -81,7 +82,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	private int mFormat;
 	private int mSize;
 	private String mFilename;
-	private byte[] mRawImage;
+	@State public byte[] mRawImage;
 	private MediaScannerConnection mScannerConn;
 	private HttpFragmentHelper mHttpHelper;
 
@@ -206,11 +207,6 @@ public class ScreenShotFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
-	}
-
-	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
 		if(requestCode == BaseActivity.REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT) {
@@ -261,7 +257,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	public void onSaveInstanceState(Bundle outState) {
 		if (mScannerConn != null)
 			mScannerConn.disconnect();
-		outState.putByteArray("rawImage", mRawImage);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override

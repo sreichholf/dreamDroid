@@ -11,7 +11,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
+
+import com.evernote.android.state.State;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.livefront.bridge.Bridge;
+
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -54,7 +58,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	protected final String sData = "data";
 	protected boolean mReload;
 	protected boolean mEnableReload;
-	protected ArrayList<ExtendedHashMap> mMapList;
+	@State public ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
 	protected Bundle mExtras;
 	protected BaseAdapter mAdapter;
@@ -72,7 +76,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		Bridge.restoreInstanceState(this, savedInstanceState);
 		if (mHttpHelper == null)
 			mHttpHelper = new HttpFragmentHelper(this);
 		else
@@ -123,7 +127,13 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putSerializable(BUNDLE_KEY_LIST, mMapList);
+		Bridge.saveInstanceState(this, outState);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Bridge.clear(this);
 	}
 
 	@Override

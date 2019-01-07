@@ -21,6 +21,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 
+import com.evernote.android.state.State;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
@@ -58,14 +60,14 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	public static final String BUNDLE_KEY_OLD_TAGS = "oldTags";
 	public static final String BUNDLE_KEY_CURRENT_LOCATION = "currentLocation";
 
-	private String mCurrentLocation;
-
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
-	private ArrayList<String> mSelectedTags;
-	private ArrayList<String> mOldTags;
 
-	private ExtendedHashMap mMovie;
+	@State public String mCurrentLocation;
+	@State public ArrayList<String> mSelectedTags;
+	@State public ArrayList<String> mOldTags;
+	@State public ExtendedHashMap mMovie;
+
 	private ProgressDialog mProgress;
 
 	@Override
@@ -86,11 +88,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 					mCurrentLocation = location;
 					break;
 				}
-		} else {
-			mMovie = savedInstanceState.getParcelable(BUNDLE_KEY_MOVIE);
-			mSelectedTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray(BUNDLE_KEY_SELECTED_TAGS)));
-			mOldTags = new ArrayList<>(Arrays.asList(savedInstanceState.getStringArray(BUNDLE_KEY_OLD_TAGS)));
-			mCurrentLocation = savedInstanceState.getString(BUNDLE_KEY_CURRENT_LOCATION);
 		}
 	}
 
@@ -114,32 +111,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.locactions_and_tags, menu);
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable(BUNDLE_KEY_MOVIE, mMovie);
-
-		String[] selectedTags;
-		if (mSelectedTags != null) {
-			selectedTags = new String[mSelectedTags.size()];
-			mSelectedTags.toArray(selectedTags);
-		} else {
-			selectedTags = new String[0];
-		}
-		outState.putStringArray(BUNDLE_KEY_SELECTED_TAGS, selectedTags);
-
-		String[] oldTags;
-		if (mOldTags != null) {
-			oldTags = new String[mOldTags.size()];
-			mOldTags.toArray(oldTags);
-		} else {
-			oldTags = new String[0];
-		}
-		outState.putStringArray(BUNDLE_KEY_OLD_TAGS, oldTags);
-		outState.putString(BUNDLE_KEY_CURRENT_LOCATION, mCurrentLocation);
-
-		super.onSaveInstanceState(outState);
 	}
 
 	@Override
