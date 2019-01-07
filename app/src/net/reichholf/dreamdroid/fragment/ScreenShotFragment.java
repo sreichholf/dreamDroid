@@ -168,9 +168,7 @@ public class ScreenShotFragment extends BaseFragment implements
 		mSize = extras.getInt(KEY_SIZE, -1);
 		mFilename = extras.getString(KEY_FILENAME);
 
-		if (savedInstanceState != null) {
-			mRawImage = savedInstanceState.getByteArray("rawImage");
-		} else if (mRawImage == null) {
+		if (mRawImage == null) {
 			mRawImage = new byte[0];
 		}
 		return view;

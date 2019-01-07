@@ -108,8 +108,6 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		mCurrentPos = -1;
 		mIsActionMode = false;
 		mReload = true;
-		if (savedInstanceState != null)
-			mTimer = savedInstanceState.getParcelable("timer");
 	}
 
 	@Override

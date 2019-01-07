@@ -51,8 +51,6 @@ import java.util.ArrayList;
 public abstract class AbstractHttpListFragment extends DreamDroidListFragment implements
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, IBaseFragment, SwipeRefreshLayout.OnRefreshListener, SimpleResultTask.SimpleResultTaskHandler {
 
-	public static final String BUNDLE_KEY_LIST = "list";
-
 	protected final String sData = "data";
 	protected boolean mReload;
 	protected boolean mEnableReload;
@@ -83,19 +81,17 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		mExtras = getArguments();
 		mMapList = null;
 
-		if (savedInstanceState != null) {
-			mMapList = (ArrayList<ExtendedHashMap>) savedInstanceState.getSerializable(BUNDLE_KEY_LIST);
-		} else {
+		if (mMapList == null) {
 			mMapList = new ArrayList<>();
 		}
 
 		if (mExtras != null) {
 			mData = (ExtendedHashMap) mExtras.getSerializable("data");
-			if (mData == null) {
-				mData = new ExtendedHashMap(mData);
-			}
 		} else {
 			mExtras = new Bundle();
+		}
+		if (mData == null) {
+			mData = new ExtendedHashMap(mData);
 		}
 		DreamDroid.loadCurrentProfile(getAppCompatActivity());
 	}

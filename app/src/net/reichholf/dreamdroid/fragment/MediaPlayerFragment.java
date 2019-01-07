@@ -57,7 +57,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	public static int LOADER_PLAYLIST_ID = 1;
 	public static String PLAYLIST_AS_ROOT = "playlist";
 
-	@State public int mMediaIndex;
+	@State public int mMediaIndex = -1;
 
 	private ExtendedHashMap mMedia;
 	private SimpleChoiceDialog mChoice;
@@ -149,10 +149,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 
 		mPlaylist = new ArrayList<>();
 		mMediaInfo = new ExtendedHashMap();
-		if (savedInstanceState != null) {
-			mMediaIndex = savedInstanceState.getInt(STATE_MEDIA_INDEX, -1);
-			if (mMediaIndex < 0)
-				return;
+		if (mMediaIndex >= 0) {
 			mMedia = mMapList.get(mMediaIndex);
 			String isDirectory = (String) mMedia.get(Mediaplayer.KEY_IS_DIRECTORY);
 			// only navigate into a directory

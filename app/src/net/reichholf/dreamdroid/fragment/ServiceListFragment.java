@@ -77,11 +77,6 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	private static final int LOADER_BOUQUETLIST_ID = 1;
 
 	public static final String SERVICE_REF_ROOT = "root";
-	public static final String BUNDLE_KEY_NAVNAME = "navname";
-	public static final String BUNDLE_KEY_NAVREFERENCE = "navreference";
-	public static final String BUNDLE_KEY_DETAILNAME = "detailname";
-	public static final String BUNDLE_KEY_DETAILREFERENCE = "detailreference";
-	public static final String BUNDLE_KEY_CURRENT_SERVICE = "currentservice";
 
 	private boolean mPickMode;
 	private boolean mReload;
@@ -128,13 +123,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 
 		mPickMode = Intent.ACTION_PICK.equals(mode);
 
-		if (savedInstanceState != null && !mPickMode) {
-			mNavName = savedInstanceState.getString(BUNDLE_KEY_NAVNAME);
-			mNavReference = savedInstanceState.getString(BUNDLE_KEY_NAVREFERENCE);
-			mDetailName = savedInstanceState.getString(BUNDLE_KEY_DETAILNAME);
-			mDetailReference = savedInstanceState.getString(BUNDLE_KEY_DETAILREFERENCE);
-			mCurrentService = (ExtendedHashMap) savedInstanceState.getSerializable(BUNDLE_KEY_CURRENT_SERVICE);
-
+		if (mNavName != null && !mPickMode) {
 			mHistory = new ArrayList<>();
 			mNavItems = new ArrayList<>();
 			mDetailItems = new ArrayList<>();

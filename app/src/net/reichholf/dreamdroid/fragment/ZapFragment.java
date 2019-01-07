@@ -50,12 +50,12 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		super.onCreate(savedInstanceState);
 		initTitle("");
 
-		mCurrentBouquet = new ExtendedHashMap();
-		mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
-		mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
-		mWaitingForPicker = false;
-
-		restoreState(savedInstanceState);
+		if (mCurrentBouquet == null) {
+			mCurrentBouquet = new ExtendedHashMap();
+			mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
+			mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
+			mWaitingForPicker = false;
+		}
 	}
 
 	@Override
@@ -68,15 +68,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		recyclerView.addOnScrollListener(listener);
 
 		return view;
-	}
-
-	private void restoreState(Bundle savedInstanceState) {
-		mReload = true;
-		if (savedInstanceState != null) {
-			ExtendedHashMap currentBouquet = (ExtendedHashMap) savedInstanceState.getSerializable(BUNDLE_KEY_CURRENT_BOUQUET);
-			if (currentBouquet != null)
-				mCurrentBouquet = currentBouquet;
-		}
 	}
 
 	@Override

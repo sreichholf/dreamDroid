@@ -10,6 +10,10 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+
+import com.evernote.android.state.State;
+import com.livefront.bridge.Bridge;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
@@ -28,9 +32,10 @@ public class MultiChoiceDialog extends DialogFragment {
 	private static final String KEY_CHECKED_ITEMS = "checkedItems";
 	private static final String KEY_POSITIVE_STRING_ID = "positiveStringId";
 
+	@State public boolean[] mCheckedItems;
+
 	private int mTitleId;
 	private CharSequence[] mItems;
-	private boolean[] mCheckedItems;
 	private int mPositiveStringId;
 
 	public interface MultiChoiceDialogListener {
@@ -42,6 +47,7 @@ public class MultiChoiceDialog extends DialogFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Bridge.restoreInstanceState(this, savedInstanceState);
 		setRetainInstance(true);
 	}
 
@@ -55,7 +61,7 @@ public class MultiChoiceDialog extends DialogFragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
-		outState.putBooleanArray("checkedItems", mCheckedItems);
+		Bridge.saveInstanceState(this, outState);
 		super.onSaveInstanceState(outState);
 	}
 
@@ -88,12 +94,6 @@ public class MultiChoiceDialog extends DialogFragment {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		init();
-		if (savedInstanceState != null) {
-			boolean[] checked = savedInstanceState.getBooleanArray("checkedItems");
-			if (checked != null)
-				mCheckedItems = checked;
-		}
-
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(mTitleId)
 				.setMultiChoiceItems(mItems, mCheckedItems, (dialog, which, isChecked) -> mCheckedItems[which] = isChecked)
