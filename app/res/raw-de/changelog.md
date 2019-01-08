@@ -1,3 +1,7 @@
+## 1.3.425
+* FIX: Tastatursteuerung
+* DEV: Code cleanup
+
 ## 1.3.424
 * FIX: Absturz beim Bearbeiten eines Profils
 * FIX: Abstürze auf Geräten mit Android < 8 (Kanalliste, Backup)

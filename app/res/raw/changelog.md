@@ -1,3 +1,7 @@
+## 1.3.425
+* FIX: Keyboard controllability
+* DEV: Code cleanup
+
 ## 1.3.424
 * FIX: Crash on Profile edit
 * FIX: Crashes on devices with Android < 8 (Servicelist, Backup)
