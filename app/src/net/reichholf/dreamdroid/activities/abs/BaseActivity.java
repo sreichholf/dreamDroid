@@ -172,7 +172,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		Bridge.restoreInstanceState(this, savedInstanceState);
 		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true)) {
-			overridePendingTransition(R.anim.activity_open_translate, R.anim.activity_close_scale);
+			overridePendingTransition(R.animator.activity_open_translate, R.animator.activity_close_scale);
 		}
 
 		initIAB();
@@ -321,7 +321,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		super.onPause();
 		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			overridePendingTransition(R.anim.activity_open_scale, R.anim.activity_close_translate);
+			overridePendingTransition(R.animator.activity_open_scale, R.animator.activity_close_translate);
 	}
 
 	@Override
@@ -346,7 +346,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(this).edit();
 			prefs.putBoolean(DreamDroid.PREFS_KEY_ALLOW_TRACKING, enabled);
 			prefs.putBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, true);
-			prefs.commit();
+			prefs.apply();
 			initPiwik();
 		} else if (action == Statics.ACTION_LOCATION_RATIONALE_DONE) {
 			initPermissions(true);

@@ -217,7 +217,7 @@ public class ItemSelectionSupport {
 	public void setViewChecked(View view, boolean checked) {
 		if (view instanceof Checkable) {
 			((Checkable) view).setChecked(checked);
-		} else if (Build.VERSION.SDK_INT >= HONEYCOMB) {
+		} else {
 			view.setActivated(checked);
 		}
 	}

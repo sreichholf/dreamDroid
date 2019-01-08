@@ -20,7 +20,7 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
 	private boolean mShowFirstDivider = false;
 	private boolean mShowLastDivider = false;
 
-	int mOrientation = -1;
+	@RecyclerView.Orientation int mOrientation = RecyclerView.VERTICAL;
 
 	public DividerItemDecoration(Context context, AttributeSet attrs) {
 		final TypedArray a = context

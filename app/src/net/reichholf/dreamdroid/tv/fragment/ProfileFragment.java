@@ -70,7 +70,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		editor.putBoolean(DatabaseHelper.KEY_PROFILE_FILE_LOGIN, p.isFileLogin());
 		editor.putString(DatabaseHelper.KEY_PROFILE_FILE_PORT, p.getFilePortString());
 		editor.putBoolean(DatabaseHelper.KEY_PROFILE_FILE_SSL, p.isFileSsl());
-		editor.commit();
+		editor.apply();
 	}
 
 	protected void updatePortPreference(boolean newValue, String preferenceKey) {
@@ -117,7 +117,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt(DreamDroid.CURRENT_PROFILE, p.getId());
-		editor.commit();
+		editor.apply();
 		DreamDroid.setCurrentProfile(p);
 		super.onPause();
 	}

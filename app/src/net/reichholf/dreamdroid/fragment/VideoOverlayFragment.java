@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -124,7 +125,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mServiceRef = getArguments().getString(SERVICE_REFERENCE);
 		mBouquetRef = getArguments().getString(BOUQUET_REFERENCE);
 		mServiceList = new ArrayList<>();
-		mServiceInfo = ((ExtendedHashMap) getArguments().get(SERVICE_INFO)).clone();
+		mServiceInfo = ((ExtendedHashMap) getArguments().get(SERVICE_INFO));
 		mHandler = new Handler();
 		mAutoHideRunnable = () -> hideOverlays();
 		mIssueReloadRunnable = () -> reload();
@@ -514,6 +515,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			mServicesView.getAdapter().notifyDataSetChanged();
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	protected void updateProgress() {
 		SeekBar serviceProgress = getView().findViewById(R.id.service_progress);
 		VideoPlayer player = VideoPlayerFactory.getInstance();
@@ -537,7 +539,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 				}
 			});
-			serviceProgress.setOnTouchListener(null);
+			serviceProgress.setOnTouchListener((v, motionEvent) -> false);
 		} else {
 			serviceProgress.setOnTouchListener((view, motionEvent) -> true);
 		}
@@ -603,38 +605,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void showToolbar() {
-		if (getActionBar().isShowing())
-			return;
-		mIsHiding = false;
 		ActionBar actionBar = getActionBar();
-		if (actionBar != null) {
-			getActionBar().setShowHideAnimationEnabled(true);
+		if (actionBar != null && !actionBar.isShowing())
 			actionBar.show();
-		}
-		getToolbar().animate().translationY(0);
 	}
 
 	private void hideToolbar() {
-		if (mIsHiding)
-			return;
-		mIsHiding = true;
-		getToolbar()
-				.animate()
-				.translationY(-getToolbar().getHeight())
-				.setListener(new AnimatorListenerAdapter() {
-					@Override
-					public void onAnimationEnd(Animator animation) {
-						if (mIsHiding) {
-							mIsHiding = false;
-							ActionBar actionBar = getActionBar();
-							if (actionBar != null) {
-								getActionBar().setShowHideAnimationEnabled(true);
-								actionBar.hide();
-							}
-						}
-						super.onAnimationEnd(animation);
-					}
-				});
+		ActionBar actionBar = getActionBar();
+		if (actionBar != null && actionBar.isShowing())
+			actionBar.hide();
 	}
 
 	public void autohide() {

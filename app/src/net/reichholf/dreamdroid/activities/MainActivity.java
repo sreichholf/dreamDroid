@@ -141,7 +141,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		if (isFirstStart) {
 			if (!isNavigationDrawerVisible())
 				toggle();
-			sp.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false).commit();
+			sp.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false).apply();
 		}
 	}
 
@@ -180,7 +180,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		if (updated) {
 			SharedPreferences.Editor editor = preferences.edit();
 			editor.putInt(DreamDroid.PREFS_KEY_LAST_VERSION_CODE, BuildConfig.VERSION_CODE);
-			editor.commit();
+			editor.apply();
 		}
 		if (updated || !onUpdateOnly)
 			showDialogFragment(ChangelogDialog.newInstance(), "changelog_dialog");
@@ -519,7 +519,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				&& mDetailFragment.isVisible()
 				&& PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
-			ft.setCustomAnimations(R.anim.activity_open_translate, R.anim.activity_close_scale, R.anim.activity_open_scale, R.anim.activity_close_translate);
+			ft.setCustomAnimations(R.animator.activity_open_translate, R.animator.activity_close_scale, R.animator.activity_open_scale, R.animator.activity_close_translate);
 
 		AppBarLayout appBarLayout = findViewById(R.id.appbar);
 		if (appBarLayout != null)

@@ -152,7 +152,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	public void detachFabReload() {
 		FloatingActionButton fab = getAppCompatActivity().findViewById(R.id.fab_reload);
 		if (fab != null) {
-			fab.setVisibility(View.GONE);
+			fab.hide();
 			((MainActivity)getAppCompatActivity()).unregisterFab(R.id.fab_reload);
 		}
 	}
