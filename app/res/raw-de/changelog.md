@@ -1,4 +1,4 @@
-## 1.3.426
+## 1.3.427
 * Der Video Player ist nun bessere Bedienbar (besonders auf TVs)
 * TV: Einstellungen wurden aufgeräumt. In den Verbindungeinstellungen kann jetzt encoding eingestellt werden
 * FIX: Der EPG für Aufnahmen war im Nacht-Modus hell

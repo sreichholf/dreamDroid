@@ -1,4 +1,4 @@
-## 1.3.426
+## 1.3.427
 * Improve overall usability of Video Player (especially on TV)
 * TV: Cleanup settings, add encoder settings to connection profile
 * FIX: Movie-EPG was bright in Night-Mode
