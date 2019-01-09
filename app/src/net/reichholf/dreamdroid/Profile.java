@@ -287,7 +287,6 @@ public class Profile implements Serializable {
 			mStreamPort = Integer.valueOf(streamPort);
 		} catch (NumberFormatException e) {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
-			mStreamPort = 8001;
 		}
 	}
 
@@ -307,27 +306,61 @@ public class Profile implements Serializable {
 	public int getEncoderPort() {
 		return mEncoderPort;
 	}
+	public String getEncoderPortString() {
+		return String.valueOf(mEncoderPort);
+	}
 
 	public void setEncoderPort(int port) {
 		mEncoderPort = port;
+	}
+
+	public void setEncoderPort(String port) {
+		try {
+			mEncoderPort = Integer.valueOf(port);
+		} catch (NumberFormatException e) {
+			Log.w(DreamDroid.LOG_TAG, e.toString());
+		}
 	}
 
 	public int getEncoderVideoBitrate() {
 		return mEncoderVideoBitrate;
 	}
 
+	public String getEncoderVideoBitrateString() {
+		return String.valueOf(mEncoderVideoBitrate);
+	}
+
 	public void setEncoderVideoBitrate(int bitrate) {
 		mEncoderVideoBitrate = bitrate;
+	}
+
+	public void setEncoderVideoBitrate(String bitrate) {
+		try {
+			mEncoderVideoBitrate = Integer.valueOf(bitrate);
+		} catch (NumberFormatException e) {
+			Log.w(DreamDroid.LOG_TAG, e.toString());
+		}
 	}
 
 	public int getEncoderAudioBitrate() {
 		return mEncoderAudioBitrate;
 	}
 
+	public String getEncoderAudioBitrateString() {
+		return String.valueOf(mEncoderAudioBitrate);
+	}
+
 	public void setEncoderAudioBitrate(int bitrate) {
 		mEncoderAudioBitrate = bitrate;
 	}
 
+	public void setEncoderAudioBitrate(String bitrate) {
+		try {
+			mEncoderAudioBitrate = Integer.valueOf(bitrate);
+		} catch (NumberFormatException e) {
+			Log.w(DreamDroid.LOG_TAG, e.toString());
+		}
+	}
 
 	public int getFilePort() {
 		return mFilePort;

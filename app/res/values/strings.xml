@@ -373,4 +373,6 @@
     <string name="backup_export_missing_permission">Please grant "Storage" permission to use this feature!</string>
     <string name="licenses">Licenses</string>
     <string name="license">Lizenz</string>
+    <string name="encoder">Encoder</string>
+    <string name="direct_streaming">Direct Streaming</string>
 </resources>
