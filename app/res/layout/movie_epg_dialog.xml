@@ -10,19 +10,19 @@
     android:orientation="vertical"
     android:padding="0dp">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar_epg_detail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <!--<com.google.android.material.appbar.AppBarLayout-->
+        <!--android:id="@+id/appbar_epg_detail"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content">-->
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_epg_detail"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorAccent"
-            android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
-    </com.google.android.material.appbar.AppBarLayout>
+        <!--<androidx.appcompat.widget.Toolbar-->
+            <!--android:id="@+id/toolbar_epg_detail"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="?attr/actionBarSize"-->
+            <!--android:background="?attr/colorAccent"-->
+            <!--android:minHeight="?attr/actionBarSize"-->
+            <!--app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>-->
+    <!--</com.google.android.material.appbar.AppBarLayout>-->
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/ScrollView"

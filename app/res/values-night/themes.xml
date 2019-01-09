@@ -66,5 +66,6 @@
         <item name="bottomSheetDialogTheme">@style/Theme.Design.BottomSheetDialog</item>
         <item name="mdtp_theme_dark">true</item>
         <item name="ic_import_export">@drawable/ic_import_export_dark</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog.Night</item>
     </style>
 </resources>

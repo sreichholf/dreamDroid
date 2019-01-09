@@ -1,3 +1,6 @@
+## 1.3.426
+* FIX: Movie-EPG was bright in Night-Mode
+
 ## 1.3.425
 * FIX: Keyboard controllability
 * DEV: Code cleanup

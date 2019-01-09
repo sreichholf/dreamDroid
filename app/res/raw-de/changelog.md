@@ -1,3 +1,6 @@
+## 1.3.426
+* FIX: Der EPG für Aufnahmen war im Nacht-Modus hell
+
 ## 1.3.425
 * FIX: Tastatursteuerung
 * DEV: Code cleanup
