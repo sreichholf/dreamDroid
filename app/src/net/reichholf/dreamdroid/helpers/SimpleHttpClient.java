@@ -39,6 +39,7 @@ import java.util.List;
  */
 public class SimpleHttpClient {
 	public static String LOG_TAG = SimpleHttpClient.class.getSimpleName();
+	public static String BIG_BUCK_BUNNY_URL = "https://dreamdroid.org/bunny/big_buck_bunny_720p_h264.mov";
 
 	private Profile mProfile;
 
@@ -107,6 +108,9 @@ public class SimpleHttpClient {
 	}
 
 	public String buildEncoderStreamUrl(String ref) {
+		if (mProfile.getHost().equals("dreamdroid.org"))
+			return BIG_BUCK_BUNNY_URL;
+
 		try {
 			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
 		} catch (UnsupportedEncodingException e) {
@@ -128,6 +132,8 @@ public class SimpleHttpClient {
 	}
 
 	public String buildStreamUrl(String ref) {
+		if (mProfile.getHost().equals("dreamdroid.org"))
+			return BIG_BUCK_BUNNY_URL;
 		if(mProfile.isEncoderStream())
 			return buildEncoderStreamUrl(ref);
 		else
@@ -139,6 +145,8 @@ public class SimpleHttpClient {
 	 * @return
 	 */
 	public String buildServiceStreamUrl(String ref) {
+		if (mProfile.getHost().equals("dreamdroid.org"))
+			return BIG_BUCK_BUNNY_URL;
 		try {
 			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
 		} catch (UnsupportedEncodingException e) {
@@ -151,6 +159,8 @@ public class SimpleHttpClient {
 	}
 
 	public String buildFileStreamUrl(String ref, String fileName) {
+		if (mProfile.getHost().equals("dreamdroid.org"))
+			return BIG_BUCK_BUNNY_URL;
 		if(mProfile.isEncoderStream() && ref.startsWith("1:"))
 			return buildEncoderStreamUrl(ref);
 
