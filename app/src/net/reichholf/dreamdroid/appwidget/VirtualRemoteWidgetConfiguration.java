@@ -98,7 +98,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt(getProfileIdKey(mAppWidgetId), profileId);
 		editor.putBoolean(getIsFullKey(mAppWidgetId), isFull);
-		editor.commit();
+		editor.apply();
 	}
 
 	public void showToast(String text) {
@@ -129,7 +129,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 		if (prefs.contains(getProfileIdKey(appWidgetId))) {
 			SharedPreferences.Editor editor = prefs.edit();
 			editor.remove(getProfileIdKey(appWidgetId));
-			editor.commit();
+			editor.apply();
 		}
 	}
 }

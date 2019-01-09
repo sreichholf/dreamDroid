@@ -41,33 +41,93 @@
         android:password="true"
         android:title="@string/pass"/>
 
-    <EditTextPreference
-        android:defaultValue="80"
-        android:inputType="number"
-        android:key="streamport"
-        android:numeric="integer"
-        android:title="@string/port_stream_live"/>
-
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="streamlogin"
-        android:title="@string/login_live"/>
+        android:key="encoder_stream"
+        android:title="@string/use_encoder"/>
 
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="file_login"
-        android:title="@string/login_movies"/>
+    <PreferenceCategory
+        android:key="category_encoder"
+        android:title="@string/encoder">
 
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="file_ssl"
-        android:title="@string/ssl_movies"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="encoder_login"
+            android:title="@string/login_enabled"/>
 
-    <EditTextPreference
-        android:defaultValue="80"
-        android:inputType="number"
-        android:key="fileport"
-        android:numeric="integer"
-        android:title="@string/port_stream_file"/>
+        <EditTextPreference
+            android:defaultValue="root"
+            android:dependency="login"
+            android:key="encoder_user"
+            android:title="@string/user"/>
 
+        <EditTextPreference
+            android:defaultValue="dreambox"
+            android:dependency="login"
+            android:inputType="textPassword"
+            android:key="encoder_pass"
+            android:password="true"
+            android:title="@string/pass"/>
+
+        <EditTextPreference
+            android:defaultValue="554"
+            android:inputType="number"
+            android:key="encoder_port"
+            android:numeric="integer"
+            android:title="@string/encoder_port"/>
+
+        <EditTextPreference
+            android:defaultValue="/stream"
+            android:inputType="text"
+            android:key="encoder_path"
+            android:title="@string/encoder_path"/>
+
+        <EditTextPreference
+            android:defaultValue="6000"
+            android:inputType="number"
+            android:key="encoder_video_bitrate"
+            android:numeric="integer"
+            android:title="@string/video_bitrate"/>
+
+
+        <EditTextPreference
+            android:defaultValue="128"
+            android:inputType="number"
+            android:key="encoder_audio_bitrate"
+            android:numeric="integer"
+            android:title="@string/audio_bitrate"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_direct"
+        android:title="@string/direct_streaming">
+        <EditTextPreference
+            android:defaultValue="80"
+            android:inputType="number"
+            android:key="streamport"
+            android:numeric="integer"
+            android:title="@string/port_stream_live"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="streamlogin"
+            android:title="@string/login_live"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="file_login"
+            android:title="@string/login_movies"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="file_ssl"
+            android:title="@string/ssl_movies"/>
+
+        <EditTextPreference
+            android:defaultValue="80"
+            android:inputType="number"
+            android:key="fileport"
+            android:numeric="integer"
+            android:title="@string/port_stream_file"/>
+    </PreferenceCategory>
 </PreferenceScreen>

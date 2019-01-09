@@ -68,11 +68,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		setFullScreen();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.video_player);
-		Toolbar toolbar = findViewById(R.id.toolbar);
-		setSupportActionBar(toolbar);
-		getSupportActionBar().setDisplayHomeAsUpEnabled(!DreamDroid.isTV(this));
-		getSupportActionBar().setHomeButtonEnabled(!DreamDroid.isTV(this));
-
 		surfaceFrameAddLayoutListener(true);
 		mCurrentScreenOrientation = getResources().getConfiguration().orientation;
 		setTitle("");
@@ -374,7 +369,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 
 	@Override
 	public void onEvent(MediaPlayer.Event event) {
-		invalidateOptionsMenu();
+		mOverlayFragment.onUpdateButtons();
 		switch(event.type){
 			case MediaPlayer.Event.ESSelected:
 				if (event.getEsChangedType() == Media.VideoTrack.Type.Video)

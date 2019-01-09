@@ -1,9 +1,10 @@
 package net.reichholf.dreamdroid.tv.fragment;
 
 import android.os.Bundle;
-import androidx.leanback.preference.LeanbackPreferenceFragment;
 
 import net.reichholf.dreamdroid.R;
+
+import androidx.leanback.preference.LeanbackPreferenceFragment;
 
 public class PrefsFragment extends LeanbackPreferenceFragment {
 
@@ -13,3 +14,5 @@ public class PrefsFragment extends LeanbackPreferenceFragment {
 		setPreferencesFromResource(R.xml.preferences, rootKey);
 	}
 }
+
+

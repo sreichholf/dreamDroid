@@ -261,7 +261,7 @@ public class DreamDroid extends MatomoApplication {
 			profileId = p.getId();
 			SharedPreferences.Editor editor = sp.edit();
 			editor.remove(CURRENT_PROFILE);
-			editor.commit();
+			editor.apply();
 		}
 
 		if (!setCurrentProfile(context, profileId)) {
@@ -298,7 +298,7 @@ public class DreamDroid extends MatomoApplication {
 		if (sProfile != null) {
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 			editor.putInt(CURRENT_PROFILE, id);
-			editor.commit();
+			editor.apply();
 			if (!sProfile.equals(oldProfile) || forceEvent) {
 				//reset locations and tags, they will be reloaded when needed the next time
 				sLocations.clear();
@@ -462,7 +462,7 @@ public class DreamDroid extends MatomoApplication {
 
 		SharedPreferences.Editor editor = sp.edit();
 		editor.putInt(PREFS_KEY_INITIALBITS, mask);
-		editor.commit();
+		editor.apply();
 	}
 
 	public static boolean isTrackingEnabled(Context context)

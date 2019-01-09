@@ -11,7 +11,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,9 +27,10 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 
-import java.util.HashMap;
+import androidx.annotation.NonNull;
 
 import static net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment.sData;
 
@@ -112,7 +112,7 @@ public class ProfileEditFragment extends BaseFragment {
 		mLayoutStream = view.findViewById(R.id.linearLayoutStream);
 		mLayoutLogin = view.findViewById(R.id.LoginLayout);
 
-		HashMap extras = (HashMap) getArguments().getSerializable(sData);
+		ExtendedHashMap extras = (ExtendedHashMap) getArguments().getSerializable(sData);
 		assert extras != null;
 
 		if (Intent.ACTION_EDIT.equals(extras.get("action"))) {

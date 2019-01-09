@@ -2,19 +2,20 @@ package net.reichholf.dreamdroid.widget;
 
 import android.content.Context;
 import android.graphics.Rect;
+
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Checkable;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 /**
  * Created by Stephan on 16.11.2014.
  */
-public class CheckableImageButton extends ImageButton implements Checkable {
+public class CheckableImageButton extends AppCompatImageButton implements Checkable {
 	private boolean mChecked;
 
 	private static final int[] CHECKED_STATE_SET = {android.R.attr.state_checked};
@@ -31,11 +32,6 @@ public class CheckableImageButton extends ImageButton implements Checkable {
 
 	public CheckableImageButton(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		init();
-	}
-
-	public CheckableImageButton(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
 		init();
 	}
 

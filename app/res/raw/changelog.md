@@ -1,8 +1,21 @@
+## 1.3.428
+* Improve overall usability of Video Player (especially on TV)
+* TV: Cleanup settings, add encoder settings to connection profile
+* FIX: Movie-EPG was bright in Night-Mode
+
+## 1.3.425
+* FIX: Keyboard controllability
+* DEV: Code cleanup
+
+## 1.3.424
+* FIX: Crash on Profile edit
+* FIX: Crashes on devices with Android < 8 (Servicelist, Backup)
+
 ## 1.3.423
 * FIX: Android TV issues (introduced in 1.2.420)
 * NEW: Add Open Source License Attribution (new button in About)
 * DEV: Internal changes (quite a bit of them) to fix some long pending crash issues (android-state with livefront:bridge)
-* DEV: Workaround an android issue with Map and Parcel ([]https://medium.com/the-wtf-files/the-mysterious-case-of-the-bundle-and-the-map-7b15279a794e])
+* DEV: Workaround an android issue with Map and Parcel [https://medium.com/...](https://medium.com/the-wtf-files/the-mysterious-case-of-the-bundle-and-the-map-7b15279a794e)
 
 ## 1.2.422
 * FIX: Crashes in settings backup
