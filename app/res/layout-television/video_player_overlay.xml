@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/overlay_root"
     android:layout_width="match_parent"
@@ -12,7 +11,72 @@
         android:layout_height="60dp"
         android:layout_centerInParent="true"
         android:indeterminate="true"
-        android:visibility="gone"/>
+        android:visibility="gone" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:layout_weight="1"
+        android:visibility="invisible"
+        app:cardBackgroundColor="?attr/colorPrimary"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        app:cardUseCompatPadding="false"
+        app:contentPadding="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="0dp">
+
+            <LinearLayout
+                android:id="@+id/video_actions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/button_audio_track"
+                    style="@style/Widget.AppCompat.Toolbar.Button.Navigation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_action_audio_track"
+                    android:visibility="invisible" />
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/button_subtitle_track"
+                    style="@style/Widget.AppCompat.Toolbar.Button.Navigation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_action_subtitle"
+                    android:visibility="invisible" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/button_previous"
+                style="@style/buttonBarNegativeButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_margin="0dp"
+                android:layout_toStartOf="@id/video_actions"
+                android:padding="4dp"/>
+
+            <Button
+                android:id="@+id/button_next"
+                style="@style/buttonBarNegativeButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="0dp"
+                android:layout_toEndOf="@id/video_actions"
+                android:padding="4dp"/>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/service_detail_root"
@@ -20,14 +84,14 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_weight="1"
-        android:visibility="gone"
+        android:minHeight="80dp"
+        android:visibility="invisible"
         app:cardBackgroundColor="?attr/colorPrimary"
         app:cardCornerRadius="8dp"
         app:cardElevation="0dp"
         app:contentPadding="8dp">
 
-        <RelativeLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/parent_service"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -39,26 +103,25 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_gravity="center_vertical"
-                android:enabled="false"/>
+                android:enabled="false" />
 
             <ImageView
                 android:id="@+id/picon"
                 android:layout_width="wrap_content"
                 android:layout_height="90dp"
-                android:layout_alignParentLeft="true"
                 android:layout_below="@id/service_progress"
+                android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:layout_marginBottom="0dp"
+                android:layout_marginTop="7dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginTop="7dp"/>
+                android:layout_marginBottom="0dp" />
 
             <LinearLayout
                 android:id="@+id/service"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/service_progress"
-                android:layout_toRightOf="@id/picon"
+                android:layout_toEndOf="@id/picon"
                 android:orientation="horizontal">
 
                 <TextView
@@ -66,7 +129,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="50dp"
                     android:gravity="center_vertical"
-                    android:textAppearance="?android:attr/textAppearanceLarge"/>
+                    android:text="..."
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
             </LinearLayout>
 
             <LinearLayout
@@ -74,7 +138,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/service"
-                android:layout_toRightOf="@id/picon"
+                android:layout_toEndOf="@id/picon"
                 android:orientation="horizontal">
 
                 <TextView
@@ -82,30 +146,26 @@
                     android:layout_width="45dip"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="-45dip"
-                    android:layout_marginRight="-45dip"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/event_now_title"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="55dip"
-                    android:layout_marginLeft="45dip"
-                    android:layout_marginRight="55dip"
                     android:layout_marginStart="45dip"
+                    android:layout_marginEnd="55dip"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:maxLines="1"/>
+                    android:maxLines="1" />
 
                 <TextView
                     android:id="@+id/event_now_duration"
                     android:layout_width="50dip"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="-55dip"
                     android:layout_marginStart="-55dip"
                     android:layout_weight="0"
                     android:gravity="end"
-                    android:minHeight="0dip"/>
+                    android:minHeight="0dip" />
             </LinearLayout>
 
             <LinearLayout
@@ -113,7 +173,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/event_now"
-                android:layout_toRightOf="@id/picon"
+                android:layout_toEndOf="@id/picon"
                 android:orientation="horizontal">
 
                 <TextView
@@ -121,30 +181,26 @@
                     android:layout_width="45dip"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="-45dip"
-                    android:layout_marginRight="-45dip"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/event_next_title"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="55dip"
-                    android:layout_marginLeft="45dip"
-                    android:layout_marginRight="55dip"
                     android:layout_marginStart="45dip"
+                    android:layout_marginEnd="55dip"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:maxLines="1"/>
+                    android:maxLines="1" />
 
                 <TextView
                     android:id="@+id/event_next_duration"
                     android:layout_width="50dip"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="-55dip"
                     android:layout_marginStart="-55dip"
                     android:layout_weight="2"
                     android:gravity="end"
-                    android:minHeight="0dip"/>
+                    android:minHeight="0dip" />
             </LinearLayout>
 
         </RelativeLayout>
@@ -155,10 +211,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/service_detail_root"
+        android:layout_below="@id/toolbar"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:layout_weight="1"
-        android:clipToPadding="false"
+        android:layout_weight="12"
+        android:visibility="invisible"
         app:cardBackgroundColor="?attr/colorPrimary"
         app:cardCornerRadius="8dp"
         app:cardElevation="0dp"
@@ -173,20 +230,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:textAppearance="?android:attr/textAppearanceLarge"/>
+                android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <TextView
                 android:id="@+id/epg_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/epg_title"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="4dp" />
 
             <TextView
                 android:id="@+id/epg_description_extended"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/epg_description"/>
+                android:layout_below="@id/epg_description" />
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
+
+
 </RelativeLayout>

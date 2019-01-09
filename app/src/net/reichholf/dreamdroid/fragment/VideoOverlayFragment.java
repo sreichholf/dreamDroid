@@ -13,14 +13,13 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -61,9 +60,7 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.loader.app.LoaderManager;
@@ -81,7 +78,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
 
 	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
-	private final int[] sOverlayViews = {R.id.service_detail_root, R.id.epg};
+	private final int[] sOverlayViews = {R.id.service_detail_root, R.id.epg, R.id.toolbar};
 	private final int[] sZapOverlayViews = {R.id.servicelist};
 	static float sOverlayAlpha = 0.85f;
 
@@ -107,6 +104,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected FrameLayout mEpgView;
 	protected AutofitRecyclerView mServicesView;
 	protected ItemClickSupport mItemClickSupport;
+	protected AppCompatImageButton mAudioTrackButton;
+	protected AppCompatImageButton mSubtitleTrackButton;
+	protected Button mNextButton;
+	protected Button mPreviousButton;
 	private GestureDetectorCompat mGestureDector;
 	private AudioManager mAudioManager;
 	private int mAudioMaxVol;
@@ -147,24 +148,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (mServicesView != null) {
 			mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
 			mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
-
-			mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-				int sTreshold = 20;
-				int mTotalDistance = 0;
-
-				@Override
-				public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-					super.onScrolled(recyclerView, dx, dy);
-					mTotalDistance += dy;
-					if (mTotalDistance < 0 - sTreshold) {
-						mTotalDistance = 0;
-						showToolbar();
-					} else if (mTotalDistance > sTreshold) {
-						mTotalDistance = 0;
-						hideToolbar();
-					}
-				}
-			});
 			mItemClickSupport = ItemClickSupport.addTo(mServicesView);
 			mItemClickSupport.setOnItemClickListener(this);
 
@@ -224,38 +207,32 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			mGestureDector.onTouchEvent(event);
 			return true;
 		});
+		mAudioTrackButton = view.findViewById(R.id.button_audio_track);
+		mAudioTrackButton.setOnClickListener(v -> onSelectAudioTrack());
+		mSubtitleTrackButton = view.findViewById(R.id.button_subtitle_track);
+		mSubtitleTrackButton.setOnClickListener(v -> onSelectSubtitleTrack());
+
+		mPreviousButton = view.findViewById(R.id.button_previous);
+		mPreviousButton.setOnClickListener(v -> previous());
+		mNextButton = view.findViewById(R.id.button_next);
+		mNextButton.setOnClickListener(v -> next());
 
 		return view;
 	}
 
 
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.video, menu);
-		super.onCreateOptionsMenu(menu, inflater);
+	public void onUpdateButtons() {
 		VideoPlayer player = VideoPlayerFactory.getInstance();
 		if(player == null)
 			return;
 		if (player.getAudioTracksCount() <= 0)
-			menu.removeItem(R.id.menu_audio_track);
+			mAudioTrackButton.setVisibility(View.INVISIBLE);
+		else
+			mAudioTrackButton.setVisibility(View.VISIBLE);
 		if (player.getSubtitleTracksCount() <= 0)
-			menu.removeItem(R.id.menu_subtitle);
-
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.menu_audio_track:
-				onSelectAudioTrack();
-				return true;
-			case R.id.menu_subtitle:
-				onSelectSubtitleTrack();
-				return true;
-			default:
-				break;
-		}
-		return super.onOptionsItemSelected(item);
+			mSubtitleTrackButton.setVisibility(View.INVISIBLE);
+		else
+			mSubtitleTrackButton.setVisibility(View.VISIBLE);
 	}
 
 	private void onSelectAudioTrack() {
@@ -357,22 +334,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	}
 
-
-
-	private void previous() {
-		int index = getCurrentServiceIndex();
-		if (index < 0)
-			return;
-		if (index == 0)
-			index = mServiceList.size() - 1;
-		else
-			index--;
-		mServiceInfo = mServiceList.get(index);
-		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
-		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
-		zap();
-	}
-
 	private void zap() {
 		if (Service.isMarker(mServiceRef))
 			return;
@@ -385,15 +346,43 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		onServiceInfoChanged(true);
 	}
 
-	private void next() {
+	private ExtendedHashMap getPreviousServiceInfo() {
 		int index = getCurrentServiceIndex();
 		if (index < 0)
-			return;
-		if (index >= mServiceList.size())
-			index = 0;
+			return null;
+		if (index == 0)
+			index = mServiceList.size() - 1;
 		else
-			index++;
-		mServiceInfo = mServiceList.get(index);
+			index--;
+		return mServiceList.get(index);
+	}
+
+	private void previous() {
+		ExtendedHashMap serviceInfo = getPreviousServiceInfo();
+		if (serviceInfo == null)
+			return;
+		mServiceInfo = serviceInfo;
+		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
+		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+		zap();
+	}
+
+	private ExtendedHashMap getNextServiceInfo() {
+		int index = getCurrentServiceIndex();
+		if (index < 0)
+			return null;
+		index++;
+		if (index >= mServiceList.size()-1)
+			index = 0;
+
+		return mServiceList.get(index);
+	}
+
+	private void next() {
+		ExtendedHashMap serviceInfo = getNextServiceInfo();
+		if (serviceInfo == null)
+			return;
+		mServiceInfo = serviceInfo;
 		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
 		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
 		zap();
@@ -513,6 +502,12 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		updateProgress();
 		if (mServicesView != null)
 			mServicesView.getAdapter().notifyDataSetChanged();
+		ExtendedHashMap prevService = getPreviousServiceInfo();
+		if (prevService != null)
+			mPreviousButton.setText(prevService.getString(Event.KEY_SERVICE_NAME, ""));
+		ExtendedHashMap nextService = getNextServiceInfo();
+		if (nextService != null)
+			mNextButton.setText(nextService.getString(Event.KEY_SERVICE_NAME, ""));
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
@@ -593,29 +588,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 
-	public ActionBar getActionBar() {
-		AppCompatActivity act = (AppCompatActivity) getActivity();
-		if (act != null)
-			return act.getSupportActionBar();
-		return null;
-	}
-
-	public Toolbar getToolbar() {
-		return (Toolbar) getActivity().findViewById(R.id.toolbar);
-	}
-
-	private void showToolbar() {
-		ActionBar actionBar = getActionBar();
-		if (actionBar != null && !actionBar.isShowing())
-			actionBar.show();
-	}
-
-	private void hideToolbar() {
-		ActionBar actionBar = getActionBar();
-		if (actionBar != null && actionBar.isShowing())
-			actionBar.hide();
-	}
-
 	public void autohide() {
 		mHandler.postDelayed(mAutoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT);
 	}
@@ -627,7 +599,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
 		updateViews();
-		showToolbar();
 		for (int id : sOverlayViews)
 			fadeInView(view.findViewById(id));
 		if (doShowZapOverlays)
@@ -641,7 +612,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (view == null)
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
-		hideToolbar();
 		for (int id : sOverlayViews)
 			fadeOutView(view.findViewById(id));
 		hideZapOverlays();
@@ -753,6 +723,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		boolean ret = false;
+		mHandler.removeCallbacks(mAutoHideRunnable);
+		autohide();
 		switch(keyCode) {
 			case KeyEvent.KEYCODE_BACK:
 			case KeyEvent.KEYCODE_BUTTON_B:
@@ -763,10 +735,14 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 					return false;
 				break;
 			case KeyEvent.KEYCODE_DPAD_LEFT:
+				if (isOverlaysVisible())
+					return false;
 				previous();
 				ret = true;
 				break;
 			case KeyEvent.KEYCODE_DPAD_RIGHT:
+				if (isOverlaysVisible())
+					return false;
 				next();
 				ret = true;
 				break;
