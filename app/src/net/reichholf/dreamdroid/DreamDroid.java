@@ -40,6 +40,7 @@ import org.matomo.sdk.extra.MatomoApplication;
 import org.matomo.sdk.extra.TrackHelper;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,6 +51,8 @@ import java.util.GregorianCalendar;
  * @author sre
  */
 public class DreamDroid extends MatomoApplication {
+	private static volatile DreamDroid instance;
+
 	public static final int INITIAL_SERVICELIST_PANE = 1;
 	public static final int INITIAL_VIRTUAL_REMOTE = 2;
     public static final String PREFS_KEY_HWACCEL = "video_hardware_acceleration";
@@ -109,6 +112,21 @@ public class DreamDroid extends MatomoApplication {
 	private static ProfileChangedListener sCurrentProfileChangedListener = null;
 
 	private static boolean sFeaturePostRequest = true;
+
+	public static Context getAppContext() {
+		if (instance != null) return instance;
+		else {
+			try {
+				instance = (DreamDroid) Class.forName("android.app.ActivityThread").getDeclaredMethod("currentApplication").invoke(null);
+			} catch (IllegalAccessException ignored) {}
+			catch (InvocationTargetException ignored) {}
+			catch (NoSuchMethodException ignored) {}
+			catch (ClassNotFoundException ignored) {}
+			catch (ClassCastException ignored) {}
+			return instance;
+		}
+
+	}
 
 	@Override
 	protected void attachBaseContext(Context base) {

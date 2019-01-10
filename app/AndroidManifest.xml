@@ -130,7 +130,7 @@
             android:theme="@style/Theme.DreamDroid.Player"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleTop"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|uiMode|smallestScreenSize" />
 
         <activity
             android:name=".appwidget.VirtualRemoteWidgetConfiguration"

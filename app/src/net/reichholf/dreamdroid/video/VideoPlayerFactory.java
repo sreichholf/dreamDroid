@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.video;
 
-import android.content.Context;
-
 /**
  * Created by Stephan on 31.12.2016.
  */
@@ -9,12 +7,7 @@ import android.content.Context;
 public class VideoPlayerFactory {
 	static VideoPlayer sPlayer;
 
-	public static void init(Context context) {
-		VLCPlayer.init(context);
-		sPlayer = new VLCPlayer();
-	}
-
-	public static void deinit() {
+	public static void release() {
 		if(sPlayer == null)
 			return;
 		sPlayer.deinit();
@@ -22,6 +15,8 @@ public class VideoPlayerFactory {
 	}
 
 	public static VideoPlayer getInstance() {
+		if (sPlayer == null)
+			sPlayer = new VLCPlayer();
 		return sPlayer;
 	}
 }

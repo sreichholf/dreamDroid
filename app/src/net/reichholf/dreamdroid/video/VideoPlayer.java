@@ -35,4 +35,8 @@ public interface VideoPlayer {
 	int getAudioTracksCount();
 
 	int getSubtitleTracksCount();
+
+	int getVideoWidth();
+
+	int getVideoHeight();
 }

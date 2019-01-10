@@ -15,8 +15,7 @@ import java.util.ArrayList;
  * Created by reichi on 16/02/16.
  */
 public class VLCPlayer implements VideoPlayer {
-	static LibVLC sLibVLC = null;
-	static MediaPlayer sMediaPlayer = null;
+	static volatile MediaPlayer sMediaPlayer = null;
 
 	public final static int MEDIA_HWACCEL_DISABLED = 0x00;
 	public final static int MEDIA_HWACCEL_ENABLED = 0x01;
@@ -24,56 +23,57 @@ public class VLCPlayer implements VideoPlayer {
 
 	protected Media mCurrentMedia;
 
-	public static void init(Context context) {
-		ArrayList<String> options = new ArrayList<>();
-		options.add("--http-reconnect");
-		sLibVLC = new LibVLC(context, options);
-		sMediaPlayer = new MediaPlayer(sLibVLC);
+	public static void init() {
+		sMediaPlayer = new MediaPlayer(VLCInstance.get());
 		sMediaPlayer.setAspectRatio(null);
 		sMediaPlayer.setScale(0);
 		sMediaPlayer.setVideoTrackEnabled(true);
 		sMediaPlayer.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0);
 	}
 
+	@Override
 	public void deinit() {
 		detach();
 		sMediaPlayer.release();
-		sLibVLC = null;
 		sMediaPlayer = null;
 	}
 
 	public static MediaPlayer getMediaPlayer() {
+		if (sMediaPlayer == null)
+			init();
 		return sMediaPlayer;
 	}
 
 	@Override
 	public void attach(IVLCVout.OnNewVideoLayoutListener newVideoLayoutListener,SurfaceView surfaceView, SurfaceView subtitleSurfaceView) {
-		if (sLibVLC == null || sMediaPlayer == null)
-			init(surfaceView.getContext());
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.setVideoView(surfaceView);
 		vlcVout.setSubtitlesView(subtitleSurfaceView);
 		vlcVout.attachViews(newVideoLayoutListener);
 	}
 
+	@Override
 	public void detach() {
 		stop();
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.detachViews();
 	}
 
+	@Override
 	public void setWindowSize(int width, int height) {
 		getMediaPlayer().getVLCVout().setWindowSize(width, height);
 	}
 
+	@Override
 	public void playUri(Uri uri, int flags) {
-		mCurrentMedia = new Media(sLibVLC, uri);
+		mCurrentMedia = new Media(VLCInstance.get(), uri);
 		boolean isHwAccel = (flags & MEDIA_HWACCEL_ENABLED) > 0;
 		boolean isHwAccelForce = (flags & MEDIA_HWACCEL_FORCE) > 0;
 		mCurrentMedia.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce);
 		play();
 	}
 
+	@Override
 	public void play() {
 		if (mCurrentMedia == null)
 			return;
@@ -101,20 +101,39 @@ public class VLCPlayer implements VideoPlayer {
 		return getMediaPlayer().isSeekable();
 	}
 
+	@Override
 	public void stop() {
 		getMediaPlayer().stop();
-		Media media = sMediaPlayer.getMedia();
+		Media media = getMediaPlayer().getMedia();
 		if (media != null) {
 			media.setEventListener(null);
 			media.release();
 		}
 	}
 
+	@Override
 	public int getAudioTracksCount() {
 		return getMediaPlayer().getAudioTracksCount();
 	}
 
+	@Override
 	public int getSubtitleTracksCount() {
 		return getMediaPlayer().getSpuTracksCount();
+	}
+
+	@Override
+	public int getVideoWidth() {
+		Media.VideoTrack track = getMediaPlayer().getCurrentVideoTrack();
+		if (track == null)
+			return 0;
+		return track.width;
+	}
+
+	@Override
+	public int getVideoHeight() {
+		Media.VideoTrack track = getMediaPlayer().getCurrentVideoTrack();
+		if (track == null)
+			return 0;
+		return track.height;
 	}
 }
