@@ -87,6 +87,16 @@ public class VLCPlayer implements VideoPlayer {
 	}
 
 	@Override
+	public long getTime() {
+		return getMediaPlayer().getTime();
+	}
+
+	@Override
+	public void setTime(long position) {
+		getMediaPlayer().setTime(position);
+	}
+
+	@Override
 	public float getPosition() {
 		return getMediaPlayer().getPosition();
 	}

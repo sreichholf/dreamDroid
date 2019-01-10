@@ -79,6 +79,7 @@ public class IntentFactory {
 		Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '" + uriString + "'");
 		Intent intent = getVideoIntent(context, uriString);
 		intent.putExtra("title", title);
+		intent.putExtra("serviceInfo", fileInfo);
 		return intent;
 	}
 }

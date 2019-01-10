@@ -30,6 +30,10 @@ public interface VideoPlayer {
 
 	void setPosition(float position);
 
+	long getTime();
+
+	void setTime(long position);
+
 	boolean isSeekable();
 
 	int getAudioTracksCount();

@@ -38,6 +38,7 @@ import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
+import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -76,6 +77,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	public static final String DIALOG_TAG_SUBTITLE_TRACK = "dialog_subtitle_track";
 
 	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
+	private static final int sFakeLength = 10000;
 
 	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
 	private final int[] sOverlayViews = {R.id.service_detail_root, R.id.epg, R.id.toolbar};
@@ -445,7 +447,9 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 		if (player.getLength() > 0)
 			fpos = fpos / player.getLength() * 100;
-		player.setPosition(fpos / 100f);
+		else
+			fpos = fpos / sFakeLength;
+		player.setPosition(fpos);
 	}
 
 	private void updateViews() {
@@ -457,21 +461,23 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		View parentNext = view.findViewById(R.id.event_next);
 
 		if (mServiceInfo != null) {
-			ImageView picon = view.findViewById(R.id.picon);
-			Picon.setPiconForView(getActivity(), picon, mServiceInfo, Statics.TAG_PICON);
+			if (mServiceInfo.containsKey(Movie.KEY_FILE_SIZE)) {
+			} else {
+				TextView nowStart = view.findViewById(R.id.event_now_start);
+				TextView nowDuration = view.findViewById(R.id.event_now_duration);
+				TextView nowTitle = view.findViewById(R.id.event_now_title);
 
-			TextView nowStart = view.findViewById(R.id.event_now_start);
-			TextView nowDuration = view.findViewById(R.id.event_now_duration);
-			TextView nowTitle = view.findViewById(R.id.event_now_title);
+				ImageView picon = view.findViewById(R.id.picon);
+				Picon.setPiconForView(getActivity(), picon, mServiceInfo, Statics.TAG_PICON);
 
-			Event.supplementReadables(mServiceInfo); //update readable values
+				Event.supplementReadables(mServiceInfo); //update readable values
 
-			nowStart.setText(mServiceInfo.getString(Event.KEY_EVENT_START_TIME_READABLE));
-			nowTitle.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
-			nowDuration.setText(mServiceInfo.getString(Event.KEY_EVENT_DURATION_READABLE));
+				nowStart.setText(mServiceInfo.getString(Event.KEY_EVENT_START_TIME_READABLE));
+				nowTitle.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
+				nowDuration.setText(mServiceInfo.getString(Event.KEY_EVENT_DURATION_READABLE));
 
-			parentNow.setVisibility(View.VISIBLE);
-
+				parentNow.setVisibility(View.VISIBLE);
+			}
 			if (mEpgView != null) {
 				TextView titleView = mEpgView.findViewById(R.id.epg_title);
 				TextView descriptionView = mEpgView.findViewById(R.id.epg_description);
@@ -534,39 +540,66 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 				}
 			});
-			serviceProgress.setOnTouchListener((v, motionEvent) -> false);
+			serviceProgress.setOnTouchListener((view, motionEvent) -> false);
 		} else {
 			serviceProgress.setOnTouchListener((view, motionEvent) -> true);
 		}
-		long max = -1;
+		serviceProgress.setFocusable(isSeekable);
+		serviceProgress.setClickable(isSeekable);
+		long len = -1;
 		long cur = -1;
 		if (mServiceInfo != null) {
-			String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
-			String start = mServiceInfo.getString(Event.KEY_EVENT_START);
+			View parentNow = getView().findViewById(R.id.event_now);
+			View parentNext = getView().findViewById(R.id.event_next);
+			if (mServiceInfo.containsKey(Movie.KEY_FILE_SIZE)) {
+				long duration = player.getLength();
+				if (duration <= 0) {
+					String textLen = mServiceInfo.getString(Movie.KEY_LENGTH, "00:00");
+					String[] l = textLen.split(":");
+					duration = (Long.valueOf(l[0]) * 60) + Long.valueOf(l[1]);
+				}
+				if (duration > 0) {
+					TextView nowStart = getView().findViewById(R.id.event_now_start);
+					TextView nowDuration = getView().findViewById(R.id.event_now_duration);
+					TextView nowTitle = getView().findViewById(R.id.event_now_title);
 
-			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
-				try {
-					max = Double.valueOf(duration).longValue();
-					cur = max - DateTime.getRemaining(duration, start) * 60;
-				} catch (Exception e) {
-					Log.e(DreamDroid.LOG_TAG, e.toString());
+					long pos = (long) (duration * player.getPosition()); //getTime() may deliver quite bogous values when streaming from a dreambox so we don't use them.
+					nowStart.setText(DateTime.minutesAndSeconds((int) pos));
+					nowTitle.setText(mServiceInfo.getString(Movie.KEY_SERVICE_NAME, ""));
+					nowDuration.setText(DateTime.minutesAndSeconds((int) duration));
+					parentNow.setVisibility(View.VISIBLE);
+				} else {
+					parentNow.setVisibility(View.GONE);
+				}
+				parentNext.setVisibility(View.GONE);
+			} else {
+				String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
+				String start = mServiceInfo.getString(Event.KEY_EVENT_START);
+
+				if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
+					try {
+						len = Double.valueOf(duration).longValue();
+						cur = len - DateTime.getRemaining(duration, start) * 60;
+					} catch (Exception e) {
+						Log.e(DreamDroid.LOG_TAG, e.toString());
+					}
 				}
 			}
 		}
-		if (max <= 0) {
-			max = player.getLength();
-			cur = (long) player.getPosition();
+		if (len <= 0) {
+			len = player.getLength() / 1000; //ms -> sec
+			cur = player.getTime() / 1000; //ms -> sec
 		}
 
-		if (max <= 0 && isSeekable) {
-			max = 100;
-			cur = 0;
+		if (len <= 0 && isSeekable) {
+			len = sFakeLength;
+			cur = (long) (len * player.getPosition());
 		}
 
-		if (max > 0 && cur >= 0) {
+		if (len > 0 && cur >= 0) {
 			serviceProgress.setEnabled(true);
 			serviceProgress.setVisibility(View.VISIBLE);
-			serviceProgress.setMax((int) max);
+			serviceProgress.setMax((int) len);
 			serviceProgress.setProgress((int) cur);
 		} else {
 			serviceProgress.setEnabled(false);
