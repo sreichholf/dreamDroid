@@ -1,4 +1,7 @@
 ## 1.3.428
+* Verbesserungen am Video Player (Rotation ohne Unterbrechung, Springen beim Abspielen auf Aufnahmen, Korrekte Zeitanzeige bei Aufnahmen)
+
+## 1.3.428
 * Der Video Player ist nun besser bedienbar (besonders auf TVs)
 * TV: Die Einstellungen wurden aufgeräumt. In den Verbindungeinstellungen kann jetzt encoding eingestellt werden
 * FIX: Der EPG für Aufnahmen war im Nacht-Modus hell

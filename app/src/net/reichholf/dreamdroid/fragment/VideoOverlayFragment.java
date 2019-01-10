@@ -445,11 +445,18 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		float fpos = (float) pos;
 
-		if (player.getLength() > 0)
-			fpos = fpos / player.getLength() * 100;
+		long length = player.getLength();
+		if (length > 0)
+			length = length / 1000;
 		else
-			fpos = fpos / sFakeLength;
-		player.setPosition(fpos);
+			length = sFakeLength;
+		player.setPosition(fpos / length);
+
+	}
+
+	private boolean isRecording() {
+		boolean isDreamboxRecording = mServiceInfo != null && mServiceInfo.containsKey(Movie.KEY_FILE_NAME);
+		return VideoPlayerFactory.getInstance().isSeekable() || isDreamboxRecording;
 	}
 
 	private void updateViews() {
@@ -461,7 +468,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		View parentNext = view.findViewById(R.id.event_next);
 
 		if (mServiceInfo != null) {
-			if (mServiceInfo.containsKey(Movie.KEY_FILE_SIZE)) {
+			if (isRecording()) {
 			} else {
 				TextView nowStart = view.findViewById(R.id.event_now_start);
 				TextView nowDuration = view.findViewById(R.id.event_now_duration);
@@ -509,11 +516,19 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (mServicesView != null)
 			mServicesView.getAdapter().notifyDataSetChanged();
 		ExtendedHashMap prevService = getPreviousServiceInfo();
-		if (prevService != null)
+		if (prevService != null) {
+			mPreviousButton.setVisibility(View.VISIBLE);
 			mPreviousButton.setText(prevService.getString(Event.KEY_SERVICE_NAME, ""));
+		} else {
+			mPreviousButton.setVisibility(View.INVISIBLE);
+		}
 		ExtendedHashMap nextService = getNextServiceInfo();
-		if (nextService != null)
+		if (nextService != null) {
+			mNextButton.setVisibility(View.VISIBLE);
 			mNextButton.setText(nextService.getString(Event.KEY_SERVICE_NAME, ""));
+		} else
+			mNextButton.setVisibility(View.INVISIBLE);
+
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
@@ -551,7 +566,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (mServiceInfo != null) {
 			View parentNow = getView().findViewById(R.id.event_now);
 			View parentNext = getView().findViewById(R.id.event_next);
-			if (mServiceInfo.containsKey(Movie.KEY_FILE_SIZE)) {
+			if (isRecording()) {
 				long duration = player.getLength() / 1000;
 				if (duration <= 0) {
 					String textLen = mServiceInfo.getString(Movie.KEY_LENGTH, "00:00");
@@ -673,6 +688,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	private void fadeInView(final View v) {
 		if (v == null || v.getVisibility() == View.VISIBLE)
+			return;
+		if (v.getId() == R.id.epg && isRecording())
 			return;
 		v.setVisibility(View.VISIBLE);
 		v.setAlpha(0.0f);

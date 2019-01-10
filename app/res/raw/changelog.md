@@ -1,3 +1,6 @@
+## 1.3.429
+* Improvements to the videoplayer (don't stop on rotation, jump in recordings, playback time displayed correctly when watching recorded movies)
+
 ## 1.3.428
 * Improve overall usability of Video Player (especially on TV)
 * TV: Cleanup settings, add encoder settings to connection profile

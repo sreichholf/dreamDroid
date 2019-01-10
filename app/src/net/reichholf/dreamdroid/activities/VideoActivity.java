@@ -260,6 +260,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		if (mVideoWidth * mVideoHeight == 0) {
 			mVideoHeight = mPlayer.getVideoHeight();
 			mVideoWidth = mPlayer.getVideoWidth();
+			mVideoVisibleWidth = mVideoWidth;
+			mVideoVisibleHeight = mVideoHeight;
 		}
 
 
