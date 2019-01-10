@@ -552,7 +552,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			View parentNow = getView().findViewById(R.id.event_now);
 			View parentNext = getView().findViewById(R.id.event_next);
 			if (mServiceInfo.containsKey(Movie.KEY_FILE_SIZE)) {
-				long duration = player.getLength();
+				long duration = player.getLength() / 1000;
 				if (duration <= 0) {
 					String textLen = mServiceInfo.getString(Movie.KEY_LENGTH, "00:00");
 					String[] l = textLen.split(":");
