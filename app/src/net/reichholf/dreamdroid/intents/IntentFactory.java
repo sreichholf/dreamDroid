@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -69,7 +69,7 @@ public class IntentFactory {
 		intent.putExtra("serviceRef", ref);
 		if(bouquetRef != null)
 			intent.putExtra("bouquetRef", bouquetRef);
-		if(serviceInfo != null)
+		if(serviceInfo != null && PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true))
 			intent.putExtra("serviceInfo", serviceInfo);
 		return intent;
 	}
@@ -79,7 +79,8 @@ public class IntentFactory {
 		Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '" + uriString + "'");
 		Intent intent = getVideoIntent(context, uriString);
 		intent.putExtra("title", title);
-		intent.putExtra("serviceInfo", fileInfo);
+		if(fileInfo != null && PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true))
+			intent.putExtra("serviceInfo", fileInfo);
 		return intent;
 	}
 }
