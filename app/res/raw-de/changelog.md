@@ -1,4 +1,8 @@
-## 1.3.428
+## 1.3.430
+* FIX: Absturz wenn über einen externen Video-Player gestreamt werden soll
+* FIX: Absturz wenn Encoderport/bitrate leer oder ungültig ist
+
+## 1.3.429
 * Verbesserungen am Video Player (Rotation ohne Unterbrechung, Springen beim Abspielen auf Aufnahmen, Korrekte Zeitanzeige bei Aufnahmen)
 
 ## 1.3.428

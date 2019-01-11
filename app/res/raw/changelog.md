@@ -1,3 +1,7 @@
+## 1.3.430
+* FIX: crash when trying to stream with external video player
+* FIX: crash when encoder-port/bitrate is empty or invalid
+
 ## 1.3.429
 * Improvements to the videoplayer (don't stop on rotation, jump in recordings, playback time displayed correctly when watching recorded movies)
 
