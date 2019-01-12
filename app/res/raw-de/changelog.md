@@ -1,6 +1,7 @@
 ## 1.3.430
 * FIX: Absturz wenn über einen externen Video-Player gestreamt werden soll
 * FIX: Absturz wenn Encoderport/bitrate leer oder ungültig ist
+* FIX: Fehler in der integrierten Bibliothek "gaugeview" der dazu führte dass das Androidd SDK die Berechtigung zum lesen des Telefon-Status automatisch ergänzte [https://github.com/...](https://github.com/sreichholf/dreamDroid/commit/f3eb97472a850ddbeca7bf91a14c4163f845cc35)
 
 ## 1.3.429
 * Verbesserungen am Video Player (Rotation ohne Unterbrechung, Springen beim Abspielen auf Aufnahmen, Korrekte Zeitanzeige bei Aufnahmen)
