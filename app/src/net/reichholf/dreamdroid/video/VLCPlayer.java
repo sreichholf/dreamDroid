@@ -77,8 +77,14 @@ public class VLCPlayer implements VideoPlayer {
 	public void play() {
 		if (mCurrentMedia == null)
 			return;
-		getMediaPlayer().setMedia(mCurrentMedia);
-		getMediaPlayer().play();
+		MediaPlayer mp = getMediaPlayer();
+		if (!mCurrentMedia.equals(mp.getMedia()))
+			mp.setMedia(mCurrentMedia);
+		if (mp.isPlaying() && mp.getRate() == 1.0f)
+			mp.pause();
+		else
+			mp.play();
+		mp.setRate(1.0f);
 	}
 
 	@Override
@@ -109,6 +115,30 @@ public class VLCPlayer implements VideoPlayer {
 	@Override
 	public boolean isSeekable() {
 		return getMediaPlayer().isSeekable();
+	}
+
+	@Override
+	public boolean faster() {
+		if (!isSeekable() || !getMediaPlayer().isPlaying())
+			return false;
+		float rate = getMediaPlayer().getRate();
+		if (rate == -1.0f)
+			rate = 0.5f; //multiplied by 2 below
+		rate = Math.min(rate * 2, 64);
+		getMediaPlayer().setRate(rate);
+		return true;
+	}
+
+	@Override
+	public boolean slower() {
+		if (!isSeekable() || !getMediaPlayer().isPlaying())
+			return false;
+		float rate = getMediaPlayer().getRate();
+		if (rate == 1.0f)
+			rate = -1.0f;
+		rate = Math.max(rate * 2, -64);
+		getMediaPlayer().setRate(rate);
+		return true;
 	}
 
 	@Override

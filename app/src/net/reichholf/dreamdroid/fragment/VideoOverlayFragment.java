@@ -83,6 +83,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private final int[] sOverlayViews = {R.id.service_detail_root, R.id.epg, R.id.toolbar};
 	private final int[] sZapOverlayViews = {R.id.servicelist};
 	static float sOverlayAlpha = 0.85f;
+	static float sSeekStepSize = 0.02f;
 
 	public final String TITLE = "title";
 	public final String SERVICE_INFO = "serviceInfo";
@@ -110,11 +111,15 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected AppCompatImageButton mSubtitleTrackButton;
 	protected Button mNextButton;
 	protected Button mPreviousButton;
+
+	protected AppCompatImageButton mButtonRewind;
+	protected AppCompatImageButton mButtonPlay;
+	protected AppCompatImageButton mButtonForward;
+
 	private GestureDetectorCompat mGestureDector;
 	private AudioManager mAudioManager;
 	private int mAudioMaxVol;
 	private float mVolume;
-	private boolean mIsHiding;
 
 	public VideoOverlayFragment() {
 	}
@@ -213,15 +218,38 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mAudioTrackButton.setOnClickListener(v -> onSelectAudioTrack());
 		mSubtitleTrackButton = view.findViewById(R.id.button_subtitle_track);
 		mSubtitleTrackButton.setOnClickListener(v -> onSelectSubtitleTrack());
+		mButtonRewind = view.findViewById(R.id.button_rwd);
+		mButtonPlay = view.findViewById(R.id.button_play);
+		mButtonForward = view.findViewById(R.id.button_fwd);
 
 		mPreviousButton = view.findViewById(R.id.button_previous);
 		mPreviousButton.setOnClickListener(v -> previous());
 		mNextButton = view.findViewById(R.id.button_next);
 		mNextButton.setOnClickListener(v -> next());
 
+		mButtonRewind.setOnClickListener(v -> onRewind());
+		mButtonPlay.setOnClickListener(v -> onPlay());
+		mButtonForward.setOnClickListener(v -> onForward());
+
 		return view;
 	}
 
+	protected void onRewind() {
+		VideoPlayer p = VideoPlayerFactory.getInstance();
+		p.setPosition(Math.max(0.0f, p.getPosition() - sSeekStepSize));
+		autohide();
+	}
+
+	protected void onForward() {
+		VideoPlayer p = VideoPlayerFactory.getInstance();
+		p.setPosition(Math.max(0.0f, p.getPosition() + sSeekStepSize));
+		autohide();
+	}
+
+	protected void onPlay() {
+		VideoPlayerFactory.getInstance().play();
+		autohide();
+	}
 
 	public void onUpdateButtons() {
 		VideoPlayer player = VideoPlayerFactory.getInstance();
@@ -619,6 +647,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 		if (len > 0 && cur >= 0) {
 			serviceProgress.setEnabled(true);
+			serviceProgress.setKeyProgressIncrement((int) (len * sSeekStepSize));
 			serviceProgress.setVisibility(View.VISIBLE);
 			serviceProgress.setMax((int) len);
 			serviceProgress.setProgress((int) cur);
@@ -643,6 +672,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 
 	public void autohide() {
+		mHandler.removeCallbacks(mAutoHideRunnable);
 		mHandler.postDelayed(mAutoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT);
 	}
 
@@ -655,6 +685,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		updateViews();
 		for (int id : sOverlayViews)
 			fadeInView(view.findViewById(id));
+		if (VideoPlayerFactory.getInstance().isSeekable())
+			view.findViewById(R.id.pvr_controls).setVisibility(View.VISIBLE);
+		else
+			view.findViewById(R.id.pvr_controls).setVisibility(View.GONE);
 		if (doShowZapOverlays)
 			showZapOverlays();
 		else
@@ -779,29 +813,55 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		boolean ret = false;
-		mHandler.removeCallbacks(mAutoHideRunnable);
 		autohide();
+		VideoPlayer player = VideoPlayerFactory.getInstance();
 		switch(keyCode) {
 			case KeyEvent.KEYCODE_BACK:
 			case KeyEvent.KEYCODE_BUTTON_B:
 				if (isOverlaysVisible()) {
 					hideOverlays();
 					ret = true;
-				} else
+				} else {
 					return false;
+				}
 				break;
 			case KeyEvent.KEYCODE_DPAD_LEFT:
 				if (isOverlaysVisible())
 					return false;
-				previous();
+				if (isRecording()) {
+					player.slower();
+					return true;
+				} else
+					previous();
 				ret = true;
 				break;
 			case KeyEvent.KEYCODE_DPAD_RIGHT:
 				if (isOverlaysVisible())
 					return false;
-				next();
+				if (isRecording())
+					onRewind();
+				else
+					next();
 				ret = true;
 				break;
+			case KeyEvent.KEYCODE_R:
+			case KeyEvent.KEYCODE_MEDIA_REWIND:
+				if (isRecording()) {
+					onRewind();
+					ret = true;
+				}
+				break;
+			case KeyEvent.KEYCODE_F:
+			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+				if (isRecording()) {
+					onForward();
+					ret = true;
+				}
+				break;
+			case KeyEvent.KEYCODE_MEDIA_PLAY:
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+				player.play();
+				ret = true;
 		}
 		if (!isOverlaysVisible()) {
 			showOverlays(true);

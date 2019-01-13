@@ -43,4 +43,8 @@ public interface VideoPlayer {
 	int getVideoWidth();
 
 	int getVideoHeight();
+
+	boolean faster();
+
+	boolean slower();
 }

@@ -63,7 +63,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_margin="0dp"
                 android:layout_toStartOf="@id/video_actions"
-                android:padding="4dp"/>
+                android:padding="4dp" />
 
             <Button
                 android:id="@+id/button_next"
@@ -73,7 +73,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_margin="0dp"
                 android:layout_toEndOf="@id/video_actions"
-                android:padding="4dp"/>
+                android:padding="4dp" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
@@ -84,7 +84,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_weight="1"
-        android:minHeight="80dp"
         android:visibility="invisible"
         app:cardBackgroundColor="?attr/colorPrimary"
         app:cardCornerRadius="8dp"
@@ -97,11 +96,51 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <RelativeLayout
+                android:id="@+id/pvr_controls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/button_play"
+                    style="@style/Base.Widget.AppCompat.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_play_circle_outline_dark" />
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/button_rwd"
+                    style="@style/Base.Widget.AppCompat.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@id/button_play"
+                    android:layout_toStartOf="@id/button_play"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_fast_rewind_dark" />
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/button_fwd"
+                    style="@style/Base.Widget.AppCompat.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@id/button_play"
+                    android:layout_toEndOf="@id/button_play"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_fast_forward_dark" />
+            </RelativeLayout>
+
             <SeekBar
                 android:id="@+id/service_progress"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
+                android:layout_below="@id/pvr_controls"
                 android:layout_gravity="center_vertical"
                 android:enabled="false" />
 
