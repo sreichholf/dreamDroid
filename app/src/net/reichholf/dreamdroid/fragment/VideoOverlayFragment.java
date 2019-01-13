@@ -571,7 +571,13 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				if (duration <= 0) {
 					String textLen = mServiceInfo.getString(Movie.KEY_LENGTH, "00:00");
 					String[] l = textLen.split(":");
-					duration = (Long.valueOf(l[0]) * 60) + Long.valueOf(l[1]);
+					try {
+						duration = (Long.valueOf(l[0]) * 60) + Long.valueOf(l[2]);
+					} catch (NumberFormatException nex) {
+						Log.w(LOG_TAG, nex.getLocalizedMessage());
+					} catch (IndexOutOfBoundsException iobex) {
+						Log.w(LOG_TAG, iobex.getLocalizedMessage());
+					}
 				}
 				if (duration > 0) {
 					TextView nowStart = getView().findViewById(R.id.event_now_start);
