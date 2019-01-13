@@ -1,3 +1,7 @@
+## 1.3.431
+* FIX: crash in relation to automated device detection
+* FIX: crash in video player when a recording is an invalid length in it's metadata
+
 ## 1.3.430
 * FIX: crash when trying to stream with external video player
 * FIX: crash when encoder-port/bitrate is empty or invalid

@@ -1,4 +1,8 @@
 ## 1.3.430
+* FIX: Absturz in Verbindung mit der automatischen Konfiguration
+* FIX: Absturz im Video Player bei Aufnahmen mit unzulässiger Längenangabe in den Metadatan
+
+## 1.3.430
 * FIX: Absturz wenn über einen externen Video-Player gestreamt werden soll
 * FIX: Absturz wenn Encoderport/bitrate leer oder ungültig ist
 * FIX: Fehler in der integrierten Bibliothek "gaugeview" der dazu führte dass das Androidd SDK die Berechtigung zum lesen des Telefon-Status automatisch ergänzte [https://github.com/...](https://github.com/sreichholf/dreamDroid/commit/f3eb97472a850ddbeca7bf91a14c4163f845cc35)
