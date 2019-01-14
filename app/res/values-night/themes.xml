@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.DreamDroid" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="Theme.DreamDroid" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:listSelector">@drawable/list_selector_dark</item>
         <item name="android:navigationBarColor">@color/primary_material_dark</item>
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
@@ -66,6 +66,23 @@
         <item name="bottomSheetDialogTheme">@style/Theme.Design.BottomSheetDialog</item>
         <item name="mdtp_theme_dark">true</item>
         <item name="ic_import_export">@drawable/ic_import_export_dark</item>
-        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog.Night</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog</item>
+        <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert</item>
+        <item name="dialogTheme">@style/Theme.DreamDroid.Dialog</item>
+    </style>
+
+    <style name="Theme.DreamDroid.Dialog" parent="Theme.MaterialComponents.Dialog">
+        <item name="colorAccent">@color/material_blue_600</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
+
+    <style name="Theme.DreamDroid.BottomSheetDialog" parent="Theme.MaterialComponents.BottomSheetDialog">
+        <item name="colorAccent">@color/material_blue_600</item>
+        <item name="bottomSheetStyle">@style/Widget.MaterialComponents.BottomSheet.Modal</item>
+    </style>
+
+    <style name="Theme.DreamDroid.Dialog.Alert" parent="Theme.MaterialComponents.Dialog.Alert">
+        <item name="colorAccent">@color/material_blue_600</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 </resources>

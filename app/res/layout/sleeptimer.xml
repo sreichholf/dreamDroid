@@ -30,7 +30,7 @@
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             app:mnpSeparatorColor="?attr/colorAccent"
-            app:mnpTextColor="?attr/colorPrimary"
+            app:mnpTextColor="?android:attr/colorForeground"
             app:mnpTextSize="25sp">
         </com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker>
 
