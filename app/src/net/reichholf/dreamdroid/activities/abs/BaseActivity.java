@@ -63,6 +63,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON = 0;
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT = 1;
 	public static final int REQUEST_PERMISSION_ACCESS_COARSE_LOCATION = 2;
+	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_BACKUP = 3;
 	private static String TAG = BaseActivity.class.getSimpleName();
 
 	private MemorizingTrustManager mTrustManager;
