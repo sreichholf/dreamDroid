@@ -5,7 +5,7 @@
 * Dialog für den Langtext des lafuenden events im Videoplayer
 * FIX: Verhalten beim Wiederherstellen von Backups
 * FIX: Absturz in Verbindung mit der automatischen Konfiguration
-* FIX: Absturz im Video Player bei Aufnahmen mit unzulässiger Längenangabe in den Metadatan
+* FIX: Absturz im Video Player bei Aufnahmen mit unzulässiger Längenangabe in den Metadaten
 
 ## 1.3.430
 * FIX: Absturz wenn über einen externen Video-Player gestreamt werden soll
