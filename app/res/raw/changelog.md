@@ -1,5 +1,5 @@
 ## 1.3.431
-* Redesign Video player for all devices (tv/mobile)
+* Redesign Video player for all devices (tv/mobile, includes PVR controls for recordings)
 * Slighty restyle Movie/Service-EPG Detail Dialog, add it for TV
 * Use Android 9 style for buttons
 * Add "Running Event" dialog to video player

@@ -1,5 +1,5 @@
 ## 1.3.431
-* Redesign des Video Players für alle Geräteklassen
+* Redesign des Video Players für alle Geräteklassen (mit PVR-Steuerung für Aufnahmen)
 * Kleinere überarbeitung des EPG-Dialog (für TV neu hinzugefügt)
 * Android 9 Stil für Buttons
 * Dialog für den Langtext des lafuenden events im Videoplayer
