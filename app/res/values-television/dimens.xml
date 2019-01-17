@@ -2,4 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="card_width" tools:ignore="MissingDefaultResource">200dp</dimen>
     <dimen name="card_height" tools:ignore="MissingDefaultResource">120dp</dimen>
+    <dimen name="dialogPreferredPadding">96dp</dimen>
+    <dimen name="titleSafeLeftRight">48dp</dimen>
+    <dimen name="titleSafeTopBottom">27dp</dimen>
 </resources>

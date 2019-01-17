@@ -24,7 +24,7 @@ import com.evernote.android.state.State;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
@@ -39,7 +39,6 @@ import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Shows some information about the service currently running on TV
@@ -168,7 +167,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 			mCurrentItem = event;
 			Bundle args = new Bundle();
 			args.putSerializable("currentItem", mCurrentItem);
-			((MultiPaneHandler) getAppCompatActivity()).showDialogFragment(EpgDetailDialog.class, args,
+			((MultiPaneHandler) getAppCompatActivity()).showDialogFragment(EpgDetailBottomSheet.class, args,
 					"current_epg_detail_dialog");
 		}
 	}

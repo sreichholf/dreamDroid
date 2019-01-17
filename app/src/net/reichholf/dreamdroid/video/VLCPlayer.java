@@ -14,7 +14,8 @@ import java.util.ArrayList;
 /**
  * Created by reichi on 16/02/16.
  */
-public class VLCPlayer implements VideoPlayer {
+public class VLCPlayer {
+	static VLCPlayer sPlayer;
 	static volatile MediaPlayer sMediaPlayer = null;
 
 	public final static int MEDIA_HWACCEL_DISABLED = 0x00;
@@ -23,7 +24,20 @@ public class VLCPlayer implements VideoPlayer {
 
 	protected Media mCurrentMedia;
 
-	public static void init() {
+	public static void release() {
+		if(sPlayer == null)
+			return;
+		sPlayer.deinit();
+		sPlayer = null;
+	}
+
+	public static VLCPlayer get() {
+		if (sPlayer == null)
+			sPlayer = new VLCPlayer();
+		return sPlayer;
+	}
+
+	protected static void init() {
 		sMediaPlayer = new MediaPlayer(VLCInstance.get());
 		sMediaPlayer.setAspectRatio(null);
 		sMediaPlayer.setScale(0);
@@ -31,7 +45,6 @@ public class VLCPlayer implements VideoPlayer {
 		sMediaPlayer.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0);
 	}
 
-	@Override
 	public void deinit() {
 		detach();
 		sMediaPlayer.release();
@@ -44,7 +57,6 @@ public class VLCPlayer implements VideoPlayer {
 		return sMediaPlayer;
 	}
 
-	@Override
 	public void attach(IVLCVout.OnNewVideoLayoutListener newVideoLayoutListener,SurfaceView surfaceView, SurfaceView subtitleSurfaceView) {
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.setVideoView(surfaceView);
@@ -52,19 +64,16 @@ public class VLCPlayer implements VideoPlayer {
 		vlcVout.attachViews(newVideoLayoutListener);
 	}
 
-	@Override
 	public void detach() {
 		stop();
 		final IVLCVout vlcVout = getMediaPlayer().getVLCVout();
 		vlcVout.detachViews();
 	}
 
-	@Override
 	public void setWindowSize(int width, int height) {
 		getMediaPlayer().getVLCVout().setWindowSize(width, height);
 	}
 
-	@Override
 	public void playUri(Uri uri, int flags) {
 		mCurrentMedia = new Media(VLCInstance.get(), uri);
 		boolean isHwAccel = (flags & MEDIA_HWACCEL_ENABLED) > 0;
@@ -73,7 +82,6 @@ public class VLCPlayer implements VideoPlayer {
 		play();
 	}
 
-	@Override
 	public void play() {
 		if (mCurrentMedia == null)
 			return;
@@ -87,37 +95,30 @@ public class VLCPlayer implements VideoPlayer {
 		mp.setRate(1.0f);
 	}
 
-	@Override
 	public long getLength() {
 		return getMediaPlayer().getLength();
 	}
 
-	@Override
 	public long getTime() {
 		return getMediaPlayer().getTime();
 	}
 
-	@Override
 	public void setTime(long position) {
 		getMediaPlayer().setTime(position);
 	}
 
-	@Override
 	public float getPosition() {
 		return getMediaPlayer().getPosition();
 	}
 
-	@Override
 	public void setPosition(float position) {
 		getMediaPlayer().setPosition(position);
 	}
 
-	@Override
 	public boolean isSeekable() {
 		return getMediaPlayer().isSeekable();
 	}
 
-	@Override
 	public boolean faster() {
 		if (!isSeekable() || !getMediaPlayer().isPlaying())
 			return false;
@@ -129,7 +130,6 @@ public class VLCPlayer implements VideoPlayer {
 		return true;
 	}
 
-	@Override
 	public boolean slower() {
 		if (!isSeekable() || !getMediaPlayer().isPlaying())
 			return false;
@@ -141,7 +141,6 @@ public class VLCPlayer implements VideoPlayer {
 		return true;
 	}
 
-	@Override
 	public void stop() {
 		getMediaPlayer().stop();
 		Media media = getMediaPlayer().getMedia();
@@ -151,17 +150,14 @@ public class VLCPlayer implements VideoPlayer {
 		}
 	}
 
-	@Override
 	public int getAudioTracksCount() {
 		return getMediaPlayer().getAudioTracksCount();
 	}
 
-	@Override
 	public int getSubtitleTracksCount() {
 		return getMediaPlayer().getSpuTracksCount();
 	}
 
-	@Override
 	public int getVideoWidth() {
 		Media.VideoTrack track = getMediaPlayer().getCurrentVideoTrack();
 		if (track == null)
@@ -169,7 +165,6 @@ public class VLCPlayer implements VideoPlayer {
 		return track.width;
 	}
 
-	@Override
 	public int getVideoHeight() {
 		Media.VideoTrack track = getMediaPlayer().getCurrentVideoTrack();
 		if (track == null)

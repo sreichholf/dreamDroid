@@ -141,15 +141,13 @@ public class CardPresenter extends Presenter {
 
 	protected void bindServiceViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
 
-		ExtendedHashMap event = item.data;
-		String title = event.getString(Event.KEY_SERVICE_NAME);
-		String eventTitle = event.getString(Event.KEY_EVENT_TITLE);
+		Event event = new Event(item.data);
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
 		//cardView.setMainImage(mDefaultCardImage);
 
 		Picon.setPiconForView(cardView.getContext(), cardView.getMainImageView(), event, "tv_picon");
-		cardView.setTitleText(title);
-		cardView.setContentText(eventTitle);
+		cardView.setTitleText(event.serviceName());
+		cardView.setContentText(event.title());
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
 		Resources res = cardView.getResources();
 		int width = res.getDimensionPixelSize(R.dimen.card_width);
@@ -158,12 +156,13 @@ public class CardPresenter extends Presenter {
 	}
 
 	protected void bindMovieViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
-		ExtendedHashMap movie = item.data;
-		String title = movie.getString(Movie.KEY_TITLE);
-		String description = movie.getString(Movie.KEY_DESCRIPTION);
+		Movie movie = new Movie(item.data);
 		TextCardView cardView = (TextCardView) viewHolder.view;
-		cardView.setTitleText(title);
-		cardView.setContentText(description);
+		cardView.setTitleText(movie.title());
+		if (!movie.descriptionExtended().isEmpty())
+			cardView.setContentText(movie.descriptionExtended());
+		else
+			cardView.setContentText(movie.description());
 	}
 
 	@Override

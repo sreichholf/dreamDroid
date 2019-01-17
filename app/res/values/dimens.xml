@@ -34,4 +34,10 @@
     <dimen name="zap_grid_item_height">70dp</dimen>
     <dimen name="content_margin_horizontal">0dp</dimen>
     <dimen name="icon_margin">16dp</dimen>
+    <dimen name="full_padding">16dp</dimen>
+    <dimen name="half_padding">8dp</dimen>
+    <dimen name="genre_corner">12dp</dimen>
+    <dimen name="dialogPreferredPadding">0dp</dimen>
+    <dimen name="titleSafeLeftRight">0dp</dimen>
+    <dimen name="titleSafeTopBottom">0dp</dimen>
 </resources>

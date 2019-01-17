@@ -1,4 +1,8 @@
-## 1.3.430
+## 1.3.431
+* Redesign des Video Players für alle Geräteklassen
+* Kleinere überarbeitung des EPG-Dialog (für TV neu hinzugefügt)
+* Android 9 Stil für Buttons
+* Dialog für den Langtext des lafuenden events im Videoplayer
 * FIX: Absturz in Verbindung mit der automatischen Konfiguration
 * FIX: Absturz im Video Player bei Aufnahmen mit unzulässiger Längenangabe in den Metadatan
 

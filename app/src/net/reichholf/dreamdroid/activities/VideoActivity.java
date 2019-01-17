@@ -21,8 +21,6 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.video.VLCPlayer;
-import net.reichholf.dreamdroid.video.VideoPlayer;
-import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 
 import org.matomo.sdk.extra.MatomoApplication;
 import org.matomo.sdk.extra.TrackHelper;
@@ -46,7 +44,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	FrameLayout mSurfaceFrame;
 	SurfaceView mSurfaceView;
 	SurfaceView mSubtitlesSurfaceView;
-	VideoPlayer mPlayer;
+	VLCPlayer mPlayer;
 	VideoOverlayFragment mOverlayFragment;
 
 	View.OnLayoutChangeListener mOnLayoutChangeListener;
@@ -111,7 +109,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mOverlayFragment.showOverlays(true);
+		mOverlayFragment.showOverlays();
 	}
 
 	@Override
@@ -130,7 +128,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	@Override
 	protected void onStop() {
 		cleanup();
-		VideoPlayerFactory.release();
+		VLCPlayer.release();
 		surfaceFrameAddLayoutListener(false);
 		super.onStop();
 	}
@@ -184,7 +182,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		mSubtitlesSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
 		if (mPlayer == null)
-			mPlayer = VideoPlayerFactory.getInstance();
+			mPlayer = VLCPlayer.get();
 		mPlayer.attach(this, mSurfaceView, mSubtitlesSurfaceView);
 
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);

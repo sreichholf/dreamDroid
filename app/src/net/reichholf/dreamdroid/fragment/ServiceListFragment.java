@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -32,7 +32,7 @@ import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleExtendedHashMapAdapter;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -86,12 +86,18 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	private View mEmpty;
 	private SlidingPaneLayout mSlidingPane;
 
-	@State public String mCurrentTitle;
-	@State public String mNavReference;
-	@State public String mNavName;
-	@State public String mDetailReference;
-	@State public String mDetailName;
-	@State public ExtendedHashMap mCurrentService;
+	@State
+	public String mCurrentTitle;
+	@State
+	public String mNavReference;
+	@State
+	public String mNavName;
+	@State
+	public String mDetailReference;
+	@State
+	public String mDetailName;
+	@State
+	public ExtendedHashMap mCurrentService;
 
 	private ArrayList<ExtendedHashMap> mHistory;
 	private Bundle mExtras;
@@ -153,7 +159,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
 		}
 
-		if( mNavReference == null ){
+		if (mNavReference == null) {
 			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
 			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
 		}
@@ -248,7 +254,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		mNavList.setOnItemClickListener((a, v, position, id) -> onNavItemClick(a, position));
 
 		if (mReload) {
-			if(mNavReference != null && ! "".equals(mNavReference))
+			if (mNavReference != null && !"".equals(mNavReference))
 				reloadNav();
 			else
 				loadNavRoot();
@@ -278,10 +284,10 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	 */
 	private void setAdapter() {
 		ListAdapter adapter = new SimpleExtendedHashMapAdapter(getAppCompatActivity(), mNavItems, android.R.layout.simple_list_item_1,
-				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
+				new String[]{Service.KEY_NAME}, new int[]{android.R.id.text1});
 		mNavList.setAdapter(adapter);
 		RecyclerView.Adapter detailAdapter;
-		if(mPickMode)
+		if (mPickMode)
 			detailAdapter = new SimpleTextAdapter(mDetailItems, R.layout.simple_list_item_1, new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
 		else
 			detailAdapter = new ServiceAdapter(getAppCompatActivity(), mDetailItems);
@@ -531,10 +537,8 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 				case R.id.menu_next_event:
 					showNext = true;
 				case R.id.menu_current_event:
-					Bundle args = new Bundle();
-					args.putSerializable("currentItem", mCurrentService);
-					args.putBoolean("showNext", showNext);
-					getMultiPaneHandler().showDialogFragment(EpgDetailDialog.class, args, "epg_detail_dialog");
+					EpgDetailBottomSheet epgDialog = EpgDetailBottomSheet.newInstance(mCurrentService, showNext);
+					getMultiPaneHandler().showDialogFragment(epgDialog, "epg_detail_dialog");
 					break;
 				case R.id.menu_browse_epg:
 					openEpg(ref, name);
@@ -656,7 +660,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		if(action < Statics.ACTION_SET_TIMER || action > Statics.ACTION_FIND_SIMILAR)
+		if (action < Statics.ACTION_SET_TIMER || action > Statics.ACTION_FIND_SIMILAR)
 			return;
 		boolean isNext = (Boolean) details;
 		ExtendedHashMap event = isNext ? Event.fromNext(mCurrentService) : mCurrentService;

@@ -1,145 +1,97 @@
 package net.reichholf.dreamdroid.widget.helper;
 
-import androidx.recyclerview.widget.RecyclerView;
-import android.view.HapticFeedbackConstants;
-import android.view.SoundEffectConstants;
 import android.view.View;
 
 import net.reichholf.dreamdroid.R;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 public class ItemClickSupport {
-	/**
-	 * Interface definition for a callback to be invoked when an item in the
-	 * RecyclerView has been clicked.
-	 */
-	public interface OnItemClickListener {
-		/**
-		 * Callback method to be invoked when an item in the RecyclerView
-		 * has been clicked.
-		 *
-		 * @param parent The RecyclerView where the click happened.
-		 * @param view The view within the RecyclerView that was clicked
-		 * @param position The position of the view in the adapter.
-		 * @param id The row id of the item that was clicked.
-		 */
-		void onItemClick(RecyclerView parent, View view, int position, long id);
-	}
+    private final RecyclerView mRecyclerView;
+    private OnItemClickListener mOnItemClickListener;
+    private OnItemLongClickListener mOnItemLongClickListener;
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (mOnItemClickListener != null) {
+                RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(v);
+                mOnItemClickListener.onItemClick(mRecyclerView, v, holder.getAdapterPosition(), v.getId());
+            }
+        }
+    };
+    private View.OnLongClickListener mOnLongClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            if (mOnItemLongClickListener != null) {
+                RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(v);
+                return mOnItemLongClickListener.onItemLongClick(mRecyclerView, v, holder.getAdapterPosition(), v.getId());
+            }
+            return false;
+        }
+    };
+    private RecyclerView.OnChildAttachStateChangeListener mAttachListener
+            = new RecyclerView.OnChildAttachStateChangeListener() {
+        @Override
+        public void onChildViewAttachedToWindow(View view) {
+            if (mOnItemClickListener != null) {
+                view.setOnClickListener(mOnClickListener);
+            }
+            if (mOnItemLongClickListener != null) {
+                view.setOnLongClickListener(mOnLongClickListener);
+            }
+        }
 
-	/**
-	 * Interface definition for a callback to be invoked when an item in the
-	 * RecyclerView has been clicked and held.
-	 */
-	public interface OnItemLongClickListener {
-		/**
-		 * Callback method to be invoked when an item in the RecyclerView
-		 * has been clicked and held.
-		 *
-		 * @param parent The RecyclerView where the click happened
-		 * @param view The view within the RecyclerView that was clicked
-		 * @param position The position of the view in the list
-		 * @param id The row id of the item that was clicked
-		 *
-		 * @return true if the callback consumed the long click, false otherwise
-		 */
-		boolean onItemLongClick(RecyclerView parent, View view, int position, long id);
-	}
+        @Override
+        public void onChildViewDetachedFromWindow(View view) {
 
-	private final RecyclerView mRecyclerView;
-	private final TouchListener mTouchListener;
+        }
+    };
 
-	private OnItemClickListener mItemClickListener;
-	private OnItemLongClickListener mItemLongClickListener;
+    private ItemClickSupport(RecyclerView RecyclerView) {
+        mRecyclerView = RecyclerView;
+        // the ID must be declared in XML, used to avoid
+        // replacing the ItemClickSupport without removing
+        // the old one from the RecyclerView
+        mRecyclerView.setTag(R.id.recyclerview_item_click_support, this);
+        mRecyclerView.addOnChildAttachStateChangeListener(mAttachListener);
+    }
 
-	private ItemClickSupport(RecyclerView recyclerView) {
-		mRecyclerView = recyclerView;
+    public static ItemClickSupport addTo(RecyclerView view) {
+        ItemClickSupport support = (ItemClickSupport) view.getTag(R.id.recyclerview_item_click_support);
+        if (support == null) {
+            support = new ItemClickSupport(view);
+        }
+        return support;
+    }
 
-		mTouchListener = new TouchListener(recyclerView);
-		recyclerView.addOnItemTouchListener(mTouchListener);
-	}
+    public static ItemClickSupport removeFrom(RecyclerView view) {
+        ItemClickSupport support = (ItemClickSupport) view.getTag(R.id.recyclerview_item_click_support);
+        if (support != null) {
+            support.detach(view);
+        }
+        return support;
+    }
 
-	/**
-	 * Register a callback to be invoked when an item in the
-	 * RecyclerView has been clicked.
-	 *
-	 * @param listener The callback that will be invoked.
-	 */
-	public void setOnItemClickListener(OnItemClickListener listener) {
-		mItemClickListener = listener;
-	}
+    public ItemClickSupport setOnItemClickListener(OnItemClickListener listener) {
+        mOnItemClickListener = listener;
+        return this;
+    }
 
-	/**
-	 * Register a callback to be invoked when an item in the
-	 * RecyclerView has been clicked and held.
-	 *
-	 * @param listener The callback that will be invoked.
-	 */
-	public void setOnItemLongClickListener(OnItemLongClickListener listener) {
-		if (!mRecyclerView.isLongClickable()) {
-			mRecyclerView.setLongClickable(true);
-		}
+    public ItemClickSupport setOnItemLongClickListener(OnItemLongClickListener listener) {
+        mOnItemLongClickListener = listener;
+        return this;
+    }
 
-		mItemLongClickListener = listener;
-	}
+    private void detach(RecyclerView view) {
+        view.removeOnChildAttachStateChangeListener(mAttachListener);
+        view.setTag(R.id.recyclerview_item_click_support, null);
+    }
 
-	public static ItemClickSupport addTo(RecyclerView recyclerView) {
-		ItemClickSupport itemClickSupport = from(recyclerView);
-		if (itemClickSupport == null) {
-			itemClickSupport = new ItemClickSupport(recyclerView);
-			recyclerView.setTag(R.id.recyclerview_item_click_support, itemClickSupport);
-		} else {
-			// TODO: Log warning
-		}
+    public interface OnItemClickListener {
+        void onItemClick(RecyclerView recyclerView, View v, int position, long id);
+    }
 
-		return itemClickSupport;
-	}
-
-	public static void removeFrom(RecyclerView recyclerView) {
-		final ItemClickSupport itemClickSupport = from(recyclerView);
-		if (itemClickSupport == null) {
-			// TODO: Log warning
-			return;
-		}
-
-		recyclerView.removeOnItemTouchListener(itemClickSupport.mTouchListener);
-		recyclerView.setTag(R.id.recyclerview_item_click_support, null);
-	}
-
-	public static ItemClickSupport from(RecyclerView recyclerView) {
-		if (recyclerView == null) {
-			return null;
-		}
-
-		return (ItemClickSupport) recyclerView.getTag(R.id.recyclerview_item_click_support);
-	}
-
-	private class TouchListener extends ClickItemTouchListener {
-		TouchListener(RecyclerView recyclerView) {
-			super(recyclerView);
-		}
-
-		@Override
-		boolean performItemClick(RecyclerView parent, View view, int position, long id) {
-			if (mItemClickListener != null && position >= 0) {
-				view.playSoundEffect(SoundEffectConstants.CLICK);
-				mItemClickListener.onItemClick(parent, view, position, id);
-				return true;
-			}
-
-			return false;
-		}
-
-		@Override
-		boolean performItemLongClick(RecyclerView parent, View view, int position, long id) {
-			if (mItemLongClickListener != null && position >= 0) {
-				view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-				return mItemLongClickListener.onItemLongClick(parent, view, position, id);
-			}
-			return false;
-		}
-
-		@Override
-		public void onRequestDisallowInterceptTouchEvent(boolean b) {
-
-		}
-	}
+    public interface OnItemLongClickListener {
+        boolean onItemLongClick(RecyclerView recyclerView, View v, int position, long id);
+    }
 }

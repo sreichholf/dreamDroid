@@ -230,17 +230,17 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 
 		ExtendedHashMap reload = new ExtendedHashMap();
 		reload.put("title", getString(R.string.reload));
-		reload.put("icon", R.drawable.ic_action_refresh);
+		reload.put("icon", R.drawable.ic_badge_reload);
 		listRowAdapter.add(new BrowseItem(BrowseItem.Type.Reload, reload));
 
 		ExtendedHashMap preferences = new ExtendedHashMap();
 		preferences.put("title", getString(R.string.settings));
-		preferences.put("icon", R.drawable.ic_settings_badge);
+		preferences.put("icon", R.drawable.ic_badge_settings);
 		listRowAdapter.add(new BrowseItem(BrowseItem.Type.Preferences, preferences));
 
 		ExtendedHashMap profile = new ExtendedHashMap();
 		profile.put("title", getString(R.string.profile));
-		profile.put("icon", R.drawable.ic_profiles_badge);
+		profile.put("icon", R.drawable.ic_badge_profiles);
 		listRowAdapter.add(new BrowseItem(BrowseItem.Type.Profile, profile));
 
 		HeaderItem header = new HeaderItem(ROW_SETTINGS_ID, getString(R.string.preferences));

@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/overlay_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_margin="0dp"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:padding="0dp">
 
     <ProgressBar
         android:id="@+id/video_load_progress"
@@ -13,184 +18,47 @@
         android:indeterminate="true"
         android:visibility="gone" />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentTop="true"
-        android:layout_weight="1"
-        android:visibility="invisible"
-        app:cardBackgroundColor="?attr/colorPrimary"
-        app:cardCornerRadius="4dp"
-        app:cardElevation="0dp"
-        app:cardUseCompatPadding="false"
-        app:contentPadding="4dp">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="0dp">
-
-            <LinearLayout
-                android:id="@+id/video_actions"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:orientation="horizontal">
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/button_audio_track"
-                    style="@style/Widget.AppCompat.Toolbar.Button.Navigation"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_action_audio_track"
-                    android:visibility="invisible" />
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/button_subtitle_track"
-                    style="@style/Widget.AppCompat.Toolbar.Button.Navigation"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_action_subtitle"
-                    android:visibility="invisible" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/button_previous"
-                style="@style/buttonBarNegativeButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_margin="0dp"
-                android:layout_toStartOf="@id/video_actions"
-                android:padding="4dp" />
-
-            <Button
-                android:id="@+id/button_next"
-                style="@style/buttonBarNegativeButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentEnd="true"
-                android:layout_margin="0dp"
-                android:layout_toEndOf="@id/video_actions"
-                android:padding="4dp" />
-
-        </RelativeLayout>
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/service_detail_root"
+    <RelativeLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_weight="1"
-        app:cardBackgroundColor="?attr/colorPrimary"
-        app:cardCornerRadius="4dp"
-        app:cardElevation="0dp"
-        app:contentPadding="4dp">
+        android:layout_margin="0dp"
+        android:background="?attr/cardBackgroundColor"
+        android:fitsSystemWindows="true"
+        android:padding="@dimen/half_padding">
 
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/parent_service"
+        <RelativeLayout
+            android:id="@+id/container_bottom"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:padding="0dp">
 
-            <RelativeLayout
-                android:id="@+id/pvr_controls"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:orientation="horizontal">
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/button_play"
-                    style="@style/Base.Widget.AppCompat.Button.Borderless"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:adjustViewBounds="true"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_play_circle_outline_dark" />
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/button_rwd"
-                    style="@style/Base.Widget.AppCompat.Button.Borderless"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignBottom="@id/button_play"
-                    android:layout_toStartOf="@id/button_play"
-                    android:adjustViewBounds="true"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_fast_rewind_dark" />
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/button_fwd"
-                    style="@style/Base.Widget.AppCompat.Button.Borderless"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignBottom="@id/button_play"
-                    android:layout_toEndOf="@id/button_play"
-                    android:adjustViewBounds="true"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_fast_forward_dark" />
-            </RelativeLayout>
-
-            <SeekBar
-                android:id="@+id/service_progress"
+            <TextView
+                android:id="@+id/title"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/pvr_controls"
-                android:layout_gravity="center_vertical"
-                android:enabled="false" />
-
-            <ImageView
-                android:id="@+id/picon"
-                android:layout_width="wrap_content"
-                android:layout_height="90dp"
-                android:layout_below="@id/service_progress"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="7dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="0dp" />
-
-            <LinearLayout
-                android:id="@+id/service"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/service_progress"
-                android:layout_toEndOf="@id/picon"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/service_name"
-                    android:layout_width="fill_parent"
-                    android:layout_height="50dp"
-                    android:gravity="center_vertical"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
-            </LinearLayout>
+                android:layout_height="50dp"
+                android:gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <LinearLayout
                 android:id="@+id/event_now"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/service"
+                android:layout_below="@id/title"
                 android:layout_toEndOf="@id/picon"
+                android:padding="0dp"
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/event_now_start"
-                    android:layout_width="45dip"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="-45dip"
-                    android:layout_weight="1" />
+                    android:layout_width="50dip"
+                    android:layout_height="wrap_content" />
 
                 <TextView
                     android:id="@+id/event_now_title"
-                    android:layout_width="fill_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="45dip"
-                    android:layout_marginEnd="55dip"
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1" />
@@ -199,8 +67,6 @@
                     android:id="@+id/event_now_duration"
                     android:layout_width="50dip"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="-55dip"
-                    android:layout_weight="0"
                     android:gravity="end"
                     android:minHeight="0dip" />
             </LinearLayout>
@@ -215,18 +81,13 @@
 
                 <TextView
                     android:id="@+id/event_next_start"
-                    android:layout_width="45dip"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="-45dip"
-                    android:layout_marginRight="-45dip"
-                    android:layout_weight="1" />
+                    android:layout_width="50dip"
+                    android:layout_height="wrap_content" />
 
                 <TextView
                     android:id="@+id/event_next_title"
-                    android:layout_width="fill_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="45dip"
-                    android:layout_marginEnd="55dip"
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:maxLines="1" />
@@ -235,21 +96,135 @@
                     android:id="@+id/event_next_duration"
                     android:layout_width="50dip"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="-55dip"
-                    android:layout_weight="2"
                     android:gravity="end"
                     android:minHeight="0dip" />
             </LinearLayout>
 
-        </RelativeLayout>
-    </androidx.cardview.widget.CardView>
 
+            <androidx.cardview.widget.CardView
+                android:id="@+id/controls_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/event_next"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:visibility="visible"
+                app:cardBackgroundColor="?attr/colorPrimaryDark"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="0dp"
+                app:cardPreventCornerOverlap="false">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        android:id="@+id/pvr_controls"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true">
+
+                        <androidx.appcompat.widget.AppCompatImageButton
+                            android:id="@+id/button_play"
+                            style="@style/VideoPlayerButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:adjustViewBounds="true"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_play_circle_outline_dark" />
+
+                        <androidx.appcompat.widget.AppCompatImageButton
+                            android:id="@+id/button_rwd"
+                            style="@style/VideoPlayerButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignBottom="@id/button_play"
+                            android:layout_toStartOf="@id/button_play"
+                            android:adjustViewBounds="true"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_fast_rewind_dark" />
+
+                        <androidx.appcompat.widget.AppCompatImageButton
+                            android:id="@+id/button_fwd"
+                            style="@style/VideoPlayerButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignBottom="@id/button_play"
+                            android:layout_toEndOf="@id/button_play"
+                            android:adjustViewBounds="true"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_fast_forward_dark" />
+                    </RelativeLayout>
+
+                    <SeekBar
+                        android:id="@+id/service_progress"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/pvr_controls"
+                        android:layout_gravity="center_vertical"
+                        android:layout_margin="0dp"
+                        android:enabled="false"
+                        android:padding="0dp" />
+
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <RelativeLayout
+                android:id="@+id/parent_actions"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:layout_below="@id/controls_card"
+                android:padding="0dp">
+
+                <LinearLayout
+                    android:id="@+id/video_actions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/button_audio_track"
+                        style="@style/VideoPlayerButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_action_audio_track"
+                        android:visibility="invisible" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/button_info"
+                        style="@style/VideoPlayerButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_menu_info_dark" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/button_list"
+                        style="@style/VideoPlayerButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_menu_list_dark" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/button_subtitle_track"
+                        style="@style/VideoPlayerButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_action_subtitle"
+                        android:visibility="invisible" />
+                </LinearLayout>
+
+            </RelativeLayout>
+        </RelativeLayout>
+
+    </RelativeLayout>
     <net.reichholf.dreamdroid.widget.AutofitRecyclerView
         android:id="@+id/servicelist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/service_detail_root"
-        android:layout_below="@id/toolbar"
+        android:layout_above="@id/container"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:layout_weight="1"

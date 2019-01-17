@@ -35,7 +35,7 @@
     <color name="material_green_300">#81c784</color>
     <color name="material_yellow_500">#ffeb3b</color>
     <color name="material_yellow_300">#fff176</color>
-
+    <color name="primary_dreamDroid_transparent">#df424242</color>
     <!-- this is needed as preference_category_material layout uses this color as the text color -->
     <color name="preference_fallback_accent_color">@color/material_blue_500</color>
 

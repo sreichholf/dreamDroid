@@ -1,6 +1,9 @@
 package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 /**
@@ -24,5 +27,12 @@ public class AbstractBottomSheetDialog extends BottomSheetDialogFragment {
 	public void onSaveInstanceState(Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
+	}
+
+	protected void setTextOrHide(TextView textView, String text) {
+		if (text.isEmpty())
+			textView.setVisibility(View.GONE);
+		else
+			textView.setText(text);
 	}
 }

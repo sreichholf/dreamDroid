@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/video_player_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:keepScreenOn="true">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="false" >
+        android:fitsSystemWindows="true">
 
         <FrameLayout
             android:id="@+id/player_surface_frame"
@@ -37,8 +37,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        android:layout_margin="10dp"
-        android:background="@android:color/transparent">
-    </FrameLayout>
+        android:background="@android:color/transparent" />
 
 </RelativeLayout>

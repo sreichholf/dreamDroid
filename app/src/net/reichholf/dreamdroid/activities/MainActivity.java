@@ -632,7 +632,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog.
+	 * @see net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet.
 	 * EpgDetailDialogListener#onFinishEpgDetailDialog(int)
 	 */
 	@Override

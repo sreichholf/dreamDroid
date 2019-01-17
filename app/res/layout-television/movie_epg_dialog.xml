@@ -1,35 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="@dimen/dialogPreferredPadding">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar_epg_detail"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:elevation="0dp">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_epg_detail"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorAccent"
-            android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
-    </com.google.android.material.appbar.AppBarLayout>
+        android:maxLines="1"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/ScrollView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:clipToPadding="false"
-        android:paddingStart="10dp"
-        android:paddingTop="0dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="0dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -68,6 +54,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+
             <TextView
                 android:id="@+id/description_extended"
                 android:layout_width="match_parent"
@@ -79,7 +66,7 @@
                 android:id="@+id/filesize"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
 </LinearLayout>
