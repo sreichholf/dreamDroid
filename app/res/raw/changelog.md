@@ -1,8 +1,9 @@
-## 1.3.431
+## 1.4.431
 * Redesign Video player for all devices (tv/mobile, includes PVR controls for recordings)
 * Slighty restyle Movie/Service-EPG Detail Dialog, add it for TV
 * Use Android 9 style for buttons
 * Add "Running Event" dialog to video player
+* FIX: Backup restore handling
 * FIX: crash in relation to automated device detection
 * FIX: crash in video player when a recording is an invalid length in it's metadata
 

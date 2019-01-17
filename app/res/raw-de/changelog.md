@@ -1,8 +1,9 @@
-## 1.3.431
+## 1.4.431
 * Redesign des Video Players für alle Geräteklassen (mit PVR-Steuerung für Aufnahmen)
-* Kleinere überarbeitung des EPG-Dialog (für TV neu hinzugefügt)
+* Leichte Überarbeitung des EPG Dialogs (für TV neu hinzugefügt)
 * Android 9 Stil für Buttons
 * Dialog für den Langtext des lafuenden events im Videoplayer
+* FIX: Verhalten beim Wiederherstellen von Backups
 * FIX: Absturz in Verbindung mit der automatischen Konfiguration
 * FIX: Absturz im Video Player bei Aufnahmen mit unzulässiger Längenangabe in den Metadatan
 
