@@ -9,7 +9,7 @@
         android:paddingBottom="5dp"
         android:paddingTop="5dp">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonHelp"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -17,7 +17,7 @@
             android:background="@drawable/button_key_dark"
             android:text="Help"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button1"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -27,7 +27,7 @@
             android:text="1"
             android:layout_toEndOf="@id/ButtonHelp"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button2"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -37,7 +37,7 @@
             android:text="2"
             android:layout_toEndOf="@id/Button1"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button3"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -47,7 +47,7 @@
             android:text="3"
             android:layout_toEndOf="@id/Button2"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonPower"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -57,7 +57,7 @@
             android:text="PWR"
             android:layout_toEndOf="@id/Button3"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button4"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -68,7 +68,7 @@
             android:text="4"
             android:layout_toEndOf="@id/ButtonHelp"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button5"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -79,7 +79,7 @@
             android:text="5"
             android:layout_toEndOf="@id/Button4"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button6"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -90,7 +90,7 @@
             android:text="6"
             android:layout_toEndOf="@id/Button5"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonVolP"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -101,7 +101,7 @@
             android:text="V+"
             android:layout_toStartOf="@id/Button4"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonVolM"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -110,7 +110,7 @@
             android:background="@drawable/button_key_light"
             android:text="V-"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button7"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -121,7 +121,7 @@
             android:text="7"
             android:layout_toEndOf="@id/ButtonVolM"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button8"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -132,7 +132,7 @@
             android:text="8"
             android:layout_toEndOf="@id/Button7"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button9"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -143,7 +143,7 @@
             android:text="9"
             android:layout_toEndOf="@id/Button8"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonBouP"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -154,7 +154,7 @@
             android:text="B+"
             android:layout_toEndOf="@id/Button9"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonLeftArrow"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -165,7 +165,7 @@
             android:text="&lt;"
             android:layout_toEndOf="@id/ButtonVolM"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/Button0"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -176,7 +176,7 @@
             android:text="0"
             android:layout_toEndOf="@id/ButtonLeftArrow"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonRightArrow"
             style="@style/RemoteButton.Medium"
             android:layout_width="@dimen/remote_key_width"
@@ -187,7 +187,7 @@
             android:text=">"
             android:layout_toEndOf="@id/Button0"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonBouM"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -208,14 +208,14 @@
         android:paddingBottom="5dp"
         android:paddingTop="5dp">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonRed"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
             android:layout_height="30dp"
             android:background="@drawable/button_key_red"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonGreen"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -224,7 +224,7 @@
             android:background="@drawable/button_key_green"
             android:layout_toEndOf="@id/ButtonRed"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonYellow"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -233,7 +233,7 @@
             android:background="@drawable/button_key_yellow"
             android:layout_toEndOf="@id/ButtonGreen"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonBlue"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -252,7 +252,7 @@
         android:paddingBottom="10dp"
         android:paddingTop="10dp">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonInfo"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -260,7 +260,7 @@
             android:background="@drawable/button_key_dark"
             android:text="Info"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonInfoSpacer"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -280,7 +280,7 @@
             android:text="UP"
             android:layout_toEndOf="@id/ButtonInfoSpacer"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonUpSpacer"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -289,7 +289,7 @@
             android:background="@android:color/transparent"
             android:layout_toEndOf="@id/ButtonUp"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonMenu"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -311,7 +311,7 @@
             android:text="LEFT"
             android:layout_toStartOf="@id/ButtonUp"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonOk"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -334,7 +334,7 @@
             android:text="RIGHT"
             android:layout_toEndOf="@id/ButtonOk"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonAudio"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -357,7 +357,7 @@
             android:text="DOWN"
             android:layout_toEndOf="@id/ButtonLeft"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonPvr"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width"
@@ -377,7 +377,7 @@
         android:paddingBottom="5dp"
         android:paddingTop="5dp">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonMute"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -385,7 +385,7 @@
             android:background="@drawable/button_key_dark"
             android:text="Mute"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonExit"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -447,7 +447,7 @@
             android:text="FWD"
             android:layout_toEndOf="@id/ButtonStop"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonTv"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -456,7 +456,7 @@
             android:background="@drawable/button_key_dark_oval"
             android:text="TV"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonRadio"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -467,7 +467,7 @@
             android:text="RADIO"
             android:layout_toEndOf="@id/ButtonTv"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonText"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
@@ -478,7 +478,7 @@
             android:text="TEXT"
             android:layout_toEndOf="@id/ButtonRadio"/>
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/ButtonRec"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"

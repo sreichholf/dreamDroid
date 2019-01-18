@@ -14,14 +14,14 @@
         android:layout_weight="1"
         android:layout_alignParentStart="true"/>
 
-    <ImageButton
+    <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/toggle_remote"
-        style="?attr/buttonBarButtonStyle"
+        style="?attr/buttonBarPositiveButtonStyle"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:src="?attr/ic_menu_remote"
-        android:layout_alignParentEnd="true"/>
+        android:layout_alignParentBottom="true"
+        android:src="?attr/ic_menu_remote" />
 
 </RelativeLayout>
