@@ -41,6 +41,8 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 	public ServiceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 		View itemView = inflater.inflate(R.layout.service_list_item_nn, parent, false);
+		itemView.setClickable(true);
+		itemView.setLongClickable(true);
 		return new ServiceViewHolder(itemView);
 	}
 
