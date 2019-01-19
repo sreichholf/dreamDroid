@@ -1,3 +1,7 @@
+## 1.4.433
+* FIX: Virtual remote widget
+* FIX (potentiell): Lang-Drücken in Listen
+
 ## 1.4.432
 * FIX: VirtualRemote war kaputt
 * FIX: Möglicher fix für "nicht klickbare" Einträge in der Kanalliste bei einigen wenigen Nutzern

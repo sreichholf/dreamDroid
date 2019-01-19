@@ -1,3 +1,7 @@
+## 1.4.433
+* FIX: Virtual remote widget
+* FIX (potentially): Broken longclick in lists on some devices
+
 ## 1.4.432
 * FIX: Virtual remote layout was broken
 * FIX: Potential fix for unclickable items in servicelist for few users
