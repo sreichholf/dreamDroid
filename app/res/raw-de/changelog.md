@@ -1,3 +1,7 @@
+## 1.4.432
+* FIX: VirtualRemote war kaputt
+* FIX: Möglicher fix für "nicht klickbare" Einträge in der Kanalliste bei einigen wenigen Nutzern
+
 ## 1.4.431
 * Redesign des Video Players für alle Geräteklassen (mit PVR-Steuerung für Aufnahmen)
 * Leichte Überarbeitung des EPG Dialogs (für TV neu hinzugefügt)

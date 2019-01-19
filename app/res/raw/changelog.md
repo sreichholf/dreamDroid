@@ -1,3 +1,7 @@
+## 1.4.432
+* FIX: Virtual remote layout was broken
+* FIX: Potential fix for unclickable items in servicelist for few users
+
 ## 1.4.431
 * Redesign Video player for all devices (tv/mobile, includes PVR controls for recordings)
 * Slighty restyle Movie/Service-EPG Detail Dialog, add it for TV
