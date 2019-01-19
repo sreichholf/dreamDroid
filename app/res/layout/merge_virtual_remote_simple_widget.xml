@@ -1,0 +1,448 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp">
+
+        <Button
+            android:id="@+id/ButtonHelp"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="30dp"
+            android:background="@drawable/button_key_dark"
+            android:text="Help"/>
+
+        <Button
+            android:id="@+id/Button1"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonHelp"
+            android:background="@drawable/button_key_dark"
+            android:text="1"
+            android:layout_toEndOf="@id/ButtonHelp"/>
+
+        <Button
+            android:id="@+id/Button2"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/Button1"
+
+            android:background="@drawable/button_key_dark"
+            android:text="2"
+            android:layout_toEndOf="@id/Button1"/>
+
+        <Button
+            android:id="@+id/Button3"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/Button2"
+            android:background="@drawable/button_key_dark"
+            android:text="3"
+            android:layout_toEndOf="@id/Button2"/>
+
+        <Button
+            android:id="@+id/ButtonPower"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="30dp"
+            android:layout_toRightOf="@id/Button3"
+            android:background="@drawable/button_key_red"
+            android:text="PWR"
+            android:layout_toEndOf="@id/Button3"/>
+
+        <Button
+            android:id="@+id/Button4"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button1"
+            android:layout_toRightOf="@id/ButtonHelp"
+            android:background="@drawable/button_key_dark"
+            android:text="4"
+            android:layout_toEndOf="@id/ButtonHelp"/>
+
+        <Button
+            android:id="@+id/Button5"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button2"
+            android:layout_toRightOf="@id/Button4"
+            android:background="@drawable/button_key_dark"
+            android:text="5"
+            android:layout_toEndOf="@id/Button4"/>
+
+        <Button
+            android:id="@+id/Button6"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button3"
+            android:layout_toRightOf="@id/Button5"
+            android:background="@drawable/button_key_dark"
+            android:text="6"
+            android:layout_toEndOf="@id/Button5"/>
+
+        <Button
+            android:id="@+id/ButtonVolP"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button4"
+            android:layout_toLeftOf="@id/Button4"
+            android:background="@drawable/button_key_light"
+            android:text="V+"
+            android:layout_toStartOf="@id/Button4"/>
+
+        <Button
+            android:id="@+id/ButtonVolM"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonVolP"
+            android:background="@drawable/button_key_light"
+            android:text="V-"/>
+
+        <Button
+            android:id="@+id/Button7"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button4"
+            android:layout_toRightOf="@id/ButtonVolM"
+            android:background="@drawable/button_key_dark"
+            android:text="7"
+            android:layout_toEndOf="@id/ButtonVolM"/>
+
+        <Button
+            android:id="@+id/Button8"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button5"
+            android:layout_toRightOf="@id/Button7"
+            android:background="@drawable/button_key_dark"
+            android:text="8"
+            android:layout_toEndOf="@id/Button7"/>
+
+        <Button
+            android:id="@+id/Button9"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button6"
+            android:layout_toRightOf="@id/Button8"
+            android:background="@drawable/button_key_dark"
+            android:text="9"
+            android:layout_toEndOf="@id/Button8"/>
+
+        <Button
+            android:id="@+id/ButtonBouP"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button6"
+            android:layout_toRightOf="@id/Button9"
+            android:background="@drawable/button_key_light"
+            android:text="B+"
+            android:layout_toEndOf="@id/Button9"/>
+
+        <Button
+            android:id="@+id/ButtonLeftArrow"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button7"
+            android:layout_toRightOf="@id/ButtonVolM"
+            android:background="@drawable/button_key_dark"
+            android:text="&lt;"
+            android:layout_toEndOf="@id/ButtonVolM"/>
+
+        <Button
+            android:id="@+id/Button0"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button8"
+            android:layout_toRightOf="@id/ButtonLeftArrow"
+            android:background="@drawable/button_key_dark"
+            android:text="0"
+            android:layout_toEndOf="@id/ButtonLeftArrow"/>
+
+        <Button
+            android:id="@+id/ButtonRightArrow"
+            style="@style/RemoteButton.Medium"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/Button9"
+            android:layout_toRightOf="@id/Button0"
+            android:background="@drawable/button_key_dark"
+            android:text=">"
+            android:layout_toEndOf="@id/Button0"/>
+
+        <Button
+            android:id="@+id/ButtonBouM"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonBouP"
+            android:layout_toRightOf="@id/ButtonRightArrow"
+            android:background="@drawable/button_key_light"
+            android:text="B-"
+            android:layout_toEndOf="@id/ButtonRightArrow"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp">
+
+        <Button
+            android:id="@+id/ButtonInfo"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:background="@drawable/button_key_dark"
+            android:text="Info"/>
+
+        <Button
+            android:id="@+id/ButtonInfoSpacer"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonInfo"
+            android:background="@android:color/transparent"
+            android:layout_toEndOf="@id/ButtonInfo"/>
+
+        <ImageButton
+            android:id="@+id/ButtonUp"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonInfoSpacer"
+            android:background="@drawable/button_key_light"
+            android:src="@drawable/ic_key_up"
+            android:text="UP"
+            android:layout_toEndOf="@id/ButtonInfoSpacer"/>
+
+        <Button
+            android:id="@+id/ButtonUpSpacer"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonUp"
+            android:background="@android:color/transparent"
+            android:layout_toEndOf="@id/ButtonUp"/>
+
+        <Button
+            android:id="@+id/ButtonMenu"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonUpSpacer"
+            android:background="@drawable/button_key_dark"
+            android:text="Menu"
+            android:layout_toEndOf="@id/ButtonUpSpacer"/>
+
+        <ImageButton
+            android:id="@+id/ButtonLeft"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonMenu"
+            android:layout_toLeftOf="@id/ButtonUp"
+            android:background="@drawable/button_key_light"
+            android:src="@drawable/ic_key_left"
+            android:text="LEFT"
+            android:layout_toStartOf="@id/ButtonUp"/>
+
+        <Button
+            android:id="@+id/ButtonOk"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonUp"
+            android:layout_toRightOf="@id/ButtonLeft"
+            android:background="@drawable/button_key_light"
+            android:text="OK"
+            android:layout_toEndOf="@id/ButtonLeft"/>
+
+        <ImageButton
+            android:id="@+id/ButtonRight"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonMenu"
+            android:layout_toRightOf="@id/ButtonOk"
+            android:background="@drawable/button_key_light"
+            android:src="@drawable/ic_key_right"
+            android:text="RIGHT"
+            android:layout_toEndOf="@id/ButtonOk"/>
+
+        <Button
+            android:id="@+id/ButtonAudio"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonLeft"
+            android:layout_toLeftOf="@id/ButtonLeft"
+            android:background="@drawable/button_key_dark"
+            android:text="Audio"
+            android:layout_toStartOf="@id/ButtonLeft"/>
+
+        <ImageButton
+            android:id="@+id/ButtonDown"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonLeft"
+            android:layout_toRightOf="@id/ButtonLeft"
+            android:background="@drawable/button_key_light"
+            android:src="@drawable/ic_key_down"
+            android:text="DOWN"
+            android:layout_toEndOf="@id/ButtonLeft"/>
+
+        <Button
+            android:id="@+id/ButtonPvr"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_below="@id/ButtonRight"
+            android:layout_toRightOf="@id/ButtonRight"
+            android:background="@drawable/button_key_dark"
+            android:text="PVR"
+            android:layout_toEndOf="@id/ButtonRight"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp">
+
+        <Button
+            android:id="@+id/ButtonMute"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="30dp"
+            android:background="@drawable/button_key_dark"
+            android:text="Mute"/>
+
+        <Button
+            android:id="@+id/ButtonExit"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="30dp"
+            android:layout_toRightOf="@id/ButtonMute"
+            android:background="@drawable/button_key_red"
+            android:text="Exit"
+            android:layout_toEndOf="@id/ButtonMute"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp">
+
+        <Button
+            android:id="@+id/ButtonRed"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="30dp"
+            android:background="@drawable/button_key_red"/>
+
+        <Button
+            android:id="@+id/ButtonGreen"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="30dp"
+            android:layout_toRightOf="@id/ButtonRed"
+            android:background="@drawable/button_key_green"
+            android:layout_toEndOf="@id/ButtonRed"/>
+
+        <Button
+            android:id="@+id/ButtonYellow"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="30dp"
+            android:layout_toRightOf="@id/ButtonGreen"
+            android:background="@drawable/button_key_yellow"
+            android:layout_toEndOf="@id/ButtonGreen"/>
+
+        <Button
+            android:id="@+id/ButtonBlue"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="30dp"
+            android:layout_toRightOf="@id/ButtonYellow"
+            android:background="@drawable/button_key_blue"
+            android:layout_toEndOf="@id/ButtonYellow"/>
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp">
+
+        <Button
+            android:id="@+id/ButtonTv"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="@dimen/remote_key_height"
+            android:background="@drawable/button_key_dark_oval"
+            android:text="TV"/>
+
+        <Button
+            android:id="@+id/ButtonRadio"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonTv"
+            android:background="@drawable/button_key_dark_oval"
+            android:text="RADIO"
+            android:layout_toEndOf="@id/ButtonTv"/>
+
+        <Button
+            android:id="@+id/ButtonText"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonRadio"
+            android:background="@drawable/button_key_dark_oval"
+            android:text="TEXT"
+            android:layout_toEndOf="@id/ButtonRadio"/>
+
+        <Button
+            android:id="@+id/ButtonRec"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonText"
+            android:background="@drawable/button_key_dark_oval"
+            android:text="REC"
+            android:textColor="#F00"
+            android:layout_toEndOf="@id/ButtonText"/>
+
+    </RelativeLayout>
+</merge>
