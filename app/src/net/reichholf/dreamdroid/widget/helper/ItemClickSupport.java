@@ -1,13 +1,19 @@
 package net.reichholf.dreamdroid.widget.helper;
 
+import android.view.HapticFeedbackConstants;
+import android.view.SoundEffectConstants;
 import android.view.View;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+
+import org.jetbrains.annotations.NotNull;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 public class ItemClickSupport {
     private final RecyclerView mRecyclerView;
+    private final TouchListener mTouchListener;
     private OnItemClickListener mOnItemClickListener;
     private OnItemLongClickListener mOnItemLongClickListener;
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -47,16 +53,22 @@ public class ItemClickSupport {
         }
     };
 
-    private ItemClickSupport(RecyclerView RecyclerView) {
-        mRecyclerView = RecyclerView;
+    private ItemClickSupport(RecyclerView recyclerView) {
+        mRecyclerView = recyclerView;
         // the ID must be declared in XML, used to avoid
         // replacing the ItemClickSupport without removing
         // the old one from the RecyclerView
         mRecyclerView.setTag(R.id.recyclerview_item_click_support, this);
-        mRecyclerView.addOnChildAttachStateChangeListener(mAttachListener);
+        if (DreamDroid.isTV(recyclerView.getContext())) {
+            mRecyclerView.addOnChildAttachStateChangeListener(mAttachListener);
+            mTouchListener = null;
+        } else {
+            mTouchListener = new TouchListener(recyclerView);
+            recyclerView.addOnItemTouchListener(mTouchListener);
+        }
     }
 
-    public static ItemClickSupport addTo(RecyclerView view) {
+    public static ItemClickSupport addTo(@NotNull RecyclerView view) {
         ItemClickSupport support = (ItemClickSupport) view.getTag(R.id.recyclerview_item_click_support);
         if (support == null) {
             support = new ItemClickSupport(view);
@@ -64,7 +76,7 @@ public class ItemClickSupport {
         return support;
     }
 
-    public static ItemClickSupport removeFrom(RecyclerView view) {
+    public static ItemClickSupport removeFrom(@NotNull RecyclerView view) {
         ItemClickSupport support = (ItemClickSupport) view.getTag(R.id.recyclerview_item_click_support);
         if (support != null) {
             support.detach(view);
@@ -83,7 +95,10 @@ public class ItemClickSupport {
     }
 
     private void detach(RecyclerView view) {
-        view.removeOnChildAttachStateChangeListener(mAttachListener);
+        if (mTouchListener != null)
+            view.removeOnItemTouchListener(mTouchListener);
+        else
+            view.removeOnChildAttachStateChangeListener(mAttachListener);
         view.setTag(R.id.recyclerview_item_click_support, null);
     }
 
@@ -93,5 +108,35 @@ public class ItemClickSupport {
 
     public interface OnItemLongClickListener {
         boolean onItemLongClick(RecyclerView recyclerView, View v, int position, long id);
+    }
+
+    private class TouchListener extends ClickItemTouchListener {
+        TouchListener(RecyclerView recyclerView) {
+            super(recyclerView);
+        }
+
+        @Override
+        boolean performItemClick(RecyclerView parent, View view, int position, long id) {
+            if (mOnItemClickListener != null && position >= 0) {
+                view.playSoundEffect(SoundEffectConstants.CLICK);
+                mOnItemClickListener.onItemClick(parent, view, position, id);
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        boolean performItemLongClick(RecyclerView parent, View view, int position, long id) {
+            if (mOnItemLongClickListener != null && position >= 0) {
+                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                return mOnItemLongClickListener.onItemLongClick(parent, view, position, id);
+            }
+            return false;
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean b) {
+        }
     }
 }
