@@ -81,8 +81,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private static final int sFakeLength = 10000;
 
 	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
-	private final int[] sOverlayViews = {R.id.container};
-	private final int[] sZapOverlayViews = {R.id.servicelist};
 	static float sOverlayAlpha = 0.85f;
 	static float sSeekStepSize = 0.02f;
 
@@ -201,10 +199,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			mServicesViewVisible = mServicesView.getVisibility() == View.VISIBLE;
 		}
 
-		mGestureDector = new GestureDetectorCompat(mOverlayRoot.getContext(), new GestureDetector.SimpleOnGestureListener() {
+		mGestureDector = new GestureDetectorCompat(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 			@Override
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-				boolean isGesturesEnabled = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true);
+				boolean isGesturesEnabled = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true);
 				if (!isGesturesEnabled)
 					return true;
 
@@ -232,7 +230,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			}
 		});
 
-		mOverlayRoot.setOnTouchListener((v, event) -> {
+		getActivity().findViewById(R.id.overlay).setOnTouchListener((v, event) -> {
 			DisplayMetrics metrics = new DisplayMetrics();
 			getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 			if (mSurfaceHeight == 0)
@@ -553,6 +551,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		TextView title = view.findViewById(R.id.title);
 		title.setText(mTitle);
 
+		if (VLCPlayer.get().isSeekable())
+			view.findViewById(R.id.pvr_controls).setVisibility(View.VISIBLE);
+		else
+			view.findViewById(R.id.pvr_controls).setVisibility(View.GONE);
+
 		View parentNow = view.findViewById(R.id.event_now);
 		View parentNext = view.findViewById(R.id.event_next);
 
@@ -722,16 +725,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
 		updateViews();
-		for (int id : sOverlayViews)
-			fadeInView(view.findViewById(id));
-		if (VLCPlayer.get().isSeekable())
-			view.findViewById(R.id.pvr_controls).setVisibility(View.VISIBLE);
-		else
-			view.findViewById(R.id.pvr_controls).setVisibility(View.GONE);
 		if (mServicesViewVisible)
 			showZapOverlays();
-		else
-			autohide();
+		fadeInView(mOverlayRoot);
+		autohide();
 	}
 
 	public void hideOverlays() {
@@ -739,9 +736,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (view == null)
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
-		for (int id : sOverlayViews)
-			fadeOutView(view.findViewById(id));
 		hideZapOverlays();
+		fadeOutView(mOverlayRoot);
 	}
 
 	private void showZapOverlays() {
@@ -754,8 +750,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		if (mServicesView != null)
 			mServicesView.getLayoutManager().scrollToPosition(getCurrentServiceIndex());
-		for (int id : sZapOverlayViews)
-			fadeInView(view.findViewById(id));
+		fadeInView(mServicesView);
 		autohide();
 	}
 
@@ -763,8 +758,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		View view = getView();
 		if (view == null)
 			return;
-		for (int id : sZapOverlayViews)
-			fadeOutView(view.findViewById(id));
+		fadeOutView(mServicesView);
 	}
 
 	private void fadeInView(final View v) {
@@ -799,7 +793,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	protected boolean isOverlaysVisible() {
-		View sdroot = getView().findViewById(R.id.container);
+		View sdroot = getView().findViewById(R.id.overlay_root);
 		return sdroot.getVisibility() == View.VISIBLE;
 	}
 
