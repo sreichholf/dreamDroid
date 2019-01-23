@@ -50,7 +50,7 @@ public class EpgDetailDialog extends AbstractDialog {
         return fragment;
     }
 
-    protected EpgDetailDialog() {
+    public EpgDetailDialog() {
         setStyle(STYLE_NO_FRAME, R.style.Theme_Dreamdroid_FullscreenDialog);
     }
 

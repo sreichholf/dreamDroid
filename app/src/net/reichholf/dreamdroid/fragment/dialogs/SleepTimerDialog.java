@@ -39,9 +39,6 @@ public class SleepTimerDialog extends AbstractDialog {
 		return f;
 	}
 
-	public SleepTimerDialog() {
-	}
-
 	@SuppressWarnings("unchecked")
 	private void init() {
 		mSleepTimer = ((ExtendedHashMap) getArguments().getSerializable(KEY_TIMER)).clone();

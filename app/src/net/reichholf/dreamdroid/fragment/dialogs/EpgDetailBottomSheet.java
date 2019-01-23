@@ -43,9 +43,6 @@ public class EpgDetailBottomSheet extends BottomSheetActionDialog {
         return fragment;
     }
 
-    protected EpgDetailBottomSheet() {
-    }
-
     @Override
     public void onDestroyView() {
         if (getDialog() != null && getRetainInstance())
