@@ -214,8 +214,12 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	public void showPrivacyStatement() {
-		PositiveNegativeDialog dialog = PositiveNegativeDialog.newInstance(getString(R.string.privacy_statement_title), R.string.privacy_statement, android.R.string.yes, Statics.ACTION_STATISTICS_AGREED, android.R.string.no, Statics.ACTION_STATISTICS_DENIED);
-		dialog.show(getSupportFragmentManager(), "privacy_statement_dialog");
+    	String tag = "privacy_statement_dialog";
+		PositiveNegativeDialog dialog = (PositiveNegativeDialog) getSupportFragmentManager().findFragmentByTag(tag);
+		if (dialog == null) {
+			dialog = PositiveNegativeDialog.newInstance(getString(R.string.privacy_statement_title), R.string.privacy_statement, android.R.string.yes, Statics.ACTION_STATISTICS_AGREED, android.R.string.no, Statics.ACTION_STATISTICS_DENIED);
+			dialog.show(getSupportFragmentManager(), tag);
+		}
 	}
 
 	private void initPiwik() {
