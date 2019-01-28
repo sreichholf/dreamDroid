@@ -40,9 +40,6 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	public static final String TYPE_VIDEO = "video";
 	public static final String TYPE_ANY = "any";
 
-	/**
-	 * @param uri
-	 */
 	public MediaplayerCommandRequestHandler() {
 		super(null);
 	}

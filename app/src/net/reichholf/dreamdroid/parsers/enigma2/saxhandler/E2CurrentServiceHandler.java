@@ -84,9 +84,6 @@ public class E2CurrentServiceHandler extends E2SimpleHandler {
 	private ExtendedHashMap mEvent;
 	private ArrayList<ExtendedHashMap> mEvents;
 
-	/**
-	 * @param list
-	 */
 	public E2CurrentServiceHandler() {
 		super();
 		mEvents = new ArrayList<>();

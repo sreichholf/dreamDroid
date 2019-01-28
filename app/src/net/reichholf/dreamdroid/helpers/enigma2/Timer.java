@@ -243,7 +243,7 @@ public class Timer {
 		intent.putExtra("fragmentClass", TimerEditFragment.class);
 		intent.putExtra("titleResource", create ? R.string.new_timer : R.string.edit_timer);
 		//intent.putExtra("menuResource", R.menu.save);
-		intent.putExtra("serializableData", (Serializable) data);
+		intent.putExtra("serializableData", data);
 		target.getActivity().startActivityForResult(intent, Statics.REQUEST_EDIT_TIMER);
 	}
 }

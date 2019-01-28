@@ -351,10 +351,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		mSelectedService = null;
 		mSelectedBouquet = null;
 
-		if (row instanceof  SettingsRow)
-			return;
-
-		else if (row instanceof MovieRow) {
+		if (row instanceof MovieRow) {
 			String dirname = row.getHeaderItem().getName();
 			if (mLocations.get(dirname).isEmpty()) {
 				ArrayList<NameValuePair> params = new ArrayList<>();

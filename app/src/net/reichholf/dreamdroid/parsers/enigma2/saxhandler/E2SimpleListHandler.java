@@ -20,9 +20,6 @@ public abstract class E2SimpleListHandler extends DefaultHandler {
 	
 	protected ArrayList<String> mList;
 	
-	/**
-	 * @param list
-	 */
 	protected E2SimpleListHandler(String tag){
 		mTag = tag;
 	}

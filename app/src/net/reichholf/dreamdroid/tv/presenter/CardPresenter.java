@@ -127,7 +127,7 @@ public class CardPresenter extends Presenter {
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
 		cardView.setTitleText(settings.getString("title"));
 
-		Integer mainImageId = (int) settings.get("icon");
+		Integer mainImageId = (Integer) settings.get("icon");
 		if(mainImageId != null)
 			cardView.setMainImage(cardView.getResources().getDrawable(mainImageId, null));
 		else

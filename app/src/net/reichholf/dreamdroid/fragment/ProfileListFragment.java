@@ -417,7 +417,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		Intent intent = new Intent(activity, SimpleToolbarFragmentActivity.class);
 		intent.putExtra("fragmentClass", ProfileEditFragment.class);
 		intent.putExtra("titleResource", profile == null ? R.string.profile_add : R.string.edit_profile);
-		intent.putExtra("serializableData", (Serializable) data);
+		intent.putExtra("serializableData", data);
 		activity.startActivityForResult(intent, Statics.REQUEST_EDIT_PROFILE);
 	}
 

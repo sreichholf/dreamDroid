@@ -79,7 +79,6 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 			mHttpHelper.bindToFragment(this);
 		setHasOptionsMenu(true);
 		mExtras = getArguments();
-		mMapList = null;
 
 		if (mMapList == null) {
 			mMapList = new ArrayList<>();

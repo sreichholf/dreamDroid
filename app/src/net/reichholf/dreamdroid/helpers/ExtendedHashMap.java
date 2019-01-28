@@ -36,8 +36,7 @@ public class ExtendedHashMap implements Serializable, Cloneable {
 
     @Override
     public ExtendedHashMap clone() {
-        HashMap<String, Object> map = new HashMap<>();
-        map.putAll(mMap);
+        HashMap<String, Object> map = new HashMap<>(mMap);
         return new ExtendedHashMap(map);
     }
 

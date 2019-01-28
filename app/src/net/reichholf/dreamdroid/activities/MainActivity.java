@@ -594,7 +594,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onFragmentResume(Fragment fragment) {
-		if (!fragment.equals(mNavigationHelper) && !fragment.equals(mDetailFragment)) {
+		if (!fragment.equals(mDetailFragment)) {
 			mDetailFragment = fragment;
 			showDetails(fragment);
 		}
