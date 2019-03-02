@@ -132,12 +132,12 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		Profile p = DreamDroid.getCurrentProfile();
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		p.setName(prefs.getString(DatabaseHelper.KEY_PROFILE_PROFILE, ""));
-		p.setHost(prefs.getString(DatabaseHelper.KEY_PROFILE_HOST, ""));
+		p.setHost(prefs.getString(DatabaseHelper.KEY_PROFILE_HOST, "192.168.1.2"));
 		p.setPort(prefs.getString(DatabaseHelper.KEY_PROFILE_PORT, "80"));
 		p.setSsl(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_SSL, false));
 		p.setLogin(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_LOGIN, false));
 		p.setUser(prefs.getString(DatabaseHelper.KEY_PROFILE_USER, "root"));
-		p.setPass(prefs.getString(DatabaseHelper.KEY_PROFILE_PASS, "dreambox"));
+		p.setPass(prefs.getString(DatabaseHelper.KEY_PROFILE_PASS, ""));
 		p.setStreamLogin(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_STREAM_LOGIN, false));
 		p.setStreamPort(prefs.getString(DatabaseHelper.KEY_PROFILE_STREAM_PORT, "8001"));
 		p.setFileLogin(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_FILE_LOGIN, false));
@@ -148,7 +148,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		p.setEncoderPort(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_PORT, "554"));
 		p.setEncoderLogin(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_ENCODER_LOGIN, false));
 		p.setEncoderUser(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_USER, "root"));
-		p.setEncoderPass(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_PASS, "dreambox"));
+		p.setEncoderPass(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_PASS, ""));
 		p.setEncoderVideoBitrate(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_VIDEO_BITRATE, "6000"));
 		p.setEncoderAudioBitrate(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_AUDIO_BITRATE, "128"));
 
