@@ -49,7 +49,7 @@ public class Profile implements Serializable {
 	private String mCachedDeviceInfo;
 
 	public static Profile getDefault() {
-		return new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
+		return new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "", false, false, false, false, false, "", "", "", "");
 	}
 
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
