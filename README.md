@@ -1,4 +1,4 @@
-DreamDroid [![Build Status](https://travis-ci.org/OpenVisionE2/VisionDroid.svg?branch=master)](https://travis-ci.org/OpenVisionE2/VisionDroid)
+VisionDroid [![Build Status](https://travis-ci.org/OpenVisionE2/VisionDroid.svg?branch=master)](https://travis-ci.org/OpenVisionE2/VisionDroid)
 ==========
 
 Remotely control your enigma2 based STB with any Android Device!
@@ -20,5 +20,5 @@ VisionDroid is built for use with all enigma2 STBs and the included WebInterface
 * The STBs should be running a WebInterface with Version 1.6.8 or later.
 * VisionDroid requires at least Android 4.1
 
-# Developing / building dreamDroid with AndroidStudio
+# Developing / building VisionDroid with AndroidStudio
 Simply import VisionDroid as gradle project and you should be fine.
