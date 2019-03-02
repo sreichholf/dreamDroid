@@ -268,7 +268,7 @@ public class DreamDroid extends MatomoApplication {
 
 			int port = Integer.valueOf(sp.getString("port", "80"));
 			String user = sp.getString("user", "root");
-			String pass = sp.getString("pass", "dreambox");
+			String pass = sp.getString("pass", "");
 
 			boolean login = sp.getBoolean("login", false);
 			boolean ssl = sp.getBoolean("ssl", false);
