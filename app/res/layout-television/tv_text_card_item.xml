@@ -7,31 +7,35 @@
     <TextView
         android:id="@+id/title_text"
         android:layout_width="@dimen/card_width"
-        android:layout_height="@dimen/card_height"
+        android:layout_height="wrap_content"
         android:ellipsize="end"
         android:fontFamily="sans-serif-condensed"
         android:maxLines="2"
-        android:scrollHorizontally="false"
-        android:paddingBottom="@dimen/lb_basic_card_info_padding_top"
-        android:paddingEnd="@dimen/lb_basic_card_info_padding_horizontal"
+        android:minLines="2"
         android:paddingStart="@dimen/lb_basic_card_info_padding_horizontal"
         android:paddingTop="@dimen/lb_basic_card_info_padding_top"
+        android:paddingEnd="@dimen/lb_basic_card_info_padding_horizontal"
+        android:paddingBottom="@dimen/lb_basic_card_info_padding_top"
+        android:scrollHorizontally="false"
         android:textColor="@color/lb_basic_card_title_text_color"
         android:textSize="@dimen/lb_basic_card_title_text_size"
-        app:layout_viewType="main"/>
+        app:layout_viewType="main" />
 
     <TextView
         android:id="@+id/content_text"
         android:layout_width="@dimen/card_width"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/card_height"
         android:ellipsize="end"
         android:fontFamily="sans-serif-condensed"
-        android:paddingBottom="@dimen/lb_basic_card_info_padding_top"
-        android:paddingEnd="@dimen/lb_basic_card_info_padding_horizontal"
+        android:gravity="bottom|left"
+        android:maxLines="8"
+        android:minLines="8"
         android:paddingStart="@dimen/lb_basic_card_info_padding_horizontal"
-        android:singleLine="true"
+        android:paddingEnd="@dimen/lb_basic_card_info_padding_horizontal"
+        android:paddingBottom="@dimen/lb_basic_card_info_padding_top"
+        android:singleLine="false"
         android:textColor="@color/lb_basic_card_content_text_color"
         android:textSize="@dimen/lb_basic_card_content_text_size"
-        app:layout_viewType="info"/>
+        app:layout_viewType="info" />
 
 </merge>

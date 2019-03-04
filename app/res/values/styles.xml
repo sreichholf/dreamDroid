@@ -49,7 +49,7 @@
         <item name="android:background">?attr/listItemBackground</item>
     </style>
 
-    <style name="RemoteButton">
+    <style name="RemoteButton" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">12sp</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
@@ -82,10 +82,13 @@
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="buttonBarButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless"/>
-    <style name="buttonBarNeutralButtonStyle" parent="Base.Widget.AppCompat.Button"/>
-    <style name="buttonBarPositiveButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless.Colored"/>
-    <style name="buttonBarNegativeButtonStyle" parent="Base.Widget.AppCompat.Button.Borderless"/>
+    <style name="buttonBarButtonStyle" parent="Widget.MaterialComponents.Button.UnelevatedButton"/>
+    <style name="buttonBarNeutralButtonStyle" parent="Widget.MaterialComponents.Button.TextButton"/>
+    <style name="buttonBarPositiveButtonStyle" parent="Widget.MaterialComponents.Button.OutlinedButton"/>
+    <style name="buttonBarNegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton"/>
+    <style name="mdtp_ActionButton"  parent="Widget.MaterialComponents.Button.TextButton" />
+
+    <style name="Button" parent="Widget.MaterialComponents.Button" />
 
     <style name="Preference_TextAppearanceMaterialBody2">
         <item name="android:textSize">14sp</item>
@@ -93,4 +96,5 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
+
 </resources>

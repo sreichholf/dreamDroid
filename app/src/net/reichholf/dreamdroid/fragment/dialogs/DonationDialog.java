@@ -20,10 +20,6 @@ public class DonationDialog extends ActionDialog {
 
 	private static String KEY_ITEMS = "items";
 
-	public DonationDialog() {
-		super();
-	}
-
 	public static DonationDialog newInstance(ExtendedHashMap items) {
 		DonationDialog d = new DonationDialog();
 		Bundle args = new Bundle();

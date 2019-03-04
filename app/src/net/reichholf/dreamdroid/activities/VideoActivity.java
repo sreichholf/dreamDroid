@@ -8,11 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.preference.PreferenceManager;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -26,14 +21,17 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.video.VLCPlayer;
-import net.reichholf.dreamdroid.video.VideoPlayer;
-import net.reichholf.dreamdroid.video.VideoPlayerFactory;
 
 import org.matomo.sdk.extra.MatomoApplication;
 import org.matomo.sdk.extra.TrackHelper;
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
 
 /**
  * Created by reichi on 16/02/16.
@@ -46,7 +44,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	FrameLayout mSurfaceFrame;
 	SurfaceView mSurfaceView;
 	SurfaceView mSubtitlesSurfaceView;
-	VideoPlayer mPlayer;
+	VLCPlayer mPlayer;
 	VideoOverlayFragment mOverlayFragment;
 
 	View.OnLayoutChangeListener mOnLayoutChangeListener;
@@ -104,7 +102,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 
 	@Override
 	protected void onStart() {
-		VideoPlayerFactory.init(this);
 		super.onStart();
 		initialize();
 	}
@@ -112,7 +109,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mOverlayFragment.showOverlays(true);
+		mOverlayFragment.showOverlays();
 	}
 
 	@Override
@@ -131,9 +128,14 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	@Override
 	protected void onStop() {
 		cleanup();
-		VideoPlayerFactory.deinit();
+		VLCPlayer.release();
 		surfaceFrameAddLayoutListener(false);
 		super.onStop();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
 	}
 
 	@Override
@@ -180,7 +182,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		mSubtitlesSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
 		if (mPlayer == null)
-			mPlayer = VideoPlayerFactory.getInstance();
+			mPlayer = VLCPlayer.get();
 		mPlayer.attach(this, mSurfaceView, mSubtitlesSurfaceView);
 
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
@@ -225,6 +227,15 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		sw = getWindow().getDecorView().getWidth();
 		sh = getWindow().getDecorView().getHeight();
 
+		// getWindow().getDecorView() doesn't always take orientation into account, we have to correct the values
+		boolean isPortrait = mCurrentScreenOrientation == Configuration.ORIENTATION_PORTRAIT;
+
+		if (sw > sh && isPortrait || sw < sh && !isPortrait) {
+			int w = sw;
+			sw = sh;
+			sh = w;
+		}
+
 		// sanity check
 		if (sw * sh == 0) {
 			Log.e(TAG, "Invalid surface size");
@@ -243,6 +254,14 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		subtitlesSurface = mSubtitlesSurfaceView;
 		surfaceFrame = mSurfaceFrame;
 		LayoutParams lp = surface.getLayoutParams();
+
+		if (mVideoWidth * mVideoHeight == 0) {
+			mVideoHeight = mPlayer.getVideoHeight();
+			mVideoWidth = mPlayer.getVideoWidth();
+			mVideoVisibleWidth = mVideoWidth;
+			mVideoVisibleHeight = mVideoHeight;
+		}
+
 
 		if (mVideoWidth * mVideoHeight == 0 || isInPictureInPictureMode()) {
 			/* Case of OpenGL vouts: handles the placement of the video using MediaPlayer API */
@@ -266,16 +285,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 			player.setScale(0);
 		}
 
-		double dw = sw, dh = sh;
-
-		// getWindow().getDecorView() doesn't always take orientation into account, we have to correct the values
-		boolean isPortrait = mCurrentScreenOrientation == Configuration.ORIENTATION_PORTRAIT;
-
-		if (sw > sh && isPortrait || sw < sh && !isPortrait) {
-			dw = sh;
-			dh = sw;
-		}
-
 		// compute the aspect ratio
 		double ar, vw;
 		if (mSarDen == mSarNum) {
@@ -287,6 +296,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 			vw = mVideoVisibleWidth * (double) mSarNum / mSarDen;
 			ar = vw / mVideoVisibleHeight;
 		}
+
+		double dw = sw, dh = sh;
 
 		// compute the display aspect ratio
 		double dar = dw / dh;

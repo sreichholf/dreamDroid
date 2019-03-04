@@ -15,7 +15,7 @@ public class CurrentService {
 	// Service
 	public static final String KEY_SERVICE = "service";
 	public static final String KEY_SERVICE_REFERENCE = "reference";
-	public static final String KEY_SERVICE_NAME = "name";
+	public static final String KEY_SERVICE_NAME = "servicename";
 	public static final String KEY_SERVICE_PROVIDER = "provider";
 	public static final String KEY_SERVICE_VIDEO_WIDTH = "videowidth";
 	public static final String KEY_SERVICE_VIDEO_HEIGHT = "videoheight";

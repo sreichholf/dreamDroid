@@ -13,15 +13,12 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,14 +28,15 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.VideoActivity;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
+import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.Picon;
+import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
@@ -47,10 +45,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestH
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog;
+import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog;
 import net.reichholf.dreamdroid.video.VLCPlayer;
-import net.reichholf.dreamdroid.video.VideoPlayer;
-import net.reichholf.dreamdroid.video.VideoPlayerFactory;
-import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
+import net.reichholf.dreamdroid.view.OnRepeatListener;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
@@ -62,12 +60,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.view.GestureDetectorCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.leanback.widget.HorizontalGridView;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
 		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener, ActionDialog.DialogActionListener {
@@ -76,11 +78,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	public static final String DIALOG_TAG_SUBTITLE_TRACK = "dialog_subtitle_track";
 
 	private static final int AUTOHIDE_DEFAULT_TIMEOUT = 7000;
+	private static final int sFakeLength = 10000;
 
 	private static final String LOG_TAG = VideoOverlayFragment.class.getSimpleName();
-	private final int[] sOverlayViews = {R.id.service_detail_root, R.id.epg, R.id.toolbar};
-	private final int[] sZapOverlayViews = {R.id.servicelist};
 	static float sOverlayAlpha = 0.85f;
+	static float sSeekStepSize = 0.02f;
 
 	public final String TITLE = "title";
 	public final String SERVICE_INFO = "serviceInfo";
@@ -90,7 +92,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected int mSurfaceHeight;
 	protected int mSurfaceWidth;
 
-	protected String mServiceName;
+	protected String mTitle;
 	protected String mServiceRef;
 	protected String mBouquetRef;
 
@@ -101,18 +103,40 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected Runnable mAutoHideRunnable;
 	protected Runnable mIssueReloadRunnable;
 
-	protected FrameLayout mEpgView;
-	protected AutofitRecyclerView mServicesView;
-	protected ItemClickSupport mItemClickSupport;
-	protected AppCompatImageButton mAudioTrackButton;
-	protected AppCompatImageButton mSubtitleTrackButton;
-	protected Button mNextButton;
-	protected Button mPreviousButton;
+    protected ItemClickSupport mItemClickSupport;
+
+    @BindView(R.id.overlay_root)
+    protected View mOverlayRoot;
+
+	@BindView(R.id.servicelist)
+	protected RecyclerView mServicesView;
+
+    @BindView(R.id.button_audio_track)
+	protected AppCompatImageButton mButtonAudioTrack;
+
+    @BindView(R.id.button_info)
+	protected AppCompatImageButton mButtonInfo;
+
+    @BindView(R.id.button_list)
+	protected AppCompatImageButton mButtonList;
+
+    @BindView(R.id.button_subtitle_track)
+    protected AppCompatImageButton mButtonSubtitleTrack;
+
+    @BindView(R.id.button_rwd)
+	protected AppCompatImageButton mButtonRewind;
+
+    @BindView(R.id.button_play)
+	protected AppCompatImageButton mButtonPlay;
+
+    @BindView(R.id.button_fwd)
+	protected AppCompatImageButton mButtonForward;
+
 	private GestureDetectorCompat mGestureDector;
 	private AudioManager mAudioManager;
 	private int mAudioMaxVol;
 	private float mVolume;
-	private boolean mIsHiding;
+	private boolean mServicesViewVisible;
 
 	public VideoOverlayFragment() {
 	}
@@ -122,12 +146,13 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		setRetainInstance(true);
 		setHasOptionsMenu(true);
 		super.onCreate(savedInstanceState);
-		mServiceName = getArguments().getString(TITLE);
+		mTitle = getArguments().getString(TITLE);
 		mServiceRef = getArguments().getString(SERVICE_REFERENCE);
 		mBouquetRef = getArguments().getString(BOUQUET_REFERENCE);
 		mServiceList = new ArrayList<>();
 		mServiceInfo = ((ExtendedHashMap) getArguments().get(SERVICE_INFO));
 		mHandler = new Handler();
+		mServicesViewVisible = false;
 		mAutoHideRunnable = () -> hideOverlays();
 		mIssueReloadRunnable = () -> reload();
 
@@ -144,9 +169,17 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.video_player_overlay, container, false);
-		mServicesView = view.findViewById(R.id.servicelist);
+		ButterKnife.bind(this, view);
 		if (mServicesView != null) {
-			mServicesView.setLayoutManager(new GridLayoutManager(getActivity(), 1));
+			if (DreamDroid.isTV(getContext())) {
+				HorizontalGridView gridView = (HorizontalGridView) mServicesView;
+				gridView.setNumRows(1);
+			} else {
+				GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 1);
+				mServicesView.setLayoutManager(layoutManager);
+			}
+			if (mServiceList.isEmpty())
+				mButtonList.setVisibility(View.GONE);
 			mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
 			mItemClickSupport = ItemClickSupport.addTo(mServicesView);
 			mItemClickSupport.setOnItemClickListener(this);
@@ -163,13 +196,13 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 						mHandler.removeCallbacks(mAutoHideRunnable);
 				}
 			});
+			mServicesViewVisible = mServicesView.getVisibility() == View.VISIBLE;
 		}
-		mEpgView = view.findViewById(R.id.epg);
 
-		mGestureDector = new GestureDetectorCompat(view.findViewById(R.id.overlay_root).getContext(), new GestureDetector.SimpleOnGestureListener() {
+		mGestureDector = new GestureDetectorCompat(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 			@Override
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-				boolean isGesturesEnabled = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true);
+				boolean isGesturesEnabled = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true);
 				if (!isGesturesEnabled)
 					return true;
 
@@ -197,7 +230,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			}
 		});
 
-		view.findViewById(R.id.overlay_root).setOnTouchListener((v, event) -> {
+		getActivity().findViewById(R.id.overlay).setOnTouchListener((v, event) -> {
 			DisplayMetrics metrics = new DisplayMetrics();
 			getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
 			if (mSurfaceHeight == 0)
@@ -207,32 +240,46 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			mGestureDector.onTouchEvent(event);
 			return true;
 		});
-		mAudioTrackButton = view.findViewById(R.id.button_audio_track);
-		mAudioTrackButton.setOnClickListener(v -> onSelectAudioTrack());
-		mSubtitleTrackButton = view.findViewById(R.id.button_subtitle_track);
-		mSubtitleTrackButton.setOnClickListener(v -> onSelectSubtitleTrack());
-
-		mPreviousButton = view.findViewById(R.id.button_previous);
-		mPreviousButton.setOnClickListener(v -> previous());
-		mNextButton = view.findViewById(R.id.button_next);
-		mNextButton.setOnClickListener(v -> next());
+		mButtonAudioTrack.setOnClickListener(v -> onSelectAudioTrack());
+		mButtonInfo.setOnClickListener(v -> onInfo());
+		mButtonList.setOnClickListener(v -> onList());
+		mButtonSubtitleTrack.setOnClickListener(v -> onSelectSubtitleTrack());
+		mButtonRewind.setOnTouchListener(new OnRepeatListener(v -> onRewind()));
+		mButtonPlay.setOnClickListener(v -> onPlay());
+		mButtonForward.setOnTouchListener(new OnRepeatListener(v -> onForward()));
 
 		return view;
 	}
 
+	protected void onRewind() {
+		VLCPlayer p = VLCPlayer.get();
+		p.setPosition(Math.max(0.0f, p.getPosition() - sSeekStepSize));
+		autohide();
+	}
+
+	protected void onForward() {
+		VLCPlayer p = VLCPlayer.get();
+		p.setPosition(Math.max(0.0f, p.getPosition() + sSeekStepSize));
+		autohide();
+	}
+
+	protected void onPlay() {
+		VLCPlayer.get().play();
+		autohide();
+	}
 
 	public void onUpdateButtons() {
-		VideoPlayer player = VideoPlayerFactory.getInstance();
+		VLCPlayer player = VLCPlayer.get();
 		if(player == null)
 			return;
 		if (player.getAudioTracksCount() <= 0)
-			mAudioTrackButton.setVisibility(View.INVISIBLE);
+			mButtonAudioTrack.setVisibility(View.GONE);
 		else
-			mAudioTrackButton.setVisibility(View.VISIBLE);
+			mButtonAudioTrack.setVisibility(View.VISIBLE);
 		if (player.getSubtitleTracksCount() <= 0)
-			mSubtitleTrackButton.setVisibility(View.INVISIBLE);
+			mButtonSubtitleTrack.setVisibility(View.GONE);
 		else
-			mSubtitleTrackButton.setVisibility(View.VISIBLE);
+			mButtonSubtitleTrack.setVisibility(View.VISIBLE);
 	}
 
 	private void onSelectAudioTrack() {
@@ -243,6 +290,39 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private void onSelectSubtitleTrack() {
 		MediaPlayer player = VLCPlayer.getMediaPlayer();
 		showTrackSelection(getString(R.string.subtitles), player.getSpuTracks(), DIALOG_TAG_SUBTITLE_TRACK);
+	}
+
+	private void onInfo(){
+		if (mServiceInfo == null)
+			return;
+
+		DialogFragment detailDialog;
+		if (mServiceInfo.containsKey(Movie.KEY_FILE_NAME)) {
+
+			Movie movie = new Movie(mServiceInfo);
+			if (DreamDroid.isTV(getContext()))
+				detailDialog = MovieDetailDialog.newInstance(movie);
+			else
+				detailDialog = MovieDetailBottomSheet.newInstance(movie);
+
+		} else {
+			if(DreamDroid.isTV(getContext()))
+				detailDialog = EpgDetailDialog.newInstance(new Event(mServiceInfo));
+			else
+				detailDialog = EpgDetailBottomSheet.newInstance(mServiceInfo);
+		}
+		if (detailDialog != null)
+			detailDialog.show(getFragmentManager(), "details_dialog_tv");
+	}
+
+	private void onList() {
+		if (!mServicesViewVisible) {
+			mServicesViewVisible = true;
+			showZapOverlays();
+		} else {
+			hideZapOverlays();
+			mServicesViewVisible = false;
+		}
 	}
 
 	private void showTrackSelection(String title, MediaPlayer.TrackDescription[] descriptions, String dialog_tag) {
@@ -327,6 +407,14 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			if (mServicesView != null)
 				mServicesView.getAdapter().notifyDataSetChanged();
 		}
+		if (mServiceList.isEmpty()) {
+			mButtonList.setVisibility(View.GONE);
+			hideZapOverlays();
+		} else {
+			mButtonList.setVisibility(View.VISIBLE);
+			if (isOverlaysVisible() && mServicesViewVisible)
+				showZapOverlays();
+		}
 	}
 
 	@Override
@@ -337,12 +425,13 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private void zap() {
 		if (Service.isMarker(mServiceRef))
 			return;
-		Intent streamingIntent = IntentFactory.getStreamServiceIntent(getActivity(), mServiceRef, mServiceName, mBouquetRef, mServiceInfo);
-		getArguments().putString(TITLE, mServiceRef);
+		Intent streamingIntent = IntentFactory.getStreamServiceIntent(getActivity(), mServiceRef, mTitle, mBouquetRef, mServiceInfo);
+		getArguments().putString(TITLE, mTitle);
 		getArguments().getString(SERVICE_REFERENCE, mServiceRef);
 		getArguments().getString(BOUQUET_REFERENCE, mBouquetRef);
 		getArguments().putSerializable(SERVICE_INFO, mServiceInfo);
 		((VideoActivity) getActivity()).handleIntent(streamingIntent);
+
 		onServiceInfoChanged(true);
 	}
 
@@ -363,7 +452,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		mServiceInfo = serviceInfo;
 		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
-		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+		mTitle = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
 		zap();
 	}
 
@@ -384,7 +473,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		mServiceInfo = serviceInfo;
 		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
-		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+		mTitle = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
 		zap();
 	}
 
@@ -403,7 +492,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private void onServiceInfoChanged(boolean doShowOverlay) {
 		Log.d(LOG_TAG, "service info changed!");
 		if (doShowOverlay)
-			showOverlays(false);
+			showOverlays();
 		else
 			updateViews();
 		if (mServiceInfo == null)
@@ -438,47 +527,55 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void seek(int pos) {
-		VideoPlayer player = VideoPlayerFactory.getInstance();
+		VLCPlayer player = VLCPlayer.get();
 		if (player == null)
 			return;
 		float fpos = (float) pos;
 
-		if (player.getLength() > 0)
-			fpos = fpos / player.getLength() * 100;
-		player.setPosition(fpos / 100f);
+		long length = player.getLength();
+		if (length > 0)
+			length = length / 1000;
+		else
+			length = sFakeLength;
+		player.setPosition(fpos / length);
+
+	}
+
+	private boolean isRecording() {
+		boolean isDreamboxRecording = mServiceInfo != null && mServiceInfo.containsKey(Movie.KEY_FILE_NAME);
+		return VLCPlayer.get().isSeekable() || isDreamboxRecording;
 	}
 
 	private void updateViews() {
 		View view = getView();
-		TextView serviceName = view.findViewById(R.id.service_name);
-		serviceName.setText(mServiceName);
+		TextView title = view.findViewById(R.id.title);
+		title.setText(mTitle);
+
+		if (VLCPlayer.get().isSeekable())
+			view.findViewById(R.id.pvr_controls).setVisibility(View.VISIBLE);
+		else
+			view.findViewById(R.id.pvr_controls).setVisibility(View.GONE);
 
 		View parentNow = view.findViewById(R.id.event_now);
 		View parentNext = view.findViewById(R.id.event_next);
 
 		if (mServiceInfo != null) {
-			ImageView picon = view.findViewById(R.id.picon);
-			Picon.setPiconForView(getActivity(), picon, mServiceInfo, Statics.TAG_PICON);
+			mButtonInfo.setVisibility(View.VISIBLE);
+			if (isRecording()) {
+				title.setText(mServiceInfo.getString(Movie.KEY_TITLE, mTitle));
+			} else {
+				title.setText(mServiceInfo.getString(Event.KEY_SERVICE_NAME, mTitle));
+				TextView nowStart = view.findViewById(R.id.event_now_start);
+				TextView nowDuration = view.findViewById(R.id.event_now_duration);
+				TextView nowTitle = view.findViewById(R.id.event_now_title);
 
-			TextView nowStart = view.findViewById(R.id.event_now_start);
-			TextView nowDuration = view.findViewById(R.id.event_now_duration);
-			TextView nowTitle = view.findViewById(R.id.event_now_title);
+				Event.supplementReadables(mServiceInfo); //update readable values
 
-			Event.supplementReadables(mServiceInfo); //update readable values
+				nowStart.setText(mServiceInfo.getString(Event.KEY_EVENT_START_TIME_READABLE));
+				nowTitle.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
+				nowDuration.setText(mServiceInfo.getString(Event.KEY_EVENT_DURATION_READABLE));
 
-			nowStart.setText(mServiceInfo.getString(Event.KEY_EVENT_START_TIME_READABLE));
-			nowTitle.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
-			nowDuration.setText(mServiceInfo.getString(Event.KEY_EVENT_DURATION_READABLE));
-
-			parentNow.setVisibility(View.VISIBLE);
-
-			if (mEpgView != null) {
-				TextView titleView = mEpgView.findViewById(R.id.epg_title);
-				TextView descriptionView = mEpgView.findViewById(R.id.epg_description);
-				TextView descriptionExView = mEpgView.findViewById(R.id.epg_description_extended);
-				titleView.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
-				descriptionView.setText(mServiceInfo.getString(Event.KEY_EVENT_DESCRIPTION));
-				descriptionExView.setText(mServiceInfo.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED));
+				parentNow.setVisibility(View.VISIBLE);
 			}
 
 			String next = mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
@@ -498,22 +595,17 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		} else {
 			parentNow.setVisibility(View.GONE);
 			parentNext.setVisibility(View.GONE);
+			mButtonInfo.setVisibility(View.GONE);
 		}
 		updateProgress();
 		if (mServicesView != null)
 			mServicesView.getAdapter().notifyDataSetChanged();
-		ExtendedHashMap prevService = getPreviousServiceInfo();
-		if (prevService != null)
-			mPreviousButton.setText(prevService.getString(Event.KEY_SERVICE_NAME, ""));
-		ExtendedHashMap nextService = getNextServiceInfo();
-		if (nextService != null)
-			mNextButton.setText(nextService.getString(Event.KEY_SERVICE_NAME, ""));
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
 	protected void updateProgress() {
 		SeekBar serviceProgress = getView().findViewById(R.id.service_progress);
-		VideoPlayer player = VideoPlayerFactory.getInstance();
+		VLCPlayer player = VLCPlayer.get();
 		boolean isSeekable = player != null && player.isSeekable();
 		if (isSeekable) {
 			serviceProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -534,39 +626,73 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 				}
 			});
-			serviceProgress.setOnTouchListener((v, motionEvent) -> false);
+			serviceProgress.setOnTouchListener((view, motionEvent) -> false);
 		} else {
 			serviceProgress.setOnTouchListener((view, motionEvent) -> true);
 		}
-		long max = -1;
+		serviceProgress.setFocusable(isSeekable);
+		serviceProgress.setClickable(isSeekable);
+		long len = -1;
 		long cur = -1;
 		if (mServiceInfo != null) {
-			String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
-			String start = mServiceInfo.getString(Event.KEY_EVENT_START);
+			View parentNow = getView().findViewById(R.id.event_now);
+			View parentNext = getView().findViewById(R.id.event_next);
+			if (isRecording()) {
+				long duration = player.getLength() / 1000;
+				if (duration <= 0) {
+					String textLen = mServiceInfo.getString(Movie.KEY_LENGTH, "00:00");
+					String[] l = textLen.split(":");
+					try {
+						duration = (Long.valueOf(l[0]) * 60) + Long.valueOf(l[1]);
+					} catch (NumberFormatException nex) {
+						Log.w(LOG_TAG, nex.getLocalizedMessage());
+					} catch (IndexOutOfBoundsException iobex) {
+						Log.w(LOG_TAG, iobex.getLocalizedMessage());
+					}
+				}
+				if (duration > 0) {
+					TextView nowStart = getView().findViewById(R.id.event_now_start);
+					TextView nowDuration = getView().findViewById(R.id.event_now_duration);
+					TextView nowTitle = getView().findViewById(R.id.event_now_title);
 
-			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
-				try {
-					max = Double.valueOf(duration).longValue();
-					cur = max - DateTime.getRemaining(duration, start) * 60;
-				} catch (Exception e) {
-					Log.e(DreamDroid.LOG_TAG, e.toString());
+					long pos = (long) (duration * player.getPosition()); //getTime() may deliver quite bogous values when streaming from a dreambox so we don't use them.
+					nowStart.setText(DateTime.minutesAndSeconds((int) pos));
+					nowTitle.setText(mServiceInfo.getString(Movie.KEY_SERVICE_NAME, ""));
+					nowDuration.setText(DateTime.minutesAndSeconds((int) duration));
+					parentNow.setVisibility(View.VISIBLE);
+				} else {
+					parentNow.setVisibility(View.GONE);
+				}
+				parentNext.setVisibility(View.GONE);
+			} else {
+				String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
+				String start = mServiceInfo.getString(Event.KEY_EVENT_START);
+
+				if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
+					try {
+						len = Double.valueOf(duration).longValue();
+						cur = len - DateTime.getRemaining(duration, start) * 60;
+					} catch (Exception e) {
+						Log.e(DreamDroid.LOG_TAG, e.toString());
+					}
 				}
 			}
 		}
-		if (max <= 0) {
-			max = player.getLength();
-			cur = (long) player.getPosition();
+		if (len <= 0) {
+			len = player.getLength() / 1000; //ms -> sec
+			cur = player.getTime() / 1000; //ms -> sec
 		}
 
-		if (max <= 0 && isSeekable) {
-			max = 100;
-			cur = 0;
+		if (len <= 0 && isSeekable) {
+			len = sFakeLength;
+			cur = (long) (len * player.getPosition());
 		}
 
-		if (max > 0 && cur >= 0) {
+		if (len > 0 && cur >= 0) {
 			serviceProgress.setEnabled(true);
+			serviceProgress.setKeyProgressIncrement((int) (len * sSeekStepSize));
 			serviceProgress.setVisibility(View.VISIBLE);
-			serviceProgress.setMax((int) max);
+			serviceProgress.setMax((int) len);
 			serviceProgress.setProgress((int) cur);
 		} else {
 			serviceProgress.setEnabled(false);
@@ -576,7 +702,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public void onResume() {
 		super.onResume();
-		showOverlays(false);
+		showOverlays();
 		reload();
 	}
 
@@ -589,22 +715,20 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 
 	public void autohide() {
+		mHandler.removeCallbacks(mAutoHideRunnable);
 		mHandler.postDelayed(mAutoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT);
 	}
 
-	public void showOverlays(boolean doShowZapOverlays) {
+	public void showOverlays() {
 		View view = getView();
-		doShowZapOverlays &= !DreamDroid.isTV(getContext());
 		if (view == null)
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
 		updateViews();
-		for (int id : sOverlayViews)
-			fadeInView(view.findViewById(id));
-		if (doShowZapOverlays)
+		if (mServicesViewVisible)
 			showZapOverlays();
-		else
-			autohide();
+		fadeInView(mOverlayRoot);
+		autohide();
 	}
 
 	public void hideOverlays() {
@@ -612,9 +736,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (view == null)
 			return;
 		mHandler.removeCallbacks(mAutoHideRunnable);
-		for (int id : sOverlayViews)
-			fadeOutView(view.findViewById(id));
 		hideZapOverlays();
+		fadeOutView(mOverlayRoot);
 	}
 
 	private void showZapOverlays() {
@@ -625,8 +748,9 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		View view = getView();
 		if (view == null)
 			return;
-		for (int id : sZapOverlayViews)
-			fadeInView(view.findViewById(id));
+		if (mServicesView != null)
+			mServicesView.getLayoutManager().scrollToPosition(getCurrentServiceIndex());
+		fadeInView(mServicesView);
 		autohide();
 	}
 
@@ -634,8 +758,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		View view = getView();
 		if (view == null)
 			return;
-		for (int id : sZapOverlayViews)
-			fadeOutView(view.findViewById(id));
+		fadeOutView(mServicesView);
 	}
 
 	private void fadeInView(final View v) {
@@ -666,11 +789,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (isOverlaysVisible())
 			hideOverlays();
 		else
-			showOverlays(true);
+			showOverlays();
 	}
 
 	protected boolean isOverlaysVisible() {
-		View sdroot = getView().findViewById(R.id.service_detail_root);
+		View sdroot = getView().findViewById(R.id.overlay_root);
 		return sdroot.getVisibility() == View.VISIBLE;
 	}
 
@@ -707,7 +830,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			return;
 		mServiceInfo = mServiceList.get(position);
 		mServiceRef = serviceRef;
-		mServiceName = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+		mTitle = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
 		zap();
 	}
 
@@ -723,32 +846,58 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		boolean ret = false;
-		mHandler.removeCallbacks(mAutoHideRunnable);
 		autohide();
+		VLCPlayer player = VLCPlayer.get();
 		switch(keyCode) {
 			case KeyEvent.KEYCODE_BACK:
 			case KeyEvent.KEYCODE_BUTTON_B:
 				if (isOverlaysVisible()) {
 					hideOverlays();
 					ret = true;
-				} else
+				} else {
 					return false;
+				}
 				break;
 			case KeyEvent.KEYCODE_DPAD_LEFT:
 				if (isOverlaysVisible())
 					return false;
-				previous();
+				if (isRecording()) {
+					player.slower();
+					return true;
+				} else
+					previous();
 				ret = true;
 				break;
 			case KeyEvent.KEYCODE_DPAD_RIGHT:
 				if (isOverlaysVisible())
 					return false;
-				next();
+				if (isRecording())
+					onRewind();
+				else
+					next();
 				ret = true;
 				break;
+			case KeyEvent.KEYCODE_R:
+			case KeyEvent.KEYCODE_MEDIA_REWIND:
+				if (isRecording()) {
+					onRewind();
+					ret = true;
+				}
+				break;
+			case KeyEvent.KEYCODE_F:
+			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+				if (isRecording()) {
+					onForward();
+					ret = true;
+				}
+				break;
+			case KeyEvent.KEYCODE_MEDIA_PLAY:
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+				player.play();
+				ret = true;
 		}
 		if (!isOverlaysVisible()) {
-			showOverlays(true);
+			showOverlays();
 			ret = true;
 		}
 		return ret;

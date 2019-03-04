@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/service_list_item_nn"
+    android:layout_width="@dimen/card_width"
+    android:layout_height="@dimen/card_width"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="?attr/cardBackgroundColor"
+    app:cardElevation="4dp"
+    app:contentPaddingTop="0dp">
+
+    <LinearLayout
+        android:id="@+id/parent_marker"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/marker_name"
+            style="@style/MediumHeader"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/parent_service"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+            android:id="@+id/service_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="0dp"
+            android:layout_weight="1"
+            android:padding="0dp"
+            app:mpb_progressStyle="horizontal"
+            app:mpb_useIntrinsicPadding="false" />
+
+        <ImageView
+            android:id="@+id/picon"
+            android:layout_width="48dp"
+            android:layout_height="30dp"
+            android:layout_below="@id/service_progress"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/service_name"
+            style="@style/CardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/picon"
+            android:layout_toRightOf="@id/picon"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:id="@+id/event_now"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/service_name"
+            android:measureWithLargestChild="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/event_now_start"
+                style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/event_now_title"
+                style="@style/CardText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:maxLines="2"
+                android:minLines="2"
+                android:singleLine="false" />
+
+            <TextView
+                android:id="@+id/event_now_duration"
+                style="@style/CardText"
+                android:layout_width="50dip"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/event_next"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/event_now"
+            android:measureWithLargestChild="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/event_next_start"
+                style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/event_next_title"
+                style="@style/CardText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:maxLines="2"
+                android:minLines="2"
+                android:singleLine="false" />
+
+            <TextView
+                android:id="@+id/event_next_duration"
+                style="@style/CardText"
+                android:layout_width="50dip"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+        </LinearLayout>
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

@@ -921,13 +921,11 @@ public class IabHelper {
         int n = skuList.size() / 20;
         int mod = skuList.size() % 20;
         for (int i = 0; i < n; i++) {
-            tempList = new ArrayList<>();
-            tempList.addAll(skuList.subList(i * 20, i * 20 + 20));
+            tempList = new ArrayList<>(skuList.subList(i * 20, i * 20 + 20));
             packs.add(tempList);
         }
         if (mod != 0) {
-            tempList = new ArrayList<>();
-            tempList.addAll(skuList.subList(n * 20, n * 20 + mod));
+            tempList = new ArrayList<>(skuList.subList(n * 20, n * 20 + mod));
             packs.add(tempList);
         }
 

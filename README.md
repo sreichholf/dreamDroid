@@ -47,3 +47,7 @@ Officially supported are the following devices:
 
 Simply import dreamDroid as gradle project and you should be fine.
 
+# Donations
+
+If you like dreamDroid, you can buy me a Beer: https://www.paypal.me/reichiii
+

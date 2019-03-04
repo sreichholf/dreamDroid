@@ -594,7 +594,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onFragmentResume(Fragment fragment) {
-		if (!fragment.equals(mNavigationHelper) && !fragment.equals(mDetailFragment)) {
+		if (!fragment.equals(mDetailFragment)) {
 			mDetailFragment = fragment;
 			showDetails(fragment);
 		}
@@ -632,7 +632,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see net.reichholf.dreamdroid.fragment.dialogs.EpgDetailDialog.
+	 * @see net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet.
 	 * EpgDetailDialogListener#onFinishEpgDetailDialog(int)
 	 */
 	@Override

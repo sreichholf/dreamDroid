@@ -376,4 +376,5 @@
     <string name="preferences">Einstellungen</string>
     <string name="encoder">Encoder</string>
     <string name="direct_streaming">Direktes Streaming</string>
+    <string name="backup_import_error">Backup-Import fehlgeschlagen!</string>
 </resources>

@@ -15,7 +15,7 @@
             android:layout_height="match_parent">
 
             <net.reichholf.dreamdroid.widget.AutofitRecyclerView
-                android:id="@+android:id/list"
+                android:id="@android:id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"

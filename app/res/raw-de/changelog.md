@@ -1,3 +1,28 @@
+## 1.4.433
+* FIX: Virtual remote widget
+* FIX (potentiell): Lang-Drücken in Listen
+
+## 1.4.432
+* FIX: VirtualRemote war kaputt
+* FIX: Möglicher fix für "nicht klickbare" Einträge in der Kanalliste bei einigen wenigen Nutzern
+
+## 1.4.431
+* Redesign des Video Players für alle Geräteklassen (mit PVR-Steuerung für Aufnahmen)
+* Leichte Überarbeitung des EPG Dialogs (für TV neu hinzugefügt)
+* Android 9 Stil für Buttons
+* Dialog für den Langtext des lafuenden events im Videoplayer
+* FIX: Verhalten beim Wiederherstellen von Backups
+* FIX: Absturz in Verbindung mit der automatischen Konfiguration
+* FIX: Absturz im Video Player bei Aufnahmen mit unzulässiger Längenangabe in den Metadaten
+
+## 1.3.430
+* FIX: Absturz wenn über einen externen Video-Player gestreamt werden soll
+* FIX: Absturz wenn Encoderport/bitrate leer oder ungültig ist
+* FIX: Fehler in der integrierten Bibliothek "gaugeview" der dazu führte dass das Androidd SDK die Berechtigung zum lesen des Telefon-Status automatisch ergänzte [https://github.com/...](https://github.com/sreichholf/dreamDroid/commit/f3eb97472a850ddbeca7bf91a14c4163f845cc35)
+
+## 1.3.429
+* Verbesserungen am Video Player (Rotation ohne Unterbrechung, Springen beim Abspielen auf Aufnahmen, Korrekte Zeitanzeige bei Aufnahmen)
+
 ## 1.3.428
 * Der Video Player ist nun besser bedienbar (besonders auf TVs)
 * TV: Die Einstellungen wurden aufgeräumt. In den Verbindungeinstellungen kann jetzt encoding eingestellt werden

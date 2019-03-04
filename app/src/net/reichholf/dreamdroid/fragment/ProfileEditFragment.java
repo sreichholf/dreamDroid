@@ -218,12 +218,12 @@ public class ProfileEditFragment extends BaseFragment {
 
 		mEncoderStream.setChecked(mCurrentProfile.isEncoderStream());
 		mEncoderPath.setText(mCurrentProfile.getEncoderPath());
-		mEncoderPort.setText(String.valueOf(mCurrentProfile.getEncoderPort()));
+		mEncoderPort.setText(mCurrentProfile.getEncoderPortString());
 		mEncoderLogin.setChecked(mCurrentProfile.isEncoderLogin());
 		mEncoderUser.setText(mCurrentProfile.getEncoderUser());
 		mEncoderPass.setText(mCurrentProfile.getEncoderPass());
-		mEncoderVideoBitrate.setText(String.valueOf(mCurrentProfile.getEncoderVideoBitrate()));
-		mEncoderAudioBitrate.setText(String.valueOf(mCurrentProfile.getEncoderAudioBitrate()));
+		mEncoderVideoBitrate.setText(mCurrentProfile.getEncoderVideoBitrateString());
+		mEncoderAudioBitrate.setText(mCurrentProfile.getEncoderAudioBitrateString());
 	}
 
 	/**
@@ -246,12 +246,12 @@ public class ProfileEditFragment extends BaseFragment {
 		//Encoder
 		mCurrentProfile.setEncoderStream(mEncoderStream.isChecked());
 		mCurrentProfile.setEncoderPath(mEncoderPath.getText().toString());
-		mCurrentProfile.setEncoderPort(Integer.valueOf(mEncoderPort.getText().toString()));
+		mCurrentProfile.setEncoderPort(mEncoderPort.getText().toString());
 		mCurrentProfile.setEncoderLogin(mEncoderLogin.isChecked());
 		mCurrentProfile.setEncoderUser(mEncoderUser.getText().toString());
 		mCurrentProfile.setEncoderPass(mEncoderPass.getText().toString());
-		mCurrentProfile.setEncoderAudioBitrate(Integer.valueOf(mEncoderAudioBitrate.getText().toString()));
-		mCurrentProfile.setEncoderVideoBitrate(Integer.valueOf(mEncoderVideoBitrate.getText().toString()));
+		mCurrentProfile.setEncoderAudioBitrate(mEncoderAudioBitrate.getText().toString());
+		mCurrentProfile.setEncoderVideoBitrate(mEncoderVideoBitrate.getText().toString());
 
 
 		Context ctx = getContext();

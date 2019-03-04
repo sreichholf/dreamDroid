@@ -1,3 +1,28 @@
+## 1.4.433
+* FIX: Virtual remote widget
+* FIX (potentially): Broken longclick in lists on some devices
+
+## 1.4.432
+* FIX: Virtual remote layout was broken
+* FIX: Potential fix for unclickable items in servicelist for few users
+
+## 1.4.431
+* Redesign Video player for all devices (tv/mobile, includes PVR controls for recordings)
+* Slighty restyle Movie/Service-EPG Detail Dialog, add it for TV
+* Use Android 9 style for buttons
+* Add "Running Event" dialog to video player
+* FIX: Backup restore handling
+* FIX: crash in relation to automated device detection
+* FIX: crash in video player when a recording is an invalid length in it's metadata
+
+## 1.3.430
+* FIX: crash when trying to stream with external video player
+* FIX: crash when encoder-port/bitrate is empty or invalid
+* FIX: Bug in integrated gaugeview-library that caused "READ_PHONE_STATE" permission to be added by the android SDK [https://github.com/...](https://github.com/sreichholf/dreamDroid/commit/f3eb97472a850ddbeca7bf91a14c4163f845cc35)
+
+## 1.3.429
+* Improvements to the videoplayer (don't stop on rotation, jump in recordings, playback time displayed correctly when watching recorded movies)
+
 ## 1.3.428
 * Improve overall usability of Video Player (especially on TV)
 * TV: Cleanup settings, add encoder settings to connection profile

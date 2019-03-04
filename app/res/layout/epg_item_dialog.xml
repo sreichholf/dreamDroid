@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/LinearLayoutMain"
     android:layout_width="fill_parent"
@@ -13,7 +12,8 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar_epg_detail"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar_epg_detail"
@@ -21,19 +21,19 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorAccent"
             android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+            app:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/ScrollView"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="96dip"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="0dp"
-        android:paddingEnd="10dp"
         android:paddingStart="10dp"
-        android:paddingTop="0dp">
+        android:paddingTop="0dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="0dp">
 
         <LinearLayout
             android:id="@+id/LinearLayoutMain"
@@ -42,27 +42,27 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/service_name"
-                android:layout_width="fill_parent"
+                android:id="@+id/service"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/epg_short"
+                android:id="@+id/description"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"/>
+                android:layout_height="wrap_content" />
 
             <TextView
-                android:id="@+id/epg_time"
+                android:id="@+id/date"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
 
             <TextView
-                android:id="@+id/epg_description_extended"
+                android:id="@+id/description_extended"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"/>
+                android:layout_marginTop="8dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -70,80 +70,73 @@
         android:id="@+id/buttonPanel1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/dialog_button_bar_height"
-        android:layout_marginTop="-96dp"
-        android:dividerPadding="0dip"
         android:minHeight="@dimen/dialog_button_bar_height"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="8dp">
 
         <LinearLayout
             style="?attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:measureWithLargestChild="true"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="0dp">
 
             <Button
                 android:id="@+id/ButtonSetTimer"
-                style="?attr/buttonBarNeutralButtonStyle"
+                style="?attr/buttonBarPositiveButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
+                android:layout_marginRight="8dp"
                 android:layout_weight="1"
                 android:maxLines="2"
-                android:minHeight="@dimen/dialog_button_bar_height"
-                android:text="@string/set_timer"/>
+                android:padding="0dp"
+                android:text="@string/set_timer" />
 
             <Button
                 android:id="@+id/ButtonEditTimer"
-                style="?attr/buttonBarNeutralButtonStyle"
+                style="?attr/buttonBarPositiveButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
+                android:layout_margin="0dp"
                 android:layout_weight="1"
                 android:maxLines="2"
-                android:minHeight="@dimen/dialog_button_bar_height"
-                android:text="@string/edit_timer"/>
+                android:padding="0dp"
+                android:text="@string/edit_timer" />
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/buttonPanel2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-48dip"
-        android:dividerPadding="0dip"
-        android:minHeight="@dimen/dialog_button_bar_height"
-        android:orientation="vertical">
 
         <LinearLayout
             style="?attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:measureWithLargestChild="true"
-            android:orientation="horizontal">
+            android:layout_margin="0dp"
+            android:orientation="horizontal"
+            android:padding="0dp">
 
             <Button
                 android:id="@+id/ButtonImdb"
-                style="?attr/buttonBarNeutralButtonStyle"
+                style="?attr/buttonBarPositiveButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
+                android:layout_marginTop="0dp"
+                android:layout_marginRight="8dp"
                 android:layout_weight="1"
                 android:maxLines="2"
-                android:minHeight="@dimen/dialog_button_bar_height"
-                android:text="@string/imdb"/>
+                android:text="@string/imdb" />
 
             <Button
                 android:id="@+id/ButtonSimilar"
-                style="?attr/buttonBarNeutralButtonStyle"
+                style="?attr/buttonBarPositiveButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
+                android:layout_marginTop="0dp"
+                android:layout_margin="0dp"
                 android:layout_weight="1"
                 android:maxLines="2"
-                android:minHeight="@dimen/dialog_button_bar_height"
-                android:text="@string/similar"/>
+                android:text="@string/similar" />
         </LinearLayout>
     </LinearLayout>
 

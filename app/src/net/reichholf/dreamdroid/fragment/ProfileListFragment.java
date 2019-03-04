@@ -145,6 +145,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 					.content(R.string.searching_known_devices)
 					.cancelable(false);
 			mProgress = IndeterminateProgress.newInstance(R.string.searching, R.string.searching_known_devices);
+			mProgress.setCancelable(false);
 			getMultiPaneHandler().showDialogFragment(mProgress, "dialog_devicesearch_indeterminate");
 			mDetectDevicesTask = new DetectDevicesTask(this);
 			mDetectDevicesTask.execute();
@@ -212,6 +213,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		builder.show();
 	}
 
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
 		mHasFabMain = true;
@@ -247,6 +249,19 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		reloadProfiles();
 	}
 
+	@Override
+	public void onPause() {
+		if (mDetectDevicesTask != null) {
+			mDetectDevicesTask.cancel(true);
+			mDetectDevicesTask = null;
+		}
+		IndeterminateProgress progress = (IndeterminateProgress) getFragmentManager().findFragmentByTag("dialog_devicesearch_indeterminate");
+		if (progress != null) {
+			progress.dismiss();
+		}
+		mProgress = null;
+		super.onPause();
+	}
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
@@ -402,7 +417,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		Intent intent = new Intent(activity, SimpleToolbarFragmentActivity.class);
 		intent.putExtra("fragmentClass", ProfileEditFragment.class);
 		intent.putExtra("titleResource", profile == null ? R.string.profile_add : R.string.edit_profile);
-		intent.putExtra("serializableData", (Serializable) data);
+		intent.putExtra("serializableData", data);
 		activity.startActivityForResult(intent, Statics.REQUEST_EDIT_PROFILE);
 	}
 

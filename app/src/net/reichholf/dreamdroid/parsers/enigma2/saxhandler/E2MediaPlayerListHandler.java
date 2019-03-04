@@ -28,9 +28,6 @@ public class E2MediaPlayerListHandler extends E2ListHandler {
 	// creates a runtime error because mList is null for endElement mList.add(mItem);
 	//private ArrayList<ExtendedHashMap> mList;
 
-	/**
-	 * @param list
-	 */
 	public E2MediaPlayerListHandler() {
 		mItem = null;
 	}

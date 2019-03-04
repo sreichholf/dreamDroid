@@ -179,6 +179,12 @@ public class DateTime {
 		return (new BigDecimal(timestamp)).intValue();
 	}
 
+	public static String minutesAndSeconds(int seconds) {
+		int min = seconds / 60;
+		int sec = seconds % 60;
+		return String.format("%02d:%02d", min, sec);
+	}
+
 	public static int getPrimeTimestamp(){
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.HOUR_OF_DAY, 20);

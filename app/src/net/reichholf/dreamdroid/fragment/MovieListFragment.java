@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
@@ -46,7 +46,6 @@ import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations
@@ -273,7 +272,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 					showToast(getString(R.string.no_epg_available));
 					break;
 				}
-				getMultiPaneHandler().showDialogFragment(MovieDetailDialog.newInstance(mMovie), "movie_detail_dialog");
+				getMultiPaneHandler().showDialogFragment(MovieDetailBottomSheet.newInstance(new Movie(mMovie)), "movie_detail_dialog");
 				break;
 			}
 
