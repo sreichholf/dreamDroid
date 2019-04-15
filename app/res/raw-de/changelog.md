@@ -1,3 +1,10 @@
+## 1.4.434
+* Das Tracking-Modul wurde vollständig entfernt (die bliebtesten Features sind mittlerweile hinreichend bekannt) und mit ihm die Datenschutzerklärung
+* NEU: Export der TabbedNavigationActivity via URL-Schema (danke Stefan H.)
+* NEU: Sendungsfortschritt ist jetzt am oberen Rand
+* FIX: Das Video-Overlay konnte bei bestimmten Timing durcheinander geraten
+* DEV: Code cleanups
+
 ## 1.4.433
 * FIX: Virtual remote widget
 * FIX (potentiell): Lang-Drücken in Listen

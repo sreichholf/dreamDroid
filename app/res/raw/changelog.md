@@ -1,3 +1,10 @@
+## 1.4.434
+* Remove tracking/statistics module and everything related (Privacy statement is gone, too)
+* NEW: expose TabbedNavigationActivity via URL-Scheme (thx to Stefan H.)
+* NEW: move progress to top of service-card
+* FIX: Video Overlay could get messed up at certain show/hide timings
+* DEV: Code cleanups
+
 ## 1.4.433
 * FIX: Virtual remote widget
 * FIX (potentially): Broken longclick in lists on some devices
