@@ -177,7 +177,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		}
 
 		initIAB();
-		initPiwik();
 		initPermissions(false);
 	}
 
@@ -211,20 +210,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
 			mIabHelper.queryInventoryAsync(true, skuList, mQueryInventoryFinishedListener);
 		});
-	}
-
-	public void showPrivacyStatement() {
-    	String tag = "privacy_statement_dialog";
-		PositiveNegativeDialog dialog = (PositiveNegativeDialog) getSupportFragmentManager().findFragmentByTag(tag);
-		if (dialog == null) {
-			dialog = PositiveNegativeDialog.newInstance(getString(R.string.privacy_statement_title), R.string.privacy_statement, android.R.string.yes, Statics.ACTION_STATISTICS_AGREED, android.R.string.no, Statics.ACTION_STATISTICS_DENIED);
-			dialog.show(getSupportFragmentManager(), tag);
-		}
-	}
-
-	private void initPiwik() {
-		if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, false))
-			showPrivacyStatement();
 	}
 
 	private void initPermissions(boolean rationaleShown) {
@@ -346,16 +331,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		if (action == Statics.ACTION_STATISTICS_AGREED || action == Statics.ACTION_STATISTICS_DENIED) {
-			boolean enabled = action == Statics.ACTION_STATISTICS_AGREED;
-			SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(this).edit();
-			prefs.putBoolean(DreamDroid.PREFS_KEY_ALLOW_TRACKING, enabled);
-			prefs.putBoolean(DreamDroid.PREFS_KEY_PRIVACY_STATEMENT_SHOWN, true);
-			prefs.apply();
-			initPiwik();
-		} else if (action == Statics.ACTION_LOCATION_RATIONALE_DONE) {
+		if (action == Statics.ACTION_LOCATION_RATIONALE_DONE)
 			initPermissions(true);
-		}
 	}
 
 	@Override

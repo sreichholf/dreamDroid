@@ -7,6 +7,7 @@
 package net.reichholf.dreamdroid;
 
 import android.Manifest;
+import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -33,12 +34,6 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
 
-
-import org.matomo.sdk.TrackerBuilder;
-import org.matomo.sdk.extra.DownloadTracker;
-import org.matomo.sdk.extra.MatomoApplication;
-import org.matomo.sdk.extra.TrackHelper;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -50,7 +45,7 @@ import java.util.GregorianCalendar;
 /**
  * @author sre
  */
-public class DreamDroid extends MatomoApplication {
+public class DreamDroid extends Application {
 	private static volatile DreamDroid instance;
 
 	public static final int INITIAL_SERVICELIST_PANE = 1;
@@ -76,8 +71,6 @@ public class DreamDroid extends MatomoApplication {
 	public static final String PREFS_KEY_ENABLE_DEVELOPER_SETTINGS = "enable_developer";
 	public static final String PREFS_KEY_FAKE_PICON = "fake_picon";
 	public static final String PREFS_KEY_XML_DEBUG = "xml_debug";
-	public static final String PREFS_KEY_ALLOW_TRACKING = "allow_tracking";
-	public static final String PREFS_KEY_PRIVACY_STATEMENT_SHOWN = "privacy_statement_shown";
 	public static final String PREFS_KEY_INTEGRATED_PLAYER = "integrated_video_player";
 	public static final String PREFS_KEY_THEME_TYPE = "theme_type";
 	public static final String PREFS_KEY_INSTANT_ZAP = "instant_zap";
@@ -144,11 +137,6 @@ public class DreamDroid extends MatomoApplication {
 		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, abi, buildDate);
 	}
 
-	@Override
-	public TrackerBuilder onCreateTrackerConfig() {
-		return TrackerBuilder.createDefault("https://reichholf.net/piwik/", 2);
-	}
-
 	/*
 	 * (non-Javadoc)
 	 *
@@ -184,7 +172,6 @@ public class DreamDroid extends MatomoApplication {
 			}
 		});
 
-		initPiwik();
 		initChannels();
 		sLocations = new ArrayList<>();
 		sTags = new ArrayList<>();
@@ -209,11 +196,6 @@ public class DreamDroid extends MatomoApplication {
 				NotificationManager.IMPORTANCE_LOW);
 		channel.setDescription(getString(R.string.epg_sync));
 		notificationManager.createNotificationChannel(channel);
-	}
-
-	private void initPiwik() {
-		if (isTrackingEnabled(this))
-			TrackHelper.track().download().identifier(new DownloadTracker.Extra.ApkChecksum(this)).with(getTracker());
 	}
 
 	public static void disableNowNext() {
@@ -481,11 +463,6 @@ public class DreamDroid extends MatomoApplication {
 		SharedPreferences.Editor editor = sp.edit();
 		editor.putInt(PREFS_KEY_INITIALBITS, mask);
 		editor.apply();
-	}
-
-	public static boolean isTrackingEnabled(Context context)
-	{
-		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PREFS_KEY_ALLOW_TRACKING, true);
 	}
 
 	public static boolean isTV(Context context) {

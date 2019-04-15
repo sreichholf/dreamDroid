@@ -57,9 +57,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
 
-import org.matomo.sdk.extra.MatomoApplication;
-import org.matomo.sdk.extra.TrackHelper;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -359,14 +356,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (mDetailFragment != null && !fragment.isVisible()) {
 				ft.hide(mDetailFragment);
 			}
-			if (DreamDroid.isTrackingEnabled(this) && !fragment.isVisible())
-				TrackHelper.track().screen("/" + fragment.getClass().getSimpleName()).title(fragment.getClass().getSimpleName()).with((MatomoApplication) getApplication());
 			ft.show(fragment);
 		} else {
 			Log.i(TAG, "Fragment " + ((Object) fragment).getClass().getSimpleName() + " not added, adding");
 			ft.replace(viewId, fragment, ((Object) fragment).getClass().getSimpleName());
-			if (DreamDroid.isTrackingEnabled(this) && !fragment.isVisible())
-				TrackHelper.track().screen("/" + fragment.getClass().getSimpleName()).title(fragment.getClass().getSimpleName()).with((MatomoApplication) getApplication());
 		}
 	}
 

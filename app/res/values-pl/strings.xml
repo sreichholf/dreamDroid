@@ -310,19 +310,6 @@
     <string name="use_fake_picon">Użyj fałszywego Pikona</string>
     <string name="use_fake_picon_long">Użyj fałszywego Pikona (picon_default.png), aby uniknąć problemów praw autorskich na zrzutach ekranu.</string>
     <string name="host_unreach">Nie można połączyć się z hostem</string>
-    <string name="allow_tracking_long">Pozwól zbierać anonimowe statystyki użytkowania</string>
-    <string name="allow_tracking">Statystyki użytkowania</string>
-<string name="privacy_statement">DreamDroid zawiera moduł zbierania danych statystycznych o użytkowaniu, które zbierają następujące informacje:
-\n
-\n&#8226; Anonimowe adresy IP
-\n&#8226; Otwierane "Strony" (jak Lista Kanałów, Nagrania itp), w tym czas trwania.
-\n&#8226; Awarie
-\n
-\nDane unikatowe oraz pełne adresy IP nie są zbierane oraz przekazywane osobom trzecim.
-\n
-\nCzy zgadzasz się przesyłać anonimowe statystyki ?</string>
-    <string name="privacy_statement_title">Polityka prywatności</string>
-    <string name="privacy">Prywatność</string>
     <string name="next_event">Następne Wydarzenie</string>
     <string name="use_encoder">Użyj enkodera dla strimu</string>
     <string name="encoder_path">Ścieżka strimu</string>

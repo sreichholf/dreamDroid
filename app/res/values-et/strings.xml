@@ -309,10 +309,6 @@
 <string name="use_fake_picon">Kasuta vaikepikonit</string>
 <string name="use_fake_picon_long">Kasuta ekraanitõmmistel vaikepikonit (picon_default.png), vältimaks probleeme autoriõigustega</string>
 <string name="host_unreach">Ühendumine masinaga nurjus</string>
-<string name="allow_tracking_long">Luba anonüümse kasutusstatistika kogumine</string>
-<string name="allow_tracking">Kasutusstatistika</string>
-<string name="privacy_statement_title">Privaatsusavaldus</string>
-<string name="privacy">Privaatsus</string>
 <string name="next_event">Järgmine saade</string>
 <string name="use_encoder">Kasuta voogesituseks enkooderit</string>
 <string name="encoder_path">Voo asukoht</string>
