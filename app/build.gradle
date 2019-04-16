@@ -8,7 +8,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.0'
+        classpath 'com.android.tools.build:gradle:3.3.2'
     }
 }
 apply plugin: 'com.android.application'
@@ -47,7 +47,6 @@ dependencies {
     implementation 'commons-net:commons-net:3.6'
     implementation 'commons-io:commons-io:2.5'
     implementation 'org.openhab.jmdns:jmdns:3.4.2'
-    implementation 'org.matomo.sdk:tracker:4.0.1'
     implementation 'ru.noties:markwon:2.0.1'
     implementation project(':libraries:gaugeview-library')
     implementation project(':libraries:MemorizingTrustManager')
@@ -66,8 +65,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 433
-        versionName="1.4.433"
+        versionCode 434
+        versionName="1.4.434"
         minSdkVersion 17
         targetSdkVersion 28
         multiDexEnabled true

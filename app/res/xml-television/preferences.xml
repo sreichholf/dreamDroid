@@ -2,12 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orderingFromXml="true">
 
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="allow_tracking"
-        android:summary="@string/allow_tracking_long"
-        android:title="@string/allow_tracking"/>
-
     <PreferenceCategory
         android:key="category_videoplayer"
         android:title="@string/video_player">

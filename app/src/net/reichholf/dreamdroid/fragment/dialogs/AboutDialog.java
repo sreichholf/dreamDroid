@@ -19,7 +19,6 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.Statics;
 
 /**
  * @author sre
@@ -39,8 +38,7 @@ public class AboutDialog extends ActionDialog {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 		builder.setTitle(R.string.about)
 				.setMessage(text)
-				.setCancelable(true)
-				.setPositiveButton(R.string.privacy, (dialog, which) -> finishDialog(Statics.ACTION_SHOW_PRIVACY_STATEMENT, null));
+				.setCancelable(true);
 		if (BuildConfig.FLAVOR.equals("google")) {
 			builder.setNeutralButton(R.string.donate, (dialog, which) -> {
 				ExtendedHashMap skus = ((BaseActivity) getActivity()).getIabItems();

@@ -425,10 +425,6 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     }
 
     public void onDialogAction(int action, Object details, String dialogTag) {
-        if (action == Statics.ACTION_SHOW_PRIVACY_STATEMENT) {
-            getMainActivity().showPrivacyStatement();
-            return;
-        }
         onNavigationItemClick(action);
     }
 

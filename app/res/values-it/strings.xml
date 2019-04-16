@@ -310,17 +310,4 @@
     <string name="use_fake_picon">Usa un picon falso</string>
     <string name="use_fake_picon_long">Usa un picon falso (picon_default.png) per evitare problemi con i diritti di autore nelle schermate</string>
     <string name="host_unreach">Impossibile collegarsi al sistema</string>
-    <string name="allow_tracking_long">Permetti la raccolta anonima di statistiche di utilizzo</string>
-    <string name="allow_tracking">Statistiche di utilizzo</string>
-<string name="privacy_statement">dreamDroid contiene un modulo per la raccolta di statistiche dei dati utilizzati. I dati raccolti contengono le seguenti informazioni:
-\n
-\n&#8226; Indirizzo IP anonimo
-\n&#8226; Le "Schede" aperte (es. Elenco servizi, Registrazioni, etc) inclusa la durata
-\n&#8226; Blocchi del programma
-\n
-\nNon esistono ID univoci o indirizzi IP completi che vengono registrati e i tuoi dati non saranno inoltrati o consegnati a terze parti.
-\n
-\nAccetti l\'attivazione delle statistiche anonime?</string>
-    <string name="privacy_statement_title">Accordo privacy</string>
-    <string name="privacy">Privacy</string>
 </resources>

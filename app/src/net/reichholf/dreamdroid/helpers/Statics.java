@@ -24,9 +24,6 @@ public class Statics {
 	public static final int ACTION_ADD_TO_PLAYLIST = 0xc17;
 	public static final int ACTION_PLAY_MEDIA = 0xc18;
 	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc19;
-	public static final int ACTION_STATISTICS_AGREED = 0xc20;
-	public static final int ACTION_STATISTICS_DENIED = 0xc21;
-	public static final int ACTION_SHOW_PRIVACY_STATEMENT = 0xc22;
 	public static final int ACTION_LOCATION_RATIONALE_DONE = 0xc23;
 	public static final int ACTION_NONE = 0xcfff;
 
