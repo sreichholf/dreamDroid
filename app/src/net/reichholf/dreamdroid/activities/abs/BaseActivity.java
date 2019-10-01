@@ -12,6 +12,11 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
 import com.livefront.bridge.Bridge;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
@@ -20,7 +25,6 @@ import net.reichholf.dreamdroid.BuildConfig;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.PiconSyncService;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -43,12 +47,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import de.duenndns.ssl.JULHandler;
 import de.duenndns.ssl.MemorizingTrustManager;
 import okhttp3.Credentials;
@@ -62,7 +60,6 @@ import okhttp3.internal.tls.OkHostnameVerifier;
 public class BaseActivity extends AppCompatActivity implements ActionDialog.DialogActionListener, SharedPreferences.OnSharedPreferenceChangeListener {
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON = 0;
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT = 1;
-	public static final int REQUEST_PERMISSION_ACCESS_COARSE_LOCATION = 2;
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_BACKUP = 3;
 	private static String TAG = BaseActivity.class.getSimpleName();
 
@@ -177,7 +174,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 		}
 
 		initIAB();
-		initPermissions(false);
 	}
 
 	@Override
@@ -210,27 +206,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			ArrayList<String> skuList = new ArrayList<>(Arrays.asList(DreamDroid.SKU_LIST));
 			mIabHelper.queryInventoryAsync(true, skuList, mQueryInventoryFinishedListener);
 		});
-	}
-
-	private void initPermissions(boolean rationaleShown) {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-		sp.registerOnSharedPreferenceChangeListener(this);
-		int currentTheme = Integer.parseInt(sp.getString("theme_type", "0"));
-		if (currentTheme != 0)
-			return;
-		 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION) && !rationaleShown) {
-				PositiveNegativeDialog rationale = PositiveNegativeDialog.newInstance(getString(R.string.location_rationale_title), R.string.location_rationale, R.string.ok, Statics.ACTION_LOCATION_RATIONALE_DONE);
-				FragmentManager fm = getSupportFragmentManager();
-				rationale.show(fm, "location_rationale");
-				return;
-			}
-
-			ActivityCompat.requestPermissions(this,
-					new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-					REQUEST_PERMISSION_ACCESS_COARSE_LOCATION);
-		}
-
 	}
 
 	@Override
@@ -331,8 +306,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onDialogAction(int action, Object details, String dialogTag) {
-		if (action == Statics.ACTION_LOCATION_RATIONALE_DONE)
-			initPermissions(true);
 	}
 
 	@Override
@@ -342,10 +315,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			case REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON:
 				if (granted)
 					callPiconSyncIntent();
-				break;
-			case REQUEST_PERMISSION_ACCESS_COARSE_LOCATION:
-				if (granted)
-					recreate();
 				break;
 			default:
 				Fragment details = getSupportFragmentManager().findFragmentById(R.id.detail_view);
@@ -385,8 +354,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key))
-			initPermissions(false);
 	}
 
 	public Context getContext() {

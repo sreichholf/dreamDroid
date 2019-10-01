@@ -1,3 +1,7 @@
+## 1.4.435
+* DEL: Auto-Theme selection and with it the coarse location permission (deprected in latest google libraries)
+* UPD: AndroidX libriaries updated to 1.1 where available
+
 ## 1.4.434
 * Remove tracking/statistics module and everything related (Privacy statement is gone, too)
 * NEW: expose TabbedNavigationActivity via URL-Scheme (thx to Stefan H.)
