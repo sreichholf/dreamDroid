@@ -1,5 +1,6 @@
-## 1.4.435
+## 1.5.436
 * DEL: Auto-Theme selection and with it the coarse location permission (deprected in latest google libraries)
+* DEL: Donations have been removed with no intention for any replacement (as 75% of any donation got eaten up by google and local taxes)
 * UPD: AndroidX libriaries updated to 1.1 where available
 
 ## 1.4.434

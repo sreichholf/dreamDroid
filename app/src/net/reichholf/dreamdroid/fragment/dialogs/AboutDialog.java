@@ -39,13 +39,6 @@ public class AboutDialog extends ActionDialog {
 		builder.setTitle(R.string.about)
 				.setMessage(text)
 				.setCancelable(true);
-		if (BuildConfig.FLAVOR.equals("google")) {
-			builder.setNeutralButton(R.string.donate, (dialog, which) -> {
-				ExtendedHashMap skus = ((BaseActivity) getActivity()).getIabItems();
-				DonationDialog d = DonationDialog.newInstance(skus);
-				((MultiPaneHandler) getActivity()).showDialogFragment(d, "donate_dialog");
-			});
-		}
 		builder.setNegativeButton(R.string.licenses, (dialog, which) -> {
 			DreamDroidAttributionPresenter.newInstance(getContext()).showDialog(getString(R.string.licenses));
 		});

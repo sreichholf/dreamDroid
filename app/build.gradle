@@ -67,8 +67,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 435
-        versionName="1.4.435"
+        versionCode 436
+        versionName="1.5.436"
         minSdkVersion 17
         targetSdkVersion 28
         multiDexEnabled true

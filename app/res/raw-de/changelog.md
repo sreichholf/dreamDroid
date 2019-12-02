@@ -1,5 +1,6 @@
-## 1.4.435
+## 1.5.436
 * ENTFERNT: Auto-Theme-Wahl und mit ihr die Berechtigung für die grobe Position
+* ENTFERNT: Die Funktion "Spenden" wurde ersatzlos gestrichen (Da ~75% einer durch Google/Steuern aufgefressen werden)
 * UPD: AndroidX Bibliotheken wurden auf Version 1.1 aktualisiert (wo verfügbar)
 
 ## 1.4.434
