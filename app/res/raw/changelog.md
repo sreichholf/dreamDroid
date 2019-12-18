@@ -1,7 +1,9 @@
-## 1.5.436
-* DEL: Auto-Theme selection and with it the coarse location permission (deprected in latest google libraries)
-* DEL: Donations have been removed with no intention for any replacement (as 75% of any donation got eaten up by google and local taxes)
+## 1.5.437
+* DEL: Auto-Theme selection and with that the coarse location permission have been dropped
+* DEL: Donations have been removed with no intention for any replacement (~70% of any donation got eaten up by google and local taxes)
 * UPD: AndroidX libriaries updated to 1.1 where available
+* UPD: Built with Android 10 SDK
+* FIX: Some minor crashes have been fixed
 
 ## 1.4.434
 * Remove tracking/statistics module and everything related (Privacy statement is gone, too)

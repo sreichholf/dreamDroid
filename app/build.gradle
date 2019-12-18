@@ -67,10 +67,10 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 436
-        versionName="1.5.436"
+        versionCode 437
+        versionName="1.5.437"
         minSdkVersion 17
-        targetSdkVersion 28
+        targetSdkVersion 29
         multiDexEnabled true
         sourceSets {
             main {
