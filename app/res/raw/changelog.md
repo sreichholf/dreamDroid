@@ -1,3 +1,7 @@
+## 1.5.438
+* FIX: restore compatibility with Android < 5.0
+* FIX: crash when streaming
+
 ## 1.5.437
 * DEL: Auto-Theme selection and with that the coarse location permission have been dropped
 * DEL: Donations have been removed with no intention for any replacement (~70% of any donation got eaten up by google and local taxes)

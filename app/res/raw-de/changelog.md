@@ -1,3 +1,7 @@
+## 1.5.438
+* FIX: Kompatibilität mit Android < 5.0 wiederhergestellt
+* FIX: Absturz beim Streamen behoben
+
 ## 1.5.437
 * DEL: Auto-Theme-Wahl und mit ihr die Berechtigung für die grobe Position
 * DEL: Die Funktion "Spenden" wurde ersatzlos gestrichen (~75% einer Spende wurden durch Google/Steuern aufgefressen)

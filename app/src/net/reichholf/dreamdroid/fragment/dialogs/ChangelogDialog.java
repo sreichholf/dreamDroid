@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.R;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -41,7 +42,13 @@ public class ChangelogDialog extends DialogFragment {
 		String changelog = "";
 		InputStream is = getResources().openRawResource(R.raw.changelog);
 		try {
-			changelog = IOUtils.toString(is);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			int length;
+			while ((length = is.read(buffer)) != -1) {
+				baos.write(buffer, 0, length);
+			}
+			changelog = baos.toString("UTF-8");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

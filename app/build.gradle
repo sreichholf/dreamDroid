@@ -9,7 +9,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.2'
+        classpath 'com.android.tools.build:gradle:3.5.3'
     }
 }
 apply plugin: 'com.android.application'
@@ -43,7 +43,7 @@ dependencies {
     implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.18'
     implementation 'com.github.StephenVinouze:MaterialNumberPicker:1.0.5'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.2.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.12.7'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
     implementation 'commons-net:commons-net:3.6'
@@ -67,8 +67,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 437
-        versionName="1.5.437"
+        versionCode 438
+        versionName="1.5.438"
         minSdkVersion 17
         targetSdkVersion 29
         multiDexEnabled true
