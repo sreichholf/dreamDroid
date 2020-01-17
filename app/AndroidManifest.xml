@@ -85,7 +85,7 @@
 
         <activity
             android:name=".activities.ShareActivity"
-            android:theme="@style/Theme.DreamDroid.Dialog">
+            android:theme="@style/Theme.DreamDroid">
 
             <intent-filter android:label="@string/watch_on_dream">
                 <action android:name="android.intent.action.VIEW"/>
@@ -123,6 +123,11 @@
                 <data android:scheme="rtmp"/>
                 <data android:scheme="mms"/>
 
+            </intent-filter>
+            <intent-filter android:label="@string/watch_on_dream">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="youtu.be" android:mimeType="text/*" />
             </intent-filter>
         </activity>
         <activity

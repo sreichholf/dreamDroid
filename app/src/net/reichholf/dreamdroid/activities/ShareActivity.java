@@ -1,33 +1,39 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
 package net.reichholf.dreamdroid.activities;
 
-import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import net.reichholf.dreamdroid.DatabaseHelper;
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.recyclerview.SimpleExtendedHashMapAdapter;
+import net.reichholf.dreamdroid.activities.abs.BaseActivity;
+import net.reichholf.dreamdroid.adapter.recyclerview.ProfileAdapter;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
+import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -35,25 +41,34 @@ import java.util.Date;
 
 /**
  * @author sre
- * 
  */
-public class ShareActivity extends ListActivity implements SimpleResultTask.SimpleResultTaskHandler {
+public class ShareActivity extends AppCompatActivity implements SimpleResultTask.SimpleResultTaskHandler, ItemClickSupport.OnItemClickListener {
 	public static String LOG_TAG = ShareActivity.class.getSimpleName();
 
+	private RecyclerView mProfilesView;
 	private SimpleResultTask mSimpleResultTask;
 	private SimpleHttpClient mShc;
-	private SimpleExtendedHashMapAdapter mAdapter;
+	private ProfileAdapter mAdapter;
 	private ArrayList<ExtendedHashMap> mProfileMapList;
 	private ProgressDialog mProgress;
 	private String mTitle;
 
 	ArrayList<Profile> mProfiles;
 
+	protected ItemClickSupport mItemClickSupport;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.share_list_content);
 		setTitle(getText(R.string.watch_on_dream));
+		Toolbar toolbar = findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
+		mProfilesView = findViewById(R.id.profilelist);
+		mProfilesView.setLayoutManager(new LinearLayoutManager(this));
+		mItemClickSupport = ItemClickSupport.addTo(mProfilesView);
+		mItemClickSupport.setOnItemClickListener(this);
 		load();
 	}
 
@@ -69,7 +84,7 @@ public class ShareActivity extends ListActivity implements SimpleResultTask.Simp
 	}
 
 	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
+	public void onItemClick(RecyclerView recyclerView, View v, int position, long id) {
 		Profile profile = mProfiles.get(position);
 		playOnDream(profile);
 	}
@@ -101,16 +116,22 @@ public class ShareActivity extends ListActivity implements SimpleResultTask.Simp
 						title = artist + " - " + song;
 				} else {
 					String tmp = extras.getString("title");
-					if(tmp != null)
+					if (tmp != null)
 						title = tmp;
 				}
 			}
 			mTitle = title;
 
+			Uri uri = Uri.parse(url);
 			url = URLEncoder.encode(url).replace("+", "%20");
 			title = URLEncoder.encode(title).replace("+", "%20");
 
 			String ref = "4097:0:1:0:0:0:0:0:0:0:" + url + ":" + title;
+
+			if ("youtu.be".equals(uri.getHost())) {
+				String vid = uri.getPath().substring(1);
+				ref = String.format("8193:0:1:0:0:0:0:0:0:0:%s:%s", URLEncoder.encode(String.format("yt://%s", vid)), title);
+			}
 			Log.i(LOG_TAG, ref);
 			ArrayList<NameValuePair> params = new ArrayList<>();
 			params.add(new NameValuePair("file", ref));
@@ -133,10 +154,8 @@ public class ShareActivity extends ListActivity implements SimpleResultTask.Simp
 				mProfileMapList.add(map);
 			}
 
-			mAdapter = new SimpleExtendedHashMapAdapter(this, mProfileMapList, android.R.layout.two_line_list_item, new String[] {
-					DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[] { android.R.id.text1,
-					android.R.id.text2 });
-			setListAdapter(mAdapter);
+			mAdapter = new ProfileAdapter(getContext(), mProfileMapList );
+			mProfilesView.setAdapter(mAdapter);
 			mAdapter.notifyDataSetChanged();
 		} else {
 			if (mProfiles.size() == 1) {
@@ -179,7 +198,6 @@ public class ShareActivity extends ListActivity implements SimpleResultTask.Simp
 		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
 		toast.show();
 	}
-
 
 	@Override
 	public Context getContext() {
