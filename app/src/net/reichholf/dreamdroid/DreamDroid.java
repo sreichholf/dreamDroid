@@ -419,31 +419,25 @@ public class DreamDroid extends Application {
 
 	public static int getThemeType(Context context) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-		return Integer.parseInt(sp.getString("theme_type", "0"));
+		int type = Integer.parseInt(sp.getString("theme_type", "1"));
+		return type > 2 ? 2 : type;
 	}
 
 	public static void setTheme(AppCompatActivity activity) {
 		int mode;
 		switch(getThemeType(activity)){
 			case 0:
-				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
-				break;
-			case 1:
 				mode = AppCompatDelegate.MODE_NIGHT_NO;
 				break;
-			case 2:
+			case 1:
 				mode = AppCompatDelegate.MODE_NIGHT_YES;
 				break;
-			case 3:
+			case 2:
 				mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
 				break;
 			default:
-				mode = AppCompatDelegate.MODE_NIGHT_AUTO;
+				mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
 		}
-		if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && mode == AppCompatDelegate.MODE_NIGHT_AUTO) {
-			mode = AppCompatDelegate.MODE_NIGHT_NO;
-		}
-
 		AppCompatDelegate.setDefaultNightMode(mode);
 		activity.getDelegate().setLocalNightMode(mode);
 	}

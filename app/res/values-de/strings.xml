@@ -326,7 +326,6 @@
     <string name="previous_lower">vorheriger</string>
 
     <string-array name="theme_option_entries">
-        <item>Auto</item>
         <item>Tag</item>
         <item>Nacht</item>
         <item>Wie System</item>

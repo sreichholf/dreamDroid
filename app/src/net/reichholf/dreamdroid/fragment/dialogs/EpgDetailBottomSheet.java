@@ -64,15 +64,17 @@ public class EpgDetailBottomSheet extends BottomSheetActionDialog {
         Bundle args = getArguments();
         mCurrentItem = (ExtendedHashMap) args.getSerializable(Event.class.getSimpleName());
         final boolean isNext = args.getBoolean("showNext", false);
-
+        String servicename = "";
+        String title = "N/A";
+        String date = null;
         String prefix = "";
-        if (isNext)
-            prefix = Event.PREFIX_NEXT;
-
-        String servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
-        String title = mCurrentItem.getString(prefix + Event.KEY_EVENT_TITLE);
-        String date = mCurrentItem.getString(prefix + Event.KEY_EVENT_START_READABLE);
-
+        if (mCurrentItem != null) {
+            if (isNext)
+                prefix = Event.PREFIX_NEXT;
+            servicename = mCurrentItem.getString(Event.KEY_SERVICE_NAME);
+            title = mCurrentItem.getString(prefix + Event.KEY_EVENT_TITLE);
+            date = mCurrentItem.getString(prefix + Event.KEY_EVENT_START_READABLE);
+        }
         if (!"N/A".equals(title) && date != null) {
             dialog = super.onCreateDialog(savedInstanceState);
             date = date.concat(" (" + mCurrentItem.getString(prefix + Event.KEY_EVENT_DURATION_READABLE) + " "

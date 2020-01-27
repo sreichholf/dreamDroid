@@ -41,6 +41,8 @@ public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder
 	public void onBindViewHolder(@NonNull ProfileViewHolder holder, int position) {
 		ExtendedHashMap ehm = mData.get(position);
 		Boolean isActive = (Boolean) ehm.get(ProfileListFragment.KEY_ACTIVE_PROFILE);
+		if (isActive == null)
+			isActive = false;
 
 		String profile = ehm.getString(DatabaseHelper.KEY_PROFILE_PROFILE);
 		String host = ehm.getString(DatabaseHelper.KEY_PROFILE_HOST);

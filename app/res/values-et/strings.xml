@@ -327,7 +327,6 @@
 <string name="previous_lower">eelmine</string>
 <string name="next_lower">järgmine</string>
 <string-array name="theme_option_entries">
-<item>Automaatne</item>
 <item>Päev</item>
 <item>Öö</item>
 <item>Süsteemi järgi</item>

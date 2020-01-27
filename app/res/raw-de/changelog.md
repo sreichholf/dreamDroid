@@ -1,3 +1,14 @@
+## 1.5.438
+* FIX: Kompatibilität mit Android < 5.0 wiederhergestellt
+* FIX: Absturz beim Streamen behoben
+
+## 1.5.437
+* DEL: Auto-Theme-Wahl und mit ihr die Berechtigung für die grobe Position
+* DEL: Die Funktion "Spenden" wurde ersatzlos gestrichen (~75% einer Spende wurden durch Google/Steuern aufgefressen)
+* UPD: AndroidX Bibliotheken wurden auf Version 1.1 aktualisiert (wo verfügbar)
+* UPD: Wechsel auf Android 10 SDK
+* FIX: Abstürze wurden behoben
+
 ## 1.4.434
 * Das Tracking-Modul wurde vollständig entfernt (die bliebtesten Features sind mittlerweile hinreichend bekannt) und mit ihm die Datenschutzerklärung
 * NEU: Export der TabbedNavigationActivity via URL-Schema (danke Stefan H.)

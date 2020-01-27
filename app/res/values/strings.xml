@@ -327,7 +327,6 @@
     <string name="previous_lower">previous</string>
     <string name="next_lower">next</string>
     <string-array name="theme_option_entries">
-        <item>Auto</item>
         <item>Day</item>
         <item>Night</item>
         <item>Follow System</item>

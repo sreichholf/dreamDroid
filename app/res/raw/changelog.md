@@ -1,3 +1,14 @@
+## 1.5.438
+* FIX: restore compatibility with Android < 5.0
+* FIX: crash when streaming
+
+## 1.5.437
+* DEL: Auto-Theme selection and with that the coarse location permission have been dropped
+* DEL: Donations have been removed with no intention for any replacement (~70% of any donation got eaten up by google and local taxes)
+* UPD: AndroidX libriaries updated to 1.1 where available
+* UPD: Built with Android 10 SDK
+* FIX: Some minor crashes have been fixed
+
 ## 1.4.434
 * Remove tracking/statistics module and everything related (Privacy statement is gone, too)
 * NEW: expose TabbedNavigationActivity via URL-Scheme (thx to Stefan H.)

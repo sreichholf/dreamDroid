@@ -16,12 +16,24 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.leanback.widget.HorizontalGridView;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -56,18 +68,6 @@ import org.videolan.libvlc.MediaPlayer;
 
 import java.util.ArrayList;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.core.view.GestureDetectorCompat;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.leanback.widget.HorizontalGridView;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
-import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -170,6 +170,20 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.video_player_overlay, container, false);
 		ButterKnife.bind(this, view);
+		mButtonAudioTrack.setOnClickListener(v -> onSelectAudioTrack());
+		mButtonInfo.setOnClickListener(v -> onInfo());
+		mButtonList.setOnClickListener(v -> onList());
+		mButtonSubtitleTrack.setOnClickListener(v -> onSelectSubtitleTrack());
+		mButtonRewind.setOnTouchListener(new OnRepeatListener(v -> onRewind()));
+		mButtonPlay.setOnClickListener(v -> onPlay());
+		mButtonForward.setOnTouchListener(new OnRepeatListener(v -> onForward()));
+
+		return view;
+	}
+
+	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		if (mServicesView != null) {
 			if (DreamDroid.isTV(getContext())) {
 				HorizontalGridView gridView = (HorizontalGridView) mServicesView;
@@ -240,15 +254,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			mGestureDector.onTouchEvent(event);
 			return true;
 		});
-		mButtonAudioTrack.setOnClickListener(v -> onSelectAudioTrack());
-		mButtonInfo.setOnClickListener(v -> onInfo());
-		mButtonList.setOnClickListener(v -> onList());
-		mButtonSubtitleTrack.setOnClickListener(v -> onSelectSubtitleTrack());
-		mButtonRewind.setOnTouchListener(new OnRepeatListener(v -> onRewind()));
-		mButtonPlay.setOnClickListener(v -> onPlay());
-		mButtonForward.setOnTouchListener(new OnRepeatListener(v -> onForward()));
-
-		return view;
 	}
 
 	protected void onRewind() {
@@ -548,6 +553,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	private void updateViews() {
 		View view = getView();
+
 		TextView title = view.findViewById(R.id.title);
 		title.setText(mTitle);
 
@@ -598,7 +604,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			mButtonInfo.setVisibility(View.GONE);
 		}
 		updateProgress();
-		if (mServicesView != null)
+		if (mServicesView != null && mServicesView.getAdapter() != null)
 			mServicesView.getAdapter().notifyDataSetChanged();
 	}
 

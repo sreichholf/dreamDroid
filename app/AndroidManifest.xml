@@ -18,16 +18,12 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="com.android.vending.BILLING" android:required="false"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:required="false"/>
     <uses-permission android:name="android.permission.BIND_JOB_SERVICE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
     <uses-feature android:name="android.hardware.faketouch" android:required="false"/>
-    <uses-feature android:name="android.hardware.location" android:required="false" />
-    <uses-feature android:name="android.hardware.location.network" android:required="false" />
 
     <application
         android:name=".DreamDroid"
@@ -89,7 +85,7 @@
 
         <activity
             android:name=".activities.ShareActivity"
-            android:theme="@style/Theme.DreamDroid.Dialog">
+            android:theme="@style/Theme.DreamDroid">
 
             <intent-filter android:label="@string/watch_on_dream">
                 <action android:name="android.intent.action.VIEW"/>
@@ -127,6 +123,11 @@
                 <data android:scheme="rtmp"/>
                 <data android:scheme="mms"/>
 
+            </intent-filter>
+            <intent-filter android:label="@string/watch_on_dream">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="youtu.be" android:mimeType="text/*" />
             </intent-filter>
         </activity>
         <activity
