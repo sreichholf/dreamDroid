@@ -121,8 +121,9 @@ android {
             buildConfigField "long", "BUILD_TIME", "0L"
         }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
             // Add build date object to BuildConfig
             buildConfigField "long", "BUILD_TIME", "" + System.currentTimeMillis() + "L"
