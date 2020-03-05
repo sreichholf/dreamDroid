@@ -12,16 +12,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar;
 
 /**
  * @author sre
@@ -119,7 +119,7 @@ public class EpgDetailBottomSheet extends BottomSheetActionDialog {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             }
         } else {
-            dialog = new AlertDialog.Builder(getContext())
+            dialog = new MaterialAlertDialogBuilder(getContext())
                     .setTitle(R.string.not_available)
                     .setMessage(R.string.no_epg_available)
                     .setPositiveButton(R.string.close, (dialog1, which) -> dismiss()).create();

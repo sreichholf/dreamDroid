@@ -24,80 +24,84 @@
 package de.duenndns.ssl;
 
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.DialogInterface.*;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class MemorizingActivity extends Activity
-		implements OnClickListener,OnCancelListener {
+        implements OnClickListener, OnCancelListener {
 
-	private final static Logger LOGGER = Logger.getLogger(MemorizingActivity.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(MemorizingActivity.class.getName());
 
-	int decisionId;
+    int decisionId;
 
-	AlertDialog dialog;
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		LOGGER.log(Level.FINE, "onCreate");
-		super.onCreate(savedInstanceState);
-	}
+    AlertDialog dialog;
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		Intent i = getIntent();
-		decisionId = i.getIntExtra(MemorizingTrustManager.DECISION_INTENT_ID, MTMDecision.DECISION_INVALID);
-		int titleId = i.getIntExtra(MemorizingTrustManager.DECISION_TITLE_ID, R.string.mtm_accept_cert);
-		String cert = i.getStringExtra(MemorizingTrustManager.DECISION_INTENT_CERT);
-		LOGGER.log(Level.FINE, "onResume with " + i.getExtras() + " decId=" + decisionId + " data: " + i.getData());
-		dialog = new AlertDialog.Builder(this).setTitle(titleId)
-			.setMessage(cert)
-			.setPositiveButton(R.string.mtm_decision_always, this)
-			.setNeutralButton(R.string.mtm_decision_once, this)
-			.setNegativeButton(R.string.mtm_decision_abort, this)
-			.setOnCancelListener(this)
-			.create();
-		dialog.show();
-	}
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        LOGGER.log(Level.FINE, "onCreate");
+        super.onCreate(savedInstanceState);
+    }
 
-	@Override
-	protected void onPause() {
-		if (dialog.isShowing())
-			dialog.dismiss();
-		super.onPause();
-	}
+    @Override
+    public void onResume() {
+        super.onResume();
+        Intent i = getIntent();
+        decisionId = i.getIntExtra(MemorizingTrustManager.DECISION_INTENT_ID, MTMDecision.DECISION_INVALID);
+        int titleId = i.getIntExtra(MemorizingTrustManager.DECISION_TITLE_ID, R.string.mtm_accept_cert);
+        String cert = i.getStringExtra(MemorizingTrustManager.DECISION_INTENT_CERT);
+        LOGGER.log(Level.FINE, "onResume with " + i.getExtras() + " decId=" + decisionId + " data: " + i.getData());
+        dialog = new MaterialAlertDialogBuilder(this).setTitle(titleId)
+                .setMessage(cert)
+                .setPositiveButton(R.string.mtm_decision_always, this)
+                .setNeutralButton(R.string.mtm_decision_once, this)
+                .setNegativeButton(R.string.mtm_decision_abort, this)
+                .setOnCancelListener(this)
+                .create();
+        dialog.show();
+    }
 
-	void sendDecision(int decision) {
-		LOGGER.log(Level.FINE, "Sending decision: " + decision);
-		MemorizingTrustManager.interactResult(decisionId, decision);
-		finish();
-	}
+    @Override
+    protected void onPause() {
+        if (dialog.isShowing())
+            dialog.dismiss();
+        super.onPause();
+    }
 
-	// react on AlertDialog button press
-	public void onClick(DialogInterface dialog, int btnId) {
-		int decision;
-		dialog.dismiss();
-		switch (btnId) {
-		case DialogInterface.BUTTON_POSITIVE:
-			decision = MTMDecision.DECISION_ALWAYS;
-			break;
-		case DialogInterface.BUTTON_NEUTRAL:
-			decision = MTMDecision.DECISION_ONCE;
-			break;
-		default:
-			decision = MTMDecision.DECISION_ABORT;
-		}
-		sendDecision(decision);
-	}
+    void sendDecision(int decision) {
+        LOGGER.log(Level.FINE, "Sending decision: " + decision);
+        MemorizingTrustManager.interactResult(decisionId, decision);
+        finish();
+    }
 
-	public void onCancel(DialogInterface dialog) {
-		sendDecision(MTMDecision.DECISION_ABORT);
-	}
+    // react on AlertDialog button press
+    public void onClick(DialogInterface dialog, int btnId) {
+        int decision;
+        dialog.dismiss();
+        switch (btnId) {
+            case DialogInterface.BUTTON_POSITIVE:
+                decision = MTMDecision.DECISION_ALWAYS;
+                break;
+            case DialogInterface.BUTTON_NEUTRAL:
+                decision = MTMDecision.DECISION_ONCE;
+                break;
+            default:
+                decision = MTMDecision.DECISION_ABORT;
+        }
+        sendDecision(decision);
+    }
+
+    public void onCancel(DialogInterface dialog) {
+        sendDecision(MTMDecision.DECISION_ABORT);
+    }
 }

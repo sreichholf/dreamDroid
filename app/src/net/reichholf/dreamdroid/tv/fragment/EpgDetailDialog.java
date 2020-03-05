@@ -13,13 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.dialogs.AbstractDialog;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -73,7 +75,7 @@ public class EpgDetailDialog extends AbstractDialog {
         if (!"N/A".equals(event.title()) && event.startReadable() != null)
             return super.onCreateDialog(savedInstanceState);
 
-        return new AlertDialog.Builder(getContext())
+        return new MaterialAlertDialogBuilder(getContext())
                 .setTitle(R.string.not_available)
                 .setMessage(R.string.no_epg_available)
                 .setPositiveButton(R.string.close, (dialog1, which) -> dismiss()).create();

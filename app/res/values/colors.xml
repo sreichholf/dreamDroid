@@ -11,8 +11,9 @@
 
     <color name="primary_dreamdroid">#ff424242</color>
     <color name="abs__holo_blue_light">#ff33b5e5</color>
-    <color name="grey">#FF888888</color>
-    <color name="black">#FF000000</color>
+    <color name="grey">#888888</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
     <color name="black_transparent">#7F000000</color>
     <color name="active_profile_color">#77AD2B</color>
     <color name="details_element_background_light">#FFEEEEEE</color>
@@ -20,13 +21,16 @@
     <color name="card_background_selected_dark">#39FFFFFF</color>
     <color name="card_background_selected_light">#19000000</color>
 
-    <color name="material_blue_500">#2196f3</color>
-    <color name="material_blue_600">#1e88e5</color>
+    <color name="material_blue_500">#03a9f4</color>
+    <color name="material_blue_600">#039be5</color>
+    <color name="material_blue_600_variant">#006db3</color>
     <color name="material_red_300">#e57373</color>
     <color name="material_red_500">#f44336</color>
+    <color name="material_red_700">#d32f2f</color>
     <color name="material_indigo_300">#7986cb</color>
     <color name="material_indigo_500">#3f51b5</color>
     <color name="material_grey_800">#424242</color>
+    <color name="material_grey_800_variant">#1b1b1b</color>
     <color name="material_grey_600">#757575</color>
     <color name="material_grey_500">#9e9e9e</color>
     <color name="material_grey_300">#e0e0e0</color>

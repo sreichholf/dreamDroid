@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import net.reichholf.dreamdroid.R;
 
 import org.apache.commons.io.IOUtils;
@@ -29,7 +31,7 @@ public class ChangelogDialog extends DialogFragment {
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
 				.setTitle(R.string.changelog)
 				.setMessage(R.string.loading)
 				.setPositiveButton(R.string.close, (dialog, which) -> dismiss());
