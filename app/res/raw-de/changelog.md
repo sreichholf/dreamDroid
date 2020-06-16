@@ -1,3 +1,7 @@
+## 1.5.439
+* UPD: Update einiger Google/Android Bibliotheken, Themes entsprechend angepasst
+* FIX: Fix Probleme mit builds für fdroid
+
 ## 1.5.438
 * FIX: Kompatibilität mit Android < 5.0 wiederhergestellt
 * FIX: Absturz beim Streamen behoben

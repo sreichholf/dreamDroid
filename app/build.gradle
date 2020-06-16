@@ -2,14 +2,13 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
-        maven { url "https://dl.bintray.com/videolan/Android" }
         flatDir{
             dirs 'libs'
         }
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.android.tools.build:gradle:3.6.1'
     }
 }
 apply plugin: 'com.android.application'
@@ -18,7 +17,6 @@ repositories {
     google()
     jcenter()
     maven { url "https://jitpack.io" }
-    maven { url "https://dl.bintray.com/videolan/Android" }
 }
 
 dependencies {
@@ -32,13 +30,13 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
     implementation 'androidx.preference:preference:1.1.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.leanback:leanback:1.0.0'
     implementation 'androidx.leanback:leanback-preference:1.0.0'
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'androidx.fragment:fragment:1.1.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.fragment:fragment:1.2.2'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation 'org.videolan.android:libvlc-all:3.1.12'
     implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.18'
     implementation 'com.github.StephenVinouze:MaterialNumberPicker:1.0.5'
@@ -60,6 +58,8 @@ dependencies {
     implementation 'com.github.franmontiel:AttributionPresenter:1.0.1'
     implementation 'com.jakewharton:butterknife:10.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
+    implementation 'androidx.navigation:navigation-fragment:2.2.1'
+    implementation 'androidx.navigation:navigation-ui:2.2.1'
 }
 
 android {
@@ -67,8 +67,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 438
-        versionName="1.5.438"
+        versionCode 439
+        versionName="1.5.439"
         minSdkVersion 17
         targetSdkVersion 29
         multiDexEnabled true
@@ -121,8 +121,9 @@ android {
             buildConfigField "long", "BUILD_TIME", "0L"
         }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
             // Add build date object to BuildConfig
             buildConfigField "long", "BUILD_TIME", "" + System.currentTimeMillis() + "L"

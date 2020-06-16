@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.DreamDroid" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.DreamDroid" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:listSelector">@drawable/list_selector_light</item>
         <item name="android:navigationBarColor">@color/primary_material_dark</item>
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
@@ -18,9 +18,15 @@
         <item name="buttonBarNeutralButtonStyle">@style/buttonBarNeutralButtonStyle</item>
         <item name="buttonBarPositiveButtonStyle">@style/buttonBarPositiveButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/buttonBarNegativeButtonStyle</item>
-        <item name="colorPrimary">@color/primary_dreamdroid</item>
-        <item name="colorPrimaryDark">@color/primary_material_dark</item>
-        <item name="colorAccent">@color/material_blue_600</item>
+        <item name="colorPrimary">@color/material_grey_800</item>
+        <item name="colorPrimaryDark">@color/material_grey_800_variant</item>
+        <item name="colorPrimaryVariant">@color/material_grey_800_variant</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/material_blue_600</item>
+        <item name="colorSecondaryVariant">@color/material_blue_600_variant</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorError">@color/material_red_700</item>
+        <item name="colorOnError">@color/white</item>
         <item name="android:textColorLink">@color/material_blue_600</item>
         <item name="detailsElementBackground">@color/details_element_background_light</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
@@ -123,7 +129,7 @@
     <style name="VideoPlayerButton" parent="Base.Widget.AppCompat.Button.Borderless" />
 
     <!-- NIGHT STYLES -->
-    <style name="Theme.DreamDroid.Night" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.DreamDroid.Night" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:listSelector">@drawable/list_selector_dark</item>
         <item name="android:navigationBarColor">@color/primary_material_dark</item>
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
@@ -142,9 +148,15 @@
         <item name="buttonBarPositiveButtonStyle">@style/buttonBarPositiveButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/buttonBarNegativeButtonStyle</item>
         <item name="detailsElementBackground">@color/details_element_background_dark</item>
-        <item name="colorPrimary">@color/primary_dreamdroid</item>
-        <item name="colorPrimaryDark">@color/primary_material_dark</item>
-        <item name="colorAccent">@color/material_blue_500</item>
+        <item name="colorPrimary">@color/material_grey_800</item>
+        <item name="colorPrimaryDark">@color/material_grey_800_variant</item>
+        <item name="colorPrimaryVariant">@color/material_grey_800_variant</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/material_blue_600</item>
+        <item name="colorSecondaryVariant">@color/material_blue_600_variant</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorError">@color/material_red_700</item>
+        <item name="colorOnError">@color/white</item>
         <item name="android:textColorLink">@color/material_blue_500</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">@android:color/transparent</item>

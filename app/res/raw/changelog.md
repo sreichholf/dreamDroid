@@ -1,3 +1,7 @@
+## 1.5.439
+* UPD: Update google libraries, adjust themes
+* FIX: Fix build issues on f-droid
+
 ## 1.5.438
 * FIX: restore compatibility with Android < 5.0
 * FIX: crash when streaming
