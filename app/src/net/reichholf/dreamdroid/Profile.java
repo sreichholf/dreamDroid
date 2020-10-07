@@ -47,6 +47,8 @@ public class Profile implements Serializable {
 	private String mSessionId;
 
 	private String mCachedDeviceInfo;
+    private String ssid;
+    private boolean isDefaultProfileOnNoWifi;
 
 	public static Profile getDefault() {
 		return new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
@@ -445,7 +447,23 @@ public class Profile implements Serializable {
 		return mCachedDeviceInfo;
 	}
 
-	public boolean equals(Profile p) {
+    public String getSsid() {
+        return ssid;
+    }
+
+    public void setSsid(String ssid) {
+        this.ssid = ssid;
+    }
+
+    public boolean isDefaultProfileOnNoWifi() {
+        return isDefaultProfileOnNoWifi;
+    }
+
+    public void setDefaultProfileOnNoWifi(boolean defaultProfileOnNoWifi) {
+        isDefaultProfileOnNoWifi = defaultProfileOnNoWifi;
+    }
+
+    public boolean equals(Profile p) {
 		return getHost().equals(p.getHost())
 				&& getStreamHost().equals(p.getStreamHost())
 				&& getUser().equals(p.getUser())

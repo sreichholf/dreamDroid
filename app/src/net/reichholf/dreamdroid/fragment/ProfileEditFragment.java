@@ -69,6 +69,8 @@ public class ProfileEditFragment extends BaseFragment {
 	private EditText mEncoderPort;
 	private LinearLayout mLayoutEncoder;
 	private LinearLayout mLayoutEncoderLogin;
+	private EditText ssid;
+	private CheckBox defaultOnNoWifi;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -96,6 +98,8 @@ public class ProfileEditFragment extends BaseFragment {
 		mSimpleRemote = view.findViewById(R.id.CheckBoxSimpleRemote);
 		mFileSsl = view.findViewById(R.id.CheckBoxSslFileStream);
 		mFileLogin = view.findViewById(R.id.CheckBoxLoginFileStream);
+		ssid = view.findViewById(R.id.EditTextSSID);
+		defaultOnNoWifi = view.findViewById(R.id.CheckBoxDefaultOnNoWifi);
 
 		//Encoder
 		mEncoderStream = view.findViewById(R.id.CheckBoxEncoder);
@@ -215,6 +219,8 @@ public class ProfileEditFragment extends BaseFragment {
 		mFileLogin.setChecked(mCurrentProfile.isFileLogin());
 		mFileSsl.setChecked(mCurrentProfile.isFileSsl());
 		mSimpleRemote.setChecked(mCurrentProfile.isSimpleRemote());
+		ssid.setText(mCurrentProfile.getSsid());
+		defaultOnNoWifi.setChecked(mCurrentProfile.isDefaultProfileOnNoWifi());
 
 		mEncoderStream.setChecked(mCurrentProfile.isEncoderStream());
 		mEncoderPath.setText(mCurrentProfile.getEncoderPath());
@@ -243,6 +249,8 @@ public class ProfileEditFragment extends BaseFragment {
 		mCurrentProfile.setUser(mUser.getText().toString());
 		mCurrentProfile.setPass(mPass.getText().toString());
 		mCurrentProfile.setSimpleRemote(mSimpleRemote.isChecked());
+		mCurrentProfile.setSsid(ssid.getText().toString().trim());
+		mCurrentProfile.setDefaultProfileOnNoWifi(defaultOnNoWifi.isChecked());
 		//Encoder
 		mCurrentProfile.setEncoderStream(mEncoderStream.isChecked());
 		mCurrentProfile.setEncoderPath(mEncoderPath.getText().toString());

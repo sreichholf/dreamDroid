@@ -141,4 +141,16 @@
             android:title="@string/dump_xml"/>
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:key="profile"
+        android:title="@string/profile">
+
+        <CheckBoxPreference
+            android:key="auto_switch_profile_wifi_based"
+            android:title="@string/auto_switch_profile_wifi_based"
+            android:summary="@string/auto_switch_profile_wifi_based_long"/>
+
+    </PreferenceCategory>
+
+
 </PreferenceScreen>

@@ -59,6 +59,7 @@
     <string name="delete">Delete</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">https</string>
+    <string name="ssid">Wifi Name</string>
     <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
     <string name="live">Live</string>
@@ -136,6 +137,7 @@
 
     <string name="virtual_remote">Virtual Remote</string>
     <string name="login">Login</string>
+    <string name="defaultOnNoWifi">Is Default Profile on no Wifi</string>
     <string name="login_enabled">Enable Login</string>
     <string name="wait_request_finished">Please wait until the running request has finished!</string>
     <string name="current_service">Current</string>
@@ -155,6 +157,8 @@
     <string name="profile_not_deleted">Error deleting profile</string>
     <string name="profile_deleted">Deleted profile</string>
     <string name="profile">Profile</string>
+    <string name="auto_switch_profile_wifi_based">Auto Profile switch</string>
+    <string name="auto_switch_profile_wifi_based_long">Automatically switch profile based on Wifi connection</string>
     <string name="profile_name">Profile name</string>
     <string name="profile_updated">Updated profile</string>
     <string name="profile_added">Added profile</string>
