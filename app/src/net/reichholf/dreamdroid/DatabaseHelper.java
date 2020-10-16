@@ -51,6 +51,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_PROFILE_DEFAULT_REF_NAME = "default_ref_name";
 	public static final String KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2";
 	public static final String KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name";
+	public static final String KEY_SSID = "ssid";
+	public static final String KEY_DEFAULT_PROFILE_ON_NO_WIFI = "defaultProfileOnNoWifi";
 	//ENCODER
 	public static final String KEY_PROFILE_ENCODER_STREAM = "encoder_stream";
 	public static final String KEY_PROFILE_ENCODER_PATH = "encoder_path";
@@ -105,6 +107,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			KEY_PROFILE_ENCODER_USER + " TEXT, " +
 			KEY_PROFILE_ENCODER_PASS + " TEXT, " +
 			KEY_PROFILE_ENCODER_VIDEO_BITRATE + " TEXT, " +
+			KEY_SSID + " TEXT, " +
+			KEY_DEFAULT_PROFILE_ON_NO_WIFI + " BOOLEAN, " +
 			KEY_PROFILE_ENCODER_AUDIO_BITRATE + " TEXT);";
 
 	private static final String PROFILES_TABLE_UPGRADE_2_3 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD "
@@ -137,6 +141,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String PROFILES_TABLE_UPGRADE_11_12_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_PASS + " TEXT;";
 	private static final String PROFILES_TABLE_UPGRADE_11_12_7 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_VIDEO_BITRATE + " INTEGER;";
 	private static final String PROFILES_TABLE_UPGRADE_11_12_8 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_AUDIO_BITRATE + " INTEGER;";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_SSID + " TEXT; ";
+	private static final String PROFILES_TABLE_UPGRADE_11_12_10 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_PROFILE_ON_NO_WIFI + " BOOLEAN;";
 
 	private static final String EVENT_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
 			EVENT_TABLE_NAME + " (" +
@@ -191,6 +197,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_6);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_7);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_8);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_9);
+		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_10);
 	}
 
 	/* (non-Javadoc)
@@ -198,6 +206,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
 		boolean scheduleBackup = oldVersion < newVersion;
 		try {
 			if (oldVersion == 2) {
@@ -291,6 +300,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		values.put(KEY_PROFILE_ENCODER_PASS, p.getEncoderPass());
 		values.put(KEY_PROFILE_ENCODER_VIDEO_BITRATE, p.getEncoderVideoBitrate());
 		values.put(KEY_PROFILE_ENCODER_AUDIO_BITRATE, p.getEncoderAudioBitrate());
+		values.put(KEY_SSID, p.getSsid());
+		values.put(KEY_DEFAULT_PROFILE_ON_NO_WIFI, p.isDefaultProfileOnNoWifi());
 		return values;
 	}
 
@@ -346,7 +357,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public ArrayList<Profile> getProfiles() {
 		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
 				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
-				KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN, KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE, KEY_PROFILE_ENCODER_AUDIO_BITRATE};
+				KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN, KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE, KEY_PROFILE_ENCODER_AUDIO_BITRATE,
+				KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI};
 		SQLiteDatabase db = getReadableDatabase();
 
 		ArrayList<Profile> list = new ArrayList<>();
@@ -375,7 +387,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public Profile getProfile(int id) {
 		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
 				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
-				KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN, KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE, KEY_PROFILE_ENCODER_AUDIO_BITRATE};
+				KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN, KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE, KEY_PROFILE_ENCODER_AUDIO_BITRATE,
+				KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI};
 		SQLiteDatabase db = getReadableDatabase();
 		Cursor c = db.query(PROFILES_TABLE_NAME, columns, KEY_PROFILE_ID + "=" + id, null, null, null, KEY_PROFILE_PROFILE);
 
@@ -432,6 +445,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		int encoderAudioBitrate = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_AUDIO_BITRATE));
 		int encoderVideoBitrate = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ENCODER_VIDEO_BITRATE));
 
+		String ssid = c.getString(c.getColumnIndex(DatabaseHelper.KEY_SSID));
+		boolean defaultProfileOnNoWifi = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_DEFAULT_PROFILE_ON_NO_WIFI))==1;
+
 		encoderPath = encoderPath == null ? "stream" : encoderPath;
 		encoderPort = encoderPort <= 0 ? 554 : encoderPort;
 		encoderUser = encoderUser == null ? "" : encoderUser;
@@ -439,7 +455,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		encoderAudioBitrate = encoderAudioBitrate <= 0 ? 128 : encoderAudioBitrate;
 		encoderVideoBitrate = encoderVideoBitrate <= 0 ? 2500 : encoderVideoBitrate;
 
-		return new Profile(id, name, host, streamHost, port, streamPort, filePort, isLogin, user, pass, isSsl, isStreamLogin, isFileLogin, isFileSsl, isSimpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, isEncoderStream, encoderPath, encoderPort, isEncoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate );
+		Profile p = new Profile(id, name, host, streamHost, port, streamPort, filePort, isLogin, user, pass, isSsl, isStreamLogin, isFileLogin, isFileSsl, isSimpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, isEncoderStream, encoderPath, encoderPort, isEncoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate );
+		p.setSsid(ssid);
+		p.setDefaultProfileOnNoWifi(defaultProfileOnNoWifi);
+		return p;
 	}
 
     public int setEvents(ArrayList<ExtendedHashMap> events){

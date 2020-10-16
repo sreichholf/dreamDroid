@@ -155,6 +155,8 @@
     <string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
     <string name="profile_deleted">Profil gelöscht</string>
     <string name="profile">Profil</string>
+    <string name="auto_switch_profile_wifi_based">Automatischer Profil wächsel</string>
+    <string name="auto_switch_profile_wifi_based_long">Automatisch das Profil wächseln, wenn mit WLAN verbunden oder getrennt wird.</string>
     <string name="profile_name">Profilname</string>
     <string name="profile_updated">Profil aktualisiert</string>
     <string name="profile_added">Profil hinzugefügt</string>

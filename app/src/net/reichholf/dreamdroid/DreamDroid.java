@@ -13,6 +13,9 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -41,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Optional;
 
 /**
  * @author sre
@@ -76,6 +80,7 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_INSTANT_ZAP = "instant_zap";
 	public static final String PREFS_KEY_VIDEO_ENABLE_GESTURES = "video_enable_gestures";
 	public static final String PREFS_KEY_LAST_VERSION_CODE = "last_version_code";
+	public static final String PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED = "auto_switch_profile_wifi_based";
 
 	public static final String IAB_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wvbGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpnaEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR888CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB";
 
@@ -177,7 +182,68 @@ public class DreamDroid extends Application {
 		sTags = new ArrayList<>();
 
 		loadCurrentProfile(this);
+
+		handleProfileSwitch(this);
 	}
+
+	private void handleProfileSwitch(Context context) {
+		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
+				DreamDroid.PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED, false)) {
+
+			String currentWifiName = getWifiName(context);
+			Profile currentProfile = DreamDroid.getCurrentProfile();
+
+			Log.i(LOG_TAG, "currentWifiName = " + currentWifiName);
+			Log.i(LOG_TAG, "currentProfileSsid = " + currentProfile.getSsid());
+			DatabaseHelper dbh = DatabaseHelper.getInstance(context);
+			if (currentWifiName == null) {
+				Log.i(LOG_TAG, "not connected to wifi, will search for default profile");
+				// not connected to wifi, search for default profile
+				if (currentProfile.isDefaultProfileOnNoWifi()) {
+					Log.i(LOG_TAG, "currentProfile is default for NO WIFI, so no action required");
+				} else {
+					Optional<Profile> noWifiDefault = dbh.getProfiles().stream().filter(Profile::isDefaultProfileOnNoWifi).findFirst();
+					if (noWifiDefault.isPresent()) {
+						Log.i(LOG_TAG, "found profile for default ");
+						setCurrentProfile(context, noWifiDefault.get().getId());
+					} else {
+						Log.w(LOG_TAG, "no default profile on no wifi found in all profiles.");
+					}
+				}
+			} else {
+				Log.i(LOG_TAG, "connected to wifi " + currentWifiName + " will search for profile with this wifi name configured");
+				// we are connected to a wifi
+				// check if current active profile fits to the wifi name
+				if (currentWifiName.equalsIgnoreCase(currentProfile.getSsid())) {
+					Log.i(LOG_TAG, "currentProfile has correct wifi name configured, so no action required");
+				} else {
+					Log.i(LOG_TAG, "connected to wifi " + currentWifiName + " will search for profile with this wifi name configured");
+					Optional<Profile> wifiProfile = dbh.getProfiles().stream().filter(p -> p.getSsid() != null).filter(p -> p.getSsid().equalsIgnoreCase(currentWifiName)).findFirst();
+					if (wifiProfile.isPresent()) {
+						Log.i(LOG_TAG, "found profile with configured ssid ");
+						setCurrentProfile(context, wifiProfile.get().getId());
+					} else {
+						Log.w(LOG_TAG, "no profile found with ssid configured for " + wifiProfile);
+					}
+				}
+			}
+		}
+	}
+
+	private String getWifiName(Context context) {
+		WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		if (manager.isWifiEnabled()) {
+			WifiInfo wifiInfo = manager.getConnectionInfo();
+			if (wifiInfo != null) {
+				NetworkInfo.DetailedState state = WifiInfo.getDetailedStateOf(wifiInfo.getSupplicantState());
+				if (state == NetworkInfo.DetailedState.CONNECTED || state == NetworkInfo.DetailedState.OBTAINING_IPADDR) {
+					return wifiInfo.getSSID().substring(1, wifiInfo.getSSID().length()-1);
+				}
+			}
+		}
+		return null;
+	}
+
 
 	private void initChannels() {
 		if (Build.VERSION.SDK_INT < 26) {
