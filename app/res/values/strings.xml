@@ -146,8 +146,10 @@
     <string name="next">Next</string>
     <string name="epg_search">EPG-Search</string>
     <string name="epg_search_hint">Search EPG</string>
-    <string name="standard">Standard Layout</string>
-    <string name="quickzap">QuickZap Layout</string>
+    <string name="remote_widget_config_title_style">Select the style of the remote control</string>
+    <string name="remote_widget_config_title_profile">Select the profile to use with the widget</string>
+    <string name="standard">Standard Layout (Full)</string>
+    <string name="quickzap">QuickZap Layout (Simple)</string>
     <string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
     <string name="ok">OK</string>
     <string name="activate">Activate</string>
