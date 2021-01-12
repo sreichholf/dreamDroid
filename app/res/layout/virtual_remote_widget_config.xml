@@ -1,22 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minWidth="400dp"
+    android:background="#111"
     android:orientation="vertical">
 
-    <CheckBox
-        android:id="@+id/checkbox_quickzap"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/remote_widget_config_title"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:checked="true"
-        android:text="@string/quickzap"/>
+        android:layout_margin="5dp"
+        android:background="@color/cardview_dark_background"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textColor="?android:attr/colorAccent"
+        android:text="@string/remote_widget_config_title_style" />
+
+    <RadioGroup
+        android:id="@+id/remote_widget_style_group"
+        android:background="@color/cardview_dark_background"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/remote_widget_style_simple"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/quickzap" />
+
+        <RadioButton
+            android:id="@+id/remote_widget_style_full"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/standard" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/remote_widget_config_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="@color/cardview_dark_background"
+        android:textColor="?android:attr/colorAccent"
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:text="@string/remote_widget_config_title_profile" />
 
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="10dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="0dp"
         android:drawSelectorOnTop="false"
-        android:minWidth="400dp"/>
+        android:dividerHeight="1dp"
+        android:minWidth="400dp" />
+
 </LinearLayout>

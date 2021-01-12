@@ -8,9 +8,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
@@ -25,10 +24,8 @@ import java.util.ArrayList;
  * Created by Stephan on 07.12.13.
  */
 public class VirtualRemoteWidgetConfiguration extends ListActivity {
-	private ArrayList<ExtendedHashMap> mProfileMapList;
-	private ArrayList<Profile> mProfiles;
-	private SimpleExtendedHashMapAdapter mAdapter;
-	private int mAppWidgetId;
+    private ArrayList<Profile> mProfiles;
+    private int mAppWidgetId;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -49,7 +46,7 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 
 	public void load() {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(this);
-		mProfileMapList = new ArrayList<>();
+        ArrayList<ExtendedHashMap> mProfileMapList = new ArrayList<>();
 		mProfileMapList.clear();
 		mProfiles = dbh.getProfiles();
 		if (mProfiles.size() > 0) {
@@ -60,9 +57,9 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 				mProfileMapList.add(map);
 			}
 
-			mAdapter = new SimpleExtendedHashMapAdapter(this, mProfileMapList, android.R.layout.two_line_list_item, new String[]{
-					DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1,
-					android.R.id.text2});
+            SimpleExtendedHashMapAdapter mAdapter = new SimpleExtendedHashMapAdapter(this, mProfileMapList, R.layout.two_line_card_list_item_no_indicator, new String[]{
+                    DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1,
+                    android.R.id.text2});
 			setListAdapter(mAdapter);
 			mAdapter.notifyDataSetChanged();
 		} else {
@@ -72,7 +69,8 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 	}
 
 	private boolean isQuickZapChecked(){
-		return ((CheckBox) findViewById(R.id.checkbox_quickzap)).isChecked();
+        RadioGroup widgetStyleGroup = (RadioGroup) findViewById(R.id.remote_widget_style_group);
+        return widgetStyleGroup.getCheckedRadioButtonId() == R.id.remote_widget_style_simple;
 	}
 
 	@Override
