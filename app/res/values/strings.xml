@@ -264,6 +264,8 @@
     <string name="no_profile_available">No connection profile found! Please configure at least one profile using the main application!</string>
     <string name="confirm_app_close">Ask for confirmation before app exits</string>
     <string name="confirm_app_close_long">Ask for confirmation before the app is being closed when pressing &quot;back&quot;</string>
+    <string name="play_button_as_play_pause">Use Play button as Play/Pause button</string>
+    <string name="play_button_as_play_pause_long">Use Play button as Play/Pause button in widget and in app remote</string>
     <string name="login_movies">Login (Movies)</string>
     <string name="ssl_movies">https (Movies)</string>
     <string name="login_live">Login (live)</string>
