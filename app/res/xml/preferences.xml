@@ -51,6 +51,11 @@
             android:key="confirm_app_close"
             android:summary="@string/confirm_app_close_long"
             android:title="@string/confirm_app_close"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="play_button_as_play_pause"
+            android:summary="@string/play_button_as_play_pause_long"
+            android:title="@string/play_button_as_play_pause"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="category_appearance"

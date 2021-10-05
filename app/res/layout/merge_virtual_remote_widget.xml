@@ -426,6 +426,17 @@
             android:layout_toEndOf="@id/ButtonRwd"/>
 
         <ImageButton
+            android:id="@+id/ButtonPlayPause"
+            style="@style/RemoteButton"
+            android:layout_width="@dimen/remote_key_width_big"
+            android:layout_height="@dimen/remote_key_height"
+            android:layout_toRightOf="@id/ButtonRwd"
+            android:background="@drawable/button_key_dark_oval"
+            android:src="@drawable/ic_media_play_pause_dark"
+            android:text="PLAY/PAUSE"
+            android:layout_toEndOf="@id/ButtonRwd"/>
+
+        <ImageButton
             android:id="@+id/ButtonStop"
             style="@style/RemoteButton"
             android:layout_width="@dimen/remote_key_width_big"
