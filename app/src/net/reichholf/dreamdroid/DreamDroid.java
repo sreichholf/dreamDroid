@@ -64,6 +64,7 @@ public class DreamDroid extends Application {
 
 	public static final String PREFS_KEY_QUICKZAP = "quickzap";
 	public static final String PREFS_KEY_CONFIRM_APP_CLOSE = "confirm_app_close";
+	public static final String PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE = "play_button_as_play_pause";
 	public static final String PREFS_KEY_ENABLE_ANIMATIONS = "enable_animations";
 	public static final String PREFS_KEY_FIRST_START = "first_start";
 	public static final String PREFS_KEY_SYNC_PICONS_PATH = "sync_picons_path";
