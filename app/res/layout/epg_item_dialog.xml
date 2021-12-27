@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorAccent"
             android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+            app:theme="@style/ThemeOverlay.Material3.Dark.ActionBar" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -75,7 +75,6 @@
         android:padding="8dp">
 
         <LinearLayout
-            style="?attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -107,7 +106,7 @@
         </LinearLayout>
 
         <LinearLayout
-            style="?attr/buttonBarStyle"
+            style="@style/Widget.AppCompat.ButtonBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="0dp"

@@ -189,7 +189,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		mDetailList.addOnScrollListener(listener);
 
 		mSlidingPane = v.findViewById(R.id.sliding_pane);
-		mSlidingPane.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
+		mSlidingPane.addPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
 			@Override
 			public void onPanelSlide(@NonNull View panel, float slideOffset) {
 			}

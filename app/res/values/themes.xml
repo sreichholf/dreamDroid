@@ -1,33 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.DreamDroid" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.DreamDroid" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:listSelector">@drawable/list_selector_light</item>
         <item name="android:navigationBarColor">@color/primary_material_dark</item>
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
         <item name="cardPreventCornerOverlap">true</item>
         <item name="cardBackgroundColor">@color/cardview_light_background</item>
-        <item name="navigation_item_selector">@color/navigation_item_selector_light</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
-        <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground</item>
-        <item name="actionModeShareDrawable">@drawable/ic_action_share</item>
-        <item name="actionModeBackground">@color/material_blue_grey_800</item>
+        <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground
+        </item>
+        <item name="actionModeBackground">@color/md_theme_light_onPrimaryContainer</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="buttonBarStyle">?attr/buttonBarStyle</item>
-        <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
-        <item name="buttonBarNeutralButtonStyle">@style/buttonBarNeutralButtonStyle</item>
-        <item name="buttonBarPositiveButtonStyle">@style/buttonBarPositiveButtonStyle</item>
-        <item name="buttonBarNegativeButtonStyle">@style/buttonBarNegativeButtonStyle</item>
-        <item name="colorPrimary">@color/material_grey_800</item>
-        <item name="colorPrimaryDark">@color/material_grey_800_variant</item>
-        <item name="colorPrimaryVariant">@color/material_grey_800_variant</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/material_blue_600</item>
-        <item name="colorSecondaryVariant">@color/material_blue_600_variant</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <item name="colorError">@color/material_red_700</item>
-        <item name="colorOnError">@color/white</item>
-        <item name="android:textColorLink">@color/material_blue_600</item>
+        <item name="android:textColorLink">@color/md_theme_light_primary</item>
         <item name="detailsElementBackground">@color/details_element_background_light</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">#DDD</item>
@@ -68,28 +54,74 @@
         <item name="text_color">#ff838383</item>
         <item name="title_color">#ff737373</item>
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
-        <item name="bottomSheetDialogTheme">@style/Theme.Design.Light.BottomSheetDialog</item>
         <item name="mdtp_theme_dark">false</item>
         <item name="md_dark_theme">false</item>
         <item name="ic_import_export">@drawable/ic_import_export_light</item>
         <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog</item>
         <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert</item>
         <item name="dialogTheme">@style/Theme.DreamDroid.Dialog</item>
+        <item name="floatingActionButtonStyle">@style/FloatingActionButton.Primary</item>
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/md_theme_light_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/md_theme_light_tertiary</item>
+        <item name="colorOnTertiary">@color/md_theme_light_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_light_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_light_onTertiaryContainer</item>
+        <item name="colorError">@color/md_theme_light_error</item>
+        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
+        <item name="colorOnError">@color/md_theme_light_onError</item>
+        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+        <item name="android:colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+        <item name="colorOnSurfaceInverse">@color/md_theme_light_inverseOnSurface</item>
+        <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
+        <item name="colorPrimaryInverse">@color/md_theme_light_primaryInverse</item>
+
+        <item name="textAppearanceHeadline1">@style/TextAppearance.MaterialComponents.Headline1
+        </item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.MaterialComponents.Headline2
+        </item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.MaterialComponents.Headline3
+        </item>
+        <item name="textAppearanceHeadline4">@style/TextAppearance.MaterialComponents.Headline4
+        </item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.MaterialComponents.Headline5
+        </item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.MaterialComponents.Headline6
+        </item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.MaterialComponents.Subtitle1
+        </item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.MaterialComponents.Subtitle2
+        </item>
+        <item name="textAppearanceBody1">@style/TextAppearance.MaterialComponents.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.MaterialComponents.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="textAppearanceButton">@style/TextAppearance.MaterialComponents.Button</item>
+        <item name="textAppearanceOverline">@style/TextAppearance.MaterialComponents.Overline</item>
+
     </style>
 
-    <style name="Theme.DreamDroid.Dialog.Alert" parent="Theme.MaterialComponents.Light.Dialog.Alert">
-        <item name="colorAccent">@color/material_blue_600</item>
+    <style name="Theme.DreamDroid.Dialog.Alert" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 
-    <style name="Theme.DreamDroid.Dialog" parent="Theme.MaterialComponents.Light.Dialog">
-        <item name="colorAccent">@color/material_blue_600</item>
+    <style name="Theme.DreamDroid.Dialog" parent="Theme.Material3.Light.Dialog">
         <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 
-    <style name="Theme.DreamDroid.BottomSheetDialog" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
-        <item name="colorAccent">@color/material_blue_600</item>
-        <item name="bottomSheetStyle">@style/Widget.MaterialComponents.BottomSheet.Modal</item>
+    <style name="Theme.DreamDroid.BottomSheetDialog" parent="Theme.Material3.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Material3.BottomSheet.Modal</item>
     </style>
 
     <style name="Theme.DreamDroid.NoTitle" parent="Theme.DreamDroid">
@@ -129,34 +161,51 @@
     <style name="VideoPlayerButton" parent="Base.Widget.AppCompat.Button.Borderless" />
 
     <!-- NIGHT STYLES -->
-    <style name="Theme.DreamDroid.Night" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.DreamDroid.Night" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_dark_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/md_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_dark_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/md_theme_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/md_theme_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_dark_onTertiaryContainer</item>
+        <item name="colorError">@color/md_theme_dark_error</item>
+        <item name="colorErrorContainer">@color/md_theme_dark_errorContainer</item>
+        <item name="colorOnError">@color/md_theme_dark_onError</item>
+        <item name="colorOnErrorContainer">@color/md_theme_dark_onErrorContainer</item>
+        <item name="android:colorBackground">@color/md_theme_dark_background</item>
+        <item name="colorOnBackground">@color/md_theme_dark_onBackground</item>
+        <item name="colorSurface">@color/md_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_dark_outline</item>
+        <item name="colorOnSurfaceInverse">@color/md_theme_dark_inverseOnSurface</item>
+        <item name="colorSurfaceInverse">@color/md_theme_dark_inverseSurface</item>
+        <item name="colorPrimaryInverse">@color/md_theme_dark_primaryInverse</item>
+        <item name="buttonBarButtonStyle">@style/Widget.Material3.Button.TextButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Material3.Button.TextButton</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Material3.Button.TextButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Material3.Button.TextButton</item>
+
         <item name="android:listSelector">@drawable/list_selector_dark</item>
         <item name="android:navigationBarColor">@color/primary_material_dark</item>
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
         <item name="cardPreventCornerOverlap">true</item>
         <item name="cardBackgroundColor">@color/cardview_dark_background</item>
-        <item name="navigation_item_selector">@color/navigation_item_selector_dark</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
-        <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground</item>
+        <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground
+        </item>
         <item name="actionModeShareDrawable">@drawable/ic_action_share</item>
         <item name="actionModeBackground">@color/material_blue_grey_800</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="md_dark_theme">true</item>
-        <item name="buttonBarStyle">?attr/buttonBarStyle</item>
-        <item name="buttonBarButtonStyle">@style/buttonBarButtonStyle</item>
-        <item name="buttonBarNeutralButtonStyle">@style/buttonBarNeutralButtonStyle</item>
-        <item name="buttonBarPositiveButtonStyle">@style/buttonBarPositiveButtonStyle</item>
-        <item name="buttonBarNegativeButtonStyle">@style/buttonBarNegativeButtonStyle</item>
         <item name="detailsElementBackground">@color/details_element_background_dark</item>
-        <item name="colorPrimary">@color/material_grey_800</item>
-        <item name="colorPrimaryDark">@color/material_grey_800_variant</item>
-        <item name="colorPrimaryVariant">@color/material_grey_800_variant</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorSecondary">@color/material_blue_600</item>
-        <item name="colorSecondaryVariant">@color/material_blue_600_variant</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <item name="colorError">@color/material_red_700</item>
-        <item name="colorOnError">@color/white</item>
         <item name="android:textColorLink">@color/material_blue_500</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>
         <item name="simpleHeaderBackground">@android:color/transparent</item>
@@ -197,26 +246,74 @@
         <item name="text_color">#ffb0b0b0</item>
         <item name="title_color">#ffd6d6d6</item>
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
-        <item name="bottomSheetDialogTheme">@style/Theme.Design.BottomSheetDialog</item>
         <item name="mdtp_theme_dark">true</item>
         <item name="ic_import_export">@drawable/ic_import_export_dark</item>
-        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog.Night</item>
         <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert</item>
         <item name="dialogTheme">@style/Theme.DreamDroid.Dialog</item>
+        <item name="floatingActionButtonStyle">@style/FloatingActionButton.Primary</item>
+
+        <item name="textAppearanceHeadline1">@style/TextAppearance.MaterialComponents.Headline1
+        </item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.MaterialComponents.Headline2
+        </item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.MaterialComponents.Headline3
+        </item>
+        <item name="textAppearanceHeadline4">@style/TextAppearance.MaterialComponents.Headline4
+        </item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.MaterialComponents.Headline5
+        </item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.MaterialComponents.Headline6
+        </item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.MaterialComponents.Subtitle1
+        </item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.MaterialComponents.Subtitle2
+        </item>
+        <item name="textAppearanceBody1">@style/TextAppearance.MaterialComponents.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.MaterialComponents.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.MaterialComponents.Caption</item>
+        <item name="textAppearanceButton">@style/TextAppearance.MaterialComponents.Button</item>
+        <item name="textAppearanceOverline">@style/TextAppearance.MaterialComponents.Overline</item>
+        <!-- Material3 attributes (needed if parent="Theme.MaterialComponents"). -->
+
+
+        <item name="textAppearanceDisplayLarge">@style/TextAppearance.Material3.DisplayLarge</item>
+        <item name="textAppearanceDisplayMedium">@style/TextAppearance.Material3.DisplayMedium
+        </item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Material3.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Material3.HeadlineLarge
+        </item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Material3.HeadlineMedium
+        </item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Material3.HeadlineSmall
+        </item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Material3.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Material3.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Material3.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Material3.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Material3.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Material3.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Material3.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Material3.LabelSmall</item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.SmallComponent
+        </item>
+        <item name="shapeAppearanceMediumComponent">
+            @style/ShapeAppearance.Material3.MediumComponent
+        </item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Material3.LargeComponent
+        </item>
     </style>
 
-    <style name="Theme.DreamDroid.Dialog.Night" parent="Theme.MaterialComponents.Dialog">
-        <item name="colorAccent">@color/material_blue_600</item>
+    <style name="Theme.DreamDroid.Dialog.Night" parent="Theme.Material3.Dark.Dialog">
         <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 
-    <style name="Theme.DreamDroid.BottomSheetDialog.Night" parent="Theme.MaterialComponents.BottomSheetDialog">
-        <item name="colorAccent">@color/material_blue_600</item>
-        <item name="bottomSheetStyle">@style/Widget.MaterialComponents.BottomSheet.Modal</item>
+    <style name="Theme.DreamDroid.BottomSheetDialog.Night" parent="Theme.Material3.Dark.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Material3.BottomSheet.Modal</item>
     </style>
 
-    <style name="Theme.DreamDroid.Dialog.Alert.Night" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="colorAccent">@color/material_blue_600</item>
+    <style name="Theme.DreamDroid.Dialog.Alert.Night" parent="Theme.Material3.Dark.Dialog.Alert">
         <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 </resources>

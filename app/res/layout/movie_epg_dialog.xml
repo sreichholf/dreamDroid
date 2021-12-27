@@ -18,7 +18,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorAccent"
             android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+            app:theme="@style/ThemeOverlay.Material3.Dark.ActionBar" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView

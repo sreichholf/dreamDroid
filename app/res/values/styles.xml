@@ -69,8 +69,9 @@
         <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>
     </style>
 
-    <style name="NavigationDrawer">
+    <style name="NavigationView">
         <item name="android:background">?android:windowBackground</item>
+        <item name="itemShapeFillColor">@color/mtrl_navigation_item_background_color</item>
     </style>
 
     <style name="MediumHeader" parent="SimpleHeader">
@@ -82,13 +83,15 @@
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="buttonBarButtonStyle" parent="Widget.MaterialComponents.Button.UnelevatedButton"/>
-    <style name="buttonBarNeutralButtonStyle" parent="Widget.MaterialComponents.Button.TextButton"/>
-    <style name="buttonBarPositiveButtonStyle" parent="Widget.MaterialComponents.Button.OutlinedButton"/>
-    <style name="buttonBarNegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton"/>
-    <style name="mdtp_ActionButton"  parent="Widget.MaterialComponents.Button.TextButton" />
+    <style name="mdtp_ActionButton"  parent="Widget.Material3.Button.TextButton.Dialog.Flush" />
 
-    <style name="Button" parent="Widget.MaterialComponents.Button" />
+    <style name="Button" parent="Widget.Material3.Button" />
+
+    <style name="FloatingActionButton.Primary" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">?attr/colorAccent</item>
+    </style>
+
+    <style name="Drawer" parent="Widget.Material3.FloatingActionButton.Primary" />
 
     <style name="Preference_TextAppearanceMaterialBody2">
         <item name="android:textSize">14sp</item>

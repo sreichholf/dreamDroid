@@ -49,4 +49,5 @@
     <attr name="keyline1" format="dimension"/>
     <attr name="keyline2" format="dimension"/>
     <attr name="keyline2from1" format="dimension"/>
+    <attr name="navigation_item_background" format="color" />
 </resources>

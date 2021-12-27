@@ -38,7 +38,7 @@ public class AboutDialog extends ActionDialog {
         builder.setTitle(R.string.about)
                 .setMessage(text)
                 .setCancelable(true);
-        builder.setNegativeButton(R.string.licenses, (dialog, which) -> {
+        builder.setNeutralButton(R.string.licenses, (dialog, which) -> {
             DreamDroidAttributionPresenter.newInstance(getContext()).showDialog(getString(R.string.licenses));
         });
 

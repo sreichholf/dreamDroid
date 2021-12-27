@@ -87,13 +87,12 @@
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.navigation.NavigationView
+        style="@style/NavigationView"
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:headerLayout="@layout/navigation_header"
-        app:itemIconTint="?attr/navigation_item_selector"
-        app:itemTextColor="?attr/navigation_item_selector"
         app:menu="@menu/navigation"/>
 
 </net.reichholf.dreamdroid.widget.DrawerLayout>
