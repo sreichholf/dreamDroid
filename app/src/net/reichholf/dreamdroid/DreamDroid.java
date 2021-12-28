@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import android.util.Log;
 
 import com.evernote.android.state.StateSaver;
+import com.google.android.material.color.DynamicColors;
 import com.livefront.bridge.Bridge;
 import com.livefront.bridge.SavedStateHandler;
 
@@ -151,6 +152,8 @@ public class DreamDroid extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		DynamicColors.applyToActivitiesIfAvailable(this);
+
 		// Determine if we require a Date-String-Locale-Missing-Fix
 		// for details please see:
 		// http://code.google.com/p/android/issues/detail?id=9453

@@ -2,7 +2,7 @@ package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
+import com.google.android.material.card.MaterialCardView;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -104,7 +104,7 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 	}
 
 	public class ServiceViewHolder extends RecyclerView.ViewHolder {
-		CardView root;
+		MaterialCardView root;
 		ImageView picon;
 		ProgressBar progress;
 		TextView serviceName;

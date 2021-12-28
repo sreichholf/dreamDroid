@@ -378,4 +378,6 @@
     <string name="encoder">Encoder</string>
     <string name="direct_streaming">Direct Streaming</string>
     <string name="backup_import_error">Backup import failed!</string>
+    <string name="tv">TV</string>
+    <string name="radio">Radio</string>
 </resources>

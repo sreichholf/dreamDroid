@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.fragment.MovieListFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
-import net.reichholf.dreamdroid.fragment.ServiceListFragment;
+import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.SignalFragment;
 import net.reichholf.dreamdroid.fragment.TimerListFragment;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
@@ -172,7 +172,8 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
 
             case R.id.menu_navigation_services:
                 clearBackStack();
-                getMainActivity().showDetails(ServiceListFragment.class);
+                //getMainActivity().showDetails(ServiceListFragment.class);
+                getMainActivity().showDetails(ServiceListPager.class);
                 break;
 
             case R.id.menu_navigation_device_info:

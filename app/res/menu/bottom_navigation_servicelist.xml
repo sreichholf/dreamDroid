@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_tv"
+        android:icon="@drawable/ic_menu_tv"
+        android:title="@string/tv"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_radio"
+        android:icon="@drawable/ic_menu_radio"
+        android:title="@string/radio"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_movie"
+        android:icon="@drawable/ic_menu_movie"
+        android:title="@string/movies"
+        dreamDroid:showAsAction="ifRoom|withText"/>
+</menu>

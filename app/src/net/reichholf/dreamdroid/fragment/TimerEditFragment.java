@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -12,7 +12,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,9 +26,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.evernote.android.state.State;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.timepicker.MaterialTimePicker;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -48,14 +49,11 @@ import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 
 //TODO Add Tag Support
 
@@ -74,9 +72,12 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	private boolean mTagsChanged;
 
-	@State public ArrayList<String> mSelectedTags;
-	@State public ExtendedHashMap mTimer;
-	@State public ExtendedHashMap mTimerOld;
+	@State
+	public ArrayList<String> mSelectedTags;
+	@State
+	public ExtendedHashMap mTimer;
+	@State
+	public ExtendedHashMap mTimerOld;
 
 	private EditText mName;
 	private EditText mDescription;
@@ -253,60 +254,72 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	}
 
 	protected boolean onItemSelected(int id) {
-		boolean consumed;
+		boolean consumed = true;
 		Calendar calendar;
 		switch (id) {
 			case Statics.ITEM_SAVE:
 				saveTimer();
-				consumed = true;
 				break;
 
 			case Statics.ITEM_CANCEL:
 				finish(Activity.RESULT_CANCELED);
-				consumed = true;
 				break;
 
 			case Statics.ITEM_PICK_SERVICE:
 				pickService();
-				consumed = true;
 				break;
 
 			case Statics.ITEM_PICK_BEGIN_DATE:
 				calendar = getCalendar(mBegin);
-				DatePickerDialog datePickerDialogBegin = DatePickerDialog.newInstance((view, year, month, day) -> TimerEditFragment.this.onDateSet(true, year, month, day), calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+				MaterialDatePicker datePickerDialogBegin = MaterialDatePicker.Builder.datePicker()
+						.setSelection(calendar.getTimeInMillis())
+						.build();
+				datePickerDialogBegin.addOnPositiveButtonClickListener(v -> {
+					onDateSet(true, (Long) datePickerDialogBegin.getSelection());
+				});
 				getMultiPaneHandler().showDialogFragment(datePickerDialogBegin, "dialog_pick_begin_date");
-				consumed = true;
 				break;
 
 			case Statics.ITEM_PICK_BEGIN_TIME:
 				calendar = getCalendar(mBegin);
-				TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance((timePickerDialog, hour, minute, second) -> TimerEditFragment.this.onTimeSet(true, hour, minute), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
+				MaterialTimePicker timePickerDialogBegin = new MaterialTimePicker.Builder()
+						.setHour(calendar.get(Calendar.HOUR_OF_DAY))
+						.setMinute(calendar.get(Calendar.MINUTE))
+						.build();
+				timePickerDialogBegin.addOnPositiveButtonClickListener(v -> {
+					onTimeSet(true, timePickerDialogBegin.getHour(), timePickerDialogBegin.getMinute());
+				});
+				//TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance((timePickerDialog, hour, minute, second) -> TimerEditFragment.this.onTimeSet(true, hour, minute), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialogBegin, "dialog_pick_begin_time");
-				consumed = true;
 				break;
 
 			case Statics.ITEM_PICK_END_DATE:
 				calendar = getCalendar(mEnd);
-				DatePickerDialog datePickerDialogEnd = DatePickerDialog.newInstance((view, year, month, day) -> TimerEditFragment.this.onDateSet(false, year, month, day), calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-				getMultiPaneHandler().showDialogFragment(datePickerDialogEnd, "dialog_pick_end_date");
-				consumed = true;
+				MaterialDatePicker datePickerDialogEnd = MaterialDatePicker.Builder.datePicker()
+						.setSelection(calendar.getTimeInMillis())
+						.build();
+				datePickerDialogEnd.addOnPositiveButtonClickListener(v -> {
+					onDateSet(false, (Long) datePickerDialogEnd.getSelection());
+				});
 				break;
 
 			case Statics.ITEM_PICK_END_TIME:
 				calendar = getCalendar(mEnd);
-				TimePickerDialog timePickerDialogEnd = TimePickerDialog.newInstance((timePickerDialog, hour, minute, second) -> TimerEditFragment.this.onTimeSet(false, hour, minute), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
-				getMultiPaneHandler().showDialogFragment(timePickerDialogEnd, "dialog_pick_end_time");
-				consumed = true;
+				MaterialTimePicker timePickerDialogEnd = new MaterialTimePicker.Builder()
+						.setHour(calendar.get(Calendar.HOUR_OF_DAY))
+						.setMinute(calendar.get(Calendar.MINUTE))
+						.build();
+				timePickerDialogEnd.addOnPositiveButtonClickListener(v -> {
+					onTimeSet(true, timePickerDialogEnd.getHour(), timePickerDialogEnd.getMinute());
+				});
 				break;
 
 			case Statics.ITEM_PICK_REPEATED:
 				pickRepeatings();
-				consumed = true;
 				break;
 
 			case Statics.ITEM_PICK_TAGS:
 				pickTags();
-				consumed = true;
 				break;
 
 			default:
@@ -595,6 +608,12 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis((long) time * 1000);
 		return cal;
+	}
+
+	public void onDateSet(boolean isBegin, Long millis) {
+		Calendar c = Calendar.getInstance();
+		c.setTimeInMillis(millis);
+		onDateSet(isBegin, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
 	}
 
 	public void onDateSet(boolean isBegin, int year, int month, int day) {

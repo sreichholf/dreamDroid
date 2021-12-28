@@ -28,7 +28,7 @@ import butterknife.ButterKnife;
  */
 public class MovieDetailBottomSheet extends BottomSheetActionDialog {
     @BindView(R.id.toolbar_epg_detail)
-    Toolbar mToolbar;
+    TextView mTitle;
 
     @BindView(R.id.service)
     TextView mService;
@@ -66,7 +66,7 @@ public class MovieDetailBottomSheet extends BottomSheetActionDialog {
         ButterKnife.bind(this, view);
         Movie movie = (Movie) getArguments().getSerializable(Movie.class.getSimpleName());
 
-        mToolbar.setTitle(movie.title());
+        mTitle.setText(movie.title());
 
         setTextOrHide(mService, movie.serviceName());
         setTextOrHide(mLength, movie.length());

@@ -54,7 +54,6 @@
         <item name="text_color">#ff838383</item>
         <item name="title_color">#ff737373</item>
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
-        <item name="mdtp_theme_dark">false</item>
         <item name="md_dark_theme">false</item>
         <item name="ic_import_export">@drawable/ic_import_export_light</item>
         <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog</item>
@@ -110,6 +109,11 @@
         <item name="textAppearanceButton">@style/TextAppearance.MaterialComponents.Button</item>
         <item name="textAppearanceOverline">@style/TextAppearance.MaterialComponents.Overline</item>
 
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.DreamDroid.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.DreamDroid.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.DreamDroid.LargeComponent</item>
+
+        <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog.Alert" parent="ThemeOverlay.Material3.MaterialAlertDialog">
@@ -246,7 +250,6 @@
         <item name="text_color">#ffb0b0b0</item>
         <item name="title_color">#ffd6d6d6</item>
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
-        <item name="mdtp_theme_dark">true</item>
         <item name="ic_import_export">@drawable/ic_import_export_dark</item>
         <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog.Night</item>
         <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert</item>
@@ -296,13 +299,11 @@
         <item name="textAppearanceLabelLarge">@style/TextAppearance.Material3.LabelLarge</item>
         <item name="textAppearanceLabelMedium">@style/TextAppearance.Material3.LabelMedium</item>
         <item name="textAppearanceLabelSmall">@style/TextAppearance.Material3.LabelSmall</item>
-        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.SmallComponent
-        </item>
-        <item name="shapeAppearanceMediumComponent">
-            @style/ShapeAppearance.Material3.MediumComponent
-        </item>
-        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Material3.LargeComponent
-        </item>
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.DreamDroid.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.DreamDroid.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.DreamDroid.LargeComponent</item>
+
+        <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>
     </style>
 
     <style name="Theme.DreamDroid.Dialog.Night" parent="Theme.Material3.Dark.Dialog">

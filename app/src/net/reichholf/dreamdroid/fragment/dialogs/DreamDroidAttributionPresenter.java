@@ -2,14 +2,18 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.content.Context;
 
+import androidx.appcompat.view.ContextThemeWrapper;
+
 import com.franmontiel.attributionpresenter.AttributionPresenter;
 import com.franmontiel.attributionpresenter.entities.Attribution;
 import com.franmontiel.attributionpresenter.entities.Library;
 import com.franmontiel.attributionpresenter.entities.License;
 
+import net.reichholf.dreamdroid.R;
+
 public class DreamDroidAttributionPresenter {
 	public static AttributionPresenter newInstance(Context context) {
-		return new AttributionPresenter.Builder(context)
+		return new AttributionPresenter.Builder(new ContextThemeWrapper(context, R.style.Theme_DreamDroid_Dialog))
 				.addAttributions(
 					Library.GSON,
 					Library.PICASSO,
@@ -106,6 +110,7 @@ public class DreamDroidAttributionPresenter {
 						.addLicense(License.APACHE)
 						.setWebsite("https://github.com/livefront/bridge")
 						.build()
-				).build();
+				)
+				.build();
 	}
 }

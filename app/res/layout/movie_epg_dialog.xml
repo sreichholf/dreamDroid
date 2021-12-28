@@ -4,32 +4,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="@dimen/dialogPreferredPadding">
+    android:padding="10dp">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar_epg_detail"
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/toolbar_epg_detail"
         android:layout_width="match_parent"
+        android:textAppearance="?attr/textAppearanceHeadline4"
         android:layout_height="wrap_content"
-        app:elevation="0dp">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_epg_detail"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorAccent"
-            android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.Material3.Dark.ActionBar" />
-    </com.google.android.material.appbar.AppBarLayout>
+        android:minHeight="?attr/actionBarSize"/>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/ScrollView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:clipToPadding="false"
-        android:paddingStart="10dp"
-        android:paddingTop="0dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="0dp">
+        android:padding="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"

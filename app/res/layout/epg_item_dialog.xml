@@ -5,24 +5,17 @@
     android:id="@+id/LinearLayoutMain"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    app:layout_behavior="@string/bottom_sheet_behavior"
     android:minWidth="150dip"
     android:orientation="vertical"
-    android:padding="0dp">
+    android:padding="10dp">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar_epg_detail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:elevation="0dp">
-
-        <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.textview.MaterialTextView
             android:id="@+id/toolbar_epg_detail"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorAccent"
-            android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.Material3.Dark.ActionBar" />
-    </com.google.android.material.appbar.AppBarLayout>
+            android:textAppearance="?attr/textAppearanceHeadline4"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"/>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/ScrollView"
@@ -30,10 +23,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingStart="10dp"
-        android:paddingTop="0dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="0dp">
+        android:padding="0dp">
 
         <LinearLayout
             android:id="@+id/LinearLayoutMain"
@@ -82,7 +72,7 @@
 
             <Button
                 android:id="@+id/ButtonSetTimer"
-                style="?attr/buttonBarPositiveButtonStyle"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
@@ -94,7 +84,7 @@
 
             <Button
                 android:id="@+id/ButtonEditTimer"
-                style="?attr/buttonBarPositiveButtonStyle"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
@@ -115,7 +105,7 @@
 
             <Button
                 android:id="@+id/ButtonImdb"
-                style="?attr/buttonBarPositiveButtonStyle"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
@@ -127,7 +117,7 @@
 
             <Button
                 android:id="@+id/ButtonSimilar"
-                style="?attr/buttonBarPositiveButtonStyle"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"

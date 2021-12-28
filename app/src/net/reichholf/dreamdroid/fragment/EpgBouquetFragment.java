@@ -3,8 +3,6 @@ package net.reichholf.dreamdroid.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.loader.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,9 +12,13 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.loader.content.Loader;
+
 import com.evernote.android.state.State;
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
-import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
@@ -39,13 +41,14 @@ import java.util.Calendar;
 /**
  * Created by Stephan on 01.11.2014.
  */
-public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
+public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	private static final String LOG_TAG = EpgBouquetFragment.class.getSimpleName();
 
 	private TextView mDateView;
 	private TextView mTimeView;
 	private boolean mWaitingForPicker;
-	@State public int mTime;
+	@State
+	public int mTime;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -82,8 +85,15 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		mDateView.setText(today.format(cal.getTime()));
 		mDateView.setOnClickListener(v -> {
 			Calendar calendar = getCalendar();
-			final DatePickerDialog datePickerDialog = DatePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-			getMultiPaneHandler().showDialogFragment(datePickerDialog, "epg_bouquet_date_picker");
+			final MaterialDatePicker dp = MaterialDatePicker.Builder.datePicker()
+					.setSelection(calendar.getTimeInMillis())
+					.build();
+			dp.addOnPositiveButtonClickListener(selection -> {
+				Calendar newDate = Calendar.getInstance();
+				newDate.setTimeInMillis((Long) dp.getSelection());
+				onDateSet(newDate.get(Calendar.YEAR), newDate.get(Calendar.MONTH), newDate.get(Calendar.DAY_OF_MONTH));
+			});
+			getMultiPaneHandler().showDialogFragment(dp, "epg_bouquet_date_picker");
 
 		});
 
@@ -91,8 +101,16 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		mTimeView.setText(now.format(cal.getTime()));
 		mTimeView.setOnClickListener(v -> {
 			Calendar calendar = getCalendar();
-			final TimePickerDialog timePickerDialog = TimePickerDialog.newInstance(EpgBouquetFragment.this, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
-			getMultiPaneHandler().showDialogFragment(timePickerDialog, "epg_bouquet_time_picker");
+			final MaterialTimePicker tp = new MaterialTimePicker.Builder()
+					.setTimeFormat(TimeFormat.CLOCK_24H)
+					.setHour(calendar.get(Calendar.HOUR_OF_DAY))
+					.setMinute(calendar.get(Calendar.MINUTE))
+					.build();
+
+			tp.addOnPositiveButtonClickListener(vw -> {
+				onTimeSet(tp.getHour(), tp.getMinute());
+			});
+			getMultiPaneHandler().showDialogFragment(tp, "epg_bouquet_time_picker");
 		});
 
 		FrameLayout frame = getAppCompatActivity().findViewById(R.id.content_header);
@@ -139,9 +157,9 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 
 	@Override
 	protected void reload() {
-		if(mReference != null && !mReference.isEmpty())
+		if (mReference != null && !mReference.isEmpty())
 			super.reload();
-		else if(!mWaitingForPicker)
+		else if (!mWaitingForPicker)
 			pickBouquet();
 	}
 
@@ -212,8 +230,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		return cal;
 	}
 
-	@Override
-	public void onDateSet(DatePickerDialog datePickerDialog, int year, int month, int day) {
+	public void onDateSet(int year, int month, int day) {
 		Calendar cal = getCalendar();
 		if (cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day)
 			return;
@@ -226,8 +243,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment implements
 		reload();
 	}
 
-	@Override
-	public void onTimeSet(TimePickerDialog timePickerDialog, int hourOfDay, int minute, int second) {
+	public void onTimeSet(int hourOfDay, int minute) {
 		Calendar cal = getCalendar();
 		if (cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute)
 			return;

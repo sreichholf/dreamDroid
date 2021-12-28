@@ -1,5 +1,4 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
     android:gravity="center_vertical"
@@ -7,31 +6,21 @@
     android:orientation="horizontal"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/textViewDate"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:gravity="center"
-        android:padding="5dp"
-        android:textAlignment="gravity"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@android:color/white"/>
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium" />
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/textViewTime"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:gravity="center"
-        android:padding="5dp"
-        android:textAlignment="gravity"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@android:color/white"/>
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium" />
 </LinearLayout>
