@@ -2,10 +2,11 @@ package net.reichholf.dreamdroid.fragment.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
-import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class IndeterminateProgress extends DialogFragment {
 	public static String ARG_TITLE = "title";
@@ -25,12 +26,10 @@ public class IndeterminateProgress extends DialogFragment {
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.progress(true, 0)
-				.progressIndeterminateStyle(true)
-				.title(getArguments().getInt(ARG_TITLE))
-				.content(getArguments().getInt(ARG_CONTENT))
-				.cancelable(false);
-		return builder.build();
+		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity());
+		builder.setMessage(getArguments().getInt(ARG_CONTENT))
+				.setTitle(getArguments().getInt(ARG_TITLE))
+				.setCancelable(false);
+		return builder.create();
 	}
 }

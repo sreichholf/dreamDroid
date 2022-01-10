@@ -11,6 +11,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -278,7 +279,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
             getBaseFragment().setCurrentTitle(mFragment.getString(R.string.loading));
 
         getAppCompatActivity().setTitle(getBaseFragment().getCurrentTitle());
-        mFragment.getLoaderManager().restartLoader(loader, getBaseFragment().getLoaderBundle(loader),
+        LoaderManager.getInstance(mFragment).restartLoader(loader, getBaseFragment().getLoaderBundle(loader),
                 (LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
     }
 

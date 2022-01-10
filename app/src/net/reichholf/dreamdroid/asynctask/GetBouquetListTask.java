@@ -15,7 +15,17 @@ import java.util.ArrayList;
  *         error-handling, refreshing and title-setting
  */
 public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean> {
-	private ArrayList<ExtendedHashMap> mBouquetList;
+	public class Bouquets {
+		public ArrayList<ExtendedHashMap> tv;
+		public ArrayList<ExtendedHashMap> radio;
+
+		public Bouquets() {
+			tv = new ArrayList<>();
+			radio = new ArrayList<>();
+		}
+	}
+
+	private Bouquets mBouquets;
 
 	public GetBouquetListTask(AsyncHttpTaskBaseHandler taskHandler) {
 		super(taskHandler);
@@ -23,25 +33,25 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 
 	@Override
 	protected Boolean doInBackground(Void... unused) {
-		mBouquetList = new ArrayList<>();
+		mBouquets = new Bouquets();
 		GetBoquetListTaskHandler taskHandler = (GetBoquetListTaskHandler) mTaskHandler.get();
 		if (isCancelled() || taskHandler == null)
 			return false;
 
 		AbstractListRequestHandler handler = new ServiceListRequestHandler();
 		String ref = taskHandler.getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
-		addBouquets(handler, ref);
+		addBouquets(handler, ref, mBouquets.tv);
 		ref = taskHandler.getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
-		addBouquets(handler, ref);
+		addBouquets(handler, ref, mBouquets.radio);
 
 		return true;
 	}
 
-	private boolean addBouquets(AbstractListRequestHandler handler, String ref) {
+	private boolean addBouquets(AbstractListRequestHandler handler, String ref, ArrayList<ExtendedHashMap> target) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("sRef", ref));
 		String xml = handler.getList(getHttpClient(), params);
-		return xml != null && !isCancelled() && handler.parseList(xml, mBouquetList);
+		return xml != null && !isCancelled() && handler.parseList(xml, target);
 	}
 
 	@Override
@@ -50,12 +60,12 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		if (isCancelled() || taskHandler == null)
 			return;
 
-		taskHandler.onBouquetListReady(result, mBouquetList, getErrorText());
+		taskHandler.onBouquetListReady(result, mBouquets, getErrorText());
 	}
 
 	public interface GetBoquetListTaskHandler extends AsyncHttpTaskBaseHandler {
 		Resources getResources();
 
-		void onBouquetListReady(boolean result, ArrayList<ExtendedHashMap> bouquetList, String errorText);
+		void onBouquetListReady(boolean result, Bouquets bouquets, String errorText);
 	}
 }

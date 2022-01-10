@@ -53,7 +53,8 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 		boolean hasNext = next != null && !"".equals(next);
 
 		if (service != null) {
-			if (Service.isMarker(service.getString(Service.KEY_REFERENCE))) {
+			String ref = service.getString(Service.KEY_REFERENCE);
+			if (Service.isMarker(ref)) {
 				holder.root.setCardElevation(0);
 				holder.root.setClickable(false);
 				holder.parentService.setVisibility(View.GONE);
@@ -61,6 +62,20 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 				holder.markerName.setText(service.getString(Event.KEY_SERVICE_NAME));
 				return;
 			}
+			if (Service.isDirectory(ref)) {
+				holder.parentService.setVisibility(View.VISIBLE);
+				holder.parentMarker.setVisibility(View.GONE);
+				holder.parentNow.setVisibility(View.GONE);
+				holder.parentNext.setVisibility(View.GONE);
+				holder.picon.setVisibility(View.GONE);
+				holder.progress.setVisibility(View.GONE);
+				holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
+				holder.root.setClickable(false);
+				holder.serviceName.setText(service.getString(Event.KEY_SERVICE_NAME));
+				return;
+			}
+			holder.parentNow.setVisibility(View.VISIBLE);
+
 			Event.supplementReadables(service);
 			Picon.setPiconForView(mContext, holder.picon, service, Statics.TAG_PICON);
 			holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
@@ -116,6 +131,7 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 		TextView eventNextDuration;
 		TextView markerName;
 		View parentService;
+		View parentNow;
 		View parentNext;
 		View parentMarker;
 
@@ -135,6 +151,7 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 			markerName = itemView.findViewById(R.id.marker_name);
 			parentService = itemView.findViewById(R.id.parent_service);
 			parentMarker = itemView.findViewById(R.id.parent_marker);
+			parentNow = itemView.findViewById(R.id.event_now);
 			parentNext = itemView.findViewById(R.id.event_next);
 		}
 	}

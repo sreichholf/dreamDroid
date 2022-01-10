@@ -22,6 +22,12 @@ import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.slidingpanelayout.widget.SlidingPaneLayout;
+
 import com.evernote.android.state.State;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
@@ -52,12 +58,6 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
 import java.util.ArrayList;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.loader.content.Loader;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.slidingpanelayout.widget.SlidingPaneLayout;
 
 
 /**

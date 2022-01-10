@@ -54,7 +54,6 @@
         <item name="text_color">#ff838383</item>
         <item name="title_color">#ff737373</item>
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
-        <item name="md_dark_theme">false</item>
         <item name="ic_import_export">@drawable/ic_import_export_light</item>
         <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog</item>
         <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert</item>
@@ -208,7 +207,6 @@
         <item name="actionModeShareDrawable">@drawable/ic_action_share</item>
         <item name="actionModeBackground">@color/material_blue_grey_800</item>
         <item name="windowActionModeOverlay">true</item>
-        <item name="md_dark_theme">true</item>
         <item name="detailsElementBackground">@color/details_element_background_dark</item>
         <item name="android:textColorLink">@color/material_blue_500</item>
         <item name="navListPreferredItemHeight">@dimen/navListPreferredItemHeight</item>

@@ -26,9 +26,9 @@
 
         <RelativeLayout
             android:id="@+id/drawer_profile"
+            style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/md_btn_selector"
             android:paddingBottom="@dimen/list_padding"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"

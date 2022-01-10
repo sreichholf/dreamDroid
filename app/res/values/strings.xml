@@ -16,6 +16,12 @@
         <item>All (Radio)</item>
     </string-array>
 
+    <string-array name="servicelist_dedicated">
+        <item>Bouquets</item>
+        <item>Provider</item>
+        <item>All Services</item>
+    </string-array>
+
     <string name="timer">Timer</string>
     <string name="mediaplayer">Mediaplayer</string>
     <string name="play">Play</string>
@@ -380,4 +386,5 @@
     <string name="backup_import_error">Backup import failed!</string>
     <string name="tv">TV</string>
     <string name="radio">Radio</string>
+    <string name="live_movie"><![CDATA[TV & Movies]]></string>
 </resources>

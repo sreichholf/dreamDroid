@@ -31,17 +31,14 @@
         android:layout_height="wrap_content"
         android:padding="0dp">
 
-        <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/service_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="4dp"
             android:layout_alignParentTop="true"
             android:layout_gravity="center_vertical"
             android:layout_margin="0dp"
-            android:layout_weight="1"
-            app:mpb_progressStyle="horizontal"
-            app:mpb_useIntrinsicPadding="false" />
+            android:layout_weight="1"/>
 
         <RelativeLayout
             android:id="@+id/parent_service"

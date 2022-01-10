@@ -160,16 +160,6 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
         setSelectedItem(itemId);
         Intent intent;
         switch (itemId) {
-            case R.id.menu_navigation_timer:
-                clearBackStack();
-                getMainActivity().showDetails(TimerListFragment.class);
-                break;
-
-            case R.id.menu_navigation_movies:
-                clearBackStack();
-                getMainActivity().showDetails(MovieListFragment.class);
-                break;
-
             case R.id.menu_navigation_services:
                 clearBackStack();
                 //getMainActivity().showDetails(ServiceListFragment.class);

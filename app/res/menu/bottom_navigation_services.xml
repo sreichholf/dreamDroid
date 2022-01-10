@@ -16,4 +16,9 @@
         android:icon="@drawable/ic_menu_movie"
         android:title="@string/movies"
         dreamDroid:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_timer"
+        android:icon="@drawable/ic_menu_timer"
+        android:title="@string/timer"
+        dreamDroid:showAsAction="ifRoom|withText"/>
 </menu>

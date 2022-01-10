@@ -14,22 +14,12 @@
                         android:id="@+id/menu_navigation_services"
                         android:checked="false"
                         android:icon="?attr/ic_menu_services"
-                        android:title="@string/services"/>
+                        android:title="@string/live_movie"/>
                     <item
                         android:id="@+id/menu_navigation_epg"
                         android:checked="false"
                         android:icon="?attr/ic_menu_epg"
                         android:title="@string/epg"/>
-                    <item
-                        android:id="@+id/menu_navigation_movies"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_movie"
-                        android:title="@string/movies"/>
-                    <item
-                        android:id="@+id/menu_navigation_timer"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_timer"
-                        android:title="@string/timer"/>
                     <item
                         android:id="@+id/menu_navigation_remote"
                         android:checked="false"

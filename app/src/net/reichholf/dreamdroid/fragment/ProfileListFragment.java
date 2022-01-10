@@ -11,9 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import androidx.appcompat.view.ActionMode;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,7 +21,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
+import androidx.appcompat.view.ActionMode;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
@@ -40,7 +40,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -138,12 +137,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 				mProgress.dismiss();
 				mProgress = null;
 			}
-			MaterialDialog.Builder builder = new MaterialDialog.Builder(getAppCompatActivity());
-			builder.progress(true, 0)
-					.progressIndeterminateStyle(true)
-					.title(R.string.searching)
-					.content(R.string.searching_known_devices)
-					.cancelable(false);
+
 			mProgress = IndeterminateProgress.newInstance(R.string.searching, R.string.searching_known_devices);
 			mProgress.setCancelable(false);
 			getMultiPaneHandler().showDialogFragment(mProgress, "dialog_devicesearch_indeterminate");
@@ -183,8 +177,8 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		}
 		mDetectedProfiles = profiles;
 
-		MaterialDialog.Builder builder = new MaterialDialog.Builder(getActivity());
-		builder.title(R.string.autodiscover_dreamboxes);
+		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity());
+		builder.setTitle(R.string.autodiscover_dreamboxes);
 
 		if (mDetectedProfiles.size() > 0) {
 			CharSequence[] items = new CharSequence[profiles.size()];
@@ -193,22 +187,24 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 				items[i] = String.format("%s (%s)", profiles.get(i).getName(), profiles.get(i).getHost());
 			}
 
-			builder.items(items);
-			builder.positiveText(R.string.reload);
-			builder.negativeText(R.string.add_all);
+			builder
+				.setItems(items, (dialog, which) -> {
+					mProfile = mDetectedProfiles.get(which);
+					editProfile();
+				})
+				.setPositiveButton(R.string.reload, (dialog, which) -> {
+					mDetectedProfiles = null;
+					detectDevices();
+				})
+				.setNegativeButton(R.string.add_all, (dialog, which) -> {
+					addAllDetectedDevices();
+				});
 
-			builder.itemsCallback((dialog, itemView, which, text) -> {
-				mProfile = mDetectedProfiles.get(which);
-				editProfile();
-			});
-			builder.onPositive((dialog, which) -> {
-				mDetectedProfiles = null;
-				detectDevices();
-			});
-			builder.onNegative((dialog, which) -> addAllDetectedDevices());
 		} else {
-			builder.content(R.string.autodiscovery_failed);
-			builder.neutralText(android.R.string.ok);
+			builder.setMessage(R.string.autodiscovery_failed);
+			builder.setNeutralButton(android.R.string.ok, (dialog, which) -> {
+
+			});
 		}
 		builder.show();
 	}

@@ -54,11 +54,6 @@ import java.util.ArrayList;
  */
 public class MovieListFragment extends BaseHttpRecyclerFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
-	public static final String BUNDLE_KEY_MOVIE = "movie";
-	public static final String BUNDLE_KEY_SELECTED_TAGS = "selectedTags";
-	public static final String BUNDLE_KEY_OLD_TAGS = "oldTags";
-	public static final String BUNDLE_KEY_CURRENT_LOCATION = "currentLocation";
-
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
 
@@ -73,7 +68,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
 		mEnableReload = true;
-		mHasFabMain = true;
+		//mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
 
@@ -98,12 +93,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 				R.id.event_duration});
 		getRecyclerView().setAdapter(mAdapter);
 		super.onActivityCreated(savedInstanceState);
-	}
-
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-		registerFab(R.id.fab_main, R.string.choose_location, R.drawable.ic_action_folder, v -> onItemSelected(Statics.ITEM_SELECT_LOCATION));
 	}
 
 	@Override
