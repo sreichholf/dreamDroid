@@ -97,6 +97,7 @@ public abstract class ScrollDirectionDetector implements AbsListView.OnScrollLis
      *
      * @deprecated because it should be used with caution
      */
+    @Deprecated
     private int estimateScrollY() {
         if (mListView == null || mListView.getChildAt(0) == null) return 0;
         View topChild = mListView.getChildAt(0);

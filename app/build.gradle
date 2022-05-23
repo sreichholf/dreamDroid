@@ -32,7 +32,7 @@ dependencies {
     implementation 'androidx.fragment:fragment:1.4.1'
     implementation 'com.google.android.material:material:1.6.0'
     implementation 'org.videolan.android:libvlc-all:3.1.12'
-    implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.18'
+    implementation 'com.simplecityapps:recyclerview-fastscroll:2.0.1'
     implementation 'com.github.StephenVinouze:MaterialNumberPicker:1.0.5'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'com.squareup.okhttp3:okhttp:3.12.7'
