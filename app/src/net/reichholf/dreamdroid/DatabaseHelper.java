@@ -74,7 +74,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public static final String KEY_SERVICES_NAME = "name";
 
 	public static final String DATABASE_NAME = "dreamdroid";
-	private static final int DATABASE_VERSION = 12;
+	private static final int DATABASE_VERSION = 13;
 	private static final String PROFILES_TABLE_NAME = "profiles";
 	private static final String EVENT_TABLE_NAME = "events";
 	private static final String SERVICES_TABLE_NAME = "services";
@@ -141,8 +141,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String PROFILES_TABLE_UPGRADE_11_12_6 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_PASS + " TEXT;";
 	private static final String PROFILES_TABLE_UPGRADE_11_12_7 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_VIDEO_BITRATE + " INTEGER;";
 	private static final String PROFILES_TABLE_UPGRADE_11_12_8 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_PROFILE_ENCODER_AUDIO_BITRATE + " INTEGER;";
-	private static final String PROFILES_TABLE_UPGRADE_11_12_9 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_SSID + " TEXT; ";
-	private static final String PROFILES_TABLE_UPGRADE_11_12_10 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_PROFILE_ON_NO_WIFI + " BOOLEAN;";
+
+	private static final String PROFILES_TABLE_UPGRADE_12_13_1 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_SSID + " TEXT; ";
+	private static final String PROFILES_TABLE_UPGRADE_12_13_2 = "ALTER TABLE " + PROFILES_TABLE_NAME + " ADD " + KEY_DEFAULT_PROFILE_ON_NO_WIFI + " BOOLEAN;";
 
 	private static final String EVENT_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS " +
 			EVENT_TABLE_NAME + " (" +
@@ -176,19 +177,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(SERVICES_TABLE_CREATE);
 	}
 
-	private void upgrade6to7(SQLiteDatabase db){
+	private void upgrade6to7(SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_2);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_3);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_4);
 	}
 
-	private void upgrade7to8(SQLiteDatabase db){
+	private void upgrade7to8(SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_2);
 	}
 
-	private void upgrade11to12(SQLiteDatabase db){
+	private void upgrade11to12(SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_2);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_3);
@@ -197,8 +198,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_6);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_7);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_8);
-		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_9);
-		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_10);
+	}
+
+	private void upgrade12to13(SQLiteDatabase db) {
+		db.execSQL(PROFILES_TABLE_UPGRADE_12_13_1);
+		db.execSQL(PROFILES_TABLE_UPGRADE_12_13_2);
 	}
 
 	/* (non-Javadoc)
@@ -249,6 +253,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
 			if(oldVersion == 11){
 				upgrade11to12(db);
+				oldVersion++;
+			}
+
+			if (oldVersion == 12) {
+				upgrade12to13(db);
 				oldVersion++;
 			}
 

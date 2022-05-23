@@ -6,7 +6,7 @@ repositories {
 }
 
 android {
-    compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
+    compileSdk 32
     buildToolsVersion project.BUILD_TOOLS_VERSION
     defaultConfig {
         minSdkVersion 7
@@ -25,10 +25,10 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
-    }
     dependencies {
         implementation 'com.google.android.material:material:1.1.0'
+    }
+    lint {
+        abortOnError false
     }
 }

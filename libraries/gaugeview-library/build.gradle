@@ -6,8 +6,8 @@ repositories {
 }
 
 android {
-    compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
-    buildToolsVersion project.BUILD_TOOLS_VERSION
+    compileSdk 32
+    buildToolsVersion BUILD_TOOLS_VERSION
 
     defaultConfig {
         minSdkVersion 7
@@ -21,7 +21,7 @@ android {
             res.srcDirs = ['res']
         }
     }
-    lintOptions {
+    lint {
         abortOnError false
     }
 }

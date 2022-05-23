@@ -56,7 +56,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.SimpleFragmentActivity">
+        <activity android:name=".activities.SimpleFragmentActivity" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
@@ -64,10 +64,12 @@
         <activity
             android:name=".activities.SimpleNoTitleFragmentActivity"
             android:theme="@style/Theme.DreamDroid.NoTitle"
-            android:uiOptions=""/>
+            android:uiOptions=""
+            android:exported="false"/>
 
         <activity
-            android:name=".activities.SimpleToolbarFragmentActivity" />
+            android:name=".activities.SimpleToolbarFragmentActivity"
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.backup.api_key"
@@ -78,15 +80,17 @@
 
         <activity
             android:name=".tv.activities.MainActivity"
-            android:theme="@style/Theme.Leanback" />
+            android:theme="@style/Theme.Leanback"
+            android:exported="false" />
         <activity
             android:name=".tv.activities.PreferenceActivity"
-            android:theme="@style/Theme.Dreamdroid.LeanbackPreferences">
-        </activity>
+            android:theme="@style/Theme.Dreamdroid.LeanbackPreferences"
+            android:exported="false" />
 
         <activity
             android:name=".activities.ShareActivity"
-            android:theme="@style/Theme.DreamDroid">
+            android:theme="@style/Theme.DreamDroid"
+            android:exported="true" >
 
             <intent-filter android:label="@string/watch_on_dream">
                 <action android:name="android.intent.action.VIEW"/>
@@ -132,27 +136,31 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.MainActivity"/>
+            android:name=".activities.MainActivity"
+            android:exported="false"/>
 
         <activity
             android:name=".activities.VideoActivity"
             android:theme="@style/Theme.DreamDroid.Player"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleTop"
-            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|uiMode|smallestScreenSize" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|uiMode|smallestScreenSize"
+            android:exported="false" />
 
         <activity
             android:name=".appwidget.VirtualRemoteWidgetConfiguration"
-            android:theme="@style/Theme.DreamDroid.Dialog">
+            android:theme="@style/Theme.DreamDroid.Dialog"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
 
         <activity android:name="de.duenndns.ssl.MemorizingActivity"
-                  android:theme="@style/Theme.DreamDroid.Dialog"/>
+                  android:theme="@style/Theme.DreamDroid.Dialog"
+                  android:exported="false"/>
 
-        <receiver android:name=".appwidget.VirtualRemoteWidgetProvider">
+        <receiver android:name=".appwidget.VirtualRemoteWidgetProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="net.reichholf.dreamdroid.appwidget.WidgetService.ACTION_RCU" />

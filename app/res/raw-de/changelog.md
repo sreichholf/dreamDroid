@@ -1,3 +1,10 @@
+## 1.6.440
+* NEU: Material 3 Theme
+* NEU: TV, Radio, Movies und Timerverwaltung sind jetzt zusammengfasst
+* NEU: Es kann ein/e alternative/r IP/Hostname für ein Verbindungsprofil auf Basis einer WLAN SSID definiert werden, Danke an @basalt79
+* FIX: "Play/Pause" in Virtueller Fernbedienung statt "Play"
+* UPD: Externe Bibliotheken aktualisiert
+
 ## 1.5.439
 * UPD: Update einiger Google/Android Bibliotheken, Themes entsprechend angepasst
 * FIX: Fix Probleme mit builds für fdroid

@@ -16,7 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import ru.noties.markwon.Markwon;
+import io.noties.markwon.Markwon;
 
 public class ChangelogDialog extends DialogFragment {
 	public static ChangelogDialog newInstance() {
@@ -55,6 +55,7 @@ public class ChangelogDialog extends DialogFragment {
 			e.printStackTrace();
 		}
 		IOUtils.closeQuietly(is); // don't forget to close your streams
-		Markwon.setMarkdown(getDialog().findViewById(android.R.id.message), changelog);
+		final Markwon markwon = Markwon.create(getContext());
+		markwon.setMarkdown(getDialog().findViewById(android.R.id.message), changelog);
 	}
 }

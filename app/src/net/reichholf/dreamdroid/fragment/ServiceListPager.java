@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.evernote.android.state.State;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -27,7 +28,14 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import java.util.ArrayList;
 
 public class ServiceListPager extends BaseHttpFragment implements GetBouquetListTask.GetBoquetListTaskHandler {
+	private static final String MODE_TV = "TV";
+	private static final String MODE_RADIO = "Radio";
+	private static final String MODE_MOVIES = "Movies";
+	private static final String MODE_TIMER = "Timer";
 
+
+	@State
+	public String mMode;
 
 	ViewPager2 mPager;
 
@@ -152,6 +160,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		super.onCreate(savedInstanceState);
 		mHasFabReload = false;
 		mBouquets = null;
+		mMode = MODE_TV;
 	}
 
 	@Override
@@ -176,9 +185,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		mTabLayout = getView().findViewById(R.id.tab_layout);
 
 		mPager = getView().findViewById(R.id.viewPager);
+
 		mServicelistAdapter = new ServicelistAdapter(this);
 		mMovielistAdapter = new MovieListAdapter(this);
 		mTimerListAdapter = new TimerListAdapter(this);
+
 		mPager.setAdapter(mServicelistAdapter);
 
 		attachTabLayoutMediator();
@@ -214,7 +225,14 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	@Override
 	public void onBouquetListReady(boolean result, GetBouquetListTask.Bouquets bouquets, String errorText) {
 		mBouquets = bouquets;
-		onTvSelected();
+		if (mMode.equals(MODE_TV))
+			onTvSelected();
+		else if (mMode.equals(MODE_RADIO))
+			onRadioSelected();
+		else if (mMode.equals((MODE_MOVIES)))
+			onMoviesSelected();
+		else
+			onTimerSelected();
 	}
 
 	protected void attachTabLayoutMediator() {
@@ -260,6 +278,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	}
 
 	public void onTvSelected() {
+		mMode = MODE_TV;
 		mServicelistAdapter.clear();
 		detachTabLayoutMediator();
 		String[] servicelist = getResources().getStringArray(R.array.servicelist_dedicated);
@@ -282,6 +301,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	}
 
 	public void onRadioSelected() {
+		mMode = MODE_RADIO;
 		mServicelistAdapter.clear();
 		detachTabLayoutMediator();
 		String[] servicelist = getResources().getStringArray(R.array.servicelist_dedicated);
@@ -305,6 +325,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	}
 
 	public void onMoviesSelected() {
+		mMode = MODE_MOVIES;
 		detachTabLayoutMediator();
 		mMovielistAdapter.clear();
 		for (String location : DreamDroid.getLocations())
@@ -316,6 +337,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	}
 
 	public void onTimerSelected() {
+		mMode = MODE_TIMER;
 		detachTabLayoutMediator();
 		mTabLayout.setVisibility(View.GONE);
 		mPager.setAdapter(mTimerListAdapter);

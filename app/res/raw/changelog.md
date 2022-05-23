@@ -1,3 +1,9 @@
+## 1.6.440
+* NEW: Material 3 Theme and updated libraries
+* NEW: Merge TV, Radio, Movies and Timer Management into a Sliding Tab
+* NEW: You can now define an alternative ip/hostname based on the WiFi SSID you're connected to, thx to @basalt79
+* FIX: Use "Play/Pause" in Virtual Remote instead of "Play"
+
 ## 1.5.439
 * UPD: Update google libraries, adjust themes
 * FIX: Fix build issues on f-droid
