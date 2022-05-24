@@ -4,7 +4,7 @@
     <string name="description">Beskrivelse</string>
     <string name="title">Titel</string>
     <string name="mo">Man</string>
-    <string name="app_name">DreamDroid</string>
+    <string name="app_name_release">DreamDroid</string>
 
     <string-array name="servicelist">
         <item>Bouquets (TV)</item>

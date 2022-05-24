@@ -3,7 +3,7 @@
     <string name="description">Opis</string>
     <string name="title">Naslov</string>
     <string name="mo">Mo</string>
-    <string name="app_name">DreamDroid</string>
+    <string name="app_name_release">DreamDroid</string>
     <string-array name="servicelist">
         <item>Buketi (TV)</item>
         <item>Provideri (TV)</item>

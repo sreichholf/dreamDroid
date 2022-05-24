@@ -4,7 +4,7 @@
     <string name="description">描述</string>
     <string name="title">标题</string>
     <string name="mo">周一</string>
-    <string name="app_name">DreamDroid</string>
+    <string name="app_name_release">DreamDroid</string>
 
     <string-array name="servicelist">
         <item>喜爱频道(TV)</item>

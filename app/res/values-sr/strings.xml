@@ -3,7 +3,7 @@
     <string name="description">opis</string>
     <string name="title">natpis</string>
     <string name="mo">mo</string>
-    <string name="app_name">DreamDroid</string>
+    <string name="app_name_release">DreamDroid</string>
     <string-array name="servicelist">
         <item>Bouquets (TV)</item>
         <item>Provider (TV)</item>

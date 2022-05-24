@@ -4,8 +4,10 @@
     <string name="description">Description</string>
     <string name="title">Title</string>
     <string name="mo">Mo</string>
-    <string name="app_name">DreamDroid</string>
-    <string name="app_name_tv">dreamDroidTV</string>
+    <string name="app_name_release">DreamDroid</string>
+    <string name="app_name_tv_release">dreamDroidTV</string>
+    <string name="app_name_debug">DreamDroid DEV</string>
+    <string name="app_name_tv_debug">dreamDroidTV DEV</string>
 
     <string-array name="servicelist">
         <item>Bouquets (TV)</item>

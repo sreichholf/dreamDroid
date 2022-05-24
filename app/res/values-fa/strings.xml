@@ -4,7 +4,7 @@
     <string name="description">توضیحات</string>
     <string name="title">عنوان</string>
     <string name="mo">Mo</string>
-    <string name="app_name">PEDroid</string>
+    <string name="app_name_release">PEDroid</string>
 
     <string-array name="servicelist">
         <item>لیست (تلوزیون)</item>

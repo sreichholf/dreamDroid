@@ -3,8 +3,8 @@
 
 <string name="description">Kirjeldus</string>
 <string name="title">Pealkiri</string>
-<string name="app_name">Dreamdroid</string>
-<string name="app_name_tv">dreamDroidTV</string>
+<string name="app_name_release">Dreamdroid</string>
+<string name="app_name_tv_release">dreamDroidTV</string>
 
 <string-array name="servicelist">
 <item>Lemmiknimekirjad (TV)</item>

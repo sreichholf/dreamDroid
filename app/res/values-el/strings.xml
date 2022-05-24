@@ -4,7 +4,7 @@
     <string name="description">Περιγραφή</string>
     <string name="title">Τίτλος</string>
     <string name="mo">μο</string>
-    <string name="app_name">DreamDroid</string>
+    <string name="app_name_release">DreamDroid</string>
 
     <string-array name="servicelist">
         <item>Μπουκέτα (TV)</item>

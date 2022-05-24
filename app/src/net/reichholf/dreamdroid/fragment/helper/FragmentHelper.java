@@ -43,7 +43,7 @@ public class FragmentHelper {
 	}
 
 	public void onCreate(Bundle savedInstanceState) {
-		mBaseTitle = mCurrentTitle = mFragment.getString(R.string.app_name);
+		mBaseTitle = mCurrentTitle = mFragment.getString(R.string.app_name_release);
 	}
 
 	public void onActivityCreated(Bundle savedInstanceState) {

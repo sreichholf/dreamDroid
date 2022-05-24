@@ -112,6 +112,10 @@ android {
     buildTypes {
         debug {
             buildConfigField "long", "BUILD_TIME", "0L"
+            applicationIdSuffix '.debug'
+            versionNameSuffix "-debug"
+            resValue "string", "app_name", "@string/app_name_debug"
+            resValue "string", "app_name_tv", "@string/app_name_tv_debug"
         }
         release {
             minifyEnabled true
@@ -120,6 +124,8 @@ android {
             debuggable false
             // Add build date object to BuildConfig
             buildConfigField "long", "BUILD_TIME", "" + System.currentTimeMillis() + "L"
+            resValue "string", "app_name", "@string/app_name_release"
+            resValue "string", "app_name_tv", "@string/app_name_tv_release"
         }
     }
     compileOptions {

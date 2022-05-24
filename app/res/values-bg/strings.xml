@@ -2,7 +2,7 @@
 <resources>
     <string name="description">описание</string>
     <string name="title">заглавие</string>
-    <string name="app_name">ДримДроид</string>
+    <string name="app_name_release">ДримДроид</string>
     <string-array name="servicelist">
         <item>Букети(ТВ)Провайдер(ТВ)Всички Канали(ТВ)Букети(радио)Провайдер(радио)Всички канали(радио)</item>
         <item/>

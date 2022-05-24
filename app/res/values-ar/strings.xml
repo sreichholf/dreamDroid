@@ -3,7 +3,7 @@
 
     <string name="description">الوصف</string>
     <string name="title">العنوان</string>
-    <string name="app_name">دريم درويد</string>
+    <string name="app_name_release">دريم درويد</string>
 
     <string-array name="servicelist">
         <item>قائمة الخدمات</item>

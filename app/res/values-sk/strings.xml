@@ -4,7 +4,7 @@
     <string name="description">Popis</string>
     <string name="title">Názov</string>
     <string name="mo">Po</string>
-    <string name="app_name">DreamDroid</string>
+    <string name="app_name_release">DreamDroid</string>
 
     <string-array name="servicelist">
         <item>Bouquets(TV)</item>
