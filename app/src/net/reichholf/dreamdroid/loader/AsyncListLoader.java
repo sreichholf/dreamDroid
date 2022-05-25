@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.loader;
 
 import android.content.Context;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.AsyncTaskLoader;
 import android.util.Log;
 
@@ -35,8 +38,8 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 	 * @param context
 	 */
 	@SuppressWarnings("unchecked")
-	public AsyncListLoader(Context context, ListRequestInterface listRequestHandler, boolean requireLocsAndTags,
-			Bundle args) {
+	public AsyncListLoader(@NonNull Context context, ListRequestInterface listRequestHandler, boolean requireLocsAndTags,
+						   @Nullable Bundle args) {
 		super(context);
 		mListRequestHandler = listRequestHandler;
 		mRequireLocsAndTags = requireLocsAndTags;
@@ -61,6 +64,7 @@ public class AsyncListLoader extends AsyncTaskLoader<LoaderResult<ArrayList<Exte
 		cancelLoad();
 	}
 
+	@Nullable
 	@Override
 	public LoaderResult<ArrayList<ExtendedHashMap>> loadInBackground() {
 		if (mListRequestHandler == null) {

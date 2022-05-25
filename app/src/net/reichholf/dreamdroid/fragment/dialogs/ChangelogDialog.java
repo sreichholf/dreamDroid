@@ -19,6 +19,7 @@ import java.io.InputStream;
 import io.noties.markwon.Markwon;
 
 public class ChangelogDialog extends DialogFragment {
+	@NonNull
 	public static ChangelogDialog newInstance() {
 		
 		Bundle args = new Bundle();

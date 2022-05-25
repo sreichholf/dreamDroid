@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
+import androidx.annotation.NonNull;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -35,7 +37,7 @@ public abstract class E2SimpleListHandler extends DefaultHandler {
 	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
-	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
+	public void startElement(String namespaceUri, @NonNull String localName, String qName, Attributes attrs) {
 		if (localName.equals(mTag)) {
 			inItem = true;
 			mItem = "";
@@ -49,7 +51,7 @@ public abstract class E2SimpleListHandler extends DefaultHandler {
 	 * java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void endElement(String namespaceURI, String localName, String qName) {
+	public void endElement(String namespaceURI, @NonNull String localName, String qName) {
 		if (localName.equals(mTag)) {
 			inItem = false;
 			mList.add(mItem.trim());

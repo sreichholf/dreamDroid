@@ -7,6 +7,9 @@
 package net.reichholf.dreamdroid.helpers.enigma2;
 
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 /**
@@ -32,7 +35,7 @@ public class Service extends ExtendedHashMap {
 		}
 	}
 
-	public static int getFlags(String ref) {
+	public static int getFlags(@Nullable String ref) {
 		int flags = 0;
 		if (ref == null || ref.isEmpty())
 			return flags;
@@ -50,7 +53,7 @@ public class Service extends ExtendedHashMap {
 		return (getFlags(ref) & FLAGS.isDirectory.value()) == FLAGS.isDirectory.value();
 	}
 
-	public static boolean isBouquet(String ref) {
+	public static boolean isBouquet(@NonNull String ref) {
 		return ref.startsWith("1:7:");
 	}
 

@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.asynctask;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
@@ -14,6 +16,7 @@ public class SimpleResultTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>
 		mHandler = handler;
 	}
 
+	@NonNull
 	@Override
 	protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 		if (isCancelled())

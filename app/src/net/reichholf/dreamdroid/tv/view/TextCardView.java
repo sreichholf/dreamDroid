@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.tv.view;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.leanback.widget.BaseCardView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,22 +21,24 @@ import net.reichholf.dreamdroid.R;
  */
 public class TextCardView extends BaseCardView {
 
-    @BindView(R.id.title_text)
+    @Nullable
+	@BindView(R.id.title_text)
     protected TextView mTitle;
 
-    @BindView(R.id.content_text)
+    @Nullable
+	@BindView(R.id.content_text)
     protected TextView mContent;
 
-    public TextCardView(Context context) {
+    public TextCardView(@NonNull Context context) {
         this(context, null);
     }
 
-    public TextCardView(Context context, AttributeSet attrs) {
+    public TextCardView(@NonNull Context context, AttributeSet attrs) {
         this(context, attrs, R.attr.imageCardViewStyle);
     }
 
 
-    public TextCardView(Context context, AttributeSet attrs, int defStyle) {
+    public TextCardView(@NonNull Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         setCardType(BaseCardView.CARD_TYPE_INFO_UNDER);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -50,7 +54,8 @@ public class TextCardView extends BaseCardView {
         mTitle.setText(text);
     }
 
-    public CharSequence getTitleText() {
+    @Nullable
+	public CharSequence getTitleText() {
         if (mTitle == null) {
             return null;
         }
@@ -66,7 +71,8 @@ public class TextCardView extends BaseCardView {
         mContent.setText(text);
     }
 
-    public CharSequence getContentText() {
+    @Nullable
+	public CharSequence getContentText() {
         if (mContent == null) {
             return null;
         }

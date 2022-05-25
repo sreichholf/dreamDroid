@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.core.content.FileProvider;
@@ -83,6 +84,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	private int mSize;
 	private String mFilename;
 	@State public byte[] mRawImage;
+	@Nullable
 	private MediaScannerConnection mScannerConn;
 	private HttpFragmentHelper mHttpHelper;
 
@@ -174,7 +176,7 @@ public class ScreenShotFragment extends BaseFragment implements
 		return view;
 	}
 
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
 		SwipeRefreshLayout SwipeRefreshLayout = view.findViewById(R.id.ptr_layout);
@@ -216,7 +218,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		if (menu.findItem(R.id.menu_reload) == null && mActionsEnabled) {
 			inflater.inflate(R.menu.reload, menu);
 			inflater.inflate(R.menu.save, menu);
@@ -242,6 +244,7 @@ public class ScreenShotFragment extends BaseFragment implements
 		}
 	}
 
+	@NonNull
 	private String getFileExtension() {
 		if (mFormat == FORMAT_JPG) {
 			return "jpg";
@@ -252,14 +255,14 @@ public class ScreenShotFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		if (mScannerConn != null)
 			mScannerConn.disconnect();
 		super.onSaveInstanceState(outState);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		switch (item.getItemId()) {
 			case Statics.ITEM_RELOAD:
 				reload();
@@ -274,7 +277,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	/**
 	 * @param bytes
 	 */
-	private void onScreenshotAvailable(byte[] bytes) {
+	private void onScreenshotAvailable(@NonNull byte[] bytes) {
 		if (!isAdded())
 			return;
 		mRawImage = bytes;
@@ -335,6 +338,7 @@ public class ScreenShotFragment extends BaseFragment implements
 		saveToFile(false);
 	}
 
+	@Nullable
 	private File saveToFile(boolean inCache) {
 //		performFileSearch();
 
@@ -401,7 +405,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<byte[]>> loader, LoaderResult<byte[]> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<byte[]>> loader, @NonNull LoaderResult<byte[]> result) {
 		mHttpHelper.onLoadFinished();
 		if (!result.isError()) {
 			if (result.getResult().length > 0)

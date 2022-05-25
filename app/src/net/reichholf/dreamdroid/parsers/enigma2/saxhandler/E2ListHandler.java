@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 
 import org.xml.sax.helpers.DefaultHandler;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
  *
  */
 public abstract class E2ListHandler extends DefaultHandler {
+	@Nullable
 	protected ArrayList<ExtendedHashMap> mList;
 	
 	public E2ListHandler(){

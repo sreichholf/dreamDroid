@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment.abs;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -57,7 +58,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
 		if (mReload)
@@ -77,7 +78,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		return onItemSelected(item.getItemId());
 	}
 
@@ -89,7 +90,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	 * @param id The id used to identify the item clicked (<code>ITEM_*</code>
 	 *           statics)
 	 */
-	protected void registerOnClickListener(View v, final int id) {
+	protected void registerOnClickListener(@Nullable View v, final int id) {
 		if (v != null) {
 			v.setOnClickListener(v1 -> onItemSelected(id));
 		}
@@ -118,7 +119,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	/**
 	 * @param event
 	 */
-	protected void findSimilarEvents(ExtendedHashMap event) {
+	protected void findSimilarEvents(@NonNull ExtendedHashMap event) {
 		mHttpHelper.findSimilarEvents(event);
 	}
 
@@ -137,11 +138,13 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 		return mHttpHelper.onKeyUp(keyCode, event);
 	}
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		return new ArrayList<>();
 	}
 
+	@NonNull
 	@Override
 	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
@@ -162,7 +165,7 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 	}
 
 	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader, @NonNull LoaderResult<ExtendedHashMap> result) {
 		mHttpHelper.onLoadFinished();
 		setCurrentTitle(getLoadFinishedTitle());
 		getAppCompatActivity().setTitle(getCurrentTitle());

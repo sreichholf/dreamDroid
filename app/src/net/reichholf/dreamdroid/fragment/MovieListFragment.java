@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
@@ -62,10 +63,11 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	@State public ArrayList<String> mOldTags;
 	@State public ExtendedHashMap mMovie;
 
+	@Nullable
 	private ProgressDialog mProgress;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(@Nullable Bundle savedInstanceState) {
 		mCardListStyle = true;
 		mEnableReload = true;
 		//mHasFabMain = true;
@@ -96,7 +98,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.locactions_and_tags, menu);
 	}
@@ -149,17 +151,17 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	}
 
 	@Override
-	public void onItemClick(RecyclerView parent, View view, int position, long id) {
+	public void onItemClick(RecyclerView parent, @NonNull View view, int position, long id) {
 		onMovieItemClick(view, position, false);
 	}
 
 	@Override
-	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
+	public boolean onItemLongClick(RecyclerView parent, @NonNull View view, int position, long id) {
 		onMovieItemClick(view, position, true);
 		return true;
 	}
 
-	private void onMovieItemClick(View view, int position, boolean isLong) {
+	private void onMovieItemClick(@NonNull View view, int position, boolean isLong) {
 	mMovie = mMapList.get(position);
 		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
 				DreamDroid.PREFS_KEY_INSTANT_ZAP, false);
@@ -170,7 +172,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		}
 	}
 
-	public void showPopupMenu(View v) {
+	public void showPopupMenu(@NonNull View v) {
 		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_movielist, menu.getMenu());
 		menu.setOnMenuItemClickListener(menuItem -> onMovieAction(menuItem.getItemId()));
@@ -193,7 +195,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	}
 
 	@Override
-	public void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
 		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
@@ -208,6 +210,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		}
 	}
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -230,8 +233,8 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-	                           LoaderResult<ArrayList<ExtendedHashMap>> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		//when popping fromt he backstack (e.g. after epg search) onStart will restore the loader which will in return call onLoadfinished
 		//because this in done twice (in onStart and in onResumed and we are not ready to handle this before onResume, we ignore any onLoadFinished
 		//that happens while we are not in a Resumed state
@@ -304,7 +307,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	}
 
 	@Override
-	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
+	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, @NonNull Integer[] selected) {
 		ArrayList<String> tags = DreamDroid.getTags();
 		ArrayList<String> selectedTags = new ArrayList<>();
 		for (Integer which : selected) {

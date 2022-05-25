@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -18,7 +20,7 @@ public class EpgAdapter extends SimpleTextAdapter {
 	}
 
 	@Override
-	public void onBindViewHolder(SimpleViewHolder holder, int position) {
+	public void onBindViewHolder(@NonNull SimpleViewHolder holder, int position) {
 		super.onBindViewHolder(holder, position);
 		ImageView picon = holder.itemView.findViewById(R.id.picon);
 		ExtendedHashMap service = mData.get(position);

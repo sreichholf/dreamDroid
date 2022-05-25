@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import androidx.annotation.Nullable;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,7 +45,9 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	protected boolean mReload;
 	protected ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
+	@Nullable
 	protected Bundle mExtras;
+	@Nullable
 	protected RecyclerView.Adapter mAdapter;
 	protected HttpFragmentHelper mHttpHelper;
 
@@ -77,7 +81,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
 	}
@@ -97,12 +101,12 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		return onItemSelected(item.getItemId());
 	}
 
@@ -114,7 +118,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		checkMenuReload(menu, inflater);
 	}
 
@@ -125,7 +129,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		}
 	}
 
-	public void checkMenuReload(Menu menu, MenuInflater inflater) {
+	public void checkMenuReload(Menu menu, @NonNull MenuInflater inflater) {
 		if (!mEnableReload)
 			return;
 
@@ -142,6 +146,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	 * @param key
 	 * @return
 	 */
+	@Nullable
 	public String getDataForKey(String key) {
 		if (mData != null) {
 			return (String) mData.get(key);
@@ -155,6 +160,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	 * @param defaultValue
 	 * @return
 	 */
+	@Nullable
 	public String getDataForKey(String key, String defaultValue) {
 		if (mData != null) {
 			String str = (String) mData.get(key);
@@ -189,7 +195,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	 * @param id The id used to identify the item clicked (<code>ITEM_*</code>
 	 *           statics)
 	 */
-	protected void registerOnClickListener(View v, final int id) {
+	protected void registerOnClickListener(@NonNull View v, final int id) {
 		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
@@ -264,6 +270,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		return new ArrayList<>();
 	}
 
+	@NonNull
 	@Override
 	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
@@ -290,7 +297,7 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {

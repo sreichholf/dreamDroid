@@ -20,6 +20,7 @@ import java.util.ArrayList;
  * Created by Stephan on 08.12.13.
  */
 public class WidgetService extends HttpIntentService {
+	@NonNull
 	public static String TAG = WidgetService.class.getSimpleName();
 
 	public static final int JOB_ID = 1337;
@@ -39,7 +40,7 @@ public class WidgetService extends HttpIntentService {
 			doZapRequest();
 	}
 
-	private void doRemoteRequest(Intent intent) {
+	private void doRemoteRequest(@NonNull Intent intent) {
 		setupSSL();
 
 		Profile profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(getApplicationContext(), intent.getIntExtra(KEY_WIDGETID, -1));

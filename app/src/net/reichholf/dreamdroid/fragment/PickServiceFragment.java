@@ -57,6 +57,7 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment {
 		finish(Activity.RESULT_OK, data);
 	}
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();

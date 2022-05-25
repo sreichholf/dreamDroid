@@ -16,6 +16,7 @@ import com.evernote.android.state.State;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.livefront.bridge.Bridge;
 
+import androidx.annotation.Nullable;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -56,7 +57,9 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	protected boolean mEnableReload;
 	@State public ArrayList<ExtendedHashMap> mMapList;
 	protected ExtendedHashMap mData;
+	@Nullable
 	protected Bundle mExtras;
+	@Nullable
 	protected BaseAdapter mAdapter;
 	protected HttpFragmentHelper mHttpHelper;
 
@@ -96,7 +99,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		((MainActivity)getAppCompatActivity()).unregisterFab(R.id.fab_reload);
 		((MainActivity)getAppCompatActivity()).unregisterFab(R.id.fab_main);
@@ -118,7 +121,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		Bridge.saveInstanceState(this, outState);
 	}
@@ -130,7 +133,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		return onItemSelected(item.getItemId());
 	}
 
@@ -156,7 +159,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		}
 	}
 
-	public void checkMenuReload(Menu menu, MenuInflater inflater) {
+	public void checkMenuReload(Menu menu, @NonNull MenuInflater inflater) {
 		if (!mEnableReload)
 			return;
 
@@ -173,6 +176,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * @param key
 	 * @return
 	 */
+	@Nullable
 	public String getDataForKey(String key) {
 		if (mData != null) {
 			return (String) mData.get(key);
@@ -186,6 +190,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * @param defaultValue
 	 * @return
 	 */
+	@Nullable
 	public String getDataForKey(String key, String defaultValue) {
 		if (mData != null) {
 			String str = (String) mData.get(key);
@@ -220,7 +225,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 	 * @param id The id used to identify the item clicked (<code>ITEM_*</code>
 	 *           statics)
 	 */
-	protected void registerOnClickListener(View v, final int id) {
+	protected void registerOnClickListener(@NonNull View v, final int id) {
 		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
@@ -298,6 +303,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 		return new ArrayList<>();
 	}
 
+	@NonNull
 	@Override
 	public Bundle getLoaderBundle(int loader) {
 		Bundle args = new Bundle();
@@ -319,7 +325,7 @@ public abstract class AbstractHttpListFragment extends DreamDroidListFragment im
 
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		mHttpHelper.onLoadFinished();
 		mMapList.clear();
 		if (result.isError()) {

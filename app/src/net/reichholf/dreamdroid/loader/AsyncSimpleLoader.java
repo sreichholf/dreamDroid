@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.loader;
 
 import android.content.Context;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.AsyncTaskLoader;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -27,15 +30,16 @@ public class AsyncSimpleLoader extends AsyncTaskLoader< LoaderResult<ExtendedHas
 
 	private AbstractSimpleRequestHandler mHandler;
 	private SimpleHttpClient mShc;
+	@Nullable
 	protected ArrayList<NameValuePair> mParams;
 
-	public AsyncSimpleLoader(Context context, AbstractSimpleRequestHandler handler, Bundle args) {
+	public AsyncSimpleLoader(@NonNull Context context, AbstractSimpleRequestHandler handler, Bundle args) {
 		super(context);
 		init(context, handler, args);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void init(Context context, AbstractSimpleRequestHandler handler, Bundle args) {
+	private void init(Context context, AbstractSimpleRequestHandler handler, @Nullable Bundle args) {
 		mHandler = handler;
 		DreamDroid.loadCurrentProfile(context);
 		mShc = new SimpleHttpClient();

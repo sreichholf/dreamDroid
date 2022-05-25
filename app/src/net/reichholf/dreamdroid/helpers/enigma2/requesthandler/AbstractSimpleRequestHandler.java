@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -41,7 +44,8 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 	 * #get(net.reichholf.dreamdroid.helpers.SimpleHttpClient,
 	 * java.util.ArrayList)
 	 */
-	public String get(SimpleHttpClient shc) {
+	@Nullable
+	public String get(@NonNull SimpleHttpClient shc) {
 		return get(shc, new ArrayList<>());
 	}
 
@@ -53,7 +57,8 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 	 * #get(net.reichholf.dreamdroid.helpers.SimpleHttpClient,
 	 * java.util.ArrayList)
 	 */
-	public String get(SimpleHttpClient shc, ArrayList<NameValuePair> params) {
+	@Nullable
+	public String get(@NonNull SimpleHttpClient shc, ArrayList<NameValuePair> params) {
 		return Request.get(shc, mUri, params);
 	}
 
@@ -63,7 +68,7 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 	 * @see net.reichholf.dreamdroid.helpers.enigma2.requesthandler.
 	 * SimpleRequestParamInterface#parse(java.lang.String)
 	 */
-	public boolean parse(String xml, ExtendedHashMap result) {
+	public boolean parse(String xml, @NonNull ExtendedHashMap result) {
 		if (Request.parse(xml, result, mHandler)) {
 			return true;
 		} else {
@@ -73,6 +78,7 @@ public abstract class AbstractSimpleRequestHandler implements SimpleRequestInter
 		}
 	}
 
+	@NonNull
 	public ExtendedHashMap getDefault() {
 		return new ExtendedHashMap();
 	}

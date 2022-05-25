@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
@@ -16,12 +18,14 @@ public class SimpleResultRequestHandler extends AbstractSimpleRequestHandler {
 		super(uri, new E2SimpleResultHandler());
 	}
 
+	@NonNull
 	public ExtendedHashMap parseSimpleResult(String xml) {
 		ExtendedHashMap result = new ExtendedHashMap();
 		parse(xml, result);
 		return result;
 	}
 	
+	@NonNull
 	public ExtendedHashMap getDefault(){
 		ExtendedHashMap result = new ExtendedHashMap();
 		result.put(SimpleResult.KEY_STATE, Python.FALSE);

@@ -47,7 +47,7 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		setAdapter();
 	}
@@ -63,6 +63,7 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment {
 		getRecyclerView().setAdapter(mAdapter);
 	}
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -71,6 +72,7 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment {
 		return params;
 	}
 
+	@NonNull
 	@Override
 	public String getLoadFinishedTitle() {
 		return getBaseTitle() + " - '" + mNeedle + "'";

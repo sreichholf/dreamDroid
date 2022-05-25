@@ -41,6 +41,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 
 	protected boolean mCardListStyle = false;
 
+	@Nullable
 	protected ActionMode mActionMode;
 	protected boolean mIsActionMode;
 	protected boolean mIsActionModeRequired;
@@ -64,8 +65,9 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 			setRetainInstance(true);
 	}
 
+	@Nullable
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		if (mCardListStyle) {
 			return inflater.inflate(R.layout.card_list_content, container, false);
 		}
@@ -112,7 +114,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		if (!getMultiPaneHandler().isDrawerOpen())
 			createOptionsMenu(menu, inflater);
@@ -190,6 +192,7 @@ public abstract class DreamDroidListFragment extends ListFragment implements Act
 		mHelper.finish(resultCode, data);
 	}
 
+	@Nullable
 	protected AppCompatActivity getAppCompatActivity() {
 		return (AppCompatActivity) getActivity();
 	}

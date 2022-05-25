@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 
 import net.reichholf.dreamdroid.R;
@@ -64,6 +65,7 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 		getRecyclerView().setAdapter(mAdapter);
 	}
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -71,6 +73,7 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 		return params;
 	}
 
+	@Nullable
 	@Override
 	public String getLoadFinishedTitle() {
 		return getBaseTitle() + " - " + mName;

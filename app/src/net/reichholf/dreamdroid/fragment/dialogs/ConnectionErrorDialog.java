@@ -14,13 +14,16 @@ import net.reichholf.dreamdroid.R;
  * Created by Reichi on 19.04.2015.
  */
 public class ConnectionErrorDialog extends ActionDialog {
-    private static String KEY_TITLE = "title";
-    private static String KEY_TEXT = "text";
+    @NonNull
+	private static String KEY_TITLE = "title";
+    @NonNull
+	private static String KEY_TEXT = "text";
 
     public static int ACTION_POSITIVE = 0x00;
     public static int ACTION_EDIT_PROFILE = 0x01;
 
-    public static ConnectionErrorDialog newInstance(String title, String text) {
+    @NonNull
+	public static ConnectionErrorDialog newInstance(String title, String text) {
         Bundle args = new Bundle();
         args.putString(KEY_TITLE, title);
         args.putString(KEY_TEXT, text);

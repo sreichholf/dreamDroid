@@ -5,6 +5,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -29,7 +32,8 @@ public class BackupService {
     private static final String TAG = BackupService.class.getSimpleName();
     private final Context mContext;
     private final SharedPreferences mPreferences;
-    private final DatabaseHelper mDatabase;
+    @NonNull
+	private final DatabaseHelper mDatabase;
 
     public BackupService(Context context) {
         mContext = context;
@@ -37,7 +41,8 @@ public class BackupService {
         mDatabase = DatabaseHelper.getInstance(mContext);
     }
 
-    public BackupData getBackupData() {
+    @NonNull
+	public BackupData getBackupData() {
         BackupData export = new BackupData();
         StreamSupport.stream(mPreferences.getAll().entrySet()).forEach((Consumer<Map.Entry<String, ?>>) entry -> {
             String key = entry.getKey();
@@ -88,7 +93,8 @@ public class BackupService {
         }
     }
 
-    private Profile getProfileFromDB(String profileName) {
+    @Nullable
+	private Profile getProfileFromDB(String profileName) {
         List<Profile> all = mDatabase.getProfiles();
         for (Profile profile : all) {
             if (profile.getName().equals(profileName)) {

@@ -23,6 +23,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
@@ -73,6 +74,7 @@ import java.util.ArrayList;
  * @author sreichholf
  */
 public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
+	@Nullable
 	private static final String TAG = ServiceListFragment.class.getCanonicalName();
 	private static final int LOADER_BOUQUETLIST_ID = 1;
 
@@ -88,18 +90,23 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 
 	@State
 	public String mCurrentTitle;
+	@Nullable
 	@State
 	public String mNavReference;
+	@Nullable
 	@State
 	public String mNavName;
+	@Nullable
 	@State
 	public String mDetailReference;
+	@Nullable
 	@State
 	public String mDetailName;
 	@State
 	public ExtendedHashMap mCurrentService;
 
 	private ArrayList<ExtendedHashMap> mHistory;
+	@Nullable
 	private Bundle mExtras;
 	private ExtendedHashMap mData;
 	private ArrayList<ExtendedHashMap> mNavItems;
@@ -166,7 +173,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_view, container, false);
 		mEmpty = v.findViewById(android.R.id.empty);
 
@@ -213,6 +220,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 
+	@NonNull
 	@Override
 	public RecyclerView getRecyclerView() {
 		return (RecyclerView) getView().findViewById(R.id.list2);
@@ -222,6 +230,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	 * @param key
 	 * @return
 	 */
+	@Nullable
 	public String getDataForKey(String key) {
 		if (mData != null) {
 			return (String) mData.get(key);
@@ -235,6 +244,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	 * @param dfault
 	 * @return
 	 */
+	@Nullable
 	public String getDataForKey(String key, String dfault) {
 		if (mData != null) {
 			String str = (String) mData.get(key);
@@ -265,16 +275,17 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public void onItemClick(RecyclerView parent, View view, int position, long id) {
+	public void onItemClick(RecyclerView parent, @NonNull View view, int position, long id) {
 		onDetailItemClick(parent, view, position, false);
 	}
 
 	@Override
-	public boolean onItemLongClick(RecyclerView parent, View view, int position, long id) {
+	public boolean onItemLongClick(RecyclerView parent, @NonNull View view, int position, long id) {
 		onDetailItemClick(parent, view, position, true);
 		return true;
 	}
 
+	@NonNull
 	public String genWindowTitle(String title) {
 		return title + " - " + mNavName;
 	}
@@ -294,7 +305,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		mDetailList.setAdapter(detailAdapter);
 	}
 
-	public void checkMenuReload(Menu menu, MenuInflater inflater) {
+	public void checkMenuReload(Menu menu, @NonNull MenuInflater inflater) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 		if (sp.getBoolean("disable_fab_reload", false)) {
 			detachFabReload();
@@ -305,13 +316,13 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.servicelist, menu);
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
+	public void onPrepareOptionsMenu(@NonNull Menu menu) {
 		if (getMultiPaneHandler().isDrawerOpen())
 			return;
 
@@ -418,8 +429,8 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		getAppCompatActivity().supportInvalidateOptionsMenu();
 
 		if (loader.getId() == LOADER_BOUQUETLIST_ID) {
@@ -497,7 +508,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		}
 	}
 
-	private void onDetailItemClick(View l, View v, int position, boolean isLong) {
+	private void onDetailItemClick(View l, @NonNull View v, int position, boolean isLong) {
 		ExtendedHashMap item = mDetailItems.get(position);
 		final String ref = item.getString(Event.KEY_SERVICE_REFERENCE);
 		final String nam = item.getString(Event.KEY_SERVICE_NAME);
@@ -524,7 +535,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		}
 	}
 
-	public void showPopupMenu(View v) {
+	public void showPopupMenu(@NonNull View v) {
 		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
 		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
 		menu.getMenu().findItem(R.id.menu_next_event).setVisible(DreamDroid.featureNowNext());
@@ -585,7 +596,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		reloadDetail(true);
 	}
 
-	public void reload(String ref, boolean isBouquetList) {
+	public void reload(@NonNull String ref, boolean isBouquetList) {
 		mReload = false;
 		mHttpHelper.onLoadStarted();
 

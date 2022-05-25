@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.widget.helper;
 
 import android.graphics.Rect;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 
@@ -12,7 +14,7 @@ public class SpacesItemDecoration extends RecyclerView.ItemDecoration {
 	}
 
 	@Override
-	public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+	public void getItemOffsets(@NonNull Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
 		outRect.left = mSpace;
 		outRect.right = mSpace;
 		outRect.bottom = mSpace;

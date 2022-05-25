@@ -27,31 +27,40 @@ import butterknife.ButterKnife;
  * Created by Stephan on 05.05.2015.
  */
 public class MovieDetailBottomSheet extends BottomSheetActionDialog {
-    @BindView(R.id.toolbar_epg_detail)
+    @Nullable
+	@BindView(R.id.toolbar_epg_detail)
     TextView mTitle;
 
-    @BindView(R.id.service)
+    @Nullable
+	@BindView(R.id.service)
     TextView mService;
 
-    @BindView(R.id.length)
+    @Nullable
+	@BindView(R.id.length)
     TextView mLength;
 
-    @BindView(R.id.filesize)
+    @Nullable
+	@BindView(R.id.filesize)
     TextView mFileSize;
 
-    @BindView(R.id.description)
+    @Nullable
+	@BindView(R.id.description)
     TextView mDescription;
 
-    @BindView(R.id.description_extended)
+    @Nullable
+	@BindView(R.id.description_extended)
     TextView mDescriptionExtended;
 
-    @BindView(R.id.tags)
+    @Nullable
+	@BindView(R.id.tags)
     LinearLayout mTagsLayout;
 
-    @BindView(R.id.date)
+    @Nullable
+	@BindView(R.id.date)
     TextView mDate;
 
-    public static MovieDetailBottomSheet newInstance(Movie movie) {
+    @NonNull
+	public static MovieDetailBottomSheet newInstance(Movie movie) {
         MovieDetailBottomSheet fragment = new MovieDetailBottomSheet();
         Bundle args = new Bundle();
         args.putSerializable(Movie.class.getSimpleName(), movie);
@@ -105,7 +114,8 @@ public class MovieDetailBottomSheet extends BottomSheetActionDialog {
         return view;
     }
 
-    @Override
+    @NonNull
+	@Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
         bottomSheetDialog.setOnShowListener(dialog -> {

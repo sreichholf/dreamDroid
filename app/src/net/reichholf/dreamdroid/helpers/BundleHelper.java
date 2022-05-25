@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
 /**
@@ -13,7 +15,8 @@ import java.util.ArrayList;
  *
  */
 public class BundleHelper {
-	public static ArrayList<String> toStringArrayList(CharSequence[] strings){
+	@NonNull
+	public static ArrayList<String> toStringArrayList(@NonNull CharSequence[] strings){
 		ArrayList<String> list = new ArrayList<>();
 		for (CharSequence string : strings) {
 			list.add(string.toString());
@@ -21,7 +24,8 @@ public class BundleHelper {
 		return list;
 	}
 	
-	public static CharSequence[] toCharSequenceArray(ArrayList<String> strings){
+	@NonNull
+	public static CharSequence[] toCharSequenceArray(@NonNull ArrayList<String> strings){
 		CharSequence[] list = new CharSequence[strings.size()];
 		for(int i = 0; i < strings.size(); ++i){
 			list[i] = strings.get(i);

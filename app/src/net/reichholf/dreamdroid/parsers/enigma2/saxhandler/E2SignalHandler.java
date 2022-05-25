@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.enigma2.Signal;
 
 import org.xml.sax.Attributes;
@@ -29,7 +31,7 @@ public class E2SignalHandler extends E2SimpleHandler {
 	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
-	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
+	public void startElement(String namespaceUri, @NonNull String localName, String qName, Attributes attrs) {
 		switch (localName) {
 			case TAG_E2SNRDB:
 				inSnrdb = true;
@@ -53,7 +55,7 @@ public class E2SignalHandler extends E2SimpleHandler {
 	 * java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void endElement(String namespaceURI, String localName, String qName) {
+	public void endElement(String namespaceURI, @NonNull String localName, String qName) {
 		switch (localName) {
 			case TAG_E2SNRDB:
 				inSnrdb = false;

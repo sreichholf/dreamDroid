@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.activities;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import android.view.WindowManager;
 
@@ -27,7 +29,7 @@ public class SimpleToolbarFragmentActivity extends SimpleFragmentActivity {
 	}
 
 	@Override
-	protected void handleExtras(Bundle extras) {
+	protected void handleExtras(@NonNull Bundle extras) {
 		super.handleExtras(extras);
 
 		if (extras.getInt("titleResource", -1) != -1) {

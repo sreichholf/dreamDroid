@@ -23,31 +23,40 @@ import butterknife.ButterKnife;
  * Created by Stephan on 05.05.2015.
  */
 public class MovieDetailDialog extends AbstractDialog {
-    @BindView(R.id.title)
+    @Nullable
+	@BindView(R.id.title)
     TextView mTitle;
 
-    @BindView(R.id.service)
+    @Nullable
+	@BindView(R.id.service)
     TextView mService;
 
-    @BindView(R.id.length)
+    @Nullable
+	@BindView(R.id.length)
     TextView mLength;
 
-    @BindView(R.id.filesize)
+    @Nullable
+	@BindView(R.id.filesize)
     TextView mFileSize;
 
-    @BindView(R.id.description)
+    @Nullable
+	@BindView(R.id.description)
     TextView mDescription;
 
-    @BindView(R.id.description_extended)
+    @Nullable
+	@BindView(R.id.description_extended)
     TextView mDescriptionExtended;
 
-    @BindView(R.id.tags)
+    @Nullable
+	@BindView(R.id.tags)
     LinearLayout mTagsLayout;
 
-    @BindView(R.id.date)
+    @Nullable
+	@BindView(R.id.date)
     TextView mDate;
 
-    public static MovieDetailDialog newInstance(Movie movie) {
+    @NonNull
+	public static MovieDetailDialog newInstance(Movie movie) {
         MovieDetailDialog fragment = new MovieDetailDialog();
         Bundle args = new Bundle();
         args.putSerializable(Movie.class.getSimpleName(), movie);

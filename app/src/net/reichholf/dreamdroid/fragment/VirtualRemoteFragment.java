@@ -14,6 +14,7 @@ import android.os.Vibrator;
 import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -43,16 +44,19 @@ import java.util.Map;
  * @author sreichholf
  */
 public class VirtualRemoteFragment extends BaseHttpFragment {
-    private static String TAG = VirtualRemoteFragment.class.getSimpleName();
+    @NonNull
+	private static String TAG = VirtualRemoteFragment.class.getSimpleName();
 
     private boolean mQuickZap;
     private boolean mPlayButtonAsPlayPause;
     private boolean mSimpleRemote;
     private String mBaseTitle;
-    private ScreenShotFragment mScreenshotFragment;
+    @Nullable
+	private ScreenShotFragment mScreenshotFragment;
     private Vibrator mVibrator;
     private Handler mHandler;
-    private Runnable mScreenShotCallback;
+    @Nullable
+	private Runnable mScreenShotCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -152,7 +156,7 @@ public class VirtualRemoteFragment extends BaseHttpFragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         return mScreenshotFragment != null && mScreenshotFragment.onOptionsItemSelected(item);
     }
 
@@ -166,7 +170,7 @@ public class VirtualRemoteFragment extends BaseHttpFragment {
      * @param buttonmap array of (button view id, command id) to register callbacks
      *                  for
      */
-    private void registerButtons(View view, Integer[][] buttonmap) {
+    private void registerButtons(@NonNull View view, @NonNull Integer[][] buttonmap) {
         for (Integer[] aButtonmap : buttonmap) {
             View v = view.findViewById(aButtonmap[0]);
             if (v == null)
@@ -205,7 +209,7 @@ public class VirtualRemoteFragment extends BaseHttpFragment {
      * @param v  The view to register an OnClickListener for
      * @param id The item ID to register the listener for
      */
-    protected void registerOnClickListener(View v, final int id) {
+    protected void registerOnClickListener(@NonNull View v, final int id) {
         v.setLongClickable(true);
 
         v.setOnLongClickListener(v12 -> {
@@ -264,7 +268,7 @@ public class VirtualRemoteFragment extends BaseHttpFragment {
     }
 
     @Override
-    public void onSimpleResult(boolean success, ExtendedHashMap result) {
+    public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
         boolean hasError = false;
         String toastText = getString(R.string.get_content_error);
         String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);

@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.helpers;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -29,7 +31,8 @@ public class NameValuePair {
 		return mValue;
 	}
 
-	public static String toString(NameValuePair pair) {
+	@NonNull
+	public static String toString(@NonNull NameValuePair pair) {
 		String value = "";
 		try {
 			value = URLEncoder.encode(pair.value(), "utf-8").replace("+", "%20");
@@ -39,7 +42,7 @@ public class NameValuePair {
 		return String.format("%s=%s", pair.key(), value);
 	}
 
-	public static String toString(List<NameValuePair> pairs) {
+	public static String toString(@NonNull List<NameValuePair> pairs) {
 		ArrayList<String> params = new ArrayList<>();
 		for(NameValuePair pair : pairs) {
 			params.add(toString(pair));

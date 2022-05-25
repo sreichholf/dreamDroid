@@ -27,6 +27,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.evernote.android.state.State;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -68,6 +69,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	private static final int[] sRepeatedValues = {1, 2, 4, 8, 16, 32, 64};
 
+	@NonNull
 	private boolean[] mCheckedDays = {false, false, false, false, false, false, false};
 
 	private boolean mTagsChanged;
@@ -76,6 +78,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	public ArrayList<String> mSelectedTags;
 	@State
 	public ExtendedHashMap mTimer;
+	@Nullable
 	@State
 	public ExtendedHashMap mTimerOld;
 
@@ -92,7 +95,9 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	private TextView mService;
 	private TextView mRepeatings;
 	private TextView mTags;
+	@Nullable
 	private ProgressDialog mLocationsAndTagsProgress;
+	@Nullable
 	private ProgressDialog mProgress;
 
 	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
@@ -196,13 +201,13 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		return view;
 	}
 
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		inflater.inflate(R.menu.save, menu);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
 		if (requestCode == Statics.REQUEST_PICK_SERVICE) {
 			if (resultCode == Activity.RESULT_OK) {
 				ExtendedHashMap map = (ExtendedHashMap) data.getSerializableExtra(sData);
@@ -215,7 +220,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
@@ -249,7 +254,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		getMultiPaneHandler().showDialogFragment(f, "dialog_select_tags");
 	}
 
-	protected void registerOnClickListener(View v, final int id) {
+	protected void registerOnClickListener(@NonNull View v, final int id) {
 		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
@@ -433,6 +438,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	 * @param value The int-value for to-repeat-days
 	 * @return All days selected for repeatings in "Mo, Tu, Fr"-style
 	 */
+	@NonNull
 	private String getRepeated(int value) {
 		String text = "";
 		CharSequence[] daysShort = getResources().getTextArray(R.array.weekdays_short);
@@ -465,7 +471,8 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	 * @param timer       The acutal timer
 	 * @return The string to set for the GUI-Label
 	 */
-	private String setRepeated(boolean[] checkedDays, ExtendedHashMap timer) {
+	@NonNull
+	private String setRepeated(@NonNull boolean[] checkedDays, @NonNull ExtendedHashMap timer) {
 		String text = "";
 		int value = 0;
 		CharSequence[] daysShort = getResources().getTextArray(R.array.weekdays_short);
@@ -540,7 +547,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	}
 
 	@Override
-	public void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
 		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
@@ -555,7 +562,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	 * Apply the values of the TimePicker for the Timer-Begin to
 	 * <code>mTimer</code>
 	 */
-	private void updateBegin(Calendar cal) {
+	private void updateBegin(@NonNull Calendar cal) {
 		mBegin = (int) (cal.getTimeInMillis() / 1000);
 		String timestamp = Long.valueOf(mBegin).toString();
 		mTimer.put(Timer.KEY_BEGIN, timestamp);
@@ -566,7 +573,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	 * Apply the values of the TimePicker for the Timer-End to
 	 * <code>mTimer</code>
 	 */
-	private void updateEnd(Calendar cal) {
+	private void updateEnd(@NonNull Calendar cal) {
 		mEnd = (int) (cal.getTimeInMillis() / 1000);
 		String timestamp = Long.valueOf(mEnd).toString();
 		mTimer.put(Timer.KEY_END, timestamp);
@@ -574,7 +581,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	}
 
 	@Override
-	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, Integer[] selected) {
+	public void onMultiChoiceDialogSelection(String dialogTag, DialogInterface dialog, @NonNull Integer[] selected) {
 		if ("dialog_select_tags".equals(dialogTag)) {
 			ArrayList<String> tags = DreamDroid.getTags();
 			ArrayList<String> selectedTags = new ArrayList<>();
@@ -604,6 +611,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		}
 	}
 
+	@NonNull
 	private Calendar getCalendar(int time) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis((long) time * 1000);
@@ -647,7 +655,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		onTimeChanged(isBegin, cal);
 	}
 
-	private void onTimeChanged(boolean isBegin, Calendar cal) {
+	private void onTimeChanged(boolean isBegin, @NonNull Calendar cal) {
 		if (isBegin)
 			updateBegin(cal);
 		else

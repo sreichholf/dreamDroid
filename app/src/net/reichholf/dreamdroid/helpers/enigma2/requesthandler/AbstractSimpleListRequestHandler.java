@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.Request;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleListHandler;
@@ -33,7 +36,8 @@ public abstract class AbstractSimpleListRequestHandler {
 	 * @param shc
 	 * @return
 	 */
-	public String getList(SimpleHttpClient shc){
+	@Nullable
+	public String getList(@NonNull SimpleHttpClient shc){
 		return Request.get(shc, mUri);
 	}
 	

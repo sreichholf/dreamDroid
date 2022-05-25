@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.dataProviders;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.parsers.GenericSaxParser;
 
 import org.xml.sax.helpers.DefaultHandler;
@@ -40,6 +42,7 @@ public class SaxDataProvider extends AbstractDataProvider {
 	 * @see
 	 * net.reichholf.dreamdroid.dataProviders.AbstractDataProvider#getParser()
 	 */
+	@NonNull
 	public GenericSaxParser getParser() {
 		return (GenericSaxParser) mParser;
 	}

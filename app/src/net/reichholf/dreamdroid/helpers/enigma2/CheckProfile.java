@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -38,13 +41,15 @@ public class CheckProfile {
 	public static final String KEY_WHAT = "what";
 	public static final String KEY_RESULT_LIST = "list";
 	public static final int[] REQUIRED_VERSION = { 1, 6, 5 };
+	@NonNull
 	public static int[] CURRENT_VERSION = { 0, 0, 0 };
 
 	/**
 	 * @param profile
 	 * @return
 	 */
-	public static ExtendedHashMap checkProfile(Profile profile, Context context) {
+	@NonNull
+	public static ExtendedHashMap checkProfile(@NonNull Profile profile, Context context) {
 		CURRENT_VERSION = new int[]{ 0, 0, 0 };
 		DreamDroid.disableSleepTimer();
 		DreamDroid.disableNowNext();
@@ -121,11 +126,11 @@ public class CheckProfile {
 		return checkResult;
 	}
 
-	public static int checkVersion(String version) {
+	public static int checkVersion(@NonNull String version) {
 		return checkVersion(version, REQUIRED_VERSION);
 	}
 
-	public static int checkVersion(String version, int[] required) {
+	public static int checkVersion(@NonNull String version, @NonNull int[] required) {
 		String[] parts = version.split("\\.");
 
 		for (int i = 0; i < required.length; i++) {
@@ -160,13 +165,13 @@ public class CheckProfile {
 	 * @param value
 	 * @param errorTextId
 	 */
-	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
+	private static void addEntry(@NonNull ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
 								 String value, int errorTextId){
 		addEntry(resultList, checkTypeId, hasError, value, errorTextId, null);
 	}
 
-	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
-			String value, int errorTextId, String errorTextExt) {
+	private static void addEntry(@NonNull ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
+								 String value, int errorTextId, String errorTextExt) {
 		ExtendedHashMap entry = new ExtendedHashMap();
 		entry.put(KEY_HAS_ERROR, hasError);
 		entry.put(KEY_WHAT, checkTypeId);
@@ -177,23 +182,23 @@ public class CheckProfile {
 		resultList.add(entry);
 	}
 
-	private static void addEntry(ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value) {
+	private static void addEntry(@NonNull ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError, String value) {
 		addEntry(resultList, checkTypeId, hasError, value, -1);
 	}
 
-	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId) {
+	private static void setError(@NonNull ExtendedHashMap checkResult, boolean hasError, int errorTextId) {
 		setError(checkResult, hasError, false, errorTextId, null);
 	}
 
-	private static void setError(ExtendedHashMap checkResult, boolean hasError, int errorTextId, String extendedText) {
+	private static void setError(@NonNull ExtendedHashMap checkResult, boolean hasError, int errorTextId, String extendedText) {
 		setError(checkResult, hasError, false, errorTextId, extendedText);
 	}
 
-	private static void setError(ExtendedHashMap checkResult, boolean hasError, boolean isSoftError, int errorTextId) {
+	private static void setError(@NonNull ExtendedHashMap checkResult, boolean hasError, boolean isSoftError, int errorTextId) {
 		setError(checkResult, hasError, isSoftError, errorTextId, null);
 	}
 
-	private static void setError(ExtendedHashMap checkResult, boolean hasError, boolean isSoftError, int errorTextId, String extendedText) {
+	private static void setError(@NonNull ExtendedHashMap checkResult, boolean hasError, boolean isSoftError, int errorTextId, @Nullable String extendedText) {
 		checkResult.put(KEY_HAS_ERROR, hasError);
 		checkResult.put(KEY_SOFT_ERROR, isSoftError);
 		checkResult.put(KEY_ERROR_TEXT, errorTextId);

@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -35,14 +37,14 @@ public class Event extends ExtendedHashMap {
     public static final String KEY_SERVICE_REFERENCE = Service.KEY_REFERENCE;
     public static final String KEY_SERVICE_NAME = Service.KEY_NAME;
 
-    public static void supplementReadables(ExtendedHashMap event) {
+    public static void supplementReadables(@NonNull ExtendedHashMap event) {
         supplementReadables("", event);
     }
 
     /**
      * @param event
      */
-    public static void supplementReadables(String prefix, ExtendedHashMap event) {
+    public static void supplementReadables(@NonNull String prefix, @NonNull ExtendedHashMap event) {
         String eventstart = event.getString(prefix.concat(KEY_EVENT_START));
 
         if (!Python.NONE.equals(eventstart) && eventstart != null) {
@@ -74,7 +76,8 @@ public class Event extends ExtendedHashMap {
         }
     }
 
-    public static ExtendedHashMap fromNext(ExtendedHashMap serviceNowNext) {
+    @NonNull
+	public static ExtendedHashMap fromNext(ExtendedHashMap serviceNowNext) {
         ExtendedHashMap event = new ExtendedHashMap(serviceNowNext);
         Object[] keys = event.keySet().toArray();
         ArrayList<String> converted = new ArrayList<>();
@@ -93,7 +96,7 @@ public class Event extends ExtendedHashMap {
         return event;
     }
 
-    public Event(ExtendedHashMap data) {
+    public Event(@NonNull ExtendedHashMap data) {
         mMap = data.getHashMap();
     }
 
@@ -145,7 +148,8 @@ public class Event extends ExtendedHashMap {
         return getString(KEY_EVENT_DESCRIPTION, "");
     }
 
-    public String descriptionExtended() {
+    @NonNull
+	public String descriptionExtended() {
         return getString(KEY_EVENT_DESCRIPTION_EXTENDED, "").replace("\\n", "\n");
     }
 

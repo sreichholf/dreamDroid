@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 /**
@@ -31,12 +33,12 @@ public class AbstractDialog extends DialogFragment {
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
 	}
 
-	public void setTextOrHide(TextView textView, String text) {
+	public void setTextOrHide(@NonNull TextView textView, @Nullable String text) {
 		if (text == null || text.isEmpty())
 			textView.setVisibility(View.GONE);
 		else

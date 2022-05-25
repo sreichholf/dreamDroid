@@ -17,6 +17,9 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -70,6 +73,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	private static final String TAG = MainActivity.class.getSimpleName();
 
+	@NonNull
 	public static List<String> NAVIGATION_DIALOG_TAGS = Arrays.asList("about_dialog",
 			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog");
 
@@ -79,14 +83,18 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
 
+	@Nullable
 	private CheckProfileTask mCheckProfileTask;
 
+	@Nullable
 	private NavigationHelper mNavigationHelper;
+	@Nullable
 	private Fragment mDetailFragment;
 
 	private ActionBarDrawerToggle mDrawerToggle;
 	private DrawerLayout mDrawerLayout;
 
+	@Nullable
 	private Snackbar mSnackbar;
 
 	private Profile mCurrentProfile;
@@ -98,6 +106,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
+	@NonNull
 	public Context getProfileCheckContext() {
 		return this;
 	}
@@ -106,7 +115,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		setConnectionState(state, false);
 	}
 
-	public void onProfileChecked(final ExtendedHashMap result) {
+	public void onProfileChecked(@NonNull final ExtendedHashMap result) {
 		if(mIsPaused || checkNavigationHelper())
 			return;
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -142,7 +151,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
-	public void showErrorDetails(ExtendedHashMap result) {
+	public void showErrorDetails(@NonNull ExtendedHashMap result) {
 		String error = getString((Integer) result.get(CheckProfile.KEY_ERROR_TEXT));
 		error = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error);
 		if (error == null)
@@ -230,7 +239,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		// Pass any configuration change to the drawer toggle
 		if (mDrawerToggle != null)
@@ -238,7 +247,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(@NonNull Menu menu) {
 		super.onCreateOptionsMenu(menu);
 
 		getMenuInflater().inflate(R.menu.search, menu);
@@ -259,6 +268,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		return true;
 	}
 
+	@Nullable
 	private Fragment getCurrentDetailFragment() {
 		if (mDetailFragment == null)
 			mDetailFragment = getSupportFragmentManager().findFragmentById(R.id.detail_view);
@@ -350,7 +360,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
-	private void showFragment(FragmentTransaction ft, int viewId, Fragment fragment) {
+	private void showFragment(@NonNull FragmentTransaction ft, int viewId, @NonNull Fragment fragment) {
 		if (fragment.isAdded()) {
 			Log.i(TAG, "Fragment " + ((Object) fragment).getClass().getSimpleName() + " already added, showing");
 			if (mDetailFragment != null && !fragment.isVisible()) {
@@ -383,7 +393,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if (mSlider && mDrawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
@@ -429,7 +439,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 * onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
 	 */
 	@Override
-	public void onProfileChanged(Profile p) {
+	public void onProfileChanged(@NonNull Profile p) {
 		if (mIsPaused)
 			return;
 
@@ -475,10 +485,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 * .lang.Class, java.lang.Class)
 	 */
 	@Override
-	public void showDetails(Class<? extends Fragment> fragmentClass) {
+	public void showDetails(@NonNull Class<? extends Fragment> fragmentClass) {
 		try {
 			showDetails(fragmentClass.newInstance());
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (@NonNull InstantiationException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -492,7 +502,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 * .support.v4.app.Fragment)
 	 */
 	@Override
-	public void showDetails(Fragment fragment) {
+	public void showDetails(@NonNull Fragment fragment) {
 		showDetails(fragment, false);
 	}
 
@@ -504,7 +514,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 * .support.v4.app.Fragment, boolean)
 	 */
 	@Override
-	public void showDetails(Fragment fragment, boolean addToBackStack) {
+	public void showDetails(@NonNull Fragment fragment, boolean addToBackStack) {
 		if (fragment.isVisible())
 			return;
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -586,7 +596,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public void onFragmentResume(Fragment fragment) {
+	public void onFragmentResume(@NonNull Fragment fragment) {
 		if (!fragment.equals(mDetailFragment)) {
 			mDetailFragment = fragment;
 			showDetails(fragment);
@@ -599,25 +609,25 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	@Override
-	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
+	public void showDialogFragment(@NonNull Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
 		DialogFragment f;
 		try {
 			f = fragmentClass.newInstance();
 			f.setArguments(args);
 			showDialogFragment(f, tag);
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (@NonNull InstantiationException | IllegalAccessException e) {
 			Log.e(TAG, e.getMessage());
 		}
 	}
 
 	@Override
-	public void showDialogFragment(DialogFragment fragment, String tag) {
+	public void showDialogFragment(@NonNull DialogFragment fragment, String tag) {
 		FragmentManager fm = getSupportFragmentManager();
 		fragment.show(fm, tag);
 	}
 
 	@Override
-	public void showDialogFragment(android.app.DialogFragment fragment, String tag) {
+	public void showDialogFragment(@NonNull android.app.DialogFragment fragment, String tag) {
 		android.app.FragmentManager fm = getFragmentManager();
 		fragment.show(fm, tag);
 	}

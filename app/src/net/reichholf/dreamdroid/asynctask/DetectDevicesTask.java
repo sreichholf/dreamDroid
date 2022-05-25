@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.asynctask;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector;
 
@@ -10,6 +12,7 @@ public class DetectDevicesTask extends AsyncHttpTaskBase<Void, Void, ArrayList<P
 		super(taskHandler);
 	}
 
+	@NonNull
 	@Override
 	protected ArrayList<Profile> doInBackground(Void... params) {
 		return DeviceDetector.getAvailableHosts();

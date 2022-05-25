@@ -24,19 +24,27 @@ public class PositiveNegativeDialog extends ActionDialog {
     private int mNegativeText;
     private int mNegativeId;
 
-    private static String KEY_TITLE = "title";
-    private static String KEY_MESSAGE_ID = "messageId";
-    private static String KEY_POSITIVE_TEXT = "positiveText";
-    private static String KEY_POSITIVE_ID = "positiveId";
-    private static String KEY_NEGATIVE_TEXT = "negativeText";
-    private static String KEY_NEGATIVE_ID = "negativeId";
+    @NonNull
+	private static String KEY_TITLE = "title";
+    @NonNull
+	private static String KEY_MESSAGE_ID = "messageId";
+    @NonNull
+	private static String KEY_POSITIVE_TEXT = "positiveText";
+    @NonNull
+	private static String KEY_POSITIVE_ID = "positiveId";
+    @NonNull
+	private static String KEY_NEGATIVE_TEXT = "negativeText";
+    @NonNull
+	private static String KEY_NEGATIVE_ID = "negativeId";
 
-    public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId) {
+    @NonNull
+	public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId) {
         return newInstance(title, messageId, positiveText, positiveId, -1, -1);
     }
 
-    public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId,
-                                                     int negativeText, int negativeId) {
+    @NonNull
+	public static PositiveNegativeDialog newInstance(String title, int messageId, int positiveText, int positiveId,
+													 int negativeText, int negativeId) {
 
         PositiveNegativeDialog fragment = new PositiveNegativeDialog();
         Bundle args = new Bundle();

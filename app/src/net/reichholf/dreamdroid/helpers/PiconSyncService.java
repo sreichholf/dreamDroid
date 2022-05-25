@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
@@ -47,6 +49,7 @@ public class PiconSyncService extends IntentService {
 		public int totalFiles;
 		public int downloadedFiles;
 		public String currentFile;
+		@Nullable
 		public String errorText;
 
 		public DownloadProgress() {

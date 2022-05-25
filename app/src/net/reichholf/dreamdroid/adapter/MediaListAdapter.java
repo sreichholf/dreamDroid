@@ -61,7 +61,7 @@ public class MediaListAdapter extends ArrayAdapter<ExtendedHashMap> {
 		return view;
 	}
 
-	public String getShortName(String path) {
+	public String getShortName(@NonNull String path) {
 		String[] split = path.split("/");
 		return split[split.length - 1];
 	}

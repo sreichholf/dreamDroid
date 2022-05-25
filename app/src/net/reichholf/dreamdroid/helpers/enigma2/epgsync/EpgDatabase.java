@@ -4,6 +4,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
@@ -31,7 +33,7 @@ public class EpgDatabase {
     int mId = 1;
     DatabaseHelper mDbh;
 
-    public void syncBouquet(Context context, String reference){
+    public void syncBouquet(@NonNull Context context, String reference){
         mNotifyManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder = new NotificationCompat.Builder(context, "dreamdroid_picon_sync");
@@ -85,7 +87,7 @@ public class EpgDatabase {
         Log.i(TAG_EPG_DATABASE, String.format("Synchronized %s events", success));
     }
 
-	public int setEvents(ArrayList<ExtendedHashMap> events){
+	public int setEvents(@NonNull ArrayList<ExtendedHashMap> events){
         return mDbh.setEvents(events);
 	}
 }

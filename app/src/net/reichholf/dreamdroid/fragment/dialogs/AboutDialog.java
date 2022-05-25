@@ -23,7 +23,8 @@ import net.reichholf.dreamdroid.R;
  * @author sre
  */
 public class AboutDialog extends ActionDialog {
-    public static AboutDialog newInstance() {
+    @NonNull
+	public static AboutDialog newInstance() {
         return new AboutDialog();
     }
 

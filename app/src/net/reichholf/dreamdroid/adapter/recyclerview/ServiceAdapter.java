@@ -135,7 +135,7 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 		View parentNext;
 		View parentMarker;
 
-		public ServiceViewHolder(View itemView) {
+		public ServiceViewHolder(@NonNull View itemView) {
 			super(itemView);
 
 			root = itemView.findViewById(R.id.service_list_item_nn);

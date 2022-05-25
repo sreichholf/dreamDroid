@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -45,11 +46,13 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 	BottomNavigationView mBottomNavigation;
 	TabLayout mTabLayout;
+	@Nullable
 	TabLayoutMediator mTabLayoutMediator;
 	GetBouquetListTask mBouquetListTask;
 
 	int mSelectedItemId;
 
+	@Nullable
 	private GetBouquetListTask.Bouquets mBouquets;
 
 	public class ServicelistAdapter extends FragmentStateAdapter {
@@ -118,7 +121,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			mFolders.add(folder);
 		}
 
-		public void addAll(ArrayList<String> folders) {
+		public void addAll(@NonNull ArrayList<String> folders) {
 			mFolders.addAll(folders);
 		}
 
@@ -170,7 +173,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
 		mBottomNavigation = getAppCompatActivity().findViewById(R.id.bottom_navigation);
@@ -251,13 +254,14 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		mTabLayoutMediator = null;
 	}
 
+	@Nullable
 	protected String getTabText(int position) {
 		if (mSelectedItemId == R.id.menu_movie)
 			return mMovielistAdapter.get(position);
 		return mServicelistAdapter.get(position).getString(Service.KEY_NAME);
 	}
 
-	public void onItemSelected(MenuItem item) {
+	public void onItemSelected(@NonNull MenuItem item) {
 		if (item.getItemId() == mSelectedItemId)
 			return;
 		mSelectedItemId = item.getItemId();

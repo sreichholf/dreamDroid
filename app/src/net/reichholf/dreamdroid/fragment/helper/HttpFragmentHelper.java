@@ -10,6 +10,9 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
@@ -47,7 +50,8 @@ import java.util.ArrayList;
 public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHandler, SetVolumeTask.SetVolumeTaskHandler {
     public static final int LOADER_DEFAULT_ID = 0;
     private Fragment mFragment;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+    @Nullable
+	private SwipeRefreshLayout mSwipeRefreshLayout;
 
     protected final String sData = "data";
     protected SimpleHttpClient mShc;
@@ -76,7 +80,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         mSwipeRefreshLayout = null;
     }
 
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         mSwipeRefreshLayout = view.findViewById(R.id.ptr_layout);
         if (mSwipeRefreshLayout != null) {
             // Now setup the SwipeRefreshLayout
@@ -102,22 +106,26 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         mShc = SimpleHttpClient.getInstance();
     }
 
-    public AppCompatActivity getAppCompatActivity() {
+    @Nullable
+	public AppCompatActivity getAppCompatActivity() {
         return (AppCompatActivity) mFragment.getActivity();
     }
 
-    public IHttpBase getBaseFragment() {
+    @NonNull
+	public IHttpBase getBaseFragment() {
         return (IHttpBase) mFragment;
     }
 
-    @Override
+    @Nullable
+	@Override
     public String getString(int resId) {
         if (mFragment != null)
             return mFragment.getActivity().getString(resId);
         return null;
     }
 
-    @Override
+    @Nullable
+	@Override
     public Context getContext() {
         return getAppCompatActivity();
     }
@@ -182,7 +190,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     @Override
-    public void onSimpleResult(boolean success, ExtendedHashMap result) {
+    public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
         if (!mFragment.isAdded())
             return;
         String toastText = (String) mFragment.getText(R.string.get_content_error);
@@ -207,7 +215,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
      * @param success
      * @param volume
      */
-    public void onVolumeSet(boolean success, ExtendedHashMap volume) {
+    public void onVolumeSet(boolean success, @NonNull ExtendedHashMap volume) {
         if (!mFragment.isAdded())
             return;
         String text = mFragment.getString(R.string.get_content_error);
@@ -259,7 +267,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     /**
      * @param event
      */
-    public void findSimilarEvents(ExtendedHashMap event) {
+    public void findSimilarEvents(@NonNull ExtendedHashMap event) {
         EpgSearchFragment f = new EpgSearchFragment();
         Bundle args = new Bundle();
         args.putString(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));

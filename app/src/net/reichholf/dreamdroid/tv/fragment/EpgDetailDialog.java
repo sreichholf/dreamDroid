@@ -29,22 +29,28 @@ import butterknife.ButterKnife;
  * @author sre
  */
 public class EpgDetailDialog extends AbstractDialog {
-    @BindView(R.id.title)
+    @Nullable
+	@BindView(R.id.title)
     TextView mTitle;
 
-    @BindView(R.id.service)
+    @Nullable
+	@BindView(R.id.service)
     TextView mServiceName;
 
-    @BindView(R.id.description)
+    @Nullable
+	@BindView(R.id.description)
     TextView mDescription;
 
-    @BindView(R.id.date)
+    @Nullable
+	@BindView(R.id.date)
     TextView mDate;
 
-    @BindView(R.id.description_extended)
+    @Nullable
+	@BindView(R.id.description_extended)
     TextView mDescriptionExtended;
 
-    public static EpgDetailDialog newInstance(Event epg) {
+    @NonNull
+	public static EpgDetailDialog newInstance(Event epg) {
         Bundle args = new Bundle();
         args.putSerializable(Event.class.getSimpleName(), epg);
         EpgDetailDialog fragment = new EpgDetailDialog();

@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.leanback.preference.LeanbackPreferenceFragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.EditTextPreference;
@@ -22,6 +25,7 @@ import net.reichholf.dreamdroid.R;
  */
 
 public class ProfileFragment extends LeanbackPreferenceFragment {
+	@NonNull
 	private static String sKeys[] = {
 			DatabaseHelper.KEY_PROFILE_PROFILE,
 			DatabaseHelper.KEY_PROFILE_HOST,
@@ -105,7 +109,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		editor.apply();
 	}
 
-	protected void updatePortPreference(boolean newValue, String preferenceKey) {
+	protected void updatePortPreference(boolean newValue, @NonNull String preferenceKey) {
 		EditTextPreference portPref = (EditTextPreference) findPreference(preferenceKey);
 		String condition = "80";
 		String newVal = "443";
@@ -119,7 +123,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		}
 	}
 
-	protected void updateSummary(Preference pref, Object newValue) {
+	protected void updateSummary(Preference pref, @Nullable Object newValue) {
 		if (pref instanceof EditTextPreference && !pref.getKey().equals(DatabaseHelper.KEY_PROFILE_PASS)) {
 			if (newValue == null)
 				newValue = ((EditTextPreference) pref).getText();

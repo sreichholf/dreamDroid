@@ -27,7 +27,8 @@ public class SimpleChoiceDialog extends ActionDialog {
     private CharSequence[] mActions;
     private String mTitle;
 
-    public static SimpleChoiceDialog newInstance(String title, CharSequence[] actions, int[] actionIds) {
+    @NonNull
+	public static SimpleChoiceDialog newInstance(String title, @NonNull CharSequence[] actions, int[] actionIds) {
         SimpleChoiceDialog fragment = new SimpleChoiceDialog();
         Bundle args = new Bundle();
         args.putString(KEY_TITLE, title);

@@ -9,10 +9,13 @@ import androidx.fragment.app.DialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class IndeterminateProgress extends DialogFragment {
+	@NonNull
 	public static String ARG_TITLE = "title";
+	@NonNull
 	public static String ARG_CONTENT = "content";
 
 
+	@NonNull
 	public static IndeterminateProgress newInstance(int titleId, int contentId) {
 
 		Bundle args = new Bundle();

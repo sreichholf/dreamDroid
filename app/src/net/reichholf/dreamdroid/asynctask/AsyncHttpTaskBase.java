@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.asynctask;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 
@@ -24,6 +26,7 @@ public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncT
 		return mShc;
 	}
 
+	@Nullable
 	protected String getErrorText() {
 		AsyncHttpTaskBaseHandler resultHandler = mTaskHandler.get();
 		if (resultHandler == null)
@@ -37,7 +40,9 @@ public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncT
 	}
 
 	public interface AsyncHttpTaskBaseHandler {
+		@Nullable
 		String getString(int resId);
+		@Nullable
 		Context getContext();
 	}
 }

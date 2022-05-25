@@ -25,6 +25,7 @@ public abstract class BaseHttpBrowseFragment extends BrowseSupportFragment imple
 
 	public static int LOADER_DEFAULT_ID = HttpFragmentHelper.LOADER_DEFAULT_ID;
 
+	@NonNull
 	protected ArrayObjectAdapter mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
 
 	@Override

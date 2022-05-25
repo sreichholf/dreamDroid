@@ -51,6 +51,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON = 0;
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT = 1;
 	public static final int REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_BACKUP = 3;
+	@NonNull
 	private static String TAG = BaseActivity.class.getSimpleName();
 
 	private MemorizingTrustManager mTrustManager;
@@ -67,7 +68,8 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
         return result;
     }
 
-    private static X509TrustManager systemDefaultTrustManager() {
+    @NonNull
+	private static X509TrustManager systemDefaultTrustManager() {
         try {
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init((KeyStore) null);
@@ -131,7 +133,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	protected void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
 		Bridge.saveInstanceState(this, outState);
 	}
@@ -225,6 +227,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 	}
 
+	@NonNull
 	public Context getContext() {
 		return this;
 	}

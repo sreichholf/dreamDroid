@@ -8,6 +8,8 @@ package net.reichholf.dreamdroid.fragment.interfaces;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -28,6 +30,7 @@ public interface IHttpBase {
 
 	ArrayList<NameValuePair> getHttpParams(int loader);
 
+	@NonNull
 	Bundle getLoaderBundle(int loader);
 
 	String getLoadFinishedTitle();

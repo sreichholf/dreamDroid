@@ -11,6 +11,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.RecyclerView;
@@ -49,11 +50,12 @@ import java.util.ArrayList;
  * @author sreichholf
  */
 public class TimerListFragment extends BaseHttpRecyclerFragment {
+	@NonNull
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
 		// Called when the action mode is created; startActionMode() was called
 		@Override
-		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+		public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
 			// Inflate a menu resource providing context menu items
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.timerlist_context, menu);
@@ -65,7 +67,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		// Called each time the action mode is shown. Always called after onCreateActionMode, but
 		// may be called multiple times if the mode is invalidated.
 		@Override
-		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+		public boolean onPrepareActionMode(ActionMode mode, @NonNull Menu menu) {
 			MenuItem toggle = menu.findItem(R.id.menu_toggle_enabled);
 			if (mTimer.getString(Timer.KEY_DISABLED).equals("0"))
 				toggle.setTitle(R.string.disable);
@@ -76,7 +78,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 
 		// Called when the user selects a contextual menu item
 		@Override
-		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+		public boolean onActionItemClicked(@NonNull ActionMode mode, @NonNull MenuItem item) {
 			mode.finish(); // Action picked, so close the CAB
 			return onItemSelected(item.getItemId());
 		}
@@ -94,6 +96,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		}
 	};
 	@State public ExtendedHashMap mTimer;
+	@Nullable
 	private ProgressDialog mProgress;
 	protected int mCurrentPos;
 
@@ -111,14 +114,14 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
 		registerFab(R.id.fab_main, R.string.new_timer, R.drawable.ic_action_fab_add, v -> onItemSelected(Statics.ITEM_NEW_TIMER));
 		return view;
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		setAdapter();
 	}
@@ -153,7 +156,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.timerlist, menu);
 	}
@@ -212,7 +215,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	 *
 	 * @param timer The Timer to delete as <code>ExtendedHashMap</code>
 	 */
-	private void deleteTimer(ExtendedHashMap timer) {
+	private void deleteTimer(@NonNull ExtendedHashMap timer) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();
@@ -223,7 +226,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
 
-	private void toggleTimerEnabled(ExtendedHashMap timer) {
+	private void toggleTimerEnabled(@NonNull ExtendedHashMap timer) {
 		ExtendedHashMap timerNew = timer.clone();
 
 		if (timerNew.getString(Timer.KEY_DISABLED).equals("1"))

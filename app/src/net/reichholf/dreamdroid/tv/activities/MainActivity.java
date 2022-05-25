@@ -17,6 +17,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import de.duenndns.ssl.JULHandler;
@@ -41,6 +42,7 @@ public class MainActivity extends FragmentActivity {
 		return result;
 	}
 
+	@NonNull
 	private static X509TrustManager systemDefaultTrustManager() {
 		try {
 			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());

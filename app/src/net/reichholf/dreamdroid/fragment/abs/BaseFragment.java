@@ -36,6 +36,7 @@ import net.reichholf.dreamdroid.helpers.Statics;
  */
 
 public abstract class BaseFragment extends Fragment implements ActivityCallbackHandler, IMutliPaneContent, IBaseFragment, ActionDialog.DialogActionListener {
+	@Nullable
 	private FragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
 	protected boolean mHasFabReload = false;
@@ -112,7 +113,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		MultiPaneHandler mph = getMultiPaneHandler(); //TODO how do i reproduce this?
 		if (mph == null || !mph.isDrawerOpen())
@@ -172,6 +173,7 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		mHelper.finish(resultCode, data);
 	}
 
+	@Nullable
 	protected AppCompatActivity getAppCompatActivity() {
 		return (AppCompatActivity) getActivity();
 	}

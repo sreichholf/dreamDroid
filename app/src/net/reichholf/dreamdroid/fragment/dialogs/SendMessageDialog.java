@@ -23,7 +23,8 @@ import net.reichholf.dreamdroid.R;
  * @author sre
  */
 public class SendMessageDialog extends AbstractDialog {
-    public static SendMessageDialog newInstance() {
+    @NonNull
+	public static SendMessageDialog newInstance() {
         return new SendMessageDialog();
     }
 

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.net.Uri;
 import android.view.SurfaceView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
@@ -15,7 +18,9 @@ import java.util.ArrayList;
  * Created by reichi on 16/02/16.
  */
 public class VLCPlayer {
+	@Nullable
 	static VLCPlayer sPlayer;
+	@Nullable
 	static volatile MediaPlayer sMediaPlayer = null;
 
 	public final static int MEDIA_HWACCEL_DISABLED = 0x00;
@@ -31,6 +36,7 @@ public class VLCPlayer {
 		sPlayer = null;
 	}
 
+	@Nullable
 	public static VLCPlayer get() {
 		if (sPlayer == null)
 			sPlayer = new VLCPlayer();
@@ -51,6 +57,7 @@ public class VLCPlayer {
 		sMediaPlayer = null;
 	}
 
+	@Nullable
 	public static MediaPlayer getMediaPlayer() {
 		if (sMediaPlayer == null)
 			init();
@@ -74,7 +81,7 @@ public class VLCPlayer {
 		getMediaPlayer().getVLCVout().setWindowSize(width, height);
 	}
 
-	public void playUri(Uri uri, int flags) {
+	public void playUri(@NonNull Uri uri, int flags) {
 		mCurrentMedia = new Media(VLCInstance.get(), uri);
 		boolean isHwAccel = (flags & MEDIA_HWACCEL_ENABLED) > 0;
 		boolean isHwAccelForce = (flags & MEDIA_HWACCEL_FORCE) > 0;

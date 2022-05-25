@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.tv.fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.leanback.widget.ArrayObjectAdapter;
 import androidx.leanback.widget.HeaderItem;
 import androidx.leanback.widget.ListRow;
@@ -56,26 +57,34 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	public static final int ROW_SETTINGS_ID = 65535;
 	public static final int ROW_MOVIE_OFFSET_ID = 0x1000;
 
+	@NonNull
 	public static String BOUQUETS_TV = "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM BOUQUET \\\"bouquets.tv\\\" ORDER BY bouquet";
 
 	boolean mRequireReload;
 
+	@NonNull
 	ArrayList<ArrayObjectAdapter> mListRowAdapters = new ArrayList<>();
 
+	@Nullable
 	ArrayList<ExtendedHashMap> mBouquets = null;
+	@Nullable
 	ArrayList<ExtendedHashMap> mBouquetQueue = null;
 
 	HashMap<String, ArrayList<ExtendedHashMap>> mLocations;
+	@Nullable
 	ListRow mLoadingLocation = null;
 
+	@Nullable
 	ExtendedHashMap mLoadingBouquet;
+	@Nullable
 	ExtendedHashMap mSelectedBouquet;
+	@Nullable
 	ExtendedHashMap mSelectedService;
 
 	private class BouquetHeaderItem extends HeaderItem {
 		private ExtendedHashMap mBouquet;
 
-		public BouquetHeaderItem(long id, ExtendedHashMap bouquet) {
+		public BouquetHeaderItem(long id, @NonNull ExtendedHashMap bouquet) {
 			super(id, bouquet.getString(Service.KEY_NAME));
 			mBouquet = bouquet;
 		}
@@ -176,7 +185,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	}
 
 	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, @NonNull LoaderResult<ArrayList<ExtendedHashMap>> data) {
 		if (data.isError()) {
 			Toast.makeText(getContext(), data.getErrorText(), Toast.LENGTH_LONG).show();
 			return;
@@ -247,7 +256,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		mRowsAdapter.add(new SettingsRow(header, listRowAdapter));
 	}
 
-	public void onLoadBouquetsFinished(ArrayList<ExtendedHashMap> bouquets) {
+	public void onLoadBouquetsFinished(@NonNull ArrayList<ExtendedHashMap> bouquets) {
 		mBouquets.addAll(bouquets);
 		mBouquetQueue.addAll(bouquets);
 
@@ -285,7 +294,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		}
 	}
 
-	public void onLoadServicesFinished(ArrayList<ExtendedHashMap> services) {
+	public void onLoadServicesFinished(@NonNull ArrayList<ExtendedHashMap> services) {
 		ArrayObjectAdapter listRowAdapter = new ArrayObjectAdapter(new CardPresenter(CardPresenter.ItemMode.MODE_IMAGE));
 		for (ExtendedHashMap service : services) {
 			listRowAdapter.add(new BrowseItem(BrowseItem.Type.Service, service));
@@ -296,7 +305,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		loadNextBouquet();
 	}
 
-	protected void onLoadMoviesFinished(ArrayList<ExtendedHashMap> movies) {
+	protected void onLoadMoviesFinished(@NonNull ArrayList<ExtendedHashMap> movies) {
 		if (mLoadingLocation == null)
 			return;
 		ListRow listRow = (ListRow) mRowsAdapter.get( mRowsAdapter.indexOf(mLoadingLocation) );

@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.fragment.dialogs;
 
+import androidx.annotation.Nullable;
+
 /**
  * @author sre
  * 
@@ -19,6 +21,6 @@ public abstract class ActionDialog extends AbstractDialog {
 	}
 
 	public interface DialogActionListener {
-		void onDialogAction(int action, Object details, String dialogTag);
+		void onDialogAction(int action, @Nullable Object details, String dialogTag);
 	}
 }

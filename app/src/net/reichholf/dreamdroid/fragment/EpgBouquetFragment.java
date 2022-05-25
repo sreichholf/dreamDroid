@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 
 import com.evernote.android.state.State;
@@ -51,7 +52,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	public int mTime;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(@Nullable Bundle savedInstanceState) {
 		mCardListStyle = true;
 		mEnableReload = true;
 		super.onCreate(savedInstanceState);
@@ -72,7 +73,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
 		View header = inflater.inflate(R.layout.date_time_picker_header, null, false);
 
@@ -129,14 +130,14 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.epgbouquet, menu);
 	}
 
 
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
 		if (resultCode != Activity.RESULT_OK)
 			return;
 		switch (requestCode) {
@@ -174,6 +175,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 		getRecyclerView().setAdapter(mAdapter);
 	}
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -182,6 +184,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 		return params;
 	}
 
+	@Nullable
 	@Override
 	public String getLoadFinishedTitle() {
 		return mName;
@@ -224,6 +227,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 		((MultiPaneHandler) getAppCompatActivity()).showDetails(f, true);
 	}
 
+	@NonNull
 	private Calendar getCalendar() {
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis((long) mTime * 1000);

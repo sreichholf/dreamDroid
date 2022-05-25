@@ -92,11 +92,14 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected int mSurfaceHeight;
 	protected int mSurfaceWidth;
 
+	@Nullable
 	protected String mTitle;
+	@Nullable
 	protected String mServiceRef;
 	protected String mBouquetRef;
 
 	protected ArrayList<ExtendedHashMap> mServiceList;
+	@Nullable
 	protected ExtendedHashMap mServiceInfo;
 
 	protected Handler mHandler;
@@ -105,33 +108,43 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
     protected ItemClickSupport mItemClickSupport;
 
-    @BindView(R.id.overlay_root)
+    @Nullable
+	@BindView(R.id.overlay_root)
     protected View mOverlayRoot;
 
+	@Nullable
 	@BindView(R.id.servicelist)
 	protected RecyclerView mServicesView;
 
-    @BindView(R.id.button_audio_track)
+    @Nullable
+	@BindView(R.id.button_audio_track)
 	protected AppCompatImageButton mButtonAudioTrack;
 
-    @BindView(R.id.button_info)
+    @Nullable
+	@BindView(R.id.button_info)
 	protected AppCompatImageButton mButtonInfo;
 
-    @BindView(R.id.button_list)
+    @Nullable
+	@BindView(R.id.button_list)
 	protected AppCompatImageButton mButtonList;
 
-    @BindView(R.id.button_subtitle_track)
+    @Nullable
+	@BindView(R.id.button_subtitle_track)
     protected AppCompatImageButton mButtonSubtitleTrack;
 
-    @BindView(R.id.button_rwd)
+    @Nullable
+	@BindView(R.id.button_rwd)
 	protected AppCompatImageButton mButtonRewind;
 
-    @BindView(R.id.button_play)
+    @Nullable
+	@BindView(R.id.button_play)
 	protected AppCompatImageButton mButtonPlay;
 
-    @BindView(R.id.button_fwd)
+    @Nullable
+	@BindView(R.id.button_fwd)
 	protected AppCompatImageButton mButtonForward;
 
+	@Nullable
 	private GestureDetectorCompat mGestureDector;
 	private AudioManager mAudioManager;
 	private int mAudioMaxVol;
@@ -202,7 +215,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			mServicesView.setAdapter(adapter);
 			mServicesView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 				@Override
-				public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+				public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
 					super.onScrollStateChanged(recyclerView, newState);
 					if (newState == RecyclerView.SCROLL_STATE_IDLE)
 						autohide();
@@ -215,7 +228,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 		mGestureDector = new GestureDetectorCompat(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 			@Override
-			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+			public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
 				boolean isGesturesEnabled = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true);
 				if (!isGesturesEnabled)
 					return true;
@@ -330,7 +343,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		}
 	}
 
-	private void showTrackSelection(String title, MediaPlayer.TrackDescription[] descriptions, String dialog_tag) {
+	private void showTrackSelection(String title, @Nullable MediaPlayer.TrackDescription[] descriptions, String dialog_tag) {
 		//this should actually never be true, but just to be sure we do it anyways
 		if (descriptions == null || descriptions.length == 0) {
 			Toast.makeText(getContext(), R.string.no_tracks, Toast.LENGTH_SHORT).show();
@@ -394,7 +407,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, LoaderResult<ArrayList<ExtendedHashMap>> data) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, @NonNull LoaderResult<ArrayList<ExtendedHashMap>> data) {
 		if (data.isError())
 			return;
 		mServiceList.clear();
@@ -440,6 +453,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		onServiceInfoChanged(true);
 	}
 
+	@Nullable
 	private ExtendedHashMap getPreviousServiceInfo() {
 		int index = getCurrentServiceIndex();
 		if (index < 0)
@@ -461,6 +475,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		zap();
 	}
 
+	@Nullable
 	private ExtendedHashMap getNextServiceInfo() {
 		int index = getCurrentServiceIndex();
 		if (index < 0)
@@ -767,7 +782,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		fadeOutView(mServicesView);
 	}
 
-	private void fadeInView(final View v) {
+	private void fadeInView(@Nullable final View v) {
 		if (v == null || v.getVisibility() == View.VISIBLE)
 			return;
 		v.setVisibility(View.VISIBLE);
@@ -780,7 +795,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		});
 	}
 
-	private void fadeOutView(final View v) {
+	private void fadeOutView(@Nullable final View v) {
 		if (v == null || v.getVisibility() == View.GONE)
 			return;
 		v.animate().alpha(0.0f).setListener(new AnimatorListenerAdapter() {
@@ -804,7 +819,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	@Override
-	public void onEvent(MediaPlayer.Event event) {
+	public void onEvent(@NonNull MediaPlayer.Event event) {
 		switch (event.type) {
 			case MediaPlayer.Event.Opening: {
 				View progressView = getView().findViewById(R.id.video_load_progress);

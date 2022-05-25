@@ -22,9 +22,12 @@ import java.util.List;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.ThemedSpinnerAdapter;
 
 public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filterable, ThemedSpinnerAdapter {
+	@NonNull
 	private final LayoutInflater mInflater;
 	private int[] mTo;
 	private String[] mFrom;
@@ -38,6 +41,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	/**
 	 * Layout inflater used for {@link #getDropDownView(int, View, ViewGroup)}.
 	 */
+	@Nullable
 	private LayoutInflater mDropDownInflater;
 
 	private SimpleFilter mFilter;
@@ -58,7 +62,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 *                 TextViews. The first N views in this list are given the values of the first N columns
 	 *                 in the from parameter.
 	 */
-	public SimpleExtendedHashMapAdapter(Context context, List<ExtendedHashMap> data,
+	public SimpleExtendedHashMapAdapter(@NonNull Context context, List<ExtendedHashMap> data,
 										@LayoutRes int resource, String[] from, @IdRes int[] to) {
 		mData = data;
 		mResource = mDropDownResource = resource;
@@ -91,11 +95,13 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	/**
 	 * @see android.widget.Adapter#getView(int, View, ViewGroup)
 	 */
+	@Nullable
 	public View getView(int position, View convertView, ViewGroup parent) {
 		return createViewFromResource(mInflater, position, convertView, parent, mResource);
 	}
 
-	private View createViewFromResource(LayoutInflater inflater, int position, View convertView,
+	@Nullable
+	private View createViewFromResource(@NonNull LayoutInflater inflater, int position, @Nullable View convertView,
 										ViewGroup parent, int resource) {
 		View v;
 		if (convertView == null) {
@@ -131,7 +137,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * @see #getDropDownView(int, View, ViewGroup)
 	 */
 	@Override
-	public void setDropDownViewTheme(Resources.Theme theme) {
+	public void setDropDownViewTheme(@Nullable Resources.Theme theme) {
 		if (theme == null) {
 			mDropDownInflater = null;
 		} else if (theme == mInflater.getContext().getTheme()) {
@@ -147,13 +153,14 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 		return mDropDownInflater == null ? null : mDropDownInflater.getContext().getTheme();
 	}
 
+	@Nullable
 	@Override
 	public View getDropDownView(int position, View convertView, ViewGroup parent) {
 		final LayoutInflater inflater = mDropDownInflater == null ? mInflater : mDropDownInflater;
 		return createViewFromResource(inflater, position, convertView, parent, mDropDownResource);
 	}
 
-	private void bindView(int position, View view) {
+	private void bindView(int position, @NonNull View view) {
 		final ExtendedHashMap dataSet = mData.get(position);
 		if (dataSet == null) {
 			return;
@@ -243,7 +250,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * @param value the value retrieved from the data set
 	 * @see #setViewImage(ImageView, String)
 	 */
-	public void setViewImage(ImageView v, int value) {
+	public void setViewImage(@NonNull ImageView v, int value) {
 		v.setImageResource(value);
 	}
 
@@ -263,7 +270,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * @param value the value retrieved from the data set
 	 * @see #setViewImage(ImageView, int)
 	 */
-	public void setViewImage(ImageView v, String value) {
+	public void setViewImage(@NonNull ImageView v, @NonNull String value) {
 		try {
 			v.setImageResource(Integer.parseInt(value));
 		} catch (NumberFormatException nfe) {
@@ -279,7 +286,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 * @param v    TextView to receive text
 	 * @param text the text to be set for the TextView
 	 */
-	public void setViewText(TextView v, String text) {
+	public void setViewText(@NonNull TextView v, String text) {
 		v.setText(text);
 	}
 
@@ -327,8 +334,9 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 	 */
 	private class SimpleFilter extends Filter {
 
+		@NonNull
 		@Override
-		protected FilterResults performFiltering(CharSequence prefix) {
+		protected FilterResults performFiltering(@Nullable CharSequence prefix) {
 			FilterResults results = new FilterResults();
 
 			if (mUnfilteredData == null) {
@@ -379,7 +387,7 @@ public class SimpleExtendedHashMapAdapter extends BaseAdapter implements Filtera
 		}
 
 		@Override
-		protected void publishResults(CharSequence constraint, FilterResults results) {
+		protected void publishResults(CharSequence constraint, @NonNull FilterResults results) {
 			//noinspection unchecked
 			mData = (List<ExtendedHashMap>) results.values;
 			if (results.count > 0) {

@@ -5,6 +5,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
@@ -25,7 +28,9 @@ public class ItemSelectionSupport {
 		MULTIPLE
 	}
 
+	@NonNull
 	private final RecyclerView mRecyclerView;
+	@NonNull
 	private final TouchListener mTouchListener;
 
 	private ChoiceMode mChoiceMode = ChoiceMode.NONE;
@@ -40,7 +45,7 @@ public class ItemSelectionSupport {
 
 	private static final int CHECK_POSITION_SEARCH_DISTANCE = 20;
 
-	private ItemSelectionSupport(RecyclerView recyclerView) {
+	private ItemSelectionSupport(@NonNull RecyclerView recyclerView) {
 		mRecyclerView = recyclerView;
 		mTouchListener = new TouchListener(recyclerView);
 		recyclerView.addOnItemTouchListener(mTouchListener);
@@ -114,6 +119,7 @@ public class ItemSelectionSupport {
 	 *          or <code>null</code> if the choice mode is set to
 	 *          {@link ChoiceMode#NONE}.
 	 */
+	@Nullable
 	public SparseBooleanArray getCheckedItemPositions() {
 		if (mChoiceMode != ChoiceMode.NONE) {
 			return mCheckedStates;
@@ -132,6 +138,7 @@ public class ItemSelectionSupport {
 	 *
 	 * @see RecyclerView.Adapter#hasStableIds()
 	 */
+	@NonNull
 	public long[] getCheckedItemIds() {
 		if (mChoiceMode == ChoiceMode.NONE
 				|| mCheckedIdStates == null || mRecyclerView.getAdapter() == null) {
@@ -318,6 +325,7 @@ public class ItemSelectionSupport {
 		}
 	}
 
+	@NonNull
 	public Bundle onSaveInstanceState() {
 		final Bundle state = new Bundle();
 
@@ -329,7 +337,7 @@ public class ItemSelectionSupport {
 		return state;
 	}
 
-	public void onRestoreInstanceState(Bundle state) {
+	public void onRestoreInstanceState(@NonNull Bundle state) {
 		mChoiceMode = ChoiceMode.values()[state.getInt(STATE_KEY_CHOICE_MODE)];
 		mCheckedStates = state.getParcelable(STATE_KEY_CHECKED_STATES);
 		mCheckedIdStates = state.getParcelable(STATE_KEY_CHECKED_ID_STATES);
@@ -338,7 +346,8 @@ public class ItemSelectionSupport {
 		// TODO confirm ids here
 	}
 
-	public static ItemSelectionSupport addTo(RecyclerView recyclerView) {
+	@Nullable
+	public static ItemSelectionSupport addTo(@NonNull RecyclerView recyclerView) {
 		ItemSelectionSupport itemSelectionSupport = from(recyclerView);
 		if (itemSelectionSupport == null) {
 			itemSelectionSupport = new ItemSelectionSupport(recyclerView);
@@ -350,7 +359,7 @@ public class ItemSelectionSupport {
 		return itemSelectionSupport;
 	}
 
-	public static void removeFrom(RecyclerView recyclerView) {
+	public static void removeFrom(@NonNull RecyclerView recyclerView) {
 		final ItemSelectionSupport itemSelection = from(recyclerView);
 		if (itemSelection == null) {
 			// TODO: Log warning
@@ -363,7 +372,8 @@ public class ItemSelectionSupport {
 		recyclerView.setTag(R.id.recyclerview_item_selection_support, null);
 	}
 
-	public static ItemSelectionSupport from(RecyclerView recyclerView) {
+	@Nullable
+	public static ItemSelectionSupport from(@Nullable RecyclerView recyclerView) {
 		if (recyclerView == null) {
 			return null;
 		}
@@ -379,7 +389,7 @@ public class ItemSelectionSupport {
 			super();
 		}
 
-		private CheckedStates(Parcel in) {
+		private CheckedStates(@NonNull Parcel in) {
 			final int size = in.readInt();
 			if (size > 0) {
 				for (int i = 0; i < size; i++) {
@@ -396,7 +406,7 @@ public class ItemSelectionSupport {
 		}
 
 		@Override
-		public void writeToParcel(Parcel parcel, int flags) {
+		public void writeToParcel(@NonNull Parcel parcel, int flags) {
 			final int size = size();
 			parcel.writeInt(size);
 
@@ -408,11 +418,13 @@ public class ItemSelectionSupport {
 
 		public static final Parcelable.Creator<CheckedStates> CREATOR
 				= new Parcelable.Creator<CheckedStates>() {
+			@NonNull
 			@Override
-			public CheckedStates createFromParcel(Parcel in) {
+			public CheckedStates createFromParcel(@NonNull Parcel in) {
 				return new CheckedStates(in);
 			}
 
+			@NonNull
 			@Override
 			public CheckedStates[] newArray(int size) {
 				return new CheckedStates[size];
@@ -425,7 +437,7 @@ public class ItemSelectionSupport {
 			super();
 		}
 
-		private CheckedIdStates(Parcel in) {
+		private CheckedIdStates(@NonNull Parcel in) {
 			final int size = in.readInt();
 			if (size > 0) {
 				for (int i = 0; i < size; i++) {
@@ -442,7 +454,7 @@ public class ItemSelectionSupport {
 		}
 
 		@Override
-		public void writeToParcel(Parcel parcel, int flags) {
+		public void writeToParcel(@NonNull Parcel parcel, int flags) {
 			final int size = size();
 			parcel.writeInt(size);
 
@@ -454,11 +466,13 @@ public class ItemSelectionSupport {
 
 		public static final Creator<CheckedIdStates> CREATOR
 				= new Creator<CheckedIdStates>() {
+			@NonNull
 			@Override
-			public CheckedIdStates createFromParcel(Parcel in) {
+			public CheckedIdStates createFromParcel(@NonNull Parcel in) {
 				return new CheckedIdStates(in);
 			}
 
+			@NonNull
 			@Override
 			public CheckedIdStates[] newArray(int size) {
 				return new CheckedIdStates[size];
@@ -467,7 +481,7 @@ public class ItemSelectionSupport {
 	}
 
 	private class TouchListener extends ClickItemTouchListener {
-		TouchListener(RecyclerView recyclerView) {
+		TouchListener(@NonNull RecyclerView recyclerView) {
 			super(recyclerView);
 		}
 

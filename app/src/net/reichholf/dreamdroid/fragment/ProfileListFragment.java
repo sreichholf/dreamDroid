@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -55,11 +57,15 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	private Profile mProfile;
 	private ArrayList<Profile> mProfiles;
 	private ArrayList<ExtendedHashMap> mProfileMapList;
+	@Nullable
 	private ArrayList<Profile> mDetectedProfiles;
 
+	@Nullable
 	private RecyclerView.Adapter mAdapter;
+	@Nullable
 	private DetectDevicesTask mDetectDevicesTask;
 
+	@Nullable
 	private IndeterminateProgress mProgress;
 
 	private int mCurrentPos;
@@ -84,11 +90,12 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 		}
 	}
 
+	@NonNull
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
 		// Called when the action mode is created; startActionMode() was called
 		@Override
-		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+		public boolean onCreateActionMode(@NonNull ActionMode mode, Menu menu) {
 			// Inflate a menu resource providing context menu items
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.profilelist_context, menu);
@@ -107,7 +114,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 
 		// Called when the user selects a contextual menu item
 		@Override
-		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+		public boolean onActionItemClicked(@NonNull ActionMode mode, @NonNull MenuItem item) {
 			mode.finish(); // Action picked, so close the CAB
 			return onItemClicked(item.getItemId());
 		}
@@ -169,7 +176,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	 * @param profiles A list of profiles for auto-discovered dreamboxes
 	 */
 	@Override
-	public void onDevicesDetected(ArrayList<Profile> profiles) {
+	public void onDevicesDetected(@NonNull ArrayList<Profile> profiles) {
 		mProgress = (IndeterminateProgress) getFragmentManager().findFragmentByTag("dialog_devicesearch_indeterminate");
 		if (mProgress != null) {
 			mProgress.dismiss();
@@ -226,14 +233,14 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
 		registerFab(R.id.fab_main, R.string.profile_add, R.drawable.ic_action_fab_add, v -> createProfile());
 		return view;
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mAdapter = new ProfileAdapter(getActivity(), mProfileMapList);
 		getRecyclerView().setAdapter(mAdapter);
@@ -319,12 +326,12 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		inflater.inflate(R.menu.profiles, menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		return onItemClicked(item.getItemId());
 	}
 
@@ -402,7 +409,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	 * @param activity The calling activity
 	 * @param profile The selected profile that should be edited, null if a new one should be created instead.
 	 */
-	public static void openProfileEditActivity(Activity activity, Profile profile) {
+	public static void openProfileEditActivity(@NonNull Activity activity, @Nullable Profile profile) {
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put("action", Intent.ACTION_EDIT);
 

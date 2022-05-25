@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 /**
@@ -24,12 +26,12 @@ public class AbstractBottomSheetDialog extends BottomSheetDialogFragment {
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
 	}
 
-	protected void setTextOrHide(TextView textView, String text) {
+	protected void setTextOrHide(@NonNull TextView textView, @NonNull String text) {
 		if (text.isEmpty())
 			textView.setVisibility(View.GONE);
 		else

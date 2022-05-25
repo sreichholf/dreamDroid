@@ -13,6 +13,9 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.activities.VideoActivity;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -26,7 +29,7 @@ public class IntentFactory {
 	/**
 	 * @param event
 	 */
-	public static void queryIMDb(Context context, ExtendedHashMap event) {
+	public static void queryIMDb(@NonNull Context context, @NonNull ExtendedHashMap event) {
 		Intent intent = new Intent(Intent.ACTION_VIEW);
 		String uriString = "imdb:///find?q=" + event.getString(Event.KEY_EVENT_TITLE);
 		intent.setData(Uri.parse(uriString));
@@ -43,6 +46,7 @@ public class IntentFactory {
 		}
 	}
 
+	@NonNull
 	public static Intent getStreamServiceIntent(Context context, String ref, String title) {
 		return getStreamServiceIntent(context, ref, title, null, null);
 	}
@@ -60,7 +64,8 @@ public class IntentFactory {
 		return intent;
 	}
 
-	public static Intent getStreamServiceIntent(Context context, String ref, String title, String bouquetRef, ExtendedHashMap serviceInfo) {
+	@NonNull
+	public static Intent getStreamServiceIntent(Context context, String ref, String title, @Nullable String bouquetRef, @Nullable ExtendedHashMap serviceInfo) {
 		String uriString = SimpleHttpClient.getInstance().buildStreamUrl(ref);
 		Log.i(DreamDroid.LOG_TAG, "Service-Streaming URL set to '" + uriString + "'");
 
@@ -74,7 +79,8 @@ public class IntentFactory {
 		return intent;
 	}
 
-	public static Intent getStreamFileIntent(Context context, String ref, String fileName, String title, ExtendedHashMap fileInfo) {
+	@NonNull
+	public static Intent getStreamFileIntent(Context context, @NonNull String ref, String fileName, String title, @Nullable ExtendedHashMap fileInfo) {
 		String uriString = SimpleHttpClient.getInstance().buildFileStreamUrl(ref, fileName);
 		Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '" + uriString + "'");
 		Intent intent = getVideoIntent(context, uriString);

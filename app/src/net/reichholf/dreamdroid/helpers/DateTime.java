@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.helpers;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.DreamDroid;
 
 import java.math.BigDecimal;
@@ -29,7 +32,7 @@ public class DateTime {
 	 * @param eventstart
 	 * @return
 	 */
-	public static int getRemaining(String duration, String eventstart) {
+	public static int getRemaining(@Nullable String duration, @Nullable String eventstart) {
 		if(duration == null || Python.NONE.equals(duration)){
 			return 0;
 		}
@@ -63,7 +66,8 @@ public class DateTime {
 	 * @param duration
 	 * @return
 	 */
-	public static String getDurationString(String duration, String eventstart) {
+	@Nullable
+	public static String getDurationString(@Nullable String duration, @Nullable String eventstart) {
 		if(duration == null || Python.NONE.equals(duration)){
 			return "0";
 		}
@@ -97,7 +101,8 @@ public class DateTime {
 	 * @param timestamp
 	 * @return
 	 */
-	public static String getDateTimeString(String timestamp) {
+	@NonNull
+	public static String getDateTimeString(@NonNull String timestamp) {
 		SimpleDateFormat sdfDateTime;
 
 		// Some devices are missing some Translations, wee need to work around
@@ -115,6 +120,7 @@ public class DateTime {
 	 * @param timestamp
 	 * @return
 	 */
+	@NonNull
 	public static String getYearDateTimeString(long timestamp) {
 		return getYearDateTimeString(String.valueOf(timestamp));
 	}
@@ -123,7 +129,8 @@ public class DateTime {
 	 * @param timestamp
 	 * @return
 	 */
-	public static String getYearDateTimeString(String timestamp) {
+	@NonNull
+	public static String getYearDateTimeString(@NonNull String timestamp) {
 		SimpleDateFormat sdfDateTime;
 
 		// Some devices are missing some Translations, wee need to work around
@@ -141,7 +148,8 @@ public class DateTime {
 	 * @param timestamp
 	 * @return
 	 */
-	public static String getTimeString(String timestamp) {
+	@NonNull
+	public static String getTimeString(@NonNull String timestamp) {
 		SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 		return DateTime.getFormattedDateString(sdfTime, timestamp);
 	}
@@ -150,7 +158,8 @@ public class DateTime {
 	 * @param timestamp
 	 * @return
 	 */
-	public static Date getDate(String timestamp) {
+	@Nullable
+	public static Date getDate(@NonNull String timestamp) {
 		try {
 			long s = Double.valueOf(timestamp).longValue();
 			s = s * 1000;
@@ -165,7 +174,8 @@ public class DateTime {
 	 * @param timestamp
 	 * @return
 	 */
-	public static String getFormattedDateString(SimpleDateFormat sdf, String timestamp) {
+	@NonNull
+	public static String getFormattedDateString(@NonNull SimpleDateFormat sdf, @NonNull String timestamp) {
 		Date date = DateTime.getDate(timestamp);
 
 		if (date != null) {
@@ -179,6 +189,7 @@ public class DateTime {
 		return (new BigDecimal(timestamp)).intValue();
 	}
 
+	@NonNull
 	public static String minutesAndSeconds(int seconds) {
 		int min = seconds / 60;
 		int sec = seconds % 60;

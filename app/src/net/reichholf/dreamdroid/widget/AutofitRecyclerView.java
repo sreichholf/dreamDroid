@@ -2,6 +2,9 @@ package net.reichholf.dreamdroid.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.GridLayoutManager;
 import android.util.AttributeSet;
 
@@ -11,17 +14,17 @@ public class AutofitRecyclerView extends com.simplecityapps.recyclerview_fastscr
 	private int mSpanCount = 4;
 	private int mMaxSpanCount = DEFAULT_MAX_SPAN_COUNT;
 
-	public AutofitRecyclerView(Context context) {
+	public AutofitRecyclerView(@NonNull Context context) {
 		super(context);
 		init(context, null);
 	}
 
-	public AutofitRecyclerView(Context context, AttributeSet attrs) {
+	public AutofitRecyclerView(@NonNull Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init(context, attrs);
 	}
 
-	public AutofitRecyclerView(Context context, AttributeSet attrs, int defStyle) {
+	public AutofitRecyclerView(@NonNull Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init(context, attrs);
 	}
@@ -30,7 +33,7 @@ public class AutofitRecyclerView extends com.simplecityapps.recyclerview_fastscr
 		mMaxSpanCount = maxSpanCount;
 	}
 
-	private void init(Context context, AttributeSet attrs) {
+	private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
 		if (attrs != null) {
 			int[] attrsArray = {
 					android.R.attr.columnWidth

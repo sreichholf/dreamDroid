@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
  */
 
 public class ZapFragment extends BaseHttpRecyclerFragment {
+	@NonNull
 	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
 
 	private ExtendedHashMap mCurrentBouquet;
@@ -59,7 +61,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
 		RecyclerView recyclerView = view.findViewById(android.R.id.list);
@@ -78,13 +80,13 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		outState.putSerializable(BUNDLE_KEY_CURRENT_BOUQUET, mCurrentBouquet);
 		super.onSaveInstanceState(outState);
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		super.createOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.epgbouquet, menu);
 	}
@@ -114,6 +116,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, bundle);
 	}
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -130,6 +133,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 			pickBouquet();
 	}
 
+	@Nullable
 	@Override
 	public String getLoadFinishedTitle() {
 		if(mCurrentBouquet != null)
@@ -139,7 +143,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
 		mMapList.clear();
 		mAdapter.notifyDataSetChanged();
@@ -176,7 +180,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	}
 
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
 		if (resultCode != Activity.RESULT_OK)
 			return;
 		switch (requestCode) {

@@ -2,6 +2,9 @@ package net.reichholf.dreamdroid.asynctask;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -15,6 +18,7 @@ public class CheckProfileTask extends AsyncHttpTaskBase<Void, String, ExtendedHa
 		mProfile = p;
 	}
 
+	@Nullable
 	@Override
 	protected ExtendedHashMap doInBackground(Void... params) {
 		CheckProfileTaskHandler taskHandler = (CheckProfileTaskHandler) mTaskHandler.get();
@@ -43,6 +47,7 @@ public class CheckProfileTask extends AsyncHttpTaskBase<Void, String, ExtendedHa
 
 		void onProfileCheckProgress(String state);
 
+		@NonNull
 		Context getProfileCheckContext();
 	}
 }

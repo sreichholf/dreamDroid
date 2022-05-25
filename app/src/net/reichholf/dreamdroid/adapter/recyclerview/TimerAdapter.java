@@ -35,7 +35,7 @@ public class TimerAdapter extends BaseAdapter<TimerAdapter.TimerViewHolder> {
 	 * @param context
 	 * @param data
 	 */
-	public TimerAdapter(Context context, ArrayList<ExtendedHashMap> data) {
+	public TimerAdapter(@NonNull Context context, ArrayList<ExtendedHashMap> data) {
 		super(data);
 		mState = context.getResources().getTextArray(R.array.timer_state);
 		mAction = context.getResources().getTextArray(R.array.timer_action);
@@ -89,7 +89,7 @@ public class TimerAdapter extends BaseAdapter<TimerAdapter.TimerViewHolder> {
 		public TextView state;
 		public TextView stateIndicator;
 
-		public TimerViewHolder(View itemView){
+		public TimerViewHolder(@NonNull View itemView){
 			super(itemView);
 			name = itemView.findViewById(R.id.timer_name);
 			service = itemView.findViewById(R.id.service_name);

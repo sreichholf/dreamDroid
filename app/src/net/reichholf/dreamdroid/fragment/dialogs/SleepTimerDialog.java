@@ -31,7 +31,8 @@ public class SleepTimerDialog extends AbstractDialog {
     private static final String KEY_TIMER = "timer";
     private ExtendedHashMap mSleepTimer;
 
-    public static SleepTimerDialog newInstance(ExtendedHashMap sleepTimer) {
+    @NonNull
+	public static SleepTimerDialog newInstance(ExtendedHashMap sleepTimer) {
         SleepTimerDialog f = new SleepTimerDialog();
         Bundle args = new Bundle();
         args.putSerializable(KEY_TIMER, sleepTimer);

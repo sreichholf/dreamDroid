@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 import androidx.slidingpanelayout.widget.SlidingPaneLayout;
 import android.view.LayoutInflater;
@@ -55,6 +56,7 @@ import java.util.ArrayList;
 public class MediaPlayerFragment extends AbstractHttpListFragment implements ActionDialog.DialogActionListener {
 	public static final String STATE_MEDIA_INDEX = "media_index";
 	public static int LOADER_PLAYLIST_ID = 1;
+	@NonNull
 	public static String PLAYLIST_AS_ROOT = "playlist";
 
 	@State public int mMediaIndex = -1;
@@ -67,13 +69,15 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	int mMode = STOP_MODE;
 	private ExtendedHashMap mMediaInfo;
 
+	@Nullable
 	private MediaListAdapter mPlaylistAdapter;
 	private ArrayList<ExtendedHashMap> mPlaylist;
 
+	@Nullable
 	private GetCurrentMediaInfoTask mGetCurrentMediaInfoTask;
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.dual_list_media_view, null, false);
 		setAdapter(v);
 
@@ -208,8 +212,8 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		reload(LOADER_PLAYLIST_ID);
 	}
 
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
 
 		if (loader.getId() == LOADER_PLAYLIST_ID) {
 			setCurrentTitle(getLoadFinishedTitle());
@@ -274,16 +278,17 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		inflater.inflate(R.menu.mediaplayer, menu);
 	}
 
+	@NonNull
 	private SlidingPaneLayout getSlidingPaneLayout() {
 		return (SlidingPaneLayout) getView().findViewById(R.id.sliding_pane);
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
+	public void onPrepareOptionsMenu(@NonNull Menu menu) {
 		if(getMultiPaneHandler().isDrawerOpen())
 			return;
 		if (mMedia != null) {
@@ -413,7 +418,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 		title.setText("-");
 	}
 
-	public void setMediaInfo(ExtendedHashMap map) {
+	public void setMediaInfo(@NonNull ExtendedHashMap map) {
 		TextView artist = getView().findViewById(R.id.artist);
 		TextView title = getView().findViewById(R.id.title);
 		// TextView album = (TextView) getView().findViewById(R.id.album);
@@ -473,7 +478,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	 *
 	 * @param filePath
 	 */
-	private void playFile(String filePath, String root) {
+	private void playFile(String filePath, @Nullable String root) {
 		mMode = PLAY_MODE;
 
 		// invalidate options menu
@@ -563,7 +568,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	/**
 	 * Initializes the <code>MediaListAdapter</code>
 	 */
-	private void setAdapter(View v) {
+	private void setAdapter(@NonNull View v) {
 		mAdapter = new MediaListAdapter(getAppCompatActivity(), mMapList);
 		setListAdapter(mAdapter);
 
@@ -575,13 +580,14 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	/**
 	 * Check if DetailView is available for current device
 	 */
-	private boolean isDetailViewAvailable(View v) {
+	private boolean isDetailViewAvailable(@NonNull View v) {
 		LinearLayout detailLayout = v.findViewById(R.id.detailView);
 
 		return detailLayout != null;
 	}
 
-	private String getCommandFromKeyState(String keyStateText) {
+	@NonNull
+	private String getCommandFromKeyState(@NonNull String keyStateText) {
 		String command = "";
 
 		if (keyStateText.contains(MediaplayerCommandRequestHandler.CMD_NEXT)) {
@@ -608,7 +614,7 @@ public class MediaPlayerFragment extends AbstractHttpListFragment implements Act
 	}
 
 	@Override
-	public void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
 		super.onSimpleResult(success, result);
 		if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
 			String command = getCommandFromKeyState(result.getString(SimpleResult.KEY_STATE_TEXT));

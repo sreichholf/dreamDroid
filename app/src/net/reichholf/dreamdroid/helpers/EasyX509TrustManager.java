@@ -19,6 +19,8 @@ package net.reichholf.dreamdroid.helpers;
  * under the License.
  */
 
+import androidx.annotation.Nullable;
+
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -37,6 +39,7 @@ import javax.net.ssl.X509TrustManager;
  */
 public class EasyX509TrustManager implements X509TrustManager {
 
+	@Nullable
 	private X509TrustManager mStandardTrustManager = null;
 
 	/**
@@ -65,7 +68,7 @@ public class EasyX509TrustManager implements X509TrustManager {
 	 * @see javax.net.ssl.X509TrustManager#checkServerTrusted(X509Certificate[],
 	 *      String authType)
 	 */
-	public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
+	public void checkServerTrusted(@Nullable X509Certificate[] certificates, String authType) throws CertificateException {
 		if ((certificates != null) && (certificates.length == 1)) {
 			certificates[0].checkValidity();
 		} else {

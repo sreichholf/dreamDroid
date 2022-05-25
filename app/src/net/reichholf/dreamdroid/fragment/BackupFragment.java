@@ -33,6 +33,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import java9.util.stream.StreamSupport;
 
@@ -46,9 +48,11 @@ import static net.reichholf.dreamdroid.helpers.Statics.REQUEST_BACKUP_IMPORT;
 public class BackupFragment extends BaseFragment {
 	private static final String TAG = BackupFragment.class.getSimpleName();
 
+	@Nullable
 	private BackupService mBackupService;
 	private BackupData mBackupData;
 
+	@NonNull
 	private List<CheckBox> mProfilesCheckBox = new ArrayList<>();
 	private CheckBox mSettingsCheckBox;
 	private View mBackupView;
@@ -62,7 +66,7 @@ public class BackupFragment extends BaseFragment {
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		inflater.inflate(R.menu.backup, menu);
 	}
 
@@ -71,7 +75,7 @@ public class BackupFragment extends BaseFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mBackupService = new BackupService(getContext());
 		mBackupView = inflater.inflate(R.layout.backup, null);
 		mSettingsCheckBox = mBackupView.findViewById(R.id.backup_export_settings);
@@ -81,7 +85,7 @@ public class BackupFragment extends BaseFragment {
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if (!hasStoragePermission()) {
 			requestStoragePermission();
 			return false;
@@ -164,7 +168,7 @@ public class BackupFragment extends BaseFragment {
 	}
 
 	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if (REQUEST_BACKUP_IMPORT == requestCode && resultCode == Activity.RESULT_OK) {
 			if (data != null) {
 				Uri uri = data.getData();
@@ -183,6 +187,7 @@ public class BackupFragment extends BaseFragment {
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 
+	@NonNull
 	private String readTextFromUri(Uri uri) throws IOException {
 		InputStream inputStream = getContext().getContentResolver().openInputStream(uri);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));

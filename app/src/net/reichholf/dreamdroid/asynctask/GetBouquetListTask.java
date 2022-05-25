@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.asynctask;
 
 import android.content.res.Resources;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -31,6 +33,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		super(taskHandler);
 	}
 
+	@NonNull
 	@Override
 	protected Boolean doInBackground(Void... unused) {
 		mBouquets = new Bouquets();
@@ -47,7 +50,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		return true;
 	}
 
-	private boolean addBouquets(AbstractListRequestHandler handler, String ref, ArrayList<ExtendedHashMap> target) {
+	private boolean addBouquets(@NonNull AbstractListRequestHandler handler, String ref, ArrayList<ExtendedHashMap> target) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("sRef", ref));
 		String xml = handler.getList(getHttpClient(), params);
@@ -64,6 +67,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 	}
 
 	public interface GetBoquetListTaskHandler extends AsyncHttpTaskBaseHandler {
+		@NonNull
 		Resources getResources();
 
 		void onBouquetListReady(boolean result, Bouquets bouquets, String errorText);

@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,12 +66,15 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	private LinearLayout mNextLayout;
 	protected ProgressDialog mProgress;
 
+	@Nullable
 	private ExtendedHashMap mService;
 	private ExtendedHashMap mNow;
 	private ExtendedHashMap mNext;
 	private boolean mCurrentServiceReady;
 
+	@Nullable
 	@State public ExtendedHashMap mCurrent;
+	@Nullable
 	@State public ExtendedHashMap mCurrentItem;
 
 	@SuppressWarnings("unchecked")
@@ -107,7 +111,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		if (mCurrent == null || mCurrent.isEmpty())
 			mReload = true;
 
@@ -126,7 +130,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	 *            The id used to identify the item clicked (<code>ITEM_*</code>
 	 *            statics)
 	 */
-	protected void registerOnClickListener(View v, final int id) {
+	protected void registerOnClickListener(@NonNull View v, final int id) {
 		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
@@ -162,7 +166,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		}
 	}
 
-	private void showEpgDetail(ExtendedHashMap event) {
+	private void showEpgDetail(@Nullable ExtendedHashMap event) {
 		if (event != null) {
 			mCurrentItem = event;
 			Bundle args = new Bundle();
@@ -177,7 +181,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	 * GUI-Content
 	 */
 	@Override
-	public void applyData(int loaderId, ExtendedHashMap content) {
+	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
 		if (content != null && !content.isEmpty()) {
 			mCurrent = content;
 			mCurrentServiceReady = true;
@@ -211,14 +215,14 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	/**
 	 * @param event
 	 */
-	protected void setTimerByEventData(ExtendedHashMap event) {
+	protected void setTimerByEventData(@NonNull ExtendedHashMap event) {
 		Timer.editUsingEvent((MultiPaneHandler) getAppCompatActivity(), event, this);
 	}
 
 	/**
 	 * @param event
 	 */
-	protected void setTimerById(ExtendedHashMap event) {
+	protected void setTimerById(@NonNull ExtendedHashMap event) {
 		if (mProgress != null) {
 			if (mProgress.isShowing()) {
 				mProgress.dismiss();

@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.widget;
 import android.content.Context;
 import android.graphics.Rect;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -20,17 +21,17 @@ public class CheckableImageButton extends AppCompatImageButton implements Checka
 
 	private static final int[] CHECKED_STATE_SET = {android.R.attr.state_checked};
 
-	public CheckableImageButton(Context context) {
+	public CheckableImageButton(@NonNull Context context) {
 		super(context);
 		init();
 	}
 
-	public CheckableImageButton(Context context, AttributeSet attrs) {
+	public CheckableImageButton(@NonNull Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public CheckableImageButton(Context context, AttributeSet attrs, int defStyleAttr) {
+	public CheckableImageButton(@NonNull Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		init();
 	}
@@ -42,11 +43,11 @@ public class CheckableImageButton extends AppCompatImageButton implements Checka
 		});
 	}
 
-	public void onLongClick(View view){
+	public void onLongClick(@NonNull View view){
 		onLongClick(view, Gravity.TOP);
 	}
 
-	public void onLongClick(View view, int primaryAlign){
+	public void onLongClick(@NonNull View view, int primaryAlign){
 		int secondaryAlign = primaryAlign == Gravity.TOP ? Gravity.BOTTOM : Gravity.TOP;
 
 

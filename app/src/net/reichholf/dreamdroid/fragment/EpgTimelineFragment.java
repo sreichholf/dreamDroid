@@ -34,7 +34,7 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.multiepg, null);
 
 		final EnhancedHorizontalScrollView headerScroll = v.findViewById(R.id.scrollview_header);
@@ -58,7 +58,7 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		reload();
 	}
@@ -68,7 +68,8 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 		return true;
 	}
 
-	public LinearLayout createTimeLine(LayoutInflater inflater) {
+	@NonNull
+	public LinearLayout createTimeLine(@NonNull LayoutInflater inflater) {
 		LinearLayout row = (LinearLayout) inflater.inflate(R.layout.multiepg_row, null);
 
 		Date now = new Date();
@@ -90,7 +91,7 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 		return row;
 	}
 
-	private View createRowItem(LayoutInflater inflater, int width, String text1, boolean header) {
+	private View createRowItem(@NonNull LayoutInflater inflater, int width, String text1, boolean header) {
 		View item;
 		if (header)
 			item = inflater.inflate(R.layout.multiepg_header_item, null);
@@ -121,6 +122,7 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 
+	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
@@ -136,8 +138,8 @@ public class EpgTimelineFragment extends BaseHttpRecyclerEventFragment {
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   LoaderResult<ArrayList<ExtendedHashMap>> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
 		super.onLoadFinished(loader, result);
 	}
 }

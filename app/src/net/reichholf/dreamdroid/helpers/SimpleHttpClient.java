@@ -10,6 +10,9 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -38,14 +41,18 @@ import java.util.List;
  * @author sreichholf
  */
 public class SimpleHttpClient {
+	@NonNull
 	public static String LOG_TAG = SimpleHttpClient.class.getSimpleName();
+	@NonNull
 	public static String BIG_BUCK_BUNNY_URL = "https://dreamdroid.org/bunny/big_buck_bunny_720p_h264.mov";
 
+	@Nullable
 	private Profile mProfile;
 
 	private String mPrefix;
 	private String mFilePrefix;
 	private byte[] mBytes;
+	@Nullable
 	private String mErrorText;
 	private int mErrorTextId;
 
@@ -67,10 +74,12 @@ public class SimpleHttpClient {
 	/**
 	 * @return
 	 */
+	@NonNull
 	public static SimpleHttpClient getInstance() {
 		return new SimpleHttpClient();
 	}
 
+	@NonNull
 	public static SimpleHttpClient getInstance(Profile p) {
 		return new SimpleHttpClient(p);
 	}
@@ -89,14 +98,16 @@ public class SimpleHttpClient {
 	 * @param parameters
 	 * @return
 	 */
-	public String buildUrl(String uri, List<NameValuePair> parameters) {
+	@NonNull
+	public String buildUrl(@NonNull String uri, @NonNull List<NameValuePair> parameters) {
 		String parms = NameValuePair.toString(parameters);
 		if(!uri.contains("?"))
 			uri += "?";
 		return mPrefix + mProfile.getHost() + ":" + mProfile.getPortString() + uri + parms;
 	}
 
-	public String buildAuthedUrl(String uri, List<NameValuePair> parameters) {
+	@NonNull
+	public String buildAuthedUrl(@NonNull String uri, @NonNull List<NameValuePair> parameters) {
 		String parms = NameValuePair.toString(parameters);
 		if(!uri.contains("?"))
 			uri += "?";
@@ -107,6 +118,7 @@ public class SimpleHttpClient {
 		return mPrefix + loginString + mProfile.getHost() + ":" + mProfile.getPortString() + uri + parms;
 	}
 
+	@NonNull
 	public String buildEncoderStreamUrl(String ref) {
 		if (mProfile.getHost().equals("dreamdroid.org"))
 			return BIG_BUCK_BUNNY_URL;
@@ -131,6 +143,7 @@ public class SimpleHttpClient {
 		);
 	}
 
+	@NonNull
 	public String buildStreamUrl(String ref) {
 		if (mProfile.getHost().equals("dreamdroid.org"))
 			return BIG_BUCK_BUNNY_URL;
@@ -144,6 +157,7 @@ public class SimpleHttpClient {
 	 * @param ref
 	 * @return
 	 */
+	@NonNull
 	public String buildServiceStreamUrl(String ref) {
 		if (mProfile.getHost().equals("dreamdroid.org"))
 			return BIG_BUCK_BUNNY_URL;
@@ -158,7 +172,8 @@ public class SimpleHttpClient {
 		return "http://" + streamLoginString + mProfile.getStreamHost() + ":" + mProfile.getStreamPortString() + "/" + ref;
 	}
 
-	public String buildFileStreamUrl(String ref, String fileName) {
+	@NonNull
+	public String buildFileStreamUrl(@NonNull String ref, String fileName) {
 		if (mProfile.getHost().equals("dreamdroid.org"))
 			return BIG_BUCK_BUNNY_URL;
 		if(mProfile.isEncoderStream() && ref.startsWith("1:"))
@@ -174,11 +189,11 @@ public class SimpleHttpClient {
 		return mFilePrefix + fileAuthString + mProfile.getStreamHost() + ":" + mProfile.getFilePortString() + URIStore.FILE + parms;
 	}
 
-	public boolean fetchPageContent(String uri) {
+	public boolean fetchPageContent(@NonNull String uri) {
 		return fetchPageContent(uri, new ArrayList<>());
 	}
 
-	private void setAuth(HttpURLConnection connection) {
+	private void setAuth(@NonNull HttpURLConnection connection) {
 		if (mProfile.isLogin()) {
 			byte[] auth = (mProfile.getUser() + ":" + mProfile.getPass()).getBytes();
 			String basic = Base64.encode(auth);
@@ -195,7 +210,7 @@ public class SimpleHttpClient {
 	 * @param parameters
 	 * @return
 	 */
-	public boolean fetchPageContent(String uri, List<NameValuePair> parameters) {
+	public boolean fetchPageContent(@NonNull String uri, @NonNull List<NameValuePair> parameters) {
 		// Set login, ssl, port, host etc;
 		applyConfig();
 
@@ -306,7 +321,7 @@ public class SimpleHttpClient {
 		}
 	}
 
-	private void dumpToFile(URL url) {
+	private void dumpToFile(@NonNull URL url) {
 		File externalStorage = Environment.getExternalStorageDirectory();
 		if (!externalStorage.canWrite())
 			return;
@@ -336,6 +351,7 @@ public class SimpleHttpClient {
 	/**
 	 * @return
 	 */
+	@NonNull
 	public String getPageContentString() {
 		return new String(mBytes);
 	}
@@ -345,7 +361,8 @@ public class SimpleHttpClient {
 	}
 
 
-	public String getErrorText(Context context){
+	@Nullable
+	public String getErrorText(@NonNull Context context){
 		if(mErrorTextId > 0)
 			return context.getString(mErrorTextId);
 		return mErrorText;

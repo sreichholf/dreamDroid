@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.loader;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -15,7 +17,7 @@ public class AsyncFavListLoader extends AsyncListLoader {
 	public static final String REF_UP = "__root__";
 	public static final String REF_FAVS = "__root__";
 
-	public AsyncFavListLoader(Context context, Bundle params) {
+	public AsyncFavListLoader(@NonNull Context context, Bundle params) {
 		super(context, new ServiceListRequestHandler(), false, params);
 	}
 
@@ -41,6 +43,7 @@ public class AsyncFavListLoader extends AsyncListLoader {
 		return result;
 	}
 
+	@NonNull
 	public ArrayList<ExtendedHashMap> loadBouquet(String ref){
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("sRef", ref));

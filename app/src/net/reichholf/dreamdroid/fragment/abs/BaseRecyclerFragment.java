@@ -47,8 +47,10 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	protected boolean mCardListStyle = false;
 
 	protected ItemClickSupport mItemClickSupport;
+	@Nullable
 	protected ItemSelectionSupport mSelectionSupport;
 
+	@Nullable
 	protected ActionMode mActionMode;
 	protected boolean mIsActionMode;
 	protected boolean mIsActionModeRequired;
@@ -73,6 +75,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 			setRetainInstance(true);
 	}
 
+	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.card_recycler_content, container, false);
@@ -135,7 +138,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		if (!getMultiPaneHandler().isDrawerOpen())
 			createOptionsMenu(menu, inflater);
@@ -188,6 +191,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		mHelper.finish(resultCode, data);
 	}
 
+	@Nullable
 	protected AppCompatActivity getAppCompatActivity() {
 		return (AppCompatActivity) getActivity();
 	}
@@ -211,7 +215,7 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		setEmptyText(emptyText, R.drawable.ic_warning_48dp);
 	}
 
-	protected void setEmptyText(CharSequence emptyText, int topDrawable) {
+	protected void setEmptyText(@Nullable CharSequence emptyText, int topDrawable) {
 		//noinspection ConstantConditions
 		View view = getView();
 		if(view == null)

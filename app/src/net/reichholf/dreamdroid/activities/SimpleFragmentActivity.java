@@ -9,6 +9,9 @@ package net.reichholf.dreamdroid.activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -33,13 +36,15 @@ import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHandler,
 		ActionDialog.DialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener {
 
+	@Nullable
 	private Fragment mFragment;
+	@Nullable
 	private ActivityCallbackHandler mCallBackHandler;
 
 	protected boolean mThemeSet = false;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(@Nullable Bundle savedInstanceState) {
 		if (!mThemeSet)
 			DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
@@ -60,7 +65,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 			handleExtras(getIntent().getExtras());
 	}
 
-	protected void handleExtras(Bundle extras) {
+	protected void handleExtras(@NonNull Bundle extras) {
 		Bundle args = new Bundle();
 		args.putSerializable(BaseHttpFragment.sData, extras.getSerializable("serializableData"));
 		args.putString("action", extras.getString("action"));
@@ -82,7 +87,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 					f = c.newInstance();
 					args.putAll(getIntent().getExtras());
 					f.setArguments(args);
-				} catch (InstantiationException | IllegalAccessException e) {
+				} catch (@NonNull InstantiationException | IllegalAccessException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -95,7 +100,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
 	}
@@ -106,7 +111,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if (item.getItemId() == android.R.id.home) {
 			finish();
 			return true;
@@ -115,7 +120,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	}
 
 	@Override
-	public void showDetails(Fragment fragment) {
+	public void showDetails(@NonNull Fragment fragment) {
 		showDetails(fragment, true);
 	}
 
@@ -127,10 +132,10 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	 * .lang.Class)
 	 */
 	@Override
-	public void showDetails(Class<? extends Fragment> fragmentClass) {
+	public void showDetails(@NonNull Class<? extends Fragment> fragmentClass) {
 		try {
 			showDetails(fragmentClass.newInstance());
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (@NonNull InstantiationException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -144,7 +149,7 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	 * .support.v4.app.Fragment, boolean)
 	 */
 	@Override
-	public void showDetails(Fragment fragment, boolean addToBackStack) {
+	public void showDetails(@NonNull Fragment fragment, boolean addToBackStack) {
 		Intent intent = new Intent(this, ((Object) this).getClass());
 		intent.putExtra("fragmentClass", ((Object) fragment).getClass());
 		intent.putExtras(fragment.getArguments());
@@ -203,24 +208,24 @@ public class SimpleFragmentActivity extends BaseActivity implements MultiPaneHan
 	}
 
 	@Override
-	public void showDialogFragment(Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
+	public void showDialogFragment(@NonNull Class<? extends DialogFragment> fragmentClass, Bundle args, String tag) {
 		try {
 			DialogFragment f = fragmentClass.newInstance();
 			f.setArguments(args);
 			showDialogFragment(f, tag);
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (@NonNull InstantiationException | IllegalAccessException e) {
 			Log.e(DreamDroid.LOG_TAG, e.getMessage());
 		}
 	}
 
 	@Override
-	public void showDialogFragment(DialogFragment fragment, String tag) {
+	public void showDialogFragment(@NonNull DialogFragment fragment, String tag) {
 		FragmentManager fm = getSupportFragmentManager();
 		fragment.show(fm, tag);
 	}
 
 	@Override
-	public void showDialogFragment(android.app.DialogFragment fragment, String tag) {
+	public void showDialogFragment(@NonNull android.app.DialogFragment fragment, String tag) {
 		android.app.FragmentManager fm = getFragmentManager();
 		fragment.show(fm, tag);
 	}

@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.fragment.helper;
 
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -38,6 +41,7 @@ public class FragmentHelper {
 		mFragment = fragment;
 	}
 
+	@Nullable
 	public AppCompatActivity getAppCompatActivity() {
 		return (AppCompatActivity) mFragment.getActivity();
 	}
@@ -68,10 +72,11 @@ public class FragmentHelper {
 			mph.onFragmentPause(mFragment);
 	}
 
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 	}
 
+	@Nullable
 	public MultiPaneHandler getMultiPaneHandler() {
 		return (MultiPaneHandler) getAppCompatActivity();
 	}
@@ -92,7 +97,7 @@ public class FragmentHelper {
 		mCurrentTitle = currentTitle;
 	}
 
-	public void finish(int resultCode, Intent data) {
+	public void finish(int resultCode, @Nullable Intent data) {
 		MultiPaneHandler mph = ((IMutliPaneContent) mFragment).getMultiPaneHandler();
 		if (mph.isMultiPane()) {
 			boolean explicitShow = false;

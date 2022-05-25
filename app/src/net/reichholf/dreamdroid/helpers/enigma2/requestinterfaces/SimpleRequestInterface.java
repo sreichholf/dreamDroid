@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -17,8 +20,11 @@ import java.util.ArrayList;
  *
  */
 public interface SimpleRequestInterface {
+	@Nullable
 	String get(SimpleHttpClient shc);
+	@Nullable
 	String get(SimpleHttpClient shc, ArrayList<NameValuePair> params);
 	boolean parse(String xml, ExtendedHashMap result);
+	@NonNull
 	ExtendedHashMap getDefault();
 }

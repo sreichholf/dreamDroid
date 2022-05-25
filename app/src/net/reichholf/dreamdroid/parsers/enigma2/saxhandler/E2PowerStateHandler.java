@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 
 import org.xml.sax.Attributes;
@@ -24,7 +26,7 @@ public class E2PowerStateHandler extends E2SimpleHandler {
 	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
-	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
+	public void startElement(String namespaceUri, @NonNull String localName, String qName, Attributes attrs) {
 		if (localName.equals(TAG_E2INSTANDBY)) {
 			inState = true;
 		}
@@ -37,7 +39,7 @@ public class E2PowerStateHandler extends E2SimpleHandler {
 	 * java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void endElement(String namespaceURI, String localName, String qName) {
+	public void endElement(String namespaceURI, @NonNull String localName, String qName) {
 		if (localName.equals(TAG_E2INSTANDBY)) {
 			inState = false;
 		}

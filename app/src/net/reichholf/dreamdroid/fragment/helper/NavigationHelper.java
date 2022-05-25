@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.android.material.navigation.NavigationView;
+
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,7 +58,8 @@ import java.util.ArrayList;
  */
 public class NavigationHelper implements NavigationView.OnNavigationItemSelectedListener, SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
 
-    protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_remote, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
+    @NonNull
+	protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_remote, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
 
     MainActivity mActivity;
     protected SetPowerStateTask mSetPowerStateTask;
@@ -82,7 +85,8 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
         return mActivity;
     }
 
-    protected NavigationView getNavigationView() {
+    @Nullable
+	protected NavigationView getNavigationView() {
         if (mActivity == null)
             return null;
         return (NavigationView) getMainActivity().findViewById(R.id.navigation_view);
@@ -107,7 +111,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     }
 
     @Override
-    public void onPowerStateSet(boolean success, ExtendedHashMap result, String resultText) {
+    public void onPowerStateSet(boolean success, @NonNull ExtendedHashMap result, String resultText) {
         if (!success) {
             showToast(resultText);
             return;
@@ -322,7 +326,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     }
 
     @Override
-    public void onSleepTimerSet(boolean success, ExtendedHashMap result, boolean openDialog, String errorText) {
+    public void onSleepTimerSet(boolean success, @NonNull ExtendedHashMap result, boolean openDialog, String errorText) {
         if (success) {
             if (openDialog) {
                 getMainActivity().showDialogFragment(SleepTimerDialog.newInstance(result), "sleeptimer_dialog");
@@ -345,7 +349,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     }
 
     @Override
-    public void onSimpleResult(boolean success, ExtendedHashMap result) {
+    public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
         String toastText = getString(R.string.get_content_error);
         String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
 

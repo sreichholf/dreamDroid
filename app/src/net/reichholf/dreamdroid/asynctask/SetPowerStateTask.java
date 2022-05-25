@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.asynctask;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler;
@@ -14,6 +16,7 @@ public class SetPowerStateTask extends AsyncHttpTaskBase<String, String, Boolean
 		super(taskHandler);
 	}
 
+	@NonNull
 	@Override
 	protected Boolean doInBackground(String... params) {
 		PowerStateRequestHandler handler = new PowerStateRequestHandler();

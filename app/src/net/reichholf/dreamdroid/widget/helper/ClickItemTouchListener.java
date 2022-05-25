@@ -1,6 +1,9 @@
 package net.reichholf.dreamdroid.widget.helper;
 
 import android.os.Build;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener;
@@ -9,14 +12,15 @@ import android.view.MotionEvent;
 import android.view.View;
 
 abstract class ClickItemTouchListener implements OnItemTouchListener {
+	@NonNull
 	private final GestureDetectorCompat mGestureDetector;
 
-	ClickItemTouchListener(RecyclerView hostView) {
+	ClickItemTouchListener(@NonNull RecyclerView hostView) {
 		mGestureDetector = new GestureDetectorCompat(hostView.getContext(),
 				new ItemClickGestureListener(hostView));
 	}
 
-	private boolean isAttachedToWindow(RecyclerView hostView) {
+	private boolean isAttachedToWindow(@NonNull RecyclerView hostView) {
 		if (Build.VERSION.SDK_INT >= 19) {
 			return hostView.isAttachedToWindow();
 		} else {
@@ -24,12 +28,12 @@ abstract class ClickItemTouchListener implements OnItemTouchListener {
 		}
 	}
 
-	private boolean hasAdapter(RecyclerView hostView) {
+	private boolean hasAdapter(@NonNull RecyclerView hostView) {
 		return (hostView.getAdapter() != null);
 	}
 
 	@Override
-	public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent event) {
+	public boolean onInterceptTouchEvent(@NonNull RecyclerView recyclerView, MotionEvent event) {
 		if (!isAttachedToWindow(recyclerView) || !hasAdapter(recyclerView)) {
 			return false;
 		}
@@ -49,6 +53,7 @@ abstract class ClickItemTouchListener implements OnItemTouchListener {
 
 	private class ItemClickGestureListener extends SimpleOnGestureListener {
 		private final RecyclerView mHostView;
+		@Nullable
 		private View mTargetChild;
 
 		public ItemClickGestureListener(RecyclerView hostView) {
@@ -56,7 +61,7 @@ abstract class ClickItemTouchListener implements OnItemTouchListener {
 		}
 
 		@Override
-		public boolean onDown(MotionEvent event) {
+		public boolean onDown(@NonNull MotionEvent event) {
 			final int x = (int) event.getX();
 			final int y = (int) event.getY();
 

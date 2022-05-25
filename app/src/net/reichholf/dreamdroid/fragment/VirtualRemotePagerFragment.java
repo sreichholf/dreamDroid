@@ -29,7 +29,7 @@ public class VirtualRemotePagerFragment extends BaseHttpFragment {
 	private class RemotePagerAdapter extends FragmentStatePagerAdapter {
 		ExtendedHashMap mItems;
 
-		public RemotePagerAdapter(FragmentManager fm) {
+		public RemotePagerAdapter(@NonNull FragmentManager fm) {
 			super(fm);
 			mItems = new ExtendedHashMap();
 
@@ -47,6 +47,7 @@ public class VirtualRemotePagerFragment extends BaseHttpFragment {
 			mItems.put(getString(R.string.standard), f);
 		}
 
+		@NonNull
 		@Override
 		public Fragment getItem(int i) {
 			return (Fragment) mItems.get((String)mItems.keySet().toArray()[i]);

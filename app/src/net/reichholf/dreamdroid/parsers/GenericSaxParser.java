@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.parsers;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.dataProviders.interfaces.DataParser;
 
 import org.xml.sax.InputSource;
@@ -28,11 +31,14 @@ import javax.xml.parsers.SAXParserFactory;
  * 
  */
 public class GenericSaxParser implements DataParser {
+	@NonNull
 	private static String LOG_TAG = GenericSaxParser.class.getSimpleName();
 	private DefaultHandler mHandler;
 	private boolean mError;
+	@Nullable
 	private String mErrorText;
 
+	@NonNull
 	static Pattern sControlPatternAggressive = Pattern.compile("\\p{C}");
 
 	/**
@@ -65,7 +71,8 @@ public class GenericSaxParser implements DataParser {
 	}
 
 
-	protected String stripNonValidXMLCharacters(String in, boolean aggressive) {
+	@NonNull
+	protected String stripNonValidXMLCharacters(@NonNull String in, boolean aggressive) {
 		if(aggressive)
 			return sControlPatternAggressive.matcher(in).replaceAll("").replace("&nbsp;", " ");
 		else
@@ -76,7 +83,8 @@ public class GenericSaxParser implements DataParser {
 	 * this is based on https://github.com/GreyCat/java-string-benchmark/blob/master/src/ru/greycat/algorithms/strip/RatchetFreak2EdStaub1GreyCat1.java
 	 * and is about a zillion lightyears faster than replaceAll... (defeats noticable lag between load finish and parse finish)
 	 */
-	public String stripControlCharacters(String s) {
+	@NonNull
+	public String stripControlCharacters(@NonNull String s) {
 		int length = s.length();
 		char[] oldChars = new char[length +1];
 		s.getChars(0, length, oldChars, 0);
@@ -133,7 +141,7 @@ public class GenericSaxParser implements DataParser {
 			xr.parse(is);
 
 			return true;
-		} catch (ParserConfigurationException | SAXException | IOException e) {
+		} catch (@NonNull ParserConfigurationException | SAXException | IOException e) {
 			// TODO Auto-generated catch block
 			Log.e(LOG_TAG, e.toString());
 			if(isRetry) {
@@ -162,6 +170,7 @@ public class GenericSaxParser implements DataParser {
 	/**
 	 * @return
 	 */
+	@Nullable
 	public String getErrorText(){
 		return mErrorText;
 	}

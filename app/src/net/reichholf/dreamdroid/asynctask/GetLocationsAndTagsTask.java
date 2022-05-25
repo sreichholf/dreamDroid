@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.asynctask;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 
@@ -8,6 +10,7 @@ public class GetLocationsAndTagsTask extends AsyncHttpTaskBase<Void, String, Boo
 		super(taskHandler);
 	}
 
+	@NonNull
 	@Override
 	protected Boolean doInBackground(Void... params) {
 		GetLocationsAndTagsTaskHandler taskHandler = (GetLocationsAndTagsTaskHandler) mTaskHandler.get();

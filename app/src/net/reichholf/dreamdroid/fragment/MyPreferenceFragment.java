@@ -99,7 +99,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 	}
 
 	@Override
-	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+	public void onSharedPreferenceChanged(@NonNull SharedPreferences prefs, String key) {
 		Log.w(DreamDroid.LOG_TAG, key);
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			updateThemeSummary();
@@ -116,7 +116,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		themePref.setSummary(getResources().getStringArray(R.array.theme_option_entries)[idx]);
 	}
 
-	protected void updateHwAccelSummary(SharedPreferences prefs) {
+	protected void updateHwAccelSummary(@NonNull SharedPreferences prefs) {
 		if (getActivity() == null)
 			return;
 		int idx = Integer.parseInt(prefs.getString(DreamDroid.PREFS_KEY_HWACCEL, Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)));

@@ -28,6 +28,9 @@ import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.util.WeakHandler;
 
 public class OnRepeatListener implements View.OnTouchListener {
@@ -40,7 +43,9 @@ public class OnRepeatListener implements View.OnTouchListener {
 
 	private int mInitialInterval;
 	private final int mNormalInterval;
+	@Nullable
 	private final View.OnClickListener mClickListener;
+	@Nullable
 	private View downView;
 
 	/**
@@ -50,7 +55,7 @@ public class OnRepeatListener implements View.OnTouchListener {
 	 * @param clickListener The OnClickListener to trigger
 	 */
 	public OnRepeatListener(int initialInterval, int normalInterval,
-							View.OnClickListener clickListener) {
+							@Nullable View.OnClickListener clickListener) {
 		if (clickListener == null)
 			throw new IllegalArgumentException("null runnable");
 		if (initialInterval < 0 || normalInterval < 0)
@@ -69,7 +74,7 @@ public class OnRepeatListener implements View.OnTouchListener {
 		this(DEFAULT_INITIAL_DELAY, DEFAULT_NORMAL_DELAY, clickListener);
 	}
 
-	public boolean onTouch(View view, MotionEvent motionEvent) {
+	public boolean onTouch(View view, @NonNull MotionEvent motionEvent) {
 		switch (motionEvent.getAction()) {
 			case MotionEvent.ACTION_DOWN:
 				mHandler.removeMessages(ACTION_ONCLICK);
@@ -86,6 +91,7 @@ public class OnRepeatListener implements View.OnTouchListener {
 		return false;
 	}
 
+	@NonNull
 	private Handler mHandler = new OnRepeatHandler(this);
 
 	private static class OnRepeatHandler extends WeakHandler<OnRepeatListener> {
@@ -95,7 +101,7 @@ public class OnRepeatListener implements View.OnTouchListener {
 		}
 
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(@NonNull Message msg) {
 			switch (msg.what){
 				case ACTION_ONCLICK:
 					sendEmptyMessageDelayed(ACTION_ONCLICK, getOwner().mNormalInterval);

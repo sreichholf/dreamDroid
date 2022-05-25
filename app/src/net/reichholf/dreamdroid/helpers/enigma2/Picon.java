@@ -13,6 +13,9 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -30,7 +33,8 @@ import java.util.ArrayList;
  */
 public class Picon {
 
-	public static String getBasepath(Context context){
+	@NonNull
+	public static String getBasepath(@NonNull Context context){
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		if(sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
 			return String.format("%s/", sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"));
@@ -43,7 +47,7 @@ public class Picon {
 				.getAbsolutePath(), File.separator, File.separator, File.separator);
 	}
 
-	public static String getPiconFileName(Context context, ExtendedHashMap service, boolean useName) {
+	public static String getPiconFileName(@NonNull Context context, @NonNull ExtendedHashMap service, boolean useName) {
 		String root = getBasepath(context);
 		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, false))
 			return  String.format("%spicon_default.png", root);
@@ -67,11 +71,11 @@ public class Picon {
 		return fileName;
 	}
 
-	public static void setPiconForView(Context context, ImageView piconView, ExtendedHashMap service, String tag) {
+	public static void setPiconForView(@NonNull Context context, ImageView piconView, @NonNull ExtendedHashMap service, @NonNull String tag) {
 		setPiconForView(context, piconView, service, tag, null);
 	}
 
-	public static void setPiconForView(Context context, ImageView piconView, ExtendedHashMap service, String tag, Callback callback) {
+	public static void setPiconForView(@NonNull Context context, @Nullable ImageView piconView, @NonNull ExtendedHashMap service, @NonNull String tag, Callback callback) {
 		if (piconView == null) {
 			return;
 		}
@@ -94,7 +98,7 @@ public class Picon {
 		Picasso.get().load(uri).fit().centerInside().tag(tag).error(R.drawable.dreamdroid_logo_simple).into(piconView, callback);
 	}
 
-	public static String getPiconUri(Context context, String fileName) {
+	public static String getPiconUri(@NonNull Context context, String fileName) {
 		//https://dm7080/file?file=%2F%2Fmedia%2Fhdd%2Fmovie%2F20160822%202245%20-%20BR%20Fernsehen%20S%C3%BCd%20HD%20-%20Irgendwie%20und%20Sowieso%20(12)%20-%20Miteinander%20-%20Auseinander%20-%2030-J%C3%84HRIGES%20JUBIL%C3%84UM.ts
 		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
 			ArrayList<NameValuePair> params = new ArrayList<>();

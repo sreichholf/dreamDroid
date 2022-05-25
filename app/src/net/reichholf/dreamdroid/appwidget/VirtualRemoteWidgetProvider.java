@@ -9,6 +9,9 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -21,7 +24,7 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
     public static final String WIDGET_PREFERENCE_PREFIX = "virtual_remote.";
 
     @Override
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+    public void onUpdate(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager, @NonNull int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
             Profile profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(context, appWidgetId);
             updateWidget(context, appWidgetManager, appWidgetId, profile);
@@ -29,14 +32,14 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
     }
 
     @Override
-    public void onDeleted(Context context, int[] appWidgetIds) {
+    public void onDeleted(Context context, @NonNull int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
             VirtualRemoteWidgetConfiguration.deleteWidgetConfiguration(context, appWidgetId);
         }
     }
 
-    public static void updateWidget(Context context, AppWidgetManager appWidgetManager,
-                                    int appWidgetId, Profile profile) {
+    public static void updateWidget(@NonNull Context context, @NonNull AppWidgetManager appWidgetManager,
+									int appWidgetId, @Nullable Profile profile) {
 
         if (profile == null)
             return;
@@ -54,7 +57,7 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
 
-    public static void registerButtons(Context context, RemoteViews remoteViews, int appWidgetId, Profile profile, boolean mPlayButtonAsPlayPause) {
+    public static void registerButtons(Context context, @NonNull RemoteViews remoteViews, int appWidgetId, Profile profile, boolean mPlayButtonAsPlayPause) {
         for (Integer[] btn : VirtualRemoteFragment.getRemoteButtons(mPlayButtonAsPlayPause)) {
             Intent intent = new Intent(context, VirtualRemoteWidgetProvider.class);
             intent.putExtra(WidgetService.KEY_WIDGETID, appWidgetId);
@@ -67,7 +70,7 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(@NonNull Context context, @NonNull Intent intent) {
         super.onReceive(context, intent);
         String action = intent.getAction();
         if (action.equals(WidgetService.ACTION_RCU) || action.equals(WidgetService.ACTION_ZAP))

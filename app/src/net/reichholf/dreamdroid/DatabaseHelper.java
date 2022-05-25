@@ -15,6 +15,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 
@@ -171,25 +174,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @see android.database.sqlite.SQLiteOpenHelper#onCreate(android.database.sqlite.SQLiteDatabase)
 	 */
 	@Override
-	public void onCreate(SQLiteDatabase db) {
+	public void onCreate(@NonNull SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_CREATE);
 		db.execSQL(EVENT_TABLE_CREATE);
 		db.execSQL(SERVICES_TABLE_CREATE);
 	}
 
-	private void upgrade6to7(SQLiteDatabase db) {
+	private void upgrade6to7(@NonNull SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_2);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_3);
 		db.execSQL(PROFILES_TABLE_UPGRADE_6_7_4);
 	}
 
-	private void upgrade7to8(SQLiteDatabase db) {
+	private void upgrade7to8(@NonNull SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_7_8_2);
 	}
 
-	private void upgrade11to12(SQLiteDatabase db) {
+	private void upgrade11to12(@NonNull SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_2);
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_3);
@@ -200,7 +203,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		db.execSQL(PROFILES_TABLE_UPGRADE_11_12_8);
 	}
 
-	private void upgrade12to13(SQLiteDatabase db) {
+	private void upgrade12to13(@NonNull SQLiteDatabase db) {
 		db.execSQL(PROFILES_TABLE_UPGRADE_12_13_1);
 		db.execSQL(PROFILES_TABLE_UPGRADE_12_13_2);
 	}
@@ -209,7 +212,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @see android.database.sqlite.SQLiteOpenHelper#onUpgrade(android.database.sqlite.SQLiteDatabase, int, int)
 	 */
 	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	public void onUpgrade(@NonNull SQLiteDatabase db, int oldVersion, int newVersion) {
 
 		boolean scheduleBackup = oldVersion < newVersion;
 		try {
@@ -276,12 +279,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			DreamDroid.scheduleBackup(mContext);
 	}
 
-	private void emergencyRecovery(SQLiteDatabase db){
+	private void emergencyRecovery(@NonNull SQLiteDatabase db){
 		db.execSQL("DROP TABLE IF EXISTS " + PROFILES_TABLE_NAME + ";");
 		db.execSQL(PROFILES_TABLE_CREATE);
 	}
 
-	private ContentValues p2cv(Profile p){
+	@NonNull
+	private ContentValues p2cv(@NonNull Profile p){
 		ContentValues values = new ContentValues();
 		values.put(KEY_PROFILE_PROFILE, p.getName());
 		values.put(KEY_PROFILE_HOST, p.getHost());
@@ -317,7 +321,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	/**
 	 * @param p
 	 */
-	public boolean addProfile(Profile p) {
+	public boolean addProfile(@NonNull Profile p) {
 		SQLiteDatabase db = getWritableDatabase();
 		long id = db.insert(PROFILES_TABLE_NAME, null, p2cv(p));
 		if (id > -1) {
@@ -333,7 +337,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	/**
 	 * @param p
 	 */
-	public boolean updateProfile(Profile p) {
+	public boolean updateProfile(@NonNull Profile p) {
 		SQLiteDatabase db = getWritableDatabase();
 		int numRows = db.update(PROFILES_TABLE_NAME, p2cv(p), KEY_PROFILE_ID + "=" + p.getId(), null);
 		db.close();
@@ -348,7 +352,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	/**
 	 * @param p
 	 */
-	public boolean deleteProfile(Profile p) {
+	public boolean deleteProfile(@NonNull Profile p) {
 		SQLiteDatabase db = getWritableDatabase();
 		int numRows = db.delete(PROFILES_TABLE_NAME, KEY_PROFILE_ID + "=" + p.getId(), null);
 		db.close();
@@ -363,6 +367,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	/**
 	 * @return Profile for all Settings
 	 */
+	@NonNull
 	public ArrayList<Profile> getProfiles() {
 		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
 				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
@@ -393,6 +398,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * @param id
 	 * @return the profile for the given id, or null if no such profile was found
 	 */
+	@Nullable
 	public Profile getProfile(int id) {
 		String[] columns = {KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
 				KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME, KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
@@ -410,7 +416,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return p;
 	}
 
-	private Profile getProfileFrom(Cursor c) {
+	@NonNull
+	private Profile getProfileFrom(@NonNull Cursor c) {
 
 		int id = c.getInt(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_ID));
 		String name = c.getString(c.getColumnIndex(DatabaseHelper.KEY_PROFILE_PROFILE));
@@ -470,7 +477,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		return p;
 	}
 
-    public int setEvents(ArrayList<ExtendedHashMap> events){
+    public int setEvents(@NonNull ArrayList<ExtendedHashMap> events){
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         int success = 0;
@@ -483,7 +490,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return success;
     }
 
-    public boolean setEvent(ExtendedHashMap event, SQLiteDatabase db){
+    public boolean setEvent(@NonNull ExtendedHashMap event, @NonNull SQLiteDatabase db){
         ContentValues values = eventToCv(event);
         if(values == null) {
             return false;
@@ -494,7 +501,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	    return db.insert(EVENT_TABLE_NAME, null, values) > -1;
     }
 
-    public ContentValues eventToCv(ExtendedHashMap event){
+    @Nullable
+	public ContentValues eventToCv(@NonNull ExtendedHashMap event){
         ContentValues values = new ContentValues();
         int _id, _start, _duration;
         try {
@@ -515,7 +523,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return values;
     }
 
-    public static DatabaseHelper getInstance(Context ctx){
+    @NonNull
+	public static DatabaseHelper getInstance(Context ctx){
         return new DatabaseHelper(ctx);
     }
 

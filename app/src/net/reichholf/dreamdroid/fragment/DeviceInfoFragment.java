@@ -8,6 +8,7 @@ package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -155,7 +156,7 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	/*
 	 * You want override this if you don't override onLoadFinished!
 	 */
-	public void applyData(int loaderId, ExtendedHashMap content) {
+	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
 		if (content != null) {
 			mInfo.clear();
 			mInfo.putAll(content);

@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import android.app.Activity;
 import android.content.Intent;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -73,6 +76,7 @@ public class Timer {
 			value = val;
 		}
 
+		@NonNull
 		@Override
 		public String toString() {
 			return String.valueOf(value);
@@ -82,7 +86,8 @@ public class Timer {
 			return value;
 		}
 
-		public String getText(Activity ac) {
+		@NonNull
+		public String getText(@NonNull Activity ac) {
 			return (String) ac.getResources().getTextArray(R.array.afterevents)[value];
 		}
 	}
@@ -99,6 +104,7 @@ public class Timer {
 			value = val;
 		}
 
+		@NonNull
 		@Override
 		public String toString() {
 			return String.valueOf(value);
@@ -108,7 +114,8 @@ public class Timer {
 			return value;
 		}
 
-		public String getText(Activity ac) {
+		@NonNull
+		public String getText(@NonNull Activity ac) {
 			return (String) ac.getResources().getTextArray(R.array.afterevents)[value];
 		}
 	}
@@ -116,6 +123,7 @@ public class Timer {
 	/**
 	 * @return
 	 */
+	@NonNull
 	public static ExtendedHashMap getInitialTimer() {
 		ExtendedHashMap timer = new ExtendedHashMap();
 		timer.put(KEY_DESCRIPTION, "");
@@ -145,7 +153,8 @@ public class Timer {
 	 * @param event
 	 * @return
 	 */
-	public static ExtendedHashMap createByEvent(ExtendedHashMap event) {
+	@NonNull
+	public static ExtendedHashMap createByEvent(@NonNull ExtendedHashMap event) {
 		ExtendedHashMap timer = getInitialTimer();
 
 		String start = event.getString(Event.KEY_EVENT_START);
@@ -163,7 +172,8 @@ public class Timer {
 		return timer;
 	}
 
-	public static ArrayList<NameValuePair> getSaveParams(ExtendedHashMap timer, ExtendedHashMap timerOld) {
+	@NonNull
+	public static ArrayList<NameValuePair> getSaveParams(@NonNull ExtendedHashMap timer, @Nullable ExtendedHashMap timerOld) {
 		/*
 		 * URL to create /web/timerchange? sRef= &begin= &end= &name=
 		 * &description= &dirname= &tags= &eit= &disabled= &justplay=
@@ -198,7 +208,8 @@ public class Timer {
 		return params;
 	}
 
-	public static ArrayList<NameValuePair> getEventIdParams(ExtendedHashMap event) {
+	@NonNull
+	public static ArrayList<NameValuePair> getEventIdParams(@NonNull ExtendedHashMap event) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
 
 		params.add(new NameValuePair("sRef", event.getString(Event.KEY_SERVICE_REFERENCE)));
@@ -207,7 +218,8 @@ public class Timer {
 		return params;
 	}
 
-	public static ArrayList<NameValuePair> getDeleteParams(ExtendedHashMap timer) {
+	@NonNull
+	public static ArrayList<NameValuePair> getDeleteParams(@NonNull ExtendedHashMap timer) {
 		// URL - web/timerdelete?sRef=&begin=&end=
 		ArrayList<NameValuePair> params = new ArrayList<>();
 
@@ -224,7 +236,7 @@ public class Timer {
 	 * @param event  - A timer (ExtendedHashMap)
 	 * @param target - The target fragment (after saving/cancellation)
 	 */
-	public static void editUsingEvent(MultiPaneHandler mph, ExtendedHashMap event, Fragment target) {
+	public static void editUsingEvent(MultiPaneHandler mph, @NonNull ExtendedHashMap event, @NonNull Fragment target) {
 		Timer.edit(mph, Timer.createByEvent(event), target, true);
 	}
 
@@ -234,7 +246,7 @@ public class Timer {
 	 * @param target - The target fragment (after saving/cancellation)
 	 * @param create - set to true if a new timer should be created instead of editing an existing one
 	 */
-	public static void edit(MultiPaneHandler mph, ExtendedHashMap timer, Fragment target, boolean create) {
+	public static void edit(MultiPaneHandler mph, ExtendedHashMap timer, @NonNull Fragment target, boolean create) {
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put("timer", timer);
 		data.put("action", create ? DreamDroid.ACTION_CREATE : Intent.ACTION_EDIT);

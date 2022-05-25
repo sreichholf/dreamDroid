@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.fragment.abs;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
@@ -25,9 +27,11 @@ import net.reichholf.dreamdroid.intents.IntentFactory;
 public abstract class BaseHttpRecyclerEventFragment extends BaseHttpRecyclerFragment implements
         ActionDialog.DialogActionListener {
 
-    @State
+    @Nullable
+	@State
     public String mReference;
-    @State
+    @Nullable
+	@State
     public String mName;
     @State
     public ExtendedHashMap mCurrentItem;
@@ -40,7 +44,7 @@ public abstract class BaseHttpRecyclerEventFragment extends BaseHttpRecyclerFrag
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString("reference", mReference);
         outState.putString("name", mName);
         outState.putSerializable("currentItem", mCurrentItem);
@@ -58,7 +62,7 @@ public abstract class BaseHttpRecyclerEventFragment extends BaseHttpRecyclerFrag
     /**
      * @param event
      */
-    protected void setTimerById(ExtendedHashMap event) {
+    protected void setTimerById(@NonNull ExtendedHashMap event) {
         if (mProgress != null) {
             if (mProgress.isShowing()) {
                 mProgress.dismiss();
@@ -82,7 +86,7 @@ public abstract class BaseHttpRecyclerEventFragment extends BaseHttpRecyclerFrag
     /**
      * @param event
      */
-    protected void setTimerByEventData(ExtendedHashMap event) {
+    protected void setTimerByEventData(@NonNull ExtendedHashMap event) {
         Timer.editUsingEvent(getMultiPaneHandler(), event, this);
     }
 

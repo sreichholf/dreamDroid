@@ -8,6 +8,8 @@ package net.reichholf.dreamdroid.helpers.enigma2;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.Profile;
 
 import java.io.IOException;
@@ -24,9 +26,11 @@ import javax.jmdns.ServiceInfo;
  * 
  */
 public class DeviceDetector {
+	@NonNull
 	public static String LOG_TAG = DeviceDetector.class.getName();
 	public static final String[] KNOWN_HOSTNAMES = { "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2", "dm500hdsev2", "dm7020hdv2", "dm7080", "dm820", "dm520", "dm525", "dm900" };
 
+	@NonNull
 	public static ArrayList<Profile> getAvailableHosts() {
 		ArrayList<Profile> profiles = new ArrayList<>();
 		for (String hostname : KNOWN_HOSTNAMES) {
@@ -77,7 +81,7 @@ public class DeviceDetector {
 		return profiles;
 	}
 
-	private static void addToList(ArrayList<Profile> list, Profile profile) {
+	private static void addToList(@NonNull ArrayList<Profile> list, @NonNull Profile profile) {
 		for (Profile p : list) {
 			if (profile.getHost().equals(p.getHost())) {
 				list.remove(p);

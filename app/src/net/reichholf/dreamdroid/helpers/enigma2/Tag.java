@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
 public class Tag {
@@ -13,7 +15,8 @@ public class Tag {
 	 * @param selectedTags
 	 * @return
 	 */
-	public static String implodeTags(ArrayList<String> selectedTags){
+	@NonNull
+	public static String implodeTags(@NonNull ArrayList<String> selectedTags){
 		String tags = "";
 		for (String tag : selectedTags) {
 			if ("".equals(tags)) {

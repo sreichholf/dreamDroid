@@ -48,6 +48,7 @@ import java.util.Optional;
  * @author sre
  */
 public class DreamDroid extends Application {
+	@Nullable
 	private static volatile DreamDroid instance;
 
 	public static final int INITIAL_SERVICELIST_PANE = 1;
@@ -106,10 +107,12 @@ public class DreamDroid extends Application {
 	private static ArrayList<String> sLocations;
 	private static ArrayList<String> sTags;
 
+	@Nullable
 	private static ProfileChangedListener sCurrentProfileChangedListener = null;
 
 	private static boolean sFeaturePostRequest = true;
 
+	@Nullable
 	public static Context getAppContext() {
 		if (instance != null) return instance;
 		else {
@@ -131,6 +134,7 @@ public class DreamDroid extends Application {
 		MultiDex.install(this);
 	}
 
+	@NonNull
 	public static String getVersionString() {
 		String buildDate = "<build-no-date>";
 		if (BuildConfig.BUILD_TIME > 0)
@@ -187,7 +191,7 @@ public class DreamDroid extends Application {
 		handleProfileSwitch(this);
 	}
 
-	private void handleProfileSwitch(Context context) {
+	private void handleProfileSwitch(@NonNull Context context) {
 		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED, false)) {
 
@@ -231,7 +235,8 @@ public class DreamDroid extends Application {
 		}
 	}
 
-	private String getWifiName(Context context) {
+	@Nullable
+	private String getWifiName(@NonNull Context context) {
 		WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		if (manager.isWifiEnabled()) {
 			WifiInfo wifiInfo = manager.getConnectionInfo();
@@ -385,7 +390,7 @@ public class DreamDroid extends Application {
 		sProfile = profile;
 	}
 
-	public static void profileChanged(Context context, Profile p) {
+	public static void profileChanged(Context context, @NonNull Profile p) {
 		if (p.getId() == sProfile.getId()) {
 			reloadCurrentProfile(context);
 		}
@@ -411,7 +416,7 @@ public class DreamDroid extends Application {
 	/**
 	 * @param shc
 	 */
-	public static synchronized boolean loadLocations(SimpleHttpClient shc) {
+	public static synchronized boolean loadLocations(@NonNull SimpleHttpClient shc) {
 		sLocations.clear();
 
 		boolean gotLoc = false;
@@ -440,7 +445,7 @@ public class DreamDroid extends Application {
 	/**
 	 * @param shc
 	 */
-	public static synchronized boolean loadTags(SimpleHttpClient shc) {
+	public static synchronized boolean loadTags(@NonNull SimpleHttpClient shc) {
 		sTags.clear();
 		boolean gotTags = false;
 
@@ -490,7 +495,7 @@ public class DreamDroid extends Application {
 		return type > 2 ? 2 : type;
 	}
 
-	public static void setTheme(AppCompatActivity activity) {
+	public static void setTheme(@NonNull AppCompatActivity activity) {
 		int mode;
 		switch(getThemeType(activity)){
 			case 0:
@@ -526,7 +531,7 @@ public class DreamDroid extends Application {
 		editor.apply();
 	}
 
-	public static boolean isTV(Context context) {
+	public static boolean isTV(@NonNull Context context) {
 		return context.getResources().getBoolean(R.bool.is_television);
 	}
 }

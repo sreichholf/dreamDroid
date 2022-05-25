@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.asynctask;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
@@ -14,6 +16,7 @@ public class SetVolumeTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, V
 		super(taskHandler);
 	}
 
+	@NonNull
 	@Override
 	protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 		if (isCancelled())

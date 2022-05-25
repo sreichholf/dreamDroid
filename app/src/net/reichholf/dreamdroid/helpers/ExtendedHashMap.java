@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Set;
@@ -22,19 +25,20 @@ public class ExtendedHashMap implements Serializable, Cloneable {
         mMap = new HashMap<>();
     }
 
-    public ExtendedHashMap(HashMap<String, Object> map) {
+    public ExtendedHashMap(@Nullable HashMap<String, Object> map) {
         mMap = new HashMap<>();
         if (map != null)
             putAll(map);
     }
 
-    public ExtendedHashMap(ExtendedHashMap map) {
+    public ExtendedHashMap(@Nullable ExtendedHashMap map) {
         mMap = new HashMap<>();
         if (map != null)
             putAll(map.getHashMap());
     }
 
-    @Override
+    @NonNull
+	@Override
     public ExtendedHashMap clone() {
         HashMap<String, Object> map = new HashMap<>(mMap);
         return new ExtendedHashMap(map);
@@ -52,19 +56,21 @@ public class ExtendedHashMap implements Serializable, Cloneable {
         mMap.put(key, value);
     }
 
-    public Object get(String key) {
+    @Nullable
+	public Object get(String key) {
         return mMap.get(key);
     }
 
-    public Object remove(String key) {
+    @Nullable
+	public Object remove(String key) {
         return mMap.remove(key);
     }
 
-    public void putAll(HashMap<String, Object> map) {
+    public void putAll(@NonNull HashMap<String, Object> map) {
         mMap.putAll(map);
     }
 
-    public void putAll(ExtendedHashMap map) {
+    public void putAll(@NonNull ExtendedHashMap map) {
         mMap.putAll(map.getHashMap());
     }
 
@@ -80,11 +86,12 @@ public class ExtendedHashMap implements Serializable, Cloneable {
         return mMap.size();
     }
 
-    public Set<String> keySet() {
+    @NonNull
+	public Set<String> keySet() {
         return mMap.keySet();
     }
 
-    public void putOrConcat(String prefix, String key, Object value) {
+    public void putOrConcat(@NonNull String prefix, String key, @NonNull Object value) {
         key = prefix.concat(key);
         putOrConcat(key, value);
     }
@@ -97,7 +104,7 @@ public class ExtendedHashMap implements Serializable, Cloneable {
      * @param value
      * @return
      */
-    public void putOrConcat(String key, Object value) {
+    public void putOrConcat(String key, @NonNull Object value) {
         // Exceptions are very expensive in terms of runtime so let's try to
         // avoid them
         if (containsKey(key)) {
@@ -118,11 +125,13 @@ public class ExtendedHashMap implements Serializable, Cloneable {
         put(key, value);
     }
 
-    public String getString(String key) {
+    @Nullable
+	public String getString(String key) {
         return (String) get(key);
     }
 
-    public String getString(String key, String defaultString) {
+    @Nullable
+	public String getString(String key, String defaultString) {
         String retVal = (String) get(key);
         if (retVal == null) {
             retVal = defaultString;

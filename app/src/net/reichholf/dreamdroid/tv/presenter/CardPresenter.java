@@ -19,6 +19,8 @@ package net.reichholf.dreamdroid.tv.presenter;
 
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+
+import androidx.annotation.NonNull;
 import androidx.leanback.widget.BaseCardView;
 import androidx.leanback.widget.ImageCardView;
 import androidx.leanback.widget.Presenter;
@@ -56,8 +58,9 @@ public class CardPresenter extends Presenter {
 		mMode = mode;
 	}
 
+	@NonNull
 	@Override
-	public ViewHolder onCreateViewHolder(ViewGroup parent) {
+	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
 		mDefaultBackgroundColor =
 				ContextCompat.getColor(parent.getContext(), R.color.primary_dreamdroid);
 		mSelectedBackgroundColor =
@@ -90,7 +93,7 @@ public class CardPresenter extends Presenter {
 		return new ViewHolder(cardView);
 	}
 
-	private void updateCardBackgroundColor(BaseCardView view, boolean selected) {
+	private void updateCardBackgroundColor(@NonNull BaseCardView view, boolean selected) {
 		int color = selected ? mSelectedBackgroundColor : mDefaultBackgroundColor;
 
 		// Both background colors should be set because the view's
@@ -102,7 +105,7 @@ public class CardPresenter extends Presenter {
 	}
 
 	@Override
-	public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
+	public void onBindViewHolder(@NonNull Presenter.ViewHolder viewHolder, Object item) {
 		BrowseItem browseItem = (BrowseItem) item;
 		switch(browseItem.type) {
 			case Service:
@@ -121,7 +124,7 @@ public class CardPresenter extends Presenter {
 		}
 	}
 
-	protected void bindSettingsViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
+	protected void bindSettingsViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem item) {
 		ExtendedHashMap settings = item.data;
 
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
@@ -139,7 +142,7 @@ public class CardPresenter extends Presenter {
 		cardView.setMainImageDimensions(width, height);
 	}
 
-	protected void bindServiceViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
+	protected void bindServiceViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem item) {
 
 		Event event = new Event(item.data);
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
@@ -155,7 +158,7 @@ public class CardPresenter extends Presenter {
 		cardView.setMainImageDimensions(width, height);
 	}
 
-	protected void bindMovieViewHolder(Presenter.ViewHolder viewHolder, BrowseItem item) {
+	protected void bindMovieViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem item) {
 		Movie movie = new Movie(item.data);
 		TextCardView cardView = (TextCardView) viewHolder.view;
 		cardView.setTitleText(movie.title());
@@ -166,7 +169,7 @@ public class CardPresenter extends Presenter {
 	}
 
 	@Override
-	public void onUnbindViewHolder(Presenter.ViewHolder viewHolder) {
+	public void onUnbindViewHolder(@NonNull Presenter.ViewHolder viewHolder) {
 		if (mMode == ItemMode.MODE_TEXT)
 			return;
 		ImageCardView cardView = (ImageCardView) viewHolder.view;

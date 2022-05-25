@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.loader;
 
 import android.content.Context;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.AsyncTaskLoader;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -25,16 +28,17 @@ import java.util.ArrayList;
 public class AsyncByteLoader extends AsyncTaskLoader<LoaderResult<byte[]>> {
 
 	private SimpleHttpClient mShc;
+	@Nullable
 	protected ArrayList<NameValuePair> mParams;
 	protected String mUri;
 
-	public AsyncByteLoader(Context context, Bundle args) {
+	public AsyncByteLoader(@NonNull Context context, Bundle args) {
 		super(context);
 		init(context, args);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void init(Context context, Bundle args) {
+	private void init(Context context, @Nullable Bundle args) {
 		DreamDroid.loadCurrentProfile(context);
 		mShc = new SimpleHttpClient();
 		if (args != null && args.containsKey("params"))

@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
 //import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Mediaplayer;
 
@@ -24,6 +27,7 @@ public class E2MediaPlayerListHandler extends E2ListHandler {
 	private boolean inIsDirectory;
 	private boolean inRoot;
 
+	@Nullable
 	private ExtendedHashMap mItem;
 	// creates a runtime error because mList is null for endElement mList.add(mItem);
 	//private ArrayList<ExtendedHashMap> mList;
@@ -39,7 +43,7 @@ public class E2MediaPlayerListHandler extends E2ListHandler {
 	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
-	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
+	public void startElement(String namespaceUri, @NonNull String localName, String qName, Attributes attrs) {
 		switch (localName) {
 			case TAG_E2FILE:
 				inFile = true;
@@ -64,7 +68,7 @@ public class E2MediaPlayerListHandler extends E2ListHandler {
 	 * java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void endElement(String namespaceURI, String localName, String qName) {
+	public void endElement(String namespaceURI, @NonNull String localName, String qName) {
 		switch (localName) {
 			case TAG_E2FILE:
 				inFile = false;

@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.tv.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceDialogFragment;
 import androidx.preference.PreferenceFragment;
 import androidx.leanback.preference.LeanbackSettingsFragment;
@@ -13,8 +15,11 @@ import androidx.preference.PreferenceScreen;
  */
 
 public class SettingsFragment extends LeanbackSettingsFragment {
+	@NonNull
 	public static String PREFS_TYPE_GENERIC = "generic";
+	@NonNull
 	public static String PREFS_TYPE_PROFILE = "profile";
+	@NonNull
 	public static String KEY_PREFS_TYPE = "type";
 
 	@Override
@@ -27,7 +32,7 @@ public class SettingsFragment extends LeanbackSettingsFragment {
 	}
 
 	@Override
-	public boolean onPreferenceStartFragment(PreferenceFragment caller, Preference pref) {
+	public boolean onPreferenceStartFragment(PreferenceFragment caller, @NonNull Preference pref) {
 		final Fragment f =
 				Fragment.instantiate(getActivity(), pref.getFragment(), pref.getExtras());
 		f.setTargetFragment(caller, 0);
@@ -40,7 +45,7 @@ public class SettingsFragment extends LeanbackSettingsFragment {
 	}
 
 	@Override
-	public boolean onPreferenceStartScreen(PreferenceFragment caller, PreferenceScreen pref) {
+	public boolean onPreferenceStartScreen(PreferenceFragment caller, @NonNull PreferenceScreen pref) {
 		final Fragment f = new PrefsFragment();
 		final Bundle args = new Bundle(1);
 		args.putString(PreferenceFragment.ARG_PREFERENCE_ROOT, pref.getKey());

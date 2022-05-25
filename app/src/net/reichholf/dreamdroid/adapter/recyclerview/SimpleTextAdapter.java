@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +47,7 @@ public class SimpleTextAdapter extends BaseAdapter<SimpleTextAdapter.SimpleViewH
 	public class SimpleViewHolder extends RecyclerView.ViewHolder {
 		HashMap<Integer, TextView> mViews;
 
-		public SimpleViewHolder(View itemView, int[] ids) {
+		public SimpleViewHolder(@NonNull View itemView, @NonNull int[] ids) {
 			super(itemView);
 			mViews = new HashMap<>();
 			for (int id : ids) {
@@ -54,6 +55,7 @@ public class SimpleTextAdapter extends BaseAdapter<SimpleTextAdapter.SimpleViewH
 			}
 		}
 
+		@Nullable
 		public TextView getView(int id) {
 			return mViews.get(id);
 		}

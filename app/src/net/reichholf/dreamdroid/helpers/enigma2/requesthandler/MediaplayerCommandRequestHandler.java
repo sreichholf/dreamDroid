@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -55,7 +58,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param value
 	 * @return
 	 */
-	private String singleParamCall(SimpleHttpClient shc, String uri, String param, String value) {
+	@Nullable
+	private String singleParamCall(@NonNull SimpleHttpClient shc, String uri, String param, String value) {
 		mUri = uri;
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair(param, value));
@@ -67,7 +71,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param cmd
 	 * @return
 	 */
-	private String cmd(SimpleHttpClient shc, String cmd) {
+	@Nullable
+	private String cmd(@NonNull SimpleHttpClient shc, String cmd) {
 		return singleParamCall(shc, URIStore.MEDIA_PLAYER_CMD, PARAM_CMD, cmd);
 	}
 
@@ -76,7 +81,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param params
 	 * @return
 	 */
-	public String playFile(SimpleHttpClient shc, String file) {
+	@Nullable
+	public String playFile(@NonNull SimpleHttpClient shc, String file) {
 		return singleParamCall(shc, URIStore.MEDIA_PLAYER_PLAY, PARAM_FILE, file);
 	}
 
@@ -85,7 +91,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param file
 	 * @return
 	 */
-	public String addToPlaylist(SimpleHttpClient shc, String file) {
+	@Nullable
+	public String addToPlaylist(@NonNull SimpleHttpClient shc, String file) {
 		return singleParamCall(shc, URIStore.MEDIA_PLAYER_ADD, PARAM_FILE, file);
 	}
 
@@ -94,7 +101,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param file
 	 * @return
 	 */
-	public String removeFromPlaylist(SimpleHttpClient shc, String file) {
+	@Nullable
+	public String removeFromPlaylist(@NonNull SimpleHttpClient shc, String file) {
 		return singleParamCall(shc, URIStore.MEDIA_PLAYER_REMOVE, PARAM_FILE, file);
 	}
 
@@ -103,7 +111,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param name
 	 * @return
 	 */
-	public String loadPlaylist(SimpleHttpClient shc, String name) {
+	@Nullable
+	public String loadPlaylist(@NonNull SimpleHttpClient shc, String name) {
 		return singleParamCall(shc, URIStore.MEDIA_PLAYER_LOAD, PARAM_NAME, name);
 	}
 
@@ -112,7 +121,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param name
 	 * @return
 	 */
-	public String savePlaylist(SimpleHttpClient shc, String name) {
+	@Nullable
+	public String savePlaylist(@NonNull SimpleHttpClient shc, String name) {
 		return singleParamCall(shc, URIStore.MEDIA_PLAYER_WRITE, PARAM_NAME, name);
 	}
 
@@ -120,7 +130,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String play(SimpleHttpClient shc) {
+	@Nullable
+	public String play(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_PLAY);
 	}
 
@@ -128,7 +139,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String pause(SimpleHttpClient shc) {
+	@Nullable
+	public String pause(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_PAUSE);
 	}
 
@@ -136,7 +148,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String next(SimpleHttpClient shc) {
+	@Nullable
+	public String next(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_NEXT);
 	}
 
@@ -144,7 +157,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String previous(SimpleHttpClient shc) {
+	@Nullable
+	public String previous(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_PREVIOUS);
 	}
 
@@ -152,7 +166,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String stop(SimpleHttpClient shc) {
+	@Nullable
+	public String stop(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_STOP);
 	}
 
@@ -160,7 +175,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String shuffle(SimpleHttpClient shc) {
+	@Nullable
+	public String shuffle(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_SHUFFLE);
 	}
 
@@ -168,7 +184,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String clear(SimpleHttpClient shc) {
+	@Nullable
+	public String clear(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_CLEAR);
 	}
 
@@ -176,7 +193,8 @@ public class MediaplayerCommandRequestHandler extends SimpleResultRequestHandler
 	 * @param shc
 	 * @return
 	 */
-	public String exit(SimpleHttpClient shc) {
+	@Nullable
+	public String exit(@NonNull SimpleHttpClient shc) {
 		return cmd(shc, CMD_EXIT);
 	}
 }

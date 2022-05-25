@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -33,14 +36,16 @@ public abstract class AbstractListRequestHandler implements ListRequestInterface
 	 * @param params
 	 * @return
 	 */
-	public String getList(SimpleHttpClient shc, ArrayList<NameValuePair> params) {
+	@Nullable
+	public String getList(@NonNull SimpleHttpClient shc, ArrayList<NameValuePair> params) {
 		return Request.get(shc, mUri, params);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.ListRequestInterface#getList(net.reichholf.dreamdroid.helpers.SimpleHttpClient)
 	 */
-	public String getList(SimpleHttpClient shc) {
+	@Nullable
+	public String getList(@NonNull SimpleHttpClient shc) {
 		return getList(shc, new ArrayList<>());
 	}
 	

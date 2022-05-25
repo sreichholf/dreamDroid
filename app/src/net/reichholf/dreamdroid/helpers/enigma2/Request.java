@@ -6,6 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.dataProviders.SaxDataProvider;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -22,11 +25,13 @@ import java.util.ArrayList;
  * 
  */
 public class Request {
-    public static String get(SimpleHttpClient shc, String uri){
+    @Nullable
+	public static String get(@NonNull SimpleHttpClient shc, @NonNull String uri){
         return get(shc, uri, new ArrayList<>());
     }
 
-	public static String get(SimpleHttpClient shc, String uri, ArrayList<NameValuePair> params) {
+	@Nullable
+	public static String get(@NonNull SimpleHttpClient shc, @NonNull String uri, ArrayList<NameValuePair> params) {
 		if (shc.fetchPageContent(uri, params)) {
 			return shc.getPageContentString();
 		}
@@ -34,14 +39,14 @@ public class Request {
 		return null;
 	}
 
-	public static byte[] getBytes(SimpleHttpClient shc, String uri, ArrayList<NameValuePair> params) {
+	public static byte[] getBytes(@NonNull SimpleHttpClient shc, @NonNull String uri, ArrayList<NameValuePair> params) {
 		if (shc.fetchPageContent(uri, params)) {
 			return shc.getBytes();
 		}
 		return new byte[0];
 	}
 	
-	public static byte[] getBytes(SimpleHttpClient shc, String uri) {
+	public static byte[] getBytes(@NonNull SimpleHttpClient shc, String uri) {
 		if (shc.fetchPageContent(uri)) {
 			return shc.getBytes();
 		}
@@ -55,7 +60,7 @@ public class Request {
 	 * @param handler
 	 * @return
 	 */
-	public static boolean parse(String xml, ExtendedHashMap result, E2SimpleHandler handler) {
+	public static boolean parse(String xml, ExtendedHashMap result, @NonNull E2SimpleHandler handler) {
 		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
 		handler.setMap(result);
 		sdp.getParser().setHandler(handler);
@@ -68,7 +73,7 @@ public class Request {
 	 * @param handler
 	 * @return
 	 */
-	public static boolean parseList(String xml, ArrayList<ExtendedHashMap> list, E2ListHandler handler) {
+	public static boolean parseList(String xml, ArrayList<ExtendedHashMap> list, @NonNull E2ListHandler handler) {
 		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
 		handler.setList(list);
 		sdp.setHandler(handler);
@@ -82,7 +87,7 @@ public class Request {
 	 * @param handler
 	 * @return
 	 */
-	public static boolean parseList(String xml, ArrayList<String> list, E2SimpleListHandler handler) {
+	public static boolean parseList(String xml, ArrayList<String> list, @NonNull E2SimpleListHandler handler) {
 		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
 		handler.setList(list);
 		sdp.setHandler(handler);

@@ -10,6 +10,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
+import androidx.annotation.NonNull;
+
 /**
  * @author sre
  * 
@@ -19,7 +21,7 @@ public class DrawerLayout extends androidx.drawerlayout.widget.DrawerLayout {
 	/**
 	 * @param context
 	 */
-	public DrawerLayout(Context context) {
+	public DrawerLayout(@NonNull Context context) {
 		super(context);
 	}
 
@@ -27,7 +29,7 @@ public class DrawerLayout extends androidx.drawerlayout.widget.DrawerLayout {
 	 * @param context
 	 * @param attrs
 	 */
-	public DrawerLayout(Context context, AttributeSet attrs) {
+	public DrawerLayout(@NonNull Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
@@ -36,7 +38,7 @@ public class DrawerLayout extends androidx.drawerlayout.widget.DrawerLayout {
 	 * @param attrs
 	 * @param defStyle
 	 */
-	public DrawerLayout(Context context, AttributeSet attrs, int defStyle) {
+	public DrawerLayout(@NonNull Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
 

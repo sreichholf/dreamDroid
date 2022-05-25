@@ -29,10 +29,12 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 public class EpgDetailBottomSheet extends BottomSheetActionDialog {
 	private ExtendedHashMap mCurrentItem;
 
+	@NonNull
 	public static EpgDetailBottomSheet newInstance(ExtendedHashMap epg) {
 		return newInstance(epg, false);
 	}
 
+	@NonNull
 	public static EpgDetailBottomSheet newInstance(ExtendedHashMap epg, boolean showNext) {
 
 		Bundle args = new Bundle();
@@ -51,7 +53,7 @@ public class EpgDetailBottomSheet extends BottomSheetActionDialog {
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(@NonNull Bundle outState) {
 		outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
 		super.onSaveInstanceState(outState);
 	}

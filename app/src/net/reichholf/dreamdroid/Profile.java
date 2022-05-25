@@ -8,6 +8,9 @@ package net.reichholf.dreamdroid;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.io.Serializable;
 
 
@@ -17,11 +20,14 @@ import java.io.Serializable;
 public class Profile implements Serializable {
 	private static final long serialVersionUID = 8176949133234868302L;
 	private int mId;
+	@Nullable
 	private String mName;
 	private String mHost;
 	private String mStreamHost;
 	private String mEncoderPath;
+	@Nullable
 	private String mUser;
+	@Nullable
 	private String mPass;
 	private String mEncoderUser;
 	private String mEncoderPass;
@@ -44,12 +50,15 @@ public class Profile implements Serializable {
 	private String mDefaultRefName;
 	private String mDefaultRef2;
 	private String mDefaultRef2Name;
+	@Nullable
 	private String mSessionId;
 
+	@Nullable
 	private String mCachedDeviceInfo;
     private String ssid;
     private boolean isDefaultProfileOnNoWifi;
 
+	@NonNull
 	public static Profile getDefault() {
 		return new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
 	}
@@ -110,7 +119,7 @@ public class Profile implements Serializable {
 		mPort = port;
 	}
 
-	public void setPort(String port, boolean ssl) {
+	public void setPort(@NonNull String port, boolean ssl) {
 		mSsl = ssl;
 		setPort(port);
 	}
@@ -123,11 +132,12 @@ public class Profile implements Serializable {
 		mFilePort = filePort;
 	}
 
+	@Nullable
 	public String getName() {
 		return mName;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nullable String name) {
 		if (name == null) {
 			name = "";
 		}
@@ -138,7 +148,7 @@ public class Profile implements Serializable {
 		return mHost;
 	}
 
-	public void setHost(String host) {
+	public void setHost(@Nullable String host) {
 		if (host == null) {
 			host = "";
 		}
@@ -153,7 +163,7 @@ public class Profile implements Serializable {
 		}
 	}
 
-	public void setStreamHost(String streamHost) {
+	public void setStreamHost(@Nullable String streamHost) {
 		if (streamHost == null)
 			streamHost = "";
 		mStreamHost = streamHost.replace("http://", "").replace("https://", "");
@@ -171,21 +181,23 @@ public class Profile implements Serializable {
 		return mEncoderPath;
 	}
 
+	@Nullable
 	public String getUser() {
 		return mUser;
 	}
 
-	public void setUser(String user) {
+	public void setUser(@Nullable String user) {
 		if (user == null)
 			user = "";
 		mUser = user;
 	}
 
+	@Nullable
 	public String getPass() {
 		return mPass;
 	}
 
-	public void setPass(String pass) {
+	public void setPass(@Nullable String pass) {
 		if (pass == null)
 			pass = "";
 		mPass = pass;
@@ -263,7 +275,7 @@ public class Profile implements Serializable {
 		return mPort;
 	}
 
-	public void setPort(String port) {
+	public void setPort(@NonNull String port) {
 		try {
 			mPort = Integer.valueOf(port);
 		} catch (NumberFormatException e) {
@@ -276,6 +288,7 @@ public class Profile implements Serializable {
 		}
 	}
 
+	@NonNull
 	public String getPortString() {
 		return String.valueOf(mPort);
 	}
@@ -284,7 +297,7 @@ public class Profile implements Serializable {
 		return mStreamPort;
 	}
 
-	public void setStreamPort(String streamPort) {
+	public void setStreamPort(@NonNull String streamPort) {
 		try {
 			mStreamPort = Integer.valueOf(streamPort);
 		} catch (NumberFormatException e) {
@@ -301,6 +314,7 @@ public class Profile implements Serializable {
 		mEncoderStream = encoderStream;
 	}
 
+	@NonNull
 	public String getStreamPortString() {
 		return String.valueOf(mStreamPort);
 	}
@@ -308,6 +322,7 @@ public class Profile implements Serializable {
 	public int getEncoderPort() {
 		return mEncoderPort;
 	}
+	@NonNull
 	public String getEncoderPortString() {
 		return String.valueOf(mEncoderPort);
 	}
@@ -316,7 +331,7 @@ public class Profile implements Serializable {
 		mEncoderPort = port;
 	}
 
-	public void setEncoderPort(String port) {
+	public void setEncoderPort(@NonNull String port) {
 		try {
 			mEncoderPort = Integer.valueOf(port);
 		} catch (NumberFormatException e) {
@@ -328,6 +343,7 @@ public class Profile implements Serializable {
 		return mEncoderVideoBitrate;
 	}
 
+	@NonNull
 	public String getEncoderVideoBitrateString() {
 		return String.valueOf(mEncoderVideoBitrate);
 	}
@@ -336,7 +352,7 @@ public class Profile implements Serializable {
 		mEncoderVideoBitrate = bitrate;
 	}
 
-	public void setEncoderVideoBitrate(String bitrate) {
+	public void setEncoderVideoBitrate(@NonNull String bitrate) {
 		try {
 			mEncoderVideoBitrate = Integer.valueOf(bitrate);
 		} catch (NumberFormatException e) {
@@ -348,6 +364,7 @@ public class Profile implements Serializable {
 		return mEncoderAudioBitrate;
 	}
 
+	@NonNull
 	public String getEncoderAudioBitrateString() {
 		return String.valueOf(mEncoderAudioBitrate);
 	}
@@ -356,7 +373,7 @@ public class Profile implements Serializable {
 		mEncoderAudioBitrate = bitrate;
 	}
 
-	public void setEncoderAudioBitrate(String bitrate) {
+	public void setEncoderAudioBitrate(@NonNull String bitrate) {
 		try {
 			mEncoderAudioBitrate = Integer.valueOf(bitrate);
 		} catch (NumberFormatException e) {
@@ -368,7 +385,7 @@ public class Profile implements Serializable {
 		return mFilePort;
 	}
 
-	public void setFilePort(String filePort) {
+	public void setFilePort(@NonNull String filePort) {
 		try {
 			mFilePort = Integer.valueOf(filePort);
 		} catch (NumberFormatException e) {
@@ -377,6 +394,7 @@ public class Profile implements Serializable {
 		}
 	}
 
+	@NonNull
 	public String getFilePortString() {
 		return String.valueOf(mFilePort);
 	}
@@ -435,6 +453,7 @@ public class Profile implements Serializable {
 		mSessionId = sessionId;
 	}
 
+	@Nullable
 	public String getSessionId() {
 		return mSessionId;
 	}
@@ -443,6 +462,7 @@ public class Profile implements Serializable {
 		mCachedDeviceInfo = deviceInfo;
 	}
 
+	@Nullable
 	public String getCachedDeviceInfo() {
 		return mCachedDeviceInfo;
 	}
@@ -463,7 +483,7 @@ public class Profile implements Serializable {
         isDefaultProfileOnNoWifi = defaultProfileOnNoWifi;
     }
 
-    public boolean equals(Profile p) {
+    public boolean equals(@NonNull Profile p) {
 		return getHost().equals(p.getHost())
 				&& getStreamHost().equals(p.getStreamHost())
 				&& getUser().equals(p.getUser())

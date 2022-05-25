@@ -16,6 +16,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -43,6 +45,7 @@ import java.util.Date;
  * @author sre
  */
 public class ShareActivity extends AppCompatActivity implements SimpleResultTask.SimpleResultTaskHandler, ItemClickSupport.OnItemClickListener {
+	@NonNull
 	public static String LOG_TAG = ShareActivity.class.getSimpleName();
 
 	private RecyclerView mProfilesView;
@@ -50,6 +53,7 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 	private SimpleHttpClient mShc;
 	private ProfileAdapter mAdapter;
 	private ArrayList<ExtendedHashMap> mProfileMapList;
+	@Nullable
 	private ProgressDialog mProgress;
 	private String mTitle;
 
@@ -90,7 +94,7 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 	}
 
 	@SuppressWarnings("deprecation")
-	private void playOnDream(Profile p) {
+	private void playOnDream(@NonNull Profile p) {
 		String url = null;
 		Intent i = getIntent();
 		Bundle extras = i.getExtras();
@@ -199,6 +203,7 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 		toast.show();
 	}
 
+	@NonNull
 	@Override
 	public Context getContext() {
 		return this;

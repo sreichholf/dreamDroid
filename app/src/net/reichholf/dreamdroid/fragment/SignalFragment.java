@@ -50,7 +50,9 @@ public class SignalFragment extends BaseHttpFragment {
 	private double mSnrDb = sMinSnrDb;
 	private long mStartTime;
 
+	@NonNull
 	private Handler mHandler = new Handler();
+	@NonNull
 	private Runnable mPlaySoundTask = new Runnable() {
 		public void run() {
 			Double freq = (1650 * mSnrDb * mSnrDb) / 1000 + 200;
@@ -62,6 +64,7 @@ public class SignalFragment extends BaseHttpFragment {
 		}
 	};
 
+	@NonNull
 	private Runnable mUpdateTask = new Runnable() {
 		public void run() {
 			if (!mIsUpdating)
@@ -128,7 +131,7 @@ public class SignalFragment extends BaseHttpFragment {
 	}
 
 	@Override
-	public void onLoadFinished(Loader<LoaderResult<ExtendedHashMap>> loader, LoaderResult<ExtendedHashMap> result) {
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader, @NonNull LoaderResult<ExtendedHashMap> result) {
 		if (result.isError()) {
 			mEnabled.setChecked(false);
 		}
@@ -136,7 +139,7 @@ public class SignalFragment extends BaseHttpFragment {
 	}
 
 	@Override
-	public void applyData(int loaderId, ExtendedHashMap content) {
+	public void applyData(int loaderId, @NonNull ExtendedHashMap content) {
 		long stopTime = System.currentTimeMillis();
 		long time = stopTime - mStartTime;
 		Log.w(TAG, "requets & parsing took: " + time + "ms");

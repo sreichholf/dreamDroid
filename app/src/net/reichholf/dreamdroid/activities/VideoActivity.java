@@ -26,6 +26,8 @@ import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentTransaction;
@@ -40,11 +42,15 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	public static final String TAG = VideoActivity.class.getSimpleName();
 
 	FrameLayout mSurfaceFrame;
+	@Nullable
 	SurfaceView mSurfaceView;
 	SurfaceView mSubtitlesSurfaceView;
+	@Nullable
 	VLCPlayer mPlayer;
+	@Nullable
 	VideoOverlayFragment mOverlayFragment;
 
+	@Nullable
 	View.OnLayoutChangeListener mOnLayoutChangeListener;
 
 	int mCurrentScreenOrientation;
@@ -135,7 +141,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if(item.getItemId() == android.R.id.home) {
 			finish();
 			return true;
@@ -144,18 +150,18 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
+	protected void onNewIntent(@NonNull Intent intent) {
 		handleIntent(intent);
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		mCurrentScreenOrientation = newConfig.orientation;
 		changeSurfaceLayout();
 	}
 
-	public void handleIntent(Intent intent) {
+	public void handleIntent(@NonNull Intent intent) {
 		if(mPlayer == null)
 			return;
 		setIntent(intent);
@@ -375,7 +381,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	@Override
-	public void onEvent(MediaPlayer.Event event) {
+	public void onEvent(@NonNull MediaPlayer.Event event) {
 		mOverlayFragment.onUpdateButtons();
 		switch(event.type){
 			case MediaPlayer.Event.ESSelected:

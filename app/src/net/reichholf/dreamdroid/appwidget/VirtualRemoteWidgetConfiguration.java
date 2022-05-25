@@ -12,6 +12,8 @@ import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -110,10 +112,12 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 		return dbh.getProfile(profileId);
 	}
 
+	@NonNull
 	public static String getProfileIdKey(int appWidgetId) {
 		return VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + Integer.toString(appWidgetId);
 	}
 
+	@NonNull
 	public static String getIsFullKey(int appWidgetId) {
 		return VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + Integer.toString(appWidgetId) + "isFull";
 	}

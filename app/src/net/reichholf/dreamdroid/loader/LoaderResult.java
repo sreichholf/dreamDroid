@@ -6,12 +6,16 @@
 
 package net.reichholf.dreamdroid.loader;
 
+import androidx.annotation.Nullable;
+
 /**
  * @author sre
  * 
  */
 public class LoaderResult<T> {
+	@Nullable
 	private T mResult;
+	@Nullable
 	private String mErrorText;
 	private boolean mError;
 
@@ -33,10 +37,12 @@ public class LoaderResult<T> {
 		mErrorText = errorText;
 	}
 
+	@Nullable
 	public T getResult() {
 		return mResult;
 	}
 
+	@Nullable
 	public String getErrorText() {
 		return mErrorText;
 	}

@@ -22,6 +22,8 @@ package net.reichholf.dreamdroid.video;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.DreamDroid;
 
 import org.videolan.libvlc.LibVLC;
@@ -32,11 +34,13 @@ import java.util.ArrayList;
 public class VLCInstance {
 	public final static String TAG = "VLC/UiTools/VLCInstance";
 
+	@Nullable
 	private static LibVLC sLibVLC = null;
 
 	/**
 	 * A set of utility functions for the VLC application
 	 */
+	@Nullable
 	public synchronized static LibVLC get() throws IllegalStateException {
 		if (sLibVLC == null) {
 			final Context context = DreamDroid.getAppContext();

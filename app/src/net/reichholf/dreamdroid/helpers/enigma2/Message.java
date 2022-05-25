@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 
@@ -23,7 +25,8 @@ public class Message extends SimpleResult {
 	public static final String MESSAGE_TYPE_INFO = "2";
 	public static final String MESSAGE_TYPE_ERROR = "3";
 	
-	public static ArrayList<NameValuePair> getParams(ExtendedHashMap message){
+	@NonNull
+	public static ArrayList<NameValuePair> getParams(@NonNull ExtendedHashMap message){
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("text", message.getString(KEY_TEXT)));
 		params.add(new NameValuePair("type", message.getString(KEY_TYPE)));

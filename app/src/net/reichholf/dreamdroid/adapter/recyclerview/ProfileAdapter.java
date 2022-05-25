@@ -24,7 +24,7 @@ public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder
 	protected int mActiveColor;
 
 
-	public ProfileAdapter(Context context, ArrayList<ExtendedHashMap> data) {
+	public ProfileAdapter(@NonNull Context context, ArrayList<ExtendedHashMap> data) {
 		super(data);
 		mActiveColor = ContextCompat.getColor(context, R.color.active_profile_color);
 	}
@@ -63,7 +63,7 @@ public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder
 		public TextView text2;
 		public TextView indicator;
 
-		public ProfileViewHolder(View itemView) {
+		public ProfileViewHolder(@NonNull View itemView) {
 			super(itemView);
 			text1 = itemView.findViewById(android.R.id.text1);
 			text2 = itemView.findViewById(android.R.id.text2);

@@ -31,6 +31,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import static net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment.sData;
 
@@ -40,6 +41,7 @@ import static net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment.sData;
  * @author sre
  */
 public class ProfileEditFragment extends BaseFragment {
+	@Nullable
 	private Profile mCurrentProfile;
 
 	private EditText mProfile;
@@ -144,11 +146,11 @@ public class ProfileEditFragment extends BaseFragment {
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
 		inflater.inflate(R.menu.save, menu);
 	}
 
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		switch (item.getItemId()) {
 			case Statics.ITEM_SAVE:
 				save();

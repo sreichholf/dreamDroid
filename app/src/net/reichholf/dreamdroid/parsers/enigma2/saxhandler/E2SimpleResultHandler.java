@@ -6,6 +6,8 @@
 
 package net.reichholf.dreamdroid.parsers.enigma2.saxhandler;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 
 import org.xml.sax.Attributes;
@@ -27,7 +29,7 @@ public class E2SimpleResultHandler extends E2SimpleHandler {
 	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
 	@Override
-	public void startElement(String namespaceUri, String localName, String qName, Attributes attrs) {
+	public void startElement(String namespaceUri, @NonNull String localName, String qName, Attributes attrs) {
 		if (localName.equals(TAG_E2STATE) || localName.equals(TAG_E2RESULT)) {
 			inState = true;
 		} else if (localName.equals(TAG_E2STATETEXT) || localName.equals(TAG_E2RESULTTEXT)) {
@@ -42,7 +44,7 @@ public class E2SimpleResultHandler extends E2SimpleHandler {
 	 * java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void endElement(String namespaceURI, String localName, String qName) {
+	public void endElement(String namespaceURI, @NonNull String localName, String qName) {
 		if (localName.equals(TAG_E2STATE) || localName.equals(TAG_E2RESULT)) {
 			inState = false;
 		} else if (localName.equals(TAG_E2STATETEXT) || localName.equals(TAG_E2RESULTTEXT)) {

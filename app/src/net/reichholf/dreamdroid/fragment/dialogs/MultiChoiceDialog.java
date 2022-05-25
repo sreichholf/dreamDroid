@@ -60,18 +60,20 @@ public class MultiChoiceDialog extends DialogFragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
         Bridge.saveInstanceState(this, outState);
         super.onSaveInstanceState(outState);
     }
 
-    public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems) {
+    @NonNull
+	public static MultiChoiceDialog newInstance(int titleId, @NonNull CharSequence[] items, boolean[] checkedItems) {
         return MultiChoiceDialog.newInstance(titleId, items, checkedItems, R.string.ok, -1);
     }
 
-    public static MultiChoiceDialog newInstance(int titleId, CharSequence[] items, boolean[] checkedItems,
-                                                int positiveStringId, int negativeStringId) {
+    @NonNull
+	public static MultiChoiceDialog newInstance(int titleId, @NonNull CharSequence[] items, boolean[] checkedItems,
+												int positiveStringId, int negativeStringId) {
 
         MultiChoiceDialog fragment = new MultiChoiceDialog();
         Bundle args = new Bundle();

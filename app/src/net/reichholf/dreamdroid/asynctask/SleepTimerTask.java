@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.asynctask;
 
+import androidx.annotation.NonNull;
+
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
@@ -20,6 +22,7 @@ public class SleepTimerTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, 
 		mDialogOnFinish = dialogOnFinish;
 	}
 
+	@NonNull
 	@Override
 	protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
 		publishProgress();

@@ -14,6 +14,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
@@ -35,7 +36,8 @@ public class Movie extends ExtendedHashMap implements Serializable {
 	public static final String KEY_FILE_SIZE = "filesize";
 	public static final String KEY_FILE_SIZE_READABLE = "filesize_readable";
 
-	public static ArrayList<NameValuePair> getDeleteParams(ExtendedHashMap movie){
+	@NonNull
+	public static ArrayList<NameValuePair> getDeleteParams(@NonNull ExtendedHashMap movie){
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("sRef", movie.getString(Movie.KEY_REFERENCE)));
 		
@@ -46,7 +48,7 @@ public class Movie extends ExtendedHashMap implements Serializable {
 		super();
 	}
 
-	public Movie(ExtendedHashMap data) {
+	public Movie(@NonNull ExtendedHashMap data) {
 		mMap = data.getHashMap();
 	}
 
@@ -62,6 +64,7 @@ public class Movie extends ExtendedHashMap implements Serializable {
 		return getString(KEY_DESCRIPTION, "");
 	}
 
+	@NonNull
 	public String descriptionExtended() {
 		return getString(KEY_DESCRIPTION_EXTENDED, "").replace("\\n", "\n");
 	}
@@ -78,6 +81,7 @@ public class Movie extends ExtendedHashMap implements Serializable {
 		return getString(KEY_TIME_READABLE, "");
 	}
 
+	@NonNull
 	public ArrayList<String> tags() {
 		String t = getString(KEY_TAGS, "");
 		if (t.isEmpty())

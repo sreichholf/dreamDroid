@@ -24,6 +24,7 @@ import java.util.ArrayList;
  * Created by Stephan on 03.02.2016.
  */
 public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
+	@NonNull
 	private static String TAG = ZapAdapter.class.getSimpleName();
 	private Context mContext;
 
@@ -57,7 +58,7 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 		TextView serviceName;
 		Callback piconCallback;
 
-		public ZapViewHolder(View itemView) {
+		public ZapViewHolder(@NonNull View itemView) {
 			super(itemView);
 			picon = itemView.findViewById(R.id.picon);
 			serviceName = itemView.findViewById(android.R.id.text1);
