@@ -303,7 +303,6 @@
     <string name="share">Dziel</string>
     <string name="restart">Zrestartować ?</string>
     <string name="theme_change_restart">Aby zastosować zmieniony motyw wymagany jest restart. Uruchomić ponownie dreamDroid ?</string>
-    <string name="more">Więcej</string>
     <string name="host_not_found">Host nieznaleziony</string>
     <string name="auth_error">Niepowodzenie autoryzacji (Sprawdź użytkownika / hasło ?)</string>
     <string name="developer_settings_enable">Włącz ustawienia programisty</string>

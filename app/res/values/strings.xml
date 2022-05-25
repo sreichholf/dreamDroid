@@ -318,7 +318,6 @@
     <string name="share">Share</string>
     <string name="restart">Restart?</string>
     <string name="theme_change_restart">To apply the changed theme a restart is required. Restart dreamDroid now?</string>
-    <string name="more">More</string>
     <string name="host_not_found">Host not found</string>
     <string name="auth_error">Authorization failed (Check user/password?)</string>
     <string name="developer_settings_enable">Enable developer settings</string>
@@ -389,4 +388,5 @@
     <string name="tv">TV</string>
     <string name="radio">Radio</string>
     <string name="live_movie"><![CDATA[TV & Movies]]></string>
+    <string name="detail">Detail</string>
 </resources>

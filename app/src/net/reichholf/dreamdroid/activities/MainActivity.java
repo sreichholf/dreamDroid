@@ -119,7 +119,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			setConnectionState(error, true);
 			dismissSnackbar();
 			mSnackbar = Snackbar.make(findViewById(R.id.drawer_layout), error, Snackbar.LENGTH_INDEFINITE)
-					.setAction(R.string.more, v -> showErrorDetails(result));
+					.setAction(R.string.detail, v -> showErrorDetails(result));
 			mSnackbar.show();
 		} else {
 			dismissSnackbar();

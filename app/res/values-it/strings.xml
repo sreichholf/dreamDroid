@@ -303,7 +303,6 @@
     <string name="share">Condividi</string>
     <string name="restart">Riavviare?</string>
     <string name="theme_change_restart">E\' necessario un riavvio per applicare il cambio tema. Riavviare dreamDroid adesso?</string>
-    <string name="more">Altro</string>
     <string name="host_not_found">Nome sistema non trovato</string>
     <string name="auth_error">Autorizzazione fallita (verifica nome utente/password)</string>
     <string name="developer_settings_enable">Abilita impostazioni sviluppatore</string>

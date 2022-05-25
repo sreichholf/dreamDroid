@@ -304,7 +304,6 @@
     <string name="theme_change_restart">Um das geänderte Motiv anzuwenden ist ein Neustart nötig. dreamDroid jetzt neu starten?</string>
     <string name="host_not_found">Host nicht gefunden</string>
     <string name="auth_error">Anmelden fehlgeschlagen (Benutzer/Passwort prüfen)</string>
-    <string name="more">Mehr</string>
     <string name="host_unreach">Host nicht erreichbar</string>
     <string name="next_event">Nächste Sendung</string>
     <string name="dump_xml_long">XML Inhalte auf dem externen Speicher ablegen</string>
@@ -375,4 +374,5 @@
     <string name="backup_import_error">Backup-Import fehlgeschlagen!</string>
     <string name="ssid">WLAN Name</string>
     <string name="live_movie"><![CDATA[TV & Filme]]></string>
+    <string name="detail">Detail</string>
 </resources>

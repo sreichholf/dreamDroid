@@ -302,8 +302,7 @@
 <string name="share">Jaga</string>
 <string name="restart">Kas taaskäivitada?</string>
 <string name="theme_change_restart">Teema muutmiseks tuleb dreamDroid taaskäivitada. Kas teha seda kohe?</string>
-<string name="more">Veel</string>
-<string name="host_not_found">Masinat ei leitud</string>
+    <string name="host_not_found">Masinat ei leitud</string>
 <string name="auth_error">Autentimine nurjus. Kontrolli kasutajanime/parooli</string>
 <string name="developer_settings_enable">Luba arendaja seaded</string>
 <string name="use_fake_picon">Kasuta vaikepikonit</string>
