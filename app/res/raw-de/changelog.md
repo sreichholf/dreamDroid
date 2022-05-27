@@ -1,3 +1,13 @@
+## 1.6.441
+* FIX: Tippfehler in der deutschen Übersetzung
+* FIX: Abstürze auf Geräten mit größeren Displays wenn TV & Filme ausgewählt wurde
+* UPD: Diverse Verbesserung am Homescreen-Widget
+  * FIX: Das Widget funktioniert jetzt auch auf Android >= 12
+  * FIX: Die Farben im Konfigurationsdialog sollten nun immer korrekt sein
+  * NEU: Das Widget kann nun neu konfiguriert werden
+  * NEU: ordentliches Vorschaubild ergänzt
+* Kleinere Code-Cleanups
+
 ## 1.6.440
 * NEU: Material 3 Theme
 * NEU: TV, Radio, Movies und Timerverwaltung sind jetzt zusammengfasst

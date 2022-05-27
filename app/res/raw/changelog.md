@@ -1,3 +1,13 @@
+## 1.6.441
+* FIX: some typos in german translation
+* FIX: Crash on large screen devices when trying to open the TV & Movies
+* UPD: multiple updates to the home screen Widget
+  * FIX: widget not being added on Android >= 12
+  * FIX: configuration colors
+  * NEW: make appwidget reconfigurable
+  * NEW: add a proper preview image/layout
+* minor code cleanups
+
 ## 1.6.440
 * NEW: Material 3 Theme and updated libraries
 * NEW: Merge TV, Radio, Movies and Timer Management into a Sliding Tab
