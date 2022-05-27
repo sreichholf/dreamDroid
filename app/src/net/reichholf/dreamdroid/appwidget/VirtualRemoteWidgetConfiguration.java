@@ -13,24 +13,37 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleExtendedHashMapAdapter;
+import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
+import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import java.util.ArrayList;
 
 /**
  * Created by Stephan on 07.12.13.
  */
-public class VirtualRemoteWidgetConfiguration extends ListActivity {
+public class VirtualRemoteWidgetConfiguration extends AppCompatActivity implements ItemClickSupport.OnItemClickListener {
     private ArrayList<Profile> mProfiles;
+	private RecyclerView mRecyclerView;
+	private ItemClickSupport mItemClickSupport;
+
     private int mAppWidgetId;
+
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		DreamDroid.setTheme(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.virtual_remote_widget_config);
 		setResult(RESULT_CANCELED);
@@ -43,27 +56,31 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 					AppWidgetManager.INVALID_APPWIDGET_ID);
 		}
 
+		mRecyclerView = findViewById(R.id.recycler_view);
+		mItemClickSupport = ItemClickSupport.addTo(mRecyclerView);
+		mItemClickSupport.setOnItemClickListener(this);
+
 		load();
 	}
 
 	public void load() {
 		DatabaseHelper dbh = DatabaseHelper.getInstance(this);
-        ArrayList<ExtendedHashMap> mProfileMapList = new ArrayList<>();
-		mProfileMapList.clear();
+        ArrayList<ExtendedHashMap> profiles = new ArrayList<>();
 		mProfiles = dbh.getProfiles();
 		if (mProfiles.size() > 0) {
 			for (Profile m : mProfiles) {
 				ExtendedHashMap map = new ExtendedHashMap();
 				map.put(DatabaseHelper.KEY_PROFILE_PROFILE, m.getName());
 				map.put(DatabaseHelper.KEY_PROFILE_HOST, m.getHost());
-				mProfileMapList.add(map);
+				profiles.add(map);
 			}
 
-            SimpleExtendedHashMapAdapter mAdapter = new SimpleExtendedHashMapAdapter(this, mProfileMapList, R.layout.two_line_card_list_item_no_indicator, new String[]{
+			SimpleTextAdapter adapter = new SimpleTextAdapter(profiles, R.layout.two_line_card_list_item_no_indicator, new String[]{
                     DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1,
                     android.R.id.text2});
-			setListAdapter(mAdapter);
-			mAdapter.notifyDataSetChanged();
+			mRecyclerView.setAdapter(adapter);
+			mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+			adapter.notifyDataSetChanged();
 		} else {
 			showToast(getString(R.string.no_profile_available));
 			finish();
@@ -74,12 +91,6 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
         RadioGroup widgetStyleGroup = (RadioGroup) findViewById(R.id.remote_widget_style_group);
         return widgetStyleGroup.getCheckedRadioButtonId() == R.id.remote_widget_style_simple;
 	}
-
-	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		finish(mProfiles.get(position).getId(), isQuickZapChecked());
-	}
-
 	public void finish(int profileId, boolean isQuickZap) {
 		saveWidgetConfiguration(profileId, !isQuickZap);
 		Context context = getApplicationContext();
@@ -133,5 +144,10 @@ public class VirtualRemoteWidgetConfiguration extends ListActivity {
 			editor.remove(getProfileIdKey(appWidgetId));
 			editor.apply();
 		}
+	}
+
+	@Override
+	public void onItemClick(RecyclerView recyclerView, View v, int position, long id) {
+		finish(mProfiles.get(position).getId(), isQuickZapChecked());
 	}
 }

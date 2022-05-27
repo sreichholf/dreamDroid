@@ -149,8 +149,8 @@
 
         <activity
             android:name=".appwidget.VirtualRemoteWidgetConfiguration"
-            android:theme="@style/Theme.DreamDroid.Dialog"
-            android:exported="false" >
+            android:theme="@style/Theme.DreamDroid.Night"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>

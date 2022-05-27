@@ -64,7 +64,7 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
             intent.putExtra(WidgetService.KEY_KEYID, Integer.toString(btn[1]));
             intent.setAction(WidgetService.ACTION_RCU);
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, btn[0], intent, 0);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, btn[0], intent, PendingIntent.FLAG_IMMUTABLE);
             remoteViews.setOnClickPendingIntent(btn[0], pendingIntent);
         }
     }

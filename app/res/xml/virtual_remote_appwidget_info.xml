@@ -5,9 +5,11 @@
                     android:minHeight="288dp"
                     android:minResizeWidth="288dp"
                     android:minResizeHeight="288dp"
-                    android:previewImage="@mipmap/ic_launcher"
                     android:initialLayout="@layout/virtual_remote_appwidget"
+                    android:previewLayout="@layout/virtual_remote_appwidget"
+                    android:previewImage="@drawable/dreamdroid_appwidget"
                     android:configure="net.reichholf.dreamdroid.appwidget.VirtualRemoteWidgetConfiguration"
                     android:resizeMode="horizontal|vertical"
-                    android:widgetCategory="home_screen">
+                    android:widgetCategory="home_screen"
+                    android:widgetFeatures="reconfigurable">
 </appwidget-provider>
