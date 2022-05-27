@@ -12,6 +12,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,6 +33,7 @@ import androidx.annotation.Nullable;
 import com.evernote.android.state.State;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -260,6 +262,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	protected boolean onItemSelected(int id) {
 		boolean consumed = true;
+		int timeFormat = DateFormat.is24HourFormat(getContext()) ? TimeFormat.CLOCK_24H : TimeFormat.CLOCK_12H;
 		Calendar calendar;
 		switch (id) {
 			case Statics.ITEM_SAVE:
@@ -290,6 +293,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				MaterialTimePicker timePickerDialogBegin = new MaterialTimePicker.Builder()
 						.setHour(calendar.get(Calendar.HOUR_OF_DAY))
 						.setMinute(calendar.get(Calendar.MINUTE))
+						.setTimeFormat(timeFormat)
 						.build();
 				timePickerDialogBegin.addOnPositiveButtonClickListener(v -> {
 					onTimeSet(true, timePickerDialogBegin.getHour(), timePickerDialogBegin.getMinute());
@@ -306,6 +310,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				datePickerDialogEnd.addOnPositiveButtonClickListener(v -> {
 					onDateSet(false, (Long) datePickerDialogEnd.getSelection());
 				});
+				getMultiPaneHandler().showDialogFragment(datePickerDialogEnd, "dialog_pick_end_date");
 				break;
 
 			case Statics.ITEM_PICK_END_TIME:
@@ -313,10 +318,12 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				MaterialTimePicker timePickerDialogEnd = new MaterialTimePicker.Builder()
 						.setHour(calendar.get(Calendar.HOUR_OF_DAY))
 						.setMinute(calendar.get(Calendar.MINUTE))
+						.setTimeFormat(timeFormat)
 						.build();
 				timePickerDialogEnd.addOnPositiveButtonClickListener(v -> {
-					onTimeSet(true, timePickerDialogEnd.getHour(), timePickerDialogEnd.getMinute());
+					onTimeSet(false, timePickerDialogEnd.getHour(), timePickerDialogEnd.getMinute());
 				});
+				getMultiPaneHandler().showDialogFragment(timePickerDialogEnd, "dialog_pick_end_time");
 				break;
 
 			case Statics.ITEM_PICK_REPEATED:

@@ -1,3 +1,7 @@
+## 1.6.442
+* FIX: end date/time could not be changed when editing a timer
+* FIX: localize time format in timer edit timer picker
+
 ## 1.6.441
 * FIX: some typos in german translation
 * FIX: Crash on large screen devices when trying to open the TV & Movies

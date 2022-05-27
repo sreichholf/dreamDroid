@@ -1,3 +1,7 @@
+## 1.6.442
+* FIX: Beim Bearbeiten eines Timers konnten Enddatum/zeit nicht geändert werden
+* FIX: Lokalisiertes Zeitformat in der Zeitauswahl bei Timern
+
 ## 1.6.441
 * FIX: Tippfehler in der deutschen Übersetzung
 * FIX: Abstürze auf Geräten mit größeren Displays wenn TV & Filme ausgewählt wurde
