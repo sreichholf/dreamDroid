@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/service_list_item_nn"
     android:layout_width="fill_parent"
@@ -18,15 +17,13 @@
 
         <ImageView
             android:id="@+id/picon"
-            android:layout_width="57dp"
-            android:layout_height="36dp"
-            android:layout_alignParentLeft="true"
+            android:layout_width="127dp"
+            android:layout_height="80dp"
             android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginEnd="3dp"
-            android:layout_marginRight="3dp"
-            android:layout_marginTop="5dp"/>
-
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp" />
 
         <LinearLayout
             android:id="@+id/linearLayoutTitle"
@@ -43,14 +40,14 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:ellipsize="end"
-                android:singleLine="true"/>
+                android:singleLine="true" />
 
             <TextView
                 android:id="@+id/service_name"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:textAppearance="@android:style/TextAppearance.Small"/>
+                android:textAppearance="@android:style/TextAppearance.Small" />
         </LinearLayout>
 
         <LinearLayout
@@ -58,6 +55,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/linearLayoutTitle"
+            android:layout_toEndOf="@id/picon"
             android:orientation="horizontal">
 
             <TextView
@@ -65,7 +63,7 @@
                 style="@style/CardText"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/event_duration"
@@ -75,7 +73,7 @@
                 android:layout_marginEnd="5dip"
                 android:layout_marginRight="5dip"
                 android:layout_weight="1"
-                android:gravity="end"/>
+                android:gravity="end" />
         </LinearLayout>
 
         <TextView
@@ -85,9 +83,10 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/LinearLayoutEventTime"
             android:layout_gravity="center_vertical"
+            android:layout_toEndOf="@id/picon"
             android:ellipsize="end"
             android:maxLines="2"
-            android:singleLine="false"/>
+            android:singleLine="false" />
 
     </RelativeLayout>
 </com.google.android.material.card.MaterialCardView>
