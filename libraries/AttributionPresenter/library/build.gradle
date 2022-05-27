@@ -10,8 +10,6 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
-        versionCode 3
-        versionName "1.0.2"
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
