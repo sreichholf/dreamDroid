@@ -18,16 +18,21 @@ package net.reichholf.dreamdroid.tv.presenter;
 
 
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-
-import androidx.annotation.NonNull;
-import androidx.leanback.widget.BaseCardView;
-import androidx.leanback.widget.ImageCardView;
-import androidx.leanback.widget.Presenter;
-import androidx.core.content.ContextCompat;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.leanback.widget.BaseCardView;
+import androidx.leanback.widget.ImageCardView;
+import androidx.leanback.widget.Presenter;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -82,6 +87,12 @@ public class CardPresenter extends Presenter {
 				@Override
 				public void setSelected(boolean selected) {
 					updateCardBackgroundColor(this, selected);
+					TextView content = findViewById(R.id.content_text);
+					if (selected) {
+						content.setMaxLines(4);
+					} else {
+						content.setMaxLines(1);
+					}
 					super.setSelected(selected);
 				}
 			};
@@ -107,7 +118,7 @@ public class CardPresenter extends Presenter {
 	@Override
 	public void onBindViewHolder(@NonNull Presenter.ViewHolder viewHolder, Object item) {
 		BrowseItem browseItem = (BrowseItem) item;
-		switch(browseItem.type) {
+		switch (browseItem.type) {
 			case Service:
 				bindServiceViewHolder(viewHolder, browseItem);
 				break;
@@ -131,7 +142,7 @@ public class CardPresenter extends Presenter {
 		cardView.setTitleText(settings.getString("title"));
 
 		Integer mainImageId = (Integer) settings.get("icon");
-		if(mainImageId != null)
+		if (mainImageId != null)
 			cardView.setMainImage(cardView.getResources().getDrawable(mainImageId, null));
 		else
 			cardView.setMainImage(mDefaultCardImage);
@@ -145,12 +156,23 @@ public class CardPresenter extends Presenter {
 	protected void bindServiceViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem item) {
 
 		Event event = new Event(item.data);
+		Event nextEvent = new Event(Event.fromNext(item.data));
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
 		//cardView.setMainImage(mDefaultCardImage);
 
 		Picon.setPiconForView(cardView.getContext(), cardView.getMainImageView(), event, "tv_picon");
 		cardView.setTitleText(event.serviceName());
-		cardView.setContentText(event.title());
+		if (nextEvent.title().isEmpty()) {
+			cardView.setTitleText(event.title());
+		} else {
+			String t = String.format("%s\n%s %s", event.title(), nextEvent.startTimeReadable(), nextEvent.title());
+			Spannable spannable = new SpannableString(t);
+			int offset = event.title().length();
+			int end = offset + nextEvent.startTimeReadable().length() + 1;
+			spannable.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), offset, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			TextView content = cardView.findViewById(R.id.content_text);
+			content.setText(spannable, TextView.BufferType.SPANNABLE);
+		}
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
 		Resources res = cardView.getResources();
 		int width = res.getDimensionPixelSize(R.dimen.card_width);
