@@ -6,8 +6,8 @@
     <string name="mo">Mo</string>
     <string name="app_name_release">DreamDroid</string>
     <string name="app_name_tv_release">dreamDroidTV</string>
-    <string name="app_name_debug">DreamDroid DEV</string>
-    <string name="app_name_tv_debug">dreamDroidTV DEV</string>
+    <string name="app_name_debug">dreamDroid DBG</string>
+    <string name="app_name_tv_debug">dreamDroidTV DBG</string>
 
     <string-array name="servicelist">
         <item>Bouquets (TV)</item>
@@ -145,7 +145,7 @@
 
     <string name="virtual_remote">Virtual Remote</string>
     <string name="login">Login</string>
-    <string name="defaultOnNoWifi">Is Default Profile on no Wifi</string>
+    <string name="defaultOnNoWifi">Is default profile on no Wifi</string>
     <string name="login_enabled">Enable Login</string>
     <string name="wait_request_finished">Please wait until the running request has finished!</string>
     <string name="current_service">Current</string>
@@ -389,4 +389,8 @@
     <string name="radio">Radio</string>
     <string name="live_movie"><![CDATA[TV & Movies]]></string>
     <string name="detail">Detail</string>
+    <string name="begin_date">Begin date</string>
+    <string name="end_date">End date</string>
+    <string name="encoder_user">Encoder user</string>
+    <string name="encoder_pass">Encoder password</string>
 </resources>

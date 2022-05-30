@@ -25,8 +25,9 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
+                android:contentDescription="@string/profile_name"
                 android:hint="@string/profile_name"
-                android:singleLine="true"/>
+                android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
@@ -59,8 +60,9 @@
                     android:id="@+id/EditTextHost"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/host_long"
                     android:hint="@string/host_long"
-                    android:singleLine="true"/>
+                    android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -73,10 +75,11 @@
                     android:id="@+id/EditTextPort"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/port"
                     android:hint="@string/port"
                     android:inputType="number"
                     android:maxLength="5"
-                    android:singleLine="true"/>
+                    android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
@@ -116,8 +119,9 @@
                     android:id="@+id/EditTextUser"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/user"
                     android:hint="@string/user"
-                    android:singleLine="true"/>
+                    android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -129,11 +133,44 @@
                     android:id="@+id/EditTextPass"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/pass"
                     android:ems="10"
                     android:hint="@string/pass"
                     android:inputType="textPassword"
-                    android:singleLine="true"/>
+                    android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <TextView
+            style="@style/SimpleHeader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="4dp"
+            android:text="@string/auto_switch_profile_wifi_based_long"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/EditTextSSID"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/ssid"
+                    android:hint="@string/ssid"
+                    android:singleLine="true" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <CheckBox
+                android:id="@+id/CheckBoxDefaultOnNoWifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/defaultOnNoWifi"/>
         </LinearLayout>
 
         <TextView
@@ -153,8 +190,9 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
+                android:contentDescription="@string/stream_host_long"
                 android:hint="@string/stream_host_long"
-                android:singleLine="true"/>
+                android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <CheckBox
@@ -185,9 +223,10 @@
                         android:id="@+id/EditTextEncoderPath"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/encoder_path"
                         android:hint="@string/encoder_path"
                         android:singleLine="true"
-                        android:text="/stream"/>
+                        android:text="/stream" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -199,11 +238,12 @@
                         android:id="@+id/EditTextEncoderPort"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/encoder_port"
                         android:hint="@string/encoder_port"
                         android:inputType="number"
                         android:maxLength="5"
                         android:singleLine="true"
-                        android:text="554"/>
+                        android:text="554" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -230,9 +270,9 @@
                         android:id="@+id/EditTextEncodermUser"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/user"
-                        android:singleLine="true"
-                        android:text="0"/>
+                        android:contentDescription="@string/encoder_user"
+                        android:hint="@string/encoder_user"
+                        android:singleLine="true" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -244,14 +284,14 @@
                         android:id="@+id/EditTextEncoderPass"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/pass"
+                        android:contentDescription="@string/encoder_pass"
+                        android:hint="@string/encoder_pass"
                         android:inputType="textPassword"
                         android:singleLine="true"
-                        android:text=""/>
+                        android:text="" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
-
             <LinearLayout
                 android:id="@+id/linearLayoutBitrates"
                 android:layout_width="fill_parent"
@@ -267,11 +307,12 @@
                         android:id="@+id/EditTextVideoBitrate"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/video_bitrate"
                         android:hint="@string/video_bitrate"
                         android:inputType="number"
                         android:maxLength="4"
                         android:singleLine="true"
-                        android:text="0"/>
+                        android:text="0" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -283,11 +324,12 @@
                         android:id="@+id/EditTextAudioBitrate"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/audio_bitrate"
                         android:hint="@string/audio_bitrate"
                         android:inputType="number"
                         android:maxLength="3"
                         android:singleLine="true"
-                        android:text="0"/>
+                        android:text="0" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
@@ -323,13 +365,13 @@
 
                     <EditText
                         android:id="@+id/EditTextStreamPort"
-                        android:layout_width="80dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/port"
+                        android:contentDescription="@string/port_stream_live"
+                        android:hint="@string/port_stream_live"
                         android:inputType="number"
                         android:maxLength="5"
-                        android:singleLine="true">
-                    </EditText>
+                        android:singleLine="true"></EditText>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <CheckBox
@@ -363,13 +405,13 @@
 
                     <EditText
                         android:id="@+id/EditTextFilePort"
-                        android:layout_width="80dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/port"
+                        android:contentDescription="@string/port_stream_file"
+                        android:hint="@string/port_stream_file"
                         android:inputType="number"
                         android:maxLength="5"
-                        android:singleLine="true">
-                    </EditText>
+                        android:singleLine="true"></EditText>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <CheckBox
@@ -383,25 +425,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/ssl_enabled"/>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                    <EditText
-                        android:id="@+id/EditTextSSID"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/ssid"
-                        android:singleLine="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <CheckBox
-                    android:id="@+id/CheckBoxDefaultOnNoWifi"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/defaultOnNoWifi"/>
 
             </LinearLayout>
         </LinearLayout>
