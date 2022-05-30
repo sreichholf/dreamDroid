@@ -375,4 +375,15 @@
     <string name="ssid">WLAN Name</string>
     <string name="live_movie"><![CDATA[TV & Filme]]></string>
     <string name="detail">Detail</string>
+    <string name="begin_date">Startdatum</string>
+    <string name="end_date">Enddatum</string>
+    <string name="encoder_user">Encoder Benuzer</string>
+    <string name="encoder_pass">Encoder Passwort</string>
+    <string name="defaultOnNoWifi">Standardprofil ohne WLAN</string>
+    <string name="remote_widget_config_title_style">"Wähle das Layout der Fernbedienung "</string>
+    <string name="remote_widget_config_title_profile">Wähle das Verbindungsprofil</string>
+    <string name="play_button_as_play_pause">Taste \"Play\" als \"Play/Pause\" nutzen</string>
+    <string name="play_button_as_play_pause_long">Taste \"Play\" im Fernbedienungswidget als \"Play/Pause\" nutzen</string>
+    <string name="tv">TV</string>
+    <string name="radio">Radio</string>
 </resources>
