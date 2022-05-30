@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -8,6 +8,8 @@ package net.reichholf.dreamdroid.fragment;
 
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
@@ -15,17 +17,10 @@ import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.loader.app.LoaderManager.LoaderCallbacks;
-import androidx.core.content.FileProvider;
-import androidx.loader.content.Loader;
-import androidx.core.view.MenuItemCompat;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.widget.ShareActionProvider;
+import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -36,12 +31,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
+import androidx.core.view.MenuItemCompat;
+import androidx.loader.app.LoaderManager.LoaderCallbacks;
+import androidx.loader.content.Loader;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.evernote.android.state.State;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -83,12 +89,19 @@ public class ScreenShotFragment extends BaseFragment implements
 	private int mFormat;
 	private int mSize;
 	private String mFilename;
-	@State public byte[] mRawImage;
+	@State
+	public byte[] mRawImage;
 	@Nullable
 	private MediaScannerConnection mScannerConn;
 	private HttpFragmentHelper mHttpHelper;
 
 	private ShareActionProvider mShareActionProvider;
+
+	private ActivityResultLauncher<String> mStoragePermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+			result -> {
+				if (result)
+					reload();
+			});
 
 	@Override
 	public void onRefresh() {
@@ -193,10 +206,11 @@ public class ScreenShotFragment extends BaseFragment implements
 			if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
 				reload();
 			else
-				ActivityCompat.requestPermissions(getAppCompatActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, BaseActivity.REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT);
+				mStoragePermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 		} else {
 			onScreenshotAvailable(mRawImage);
 		}
+
 	}
 
 	@Override
@@ -204,17 +218,6 @@ public class ScreenShotFragment extends BaseFragment implements
 		mScannerConn.disconnect();
 		mScannerConn = null;
 		super.onPause();
-	}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-		boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
-		if(requestCode == BaseActivity.REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT) {
-			if(granted)
-				reload();
-			return;
-		}
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 	}
 
 	@Override
@@ -311,7 +314,7 @@ public class ScreenShotFragment extends BaseFragment implements
 				break;
 		}
 
-		if(mSize > 0)
+		if (mSize > 0)
 			params.add(new NameValuePair("r", String.valueOf(mSize)));
 
 		long ts = (new GregorianCalendar().getTimeInMillis()) / 1000;
@@ -325,59 +328,51 @@ public class ScreenShotFragment extends BaseFragment implements
 		getLoaderManager().restartLoader(0, args, this);
 	}
 
-
-/*	public void performFileSearch() {
-
-		Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-		intent.addCategory(Intent.CATEGORY_OPENABLE);
-		intent.setType("image*//*");
-		startActivity(intent);
-	}*/
-
 	private void saveToFile() {
 		saveToFile(false);
 	}
 
 	@Nullable
 	private File saveToFile(boolean inCache) {
-//		performFileSearch();
-
 		if (mRawImage != null) {
-			long timestamp = GregorianCalendar.getInstance().getTimeInMillis();
-
-
-			File root;
-			String filepath;
-			if (inCache) {
-				root = getAppCompatActivity().getCacheDir();
-			} else {
-				root = Environment.getExternalStorageDirectory();
-				filepath = String.format("%s%s%s", root.getAbsolutePath(), File.separator, "media/screenshots");
-				root = new File(filepath);
-				if (!root.exists()) {
-					root.mkdirs();
-				}
-			}
-
 			String extension = getFileExtension();
 			String fileName;
 			if (inCache) {
-				fileName = String.format("screenshot.%s", extension);
-			} else {
-				fileName = String.format("dreamDroid_%s.%s", timestamp, extension);
+				fileName = String.format("dreamDroid.%s", extension);
+				try {
+					File file = new File(getContext().getCacheDir(), fileName);
+					FileOutputStream out = new FileOutputStream(file);
+					out.write(mRawImage);
+					out.close();
+					return file;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return null;
 			}
+			long timestamp = GregorianCalendar.getInstance().getTimeInMillis();
+			fileName = String.format("dreamDroid_%s.%s", timestamp, extension);
+			ContentValues imageDetails = new ContentValues();
+			imageDetails.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+
+			Uri imageCollection;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				imageCollection = MediaStore.Images.Media
+						.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+			} else {
+				imageCollection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+			}
+
 			FileOutputStream out;
+			ContentResolver resolver = getAppCompatActivity().getApplicationContext().getContentResolver();
+			Uri imageContentUri = resolver.insert(imageCollection, imageDetails);
 			try {
-				File file = new File(root, fileName);
-				file.createNewFile();
-				out = new FileOutputStream(file);
+				ParcelFileDescriptor pfd = resolver.openFileDescriptor(imageContentUri, "w", null);
+				out = new FileOutputStream(pfd.getFileDescriptor());
 				out.write(mRawImage);
 				out.close();
-				if (!inCache) {
-					mScannerConn.scanFile(file.getAbsolutePath(), "image/*");
-					showToast(getString(R.string.screenshot_saved, file.getAbsolutePath()));
-				}
-				return file;
+				pfd.close();
+				showToast(getString(R.string.screenshot_saved, fileName));
 			} catch (IOException e) {
 				Log.e(DreamDroid.LOG_TAG, e.getLocalizedMessage());
 				showToast(e.toString());
