@@ -14,7 +14,8 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.evernote.android.state.State;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.google.android.material.navigationrail.NavigationRailView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -44,7 +45,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	MovieListAdapter mMovielistAdapter;
 	TimerListAdapter mTimerListAdapter;
 
-	BottomNavigationView mBottomNavigation;
+	NavigationBarView mNavigation;
 	TabLayout mTabLayout;
 	@Nullable
 	TabLayoutMediator mTabLayoutMediator;
@@ -176,11 +177,12 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		mBottomNavigation = getAppCompatActivity().findViewById(R.id.bottom_navigation);
-		mBottomNavigation.setVisibility(View.VISIBLE);
-		mBottomNavigation.getMenu().clear();
-		mBottomNavigation.inflateMenu(R.menu.bottom_navigation_services);
-		mBottomNavigation.setOnItemSelectedListener(item -> {
+		mNavigation = getAppCompatActivity().findViewById(R.id.bottom_navigation);
+		mNavigation.setVisibility(View.VISIBLE);
+		mNavigation.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
+		mNavigation.getMenu().clear();
+		mNavigation.inflateMenu(R.menu.bottom_navigation_services);
+		mNavigation.setOnItemSelectedListener(item -> {
 			onItemSelected(item);
 			return true;
 		});
@@ -206,13 +208,13 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	@Override
 	public void onPause() {
 		super.onPause();
-		mBottomNavigation.setVisibility(View.GONE);
+		mNavigation.setVisibility(View.GONE);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		mBottomNavigation.setVisibility(View.VISIBLE);
+		mNavigation.setVisibility(View.VISIBLE);
 	}
 
 	@Override
@@ -343,7 +345,12 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	public void onTimerSelected() {
 		mMode = MODE_TIMER;
 		detachTabLayoutMediator();
-		mTabLayout.setVisibility(View.GONE);
+		if (mNavigation instanceof NavigationRailView)
+			mTabLayout.removeAllTabs();
+		else
+			mTabLayout.setVisibility(View.GONE);
+
+
 		mPager.setAdapter(mTimerListAdapter);
 	}
 }

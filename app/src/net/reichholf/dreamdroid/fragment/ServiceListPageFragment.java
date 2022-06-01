@@ -7,13 +7,15 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.content.ActivityNotFoundException;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,7 +36,6 @@ import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.SyncService;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -45,6 +46,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
 import java.util.ArrayList;
 
@@ -108,6 +110,26 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		super.onActivityCreated(savedInstanceState);
 		getAppCompatActivity().supportInvalidateOptionsMenu();
 		getAppCompatActivity().setTitle(mName);
+	}
+
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.card_grid_content, container, false);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
+		((AutofitRecyclerView) getRecyclerView()).setMaxSpanCount(
+				Integer.parseInt(
+						prefs.getString(
+								DreamDroid.PREFS_KEY_GRID_MAX_COLS,
+								Integer.toString(AutofitRecyclerView.DEFAULT_MAX_SPAN_COUNT)
+						)
+				)
+		);
+		super.onViewCreated(view, savedInstanceState);
 	}
 
 	@Override

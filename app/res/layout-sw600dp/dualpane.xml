@@ -14,17 +14,34 @@
         android:layout_weight="1"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <FrameLayout
-            android:id="@+id/detail_view"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_marginStart="@dimen/content_margin_horizontal"
-            android:layout_marginTop="0dp"
-            android:layout_marginEnd="@dimen/content_margin_horizontal"
-            android:layout_marginBottom="0dp"
-            android:background="?attr/cardBackgroundColor"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+            <com.google.android.material.navigationrail.NavigationRailView
+                android:id="@+id/bottom_navigation"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="48dp"
+                android:layout_height="match_parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_insetEdge="right"
+                android:visibility="visible"
+                app:menu="@menu/bottom_navigation_services"/>
+
+            <FrameLayout
+                android:id="@+id/detail_view"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_marginStart="@dimen/content_margin_horizontal"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="@dimen/content_margin_horizontal"
+                android:layout_marginBottom="0dp"
+                android:background="?attr/cardBackgroundColor"
+                app:layout_constraintStart_toEndOf="@id/bottom_navigation"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
         <LinearLayout
             android:id="@+id/fab_layout"
             android:layout_width="32dp"
@@ -85,17 +102,6 @@
             app:layout_anchor="@+id/detail_view"
             app:layout_anchorGravity="bottom|end|right"
             app:pressedTranslationZ="12dp" />
-
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            app:layout_insetEdge="bottom"
-            app:layout_scrollFlags="scroll|enterAlways|snap"
-            app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-            android:visibility="gone"
-            app:menu="@menu/bottom_navigation_services"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_reload"
