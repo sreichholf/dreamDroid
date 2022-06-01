@@ -22,6 +22,7 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 
 import androidx.annotation.RequiresApi;
 
@@ -213,7 +214,7 @@ public class HalfGauge extends AbstractGauge {
 		Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		textPaint.setColor(color);
 		textPaint.setStyle(Paint.Style.FILL);
-		textPaint.setTextSize(15f);
+		textPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 9, getResources().getDisplayMetrics()));
 		textPaint.setTextAlign(Paint.Align.CENTER);
 		return textPaint;
 	}
