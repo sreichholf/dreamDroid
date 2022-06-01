@@ -1,10 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
+    xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/menu_share"
+        android:icon="@drawable/ic_menu_share"
         android:title="@string/share"
-        dreamDroid:actionProviderClass="androidx.appcompat.widget.ShareActionProvider"
-        dreamDroid:showAsAction="always|withText"/>
+        dreamDroid:showAsAction="always" />
 
 </menu>

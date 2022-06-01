@@ -95,8 +95,6 @@ public class ScreenShotFragment extends BaseFragment implements
 	private MediaScannerConnection mScannerConn;
 	private HttpFragmentHelper mHttpHelper;
 
-	private ShareActionProvider mShareActionProvider;
-
 	private ActivityResultLauncher<String> mStoragePermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
 			result -> {
 				if (result)
@@ -227,30 +225,35 @@ public class ScreenShotFragment extends BaseFragment implements
 			inflater.inflate(R.menu.save, menu);
 			inflater.inflate(R.menu.share, menu);
 		}
-		MenuItem shareItem = menu.findItem(R.id.menu_share);
-		mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
 	}
 
-	private void setShareIntent() {
-		if (mShareActionProvider != null) {
-			File file = saveToFile(true);
-			if (file == null) {
-				showToast(getString(R.string.error));
-				return;
-			}
-			file.setReadable(true, false);
-			Uri uri = FileProvider.getUriForFile(getContext(), getContext().getApplicationContext().getPackageName() + ".provider", file);
-			Intent intent = new Intent(Intent.ACTION_SEND);
-			intent.putExtra(Intent.EXTRA_STREAM, uri);
-			intent.setType(String.format("image/%s", getFileExtension()));
-			mShareActionProvider.setShareIntent(intent);
+	private void share() {
+		File file = saveToFile(true);
+		if (file == null) {
+			showToast(getString(R.string.error));
+			return;
 		}
+		file.setReadable(true, false);
+		Uri uri = FileProvider.getUriForFile(getContext(), getContext().getApplicationContext().getPackageName() + ".provider", file);
+		Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.putExtra(Intent.EXTRA_STREAM, uri);
+		intent.setType(String.format("image/%s", getMimeType()));
+		startActivity(Intent.createChooser(intent, null));
 	}
 
 	@NonNull
 	private String getFileExtension() {
 		if (mFormat == FORMAT_JPG) {
 			return "jpg";
+		} else if (mFormat == FORMAT_PNG) {
+			return "png";
+		}
+		return "";
+	}
+
+	private String getMimeType() {
+		if (mFormat == FORMAT_JPG) {
+			return "jpeg";
 		} else if (mFormat == FORMAT_PNG) {
 			return "png";
 		}
@@ -272,6 +275,10 @@ public class ScreenShotFragment extends BaseFragment implements
 				break;
 			case Statics.ITEM_SAVE:
 				saveToFile();
+				break;
+			case R.id.menu_share:
+				share();
+				break;
 		}
 
 		return true;
@@ -286,7 +293,6 @@ public class ScreenShotFragment extends BaseFragment implements
 		mRawImage = bytes;
 		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
 		mImageView.getAttacher().update();
-		setShareIntent();
 	}
 
 	protected void reload() {
