@@ -48,14 +48,13 @@ dependencies {
     implementation 'org.openhab.jmdns:jmdns:3.4.2'
     implementation 'io.noties.markwon:core:4.6.2'
     implementation project(':libraries:AttributionPresenter:library')
-    implementation project(':libraries:gaugeview-library')
     implementation project(':libraries:MemorizingTrustManager')
+    implementation project(':libraries:simple-gauge-android:gaugelibrary')
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'net.sourceforge.streamsupport:android-retrostreams:1.7.1'
     implementation 'com.evernote:android-state:1.4.1'
     annotationProcessor 'com.evernote:android-state-processor:1.4.1'
     implementation 'com.github.livefront:bridge:v2.0.2'
-    //implementation 'com.github.franmontiel:AttributionPresenter:1.0.1'
     implementation 'com.jakewharton:butterknife:10.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
     implementation 'androidx.navigation:navigation-fragment:2.4.2'

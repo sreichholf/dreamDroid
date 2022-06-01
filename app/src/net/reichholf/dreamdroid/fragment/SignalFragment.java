@@ -1,25 +1,30 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
 
 package net.reichholf.dreamdroid.fragment;
 
+import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.annotation.NonNull;
-import androidx.loader.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.ToggleButton;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.loader.content.Loader;
+
+import com.ekndev.gaugelibrary.HalfGauge;
+import com.ekndev.gaugelibrary.Range;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
@@ -30,8 +35,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHand
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
-import org.codeandmagic.android.gauge.GaugeView;
-
 public class SignalFragment extends BaseHttpFragment {
 	private static final String TAG = SignalFragment.class.getSimpleName();
 
@@ -39,9 +42,9 @@ public class SignalFragment extends BaseHttpFragment {
 	private static int sMinSnrDb = 5;
 	private static int sMaxDelay = 1000;
 	private static int sMinDelay = 150;
-	GaugeView mSnr;
+	HalfGauge mSnr;
 	CheckBox mSound;
-	ToggleButton mEnabled;
+	SwitchCompat mEnabled;
 	TextView mSnrdb;
 	TextView mBer;
 	TextView mAgc;
@@ -90,6 +93,37 @@ public class SignalFragment extends BaseHttpFragment {
 		View view = inflater.inflate(R.layout.signal, container, false);
 
 		mSnr = view.findViewById(R.id.gauge_view1);
+
+		Range range = new Range();
+		range.setColor(Color.parseColor("#ce0000"));
+		range.setFrom(0.0);
+		range.setTo(50.0);
+
+		Range range2 = new Range();
+		range2.setColor(Color.parseColor("#e37700"));
+		range2.setFrom(50.0);
+		range2.setTo(65.0);
+
+		Range range3 = new Range();
+		range3.setColor(Color.parseColor("#e3e500"));
+		range3.setFrom(65.0);
+		range3.setTo(80.0);
+
+		Range range4 = new Range();
+		range4.setColor(Color.parseColor("#00b20b"));
+		range4.setFrom(80.0);
+		range4.setTo(100.0);
+
+		//add color ranges to gauge
+		mSnr.addRange(range);
+		mSnr.addRange(range2);
+		mSnr.addRange(range3);
+		mSnr.addRange(range4);
+
+		//set min max and current value
+		mSnr.setMinValue(0.0);
+		mSnr.setMaxValue(100.0);
+		mSnr.setValue(0.0);
 
 		mEnabled = view.findViewById(R.id.toggle_enabled);
 		mEnabled.setChecked(true);
@@ -160,7 +194,7 @@ public class SignalFragment extends BaseHttpFragment {
 			mSnrDb = sMinSnrDb;
 		}
 
-		mSnr.setTargetValue(snr);
+		mSnr.setValue(snr);
 		mSnrdb.setText(content.getString(Signal.KEY_SNRDB, "-").trim());
 		mBer.setText(content.getString(Signal.KEY_BER, "-").trim());
 		mAgc.setText(content.getString(Signal.KEY_AGC, "-").trim());
@@ -194,7 +228,7 @@ public class SignalFragment extends BaseHttpFragment {
 	private void stopPolling() {
 		mHandler.removeCallbacks(mPlaySoundTask);
 		mHandler.removeCallbacks(mUpdateTask);
-		mSnr.setTargetValue(0);
+		mSnr.setValue(0);
 		mSnrdb.setText("-");
 		mBer.setText("-");
 		mAgc.setText("-");
@@ -213,7 +247,7 @@ public class SignalFragment extends BaseHttpFragment {
 		AudioTrack audioTrack = null; // Get audio track
 		try {
 			audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO,
-					AudioFormat.ENCODING_PCM_16BIT,  numSamples * 2, AudioTrack.MODE_STATIC);
+					AudioFormat.ENCODING_PCM_16BIT, numSamples * 2, AudioTrack.MODE_STATIC);
 			Log.w("SignalFragment!!", Integer.toString(sampleRate));
 		} catch (Exception e) {
 			return;

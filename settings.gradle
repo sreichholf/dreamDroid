@@ -1,4 +1,4 @@
 include ':app'
 include ':libraries:AttributionPresenter:library'
-include ':libraries:gaugeview-library'
+include ':libraries:simple-gauge-android:gaugelibrary'
 include ':libraries:MemorizingTrustManager'
