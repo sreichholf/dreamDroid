@@ -209,7 +209,10 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 					if (p.getDefaultRef() != null && p.getDefaultRef().equals(mRef)) {
 						p.setDefaultRef(null);
 						reset = true;
+					} else {
+						p.setDefaultRefValues(mRef, mName);
 					}
+
 					DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
 					if (dbh.updateProfile(p)) {
 						if (!reset)
@@ -267,6 +270,17 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		super.onLoadFinished(loader, result);
 	}
 
+	public void upOrReload() {
+		if (!mHistory.isEmpty()) {
+			Bundle args = getArguments();
+			if (args != null) {
+				mRef = args.getString(Service.KEY_REFERENCE, mRef);
+				mName = args.getString(Service.KEY_NAME, mName);
+			}
+			mHistory.clear();
+		}
+		reload();
+	}
 
 	/**
 	 * @param ref The ServiceReference to catch the EPG for

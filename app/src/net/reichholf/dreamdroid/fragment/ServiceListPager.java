@@ -187,6 +187,23 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		});
 
 		mTabLayout = getView().findViewById(R.id.tab_layout);
+		mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+			@Override
+			public void onTabSelected(TabLayout.Tab tab) {
+			}
+
+			@Override
+			public void onTabUnselected(TabLayout.Tab tab) {
+			}
+
+			@Override
+			public void onTabReselected(TabLayout.Tab tab) {
+				if (mMode.equals(MODE_TV) || mMode.equals(MODE_RADIO)) {
+					ServiceListPageFragment f = (ServiceListPageFragment) getChildFragmentManager().findFragmentByTag("f" +mPager.getCurrentItem());
+					f.upOrReload();
+				}
+			}
+		});
 
 		mPager = getView().findViewById(R.id.viewPager);
 
