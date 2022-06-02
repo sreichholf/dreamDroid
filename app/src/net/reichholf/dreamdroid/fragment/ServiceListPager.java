@@ -179,7 +179,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 		mNavigation = getAppCompatActivity().findViewById(R.id.bottom_navigation);
 		mNavigation.setVisibility(View.VISIBLE);
-		mNavigation.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
 		mNavigation.getMenu().clear();
 		mNavigation.inflateMenu(R.menu.bottom_navigation_services);
 		mNavigation.setOnItemSelectedListener(item -> {

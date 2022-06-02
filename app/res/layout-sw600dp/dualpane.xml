@@ -23,10 +23,11 @@
                 android:id="@+id/bottom_navigation"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_insetEdge="right"
                 app:menuGravity="center"
+                app:labelVisibilityMode="labeled"
                 app:menu="@menu/bottom_navigation_services"/>
 
             <FrameLayout
