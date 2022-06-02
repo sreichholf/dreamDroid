@@ -4,17 +4,22 @@ package net.reichholf.dreamdroid.fragment;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+
+import com.google.android.material.color.DynamicColors;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -41,11 +46,12 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-		Preference syncPref = findPreference("sync_picons");
+		Preference syncPref = findPreference(DreamDroid.PREFS_KEY_SYNC_PICONS);
 		syncPref.setOnPreferenceClickListener(preference -> {
 			startPiconSync();
 			return true;
 		});
+		findPreference(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS).setEnabled(DynamicColors.isDynamicColorAvailable());
 		updateThemeSummary();
 		updateHwAccelSummary(prefs);
 	}
@@ -104,6 +110,9 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			updateThemeSummary();
 			DreamDroid.setTheme((AppCompatActivity) getActivity());
+		} else if (DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS.equals(key)) {
+			if (DynamicColors.isDynamicColorAvailable())
+				new Handler(Looper.getMainLooper()).postDelayed(() -> DreamDroid.restart(getContext()), 300);
 		} else if (DreamDroid.PREFS_KEY_HWACCEL.equals(key))
 			updateHwAccelSummary(prefs);
 	}

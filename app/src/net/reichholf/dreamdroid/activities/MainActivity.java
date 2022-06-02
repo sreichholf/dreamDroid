@@ -12,28 +12,29 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
+
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.reichholf.dreamdroid.BuildConfig;
 import net.reichholf.dreamdroid.DreamDroid;
@@ -116,7 +117,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	public void onProfileChecked(@NonNull final ExtendedHashMap result) {
-		if(mIsPaused || checkNavigationHelper())
+		if (mIsPaused || checkNavigationHelper())
 			return;
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
@@ -171,6 +172,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		mCurrentProfile = Profile.getDefault();
 		initViews();
 		DreamDroid.setCurrentProfileChangedListener(this);
+		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 		showChangeLog(true);
 	}
 
@@ -207,7 +209,12 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		// To catch that we check if mNavigationHelper is actually null, which it'll only be on first start or after onPause has been called.
 		mIsPaused = false;
 		checkNavigationHelper();
-		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+	}
+
+	@Override
+	protected void onDestroy() {
+		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+		super.onDestroy();
 	}
 
 	private boolean checkNavigationHelper() {
@@ -225,7 +232,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		mIsPaused = true;
 		//TODO preserve/restore mNavigationHelper properly
 		mNavigationHelper = null;
-		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
 		super.onPause();
 	}
 

@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -9,14 +9,16 @@ package net.reichholf.dreamdroid;
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -24,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.multidex.MultiDex;
+import androidx.preference.PreferenceManager;
 
 import com.evernote.android.state.StateSaver;
 import com.google.android.material.color.DynamicColors;
@@ -53,7 +56,7 @@ public class DreamDroid extends Application {
 
 	public static final int INITIAL_SERVICELIST_PANE = 1;
 	public static final int INITIAL_VIRTUAL_REMOTE = 2;
-    public static final String PREFS_KEY_HWACCEL = "video_hardware_acceleration";
+	public static final String PREFS_KEY_HWACCEL = "video_hardware_acceleration";
 	public static final String PREFS_KEY_PICONS_ONLINE = "picons_online";
 
 	public static String VERSION_STRING;
@@ -66,6 +69,7 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE = "play_button_as_play_pause";
 	public static final String PREFS_KEY_ENABLE_ANIMATIONS = "enable_animations";
 	public static final String PREFS_KEY_FIRST_START = "first_start";
+	public static final String PREFS_KEY_SYNC_PICONS = "sync_picons";
 	public static final String PREFS_KEY_SYNC_PICONS_PATH = "sync_picons_path";
 	public static final String PREFS_KEY_PICONS_ENABLED = "picons";
 	public static final String PREFS_KEY_PICONS_USE_NAME = "use_name_as_picon_filename";
@@ -81,6 +85,7 @@ public class DreamDroid extends Application {
 	public static final String PREFS_KEY_VIDEO_ENABLE_GESTURES = "video_enable_gestures";
 	public static final String PREFS_KEY_LAST_VERSION_CODE = "last_version_code";
 	public static final String PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED = "auto_switch_profile_wifi_based";
+	public static final String PREFS_KEY_DYNAMIC_THEME_COLORS = "dynamic_theme_colors";
 
 	public static final String IAB_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wvbGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpnaEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR888CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB";
 
@@ -118,11 +123,12 @@ public class DreamDroid extends Application {
 		else {
 			try {
 				instance = (DreamDroid) Class.forName("android.app.ActivityThread").getDeclaredMethod("currentApplication").invoke(null);
-			} catch (IllegalAccessException ignored) {}
-			catch (InvocationTargetException ignored) {}
-			catch (NoSuchMethodException ignored) {}
-			catch (ClassNotFoundException ignored) {}
-			catch (ClassCastException ignored) {}
+			} catch (IllegalAccessException ignored) {
+			} catch (InvocationTargetException ignored) {
+			} catch (NoSuchMethodException ignored) {
+			} catch (ClassNotFoundException ignored) {
+			} catch (ClassCastException ignored) {
+			}
 			return instance;
 		}
 
@@ -140,7 +146,7 @@ public class DreamDroid extends Application {
 		if (BuildConfig.BUILD_TIME > 0)
 			buildDate = DateTime.getYearDateTimeString(BuildConfig.BUILD_TIME / 1000);
 		String abi = Build.CPU_ABI;
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 			abi = Build.SUPPORTED_ABIS[0];
 		return String.format("dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net", BuildConfig.VERSION_NAME, BuildConfig.FLAVOR, BuildConfig.BUILD_TYPE, abi, buildDate);
 	}
@@ -153,7 +159,9 @@ public class DreamDroid extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		DynamicColors.applyToActivitiesIfAvailable(this);
+		boolean dynamicColors = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS, false);
+		if (dynamicColors)
+			DynamicColors.applyToActivitiesIfAvailable(this);
 
 		// Determine if we require a Date-String-Locale-Missing-Fix
 		// for details please see:
@@ -243,7 +251,7 @@ public class DreamDroid extends Application {
 			if (wifiInfo != null) {
 				NetworkInfo.DetailedState state = WifiInfo.getDetailedStateOf(wifiInfo.getSupplicantState());
 				if (state == NetworkInfo.DetailedState.CONNECTED || state == NetworkInfo.DetailedState.OBTAINING_IPADDR) {
-					return wifiInfo.getSSID().substring(1, wifiInfo.getSSID().length()-1);
+					return wifiInfo.getSSID().substring(1, wifiInfo.getSSID().length() - 1);
 				}
 			}
 		}
@@ -309,7 +317,7 @@ public class DreamDroid extends Application {
 	public static void loadCurrentProfile(Context context) {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
 		int profileId = sp.getInt(CURRENT_PROFILE, 1);
-		if(sProfile != null && sProfile.getId() == profileId)
+		if (sProfile != null && sProfile.getId() == profileId)
 			return;
 
 		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
@@ -497,7 +505,7 @@ public class DreamDroid extends Application {
 
 	public static void setTheme(@NonNull AppCompatActivity activity) {
 		int mode;
-		switch(getThemeType(activity)){
+		switch (getThemeType(activity)) {
 			case 0:
 				mode = AppCompatDelegate.MODE_NIGHT_NO;
 				break;
@@ -512,6 +520,15 @@ public class DreamDroid extends Application {
 		}
 		AppCompatDelegate.setDefaultNightMode(mode);
 		activity.getDelegate().setLocalNightMode(mode);
+	}
+
+	public static void restart(Context context) {
+		PackageManager packageManager = context.getPackageManager();
+		Intent intent = packageManager.getLaunchIntentForPackage(context.getPackageName());
+		ComponentName componentName = intent.getComponent();
+		Intent mainIntent = Intent.makeRestartActivityTask(componentName);
+		context.startActivity(mainIntent);
+		Runtime.getRuntime().exit(0);
 	}
 
 	public static boolean checkInitial(Context context, int which) {

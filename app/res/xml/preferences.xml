@@ -71,6 +71,11 @@
             android:title="@string/theme_long"/>
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="dynamic_theme_colors"
+            android:summary="@string/dynamic_theme_colors_long"
+            android:title="@string/dynamic_theme_colors"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="disable_fab_reload"
             android:summary="@string/disable_fab_reload_long"
             android:title="@string/disable_fab_reload"/>

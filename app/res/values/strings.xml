@@ -393,4 +393,6 @@
     <string name="end_date">End date</string>
     <string name="encoder_user">Encoder user</string>
     <string name="encoder_pass">Encoder password</string>
+    <string name="dynamic_theme_colors_long">Use dynamic theme colors\nChanging this will RESTART the app!</string>
+    <string name="dynamic_theme_colors">Dynamic theme colors</string>
 </resources>
