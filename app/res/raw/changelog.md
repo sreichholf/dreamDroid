@@ -1,3 +1,16 @@
+## 1.6.443
+* NEW: Add preference for enabling "Dynamic Theme" mode on Android >= 12 (this was default enabled in all previous 1.6.x versions)
+* IMP: Bigger picons on bigger screens
+* IMP: Modernize signal meter
+* IMP: Side navigation rail instead of bottom navigation for TV & Movies on larger screens
+* FIX/IMP: reimplement Multi-Column service list
+* FIX: misaligned floating action button when profile fails to connect
+* FIX/NEW: add "UP" navigation for providers by clicking the selected tab again (if no up is available this will reload the current bouquet)
+* FIX: Screenshot saving, caching and sharing
+* FIX: Add a bunch of missing accessibility descriptions
+* UPD: German translation
+* NEW/TV: Add "next" event to content description in service list
+
 ## 1.6.442
 * FIX: end date/time could not be changed when editing a timer
 * FIX: localize time format in timer edit timer picker

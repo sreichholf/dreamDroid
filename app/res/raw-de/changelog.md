@@ -1,3 +1,16 @@
+## 1.6.443
+* NEU: Einstellung zur Aktivierung dynamischer Farbschemen für Android >= 12 (war den bisherigen 1.6.x Versionen standardmäßig aktiviert)
+* UPD: Größere Picons auf größeren Bildschirmen (Tablets, etc)
+* UPD: Signal Meter moderninierst
+* UPD: Auf tablets wird die Navigation nun am linken statt am unteren Rand angezeigt
+* FIX: Mehrspaltige Kanallisten sind wieder verfügbar/funktional
+* FIX: Wenn ein Provider gewählt wurde kann durch ein drücken auf den "Provider" Tab einen ordner nach oben gesprungen werden (ist man ganz oben wird neu geladen)
+* FIX: Der schwebende Button z.B. zum hinzufügen einen Verbindungsprofils war in bestimmten Fällen links oben statt rechts unten
+* FIX: Screenshot können wieder gespeichert, zwischengespeichert und ordentlich geteilt werden
+* FIX: Eine ganze Reihe fehlender Beschreibungen für Bedienungshilfen wurde ergänzt
+* UPD: Deutsche Übersetzung
+* NEU/TV: Das nächste Event wird jetzt in der Kanalübersicht angezeigt
+
 ## 1.6.442
 * FIX: Beim Bearbeiten eines Timers konnten Enddatum/zeit nicht geändert werden
 * FIX: Lokalisiertes Zeitformat in der Zeitauswahl bei Timern
