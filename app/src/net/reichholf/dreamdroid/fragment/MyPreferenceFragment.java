@@ -51,7 +51,7 @@ public class MyPreferenceFragment extends PreferenceFragmentCompat implements
 			startPiconSync();
 			return true;
 		});
-		findPreference(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS).setEnabled(DynamicColors.isDynamicColorAvailable());
+		findPreference(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS).setVisible(DynamicColors.isDynamicColorAvailable());
 		updateThemeSummary();
 		updateHwAccelSummary(prefs);
 	}

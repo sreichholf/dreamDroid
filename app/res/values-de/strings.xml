@@ -386,6 +386,6 @@
     <string name="play_button_as_play_pause_long">Taste \"Play\" im Fernbedienungswidget als \"Play/Pause\" nutzen</string>
     <string name="tv">TV</string>
     <string name="radio">Radio</string>
-    <string name="dynamic_theme_colors_long">Dynamisches Farbschema nutzen\\nEine Änderung dieser Einstellung führt zum NEUSTART der App!</string>
+    <string name="dynamic_theme_colors_long">Dynamisches Farbschema nutzen\nEine Änderung dieser Einstellung führt zum NEUSTART der App!\n</string>
     <string name="dynamic_theme_colors">Dynamisches Farbschema</string>
 </resources>
