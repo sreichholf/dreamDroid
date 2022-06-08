@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,24 +56,26 @@ public class ZapAdapter extends BaseAdapter<ZapAdapter.ZapViewHolder> {
 
 	static class ZapViewHolder extends RecyclerView.ViewHolder {
 		ImageView picon;
+		CardView card;
 		TextView serviceName;
 		Callback piconCallback;
 
 		public ZapViewHolder(@NonNull View itemView) {
 			super(itemView);
 			picon = itemView.findViewById(R.id.picon);
+			card = itemView.findViewById(R.id.textCard);
 			serviceName = itemView.findViewById(android.R.id.text1);
 			piconCallback = new Callback() {
 				@Override
 				public void onSuccess() {
-					serviceName.setVisibility(View.GONE);
+					card.setVisibility(View.GONE);
 					picon.setVisibility(View.VISIBLE);
 				}
 
 				@Override
 				public void onError(Exception e) {
 					Log.w(TAG, String.format("Error loading picon for %s", serviceName.getText()));
-					serviceName.setVisibility(View.VISIBLE);
+					card.setVisibility(View.VISIBLE);
 					picon.setVisibility(View.GONE);
 				}
 			};

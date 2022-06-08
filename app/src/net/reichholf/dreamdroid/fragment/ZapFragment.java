@@ -4,16 +4,17 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.loader.content.Loader;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -29,6 +30,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
 import java.util.ArrayList;
 
@@ -64,11 +66,12 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.card_grid_content, container, false);
 
-		RecyclerView recyclerView = view.findViewById(android.R.id.list);
+		AutofitRecyclerView recyclerView = view.findViewById(android.R.id.list);
 		recyclerView.setLayoutManager(new GridLayoutManager(getAppCompatActivity(), 3));
 		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
 		recyclerView.addOnScrollListener(listener);
-
+		float colWidth = getResources().getDimension(R.dimen.zap_grid_item_height) / 9 * 16;
+		recyclerView.setColumnWidth((int) colWidth);
 		return view;
 	}
 
@@ -127,16 +130,16 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	@Override
 	protected void reload() {
-		if(mCurrentBouquet != null && !mCurrentBouquet.isEmpty())
+		if (mCurrentBouquet != null && !mCurrentBouquet.isEmpty())
 			super.reload();
-		else if(!mWaitingForPicker)
+		else if (!mWaitingForPicker)
 			pickBouquet();
 	}
 
 	@Nullable
 	@Override
 	public String getLoadFinishedTitle() {
-		if(mCurrentBouquet != null)
+		if (mCurrentBouquet != null)
 			return mCurrentBouquet.getString(Service.KEY_NAME, super.getLoadFinishedTitle());
 		return super.getLoadFinishedTitle();
 	}

@@ -33,6 +33,11 @@ public class AutofitRecyclerView extends com.simplecityapps.recyclerview_fastscr
 		mMaxSpanCount = maxSpanCount;
 	}
 
+	public void setColumnWidth(int columnWidth) {
+		mColumnWidth = columnWidth;
+		invalidate();
+	}
+
 	private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
 		if (attrs != null) {
 			int[] attrsArray = {
