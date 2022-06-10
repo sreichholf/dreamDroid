@@ -1,27 +1,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="?attr/actionBarSize"
+    android:layout_height="match_parent"
     android:layout_gravity="end"
-    android:gravity="end"
-    android:minHeight="?attr/actionBarSize"
-    android:orientation="horizontal"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+    android:orientation="horizontal">
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/textViewDate"
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginEnd="5dp"
         android:layout_marginRight="5dp"
-        android:gravity="center" />
+        android:gravity="center"
+        android:textAppearance="?attr/textAppearanceTitleLarge"
+        android:textColor="?attr/colorOnPrimarySurface" />
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/textViewTime"
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginEnd="5dp"
         android:layout_marginRight="5dp"
-        android:gravity="center" />
+        android:gravity="center"
+        android:textAppearance="?attr/textAppearanceTitleLarge"
+        android:textColor="?attr/colorOnPrimarySurface" />
 </LinearLayout>

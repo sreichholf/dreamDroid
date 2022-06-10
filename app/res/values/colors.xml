@@ -86,7 +86,7 @@
     <color name="md_theme_dark_onErrorContainer">#FFDAD4</color>
     <color name="md_theme_dark_background">#1B1B1E</color>
     <color name="md_theme_dark_onBackground">#E4E2E6</color>
-    <color name="md_theme_dark_surface">#1B1B1E</color>
+    <color name="md_theme_dark_surface">#2B2B2E</color>
     <color name="md_theme_dark_onSurface">#E4E2E6</color>
     <color name="md_theme_dark_surfaceVariant">#44464E</color>
     <color name="md_theme_dark_onSurfaceVariant">#C5C6D0</color>

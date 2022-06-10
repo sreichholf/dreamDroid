@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <com.google.android.material.tabs.TabLayout
+        android:background="?attr/colorOnSurfaceInverse"
         android:id="@+id/tab_layout"
         app:tabMode="scrollable"
         android:layout_width="match_parent"
