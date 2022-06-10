@@ -192,15 +192,11 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 break;
 
             case R.id.menu_navigation_settings:
-                if (!isTablet()) {
-                    intent = new Intent(mActivity, SimpleToolbarFragmentActivity.class);
-                    intent.putExtra("fragmentClass", MyPreferenceFragment.class);
-                    intent.putExtra("titleResource", R.string.settings);
-                    mActivity.startActivity(intent);
-                } else {
-                    clearBackStack();
-                    getMainActivity().showDetails(MyPreferenceFragment.class);
-                }
+                intent = new Intent(mActivity, SimpleToolbarFragmentActivity.class);
+                intent.putExtra("fragmentClass", MyPreferenceFragment.class);
+                intent.putExtra("titleResource", R.string.settings);
+                mActivity.startActivity(intent);
+
                 break;
 
             case R.id.menu_navigation_message:
