@@ -25,6 +25,7 @@
         android:clickable="true"
         android:foreground="?attr/selectableItemBackground"
         app:cardPreventCornerOverlap="false"
+        app:cardBackgroundColor="?attr/colorButtonNormal"
         app:contentPadding="0dp">
 
         <TextView
