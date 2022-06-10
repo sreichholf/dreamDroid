@@ -90,6 +90,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            style="@style/Widget.Material3.FloatingActionButton.Primary"
             android:id="@+id/fab_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -102,6 +103,7 @@
             app:pressedTranslationZ="12dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            style="@style/Widget.Material3.FloatingActionButton.Primary"
             android:id="@+id/fab_reload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
