@@ -263,7 +263,6 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	protected boolean onItemSelected(int id) {
 		boolean consumed = true;
 		int timeFormat = DateFormat.is24HourFormat(getContext()) ? TimeFormat.CLOCK_24H : TimeFormat.CLOCK_12H;
-		Calendar calendar;
 		switch (id) {
 			case Statics.ITEM_SAVE:
 				saveTimer();
@@ -278,9 +277,8 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				break;
 
 			case Statics.ITEM_PICK_BEGIN_DATE:
-				calendar = getCalendar(mBegin);
 				MaterialDatePicker datePickerDialogBegin = MaterialDatePicker.Builder.datePicker()
-						.setSelection(calendar.getTimeInMillis())
+						.setSelection(getCalendar(mBegin).getTimeInMillis())
 						.build();
 				datePickerDialogBegin.addOnPositiveButtonClickListener(v -> {
 					onDateSet(true, (Long) datePickerDialogBegin.getSelection());
@@ -289,10 +287,9 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				break;
 
 			case Statics.ITEM_PICK_BEGIN_TIME:
-				calendar = getCalendar(mBegin);
 				MaterialTimePicker timePickerDialogBegin = new MaterialTimePicker.Builder()
-						.setHour(calendar.get(Calendar.HOUR_OF_DAY))
-						.setMinute(calendar.get(Calendar.MINUTE))
+						.setHour(getCalendar(mBegin).get(Calendar.HOUR_OF_DAY))
+						.setMinute(getCalendar(mBegin).get(Calendar.MINUTE))
 						.setTimeFormat(timeFormat)
 						.build();
 				timePickerDialogBegin.addOnPositiveButtonClickListener(v -> {
@@ -303,9 +300,8 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				break;
 
 			case Statics.ITEM_PICK_END_DATE:
-				calendar = getCalendar(mEnd);
 				MaterialDatePicker datePickerDialogEnd = MaterialDatePicker.Builder.datePicker()
-						.setSelection(calendar.getTimeInMillis())
+						.setSelection(getCalendar(mEnd).getTimeInMillis())
 						.build();
 				datePickerDialogEnd.addOnPositiveButtonClickListener(v -> {
 					onDateSet(false, (Long) datePickerDialogEnd.getSelection());
@@ -314,10 +310,9 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				break;
 
 			case Statics.ITEM_PICK_END_TIME:
-				calendar = getCalendar(mEnd);
 				MaterialTimePicker timePickerDialogEnd = new MaterialTimePicker.Builder()
-						.setHour(calendar.get(Calendar.HOUR_OF_DAY))
-						.setMinute(calendar.get(Calendar.MINUTE))
+						.setHour(getCalendar(mEnd).get(Calendar.HOUR_OF_DAY))
+						.setMinute(getCalendar(mEnd).get(Calendar.MINUTE))
 						.setTimeFormat(timeFormat)
 						.build();
 				timePickerDialogEnd.addOnPositiveButtonClickListener(v -> {
