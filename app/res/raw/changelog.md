@@ -1,3 +1,9 @@
+## 1.6.444
+* UPD: Color theme improvments
+* UPD/FIX: number of columns and general visuals in Zap layout
+* UPD: Settings are now always opened in a dedicated Activity
+* FIX: On large screens time selection in "EPG" view was invisible (but actually there)
+
 ## 1.6.443
 * NEW: Add preference for enabling "Dynamic Theme" mode on Android >= 12 (this was default enabled in all previous 1.6.x versions)
 * IMP: Bigger picons on bigger screens

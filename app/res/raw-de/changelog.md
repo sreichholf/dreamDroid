@@ -1,3 +1,9 @@
+## 1.6.444
+* UPD: Farbschema an diversen Stellen angepasst/verbessert
+* UPD/FIX: Zahl der Spalten im Zap Layout und sowie optische Verbesserungen
+* UPD: Die Einstellungen werden jetzt immer in einem eigenen Bildschirm geöffnet
+* FIX: Auf großen Bildschirmen (z.B. Tablets) war im EPG Modus die Zeitauswahl unsichtbar
+
 ## 1.6.443
 * NEU: Einstellung zur Aktivierung dynamischer Farbschemen für Android >= 12 (war den bisherigen 1.6.x Versionen standardmäßig aktiviert)
 * UPD: Größere Picons auf größeren Bildschirmen (Tablets, etc)
