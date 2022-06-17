@@ -41,6 +41,9 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		if (isCancelled() || taskHandler == null)
 			return false;
 
+		if (!taskHandler.isAdded())
+			return false;
+
 		AbstractListRequestHandler handler = new ServiceListRequestHandler();
 		String ref = taskHandler.getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
 		addBouquets(handler, ref, mBouquets.tv);
@@ -69,6 +72,8 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 	public interface GetBoquetListTaskHandler extends AsyncHttpTaskBaseHandler {
 		@NonNull
 		Resources getResources();
+
+		boolean isAdded();
 
 		void onBouquetListReady(boolean result, Bouquets bouquets, String errorText);
 	}
