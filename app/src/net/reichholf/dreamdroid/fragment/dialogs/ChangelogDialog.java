@@ -34,14 +34,18 @@ public class ChangelogDialog extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
 				.setTitle(R.string.changelog)
-				.setMessage(R.string.loading)
-				.setPositiveButton(R.string.close, (dialog, which) -> dismiss());
+				.setMessage(R.string.loading);
 		return builder.create();
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
+		final Markwon markwon = Markwon.create(getContext());
+		markwon.setMarkdown(getDialog().findViewById(android.R.id.message), getChangelog());
+	}
+
+	public String getChangelog() {
 		String changelog = "";
 		InputStream is = getResources().openRawResource(R.raw.changelog);
 		try {
@@ -56,7 +60,6 @@ public class ChangelogDialog extends DialogFragment {
 			e.printStackTrace();
 		}
 		IOUtils.closeQuietly(is); // don't forget to close your streams
-		final Markwon markwon = Markwon.create(getContext());
-		markwon.setMarkdown(getDialog().findViewById(android.R.id.message), changelog);
+		return changelog;
 	}
 }
