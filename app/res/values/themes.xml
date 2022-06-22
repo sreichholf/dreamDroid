@@ -55,9 +55,6 @@
         <item name="title_color">#ff737373</item>
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
         <item name="ic_import_export">@drawable/ic_import_export_light</item>
-        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog</item>
-        <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert</item>
-        <item name="dialogTheme">@style/Theme.DreamDroid.Dialog</item>
         <item name="floatingActionButtonStyle">@style/FloatingActionButton.Primary</item>
         <item name="colorPrimary">@color/md_theme_light_primary</item>
         <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
@@ -115,18 +112,6 @@
         <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>
     </style>
 
-    <style name="Theme.DreamDroid.Dialog.Alert" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="android:windowCloseOnTouchOutside">true</item>
-    </style>
-
-    <style name="Theme.DreamDroid.Dialog" parent="Theme.Material3.Light.Dialog">
-        <item name="android:windowCloseOnTouchOutside">true</item>
-    </style>
-
-    <style name="Theme.DreamDroid.BottomSheetDialog" parent="Theme.Material3.Light.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/Widget.Material3.BottomSheet.Modal</item>
-    </style>
-
     <style name="Theme.DreamDroid.NoTitle" parent="Theme.DreamDroid">
         <item name="windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
@@ -148,9 +133,6 @@
         <item name="android:windowActionBarOverlay">true</item>
         <item name="windowActionBarOverlay">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
-        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog.Night</item>
-        <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert.Night</item>
-        <item name="dialogTheme">@style/Theme.DreamDroid.Dialog.Night</item>
     </style>
 
     <style name="Theme.Dreamdroid.LeanbackPreferences" parent="Theme.Leanback">
@@ -249,9 +231,6 @@
         <item name="title_color">#ffd6d6d6</item>
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
         <item name="ic_import_export">@drawable/ic_import_export_dark</item>
-        <item name="bottomSheetDialogTheme">@style/Theme.DreamDroid.BottomSheetDialog.Night</item>
-        <item name="alertDialogTheme">@style/Theme.DreamDroid.Dialog.Alert</item>
-        <item name="dialogTheme">@style/Theme.DreamDroid.Dialog</item>
         <item name="floatingActionButtonStyle">@style/FloatingActionButton.Primary</item>
 
         <item name="textAppearanceHeadline1">@style/TextAppearance.MaterialComponents.Headline1
@@ -302,17 +281,5 @@
         <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.DreamDroid.LargeComponent</item>
 
         <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>
-    </style>
-
-    <style name="Theme.DreamDroid.Dialog.Night" parent="Theme.Material3.Dark.Dialog">
-        <item name="android:windowCloseOnTouchOutside">true</item>
-    </style>
-
-    <style name="Theme.DreamDroid.BottomSheetDialog.Night" parent="Theme.Material3.Dark.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/Widget.Material3.BottomSheet.Modal</item>
-    </style>
-
-    <style name="Theme.DreamDroid.Dialog.Alert.Night" parent="Theme.Material3.Dark.Dialog.Alert">
-        <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 </resources>

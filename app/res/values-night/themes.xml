@@ -2,8 +2,5 @@
 <resources>
 
     <style name="Theme.DreamDroid" parent="Theme.DreamDroid.Night" />
-    <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid.Dialog.Night" />
-    <style name="Theme.DreamDroid.BottomSheetDialog" parent="Theme.DreamDroid.BottomSheetDialog.Night" />
-    <style name="Theme.DreamDroid.Dialog.Alert" parent="Theme.DreamDroid.Dialog.Alert.Night" />
 
 </resources>
