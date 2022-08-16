@@ -295,7 +295,6 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				timePickerDialogBegin.addOnPositiveButtonClickListener(v -> {
 					onTimeSet(true, timePickerDialogBegin.getHour(), timePickerDialogBegin.getMinute());
 				});
-				//TimePickerDialog timePickerDialogBegin = TimePickerDialog.newInstance((timePickerDialog, hour, minute, second) -> TimerEditFragment.this.onTimeSet(true, hour, minute), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				getMultiPaneHandler().showDialogFragment(timePickerDialogBegin, "dialog_pick_begin_time");
 				break;
 
