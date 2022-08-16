@@ -144,6 +144,7 @@
             android:theme="@style/Theme.DreamDroid.Player"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleTop"
+            android:supportsPictureInPicture="true"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|screenLayout|uiMode|smallestScreenSize"
             android:exported="false" />
 

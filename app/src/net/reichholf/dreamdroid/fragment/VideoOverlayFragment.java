@@ -740,7 +740,17 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mHandler.postDelayed(mAutoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT);
 	}
 
+	@Override
+	public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+		super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+		hideOverlays();
+	}
+
 	public void showOverlays() {
+		if (getActivity().isInPictureInPictureMode()) {
+			hideOverlays();
+			return;
+		}
 		View view = getView();
 		if (view == null)
 			return;

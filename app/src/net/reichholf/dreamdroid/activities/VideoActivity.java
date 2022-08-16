@@ -1,14 +1,17 @@
 package net.reichholf.dreamdroid.activities;
 
 import android.annotation.TargetApi;
+import android.app.PictureInPictureParams;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.util.Rational;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.SurfaceView;
@@ -320,6 +323,14 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		lp.height = (int) Math.floor(dh);
 		surfaceFrame.setLayoutParams(lp);
 
+		final Rect sourceRectHint = new Rect();
+		mSurfaceView.getGlobalVisibleRect(sourceRectHint);
+		setPictureInPictureParams(new PictureInPictureParams.Builder()
+				.setAspectRatio(new Rational(mVideoVisibleWidth, mVideoVisibleHeight))
+				.setSourceRectHint(sourceRectHint)
+				.setAutoEnterEnabled(true)
+				.build());
+
 		surface.invalidate();
 		subtitlesSurface.invalidate();
 	}
@@ -358,8 +369,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	@Override
-	public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
-		super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+	public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
+		super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
 		changeSurfaceLayout();
 	}
 
