@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="description">Beschreibung</string>
     <string name="title">Titel</string>
     <string name="mo">Mo</string>
     <string name="app_name_release">DreamDroid</string>
-
     <string-array name="servicelist">
         <item>Bouquets (TV)</item>
         <item>Provider (TV)</item>
@@ -14,7 +12,6 @@
         <item>Provider (Radio)</item>
         <item>Alle Kanäle (Radio)</item>
     </string-array>
-
     <string name="timer">Timer</string>
     <string name="mediaplayer">Mediaplayer</string>
     <string name="play">Play</string>
@@ -32,14 +29,12 @@
     <string name="service">Kanal</string>
     <string name="afterevent">Anschlussereignis</string>
     <string name="location">Ort</string>
-
     <string-array name="afterevents">
         <item>Keines</item>
         <item>Standby</item>
         <item>Herunterfahren</item>
         <item>Automatisch</item>
     </string-array>
-
     <string name="begin_time">Startzeit</string>
     <string name="repeatings">Wiederholungen</string>
     <string name="end_time">Endzeit</string>
@@ -49,8 +44,8 @@
     <string name="send_message">Nachricht senden</string>
     <string name="save">Speichern</string>
     <string name="cancel">Abbrechen</string>
-    <string name="fetching_data">Abruf von Daten&#8230;</string>
-    <string name="parsing">Lese Daten&#8230;</string>
+    <string name="fetching_data">Abruf von Daten…</string>
+    <string name="parsing">Lese Daten…</string>
     <string name="get_content_error">Fehler beim Abrufen der Daten!</string>
     <string name="zap">Umschalten</string>
     <string name="browse_epg">EPG ansehen</string>
@@ -73,8 +68,8 @@
     <string name="user_long">Benutzername für die Anmeldung</string>
     <string name="pass">Passwort</string>
     <string name="pass_long">Passwort für die Anmeldung</string>
-    <string name="saving">Speichern. Bitte warten&#8230;</string>
-    <string name="deleting">Lösche. Bitte warten&#8230;</string>
+    <string name="saving">Speichern. Bitte warten…</string>
+    <string name="deleting">Lösche. Bitte warten…</string>
     <string name="delete_confirm">Wirklich löschen?</string>
     <string name="set_timer">Timer festlegen</string>
     <string name="home">Startseite</string>
@@ -83,7 +78,6 @@
     <string name="set_time_end">Enddatum und -zeit</string>
     <string name="apply">Übernehmen</string>
     <string name="reload">Neu laden</string>
-
     <string-array name="weekdays_short">
         <item>Mo</item>
         <item>Di</item>
@@ -102,7 +96,6 @@
         <item>Samstag</item>
         <item>Sonntag</item>
     </string-array>
-
     <string name="none">Keine</string>
     <string name="choose_days">Tage auswählen</string>
     <string name="mo_to_fr">Werktags</string>
@@ -126,14 +119,12 @@
     <string name="message_text_hint">Nachricht eingeben</string>
     <string name="send">Senden</string>
     <string name="type">Typ</string>
-
     <string-array name="message_types">
         <item>JaNein</item>
         <item>Warnung</item>
         <item>Info</item>
         <item>Fehler</item>
     </string-array>
-
     <string name="virtual_remote">Virt. Fernbedienung</string>
     <string name="login">Login</string>
     <string name="login_enabled">Login aktivieren</string>
@@ -163,7 +154,7 @@
     <string name="profile_add">Profil hinzufügen</string>
     <string name="profile_not_added">Profil konnte nicht hinzugefügt werden</string>
     <string name="profile_not_updated">Profil konnte nicht aktualisiert werden</string>
-    <string name="no_list_item">Es wurden keine Listeneinträge gefunden&#8230;</string>
+    <string name="no_list_item">Es wurden keine Listeneinträge gefunden…</string>
     <string name="locations_default_fallback">Fehler beim Laden von Orten, benutzt wird stattdessen der Standardwert :</string>
     <string name="tags">Tags</string>
     <string name="screenshot">Screenshot</string>
@@ -180,7 +171,7 @@
     <string name="set_default">Als Standard festlegen</string>
     <string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>
     <string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
-    <string name="loading">Lade&#8230;</string>
+    <string name="loading">Lade…</string>
     <string name="about">Über</string>
     <string name="license_gplv3">Lizenz:\nDreamdroid ist freie Software!\nLizensiert unter GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.de.html</string>
     <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
@@ -188,7 +179,7 @@
     <string name="connection">Verbindung</string>
     <string name="connection_state">Verbindungsstatus</string>
     <string name="not_available">Nicht verfügbar</string>
-    <string name="checking">prüfe&#8230;</string>
+    <string name="checking">prüfe…</string>
     <string name="error">FEHLER!</string>
     <string name="check_connectivity">Verbindung prüfen</string>
     <string name="version_too_low">Version &lt; 1.6</string>
@@ -205,11 +196,10 @@
     <string name="stream_host_long">Host/IP für Streaming (optional)</string>
     <string name="stream_current">Streame laufendes Programm</string>
     <string name="similar">Ähnliche</string>
-
     <string-array name="timer_state">
-        <item>wartet&#8230;</item>
-        <item>vorbereiten&#8230;</item>
-        <item>läuft&#8230;</item>
+        <item>wartet…</item>
+        <item>vorbereiten…</item>
+        <item>läuft…</item>
         <item>beendet</item>
         <item>deaktiviert</item>
     </string-array>
@@ -217,7 +207,6 @@
         <item>aufnehmen</item>
         <item>umschalten</item>
     </string-array>
-
     <string name="sleeptimer">Abschalttimer</string>
     <string name="current_volume">Lautstärke ist nun %s</string>
     <string name="muted">Stumm</string>
@@ -240,8 +229,8 @@
     <string name="force_tablet_layout">Tablet Layout erzwingen</string>
     <string name="mobile_imdb">Mobile Version von www.imdb.com benutzen</string>
     <string name="mobile_imdb_long">Benutze m.imdb.com statt www.imdb.com</string>
-    <string name="searching">Suche&#8230;</string>
-    <string name="searching_known_devices">Dreamboxen im lokalen Netzwerk werden gesucht. Dies kann einige Minuten in Anspruch nehmen&#8230;</string>
+    <string name="searching">Suche…</string>
+    <string name="searching_known_devices">Dreamboxen im lokalen Netzwerk werden gesucht. Dies kann einige Minuten in Anspruch nehmen…</string>
     <string name="autodiscover_dreamboxes">Automatische Konfiguration</string>
     <string name="autodiscovery_failed">Leider konnte keine Dreambox im lokalen Netzwerk gefunden werden!</string>
     <string name="add_all">Alle hinzufügen</string>
@@ -258,7 +247,7 @@
     <string name="sent_from_dreamdroid">Von dreamDroid gesendet (%s)</string>
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
     <string name="confirm_app_close">Verlassen der App bestätigen</string>
-    <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen bevor die App durch drücken von &quot;zurück&quot; beendet wird.</string>
+    <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen bevor die App durch drücken von "zurück" beendet wird.</string>
     <string name="login_movies">Login (Filme)</string>
     <string name="ssl_movies">https (Filme)</string>
     <string name="login_live">Login (Live)</string>
@@ -325,7 +314,6 @@
     <string name="next_lower">nächster</string>
     <string name="playback_failed">Wiedergabe fehlgeschlagen!</string>
     <string name="previous_lower">vorheriger</string>
-
     <string-array name="theme_option_entries">
         <item>Tag</item>
         <item>Nacht</item>
@@ -333,7 +321,6 @@
     </string-array>
     <string name="theme">Tag/Nacht Thema</string>
     <string name="theme_long">Tag/Nacht Thema wählen</string>
-
     <string-array name="hw_accel_entries">
         <item>Deaktiviert</item>
         <item>Automatisch</item>
@@ -388,4 +375,5 @@
     <string name="radio">Radio</string>
     <string name="dynamic_theme_colors_long">Dynamisches Farbschema nutzen\nEine Änderung dieser Einstellung führt zum NEUSTART der App!\n</string>
     <string name="dynamic_theme_colors">Dynamisches Farbschema</string>
+    <string name="app_name_tv_release">dreamDroidTV</string>
 </resources>
