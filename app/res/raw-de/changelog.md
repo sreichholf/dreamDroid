@@ -1,3 +1,10 @@
+## 1.6.445
+* NEW: PIP für Android >= 8.0 aktiviert
+* UPD: Deutsche Übersetzung
+* FIX: Möglicher Fix für einen nicht nachvollziebaren Absturz
+* FIX: Themen-Bereinigung
+* IMP: Kleinere code cleanups
+
 ## 1.6.444
 * UPD: Farbschema an diversen Stellen angepasst/verbessert
 * UPD/FIX: Zahl der Spalten im Zap Layout und sowie optische Verbesserungen

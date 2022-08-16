@@ -1,3 +1,10 @@
+## 1.6.445
+* NEW: enable PIP for android >= 8.0
+* UPD: German translation
+* FIX: try to fix a crash I can't reproduce
+* FIX: Theming cleanups
+* IMP: minor code cleanups
+
 ## 1.6.444
 * UPD: Color theme improvments
 * UPD/FIX: number of columns and general visuals in Zap layout
