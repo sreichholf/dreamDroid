@@ -25,7 +25,7 @@ import net.reichholf.dreamdroid.fragment.VideoOverlayFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.video.VLCPlayer;
 
-import org.videolan.libvlc.IVLCVout;
+import org.videolan.libvlc.interfaces.IVLCVout;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
@@ -154,6 +154,7 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 
 	@Override
 	protected void onNewIntent(@NonNull Intent intent) {
+		super.onNewIntent(intent);
 		handleIntent(intent);
 	}
 
@@ -220,6 +221,17 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		mSurfaceView = null;
 		VLCPlayer.getMediaPlayer().getVLCVout().removeCallback(this);
 		VLCPlayer.getMediaPlayer().setEventListener(null);
+	}
+
+	protected void onMediaPlaying() {
+		if (mVideoWidth * mVideoHeight == 0) {
+			mVideoHeight = mPlayer.getVideoHeight();
+			mVideoWidth = mPlayer.getVideoWidth();
+			mVideoVisibleWidth = mVideoWidth;
+			mVideoVisibleHeight = mVideoHeight;
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+			setPictureInPictureParams(getPipParams());
 	}
 
 	protected void changeSurfaceLayout() {
@@ -323,16 +335,43 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		lp.height = (int) Math.floor(dh);
 		surfaceFrame.setLayoutParams(lp);
 
-		final Rect sourceRectHint = new Rect();
-		mSurfaceView.getGlobalVisibleRect(sourceRectHint);
-		setPictureInPictureParams(new PictureInPictureParams.Builder()
-				.setAspectRatio(new Rational(mVideoVisibleWidth, mVideoVisibleHeight))
-				.setSourceRectHint(sourceRectHint)
-				.setAutoEnterEnabled(true)
-				.build());
-
 		surface.invalidate();
 		subtitlesSurface.invalidate();
+	}
+
+	protected PictureInPictureParams getPipParams() {
+		final Rect sourceRectHint = new Rect();
+		mSurfaceView.getGlobalVisibleRect(sourceRectHint);
+		Rational ar = new Rational(mVideoWidth, mVideoHeight);
+		PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
+		if (ar.isFinite() && !ar.isZero())
+				builder.setAspectRatio(ar);
+		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2)
+			builder.setSourceRectHint(sourceRectHint);
+		return builder.build();
+	}
+
+	@TargetApi(Build.VERSION_CODES.O)
+	protected boolean doEnterPip() {
+		PictureInPictureParams params = getPipParams();
+		try {
+			enterPictureInPictureMode(params);
+		} catch (IllegalArgumentException e) {
+			enterPictureInPictureMode();
+		}
+		return true;
+	}
+	@Override
+	@TargetApi(Build.VERSION_CODES.R)
+	public boolean onPictureInPictureRequested() {
+		return doEnterPip();
+	}
+
+	@Override
+	@TargetApi(Build.VERSION_CODES.O)
+	protected void onUserLeaveHint() {
+		if (!isInPictureInPictureMode())
+			doEnterPip();
 	}
 
 	public void setFullScreen() {
@@ -395,6 +434,8 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	public void onEvent(@NonNull MediaPlayer.Event event) {
 		mOverlayFragment.onUpdateButtons();
 		switch(event.type){
+			case MediaPlayer.Event.Playing:
+				onMediaPlaying();
 			case MediaPlayer.Event.ESSelected:
 				if (event.getEsChangedType() == Media.VideoTrack.Type.Video)
 					changeSurfaceLayout();

@@ -37,7 +37,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.3.0'
     implementation 'androidx.fragment:fragment:1.4.1'
     implementation 'com.google.android.material:material:1.6.0'
-    implementation 'org.videolan.android:libvlc-all:3.1.12'
+    implementation 'org.videolan.android:libvlc-all:3.5.1'
     implementation 'com.simplecityapps:recyclerview-fastscroll:2.0.1'
     implementation 'com.github.StephenVinouze:MaterialNumberPicker:1.0.5'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
@@ -67,10 +67,10 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 445
-        versionName="1.6.445"
+        versionCode 446
+        versionName="1.6.446"
         minSdkVersion 17
-        targetSdkVersion 31
+        targetSdkVersion 33
         multiDexEnabled true
         sourceSets {
             main {

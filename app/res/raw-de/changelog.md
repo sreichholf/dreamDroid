@@ -1,3 +1,6 @@
+## 1.6.446
+* FIX: Absturz behoben der durch die PiP-Änderungen auftrat.
+
 ## 1.6.445
 * NEW: PIP für Android >= 8.0 aktiviert
 * UPD: Deutsche Übersetzung

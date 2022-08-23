@@ -1,3 +1,6 @@
+## 1.6.446
+* FIX: crash introduced with the latest pip changes
+
 ## 1.6.445
 * NEW: enable PIP for android >= 8.0
 * UPD: German translation
