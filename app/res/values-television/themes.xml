@@ -8,7 +8,7 @@
         <item name="android:textAlignment">center</item>
     </style>
 
-    <style name="Theme.Dreamdroid.FullscreenDialog" parent="Theme.DreamDroid.Dialog">
+    <style name="Theme.Dreamdroid.FullscreenDialog" parent="Theme.Material3.DayNight.Dialog">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowIsFloating">false</item>

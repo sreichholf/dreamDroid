@@ -48,7 +48,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/title"
-                android:layout_toEndOf="@id/picon"
                 android:orientation="horizontal">
 
                 <TextView
@@ -77,7 +76,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/event_now"
-                android:layout_toEndOf="@id/picon"
                 android:orientation="horizontal">
 
                 <TextView
