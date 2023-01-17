@@ -29,7 +29,7 @@ public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncT
 	@Nullable
 	protected String getErrorText() {
 		AsyncHttpTaskBaseHandler resultHandler = mTaskHandler.get();
-		if (resultHandler == null)
+		if (isCancelled() || resultHandler == null || resultHandler.getContext() == null)
 			return null;
 		String errorText;
 		if (getHttpClient().hasError())
