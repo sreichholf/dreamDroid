@@ -779,9 +779,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		View view = getView();
 		if (view == null)
 			return;
-		if (mServicesView != null)
+		if (mServicesView != null) {
 			mServicesView.getLayoutManager().scrollToPosition(getCurrentServiceIndex());
-		fadeInView(mServicesView);
+			fadeInView(mServicesView);
+		}
 		autohide();
 	}
 
