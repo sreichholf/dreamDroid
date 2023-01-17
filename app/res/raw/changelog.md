@@ -1,51 +1,14 @@
-## 1.6.446
-* FIX: crash introduced with the latest pip changes
-
-## 1.6.445
-* NEW: enable PIP for android >= 8.0
-* UPD: German translation
-* FIX: try to fix a crash I can't reproduce
-* FIX: Theming cleanups
-* IMP: minor code cleanups
-
-## 1.6.444
-* UPD: Color theme improvments
-* UPD/FIX: number of columns and general visuals in Zap layout
-* UPD: Settings are now always opened in a dedicated Activity
-* FIX: On large screens time selection in "EPG" view was invisible (but actually there)
-
-## 1.6.443
-* NEW: Add preference for enabling "Dynamic Theme" mode on Android >= 12 (this was default enabled in all previous 1.6.x versions)
-* IMP: Bigger picons on bigger screens
-* IMP: Modernize signal meter
-* IMP: Side navigation rail instead of bottom navigation for TV & Movies on larger screens
-* FIX/IMP: reimplement Multi-Column service list
-* FIX: misaligned floating action button when profile fails to connect
-* FIX/NEW: add "UP" navigation for providers by clicking the selected tab again (if no up is available this will reload the current bouquet)
-* FIX: Screenshot saving, caching and sharing
-* FIX: Add a bunch of missing accessibility descriptions
-* UPD: German translation
-* NEW/TV: Add "next" event to content description in service list
-
-## 1.6.442
-* FIX: end date/time could not be changed when editing a timer
-* FIX: localize time format in timer edit timer picker
-
-## 1.6.441
-* FIX: some typos in german translation
-* FIX: Crash on large screen devices when trying to open the TV & Movies
-* UPD: multiple updates to the home screen Widget
-  * FIX: widget not being added on Android >= 12
-  * FIX: configuration colors
-  * NEW: make appwidget reconfigurable
-  * NEW: add a proper preview image/layout
-* minor code cleanups
-
-## 1.6.440
-* NEW: Material 3 Theme and updated libraries
+## 1.6.447
+* NEW: Material 3 theme incl. dynamic color themes
 * NEW: Merge TV, Radio, Movies and Timer Management into a Sliding Tab
+* NEW: Numerous visual improvements
+* NEW: Enable PIP for android >= 8.0
 * NEW: You can now define an alternative ip/hostname based on the WiFi SSID you're connected to, thx to @basalt79
-* FIX: Use "Play/Pause" in Virtual Remote instead of "Play"
+* NEW-TV: Add "next" event to content description in service list
+* UPD: multiple updates to the homescreen widget
+* UPD: external libraries
+* FIX: Screenshot saving, caching and sharing
+* FIX: Add a bunch of missing accessibility descriptions 
 
 ## 1.5.439
 * UPD: Update google libraries, adjust themes

@@ -1,52 +1,15 @@
-## 1.6.446
-* FIX: Absturz behoben der durch die PiP-Änderungen auftrat.
-
-## 1.6.445
-* NEW: PIP für Android >= 8.0 aktiviert
-* UPD: Deutsche Übersetzung
-* FIX: Möglicher Fix für einen nicht nachvollziebaren Absturz
-* FIX: Themen-Bereinigung
-* IMP: Kleinere code cleanups
-
-## 1.6.444
-* UPD: Farbschema an diversen Stellen angepasst/verbessert
-* UPD/FIX: Zahl der Spalten im Zap Layout und sowie optische Verbesserungen
-* UPD: Die Einstellungen werden jetzt immer in einem eigenen Bildschirm geöffnet
-* FIX: Auf großen Bildschirmen (z.B. Tablets) war im EPG Modus die Zeitauswahl unsichtbar
-
-## 1.6.443
-* NEU: Einstellung zur Aktivierung dynamischer Farbschemen für Android >= 12 (war den bisherigen 1.6.x Versionen standardmäßig aktiviert)
-* UPD: Größere Picons auf größeren Bildschirmen (Tablets, etc)
-* UPD: Signal Meter moderninierst
-* UPD: Auf tablets wird die Navigation nun am linken statt am unteren Rand angezeigt
-* FIX: Mehrspaltige Kanallisten sind wieder verfügbar/funktional
-* FIX: Wenn ein Provider gewählt wurde kann durch ein drücken auf den "Provider" Tab einen ordner nach oben gesprungen werden (ist man ganz oben wird neu geladen)
-* FIX: Der schwebende Button z.B. zum hinzufügen einen Verbindungsprofils war in bestimmten Fällen links oben statt rechts unten
-* FIX: Screenshot können wieder gespeichert, zwischengespeichert und ordentlich geteilt werden
-* FIX: Eine ganze Reihe fehlender Beschreibungen für Bedienungshilfen wurde ergänzt
-* UPD: Deutsche Übersetzung
-* NEU/TV: Das nächste Event wird jetzt in der Kanalübersicht angezeigt
-
-## 1.6.442
-* FIX: Beim Bearbeiten eines Timers konnten Enddatum/zeit nicht geändert werden
-* FIX: Lokalisiertes Zeitformat in der Zeitauswahl bei Timern
-
-## 1.6.441
-* FIX: Tippfehler in der deutschen Übersetzung
-* FIX: Abstürze auf Geräten mit größeren Displays wenn TV & Filme ausgewählt wurde
-* UPD: Diverse Verbesserung am Homescreen-Widget
-  * FIX: Das Widget funktioniert jetzt auch auf Android >= 12
-  * FIX: Die Farben im Konfigurationsdialog sollten nun immer korrekt sein
-  * NEU: Das Widget kann nun neu konfiguriert werden
-  * NEU: ordentliches Vorschaubild ergänzt
-* Kleinere Code-Cleanups
-
-## 1.6.440
-* NEU: Material 3 Theme
+## 1.6.447
+* NEU: Material 3 Theme inkl dynamischem Farbtheme auf Android >= 12
+* NEU: Diverse Optische Verbesserung
 * NEU: TV, Radio, Movies und Timerverwaltung sind jetzt zusammengfasst
+* NEU: PIP für Android >= 8.0 aktiviert
 * NEU: Es kann ein/e alternative/r IP/Hostname für ein Verbindungsprofil auf Basis einer WLAN SSID definiert werden, Danke an @basalt79
-* FIX: "Play/Pause" in Virtueller Fernbedienung statt "Play"
+* NEU-TV: Das nächste Event wird jetzt in der Kanalübersicht angezeigt (Android/Fire TV)
+* UPD: Diverse Verbesserung und Fixes für das Homescreen-Widget
 * UPD: Externe Bibliotheken aktualisiert
+* FIX: Kleinere Code-Cleanups
+* FIX: Screenshots können wieder gespeichert, zwischengespeichert und ordentlich geteilt werden
+* FIX: Eine ganze Reihe fehlender Beschreibungen für Bedienungshilfen wurde ergänzt
 
 ## 1.5.439
 * UPD: Update einiger Google/Android Bibliotheken, Themes entsprechend angepasst
