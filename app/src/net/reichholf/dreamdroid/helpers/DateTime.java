@@ -27,12 +27,16 @@ import java.util.Locale;
  */
 public class DateTime {
 
+	public static int getRemaining(@Nullable String duration, @Nullable String eventstart) {
+		return getRemaining(duration, eventstart, null);
+	}
+
 	/**
 	 * @param duration
 	 * @param eventstart
 	 * @return
 	 */
-	public static int getRemaining(@Nullable String duration, @Nullable String eventstart) {
+	public static int getRemaining(@Nullable String duration, @Nullable String eventstart, @Nullable String nowTime) {
 		if(duration == null || Python.NONE.equals(duration)){
 			return 0;
 		}
@@ -42,8 +46,11 @@ public class DateTime {
 		if (eventstart != null && ! Python.NONE.equals(eventstart)) {
 			try {
 				long s = Double.valueOf(eventstart).longValue() * 1000;
-				Date now = new Date();
-
+				Date now = null;
+				if (nowTime != null)
+					now = DateTime.getDate(nowTime);
+				if (now == null)
+					 now = new Date();
 				if (now.getTime() >= s) {
 					d = d - ((now.getTime() - s) / 1000);
 					if (d <= 60) {

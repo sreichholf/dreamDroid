@@ -1,5 +1,7 @@
 ## 1.7.448
 * FIX: location selection for movies
+* FIX: crashes on TVs
+* NOTE: there are some open reported Bug, this is just fixing the most pressing issues
 
 ## 1.6.447
 * NEW: Material 3 theme incl. dynamic color themes

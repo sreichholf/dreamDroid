@@ -89,13 +89,15 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 
 			long max = -1;
 			long cur = -1;
+
+			String nowTime = service.getString(Event.KEY_CURRENT_TIME);
 			String duration = service.getString(Event.KEY_EVENT_DURATION);
 			String start = service.getString(Event.KEY_EVENT_START);
 
 			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
 				try {
 					max = Double.valueOf(duration).longValue() / 60;
-					cur = max - DateTime.getRemaining(duration, start);
+					cur = max - DateTime.getRemaining(duration, start, nowTime);
 				} catch (Exception e) {
 					Log.e(DreamDroid.LOG_TAG, e.toString());
 				}
