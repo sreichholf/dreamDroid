@@ -30,9 +30,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.progressindicator.LinearProgressIndicator
+        <ProgressBar
             android:id="@+id/service_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:background="@color/black_transparent"
             android:layout_width="match_parent"
             android:layout_height="4dp"
             android:layout_alignParentTop="true"
