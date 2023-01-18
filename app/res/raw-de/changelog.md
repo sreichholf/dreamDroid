@@ -1,7 +1,8 @@
 ## 1.7.448
 * FIX: Ordnerwahl bei Aufnahmen
 * FIX: Abstürze auf TVs
-* NOTIZ: Es gibt noch offenen Bugs, diese Release fixt lediglich die zwei dringendsten Probleme
+* FIX: Experimenteller Fix für einen lokal aktuell nicht nachvollziehbaren Bug
+* NOTIZ: Es gibt noch weitere, offene Bugs, dieses Release fixt nicht alle derzeit bekannten Fehler!
 
 ## 1.6.447
 * NEU: Material 3 Theme inkl dynamischem Farbtheme auf Android >= 12

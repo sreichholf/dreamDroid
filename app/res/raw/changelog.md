@@ -1,7 +1,8 @@
 ## 1.7.448
 * FIX: location selection for movies
 * FIX: crashes on TVs
-* NOTE: there are some open reported Bug, this is just fixing the most pressing issues
+* FIX: experimental fix for a bug i can't reproduce 
+* NOTE: there are some open reported Bug, this is just fixing SOME issues
 
 ## 1.6.447
 * NEW: Material 3 theme incl. dynamic color themes
@@ -10,7 +11,7 @@
 * NEW: Enable PIP for android >= 8.0
 * NEW: You can now define an alternative ip/hostname based on the WiFi SSID you're connected to, thx to @basalt79
 * NEW-TV: Add "next" event to content description in service list
-* UPD: multiple updates to the homescreen widget
+* UPD: multiple updates to the home screen widget
 * UPD: external libraries
 * FIX: Screenshot saving, caching and sharing
 * FIX: Add a bunch of missing accessibility descriptions 
