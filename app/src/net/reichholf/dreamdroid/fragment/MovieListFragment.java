@@ -54,7 +54,7 @@ import java.util.ArrayList;
  * @author sreichholf
  */
 public class MovieListFragment extends BaseHttpRecyclerFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
-
+	public static String ARGUMENT_LOCATION = "location";
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
 
@@ -74,7 +74,12 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
 
-		mCurrentLocation = "/media/hdd/movie/";
+		mCurrentLocation = DreamDroid.getLocations().get(
+					getArguments().getInt(
+							ARGUMENT_LOCATION,
+							DreamDroid.getLocations().indexOf(mCurrentLocation)
+					)
+				);
 		mReload = true;
 		if (savedInstanceState == null) {
 			mSelectedTags = new ArrayList<>();
@@ -109,8 +114,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 			case Statics.ITEM_TAGS:
 				pickTags();
 				return true;
-			case Statics.ITEM_SELECT_LOCATION:
-				selectLocation();
 			default:
 				return super.onItemSelected(id);
 		}
@@ -135,19 +138,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 				R.string.cancel);
 
 		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_tags");
-	}
-
-	protected void selectLocation() {
-		int len = DreamDroid.getLocations().size();
-		CharSequence[] locations = new CharSequence[len];
-		int[] locationIds = new int[locations.length];
-		for(int i=0; i<len;++i){
-			locations[i] = DreamDroid.getLocations().get(i);
-			locationIds[i] = i;
-		}
-
-		SimpleChoiceDialog f = SimpleChoiceDialog.newInstance(getString(R.string.choose_location), locations, locationIds);
-		getMultiPaneHandler().showDialogFragment(f, "dialog_pick_location");
 	}
 
 	@Override
@@ -244,16 +234,16 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		getAppCompatActivity().setTitle(mCurrentLocation);
 	}
 
-	public void onDialogAction(int action, Object details, String dialogTag) {
-		if("dialog_pick_location".equals(dialogTag)) {
-			String selectedLoc = DreamDroid.getLocations().get(action);
-			if (!selectedLoc.equals(mCurrentLocation)) {
-				mCurrentLocation = selectedLoc;
-				reload();
-			}
-			return;
+	public void setLocation(int index) {
+		String selectedLoc = DreamDroid.getLocations().get(index);
+		if (!selectedLoc.equals(mCurrentLocation)) {
+			mCurrentLocation = selectedLoc;
+			reload();
 		}
+		return;
+	}
 
+	public void onDialogAction(int action, Object details, String dialogTag) {
 		onMovieAction(action);
 	}
 

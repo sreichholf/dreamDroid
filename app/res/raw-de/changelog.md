@@ -1,3 +1,6 @@
+## 1.7.448
+* FIX: Ordnerwahl bei Aufnahmen
+
 ## 1.6.447
 * NEU: Material 3 Theme inkl dynamischem Farbtheme auf Android >= 12
 * NEU: Diverse Optische Verbesserung

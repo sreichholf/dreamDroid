@@ -130,6 +130,9 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		@Override
 		public Fragment createFragment(int position) {
 			Fragment f = new MovieListFragment();
+			Bundle args = new Bundle();
+			args.putInt(MovieListFragment.ARGUMENT_LOCATION, position);
+			f.setArguments(args);
 			return f;
 		}
 

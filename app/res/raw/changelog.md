@@ -1,3 +1,6 @@
+## 1.7.448
+* FIX: location selection for movies
+
 ## 1.6.447
 * NEW: Material 3 theme incl. dynamic color themes
 * NEW: Merge TV, Radio, Movies and Timer Management into a Sliding Tab
