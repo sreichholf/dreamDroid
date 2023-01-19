@@ -29,7 +29,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 
 import java.util.ArrayList;
 
-public class ServiceListPager extends BaseHttpFragment implements GetBouquetListTask.GetBoquetListTaskHandler {
+public class ServiceListPager extends BaseHttpFragment implements GetBouquetListTask.GetBouquetListTaskHandler {
 	private static final String MODE_TV = "TV";
 	private static final String MODE_RADIO = "Radio";
 	private static final String MODE_MOVIES = "Movies";

@@ -34,7 +34,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 
 	public GetBouquetListTask(AsyncHttpTaskBaseHandler taskHandler) {
 		super(taskHandler);
-		GetBoquetListTaskHandler t = (GetBoquetListTaskHandler) mTaskHandler.get();
+		GetBouquetListTaskHandler t = (GetBouquetListTaskHandler) mTaskHandler.get();
 		mTV = t.getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
 		mRadio = t.getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
 	}
@@ -43,7 +43,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 	@Override
 	protected Boolean doInBackground(Void... unused) {
 		mBouquets = new Bouquets();
-		GetBoquetListTaskHandler taskHandler = (GetBoquetListTaskHandler) mTaskHandler.get();
+		GetBouquetListTaskHandler taskHandler = (GetBouquetListTaskHandler) mTaskHandler.get();
 		if (isCancelled() || taskHandler == null)
 			return false;
 
@@ -66,14 +66,14 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 
 	@Override
 	protected void onPostExecute(Boolean result) {
-		GetBoquetListTaskHandler taskHandler = (GetBoquetListTaskHandler) mTaskHandler.get();
+		GetBouquetListTaskHandler taskHandler = (GetBouquetListTaskHandler) mTaskHandler.get();
 		if (isCancelled() || taskHandler == null)
 			return;
 
 		taskHandler.onBouquetListReady(result, mBouquets, getErrorText());
 	}
 
-	public interface GetBoquetListTaskHandler extends AsyncHttpTaskBaseHandler {
+	public interface GetBouquetListTaskHandler extends AsyncHttpTaskBaseHandler {
 		@NonNull
 		Resources getResources();
 
