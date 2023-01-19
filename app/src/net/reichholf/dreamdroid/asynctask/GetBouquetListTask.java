@@ -27,10 +27,16 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		}
 	}
 
+	protected String mTV;
+	protected String mRadio;
+
 	private Bouquets mBouquets;
 
 	public GetBouquetListTask(AsyncHttpTaskBaseHandler taskHandler) {
 		super(taskHandler);
+		GetBoquetListTaskHandler t = (GetBoquetListTaskHandler) mTaskHandler.get();
+		mTV = t.getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
+		mRadio = t.getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
 	}
 
 	@NonNull
@@ -45,10 +51,8 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 			return false;
 
 		AbstractListRequestHandler handler = new ServiceListRequestHandler();
-		String ref = taskHandler.getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
-		addBouquets(handler, ref, mBouquets.tv);
-		ref = taskHandler.getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
-		addBouquets(handler, ref, mBouquets.radio);
+		addBouquets(handler, mTV, mBouquets.tv);
+		addBouquets(handler, mRadio, mBouquets.radio);
 
 		return true;
 	}
