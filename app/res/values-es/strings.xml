@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="description">Descripción</string>
     <string name="title">Título</string>
     <string name="mo">Mo</string>
     <string name="app_name_release">DreamDroid</string>
-
     <string-array name="servicelist">
         <item>Bouquets (TV)</item>
         <item>Proveedor (TV)</item>
@@ -14,7 +12,6 @@
         <item>Proveedor (Radio)</item>
         <item>Todos los servicios (Radio)</item>
     </string-array>
-
     <string name="timer">Temporizador</string>
     <string name="mediaplayer">Mediaplayer</string>
     <string name="play">Reproducir</string>
@@ -32,14 +29,12 @@
     <string name="service">Servicio</string>
     <string name="afterevent">Después</string>
     <string name="location">Localización</string>
-
     <string-array name="afterevents">
         <item>Nada</item>
         <item>Reposo</item>
         <item>Reposo profundo</item>
         <item>Automático</item>
     </string-array>
-
     <string name="begin_time">Hora inicio</string>
     <string name="repeatings">Repeticiones</string>
     <string name="end_time">Hora final</string>
@@ -49,9 +44,9 @@
     <string name="send_message">Enviar mensaje</string>
     <string name="save">Guardar</string>
     <string name="cancel">Cancelar</string>
-    <string name="fetching_data">Obteniendo datos&#8230;</string>
-    <string name="parsing">Analizando&#8230;</string>
-    <string name="get_content_error">Error de conexión</string>
+    <string name="fetching_data">Obteniendo datos…</string>
+    <string name="parsing">Analizando…</string>
+    <string name="get_content_error">¡Error de conexión!</string>
     <string name="zap">Zapear</string>
     <string name="browse_epg">Buscar EPG</string>
     <string name="edit">Editar</string>
@@ -72,8 +67,8 @@
     <string name="user_long">Nombre usuario para acceso</string>
     <string name="pass">Contraseña</string>
     <string name="pass_long">Contraseña para acceso</string>
-    <string name="saving">Guardando. Por favor espera&#8230;</string>
-    <string name="deleting">Borrando. Por favor espera&#8230;</string>
+    <string name="saving">Guardando. Por favor espera…</string>
+    <string name="deleting">Borrando. Por favor espera…</string>
     <string name="delete_confirm">¿Confirma el borrado?</string>
     <string name="set_timer">Ajustar temporizador</string>
     <string name="home">Inicio</string>
@@ -82,7 +77,6 @@
     <string name="set_time_end">Fecha y hora final</string>
     <string name="apply">Aplicar</string>
     <string name="reload">Recargar</string>
-
     <string-array name="weekdays_short">
         <item>L</item>
         <item>M</item>
@@ -101,7 +95,6 @@
         <item>Sábado</item>
         <item>Domingo</item>
     </string-array>
-
     <string name="none">Ninguno</string>
     <string name="choose_days">Selecciona los días</string>
     <string name="mo_to_fr">Lunes a Viernes</string>
@@ -125,14 +118,12 @@
     <string name="message_text_hint">Introduce el texto del mensaje</string>
     <string name="send">Enviar</string>
     <string name="type">Tipo</string>
-
     <string-array name="message_types">
         <item>Sí / No</item>
         <item>Aviso</item>
         <item>Informativo</item>
         <item>Error</item>
     </string-array>
-
     <string name="virtual_remote">Control remoto virtual</string>
     <string name="login">Autentificación</string>
     <string name="login_enabled">Usar autentificación</string>
@@ -160,7 +151,7 @@
     <string name="profile_add">Añadir perfil</string>
     <string name="profile_not_added">No se ha podido añadir el perfil</string>
     <string name="profile_not_updated">No se ha podido actualizar el perfil</string>
-    <string name="no_list_item">No hay elementos que mostrar&#8230;</string>
+    <string name="no_list_item">No hay elementos que mostrar…</string>
     <string name="locations_default_fallback">Error cargando localizaciones, dejando por defecto:</string>
     <string name="tags">Etiquetas</string>
     <string name="screenshot">Captura de pantalla</string>
@@ -177,17 +168,17 @@
     <string name="set_default">Marcar por defecto</string>
     <string name="default_bouquet_set_to">Bouquet por defecto:</string>
     <string name="default_bouquet_not_set">¡No se pudo cargar el bouquet por defecto!</string>
-    <string name="loading">Cargando&#8230;</string>
+    <string name="loading">Cargando…</string>
     <string name="about">Acerca de</string>
     <string name="changelog">Registro de cambios</string>
-<string name="license">LICENSE:
+    <string name="license">LICENSE:
 \nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Código fuente disponible en: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Perfil</string>
     <string name="connection">Conexión</string>
     <string name="connection_state">Estado</string>
     <string name="not_available">No disponible</string>
-    <string name="checking">comprobando&#8230;</string>
+    <string name="checking">comprobando…</string>
     <string name="error">¡ERROR!</string>
     <string name="check_connectivity">Comprobar conectividad</string>
     <string name="version_too_low">Versión &lt; 1.6.5</string>
@@ -204,11 +195,10 @@
     <string name="stream_host_long">Host/ip para streaming (opcional)</string>
     <string name="stream_current">Stream actual</string>
     <string name="similar">Eventos similares</string>
-
     <string-array name="timer_state">
-        <item>en espera&#8230;</item>
-        <item>preparado&#8230;</item>
-        <item>funcionando&#8230;</item>
+        <item>en espera…</item>
+        <item>preparado…</item>
+        <item>funcionando…</item>
         <item>finalizado</item>
         <item>deshabilitado</item>
     </string-array>
@@ -216,7 +206,6 @@
         <item>grabar</item>
         <item>zapear</item>
     </string-array>
-
     <string name="sleeptimer">Temporizador desconexión</string>
     <string name="current_volume">Volumen actual %s</string>
     <string name="muted">Silenciado</string>
@@ -229,18 +218,18 @@
     <string name="profiles_long">Configurar perfiles de conexión</string>
     <string name="enable_instant_zap">Zapeo instantáneo</string>
     <string name="enable_instant_zap_long">Zapeo instantáneo en presión corta sobre el servicio</string>
-    <string name="wrong_activity">¡Llamada errónea! Por favor, regenere los accesos directos creados para dreamDroid</string>
+    <string name="wrong_activity">¡Llamada errónea! ¡Por favor, regenere los accesos directos creados para dreamDroid!</string>
     <string name="simple_remote">Vista simple control remoto</string>
     <string name="screenshot_saved">Captura de pantalla guardada en \'%s\'</string>
     <string name="imdb">IMDb</string>
-    <string name="missing_stream_player">No hay reproductor multimedia instalado en el dispositivo</string>
+    <string name="missing_stream_player">¡No hay ningún reproductor multimedia instalado en este dispositivo!</string>
     <string name="edit_profile">Editar perfil</string>
     <string name="force_tablet_layout_long">Forzar diseño optimizado para tablets</string>
     <string name="force_tablet_layout">Forzar diseño tablets</string>
     <string name="mobile_imdb">Versión móvil de imdb.com</string>
     <string name="mobile_imdb_long">Usar m.imdb.com en lugar de www.imdb.com</string>
-    <string name="searching">Buscando&#8230;</string>
-    <string name="searching_known_devices">Buscando Dreamboxes en tu red local. Esto puede tardar varios minutos&#8230;</string>
+    <string name="searching">Buscando…</string>
+    <string name="searching_known_devices">Buscando Dreamboxes en tu red local. Esto puede tardar varios minutos…</string>
     <string name="autodiscovery_failed">¡No se ha encontrado ninguna Dreambox en tu red local!</string>
     <string name="add_all">Añadir Todo</string>
     <string name="error_parsing">¡Error analizando los datos!</string>
@@ -254,16 +243,16 @@
     <string name="sent_as">Enviado como %s</string>
     <string name="watch_on_dream">Ver en la Dreambox</string>
     <string name="sent_from_dreamdroid">Enviado de dreamDroid en %s</string>
-    <string name="no_profile_available">¡No se ha encontrado ningún perfil de conexión! Por favor, configure al menos uno usando la aplicación principal</string>
+    <string name="no_profile_available">¡No se ha encontrado ningún perfil de conexión! ¡Configure al menos un perfil usando la aplicación principal!</string>
     <string name="confirm_app_close">Confirmar al salir</string>
-    <string name="confirm_app_close_long">Pedir confirmación antes de cerrar la aplicación al pulsar &quot;atrás&quot;</string>
+    <string name="confirm_app_close_long">Pedir confirmación antes de cerrar la aplicación al pulsar "atrás"</string>
     <string name="login_movies">Login (Películas)</string>
     <string name="ssl_movies">https (Películas)</string>
     <string name="login_live">Login (live)</string>
     <string name="appearance">Apariencia</string>
     <string name="usability">Usabilidad</string>
     <string name="use_picons">Usar Picons</string>
-<string name="use_picons_long">Habilitar el uso de picons en ciertas áreas.
+    <string name="use_picons_long">Habilitar el uso de picons en ciertas áreas.
 \nRequiere picons en /{ExternalStorageDir}/dreamDroid/picons</string>
     <string name="sync_picons">Sincronizar Picons</string>
     <string name="sync_picons_long">Sincronizar Picons en /{ExternalStorageDir}/dreamDroid/picons usando el perfil de conexión actual</string>
@@ -288,4 +277,101 @@
     <string name="disable">Deshabilitar</string>
     <string name="epg_sync">Sincronizando EPG</string>
     <string name="epg_sync_finished">EPG ha sido sincronizado</string>
+    <string name="auto_switch_profile_wifi_based_long">Cambia automáticamente de perfil según la conexión Wifi</string>
+    <string name="theme_change_restart">Para aplicar el tema modificado, se requiere reiniciar. ¿Reiniciar dreamDroid ahora\?</string>
+    <string name="integrated_video_player_long">Use el reproductor de video integrado cuando reproduzca streams</string>
+    <string name="license_gplv3">LICENCIA:
+\n¡DreamDroid es software libre!
+\nCon licencia de GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.html</string>
+    <string name="disable_fab_reload_long">Recargar se colocará en la barra de acción en su lugar</string>
+    <string name="app_name_tv_release">dreamDroidTV</string>
+    <string name="app_name_debug">dreamDroid DBG</string>
+    <string name="app_name_tv_debug">dreamDroidTV DBG</string>
+    <string name="ssid">Nombre Wi-Fi</string>
+    <string name="defaultOnNoWifi">Es el perfil predeterminado sin Wifi</string>
+    <string name="remote_widget_config_title_style">Seleccione el estilo del control remoto</string>
+    <string name="remote_widget_config_title_profile">Seleccione el perfil para usar con el widget</string>
+    <string name="auto_switch_profile_wifi_based">Cambio de perfil automático</string>
+    <string name="autodiscover_dreamboxes">Dreambox Autodiscovery</string>
+    <string name="play_button_as_play_pause">Usar el botón Reproducir como botón Reproducir/Pausar</string>
+    <string name="play_button_as_play_pause_long">Use el botón Reproducir como botón Reproducir/Pausar en el widget y en la aplicación remota</string>
+    <string name="disable_fab_reload">Deshabilitar el botón de recarga flotante</string>
+    <string name="reset_default">Restablecer predeterminado</string>
+    <string name="max_grid_cols">Máx. columnas de la lista de canales</string>
+    <string name="max_grid_cols_long">Número máximo de columnas en la lista de canales</string>
+    <string name="default_to_full_vrm_long">Use el diseño remoto virtual simple como predeterminado</string>
+    <string name="default_to_full_vrm">Remoto simple como predeterminado</string>
+    <string name="donate_sum">Donar %s</string>
+    <string name="donate">Donar</string>
+    <string name="donation_thanks">¡Muchas gracias por su donación!</string>
+    <string name="donation_error">¡Tu donación falló! ¡Lo siento por eso! (%s)</string>
+    <string name="restart">¿Reiniciar\?</string>
+    <string name="host_not_found">Host no encontrado</string>
+    <string name="share">Compartir</string>
+    <string name="auth_error">Error de autorización (¿Verificar usuario/contraseña\?)</string>
+    <string name="developer_settings_enable">Habilitar la configuración del desarrollador</string>
+    <string name="use_fake_picon">Usa un picon falso</string>
+    <string name="use_fake_picon_long">Use un picon falso (picon_default.png) para evitar problemas de derechos de autor en las capturas de pantalla</string>
+    <string name="host_unreach">No pudo conectar al servidor</string>
+    <string name="next_event">Próximo evento</string>
+    <string name="use_encoder">Usar codificador para streaming</string>
+    <string name="encoder_path">Ruta Stream</string>
+    <string name="audio_bitrate">Audio Bitrate</string>
+    <string name="video_bitrate">Video Bitrate</string>
+    <string name="encoder_port">Puerto stream</string>
+    <string name="settings_and_about">Configuración y Acerca de</string>
+    <string name="tools">Herramientas</string>
+    <string name="control">Control</string>
+    <string name="picon_sync_started">Comenzó la sincronización de Picon. Vea el área de notificación para más detalles.</string>
+    <string name="picon_sync_running">¡Todavía hay otra sincronización de picon en ejecución!</string>
+    <string name="streaming">Streaming</string>
+    <string name="integrated_video_player">Reproductor de vídeo integrado</string>
+    <string name="playback_failed">¡La reproducción falló!</string>
+    <string name="previous_lower">previo</string>
+    <string name="next_lower">siguiente</string>
+    <string name="theme">Tema de día/noche</string>
+    <string name="theme_long">Opciones de tema de día/noche</string>
+    <string name="video_use_hw_accel">Aceleración por hardware</string>
+    <string name="use_hw_accel">Decodificación acelerada</string>
+    <string name="use_hw_accel_long">Usar aceleración por hardware para decodificación de video (%s)</string>
+    <string name="video_player">Reproductor de video</string>
+    <string name="location_rationale_title">Ubicación requerida</string>
+    <string name="location_rationale">DreamDroid requiere la ubicación aproximada para el cambio automático de tema de día/noche.
+\n¡La ubicación no es parte de ningún registro, ni se usará para nada más que cambiar de tema!</string>
+    <string name="video_enable_gestures_long">Habilitar gestos para controlar el volumen y el brillo</string>
+    <string name="video_enable_gestures">Habilitar gestos</string>
+    <string name="online_picons">Usar picones en línea</string>
+    <string name="online_picons_long">No use picons sincronizados, cárguelos directamente a través de http(s). ¡Puede generar tráfico considerable!</string>
+    <string name="audio_track">Pista de audio</string>
+    <string name="subtitle">Subtitulo</string>
+    <string name="audio_tracks">Pistas de audio</string>
+    <string name="subtitles">Subtítulos</string>
+    <string name="no_tracks">¡No hay pistas disponibles!</string>
+    <string name="preferences">Preferencias</string>
+    <string name="backup">Copia de seguridad</string>
+    <string name="backup_current_profile">actual</string>
+    <string name="backup_export">Exportar</string>
+    <string name="backup_import">Importar</string>
+    <string name="backup_settings">Ajustes</string>
+    <string name="backup_profiles">Perfiles</string>
+    <string name="backup_export_settings">Exportar ajustes</string>
+    <string name="backup_export_profiles">Exportar perfiles</string>
+    <string name="backup_export_successful">Exportación exitosa</string>
+    <string name="backup_import_successful">Importación exitosa</string>
+    <string name="backup_export_missing_permission">¡Otorgue permiso de almacenamiento para usar esta función!</string>
+    <string name="licenses">Licencias</string>
+    <string name="encoder">Codificador</string>
+    <string name="direct_streaming">Streaming directo</string>
+    <string name="backup_import_error">¡La importación de la copia de seguridad falló!</string>
+    <string name="tv">TV</string>
+    <string name="radio">Radio</string>
+    <string name="live_movie">TV &amp; Películas</string>
+    <string name="detail">Detalle</string>
+    <string name="begin_date">Fecha de inicio</string>
+    <string name="end_date">Fecha de finalización</string>
+    <string name="encoder_pass">Contraseña del codificador</string>
+    <string name="dynamic_theme_colors_long">Usar colores de tema dinámicos
+\n¡Cambiar esto REINICIARÁ la aplicación!</string>
+    <string name="dynamic_theme_colors">Colores de tema dinámicos</string>
+    <string name="encoder_user">Usuario del codificador</string>
 </resources>
