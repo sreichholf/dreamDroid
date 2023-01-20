@@ -247,18 +247,18 @@
     <string name="sent_from_dreamdroid">Von dreamDroid gesendet (%s)</string>
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
     <string name="confirm_app_close">Verlassen der App bestätigen</string>
-    <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen bevor die App durch drücken von "zurück" beendet wird.</string>
+    <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen bevor die App durch Drücken von (OK) zurück beendet wird.</string>
     <string name="login_movies">Login (Filme)</string>
     <string name="ssl_movies">https (Filme)</string>
     <string name="login_live">Login (Live)</string>
     <string name="appearance">Erscheinungsbild</string>
-    <string name="usability">Usability</string>
+    <string name="usability">Useability</string>
     <string name="use_picons">Picons benutzen</string>
     <string name="use_picons_long">Wo möglich werden Picons angezeigt.\nErfordert Picons in /{Speicher}/dreamDroid/picons</string>
     <string name="sync_picons">Picons synchronisieren</string>
     <string name="sync_picons_long">Picons auf Basis des aktiven Verbindungsprofiles nach /{Speicher}/dreamDroid/picons synchronisieren</string>
-    <string name="sync_picons_path">Picons - Entfernter Pfad</string>
-    <string name="sync_picons_path_long">Pfad in welchem die Picons auf der Dreambox abgelegt wurden</string>
+    <string name="sync_picons_path">Picons - entfernter Pfad</string>
+    <string name="sync_picons_path_long">Pfad, in dem die Picons auf der Dreambox abgelegt wurden</string>
     <string name="connecting">Verbinde</string>
     <string name="connected">Verbunden</string>
     <string name="logged_in">Anmeldung erfolgreich</string>
@@ -282,7 +282,7 @@
     <string name="disable">Deaktivieren</string>
     <string name="developer_settings">Entwickler Einstellungen</string>
     <string name="default_to_full_vrm">Einfache Fernbedienung als Standard</string>
-    <string name="default_to_full_vrm_long">Die virtuelle Fernbedienung nutzt beim öffnen das einfache Layout</string>
+    <string name="default_to_full_vrm_long">Die virtuelle Fernbedienung nutzt beim Öffnen das einfache Layout</string>
     <string name="dump_xml">XML Inhalte ablegen</string>
     <string name="donate">Spenden</string>
     <string name="donate_sum">Spende %s</string>
@@ -326,9 +326,9 @@
         <item>Automatisch</item>
         <item>Erzwungen</item>
     </string-array>
-    <string name="video_use_hw_accel">Hardware Beschleunigung</string>
+    <string name="video_use_hw_accel">Hardware-Beschleunigung</string>
     <string name="use_hw_accel">Bechleunigtes dekodieren</string>
-    <string name="use_hw_accel_long">Hardware Beschleunigung zum dekodieren von Videos verwenden (%s)</string>
+    <string name="use_hw_accel_long">Hardware-Beschleunigung zum Dekodieren von Videos verwenden (%s)</string>
     <string name="video_player">Video Player</string>
     <string name="location_rationale_title">Standort wird benötigt</string>
     <string name="location_rationale">DreamDroid benötigt den ungefähren Standort für die automatische Tag/Nacht Schaltung des Themas.\nDie Standortdaten werden ausschließlich zur Wahl des richtigen Themas benutzt und nicht aufgezeichnet oder weitergeleitet!</string>

@@ -278,7 +278,7 @@
     <string name="ssl_movies">https (Movies)</string>
     <string name="login_live">Login (live)</string>
     <string name="appearance">Appearance</string>
-    <string name="usability">Usability</string>
+    <string name="usability">Useability</string>
     <string name="use_picons">Use Picons</string>
     <string name="use_picons_long">Enable the use of picons in certain areas.\nRequires picons in /{ExternalStorageDir}/dreamDroid/picons</string>
     <string name="sync_picons">Sync Picons</string>
