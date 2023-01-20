@@ -1,5 +1,6 @@
 ## 1.8.449
 # FIX: This should finally fix most of the annyoing crashes you've experienced recently
+# FIX: Favorite bouquet is properly loaded upon start again
 
 ## 1.7.448
 * FIX: location selection for movies
