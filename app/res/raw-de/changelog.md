@@ -1,7 +1,7 @@
 ## 1.8.449
-* FIX: Dieses Update sollte ein Großteil der nervigen Abstürze beheben
+* FIX: Dieses Update sollte einen Großteil der Abstürze beheben
 * FIX: Das Lieblingsbouquet wird beim Start wieder korrekt geladen
-* UPD: Verbesserung der deutschen Übersetzung (danke Hilmar B.)
+* UPD: Verbesserung der deutschen Übersetzung (Danke Hilmar B.)
 
 ## 1.7.448
 * FIX: Ordnerwahl bei Aufnahmen
