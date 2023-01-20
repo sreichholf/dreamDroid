@@ -1,3 +1,6 @@
+## 1.8.449
+* FIX: Dieses Update sollte ein Großteil der nervigen Abstürze beheben
+
 ## 1.7.448
 * FIX: Ordnerwahl bei Aufnahmen
 * FIX: Abstürze auf TVs

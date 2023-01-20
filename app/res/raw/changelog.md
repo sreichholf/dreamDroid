@@ -1,3 +1,6 @@
+## 1.8.449
+# FIX: This should finally fix most of the annyoing crashes you've experienced recently
+
 ## 1.7.448
 * FIX: location selection for movies
 * FIX: crashes on TVs
