@@ -95,6 +95,14 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 				return mItems.size();
 			return 0;
 		}
+
+		public int indexOf(@NonNull String ref) {
+			for (ExtendedHashMap bouquet : mItems) {
+				if (ref != null && ref.equals(bouquet.get(Service.KEY_REFERENCE)))
+					return mItems.indexOf(bouquet);
+			}
+			return -1;
+		}
 	}
 
 	public class MovieListAdapter extends FragmentStateAdapter {
@@ -322,6 +330,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 		mServicelistAdapter.notifyDataSetChanged();
 		mPager.setAdapter(mServicelistAdapter);
+		String detailReference = DreamDroid.getCurrentProfile().getDefaultRef();
+		int idx = mServicelistAdapter.indexOf(detailReference);
+		if (idx >= 0)
+			mPager.setCurrentItem(idx);
+
 		attachTabLayoutMediator();
 	}
 
