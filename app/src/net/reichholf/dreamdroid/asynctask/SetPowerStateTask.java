@@ -38,7 +38,7 @@ public class SetPowerStateTask extends AsyncHttpTaskBase<String, String, Boolean
 	@Override
 	protected void onPostExecute(Boolean result) {
 		PowerStateTaskHandler resultHandler = (PowerStateTaskHandler) mTaskHandler.get();
-		if (isCancelled() || resultHandler == null)
+		if (isInvalid(resultHandler))
 			return;
 
 		boolean success = result && mResult != null;

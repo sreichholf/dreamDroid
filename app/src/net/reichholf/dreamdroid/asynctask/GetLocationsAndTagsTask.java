@@ -14,17 +14,15 @@ public class GetLocationsAndTagsTask extends AsyncHttpTaskBase<Void, String, Boo
 	@Override
 	protected Boolean doInBackground(Void... params) {
 		GetLocationsAndTagsTaskHandler taskHandler = (GetLocationsAndTagsTaskHandler) mTaskHandler.get();
-		if (taskHandler == null)
+		if (isInvalid(taskHandler))
 			return false;
 		if (DreamDroid.getLocations().size() == 0) {
-			if (isCancelled())
-				return false;
 			publishProgress(taskHandler.getString(R.string.locations) + " - " + taskHandler.getString(R.string.fetching_data));
 			DreamDroid.loadLocations(getHttpClient());
 		}
 
 		if (DreamDroid.getTags().size() == 0) {
-			if (isCancelled())
+			if (isInvalid(taskHandler))
 				return false;
 			publishProgress(taskHandler.getString(R.string.tags) + " - " + taskHandler.getString(R.string.fetching_data));
 			DreamDroid.loadTags(getHttpClient());
@@ -36,16 +34,16 @@ public class GetLocationsAndTagsTask extends AsyncHttpTaskBase<Void, String, Boo
 	@Override
 	protected void onProgressUpdate(String... progress) {
 		GetLocationsAndTagsTaskHandler taskHandler = (GetLocationsAndTagsTaskHandler) mTaskHandler.get();
+		if (isInvalid(taskHandler))
+			return ;
 
-		if (isCancelled() || taskHandler == null)
-			return;
 		taskHandler.onGetLocationsAndTagsProgress(taskHandler.getString(R.string.loading), progress[0]);
 	}
 
 	@Override
 	protected void onPostExecute(Boolean result) {
 		GetLocationsAndTagsTaskHandler taskHandler = (GetLocationsAndTagsTaskHandler) mTaskHandler.get();
-		if (isCancelled() || taskHandler == null)
+		if (isInvalid(taskHandler))
 			return;
 		taskHandler.onLocationsAndTagsReady();
 	}

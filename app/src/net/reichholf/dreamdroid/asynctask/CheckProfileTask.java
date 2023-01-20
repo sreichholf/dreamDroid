@@ -22,7 +22,7 @@ public class CheckProfileTask extends AsyncHttpTaskBase<Void, String, ExtendedHa
 	@Override
 	protected ExtendedHashMap doInBackground(Void... params) {
 		CheckProfileTaskHandler taskHandler = (CheckProfileTaskHandler) mTaskHandler.get();
-		if (taskHandler == null)
+		if (taskHandler == null || taskHandler.getContext() == null || isCancelled())
 			return null;
 		publishProgress(taskHandler.getString(R.string.checking));
 		return CheckProfile.checkProfile(mProfile, taskHandler.getProfileCheckContext());

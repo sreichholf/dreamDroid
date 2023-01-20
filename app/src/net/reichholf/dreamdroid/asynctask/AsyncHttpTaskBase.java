@@ -29,7 +29,7 @@ public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncT
 	@Nullable
 	protected String getErrorText() {
 		AsyncHttpTaskBaseHandler resultHandler = mTaskHandler.get();
-		if (isCancelled() || resultHandler == null || resultHandler.getContext() == null)
+		if (isInvalid(resultHandler))
 			return null;
 		String errorText;
 		if (getHttpClient().hasError())
@@ -37,6 +37,10 @@ public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncT
 		else
 			errorText = resultHandler.getString(R.string.get_content_error);
 		return errorText;
+	}
+
+	protected boolean isInvalid(AsyncHttpTaskBaseHandler taskHandler) {
+		return isCancelled() || taskHandler == null || taskHandler.getContext() == null;
 	}
 
 	public interface AsyncHttpTaskBaseHandler {

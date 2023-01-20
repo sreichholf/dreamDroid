@@ -43,11 +43,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 	@Override
 	protected Boolean doInBackground(Void... unused) {
 		mBouquets = new Bouquets();
-		GetBouquetListTaskHandler taskHandler = (GetBouquetListTaskHandler) mTaskHandler.get();
-		if (isCancelled() || taskHandler == null)
-			return false;
-
-		if (!taskHandler.isAdded())
+		if (isCancelled())
 			return false;
 
 		AbstractListRequestHandler handler = new ServiceListRequestHandler();
@@ -67,7 +63,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 	@Override
 	protected void onPostExecute(Boolean result) {
 		GetBouquetListTaskHandler taskHandler = (GetBouquetListTaskHandler) mTaskHandler.get();
-		if (isCancelled() || taskHandler == null)
+		if (isInvalid(taskHandler))
 			return;
 
 		taskHandler.onBouquetListReady(result, mBouquets, getErrorText());

@@ -44,7 +44,7 @@ public class SimpleResultTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>
 
 	protected void onPostExecute(Boolean result) {
 		SimpleResultTaskHandler resultHandler = (SimpleResultTaskHandler) mTaskHandler.get();
-		if (isCancelled() || resultHandler == null)
+		if (isInvalid(resultHandler))
 			return;
 		if (!result || mResult == null)
 			mResult = new ExtendedHashMap();

@@ -21,7 +21,7 @@ public class DetectDevicesTask extends AsyncHttpTaskBase<Void, Void, ArrayList<P
 	@Override
 	protected void onPostExecute(ArrayList<Profile> profiles) {
 		DetectDevicesTaskHandler taskHandler = (DetectDevicesTaskHandler) mTaskHandler.get();
-		if (!isCancelled() && taskHandler != null)
+		if (!isInvalid(taskHandler))
 			taskHandler.onDevicesDetected(profiles);
 	}
 
