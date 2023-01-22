@@ -73,24 +73,32 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 		//mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
+		mCurrentLocation = null;
+		if (savedInstanceState == null) {
+			mSelectedTags = new ArrayList<>();
+			mOldTags = new ArrayList<>();
+		}
+		setInitialLocation(savedInstanceState);
+	}
 
-		mCurrentLocation = DreamDroid.getLocations().get(
+	protected void setInitialLocation(@Nullable Bundle savedInstanceState) {
+		int locationArg = getArguments().getInt(ARGUMENT_LOCATION, -1);
+		if (locationArg >= 0) {
+			mCurrentLocation = DreamDroid.getLocations().get(
 					getArguments().getInt(
 							ARGUMENT_LOCATION,
 							DreamDroid.getLocations().indexOf(mCurrentLocation)
 					)
-				);
-		mReload = true;
-		if (savedInstanceState == null) {
-			mSelectedTags = new ArrayList<>();
-			mOldTags = new ArrayList<>();
-			if(!(DreamDroid.getLocations().size() > 0) || !(DreamDroid.getLocations().indexOf(mCurrentLocation) >= 0)) {
+			);
+		} else if (savedInstanceState == null) {
+			if(mCurrentLocation != null && DreamDroid.getLocations().indexOf(mCurrentLocation) >= 0) {
 				for (String location : DreamDroid.getLocations()) {
 					mCurrentLocation = location;
 					break;
 				}
 			}
 		}
+		mReload = true;
 	}
 
 	@Override

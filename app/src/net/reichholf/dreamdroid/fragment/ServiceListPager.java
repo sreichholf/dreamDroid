@@ -22,6 +22,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
+import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -29,7 +30,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 
 import java.util.ArrayList;
 
-public class ServiceListPager extends BaseHttpFragment implements GetBouquetListTask.GetBouquetListTaskHandler {
+public class ServiceListPager extends BaseHttpFragment implements GetBouquetListTask.GetBouquetListTaskHandler, GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler {
 	private static final String MODE_TV = "TV";
 	private static final String MODE_RADIO = "Radio";
 	private static final String MODE_MOVIES = "Movies";
@@ -50,11 +51,23 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	@Nullable
 	TabLayoutMediator mTabLayoutMediator;
 	GetBouquetListTask mBouquetListTask;
+	GetLocationsAndTagsTask mLocationsAndTagsTask;
 
 	int mSelectedItemId;
 
 	@Nullable
 	private GetBouquetListTask.Bouquets mBouquets;
+
+	@Override
+	public void onGetLocationsAndTagsProgress(String title, String progress) {
+		// skip
+	}
+
+	@Override
+	public void onLocationsAndTagsReady() {
+		if (mMode.equals((MODE_MOVIES)))
+			onMoviesSelected();
+	}
 
 	public class ServicelistAdapter extends FragmentStateAdapter {
 		ArrayList<ExtendedHashMap> mItems;
@@ -210,7 +223,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			@Override
 			public void onTabReselected(TabLayout.Tab tab) {
 				if (mMode.equals(MODE_TV) || mMode.equals(MODE_RADIO)) {
-					ServiceListPageFragment f = (ServiceListPageFragment) getChildFragmentManager().findFragmentByTag("f" +mPager.getCurrentItem());
+					ServiceListPageFragment f = (ServiceListPageFragment) getChildFragmentManager().findFragmentByTag("f" + mPager.getCurrentItem());
 					f.upOrReload();
 				}
 			}
@@ -230,6 +243,12 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		}
 		mBouquetListTask = new GetBouquetListTask(this);
 		mBouquetListTask.execute();
+
+		if (mLocationsAndTagsTask != null) {
+			mLocationsAndTagsTask.cancel(true);
+		}
+		mLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
+		mLocationsAndTagsTask.execute();
 	}
 
 	@Override
@@ -261,9 +280,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			onTvSelected();
 		else if (mMode.equals(MODE_RADIO))
 			onRadioSelected();
-		else if (mMode.equals((MODE_MOVIES)))
-			onMoviesSelected();
-		else
+		else if (mMode.equals((MODE_TIMER)))
 			onTimerSelected();
 	}
 
@@ -365,6 +382,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	public void onMoviesSelected() {
 		mMode = MODE_MOVIES;
 		detachTabLayoutMediator();
+		if (DreamDroid.getLocations().size() == 0) {
+			showToast(getString(R.string.loading));
+			attachTabLayoutMediator();
+			return;
+		}
 		mMovielistAdapter.clear();
 		for (String location : DreamDroid.getLocations())
 			mMovielistAdapter.add(location);
