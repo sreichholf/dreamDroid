@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -747,7 +748,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	public void showOverlays() {
-		if (getActivity().isInPictureInPictureMode()) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && getActivity().isInPictureInPictureMode()) {
 			hideOverlays();
 			return;
 		}
