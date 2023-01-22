@@ -2,10 +2,15 @@ package net.reichholf.dreamdroid.tv.activities;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -17,11 +22,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
-import de.duenndns.ssl.JULHandler;
-import de.duenndns.ssl.MemorizingTrustManager;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
@@ -32,7 +32,7 @@ import okhttp3.internal.tls.OkHostnameVerifier;
  */
 
 public class MainActivity extends FragmentActivity {
-	private MemorizingTrustManager mTrustManager;
+	private DreamDroidTrustManager mTrustManager;
 
 	private int responseCount(Response response) {
 		int result = 1;
@@ -63,12 +63,8 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.tv_main);
 		try {
-			// set location of the keystore
-			JULHandler.initialize();
-			JULHandler.setDebugLogSettings(() -> false);
 			// register MemorizingTrustManager for HTTPS
-
-			mTrustManager = new MemorizingTrustManager(this);
+			mTrustManager = new DreamDroidTrustManager(this);
 
 			SSLContext sc = SSLContext.getInstance("TLS");
 			sc.init(null, new X509TrustManager[]{mTrustManager},

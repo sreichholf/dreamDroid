@@ -1,6 +1,12 @@
+## 1.9.451
+* IMPORTANT: for https using self-signed certs you will now have to check the "All certificates" option in the related connection profile
+* FIX: crashes related to self-signed ssl/https certificates
+* FIX: crash on android < 24 (Nougat) when trying to stream with the internal player
+* FIX: crashes related to the movies tab
+
 ## 1.8.449
-# FIX: This should finally fix most of the annyoing crashes you've experienced recently
-# FIX: Favorite bouquet is properly loaded upon start again
+* FIX: This should finally fix most of the annyoing crashes you've experienced recently
+* FIX: Favorite bouquet is properly loaded upon start again
 
 ## 1.7.448
 * FIX: location selection for movies

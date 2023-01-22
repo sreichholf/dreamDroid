@@ -31,6 +31,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 			DatabaseHelper.KEY_PROFILE_HOST,
 			DatabaseHelper.KEY_PROFILE_PORT,
 			DatabaseHelper.KEY_PROFILE_SSL,
+			DatabaseHelper.KEY_PROFILE_TRUST_ALL_CERTS,
 			DatabaseHelper.KEY_PROFILE_LOGIN,
 			DatabaseHelper.KEY_PROFILE_USER,
 			DatabaseHelper.KEY_PROFILE_PASS,
@@ -90,6 +91,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		editor.putString(DatabaseHelper.KEY_PROFILE_HOST, p.getHost());
 		editor.putString(DatabaseHelper.KEY_PROFILE_PORT, p.getPortString());
 		editor.putBoolean(DatabaseHelper.KEY_PROFILE_SSL, p.isSsl());
+		editor.putBoolean(DatabaseHelper.KEY_PROFILE_TRUST_ALL_CERTS, p.isAllCertsTrusted());
 		editor.putBoolean(DatabaseHelper.KEY_PROFILE_LOGIN, p.isLogin());
 		editor.putString(DatabaseHelper.KEY_PROFILE_USER, p.getUser());
 		editor.putString(DatabaseHelper.KEY_PROFILE_PASS, p.getPass());
@@ -139,6 +141,7 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		p.setHost(prefs.getString(DatabaseHelper.KEY_PROFILE_HOST, ""));
 		p.setPort(prefs.getString(DatabaseHelper.KEY_PROFILE_PORT, "80"));
 		p.setSsl(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_SSL, false));
+		p.setAllCertsTrusted(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_TRUST_ALL_CERTS, false));
 		p.setLogin(prefs.getBoolean(DatabaseHelper.KEY_PROFILE_LOGIN, false));
 		p.setUser(prefs.getString(DatabaseHelper.KEY_PROFILE_USER, "root"));
 		p.setPass(prefs.getString(DatabaseHelper.KEY_PROFILE_PASS, "dreambox"));

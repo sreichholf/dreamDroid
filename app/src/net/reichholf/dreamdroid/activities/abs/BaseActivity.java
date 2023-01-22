@@ -25,6 +25,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.helpers.PiconSyncService;
+import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -37,8 +38,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import de.duenndns.ssl.JULHandler;
-import de.duenndns.ssl.MemorizingTrustManager;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
@@ -54,11 +53,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	@NonNull
 	private static String TAG = BaseActivity.class.getSimpleName();
 
-	private MemorizingTrustManager mTrustManager;
-
-	static {
-		MemorizingTrustManager.setKeyStoreFile("private", "sslkeys.bks");
-	}
+	private DreamDroidTrustManager mTrustManager;
 
     private int responseCount(Response response) {
         int result = 1;
@@ -87,12 +82,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		try {
-			// set location of the keystore
-			JULHandler.initialize();
-			JULHandler.setDebugLogSettings(() -> false);
-			// register MemorizingTrustManager for HTTPS
-
-			mTrustManager = new MemorizingTrustManager(this);
+			mTrustManager = new DreamDroidTrustManager(this);
 
 			SSLContext sc = SSLContext.getInstance("TLS");
 			sc.init(null, new X509TrustManager[]{mTrustManager},
@@ -155,7 +145,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onPause() {
-		mTrustManager.unbindDisplayActivity(this);
 		super.onPause();
 		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true))
@@ -164,7 +153,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 
 	@Override
 	public void onResume() {
-		mTrustManager.bindDisplayActivity(this);
 		super.onResume();
 	}
 

@@ -51,6 +51,7 @@ public class ProfileEditFragment extends BaseFragment {
 	private EditText mStreamPort;
 	private EditText mFilePort;
 	private CheckBox mSsl;
+	private CheckBox mTrustAllCerts;
 	private CheckBox mLogin;
 	private CheckBox mStreamLogin;
 	private CheckBox mFileSsl;
@@ -74,6 +75,7 @@ public class ProfileEditFragment extends BaseFragment {
 	private EditText ssid;
 	private CheckBox defaultOnNoWifi;
 
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mHasFabMain = true;
@@ -93,6 +95,7 @@ public class ProfileEditFragment extends BaseFragment {
 		mStreamPort = view.findViewById(R.id.EditTextStreamPort);
 		mFilePort = view.findViewById(R.id.EditTextFilePort);
 		mSsl = view.findViewById(R.id.CheckBoxSsl);
+		mTrustAllCerts = view.findViewById(R.id.CheckBoxTrustAll);
 		mLogin = view.findViewById(R.id.CheckBoxLogin);
 		mStreamLogin = view.findViewById(R.id.CheckBoxLoginStream);
 		mUser = view.findViewById(R.id.EditTextUser);
@@ -166,10 +169,13 @@ public class ProfileEditFragment extends BaseFragment {
 
 	@SuppressLint("SetTextI18n")
 	private void onSslChanged(boolean checked) {
-		if (checked)
+		if (checked) {
 			mPort.setText("443");
-		else
+			mTrustAllCerts.setVisibility(View.VISIBLE);
+		} else {
 			mPort.setText("80");
+			mTrustAllCerts.setVisibility(View.GONE);
+		}
 	}
 
 	/**
@@ -211,6 +217,7 @@ public class ProfileEditFragment extends BaseFragment {
 		mHost.setText(mCurrentProfile.getHost());
 		mStreamHost.setText(mCurrentProfile.getStreamHostValue());
 		mSsl.setChecked(mCurrentProfile.isSsl());
+		mTrustAllCerts.setChecked(mCurrentProfile.isAllCertsTrusted());
 		mPort.setText(mCurrentProfile.getPortString());
 		mStreamPort.setText(mCurrentProfile.getStreamPortString());
 		mFilePort.setText(mCurrentProfile.getFilePortString());
@@ -241,7 +248,7 @@ public class ProfileEditFragment extends BaseFragment {
 		mCurrentProfile.setName(mProfile.getText().toString());
 		mCurrentProfile.setHost(mHost.getText().toString().trim());
 		mCurrentProfile.setStreamHost(mStreamHost.getText().toString().trim());
-		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked());
+		mCurrentProfile.setPort(mPort.getText().toString(), mSsl.isChecked(), mTrustAllCerts.isChecked());
 		mCurrentProfile.setStreamPort(mStreamPort.getText().toString());
 		mCurrentProfile.setFilePort(mFilePort.getText().toString());
 		mCurrentProfile.setLogin(mLogin.isChecked());

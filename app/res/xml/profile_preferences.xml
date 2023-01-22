@@ -6,7 +6,7 @@
         android:title="@string/profile_name"/>
 
     <EditTextPreference
-        android:defaultValue="dm.reichholf.net"
+        android:defaultValue="demo.dreamdroid.org"
         android:key="host"
         android:title="@string/host"/>
 
@@ -21,6 +21,12 @@
         android:defaultValue="false"
         android:key="ssl"
         android:title="@string/ssl_enabled"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="trust_all_certs"
+        android:dependency="ssl"
+        android:title="@string/trust_all_certs"/>
 
     <CheckBoxPreference
         android:defaultValue="false"

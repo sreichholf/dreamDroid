@@ -50,7 +50,6 @@ dependencies {
     implementation 'org.openhab.jmdns:jmdns:3.4.2'
     implementation 'io.noties.markwon:core:4.6.2'
     implementation project(':libraries:AttributionPresenter:library')
-    implementation project(':libraries:MemorizingTrustManager')
     implementation project(':libraries:simple-gauge-android:gaugelibrary')
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'net.sourceforge.streamsupport:android-retrostreams:1.7.1'
@@ -71,8 +70,8 @@ android {
     buildToolsVersion project.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        versionCode 449
-        versionName="1.8.449"
+        versionCode 451
+        versionName="1.9.451"
         minSdkVersion 17
         targetSdkVersion 33
         multiDexEnabled true

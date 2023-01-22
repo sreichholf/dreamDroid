@@ -1,5 +1,5 @@
 /* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
+ *
  * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
  * http://creativecommons.org/licenses/by-nc-sa/3.0/
  */
@@ -33,6 +33,7 @@ public class Profile implements Serializable {
 	private String mEncoderPass;
 	private boolean mLogin;
 	private boolean mSsl;
+	private boolean mAllCertsTrusted;
 	private boolean mStreamLogin;
 	private boolean mFileLogin;
 	private boolean mEncoderLogin;
@@ -66,20 +67,20 @@ public class Profile implements Serializable {
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
-		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, false, "stream", 554, false, "", "", 2500, 128);
+		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, false, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, false, "stream", 554, false, "", "", 2500, 128);
 	}
 
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
-				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
+				   String user, String pass, boolean ssl, boolean allCertsTrusted, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
 				   String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
-		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, encoderStream, encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate);
+		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, allCertsTrusted, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, encoderStream, encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate);
 	}
 
 	private void init(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
-					  String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
-					  boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
-					  String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
+				  String user, String pass, boolean ssl, boolean allCertsTrusted, boolean streamLogin, boolean fileLogin, boolean fileSsl,
+				  boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
+				  String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
 		mId = id;
 		mSessionId = null;
 		mCachedDeviceInfo = null;
@@ -97,6 +98,7 @@ public class Profile implements Serializable {
 		setUser(user);
 		setPass(pass);
 		setSsl(ssl);
+		setAllCertsTrusted(allCertsTrusted);
 		setSimpleRemote(simpleRemote);
 		setDefaultRefValues(defaultRef, defaultRefName);
 		setDefaultRef2Values(defaultRef2, defaultRef2Name);
@@ -120,7 +122,13 @@ public class Profile implements Serializable {
 	}
 
 	public void setPort(@NonNull String port, boolean ssl) {
-		mSsl = ssl;
+		setSsl(ssl);
+		setPort(port);
+	}
+
+	public void setPort(@NonNull String port, boolean ssl, boolean isAllCertsTrusted) {
+		setSsl(ssl);
+		setAllCertsTrusted(isAllCertsTrusted);
 		setPort(port);
 	}
 
@@ -241,6 +249,14 @@ public class Profile implements Serializable {
 
 	public void setSsl(boolean ssl) {
 		mSsl = ssl;
+	}
+
+	public boolean isAllCertsTrusted() {
+		return mAllCertsTrusted;
+	}
+
+	public void setAllCertsTrusted(boolean allCertsTrusted) {
+		mAllCertsTrusted = allCertsTrusted;
 	}
 
 	public boolean isFileLogin() {

@@ -1,3 +1,9 @@
+## 1.9.451
+* WICHTIG: Für https Verbindung mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil der Haken bei 'Alle Zertifikate' gesetzt werden!
+* FIX: Abstürze im Verbindung mit selbst signierten Zertifikaten
+* FIX: Abstürze unter < 24 (Nougat) wenn etwas mit dem internem Player abgespielt werden sollte
+* FIX: Abstürze bei Auswahl des 'Filme' Reiters
+
 ## 1.8.449
 * FIX: Dieses Update sollte einen Großteil der Abstürze beheben
 * FIX: Das Lieblingsbouquet wird beim Start wieder korrekt geladen

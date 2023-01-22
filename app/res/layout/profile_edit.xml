@@ -97,6 +97,13 @@
                 android:text="@string/ssl_enabled"/>
 
             <CheckBox
+                android:id="@+id/CheckBoxTrustAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/trust_all_certs"/>
+
+            <CheckBox
                 android:id="@+id/CheckBoxLogin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

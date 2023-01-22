@@ -376,4 +376,5 @@
     <string name="dynamic_theme_colors_long">Dynamisches Farbschema nutzen\nEine Änderung dieser Einstellung führt zum NEUSTART der App!\n</string>
     <string name="dynamic_theme_colors">Dynamisches Farbschema</string>
     <string name="app_name_tv_release">dreamDroidTV</string>
+    <string name="trust_all_certs">Alle Zertifikate</string>
 </resources>

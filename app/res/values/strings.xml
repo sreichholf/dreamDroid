@@ -395,4 +395,5 @@
     <string name="encoder_pass">Encoder password</string>
     <string name="dynamic_theme_colors_long">Use dynamic theme colors\nChanging this will RESTART the app!</string>
     <string name="dynamic_theme_colors">Dynamic theme colors</string>
+    <string name="trust_all_certs">All certificates</string>
 </resources>
