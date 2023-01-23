@@ -40,6 +40,7 @@ import net.reichholf.dreamdroid.fragment.dialogs.IndeterminateProgress;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
+import net.reichholf.dreamdroid.room.AppDatabase;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import java.util.ArrayList;
@@ -76,12 +77,10 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	public void onDialogAction(int action, Object details, String dialogTag) {
 		switch (action) {
 			case Statics.ACTION_DELETE_CONFIRMED:
-				DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
-				if (dbh.deleteProfile(mProfile)) {
-					showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
-				} else {
-					showToast(getString(R.string.profile_not_deleted) + " '" + mProfile.getName() + "'");
-				}
+				Profile.ProfileDao dao = AppDatabase.profiles(getContext());
+				dao.deleteProfile(mProfile);
+				showToast(getString(R.string.profile_deleted) + " '" + mProfile.getName() + "'");
+
 				// TODO Add error handling
 				reloadProfiles();
 				mProfile = Profile.getDefault();
@@ -161,13 +160,10 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	}
 
 	private void addAllDetectedDevices() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
+		Profile.ProfileDao dao = AppDatabase.profiles(getContext());
 		for (Profile p : mDetectedProfiles) {
-			if (dbh.addProfile(p)) {
-				showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
-			} else {
-				showToast(getText(R.string.profile_not_added) + " '" + p.getName() + "'");
-			}
+			dao.addProfile(p);
+			showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
 		}
 		reloadProfiles();
 	}
@@ -290,10 +286,10 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	}
 
 	private void reloadProfiles() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
+		Profile.ProfileDao dao = AppDatabase.profiles(getContext());
 		mProfiles.clear();
 		mProfileMapList.clear();
-		mProfiles.addAll(dbh.getProfiles());
+		mProfiles.addAll(dao.getProfiles());
 
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
 

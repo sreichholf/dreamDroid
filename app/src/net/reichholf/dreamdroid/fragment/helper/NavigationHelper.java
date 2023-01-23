@@ -25,13 +25,11 @@ import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
 import net.reichholf.dreamdroid.fragment.MediaPlayerFragment;
-import net.reichholf.dreamdroid.fragment.MovieListFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.SignalFragment;
-import net.reichholf.dreamdroid.fragment.TimerListFragment;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.fragment.ZapFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
@@ -274,10 +272,10 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 clearBackStack();
                 Bundle args = new Bundle();
 
-                String ref = DreamDroid.getCurrentProfile().getDefaultRef();
+                String ref = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
                 args.putString(Event.KEY_SERVICE_REFERENCE, ref);
 
-                String name = DreamDroid.getCurrentProfile().getDefaultRefName();
+                String name = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
                 args.putString(Event.KEY_SERVICE_NAME, name);
 
                 EpgBouquetFragment f = new EpgBouquetFragment();

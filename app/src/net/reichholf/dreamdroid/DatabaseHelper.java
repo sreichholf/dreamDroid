@@ -1,9 +1,9 @@
-/* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
- * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
- * http://creativecommons.org/licenses/by-nc-sa/3.0/
- */
-
+///* © 2010 Stephan Reichholf <stephan at reichholf dot net>
+// *
+// * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
+// * http://creativecommons.org/licenses/by-nc-sa/3.0/
+// */
+//
 package net.reichholf.dreamdroid;
 
 import android.content.ContentValues;
@@ -27,11 +27,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-
-/**
- * @author sre
- *
- */
+//
+///**
+// * @author sre
+// *
+// */
 public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 14;
 
@@ -277,12 +277,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				upgrade13to14(db);
 				oldVersion ++ ;
 			}
-
-			if (oldVersion != DATABASE_VERSION){ //this should never happen...
-				emergencyRecovery(db);
-			}
-
-
 		} catch (SQLiteException e) {
 			Log.e(LOG_TAG, "onUpgrade: SQLiteException, recreating db. ", e);
 			Log.e(LOG_TAG, "(oldVersion was " + oldVersion + ")");
@@ -316,10 +310,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		values.put(KEY_PROFILE_FILE_LOGIN, p.isFileLogin());
 		values.put(KEY_PROFILE_FILE_SSL, p.isFileSsl());
 		values.put(KEY_PROFILE_SIMPLE_REMOTE, p.isSimpleRemote());
-		values.put(KEY_PROFILE_DEFAULT_REF, p.getDefaultRef());
-		values.put(KEY_PROFILE_DEFAULT_REF_NAME, p.getDefaultRefName());
-		values.put(KEY_PROFILE_DEFAULT_REF_2, p.getDefaultRef2());
-		values.put(KEY_PROFILE_DEFAULT_REF_2_NAME, p.getDefaultRef2Name());
+		values.put(KEY_PROFILE_DEFAULT_REF, p.getDefaultBouquetTv());
+		values.put(KEY_PROFILE_DEFAULT_REF_NAME, p.getDefaultBouquetTvName());
+		values.put(KEY_PROFILE_DEFAULT_REF_2, p.getParentBouquetTv());
+		values.put(KEY_PROFILE_DEFAULT_REF_2_NAME, p.getParentBouquetTvName());
 		values.put(KEY_PROFILE_ENCODER_STREAM, p.isEncoderStream());
 		values.put(KEY_PROFILE_ENCODER_PATH, p.getEncoderPath());
 		values.put(KEY_PROFILE_ENCODER_PORT, p.getEncoderPort());
@@ -389,6 +383,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN, KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE, KEY_PROFILE_ENCODER_AUDIO_BITRATE,
 				KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI};
 		SQLiteDatabase db = getReadableDatabase();
+
 
 		ArrayList<Profile> list = new ArrayList<>();
 

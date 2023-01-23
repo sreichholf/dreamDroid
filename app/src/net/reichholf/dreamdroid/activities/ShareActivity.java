@@ -27,7 +27,6 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.adapter.recyclerview.ProfileAdapter;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -35,11 +34,13 @@ import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
+import net.reichholf.dreamdroid.room.AppDatabase;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author sre
@@ -57,7 +58,7 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 	private ProgressDialog mProgress;
 	private String mTitle;
 
-	ArrayList<Profile> mProfiles;
+	List<Profile> mProfiles;
 
 	protected ItemClickSupport mItemClickSupport;
 
@@ -146,10 +147,10 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 	}
 
 	public void load() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(this);
+		Profile.ProfileDao dao = AppDatabase.profiles(getContext());
 		mProfileMapList = new ArrayList<>();
 		mProfileMapList.clear();
-		mProfiles = dbh.getProfiles();
+		mProfiles = dao.getProfiles();
 		if (mProfiles.size() > 1) {
 			for (Profile m : mProfiles) {
 				ExtendedHashMap map = new ExtendedHashMap();

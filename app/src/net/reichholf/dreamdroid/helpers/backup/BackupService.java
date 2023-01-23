@@ -11,8 +11,8 @@ import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.Profile;
+import net.reichholf.dreamdroid.room.AppDatabase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,12 +33,12 @@ public class BackupService {
     private final Context mContext;
     private final SharedPreferences mPreferences;
     @NonNull
-	private final DatabaseHelper mDatabase;
+	private final Profile.ProfileDao mDatabase;
 
     public BackupService(Context context) {
         mContext = context;
         mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mDatabase = DatabaseHelper.getInstance(mContext);
+        mDatabase = AppDatabase.profiles(context);
     }
 
     @NonNull
