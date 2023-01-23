@@ -192,6 +192,17 @@ public class DreamDroid extends Application {
 			}
 		});
 
+
+		Profile.ProfileDao dao = AppDatabase.getInstance(getAppContext()).profileDao();
+		if (dao.getProfiles().size() == 0) {
+			//DatabaseHelper dbh = DatabaseHelper.getInstance(getAppContext());
+			//if (dbh.getProfiles().size() > 0) {
+			//	for (Profile p : dbh.getProfiles())
+			//		dao.addProfile(p);
+			//}
+		}
+
+
 		initChannels();
 		sLocations = new ArrayList<>();
 		sTags = new ArrayList<>();
@@ -374,8 +385,7 @@ public class DreamDroid extends Application {
 			oldProfile = Profile.getDefault();
 
 
-		AppDatabase db = AppDatabase.getInstance(getAppContext());
-		sProfile = db.profileDao().getProfile(id);
+		sProfile = AppDatabase.getInstance(context).profileDao().getProfile(id);
 
 		if (sProfile != null) {
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();

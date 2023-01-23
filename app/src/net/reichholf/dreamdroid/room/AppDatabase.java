@@ -5,14 +5,12 @@ import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import net.reichholf.dreamdroid.Profile;
 
 @Database(entities = {Profile.class}, version = 15)
-@TypeConverters(ProfilesConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
 	public abstract Profile.ProfileDao profileDao();
 	private static AppDatabase db = null;
@@ -30,7 +28,9 @@ public abstract class AppDatabase extends RoomDatabase {
 						context.getApplicationContext(),
 						AppDatabase.class, "dreamdroid"
 				)
-				.addMigrations(MIGRATION_14_15).build();
+				.addMigrations(MIGRATION_14_15)
+				.allowMainThreadQueries()
+				.build();
 		return db;
 	}
 

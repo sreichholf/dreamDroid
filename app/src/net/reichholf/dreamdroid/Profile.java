@@ -21,13 +21,18 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import java.io.Serializable;
 import java.util.List;
 
 
-@Entity( tableName = "profiles")
-public class Profile {
+@Entity( tableName = "profile")
+public class Profile implements Serializable {
+	private static final long serialVersionUID = 8176949133234868302L;
 	@Dao
 	public interface ProfileDao {
+		@Insert(onConflict = OnConflictStrategy.REPLACE)
+		void insertAll(Profile... profiles);
+
 		@Insert(onConflict = OnConflictStrategy.REPLACE)
 		void addProfile(Profile profile);
 
@@ -37,17 +42,17 @@ public class Profile {
 		@Delete
 		void deleteProfile(Profile profile);
 
-		@Query("SELECT * FROM profiles")
+		@Query("SELECT * FROM profile")
 		List<Profile> getProfiles();
 
-		@Query("SELECT * FROM profiles WHERE _id=:id")
+		@Query("SELECT * FROM profile WHERE _id=:id")
 		public Profile getProfile(int id);
 	}
 
 
 	@PrimaryKey
 	@ColumnInfo(name= "_id")
-	public Integer id;
+	public int id;
 
 	@ColumnInfo(name = "profile")
 	public String name;
@@ -74,49 +79,49 @@ public class Profile {
 	public String encoderPass;
 
 	@ColumnInfo(name = "login")
-	public Boolean login;
+	public boolean login;
 
 	@ColumnInfo(name = "ssl")
-	public Boolean ssl;
+	public boolean ssl;
 
 	@ColumnInfo(name = "trust_all_certs")
-	public Boolean allCertsTrusted;
+	public boolean allCertsTrusted;
 
 	@ColumnInfo(name = "streamlogin")
-	public Boolean streamLogin;
+	public boolean streamLogin;
 
 	@ColumnInfo(name = "file_login")
-	public Boolean fileLogin;
+	public boolean fileLogin;
 
 	@ColumnInfo(name = "encoder_login")
-	public Boolean encoderLogin;
+	public boolean encoderLogin;
 
 	@ColumnInfo(name = "encoder_stream")
-	public Boolean encoderStream;
+	public boolean encoderStream;
 
 	@ColumnInfo(name = "file_ssl")
-	public Boolean fileSsl;
+	public boolean fileSsl;
 
 	@ColumnInfo(name = "simpleremote")
-	public Boolean simpleRemote;
+	public boolean simpleRemote;
 
 	@ColumnInfo(name = "port")
-	public Integer port;
+	public int port;
 
 	@ColumnInfo(name = "streamport")
-	public Integer streamPort;
+	public int streamPort;
 
 	@ColumnInfo(name = "fileport")
-	public Integer filePort;
+	public int filePort;
 
 	@ColumnInfo(name = "encoder_port")
-	public Integer encoderPort;
+	public int encoderPort;
 
-	@ColumnInfo(name = "encoder_audio_bitrate", typeAffinity= ColumnInfo.TEXT)
-	public Integer encoderAudioBitrate;
+	@ColumnInfo(name = "encoder_audio_bitrate")
+	public int encoderAudioBitrate;
 
-	@ColumnInfo(name = "encoder_video_bitrate", typeAffinity= ColumnInfo.TEXT)
-	public Integer encoderVideoBitrate;
+	@ColumnInfo(name = "encoder_video_bitrate")
+	public int encoderVideoBitrate;
 
 
 	@ColumnInfo(name = "default_ref")
@@ -140,8 +145,8 @@ public class Profile {
 	@ColumnInfo(name = "ssid")
 	public String ssid;
 
-	@ColumnInfo(name = "defaultProfileOnNoWifi", defaultValue=not)
-	public Boolean isDefaultProfileOnNoWifi;
+	@ColumnInfo(name = "defaultProfileOnNoWifi")
+	public boolean isDefaultProfileOnNoWifi;
 
 	@Ignore
 	public static Profile getDefault() {
