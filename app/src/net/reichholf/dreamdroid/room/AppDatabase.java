@@ -10,16 +10,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import net.reichholf.dreamdroid.Profile;
 
-@Database(entities = {Profile.class}, version = 15)
+@Database(entities = {Profile.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
 	public abstract Profile.ProfileDao profileDao();
+
 	private static AppDatabase db = null;
-	static final Migration MIGRATION_14_15 = new Migration(14, 15) {
-		@Override
-		public void migrate(SupportSQLiteDatabase database) {
-			// Empty implementation, because the schema isn't changing.
-		}
-	};
 
 	public static AppDatabase getInstance(Context context) {
 		if (db != null)
@@ -28,12 +23,10 @@ public abstract class AppDatabase extends RoomDatabase {
 						context.getApplicationContext(),
 						AppDatabase.class, "dreamdroid"
 				)
-				.addMigrations(MIGRATION_14_15)
 				.allowMainThreadQueries()
 				.build();
 		return db;
 	}
-
 
 
 }
