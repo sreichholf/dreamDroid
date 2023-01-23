@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.appwidget;
 
-import android.app.ListActivity;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,13 +7,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,19 +19,19 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.recyclerview.SimpleExtendedHashMapAdapter;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.room.AppDatabase;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
-import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Stephan on 07.12.13.
  */
 public class VirtualRemoteWidgetConfiguration extends AppCompatActivity implements ItemClickSupport.OnItemClickListener {
-    private ArrayList<Profile> mProfiles;
+    private List<Profile> mProfiles;
 	private RecyclerView mRecyclerView;
 	private ItemClickSupport mItemClickSupport;
 
@@ -64,9 +61,9 @@ public class VirtualRemoteWidgetConfiguration extends AppCompatActivity implemen
 	}
 
 	public void load() {
-		DatabaseHelper dbh = DatabaseHelper.getInstance(this);
+		Profile.ProfileDao dao = AppDatabase.getInstance(this).profileDao();
         ArrayList<ExtendedHashMap> profiles = new ArrayList<>();
-		mProfiles = dbh.getProfiles();
+		mProfiles = dao.getProfiles();
 		if (mProfiles.size() > 0) {
 			for (Profile m : mProfiles) {
 				ExtendedHashMap map = new ExtendedHashMap();
@@ -119,8 +116,8 @@ public class VirtualRemoteWidgetConfiguration extends AppCompatActivity implemen
 
 	public static Profile getWidgetProfile(Context context, int appWidgetId) {
 		int profileId = PreferenceManager.getDefaultSharedPreferences(context).getInt(getProfileIdKey(appWidgetId), -1);
-		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
-		return dbh.getProfile(profileId);
+		Profile.ProfileDao dao = AppDatabase.getInstance(context).profileDao();
+		return dao.getProfile(profileId);
 	}
 
 	@NonNull

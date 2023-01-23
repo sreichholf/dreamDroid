@@ -37,6 +37,7 @@ import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler;
+import net.reichholf.dreamdroid.room.AppDatabase;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -45,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -208,14 +210,14 @@ public class DreamDroid extends Application {
 
 			Log.i(LOG_TAG, "currentWifiName = " + currentWifiName);
 			Log.i(LOG_TAG, "currentProfileSsid = " + currentProfile.getSsid());
-			DatabaseHelper dbh = DatabaseHelper.getInstance(context);
+			Profile.ProfileDao dao = AppDatabase.getInstance(getAppContext()).profileDao();
 			if (currentWifiName == null) {
 				Log.i(LOG_TAG, "not connected to wifi, will search for default profile");
 				// not connected to wifi, search for default profile
 				if (currentProfile.isDefaultProfileOnNoWifi()) {
 					Log.i(LOG_TAG, "currentProfile is default for NO WIFI, so no action required");
 				} else {
-					Optional<Profile> noWifiDefault = dbh.getProfiles().stream().filter(Profile::isDefaultProfileOnNoWifi).findFirst();
+					Optional<Profile> noWifiDefault = dao.getProfiles().stream().filter(Profile::isDefaultProfileOnNoWifi).findFirst();
 					if (noWifiDefault.isPresent()) {
 						Log.i(LOG_TAG, "found profile for default ");
 						setCurrentProfile(context, noWifiDefault.get().getId());
@@ -231,7 +233,7 @@ public class DreamDroid extends Application {
 					Log.i(LOG_TAG, "currentProfile has correct wifi name configured, so no action required");
 				} else {
 					Log.i(LOG_TAG, "connected to wifi " + currentWifiName + " will search for profile with this wifi name configured");
-					Optional<Profile> wifiProfile = dbh.getProfiles().stream().filter(p -> p.getSsid() != null).filter(p -> p.getSsid().equalsIgnoreCase(currentWifiName)).findFirst();
+					Optional<Profile> wifiProfile = dao.getProfiles().stream().filter(p -> p.getSsid() != null).filter(p -> p.getSsid().equalsIgnoreCase(currentWifiName)).findFirst();
 					if (wifiProfile.isPresent()) {
 						Log.i(LOG_TAG, "found profile with configured ssid ");
 						setCurrentProfile(context, wifiProfile.get().getId());
@@ -320,8 +322,8 @@ public class DreamDroid extends Application {
 		if (sProfile != null && sProfile.getId() == profileId)
 			return;
 
-		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
-		ArrayList<Profile> profiles = dbh.getProfiles();
+		Profile.ProfileDao dao = AppDatabase.getInstance(context).profileDao();
+		List<Profile> profiles = dao.getProfiles();
 		// the profile-table is initial - let's migrate the current config as
 		// default Profile
 		if (profiles.isEmpty()) {
@@ -337,7 +339,7 @@ public class DreamDroid extends Application {
 
 			Profile p = new Profile(-1, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
 					false, false, "", "", "", "");
-			dbh.addProfile(p);
+			dao.addProfile(p);
 			profileId = p.getId();
 			SharedPreferences.Editor editor = sp.edit();
 			editor.remove(CURRENT_PROFILE);
@@ -372,8 +374,8 @@ public class DreamDroid extends Application {
 			oldProfile = Profile.getDefault();
 
 
-		DatabaseHelper dbh = DatabaseHelper.getInstance(context);
-		sProfile = dbh.getProfile(id);
+		AppDatabase db = AppDatabase.getInstance(getAppContext());
+		sProfile = db.profileDao().getProfile(id);
 
 		if (sProfile != null) {
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();

@@ -23,15 +23,15 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import net.reichholf.dreamdroid.DatabaseHelper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import net.reichholf.dreamdroid.room.AppDatabase;
 
 import static net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment.sData;
 
@@ -276,7 +276,7 @@ public class ProfileEditFragment extends BaseFragment {
 			showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getName() + "'");
 			return;
 		}
-		DatabaseHelper dbh = DatabaseHelper.getInstance(ctx);
+		Profile.ProfileDao dao = AppDatabase.getInstance(getContext()).profileDao();
 		if (mCurrentProfile.getId() > 0) {
 			if (mCurrentProfile.getHost() == null || "".equals(mCurrentProfile.getHost())) {
 				showToast(getText(R.string.host_empty));
@@ -285,19 +285,13 @@ public class ProfileEditFragment extends BaseFragment {
 			if (mCurrentProfile.getStreamHost() == null) {
 				mCurrentProfile.setStreamHost("");
 			}
-			if (dbh.updateProfile(mCurrentProfile)) {
-				showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getName() + "'");
-				finish(Activity.RESULT_OK);
-			} else {
-				showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getName() + "'");
-			}
+			dao.updateProfile(mCurrentProfile);
+			showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getName() + "'");
+			finish(Activity.RESULT_OK);
 		} else {
-			if (dbh.addProfile(mCurrentProfile)) {
-				showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");
-				finish(Activity.RESULT_OK);
-			} else {
-				showToast(getText(R.string.profile_not_added) + " '" + mCurrentProfile.getName() + "'");
-			}
+			dao.addProfile(mCurrentProfile);
+			showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");
+			finish(Activity.RESULT_OK);
 		}
 	}
 

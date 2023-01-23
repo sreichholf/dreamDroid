@@ -10,80 +10,167 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.ColumnInfo;
+import androidx.room.Dao;
+import androidx.room.Delete;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
+import androidx.room.PrimaryKey;
+import androidx.room.Query;
+import androidx.room.Update;
 
-import java.io.Serializable;
+import java.util.List;
 
 
-/**
- * @author sre
- */
-public class Profile implements Serializable {
-	private static final long serialVersionUID = 8176949133234868302L;
-	private int mId;
-	@Nullable
-	private String mName;
-	private String mHost;
-	private String mStreamHost;
-	private String mEncoderPath;
-	@Nullable
-	private String mUser;
-	@Nullable
-	private String mPass;
-	private String mEncoderUser;
-	private String mEncoderPass;
-	private boolean mLogin;
-	private boolean mSsl;
-	private boolean mAllCertsTrusted;
-	private boolean mStreamLogin;
-	private boolean mFileLogin;
-	private boolean mEncoderLogin;
-	private boolean mEncoderStream;
-	private boolean mFileSsl;
-	private boolean mSimpleRemote;
-	private int mPort;
-	private int mStreamPort;
-	private int mFilePort;
-	private int mEncoderPort;
-	private int mEncoderAudioBitrate;
-	private int mEncoderVideoBitrate;
+@Entity( tableName = "profiles")
+public class Profile {
+	@Dao
+	public interface ProfileDao {
+		@Insert(onConflict = OnConflictStrategy.REPLACE)
+		void addProfile(Profile profile);
 
-	private String mDefaultRef;
-	private String mDefaultRefName;
-	private String mDefaultRef2;
-	private String mDefaultRef2Name;
-	@Nullable
-	private String mSessionId;
+		@Update
+		public void updateProfile(Profile profiles);
 
-	@Nullable
-	private String mCachedDeviceInfo;
-    private String ssid;
-    private boolean isDefaultProfileOnNoWifi;
+		@Delete
+		void deleteProfile(Profile profile);
 
-	@NonNull
+		@Query("SELECT * FROM profiles")
+		List<Profile> getProfiles();
+
+		@Query("SELECT * FROM profiles WHERE _id=:id")
+		public Profile getProfile(int id);
+	}
+
+
+	@PrimaryKey
+	@ColumnInfo(name= "_id")
+	public Integer id;
+
+	@ColumnInfo(name = "profile")
+	public String name;
+
+	@ColumnInfo(name = "host")
+	public String host;
+
+	@ColumnInfo(name = "streamhost")
+	public String streamHost;
+
+	@ColumnInfo(name = "encoder_path")
+	public String encoderPath;
+
+	@ColumnInfo(name = "user")
+	public String user;
+
+	@ColumnInfo(name = "pass")
+	public String pass;
+
+	@ColumnInfo(name = "encoder_user")
+	public String encoderUser;
+
+	@ColumnInfo(name = "encoder_pass")
+	public String encoderPass;
+
+	@ColumnInfo(name = "login")
+	public Boolean login;
+
+	@ColumnInfo(name = "ssl")
+	public Boolean ssl;
+
+	@ColumnInfo(name = "trust_all_certs")
+	public Boolean allCertsTrusted;
+
+	@ColumnInfo(name = "streamlogin")
+	public Boolean streamLogin;
+
+	@ColumnInfo(name = "file_login")
+	public Boolean fileLogin;
+
+	@ColumnInfo(name = "encoder_login")
+	public Boolean encoderLogin;
+
+	@ColumnInfo(name = "encoder_stream")
+	public Boolean encoderStream;
+
+	@ColumnInfo(name = "file_ssl")
+	public Boolean fileSsl;
+
+	@ColumnInfo(name = "simpleremote")
+	public Boolean simpleRemote;
+
+	@ColumnInfo(name = "port")
+	public Integer port;
+
+	@ColumnInfo(name = "streamport")
+	public Integer streamPort;
+
+	@ColumnInfo(name = "fileport")
+	public Integer filePort;
+
+	@ColumnInfo(name = "encoder_port")
+	public Integer encoderPort;
+
+	@ColumnInfo(name = "encoder_audio_bitrate", typeAffinity= ColumnInfo.TEXT)
+	public Integer encoderAudioBitrate;
+
+	@ColumnInfo(name = "encoder_video_bitrate", typeAffinity= ColumnInfo.TEXT)
+	public Integer encoderVideoBitrate;
+
+
+	@ColumnInfo(name = "default_ref")
+	public String defaultBouquetTv;
+
+	@ColumnInfo(name = "default_ref_name")
+	public String defaultBouquetTvName;
+
+	@ColumnInfo(name = "default_ref_2")
+	public String defaultParentBouquetTv;
+
+	@ColumnInfo(name = "default_ref_2_name")
+	public String defaultParentBouquetTvName;
+
+	@Ignore
+	public String sessionid;
+
+	@Ignore
+	public String cachedDeviceInfo;
+
+	@ColumnInfo(name = "ssid")
+	public String ssid;
+
+	@ColumnInfo(name = "defaultProfileOnNoWifi", defaultValue=not)
+	public Boolean isDefaultProfileOnNoWifi;
+
+	@Ignore
 	public static Profile getDefault() {
 		return new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
 	}
 
-	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+	@Ignore
+	public Profile(int id, String profile, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
-		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, false, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, false, "stream", 554, false, "", "", 2500, 128);
+		init(id, profile, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, false, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, false, "stream", 554, false, "", "", 2500, 128);
 	}
+
 
 	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean allCertsTrusted, boolean streamLogin, boolean fileLogin, boolean fileSsl,
-				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
+				   boolean simpleRemote, String defaultBouquetTv, String defaultBouquetTvName, String defaultParentBouquetTv, String defaultParentBouquetTvName, boolean encoderStream,
 				   String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
-		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, allCertsTrusted, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, encoderStream, encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate);
+		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, allCertsTrusted, streamLogin, fileLogin, fileSsl, simpleRemote, defaultBouquetTv, defaultBouquetTvName, defaultParentBouquetTv, defaultParentBouquetTvName, encoderStream, encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate);
 	}
 
+	@Ignore
 	private void init(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
-				  String user, String pass, boolean ssl, boolean allCertsTrusted, boolean streamLogin, boolean fileLogin, boolean fileSsl,
-				  boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
-				  String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
-		mId = id;
-		mSessionId = null;
-		mCachedDeviceInfo = null;
+					  String user, String pass, boolean ssl, boolean allCertsTrusted, boolean streamLogin, boolean fileLogin, boolean fileSsl,
+					  boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
+					  String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
+		this.id = id;
+		sessionid = null;
+		cachedDeviceInfo = null;
 
 		setName(name);
 		setHost(host);
@@ -114,11 +201,11 @@ public class Profile implements Serializable {
 	}
 
 	public void setId(int id) {
-		mId = id;
+		this.id = id;
 	}
 
 	public void setPort(int port) {
-		mPort = port;
+		this.port = port;
 	}
 
 	public void setPort(@NonNull String port, boolean ssl) {
@@ -133,189 +220,189 @@ public class Profile implements Serializable {
 	}
 
 	public void setStreamPort(int streamPort) {
-		mStreamPort = streamPort;
+		this.streamPort = streamPort;
 	}
 
 	public void setFilePort(int filePort) {
-		mFilePort = filePort;
+		this.filePort = filePort;
 	}
 
 	@Nullable
 	public String getName() {
-		return mName;
+		return name;
 	}
 
 	public void setName(@Nullable String name) {
 		if (name == null) {
 			name = "";
 		}
-		mName = name;
+		this.name = name;
 	}
 
 	public String getHost() {
-		return mHost;
+		return host;
 	}
 
 	public void setHost(@Nullable String host) {
 		if (host == null) {
 			host = "";
 		}
-		mHost = host.replace("http://", "").replace("https://", "");
+		this.host = host.replace("http://", "").replace("https://", "");
 	}
 
 	public String getStreamHost() {
-		if ("".equals(mStreamHost) || mStreamHost == null) {
-			return mHost;
+		if ("".equals(streamHost) || streamHost == null) {
+			return host;
 		} else {
-			return mStreamHost;
+			return streamHost;
 		}
 	}
 
 	public void setStreamHost(@Nullable String streamHost) {
 		if (streamHost == null)
 			streamHost = "";
-		mStreamHost = streamHost.replace("http://", "").replace("https://", "");
+		this.streamHost = streamHost.replace("http://", "").replace("https://", "");
 	}
 
 	public String getStreamHostValue() {
-		return mStreamHost;
+		return streamHost;
 	}
 
 	public void setEncoderPath(String encoderPath) {
-		mEncoderPath = encoderPath;
+		this.encoderPath = encoderPath;
 	}
 
 	public String getEncoderPath() {
-		return mEncoderPath;
+		return encoderPath;
 	}
 
 	@Nullable
 	public String getUser() {
-		return mUser;
+		return user;
 	}
 
 	public void setUser(@Nullable String user) {
 		if (user == null)
 			user = "";
-		mUser = user;
+		this.user = user;
 	}
 
 	@Nullable
 	public String getPass() {
-		return mPass;
+		return pass;
 	}
 
 	public void setPass(@Nullable String pass) {
 		if (pass == null)
 			pass = "";
-		mPass = pass;
+		this.pass = pass;
 	}
 
 	public boolean isLogin() {
-		return mLogin;
+		return login;
 	}
 
 	public void setLogin(boolean login) {
-		mLogin = login;
+		this.login = login;
 	}
 
 	public String getEncoderUser() {
-		return mEncoderUser;
+		return encoderUser;
 	}
 
 	public void setEncoderUser(String user) {
-		mEncoderUser = user;
+		encoderUser = user;
 	}
 
 	public String getEncoderPass() {
-		return mEncoderPass;
+		return encoderPass;
 	}
 
 	public void setEncoderPass(String pass) {
-		mEncoderPass = pass;
+		encoderPass = pass;
 	}
 
 	public boolean isEncoderLogin() {
-		return mEncoderLogin;
+		return encoderLogin;
 	}
 
 	public void setEncoderLogin(boolean isLogin) {
-		mEncoderLogin = isLogin;
+		encoderLogin = isLogin;
 	}
 
 	public boolean isSsl() {
-		return mSsl;
+		return ssl;
 	}
 
 	public void setSsl(boolean ssl) {
-		mSsl = ssl;
+		this.ssl = ssl;
 	}
 
 	public boolean isAllCertsTrusted() {
-		return mAllCertsTrusted;
+		return allCertsTrusted;
 	}
 
 	public void setAllCertsTrusted(boolean allCertsTrusted) {
-		mAllCertsTrusted = allCertsTrusted;
+		this.allCertsTrusted = allCertsTrusted;
 	}
 
 	public boolean isFileLogin() {
-		return mFileLogin;
+		return fileLogin;
 	}
 
 	public void setFileLogin(boolean login) {
-		mFileLogin = login;
+		fileLogin = login;
 	}
 
 	public boolean isFileSsl() {
-		return mFileSsl;
+		return fileSsl;
 	}
 
 	public void setFileSsl(boolean ssl) {
-		mFileSsl = ssl;
+		fileSsl = ssl;
 	}
 
 	public boolean isSimpleRemote() {
-		return mSimpleRemote;
+		return simpleRemote;
 	}
 
 	public void setSimpleRemote(boolean simpleRemote) {
-		mSimpleRemote = simpleRemote;
+		this.simpleRemote = simpleRemote;
 	}
 
 	public int getId() {
-		return mId;
+		return id;
 	}
 
 	public int getPort() {
-		return mPort;
+		return port;
 	}
 
 	public void setPort(@NonNull String port) {
 		try {
-			mPort = Integer.valueOf(port);
+			this.port = Integer.valueOf(port);
 		} catch (NumberFormatException e) {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
-			if (mSsl) {
-				mPort = 443;
+			if (ssl) {
+				this.port = 443;
 			} else {
-				mPort = 80;
+				this.port = 80;
 			}
 		}
 	}
 
 	@NonNull
 	public String getPortString() {
-		return String.valueOf(mPort);
+		return String.valueOf(port);
 	}
 
 	public int getStreamPort() {
-		return mStreamPort;
+		return streamPort;
 	}
 
 	public void setStreamPort(@NonNull String streamPort) {
 		try {
-			mStreamPort = Integer.valueOf(streamPort);
+			this.streamPort = Integer.valueOf(streamPort);
 		} catch (NumberFormatException e) {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
 		}
@@ -323,183 +410,183 @@ public class Profile implements Serializable {
 
 
 	public boolean isEncoderStream() {
-		return mEncoderStream;
+		return encoderStream;
 	}
 
 	public void setEncoderStream(boolean encoderStream) {
-		mEncoderStream = encoderStream;
+		this.encoderStream = encoderStream;
 	}
 
 	@NonNull
 	public String getStreamPortString() {
-		return String.valueOf(mStreamPort);
+		return String.valueOf(streamPort);
 	}
 
 	public int getEncoderPort() {
-		return mEncoderPort;
+		return encoderPort;
 	}
 	@NonNull
 	public String getEncoderPortString() {
-		return String.valueOf(mEncoderPort);
+		return String.valueOf(encoderPort);
 	}
 
 	public void setEncoderPort(int port) {
-		mEncoderPort = port;
+		encoderPort = port;
 	}
 
 	public void setEncoderPort(@NonNull String port) {
 		try {
-			mEncoderPort = Integer.valueOf(port);
+			encoderPort = Integer.valueOf(port);
 		} catch (NumberFormatException e) {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
 		}
 	}
 
 	public int getEncoderVideoBitrate() {
-		return mEncoderVideoBitrate;
+		return encoderVideoBitrate;
 	}
 
 	@NonNull
 	public String getEncoderVideoBitrateString() {
-		return String.valueOf(mEncoderVideoBitrate);
+		return String.valueOf(encoderVideoBitrate);
 	}
 
 	public void setEncoderVideoBitrate(int bitrate) {
-		mEncoderVideoBitrate = bitrate;
+		encoderVideoBitrate = bitrate;
 	}
 
 	public void setEncoderVideoBitrate(@NonNull String bitrate) {
 		try {
-			mEncoderVideoBitrate = Integer.valueOf(bitrate);
+			encoderVideoBitrate = Integer.valueOf(bitrate);
 		} catch (NumberFormatException e) {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
 		}
 	}
 
 	public int getEncoderAudioBitrate() {
-		return mEncoderAudioBitrate;
+		return encoderAudioBitrate;
 	}
 
 	@NonNull
 	public String getEncoderAudioBitrateString() {
-		return String.valueOf(mEncoderAudioBitrate);
+		return String.valueOf(encoderAudioBitrate);
 	}
 
 	public void setEncoderAudioBitrate(int bitrate) {
-		mEncoderAudioBitrate = bitrate;
+		encoderAudioBitrate = bitrate;
 	}
 
 	public void setEncoderAudioBitrate(@NonNull String bitrate) {
 		try {
-			mEncoderAudioBitrate = Integer.valueOf(bitrate);
+			encoderAudioBitrate = Integer.valueOf(bitrate);
 		} catch (NumberFormatException e) {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
 		}
 	}
 
 	public int getFilePort() {
-		return mFilePort;
+		return filePort;
 	}
 
 	public void setFilePort(@NonNull String filePort) {
 		try {
-			mFilePort = Integer.valueOf(filePort);
+			this.filePort = Integer.valueOf(filePort);
 		} catch (NumberFormatException e) {
 			Log.w(DreamDroid.LOG_TAG, e.toString());
-			mFilePort = 80;
+			this.filePort = 80;
 		}
 	}
 
 	@NonNull
 	public String getFilePortString() {
-		return String.valueOf(mFilePort);
+		return String.valueOf(filePort);
 	}
 
 	public void setDefaultRefValues(String ref, String name) {
-		setDefaultRef(ref);
-		setDefaultRefName(name);
+		setDefaultBouquetTv(ref);
+		setDefaultBouquetTvName(name);
 	}
 
 	public void setDefaultRef2Values(String ref, String name) {
-		setDefaultRef2(ref);
-		setDefaultRef2Name(name);
+		setParentBouquetTv(ref);
+		setParentBouquetTvName(name);
 	}
 
-	public String getDefaultRef() {
-		return mDefaultRef;
+	public String getDefaultBouquetTv() {
+		return defaultBouquetTv;
 	}
 
-	public void setDefaultRef(String defaultRef) {
-		mDefaultRef = defaultRef;
+	public void setDefaultBouquetTv(String defaultBouquetTv) {
+		this.defaultBouquetTv = defaultBouquetTv;
 	}
 
-	public String getDefaultRefName() {
-		return mDefaultRefName;
+	public String getDefaultBouquetTvName() {
+		return defaultBouquetTvName;
 	}
 
-	public void setDefaultRefName(String defaultRefName) {
-		mDefaultRefName = defaultRefName;
+	public void setDefaultBouquetTvName(String defaultRefName) {
+		defaultBouquetTvName = defaultRefName;
 	}
 
-	public String getDefaultRef2() {
-		return mDefaultRef2;
+	public String getParentBouquetTv() {
+		return defaultParentBouquetTv;
 	}
 
-	public void setDefaultRef2(String defaultRef2) {
-		mDefaultRef2 = defaultRef2;
+	public void setParentBouquetTv(String defaultRef2) {
+		defaultParentBouquetTv = defaultRef2;
 	}
 
-	public String getDefaultRef2Name() {
-		return mDefaultRef2Name;
+	public String getParentBouquetTvName() {
+		return defaultParentBouquetTvName;
 	}
 
-	public void setDefaultRef2Name(String defaultRef2Name) {
-		mDefaultRef2Name = defaultRef2Name;
+	public void setParentBouquetTvName(String defaultRef2Name) {
+		defaultParentBouquetTvName = defaultRef2Name;
 	}
 
 	public boolean isStreamLogin() {
-		return mStreamLogin;
+		return streamLogin;
 	}
 
 	public void setStreamLogin(boolean streamLogin) {
-		mStreamLogin = streamLogin;
+		this.streamLogin = streamLogin;
 	}
 
 	public void setSessionId(String sessionId) {
-		mSessionId = sessionId;
+		sessionid = sessionId;
 	}
 
 	@Nullable
 	public String getSessionId() {
-		return mSessionId;
+		return sessionid;
 	}
 
 	public void setCachedDeviceInfo(String deviceInfo) {
-		mCachedDeviceInfo = deviceInfo;
+		cachedDeviceInfo = deviceInfo;
 	}
 
 	@Nullable
 	public String getCachedDeviceInfo() {
-		return mCachedDeviceInfo;
+		return cachedDeviceInfo;
 	}
 
-    public String getSsid() {
-        return ssid;
-    }
+	public String getSsid() {
+		return ssid;
+	}
 
-    public void setSsid(String ssid) {
-        this.ssid = ssid;
-    }
+	public void setSsid(String ssid) {
+		this.ssid = ssid;
+	}
 
-    public boolean isDefaultProfileOnNoWifi() {
-        return isDefaultProfileOnNoWifi;
-    }
+	public boolean isDefaultProfileOnNoWifi() {
+		return isDefaultProfileOnNoWifi;
+	}
 
-    public void setDefaultProfileOnNoWifi(boolean defaultProfileOnNoWifi) {
-        isDefaultProfileOnNoWifi = defaultProfileOnNoWifi;
-    }
+	public void setDefaultProfileOnNoWifi(boolean defaultProfileOnNoWifi) {
+		isDefaultProfileOnNoWifi = defaultProfileOnNoWifi;
+	}
 
-    public boolean equals(@NonNull Profile p) {
+	public boolean equals(@NonNull Profile p) {
 		return getHost().equals(p.getHost())
 				&& getStreamHost().equals(p.getStreamHost())
 				&& getUser().equals(p.getUser())

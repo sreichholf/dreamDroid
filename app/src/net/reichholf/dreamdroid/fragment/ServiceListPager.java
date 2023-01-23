@@ -347,7 +347,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 		mServicelistAdapter.notifyDataSetChanged();
 		mPager.setAdapter(mServicelistAdapter);
-		String detailReference = DreamDroid.getCurrentProfile().getDefaultRef();
+		String detailReference = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
 		int idx = mServicelistAdapter.indexOf(detailReference);
 		if (idx >= 0)
 			mPager.setCurrentItem(idx);

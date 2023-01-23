@@ -31,7 +31,6 @@ import androidx.slidingpanelayout.widget.SlidingPaneLayout;
 
 import com.evernote.android.state.State;
 
-import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -56,6 +55,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.room.AppDatabase;
 import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
 import java.util.ArrayList;
@@ -162,13 +162,13 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 		}
 
 		if (mDetailReference == null) {
-			mDetailReference = DreamDroid.getCurrentProfile().getDefaultRef();
-			mDetailName = DreamDroid.getCurrentProfile().getDefaultRefName();
+			mDetailReference = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
+			mDetailName = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
 		}
 
 		if (mNavReference == null) {
-			mNavReference = DreamDroid.getCurrentProfile().getDefaultRef2();
-			mNavName = DreamDroid.getCurrentProfile().getDefaultRef2Name();
+			mNavReference = DreamDroid.getCurrentProfile().getParentBouquetTv();
+			mNavName = DreamDroid.getCurrentProfile().getParentBouquetTvName();
 		}
 	}
 
@@ -327,7 +327,7 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 			return;
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
-		String defaultReference = DreamDroid.getCurrentProfile().getDefaultRef();
+		String defaultReference = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
 		setDefault.setVisible(true);
 		if (defaultReference != null) {
 			if (defaultReference.equals(mDetailReference)) {
@@ -360,12 +360,12 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 				if (mDetailReference != null || mNavReference != null) {
 					Profile p = DreamDroid.getCurrentProfile();
 					boolean reset = false;
-					if (p.getDefaultRef() != null && p.getDefaultRef().equals(mDetailReference)) {
-						p.setDefaultRef(null);
+					if (p.getDefaultBouquetTv() != null && p.getDefaultBouquetTv().equals(mDetailReference)) {
+						p.setDefaultBouquetTv(null);
 						reset = true;
 					}
-					if (p.getDefaultRef2() != null && p.getDefaultRef2().equals(mNavReference)) {
-						p.setDefaultRef2(null);
+					if (p.getParentBouquetTv() != null && p.getParentBouquetTv().equals(mNavReference)) {
+						p.setParentBouquetTv(null);
 						reset = true;
 					}
 
@@ -375,13 +375,10 @@ public class ServiceListFragment extends BaseHttpRecyclerEventFragment {
 						if (mNavReference != null)
 							p.setDefaultRef2Values(mNavReference, mNavName);
 					}
-					DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
-					if (dbh.updateProfile(p)) {
-						if (!reset)
-							showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
-					} else {
-						showToast(getText(R.string.default_bouquet_not_set));
-					}
+					Profile.ProfileDao dao = AppDatabase.getInstance(getAppCompatActivity()).profileDao();
+					dao.updateProfile(p);
+					if (!reset)
+						showToast(getText(R.string.default_bouquet_set_to) + " '" + mDetailName + "'");
 				} else {
 					showToast(getText(R.string.default_bouquet_not_set));
 				}

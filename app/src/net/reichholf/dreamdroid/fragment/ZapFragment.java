@@ -56,8 +56,8 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 			mReload = true;
 			initTitle("");
 			mCurrentBouquet = new ExtendedHashMap();
-			mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultRef());
-			mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultRefName());
+			mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultBouquetTv());
+			mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultBouquetTvName());
 			mWaitingForPicker = false;
 		}
 	}

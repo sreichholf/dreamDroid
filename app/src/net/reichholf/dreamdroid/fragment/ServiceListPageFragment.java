@@ -25,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.evernote.android.state.State;
 
-import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -46,6 +45,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListReques
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.room.AppDatabase;
 import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
 import java.util.ArrayList;
@@ -97,8 +97,8 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		mHistory = new ArrayList<>();
 
 		if (mRef == null) {
-			mRef = DreamDroid.getCurrentProfile().getDefaultRef();
-			mName = DreamDroid.getCurrentProfile().getDefaultRefName();
+			mRef = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
+			mName = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
 		}
 	}
 
@@ -186,7 +186,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 			return;
 
 		MenuItem setDefault = menu.findItem(R.id.menu_default);
-		String defaultReference = DreamDroid.getCurrentProfile().getDefaultRef();
+		String defaultReference = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
 		setDefault.setVisible(true);
 		if (defaultReference != null) {
 			if (defaultReference.equals(mRef)) {
@@ -206,20 +206,17 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 				if (mRef != null) {
 					Profile p = DreamDroid.getCurrentProfile();
 					boolean reset = false;
-					if (p.getDefaultRef() != null && p.getDefaultRef().equals(mRef)) {
-						p.setDefaultRef(null);
+					if (p.getDefaultBouquetTv() != null && p.getDefaultBouquetTv().equals(mRef)) {
+						p.setDefaultBouquetTv(null);
 						reset = true;
 					} else {
 						p.setDefaultRefValues(mRef, mName);
 					}
 
-					DatabaseHelper dbh = DatabaseHelper.getInstance(getAppCompatActivity());
-					if (dbh.updateProfile(p)) {
-						if (!reset)
-							showToast(getText(R.string.default_bouquet_set_to) + " '" + mName + "'");
-					} else {
-						showToast(getText(R.string.default_bouquet_not_set));
-					}
+					Profile.ProfileDao dao = AppDatabase.getInstance(getAppCompatActivity()).profileDao();
+					dao.updateProfile(p);
+					if (!reset)
+						showToast(getText(R.string.default_bouquet_set_to) + " '" + mName + "'");
 				} else {
 					showToast(getText(R.string.default_bouquet_not_set));
 				}

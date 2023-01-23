@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.room.AppDatabase;
 
 /**
  * Created by Stephan on 29.10.2016.
@@ -159,8 +160,8 @@ public class ProfileFragment extends LeanbackPreferenceFragment {
 		p.setEncoderVideoBitrate(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_VIDEO_BITRATE, "6000"));
 		p.setEncoderAudioBitrate(prefs.getString(DatabaseHelper.KEY_PROFILE_ENCODER_AUDIO_BITRATE, "128"));
 
-		DatabaseHelper dbh = DatabaseHelper.getInstance(getActivity());
-		dbh.updateProfile(p);
+		Profile.ProfileDao dao = AppDatabase.getInstance(getContext()).profileDao();
+		dao.updateProfile(p);
 
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putInt(DreamDroid.CURRENT_PROFILE, p.getId());
