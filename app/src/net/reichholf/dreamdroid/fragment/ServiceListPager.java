@@ -302,9 +302,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 	@Nullable
 	protected String getTabText(int position) {
-		if (mSelectedItemId == R.id.menu_movie)
+		if (mSelectedItemId == R.id.menu_movie && mMovielistAdapter.getItemCount() > position)
 			return mMovielistAdapter.get(position);
-		return mServicelistAdapter.get(position).getString(Service.KEY_NAME);
+		if (mServicelistAdapter.getItemCount() > position)
+			return mServicelistAdapter.get(position).getString(Service.KEY_NAME);
+		return getString(R.string.not_available);
 	}
 
 	public void onItemSelected(@NonNull MenuItem item) {
@@ -334,10 +336,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		String[] servicelist = getResources().getStringArray(R.array.servicelist_dedicated);
 		String[] servicerefs = getResources().getStringArray(R.array.servicerefstv);
 		int start = 0;
-		if (mBouquets != null && mBouquets.tv.size() > 0)
+		if (mBouquets != null && mBouquets.tv.size() > 0) {
 			start = 1;
-		for (ExtendedHashMap bouquet : mBouquets.tv)
-			mServicelistAdapter.add(bouquet);
+			for (ExtendedHashMap bouquet : mBouquets.tv)
+				mServicelistAdapter.add(bouquet);
+		}
 		for (int i = start; i < servicelist.length; i++) {
 			ExtendedHashMap bouquet = new ExtendedHashMap();
 			bouquet.put(Event.KEY_SERVICE_NAME, servicelist[i]);
@@ -362,10 +365,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		String[] servicelist = getResources().getStringArray(R.array.servicelist_dedicated);
 		String[] servicerefs = getResources().getStringArray(R.array.servicerefsradio);
 		int start = 0;
-		if (mBouquets != null && mBouquets.radio.size() > 0)
+		if (mBouquets != null && mBouquets.radio.size() > 0) {
 			start = 1;
-		for (ExtendedHashMap bouquet : mBouquets.radio)
-			mServicelistAdapter.add(bouquet);
+			for (ExtendedHashMap bouquet : mBouquets.radio)
+				mServicelistAdapter.add(bouquet);
+		}
 		for (int i = start; i < servicelist.length; i++) {
 			ExtendedHashMap bouquet = new ExtendedHashMap();
 			bouquet.put(Event.KEY_SERVICE_NAME, servicelist[i]);
@@ -374,7 +378,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		}
 
 		mServicelistAdapter.notifyDataSetChanged();
-		//if (!mPager.getAdapter().equals(mServicelistAdapter))
 		mPager.setAdapter(mServicelistAdapter);
 		attachTabLayoutMediator();
 	}
