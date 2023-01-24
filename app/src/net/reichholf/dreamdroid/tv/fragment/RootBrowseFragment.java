@@ -125,7 +125,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 			mBouquets = new ArrayList<>();
 		if (mBouquetQueue == null)
 			mBouquetQueue = new ArrayList<>();
-		if (mLocations == null);
+		if (mLocations == null)
 		 	mLocations = new HashMap<>();
 
 		setHeadersState(HEADERS_ENABLED);
