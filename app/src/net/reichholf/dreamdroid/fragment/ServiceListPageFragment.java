@@ -86,9 +86,9 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		mEnableReload = false;
 
 		Bundle args = getArguments();
-		if (args != null) {
-			mRef = args.getString(Service.KEY_REFERENCE, mRef);
-			mName = args.getString(Service.KEY_NAME, mName);
+		if (args != null && mRef == null)  {
+			mRef = args.getString(Service.KEY_REFERENCE, null);
+			mName = args.getString(Service.KEY_NAME, "-");
 		}
 
 		mCurrentItem = new ExtendedHashMap();

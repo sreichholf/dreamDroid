@@ -235,7 +235,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		mMovielistAdapter = new MovieListAdapter(this);
 		mTimerListAdapter = new TimerListAdapter(this);
 
-		mPager.setAdapter(mServicelistAdapter);
+		if (MODE_MOVIES.equals(mMode)) {
+			mPager.setAdapter(mMovielistAdapter);
+		} else {
+			mPager.setAdapter(mServicelistAdapter);
+		}
 
 		attachTabLayoutMediator();
 		if (mBouquetListTask != null) {
