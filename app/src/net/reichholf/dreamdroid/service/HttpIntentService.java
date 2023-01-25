@@ -27,7 +27,7 @@ public abstract class HttpIntentService extends JobIntentService {
 	protected void setupSSL() {
 		if(!HttpsURLConnection.getDefaultSSLSocketFactory().getClass().equals(DreamDroidTrustManager.class)){
 			try {
-				// register MemorizingTrustManager for HTTPS
+				// register DreamDroidTrustManager for HTTPS
 				SSLContext sc = SSLContext.getInstance("TLS");
 				mTrustManager = new DreamDroidTrustManager(getApplicationContext());
 				sc.init(null, new X509TrustManager[] { mTrustManager },

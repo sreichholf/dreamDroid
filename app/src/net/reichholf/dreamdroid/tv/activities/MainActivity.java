@@ -63,7 +63,7 @@ public class MainActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.tv_main);
 		try {
-			// register MemorizingTrustManager for HTTPS
+			// register DreamDroidTrustManager for HTTPS
 			mTrustManager = new DreamDroidTrustManager(this);
 
 			SSLContext sc = SSLContext.getInstance("TLS");

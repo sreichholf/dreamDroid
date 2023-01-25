@@ -90,20 +90,15 @@ public class DreamDroidAttributionPresenter {
 						.addLicense(License.APACHE)
 						.setWebsite("https://github.com/CodeAndMagic/GaugeView")
 						.build(),
-					new Attribution.Builder("MemorizingTrustManager")
-						.addCopyrightNotice("Copyright (c) 2010 Georg Lukas <georg@op-co.de>")
-						.addLicense(License.MIT)
-						.setWebsite("https://github.com/ge0rg/MemorizingTrustManager")
-						.build(),
 					new Attribution.Builder("android-retrostreams")
 						.addCopyrightNotice("Copyright (c) 2018 Stefan Zobel <spliterator@gmail.com>")
 						.addLicense(License.GPL_2)
-						.setWebsite("https://github.com/ge0rg/MemorizingTrustManager")
+						.setWebsite("https://github.com/retrostreams/android-retrostreams")
 						.build(),
 					new Attribution.Builder("Android-State")
 						.addCopyrightNotice("Copyright (c) 2017 Evernote Corporation.")
 						.addLicense("Eclipse Public License - v 1.0","https://www.eclipse.org/legal/epl-v10.html")
-						.setWebsite("https://github.com/ge0rg/MemorizingTrustManager")
+						.setWebsite("https://github.com/evernote/android-state")
 						.build(),
 					new Attribution.Builder("Bridge")
 						.addCopyrightNotice("Copyright 2017 Livefront")
