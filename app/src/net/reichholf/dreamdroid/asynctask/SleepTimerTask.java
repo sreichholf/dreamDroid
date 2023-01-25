@@ -25,6 +25,8 @@ public class SleepTimerTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, 
 	@NonNull
 	@Override
 	protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+		if (isCancelled())
+			return false;
 		publishProgress();
 		String xml = mHandler.get(getHttpClient(), params[0]);
 
@@ -45,14 +47,14 @@ public class SleepTimerTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, 
 
 	@Override
 	protected void onPostExecute(Boolean result) {
-		SleepTimerTaskHandler resultHandler = (SleepTimerTaskHandler) mTaskHandler.get();
-		if (isCancelled() || resultHandler == null)
+		SleepTimerTaskHandler taskHandler = (SleepTimerTaskHandler) mTaskHandler.get();
+		if (isInvalid(taskHandler))
 			return;
 
 		if (!result || mResult == null)
 			mResult = new ExtendedHashMap();
 
-		resultHandler.onSleepTimerSet(result, mResult, mDialogOnFinish, getErrorText());
+		taskHandler.onSleepTimerSet(result, mResult, mDialogOnFinish, getErrorText());
 	}
 
 	public interface SleepTimerTaskHandler extends AsyncHttpTaskBaseHandler {

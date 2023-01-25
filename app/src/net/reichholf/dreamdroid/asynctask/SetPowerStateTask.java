@@ -37,14 +37,14 @@ public class SetPowerStateTask extends AsyncHttpTaskBase<String, String, Boolean
 
 	@Override
 	protected void onPostExecute(Boolean result) {
-		PowerStateTaskHandler resultHandler = (PowerStateTaskHandler) mTaskHandler.get();
-		if (isInvalid(resultHandler))
+		PowerStateTaskHandler taskHandler = (PowerStateTaskHandler) mTaskHandler.get();
+		if (isInvalid(taskHandler))
 			return;
 
 		boolean success = result && mResult != null;
 		if (!success)
 			mResult = new ExtendedHashMap();
-		resultHandler.onPowerStateSet(success, mResult, getErrorText());
+		taskHandler.onPowerStateSet(success, mResult, getErrorText());
 	}
 
 	public interface PowerStateTaskHandler extends AsyncHttpTaskBaseHandler {

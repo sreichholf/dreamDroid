@@ -41,14 +41,14 @@ public class SetVolumeTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, V
 
 	protected void onPostExecute(Boolean result) {
 		SetVolumeTaskHandler taskHandler = (SetVolumeTaskHandler) mTaskHandler.get();
-		if (isCancelled() || taskHandler == null)
+		if (isInvalid(taskHandler))
 			return;
 		if (!result || mVolume == null)
 			mVolume = new ExtendedHashMap();
 		taskHandler.onVolumeSet(result, mVolume);
 	}
 
-	public interface SetVolumeTaskHandler {
+	public interface SetVolumeTaskHandler extends AsyncHttpTaskBaseHandler {
 		void onVolumeSet(boolean result, ExtendedHashMap volume);
 	}
 }
