@@ -1,3 +1,10 @@
+## 1.10.452
+* FIX: crashing VirtualRemote on Android 6.0 and older (SDK <= 23)
+* FIX: a bunch of crashes on mobile and tv
+* FIX: some theming/style issues
+* UPD: italian and spanish translations
+* UPD: Internal changes to how profiles are handled (old profiles will migrated automatically)
+
 ## 1.9.451
 * IMPORTANT: for https using self-signed certs you will now have to check the "All certificates" option in the related connection profile
 * FIX: crashes related to self-signed ssl/https certificates

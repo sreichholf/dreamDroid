@@ -1,5 +1,12 @@
+## 1.10.452
+* FIX: Absturz beim Öffnen der virtuellen Fernbedienung auf Android <= 6 (SDK <= 23)
+* FIX: Diverse Abstürze auf Mobil und TV Geräten wurden behoben
+* FIX: Diverse kleinere Darstellungsprobleme
+* UPD: Italienische und spanische Übersetzung aktualisiert
+* UPD: Interne Änderungen wie die Verbindungsprofile gehandhabt werden (alte Profile werden automatisch migriert)
+
 ## 1.9.451
-* WICHTIG: Für https Verbindung mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil der Haken bei 'Alle Zertifikate' gesetzt werden!
+* WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil der Haken bei 'Alle Zertifikate' gesetzt werden!
 * FIX: Abstürze im Verbindung mit selbst signierten Zertifikaten
 * FIX: Abstürze unter < 24 (Nougat) wenn etwas mit dem internem Player abgespielt werden sollte
 * FIX: Abstürze bei Auswahl des 'Filme' Reiters
