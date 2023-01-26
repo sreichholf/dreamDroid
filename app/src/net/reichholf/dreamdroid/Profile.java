@@ -377,6 +377,8 @@ public class Profile implements Serializable {
 	}
 
 	public Integer getId() {
+		if (id == null)
+			return -1;
 		return id;
 	}
 
