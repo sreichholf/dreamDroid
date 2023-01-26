@@ -1,7 +1,8 @@
-## 1.10.452
+## 1.10.452 / 1.11.453
 * FIX: Absturz beim Öffnen der virtuellen Fernbedienung auf Android <= 6 (SDK <= 23)
 * FIX: Diverse Abstürze auf Mobil und TV Geräten wurden behoben
 * FIX: Diverse kleinere Darstellungsprobleme
+* FIX: Radio Modus (defekt in 1.10.452)
 * UPD: Italienische und spanische Übersetzung aktualisiert
 * UPD: Interne Änderungen wie die Verbindungsprofile gehandhabt werden (alte Profile werden automatisch migriert)
 

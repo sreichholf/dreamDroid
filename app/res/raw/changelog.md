@@ -1,7 +1,8 @@
-## 1.10.452
+## 1.10.452 / 1.11.453
 * FIX: crashing VirtualRemote on Android 6.0 and older (SDK <= 23)
 * FIX: a bunch of crashes on mobile and tv
 * FIX: some theming/style issues
+* FIX: Radio mode (broken in 1.10.452)
 * UPD: italian and spanish translations
 * UPD: Internal changes to how profiles are handled (old profiles will migrated automatically)
 
