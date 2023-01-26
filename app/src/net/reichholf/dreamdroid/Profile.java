@@ -159,7 +159,7 @@ public class Profile implements Serializable {
 	}
 
 
-	public Profile(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+	public Profile(Integer id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean allCertsTrusted, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 				   boolean simpleRemote, String defaultBouquetTv, String defaultBouquetTvName, String defaultParentBouquetTv, String defaultParentBouquetTvName, boolean encoderStream,
 				   String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
