@@ -133,6 +133,7 @@ public class ProfileEditFragment extends BaseFragment {
 		onIsLoginChanged(mLogin.isChecked());
 		onIsEncoderStreamChanged(mEncoderStream.isChecked());
 		onIsEncoderLoginChanged(mEncoderLogin.isChecked());
+		onSslChanged(mSsl.isChecked());
 		registerListeners();
 		return view;
 	}
