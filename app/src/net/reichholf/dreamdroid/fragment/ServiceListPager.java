@@ -40,9 +40,19 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	@State
 	public String mMode;
 
+	@State
+	public String mCurrentTv;
+
+	@State
+	public String mCurrentRadio;
+
+	@State
+	public String mCurrentMovie;
+
 	ViewPager2 mPager;
 
-	ServicelistAdapter mServicelistAdapter;
+	ServicelistAdapter mTvListAdapter;
+	ServicelistAdapter mRadioListAdapter;
 	MovieListAdapter mMovielistAdapter;
 	TimerListAdapter mTimerListAdapter;
 
@@ -163,6 +173,10 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 				return mFolders.size();
 			return 0;
 		}
+
+		public int indexOf(@NonNull String ref) {
+			return mFolders.indexOf(ref);
+		}
 	}
 
 	public class TimerListAdapter extends FragmentStateAdapter {
@@ -188,7 +202,8 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		super.onCreate(savedInstanceState);
 		mHasFabReload = false;
 		mBouquets = null;
-		mMode = MODE_TV;
+		if (mMode == null)
+			mMode = MODE_TV;
 	}
 
 	@Override
@@ -230,18 +245,41 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		});
 
 		mPager = getView().findViewById(R.id.viewPager);
-
-		mServicelistAdapter = new ServicelistAdapter(this);
+		mPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+			@Override
+			public void onPageSelected(int position) {
+				super.onPageSelected(position);
+				switch(mMode) {
+					case MODE_TV:
+						mCurrentTv = mTvListAdapter.get(position).getString(Service.KEY_REFERENCE, null);
+						break;
+					case MODE_RADIO:
+						mCurrentRadio = mRadioListAdapter.get(position).getString(Service.KEY_REFERENCE, null);
+						break;
+					case MODE_MOVIES:
+						mCurrentMovie = mMovielistAdapter.get(position);
+						break;
+				}
+			}
+		});
+		mTvListAdapter = new ServicelistAdapter(this);
+		mRadioListAdapter = new ServicelistAdapter(this);
 		mMovielistAdapter = new MovieListAdapter(this);
 		mTimerListAdapter = new TimerListAdapter(this);
 
+		//selectedItemId = mTabLayout.getSelectedTabPosition()
 		if (MODE_MOVIES.equals(mMode)) {
 			mPager.setAdapter(mMovielistAdapter);
+		} else if (MODE_RADIO.equals(mMode)){
+			mPager.setAdapter(mRadioListAdapter);
+		} else if (MODE_TIMER.equals(mMode)) {
+			mPager.setAdapter(mTimerListAdapter);
 		} else {
-			mPager.setAdapter(mServicelistAdapter);
+			mPager.setAdapter(mTvListAdapter);
 		}
 
-		attachTabLayoutMediator();
+		if (mMode != MODE_TIMER)
+			attachTabLayoutMediator();
 		if (mBouquetListTask != null) {
 			mBouquetListTask.cancel(true);
 		}
@@ -258,12 +296,16 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	@Override
 	public void onPause() {
 		super.onPause();
+		if (mMode.equals(MODE_TIMER))
+			mPager.setAdapter(null);
 		mNavigation.setVisibility(View.GONE);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+		if (mMode.equals(MODE_TIMER))
+			mPager.setAdapter(mTimerListAdapter);
 		mNavigation.setVisibility(View.VISIBLE);
 	}
 
@@ -284,6 +326,8 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			onTvSelected();
 		else if (mMode.equals(MODE_RADIO))
 			onRadioSelected();
+		else if (mMode.equals(MODE_MOVIES))
+			onMoviesSelected();
 		else if (mMode.equals((MODE_TIMER)))
 			onTimerSelected();
 	}
@@ -306,10 +350,13 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 	@Nullable
 	protected String getTabText(int position) {
-		if (mSelectedItemId == R.id.menu_movie && mMovielistAdapter.getItemCount() > position)
+		if (MODE_MOVIES.equals(mMode) && mMovielistAdapter.getItemCount() > position)
 			return mMovielistAdapter.get(position);
-		if (mServicelistAdapter.getItemCount() > position)
-			return mServicelistAdapter.get(position).getString(Service.KEY_NAME);
+		if (MODE_TV.equals(mMode) && mTvListAdapter.getItemCount() > position)
+			return mTvListAdapter.get(position).getString(Service.KEY_NAME);
+		if (MODE_RADIO.equals(mMode) && mRadioListAdapter.getItemCount() > position)
+			return mRadioListAdapter.get(position).getString(Service.KEY_NAME);
+
 		return getString(R.string.not_available);
 	}
 
@@ -335,7 +382,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 	public void onTvSelected() {
 		mMode = MODE_TV;
-		mServicelistAdapter.clear();
+		mTvListAdapter.clear();
 		detachTabLayoutMediator();
 		String[] servicelist = getResources().getStringArray(R.array.servicelist_dedicated);
 		String[] servicerefs = getResources().getStringArray(R.array.servicerefstv);
@@ -343,28 +390,33 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		if (mBouquets != null && mBouquets.tv.size() > 0) {
 			start = 1;
 			for (ExtendedHashMap bouquet : mBouquets.tv)
-				mServicelistAdapter.add(bouquet);
+				mTvListAdapter.add(bouquet);
 		}
 		for (int i = start; i < servicelist.length; i++) {
 			ExtendedHashMap bouquet = new ExtendedHashMap();
 			bouquet.put(Event.KEY_SERVICE_NAME, servicelist[i]);
 			bouquet.put(Event.KEY_SERVICE_REFERENCE, servicerefs[i]);
-			mServicelistAdapter.add(bouquet);
+			mTvListAdapter.add(bouquet);
 		}
 
-		mServicelistAdapter.notifyDataSetChanged();
-		mPager.setAdapter(mServicelistAdapter);
-		String detailReference = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
-		int idx = mServicelistAdapter.indexOf(detailReference);
+		mTvListAdapter.notifyDataSetChanged();
+		if (!mTvListAdapter.equals(mPager.getAdapter()))
+			mPager.setAdapter(mTvListAdapter);
+
+		if (mCurrentTv == null)
+			mCurrentTv = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
+		int idx = mTvListAdapter.indexOf(mCurrentTv);
 		if (idx >= 0)
 			mPager.setCurrentItem(idx);
+		else
+			mPager.setCurrentItem(0);
 
 		attachTabLayoutMediator();
 	}
 
 	public void onRadioSelected() {
 		mMode = MODE_RADIO;
-		mServicelistAdapter.clear();
+		mRadioListAdapter.clear();
 		detachTabLayoutMediator();
 		String[] servicelist = getResources().getStringArray(R.array.servicelist_dedicated);
 		String[] servicerefs = getResources().getStringArray(R.array.servicerefsradio);
@@ -372,17 +424,29 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		if (mBouquets != null && mBouquets.radio.size() > 0) {
 			start = 1;
 			for (ExtendedHashMap bouquet : mBouquets.radio)
-				mServicelistAdapter.add(bouquet);
+				mRadioListAdapter.add(bouquet);
 		}
 		for (int i = start; i < servicelist.length; i++) {
 			ExtendedHashMap bouquet = new ExtendedHashMap();
 			bouquet.put(Event.KEY_SERVICE_NAME, servicelist[i]);
 			bouquet.put(Event.KEY_SERVICE_REFERENCE, servicerefs[i]);
-			mServicelistAdapter.add(bouquet);
+			mRadioListAdapter.add(bouquet);
 		}
 
-		mServicelistAdapter.notifyDataSetChanged();
-		mPager.setAdapter(mServicelistAdapter);
+		mRadioListAdapter.notifyDataSetChanged();
+		if (!mRadioListAdapter.equals(mPager.getAdapter()))
+			mPager.setAdapter(mRadioListAdapter);
+
+		int idx = 0;
+		if (mCurrentRadio != null)
+			idx = mRadioListAdapter.indexOf(mCurrentRadio);
+
+		if (idx >= 0) {
+			mPager.setCurrentItem(idx);
+		} else {
+			mPager.setCurrentItem(0);
+		}
+
 		attachTabLayoutMediator();
 	}
 
@@ -400,6 +464,16 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		mMovielistAdapter.notifyDataSetChanged();
 		if (!mPager.getAdapter().equals(mMovielistAdapter))
 			mPager.setAdapter(mMovielistAdapter);
+
+		int idx = 0;
+		if (mCurrentMovie != null)
+			idx = mMovielistAdapter.indexOf(mCurrentMovie);
+
+		if (idx >= 0)
+			mPager.setCurrentItem(idx);
+		else
+			mPager.setCurrentItem(0);
+
 		attachTabLayoutMediator();
 	}
 
@@ -410,7 +484,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			mTabLayout.removeAllTabs();
 		else
 			mTabLayout.setVisibility(View.GONE);
-
 
 		mPager.setAdapter(mTimerListAdapter);
 	}
