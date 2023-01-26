@@ -29,7 +29,7 @@
         <item name="android:padding">4dp</item>
     </style>
 
-    <style name="CardListView.Light" parent="CardListView"/>
+    <style name="CardListView.Light" parent="CardListView" />
 
     <style name="SimpleHeader" parent="@android:style/TextAppearance.Small">
         <item name="android:textAllCaps">true</item>
@@ -41,9 +41,9 @@
         <item name="android:background">@drawable/simple_heading_line</item>
     </style>
 
-    <style name="ButtonPanel"/>
+    <style name="ButtonPanel" />
 
-    <style name="NavButtonBar" parent="@style/Widget.AppCompat.ButtonBar"/>
+    <style name="NavButtonBar" parent="@style/Widget.AppCompat.ButtonBar" />
 
     <style name="NavButtonBarButton">
         <item name="android:background">?attr/listItemBackground</item>
@@ -83,7 +83,7 @@
         <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
-    <style name="mdtp_ActionButton"  parent="Widget.Material3.Button.TextButton.Dialog.Flush" />
+    <style name="mdtp_ActionButton" parent="Widget.Material3.Button.TextButton.Dialog.Flush" />
 
     <style name="Button" parent="Widget.Material3.Button" />
 
@@ -99,6 +99,7 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
+
     <style name="ShapeAppearance.DreamDroid.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">4dp</item>
@@ -114,5 +115,10 @@
         <item name="cornerSize">8dp</item>
     </style>
 
+    <style name="ToolbarStyle" parent="@style/Widget.MaterialComponents.Toolbar.PrimarySurface">
+    </style>
 
+    <style name="ActionModeStyle" parent="@style/Widget.Material3.ActionMode">
+        <item name="background">@color/material_blue_grey_800</item>
+    </style>
 </resources>

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <style name="Theme.DreamDroid" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorControlNormal">@color/white</item>
         <item name="android:listSelector">@drawable/list_selector_light</item>
         <item name="android:navigationBarColor">@color/primary_material_dark</item>
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
@@ -10,7 +11,7 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground
         </item>
-        <item name="actionModeBackground">@color/md_theme_light_onPrimaryContainer</item>
+        <item name="actionModeStyle">@style/ActionModeStyle</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="buttonBarStyle">?attr/buttonBarStyle</item>
         <item name="android:textColorLink">@color/md_theme_light_primary</item>
@@ -181,7 +182,7 @@
         <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground
         </item>
         <item name="actionModeShareDrawable">@drawable/ic_action_share</item>
-        <item name="actionModeBackground">@color/material_blue_grey_800</item>
+        <item name="actionModeStyle">@style/ActionModeStyle</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="detailsElementBackground">@color/details_element_background_dark</item>
         <item name="android:textColorLink">@color/material_blue_500</item>

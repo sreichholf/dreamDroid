@@ -22,7 +22,7 @@
             android:layout_height="wrap_content">
 
             <com.google.android.material.appbar.MaterialToolbar
-                style="@style/Widget.MaterialComponents.Toolbar.PrimarySurface"
+                style="@style/ToolbarStyle"
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
