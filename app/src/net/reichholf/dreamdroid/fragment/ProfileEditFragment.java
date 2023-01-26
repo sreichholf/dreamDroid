@@ -289,7 +289,7 @@ public class ProfileEditFragment extends BaseFragment {
 			showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getName() + "'");
 			finish(Activity.RESULT_OK);
 		} else {
-			dao.addProfile(mCurrentProfile);
+			mCurrentProfile.setId( dao.addProfile(mCurrentProfile) );
 			showToast(getText(R.string.profile_added) + " '" + mCurrentProfile.getName() + "'");
 			finish(Activity.RESULT_OK);
 		}

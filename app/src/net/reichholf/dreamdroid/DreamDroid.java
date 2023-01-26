@@ -199,7 +199,7 @@ public class DreamDroid extends Application {
 			if (dbh.getProfiles().size() > 0) {
 				for (Profile p : dbh.getProfiles()) {
 					dbh.deleteProfile(p);
-					dao.addProfile(p);
+					p.setId( dao.addProfile(p) );
 				}
 
 			}
@@ -351,10 +351,10 @@ public class DreamDroid extends Application {
 			boolean login = sp.getBoolean("login", false);
 			boolean ssl = sp.getBoolean("ssl", false);
 
-			Profile p = new Profile(-1, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
+			Profile p = new Profile(null, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
 					false, false, "", "", "", "");
-			dao.addProfile(p);
-			profileId = p.getId();
+			p.setId( dao.addProfile(p) );
+
 			SharedPreferences.Editor editor = sp.edit();
 			editor.remove(CURRENT_PROFILE);
 			editor.apply();
@@ -363,7 +363,7 @@ public class DreamDroid extends Application {
 		if (!setCurrentProfile(context, profileId)) {
 			// However we got here... we're creating an
 			// "do-not-crash-default-profile now
-			sProfile = new Profile(-1, "Demo", "dreamdroid.org", "", 80, 8001, 80, false, "", "", false, false, false, false,
+			sProfile = new Profile(null, "Demo", "dreamdroid.org", "", 80, 8001, 80, false, "", "", false, false, false, false,
 					false, "", "", "", "");
 		}
 	}

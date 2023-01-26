@@ -162,7 +162,7 @@ public class ProfileListFragment extends BaseRecyclerFragment implements DetectD
 	private void addAllDetectedDevices() {
 		Profile.ProfileDao dao = AppDatabase.profiles(getContext());
 		for (Profile p : mDetectedProfiles) {
-			dao.addProfile(p);
+			p.setId ( dao.addProfile(p) );
 			showToast(getText(R.string.profile_added) + " '" + p.getName() + "'");
 		}
 		reloadProfiles();

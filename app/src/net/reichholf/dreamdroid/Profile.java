@@ -32,7 +32,7 @@ public class Profile implements Serializable {
 	public interface ProfileDao {
 
 		@Insert(onConflict = OnConflictStrategy.REPLACE)
-		void addProfile(Profile profile);
+		long addProfile(Profile profile);
 
 		@Update
 		void updateProfile(Profile profiles);
@@ -48,9 +48,9 @@ public class Profile implements Serializable {
 	}
 
 
-	@PrimaryKey
+	@PrimaryKey(autoGenerate = true)
 	@ColumnInfo(name= "_id")
-	public int id;
+	public Integer id;
 
 	@ColumnInfo(name = "profile")
 	public String name;
@@ -148,11 +148,11 @@ public class Profile implements Serializable {
 
 	@Ignore
 	public static Profile getDefault() {
-		return new Profile(-1, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
+		return new Profile(null, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
 	}
 
 	@Ignore
-	public Profile(int id, String profile, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+	public Profile(Integer id, String profile, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 				   String user, String pass, boolean ssl, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 				   boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name) {
 		init(id, profile, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, false, streamLogin, fileLogin, fileSsl, simpleRemote, defaultRef, defaultRefName, defaultRef2, defaultRef2Name, false, "stream", 554, false, "", "", 2500, 128);
@@ -166,8 +166,7 @@ public class Profile implements Serializable {
 		init(id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl, allCertsTrusted, streamLogin, fileLogin, fileSsl, simpleRemote, defaultBouquetTv, defaultBouquetTvName, defaultParentBouquetTv, defaultParentBouquetTvName, encoderStream, encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate);
 	}
 
-	@Ignore
-	private void init(int id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
+	private void init(Integer id, String name, String host, String streamHost, int port, int streamPort, int filePort, boolean login,
 					  String user, String pass, boolean ssl, boolean allCertsTrusted, boolean streamLogin, boolean fileLogin, boolean fileSsl,
 					  boolean simpleRemote, String defaultRef, String defaultRefName, String defaultRef2, String defaultRef2Name, boolean encoderStream,
 					  String encoderPath, int encoderPort, boolean encoderLogin, String encoderUser, String encoderPass, int encoderVideoBitrate, int encoderAudioBitrate) {
@@ -205,6 +204,10 @@ public class Profile implements Serializable {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public void setId(long id) {
+		this.id = (int) id;
 	}
 
 	public void setPort(int port) {
@@ -373,7 +376,7 @@ public class Profile implements Serializable {
 		this.simpleRemote = simpleRemote;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 

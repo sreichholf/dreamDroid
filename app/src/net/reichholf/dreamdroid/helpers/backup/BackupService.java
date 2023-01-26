@@ -23,7 +23,8 @@ import java.util.Map;
 import java9.util.function.Consumer;
 import java9.util.stream.StreamSupport;
 
-import static android.os.Environment.*;
+import static android.os.Environment.DIRECTORY_DOWNLOADS;
+import static android.os.Environment.getExternalStoragePublicDirectory;
 
 /**
  * Created by GAigner on 01/09/18.
@@ -33,12 +34,12 @@ public class BackupService {
     private final Context mContext;
     private final SharedPreferences mPreferences;
     @NonNull
-	private final Profile.ProfileDao mDatabase;
+	private final Profile.ProfileDao mProfiles;
 
     public BackupService(Context context) {
         mContext = context;
         mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mDatabase = AppDatabase.profiles(context);
+        mProfiles = AppDatabase.profiles(context);
     }
 
     @NonNull
@@ -50,7 +51,7 @@ public class BackupService {
             String type = entry.getValue().getClass().getSimpleName();
             export.addGenericSetting(new GenericSetting(key, value, type));
         });
-        StreamSupport.stream(mDatabase.getProfiles()).forEach(profile -> export.addProfile(profile));
+        StreamSupport.stream(mProfiles.getProfiles()).forEach(profile -> export.addProfile(profile));
         return export;
     }
 
@@ -81,9 +82,9 @@ public class BackupService {
         for (Profile profile : profiles) {
             Profile existingProfile = getProfileFromDB(profile.getName());
             if (existingProfile != null) {
-                mDatabase.deleteProfile(existingProfile);
+                mProfiles.deleteProfile(existingProfile);
             }
-            mDatabase.addProfile(profile);
+            profile.setId( mProfiles.addProfile(profile) );
         }
         List<GenericSetting> settings = backupData.getSettings();
         Map<String, Object> allPreferences = (Map<String, Object>) mPreferences.getAll();
@@ -95,7 +96,7 @@ public class BackupService {
 
     @Nullable
 	private Profile getProfileFromDB(String profileName) {
-        List<Profile> all = mDatabase.getProfiles();
+        List<Profile> all = mProfiles.getProfiles();
         for (Profile profile : all) {
             if (profile.getName().equals(profileName)) {
                 return profile;
