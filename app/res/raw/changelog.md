@@ -1,16 +1,21 @@
+## 1.12.456
+* FIX: TV & Movies now properly remembers where you left any of the tabs after rotation or reopening the app
+* FIX: A crash in TV & Services when the device was rotated while the "Timer" tab was active
+* FIX: Crashes related to the new profile storage implementation, breaking saving of any newly created Profile
+
 ## 1.10.452 / 1.11.453
-* FIX: crashing VirtualRemote on Android 6.0 and older (SDK <= 23)
-* FIX: a bunch of crashes on mobile and tv
-* FIX: some theming/style issues
+* FIX: Crashing VirtualRemote on Android 6.0 and older (SDK <= 23)
+* FIX: A bunch of crashes on mobile and tv
+* FIX: Some theming/style issues
 * FIX: Radio mode (broken in 1.10.452)
-* UPD: italian and spanish translations
+* UPD: Italian and spanish translations
 * UPD: Internal changes to how profiles are handled (old profiles will migrated automatically)
 
 ## 1.9.451
-* IMPORTANT: for https using self-signed certs you will now have to check the "All certificates" option in the related connection profile
-* FIX: crashes related to self-signed ssl/https certificates
-* FIX: crash on android < 24 (Nougat) when trying to stream with the internal player
-* FIX: crashes related to the movies tab
+* IMPORTANT: For https using self-signed certs you will now have to check the "All certificates" option in the related connection profile
+* FIX: Crashes related to self-signed ssl/https certificates
+* FIX: Crash on android < 24 (Nougat) when trying to stream with the internal player
+* FIX: Crashes related to the movies tab
 
 ## 1.8.449
 * FIX: This should finally fix most of the annyoing crashes you've experienced recently

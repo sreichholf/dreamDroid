@@ -1,3 +1,8 @@
+## 1.12.456
+* FIX: TV & Filme erinnert sich nach Rotation oder Wiederherstellung wo man war
+* FIX: Ein Absturz unter TV & Filme wenn während einer Gerätedrehung der Timer Tab aktiv war. 
+* FIX: Abstürze im Bezug auf die Änderungen an den Verbindungsprofilen, neue Profile können nun wieder angelegt werden!
+
 ## 1.10.452 / 1.11.453
 * FIX: Absturz beim Öffnen der virtuellen Fernbedienung auf Android <= 6 (SDK <= 23)
 * FIX: Diverse Abstürze auf Mobil und TV Geräten wurden behoben
