@@ -12,17 +12,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -122,10 +121,14 @@ public class VirtualRemoteFragment extends BaseHttpFragment {
         buttonMap.put(R.id.ButtonTv, Remote.KEY_TV);
         buttonMap.put(R.id.ButtonRadio, Remote.KEY_RADIO);
         buttonMap.put(R.id.ButtonText, Remote.KEY_TEXT);
-        return buttonMap.entrySet()
-                .stream()
-                .map(e -> new Integer[]{e.getKey(), e.getValue()})
-                .toArray(Integer[][]::new);
+
+        Integer[][] keys = new Integer[buttonMap.size()][];
+        int i = 0;
+        for (Map.Entry<Integer,Integer> entry: buttonMap.entrySet()) {
+            keys[i] = new Integer[]{entry.getKey(), entry.getValue()};
+            i++;
+        }
+        return keys;
     }
 
     @Override
