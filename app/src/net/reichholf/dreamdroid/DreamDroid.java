@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -261,7 +262,7 @@ public class DreamDroid extends Application {
 
 	@Nullable
 	private String getWifiName(@NonNull Context context) {
-		WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		WifiManager manager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		if (manager.isWifiEnabled()) {
 			WifiInfo wifiInfo = manager.getConnectionInfo();
 			if (wifiInfo != null) {
@@ -399,7 +400,7 @@ public class DreamDroid extends Application {
 				sLocations.clear();
 				sTags.clear();
 				activeProfileChanged();
-			} else if (sProfile.getId() == oldProfile.getId()) {
+			} else if (Objects.equals(sProfile.getId(), oldProfile.getId())) {
 				sProfile.setSessionId(oldProfile.getSessionId());
 			}
 			return true;
@@ -414,7 +415,7 @@ public class DreamDroid extends Application {
 	}
 
 	public static void profileChanged(Context context, @NonNull Profile p) {
-		if (p.getId() == sProfile.getId()) {
+		if (Objects.equals(p.getId(), sProfile.getId())) {
 			reloadCurrentProfile(context);
 		}
 	}

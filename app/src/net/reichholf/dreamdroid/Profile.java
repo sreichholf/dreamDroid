@@ -23,6 +23,7 @@ import androidx.room.Update;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 
 @Entity( tableName = "profile")
@@ -602,7 +603,7 @@ public class Profile implements Serializable {
 				&& isLogin() == p.isLogin()
 				&& isSsl() == p.isSsl()
 				&& isSimpleRemote() == p.isSimpleRemote()
-				&& getId() == p.getId()
+				&& Objects.equals(getId(), p.getId())
 				&& getPort() == p.getPort()
 				&& getStreamPort() == p.getStreamPort()
 				&& getFilePort() == p.getFilePort()
