@@ -26,6 +26,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
@@ -133,19 +134,17 @@ public class ProfileEditFragment extends BaseFragment {
 		onIsLoginChanged(mLogin.isChecked());
 		onIsEncoderStreamChanged(mEncoderStream.isChecked());
 		onIsEncoderLoginChanged(mEncoderLogin.isChecked());
-		onSslChanged(mSsl.isChecked());
+		onSslChanged(mSsl.isChecked(), true);
 		registerListeners();
 		return view;
 	}
 
 	private void registerListeners() {
 		mLogin.setOnCheckedChangeListener((checkbox, checked) -> onIsLoginChanged(checked));
-
-		mSsl.setOnCheckedChangeListener((checkbox, checked) -> onSslChanged(checked));
-
+		mSsl.setOnCheckedChangeListener((checkbox, checked) -> onSslChanged(checked, false));
 		mEncoderStream.setOnCheckedChangeListener((buttonView, isChecked) -> onIsEncoderStreamChanged(isChecked));
-
 		mEncoderLogin.setOnCheckedChangeListener((buttonView, isChecked) -> onIsEncoderLoginChanged(isChecked));
+
 		registerFab(R.id.fab_main, R.string.save, R.drawable.ic_action_save, v -> save());
 	}
 
@@ -169,14 +168,10 @@ public class ProfileEditFragment extends BaseFragment {
 	}
 
 	@SuppressLint("SetTextI18n")
-	private void onSslChanged(boolean checked) {
-		if (checked) {
-			mPort.setText("443");
-			mTrustAllCerts.setVisibility(View.VISIBLE);
-		} else {
-			mPort.setText("80");
-			mTrustAllCerts.setVisibility(View.INVISIBLE);
-		}
+	private void onSslChanged(boolean checked, boolean keepPort) {
+		if (!keepPort)
+			mPort.setText(checked ? "443" : "80");
+		mTrustAllCerts.setVisibility(checked ? View.VISIBLE : View.INVISIBLE);
 	}
 
 	/**
@@ -273,7 +268,7 @@ public class ProfileEditFragment extends BaseFragment {
 
 
 		Context ctx = getContext();
-		if(ctx == null) { //FIMXE: why/how does this happen?
+		if (ctx == null) { //FIMXE: why/how does this happen?
 			showToast(getText(R.string.profile_not_updated) + " '" + mCurrentProfile.getName() + "'");
 			return;
 		}
