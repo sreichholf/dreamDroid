@@ -175,7 +175,7 @@ public class ProfileEditFragment extends BaseFragment {
 			mTrustAllCerts.setVisibility(View.VISIBLE);
 		} else {
 			mPort.setText("80");
-			mTrustAllCerts.setVisibility(View.GONE);
+			mTrustAllCerts.setVisibility(View.INVISIBLE);
 		}
 	}
 
