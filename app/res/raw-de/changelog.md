@@ -1,3 +1,10 @@
+## 1.13.457
+* FIX: Verfügbarkeit auf TVs ohne WiFi (scheinbar exitstieren solche Geräte)
+* FIX: Markierte Einträge werden wieder hervorgehoben
+* UPD: "Backup" optisch verbessert
+* UPD: Diverse optische Verbesserungen
+* UPD: Externe Bibliotheken
+
 ## 1.12.456
 * FIX: TV & Filme erinnert sich nach Rotation oder Wiederherstellung wo man war
 * FIX: Ein Absturz unter TV & Filme wenn während einer Gerätedrehung der Timer Tab aktiv war. 

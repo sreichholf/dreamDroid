@@ -1,3 +1,10 @@
+## 1.13.457
+* FIX: availability for TVs without WiFi but only Ethernet (googles told me those things exist, I wouldn't have guessed so)
+* FIX: marked entries are now properly highlighted again (Profiles, Timers, etc)
+* UPD: Prettify the backup screen and modernize the code it uses
+* UPD: Visual improvements at multiple places
+* UPD: external libraries
+
 ## 1.12.456
 * FIX: TV & Movies now properly remembers where you left any of the tabs after rotation or reopening the app
 * FIX: A crash in TV & Services when the device was rotated while the "Timer" tab was active
