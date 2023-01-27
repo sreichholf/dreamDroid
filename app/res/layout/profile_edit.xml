@@ -149,7 +149,7 @@
         </LinearLayout>
 
         <TextView
-            style="@style/SimpleHeader"
+            style="@style/SimpleHeaderSmall"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
@@ -181,7 +181,7 @@
         </LinearLayout>
 
         <TextView
-            style="@style/SimpleHeader"
+            style="@style/SimpleHeaderSmall"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
@@ -360,7 +360,7 @@
                 android:paddingEnd="6dp">
 
                 <TextView
-                    style="@style/SimpleHeader"
+                    style="@style/SimpleHeaderSmall"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
@@ -400,7 +400,7 @@
                 android:paddingEnd="6dp">
 
                 <TextView
-                    style="@style/SimpleHeader"
+                    style="@style/SimpleHeaderSmall"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"

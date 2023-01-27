@@ -23,7 +23,7 @@
 
             <TextView
                 android:id="@+id/GuiVersionTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/gui_version"/>
@@ -40,7 +40,7 @@
 
             <TextView
                 android:id="@+id/ImageVersionTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/image_version"/>
@@ -57,7 +57,7 @@
 
             <TextView
                 android:id="@+id/InterfaceVersionTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/interface_version"/>
@@ -74,7 +74,7 @@
 
             <TextView
                 android:id="@+id/FrontprocessorVersionTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/front_processor_version"/>
@@ -91,7 +91,7 @@
 
             <TextView
                 android:id="@+id/DeviceNameTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/device_name"/>
@@ -108,7 +108,7 @@
 
             <TextView
                 android:id="@+id/FrontendsTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/frontends"/>
@@ -130,7 +130,7 @@
 
             <TextView
                 android:id="@+id/NicsTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/nics"/>
@@ -152,7 +152,7 @@
 
             <TextView
                 android:id="@+id/HddsTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/hdds"/>

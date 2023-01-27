@@ -24,7 +24,7 @@
 
             <TextView
                 android:id="@+id/ServiceNameTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/service"/>
@@ -57,7 +57,7 @@
 
             <TextView
                 android:id="@+id/ProviderTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/provider"/>
@@ -74,7 +74,7 @@
 
             <TextView
                 android:id="@+id/NowTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/now"/>
@@ -132,7 +132,7 @@
 
             <TextView
                 android:id="@+id/NextTitle"
-                style="@style/SimpleHeader"
+                style="@style/SimpleHeaderSmall"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/next"/>
