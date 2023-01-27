@@ -79,7 +79,6 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 		initializeOverlay();
 	}
 
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void surfaceFrameAddLayoutListener(boolean add) {
 		if (mSurfaceFrame == null || add == (mOnLayoutChangeListener != null)) return;
 		if (add) {

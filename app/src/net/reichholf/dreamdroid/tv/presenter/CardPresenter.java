@@ -17,6 +17,7 @@ package net.reichholf.dreamdroid.tv.presenter;
  */
 
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -29,7 +30,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.leanback.widget.BaseCardView;
 import androidx.leanback.widget.ImageCardView;
 import androidx.leanback.widget.Presenter;
@@ -66,12 +67,15 @@ public class CardPresenter extends Presenter {
 	@NonNull
 	@Override
 	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent) {
+		Context ctx = parent.getContext();
+		Resources res = parent.getResources();
+		Resources.Theme theme = ctx.getTheme();
 		mDefaultBackgroundColor =
-				ContextCompat.getColor(parent.getContext(), R.color.primary_dreamdroid);
+				ResourcesCompat.getColor(res, R.color.primary_dreamdroid, theme);
 		mSelectedBackgroundColor =
-				ContextCompat.getColor(parent.getContext(), R.color.primary_material_dark);
-		mDefaultCardImage = parent.getResources().getDrawable(R.drawable.dreamdroid_logo_simple, null);
-
+				ResourcesCompat.getColor(res, R.color.primary_material_dark, theme);
+		mDefaultCardImage =
+				ResourcesCompat.getDrawable(res, (R.drawable.dreamdroid_logo_simple), theme);
 
 		BaseCardView cardView;
 		if (mMode == ItemMode.MODE_TEXT) {
@@ -143,7 +147,7 @@ public class CardPresenter extends Presenter {
 
 		Integer mainImageId = (Integer) settings.get("icon");
 		if (mainImageId != null)
-			cardView.setMainImage(cardView.getResources().getDrawable(mainImageId, null));
+			cardView.setMainImage(ResourcesCompat.getDrawable(cardView.getResources(), mainImageId, cardView.getContext().getTheme()));
 		else
 			cardView.setMainImage(mDefaultCardImage);
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);

@@ -220,7 +220,6 @@ public class ItemSelectionSupport {
 		updateOnScreenCheckedViews();
 	}
 
-	@TargetApi(HONEYCOMB)
 	public void setViewChecked(View view, boolean checked) {
 		if (view instanceof Checkable) {
 			((Checkable) view).setChecked(checked);

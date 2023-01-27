@@ -107,7 +107,7 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
                     .sslSocketFactory(sc.getSocketFactory(), systemDefaultTrustManager())
                     .hostnameVerifier(mTrustManager.wrapHostnameVerifier(OkHostnameVerifier.INSTANCE));
             Picasso.Builder builder = new Picasso.Builder(getApplicationContext());
-            builder.downloader(new OkHttp3Downloader(clientBuilder.build()));
+			builder.downloader(new OkHttp3Downloader(clientBuilder.build()));
 			try {
 				Picasso.setSingletonInstance(builder.build());
 			} catch (IllegalStateException ignored) {}

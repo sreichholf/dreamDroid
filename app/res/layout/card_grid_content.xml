@@ -32,9 +32,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:drawableTop="@drawable/ic_warning_48dp"
             android:gravity="center"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            app:drawableTopCompat="@drawable/ic_warning_48dp" />
     </FrameLayout>
 </LinearLayout>
