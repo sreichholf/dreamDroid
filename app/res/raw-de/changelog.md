@@ -1,6 +1,8 @@
 ## 1.13.457
-* FIX: Verfügbarkeit auf TVs ohne WiFi (scheinbar exitstieren solche Geräte)
+* FIX: Beim Bearbeiten eines Profils wurde der Port immer auf Protkoll-Standard zurückgesetzt (jedoch immer korrekt gespeichert)
 * FIX: Markierte Einträge werden wieder hervorgehoben
+* FIX: Optische problem unter Android <= 5 (SDK 21)
+* FIX: Verfügbarkeit auf TVs ohne WiFi (scheinbar exitstieren solche Geräte)
 * UPD: "Backup" optisch verbessert
 * UPD: Diverse optische Verbesserungen
 * UPD: Externe Bibliotheken
