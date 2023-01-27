@@ -7,19 +7,21 @@
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="?attr/cardBackgroundColor"
     app:cardElevation="4dp"
-    app:contentPadding="4dp">
+    app:cardPreventCornerOverlap="false"
+    app:contentPadding="0dp">
 
     <net.reichholf.dreamdroid.widget.CheckableLinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="0dp"
         android:background="?attr/listItemBackground"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="0dp">
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            android:layout_marginLeft="3dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -39,10 +41,9 @@
 
         <TextView
             android:id="@+id/activeIndicator"
-            android:layout_width="15dp"
+            android:layout_width="30dp"
             android:layout_height="fill_parent"
-            android:layout_marginEnd="3dp"
-            android:layout_marginRight="3dp"
+            android:layout_marginEnd="0dp"
             android:layout_weight="1" />
 
     </net.reichholf.dreamdroid.widget.CheckableLinearLayout>
