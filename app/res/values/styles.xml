@@ -31,18 +31,18 @@
 
     <style name="CardListView.Light" parent="CardListView" />
 
-    <style name="SimpleHeaderSmall" parent="@style/TextAppearance.Material3.HeadlineSmall">
+    <style name="SimpleHeaderSmall" parent="@style/TextAppearance.Material3.TitleSmall">
         <item name="android:textAllCaps">true</item>
-        <item name="android:paddingLeft">3dp</item>
-        <item name="android:paddingRight">3dp</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:background">@drawable/simple_heading_line</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">3dp</item>
+        <item name="android:textColor">?attr/colorAccent</item>
     </style>
 
-    <style name="SimpleHeaderMedium" parent="@style/TextAppearance.Material3.HeadlineSmall">
+    <style name="SimpleHeaderMedium" parent="@style/TextAppearance.Material3.TitleMedium">
         <item name="android:textAllCaps">true</item>
-        <item name="android:background">@drawable/simple_heading_line</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">3dp</item>
+        <item name="android:textColor">?attr/colorAccent</item>
     </style>
 
     <style name="ButtonPanel" />
