@@ -19,7 +19,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/EditTextTitle"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/EditTextDescription"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
