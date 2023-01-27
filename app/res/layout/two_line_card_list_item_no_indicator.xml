@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    style="@style/Theme.DreamDroid.Night"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Theme.DreamDroid.Night"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:checkable="true"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardBackgroundColor="@color/cardview_dark_background"
     app:cardElevation="4dp"
@@ -19,23 +19,23 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
             android:layout_marginLeft="3dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="3dp">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@android:id/text1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@android:id/text2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
         </LinearLayout>
 
     </net.reichholf.dreamdroid.widget.CheckableLinearLayout>

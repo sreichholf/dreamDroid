@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:checkable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="?attr/cardBackgroundColor"
     app:cardElevation="4dp"
@@ -15,21 +15,13 @@
         android:background="?attr/listItemBackground"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/timer_state_indicator"
-            android:layout_width="15dp"
-            android:layout_height="fill_parent"
-            android:layout_marginRight="3dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="3dp"/>
-
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
             android:layout_marginLeft="3dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="3dp">
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="fill_parent"
@@ -47,7 +39,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_weight="1"/>
+                        android:layout_weight="1" />
 
                     <TextView
                         android:id="@+id/timer_action"
@@ -56,7 +48,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:gravity="end"/>
+                        android:gravity="end" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -70,7 +62,7 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_weight="1"/>
+                        android:layout_weight="1" />
 
                     <TextView
                         android:id="@+id/timer_state"
@@ -79,7 +71,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:gravity="end"/>
+                        android:gravity="end" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -93,14 +85,14 @@
                     style="@style/CardTextSmall"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <TextView
                     style="@style/CardTextSmall"
                     android:layout_width="15dp"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
-                    android:text="-"/>
+                    android:text="-" />
 
                 <TextView
                     android:id="@+id/timer_end"
@@ -108,9 +100,17 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="end"/>
+                    android:gravity="end" />
             </LinearLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/timer_state_indicator"
+            android:layout_width="15dp"
+            android:layout_height="fill_parent"
+            android:layout_marginEnd="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_weight="1" />
 
     </net.reichholf.dreamdroid.widget.CheckableLinearLayout>
 </com.google.android.material.card.MaterialCardView>
