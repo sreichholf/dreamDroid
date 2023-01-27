@@ -18,6 +18,15 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.MenuProvider;
+
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -33,19 +42,15 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import java9.util.stream.StreamSupport;
 
 import static net.reichholf.dreamdroid.helpers.Statics.ITEM_BACKUP_EXPORT;
 import static net.reichholf.dreamdroid.helpers.Statics.ITEM_BACKUP_IMPORT;
-import static net.reichholf.dreamdroid.helpers.Statics.REQUEST_BACKUP_IMPORT;
 
 /**
  * Created by GAigner on 01/09/18.
  */
-public class BackupFragment extends BaseFragment {
+public class BackupFragment extends BaseFragment implements MenuProvider {
 	private static final String TAG = BackupFragment.class.getSimpleName();
 
 	@Nullable
@@ -53,20 +58,23 @@ public class BackupFragment extends BaseFragment {
 	private BackupData mBackupData;
 
 	@NonNull
-	private List<CheckBox> mProfilesCheckBox = new ArrayList<>();
-	private CheckBox mSettingsCheckBox;
+	private List<SwitchCompat> mProfileSwitches = new ArrayList<>();
+	private SwitchCompat mSettingsSwitch;
 	private View mBackupView;
 
+	private ActivityResultLauncher<Intent> mPickImportFile = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(), result -> onImportFilePicked(result)
+	);
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
-		initTitles(getString(R.string.backup));
+		getAppCompatActivity().addMenuProvider(this);
 		requestStoragePermission();
+
 	}
 
 	@Override
-	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
+	public void onCreateMenu(Menu menu, @NonNull MenuInflater inflater) {
 		inflater.inflate(R.menu.backup, menu);
 	}
 
@@ -78,14 +86,14 @@ public class BackupFragment extends BaseFragment {
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		mBackupService = new BackupService(getContext());
 		mBackupView = inflater.inflate(R.layout.backup, null);
-		mSettingsCheckBox = mBackupView.findViewById(R.id.backup_export_settings);
+		mSettingsSwitch = mBackupView.findViewById(R.id.backup_export_settings);
 		loadBackupData();
 		refreshView();
 		return mBackupView;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+	public boolean onMenuItemSelected(@NonNull MenuItem item) {
 		if (!hasStoragePermission()) {
 			requestStoragePermission();
 			return false;
@@ -119,20 +127,20 @@ public class BackupFragment extends BaseFragment {
 		int currentProfileId = DreamDroid.getCurrentProfile().getId();
 		LinearLayout checkboxLayout = mBackupView.findViewById(R.id.layout_backup_profile_dynamic);
 		checkboxLayout.removeAllViews();
-		mProfilesCheckBox.clear();
+		mProfileSwitches.clear();
 		for (Profile profile : mBackupData.getProfiles()) {
 			int id = profile.getId();
-			String text = profile.getName();
+			String text = String.format("%s (%s)", profile.getName(), profile.getHost());
 			if (id == currentProfileId) {
 				String currentText = getString(R.string.backup_current_profile);
 				text += " (" + currentText + ")";
 			}
-			CheckBox ch = new CheckBox(getContext());
-			ch.setText(text);
-			ch.setId(id);
-			ch.setChecked(true);
-			checkboxLayout.addView(ch);
-			mProfilesCheckBox.add(ch);
+			SwitchCompat sw = new SwitchCompat(getContext());
+			sw.setText(text);
+			sw.setId(id);
+			sw.setChecked(true);
+			checkboxLayout.addView(sw);
+			mProfileSwitches.add(sw);
 		}
 	}
 
@@ -140,7 +148,7 @@ public class BackupFragment extends BaseFragment {
 		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 		intent.setType("*/*");
 		try {
-			getActivity().startActivityForResult(intent, REQUEST_BACKUP_IMPORT);
+			mPickImportFile.launch(intent);
 		} catch (ActivityNotFoundException e) {
 			showToast(e.getLocalizedMessage());
 		}
@@ -148,10 +156,10 @@ public class BackupFragment extends BaseFragment {
 	}
 
 	private void doExport() {
-		if (!mSettingsCheckBox.isChecked()) {
+		if (!mSettingsSwitch.isChecked()) {
 			mBackupData.setSettings(null);
 		}
-		StreamSupport.stream(mProfilesCheckBox).filter(p -> !p.isChecked()).forEach(checkBox -> {
+		StreamSupport.stream(mProfileSwitches).filter(p -> !p.isChecked()).forEach(checkBox -> {
 			mBackupData.getProfiles().remove(StreamSupport.stream(mBackupData.getProfiles()).filter(p -> p.getId() == checkBox.getId()).findFirst().get());
 		});
 		mBackupService.doExport(mBackupData);
@@ -166,10 +174,9 @@ public class BackupFragment extends BaseFragment {
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
 	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if (REQUEST_BACKUP_IMPORT == requestCode && resultCode == Activity.RESULT_OK) {
+	protected void onImportFilePicked(ActivityResult result) {
+		if (result.getResultCode() == Activity.RESULT_OK) {
+			Intent data = result.getData();
 			if (data != null) {
 				Uri uri = data.getData();
 				try {
@@ -184,7 +191,6 @@ public class BackupFragment extends BaseFragment {
 			}
 			return;
 		}
-		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@NonNull
