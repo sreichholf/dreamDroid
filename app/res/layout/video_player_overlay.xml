@@ -110,7 +110,7 @@
                 app:cardBackgroundColor="?attr/colorPrimaryDark"
                 app:cardCornerRadius="4dp"
                 app:cardElevation="0dp"
-                app:cardPreventCornerOverlap="false">
+                app:cardPreventCornerOverlap="@bool/preventCardCornerOverlap">
 
                 <RelativeLayout
                     android:layout_width="match_parent"

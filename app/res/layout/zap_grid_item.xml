@@ -24,7 +24,7 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:foreground="?attr/selectableItemBackground"
-        app:cardPreventCornerOverlap="false"
+        app:cardPreventCornerOverlap="@bool/preventCardCornerOverlap"
         app:cardBackgroundColor="?attr/colorButtonNormal"
         app:contentPadding="0dp">
 

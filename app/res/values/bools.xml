@@ -3,4 +3,5 @@
     <bool name="is_tablet">false</bool>
     <bool name="requireTranslucentStatusbar">false</bool>
     <bool name="is_television">false</bool>
+    <bool name="preventCardCornerOverlap">true</bool>
 </resources>

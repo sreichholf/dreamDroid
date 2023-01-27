@@ -7,7 +7,7 @@
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="?attr/cardBackgroundColor"
     app:cardElevation="4dp"
-    app:cardPreventCornerOverlap="false"
+    app:cardPreventCornerOverlap="@bool/preventCardCornerOverlap"
     app:contentPadding="0dp">
 
     <net.reichholf.dreamdroid.widget.CheckableLinearLayout
