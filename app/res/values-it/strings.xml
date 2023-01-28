@@ -250,7 +250,7 @@
     <string name="ssl_movies">https (Film)</string>
     <string name="login_live">Accesso (live)</string>
     <string name="appearance">Aspetto</string>
-    <string name="usability">Usabilità</string>
+    <string name="usability">Fruibilità</string>
     <string name="use_picons">Usa picon</string>
     <string name="use_picons_long">Abilita l\'uso dei picon in determinate aree.
 \nRichiede picon in /{ExternalStorageDir}/dreamDroid/picons</string>
@@ -373,4 +373,5 @@
     <string name="dynamic_theme_colors_long">Usa i colori dinamici del tema.
 \nLa modifica riavvierà l\'app!</string>
     <string name="dynamic_theme_colors">Colori tema dinamici</string>
+    <string name="trust_all_certs">Tutti i certificati</string>
 </resources>
