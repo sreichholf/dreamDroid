@@ -345,12 +345,12 @@ public class DreamDroid extends Application {
 			String host = sp.getString("host", "dreamdroid.org");
 			String streamHost = sp.getString("host", "");
 
-			int port = Integer.valueOf(sp.getString("port", "80"));
+			int port = Integer.valueOf(sp.getString("port", "443"));
 			String user = sp.getString("user", "root");
 			String pass = sp.getString("pass", "dreambox");
 
 			boolean login = sp.getBoolean("login", false);
-			boolean ssl = sp.getBoolean("ssl", false);
+			boolean ssl = sp.getBoolean("ssl", true);
 
 			Profile p = new Profile(null, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
 					false, false, "", "", "", "");
