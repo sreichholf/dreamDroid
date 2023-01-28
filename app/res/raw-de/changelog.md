@@ -1,3 +1,5 @@
+### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
+
 ## 1.13.457
 * FIX: Beim Bearbeiten eines Profils wurde der Port immer auf Protkoll-Standard zurückgesetzt (jedoch immer korrekt gespeichert)
 * FIX: Markierte Einträge werden wieder hervorgehoben
@@ -21,7 +23,6 @@
 * UPD: Interne Änderungen wie die Verbindungsprofile gehandhabt werden (alte Profile werden automatisch migriert)
 
 ## 1.9.451
-* WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil der Haken bei 'Alle Zertifikate' gesetzt werden!
 * FIX: Abstürze im Verbindung mit selbst signierten Zertifikaten
 * FIX: Abstürze unter < 24 (Nougat) wenn etwas mit dem internem Player abgespielt werden sollte
 * FIX: Abstürze bei Auswahl des 'Filme' Reiters

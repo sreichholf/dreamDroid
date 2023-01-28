@@ -1,3 +1,5 @@
+### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
+
 ## 1.13.457
 * FIX: Don't reset the port to protocol default when editing an existing profile
 * FIX: Marked entries are now properly highlighted again (Profiles, Timers, etc)
@@ -21,7 +23,6 @@
 * UPD: Internal changes to how profiles are handled (old profiles will migrated automatically)
 
 ## 1.9.451
-* IMPORTANT: For https using self-signed certs you will now have to check the "All certificates" option in the related connection profile
 * FIX: Crashes related to self-signed ssl/https certificates
 * FIX: Crash on android < 24 (Nougat) when trying to stream with the internal player
 * FIX: Crashes related to the movies tab
