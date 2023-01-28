@@ -282,6 +282,8 @@ public class ProfileEditFragment extends BaseFragment {
 				mCurrentProfile.setStreamHost("");
 			}
 			dao.updateProfile(mCurrentProfile);
+			if (mCurrentProfile.getId().equals(DreamDroid.getCurrentProfile().getId()))
+				DreamDroid.setCurrentProfile(mCurrentProfile);
 			showToast(getText(R.string.profile_updated) + " '" + mCurrentProfile.getName() + "'");
 			finish(Activity.RESULT_OK);
 		} else {
