@@ -149,7 +149,7 @@ public class Profile implements Serializable {
 
 	@Ignore
 	public static Profile getDefault() {
-		return new Profile(null, "", "", "", 80, 8001, 80, false, "root", "dreambox", false, false, false, false, false, "", "", "", "");
+		return new Profile(null, "", "", "", 443, 8001, 80, false, "root", "dreambox", true, false, false, false, false, "", "", "", "");
 	}
 
 	@Ignore
