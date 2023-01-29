@@ -208,8 +208,8 @@
     <string name="sleeptimer">Timer spegnimento</string>
     <string name="current_volume">Volume impostato a %s</string>
     <string name="muted">Muto</string>
-    <string name="enable_volume_control">Abilita controllo volume</string>
-    <string name="enable_volume_control_long">Abilita controllo volume diretto usando tasti fisici</string>
+    <string name="enable_volume_control">Controllo volume</string>
+    <string name="enable_volume_control_long">Abilita il controllo volume diretto usando i tasti fisici +/-</string>
     <string name="download">Scarica</string>
     <string name="extras">Extra</string>
     <string name="main_menu">Principale</string>
@@ -225,7 +225,7 @@
     <string name="edit_profile">Modifica profilo</string>
     <string name="force_tablet_layout_long">Forza disposizione ottimizzata per tablet</string>
     <string name="force_tablet_layout">Forza disposizione tablet</string>
-    <string name="mobile_imdb">Usa la versione mobile di imdb.com</string>
+    <string name="mobile_imdb">Versione mobile di imdb.com</string>
     <string name="mobile_imdb_long">Usa m.imdb.com invece di www.imdb.com</string>
     <string name="searching">Ricerca in corso…</string>
     <string name="searching_known_devices">Ricerca di Dreambox nella tua rete locale. Questo potrebbe richiedere alcuni minuti…</string>
@@ -244,19 +244,18 @@
     <string name="watch_on_dream">Guarda su Dreambox</string>
     <string name="sent_from_dreamdroid">Inviato da dreamDroid su %s</string>
     <string name="no_profile_available">Nessun profilo di connessione trovato! Configura almeno un profilo usando l\'applicazione principale!</string>
-    <string name="confirm_app_close">Chiedi conferma prima di uscire</string>
-    <string name="confirm_app_close_long">Chiedi conferma prima di chiudere l\'applicazione premendo back</string>
+    <string name="confirm_app_close">Conferma prima di uscire dall\'app</string>
+    <string name="confirm_app_close_long">Chiedi conferma prima che l\'app venga chiusa quando premi indietro</string>
     <string name="login_movies">Accesso (film)</string>
     <string name="ssl_movies">https (Film)</string>
     <string name="login_live">Accesso (live)</string>
     <string name="appearance">Aspetto</string>
-    <string name="usability">Fruibilità</string>
-    <string name="use_picons">Usa picon</string>
-    <string name="use_picons_long">Abilita l\'uso dei picon in determinate aree.
-\nRichiede picon in /{ExternalStorageDir}/dreamDroid/picons</string>
-    <string name="sync_picons">Sincronizza picon</string>
-    <string name="sync_picons_long">Sincronizza picon in /{ExternalStorageDir}/dreamDroid/picons usando il profilo di connessione attualmente configurato</string>
-    <string name="sync_picons_path">Picon - percorso remoto</string>
+    <string name="usability">Usabilità</string>
+    <string name="use_picons">Picon</string>
+    <string name="use_picons_long">Abilita l\'uso dei picon in determinate aree. Richiede picon in /{ExternalStorageDir}/dreamDroid/picons</string>
+    <string name="sync_picons">Sincronizzazione picon</string>
+    <string name="sync_picons_long">Sincronizza subito i picon in /{ExternalStorageDir}/dreamDroid/picons usando il profilo di connessione attualmente configurato</string>
+    <string name="sync_picons_path">Percorso remoto picon</string>
     <string name="sync_picons_path_long">Percorso dei picon sul tuo Dreambox</string>
     <string name="connecting">Connessione in corso</string>
     <string name="connected">Connesso</string>
@@ -266,7 +265,7 @@
     <string name="drawer_open">Apri il menu di navigazione</string>
     <string name="drawer_close">Chiudi il menu di navigazione</string>
     <string name="enable_animations_long">Abilita le animazioni aggiuntive</string>
-    <string name="enable_animations">Abilita animazioni</string>
+    <string name="enable_animations">Animazioni</string>
     <string name="use_name_as_picon_filename_long">Usa nome servizio come nome file per picon</string>
     <string name="use_name_as_picon_filename">Picon per nome servizio</string>
     <string name="picons">Picon</string>
@@ -277,13 +276,13 @@
     <string name="disable">Disabilita</string>
     <string name="epg_sync">Sincronizzazione EPG in corso</string>
     <string name="epg_sync_finished">La guida programmi è stata sincronizzata</string>
-    <string name="disable_fab_reload">Disabilita il tasto ricarica flottante</string>
-    <string name="disable_fab_reload_long">Il tasto ricarica verrà collocato nella ActionBar</string>
+    <string name="disable_fab_reload">Pulsante di ricarica mobile</string>
+    <string name="disable_fab_reload_long">Il tasto ricarica verrà invece inserito nella ActionBar</string>
     <string name="reset_default">Ripristina predefinito</string>
-    <string name="max_grid_cols">Max colonne elenco servizi</string>
+    <string name="max_grid_cols">Colonne elenco servizi</string>
     <string name="max_grid_cols_long">Numero massimo di colonne nell\'elenco servizi</string>
     <string name="default_to_full_vrm_long">Usa la disposizione semplice come predefinita</string>
-    <string name="default_to_full_vrm">Telecomando semplice come predefinito</string>
+    <string name="default_to_full_vrm">Telecomando predefinito</string>
     <string name="donate_sum">Dona %s</string>
     <string name="donate">Donazione</string>
     <string name="donation_thanks">Grazie mille per la tua donazione!</string>
@@ -304,13 +303,13 @@
     <string name="defaultOnNoWifi">È il profilo predefinito senza Wi-Fi</string>
     <string name="remote_widget_config_title_style">Seleziona lo stile del telecomando</string>
     <string name="remote_widget_config_title_profile">Seleziona il profilo da usare nel widget</string>
-    <string name="auto_switch_profile_wifi_based">Cambio profilo automatico</string>
-    <string name="auto_switch_profile_wifi_based_long">Cambio profilo automatico in base alla connessione Wi-Fi</string>
+    <string name="auto_switch_profile_wifi_based">Profilo automatico</string>
+    <string name="auto_switch_profile_wifi_based_long">Cambia automaticamente il profilo in base alla connessione Wi-Fi</string>
     <string name="license_gplv3">Licenza:
 \nDreamdroid è un software gratuito.
 \nLicenza GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.html</string>
     <string name="play_button_as_play_pause_long">Usa il tasto Play come Play/Pausa nel widget e nel telecomando dell\'app</string>
-    <string name="play_button_as_play_pause">Usa il tasto Play come Play/Pausa</string>
+    <string name="play_button_as_play_pause">Tasto Play come Play/Pausa</string>
     <string name="next_event">Evento successivo</string>
     <string name="use_encoder">Usa encoder per la trasmissione</string>
     <string name="encoder_path">Percorso trasmissione</string>
@@ -324,12 +323,12 @@
     <string name="picon_sync_running">C\'è ancora un\'altra sincronizzazione picon in esecuzione!</string>
     <string name="streaming">Trasmissione in corso</string>
     <string name="integrated_video_player">Lettore video integrato</string>
-    <string name="integrated_video_player_long">Usa il lettore video integrato durante la trasmissione</string>
+    <string name="integrated_video_player_long">Usa il lettore video integrato durante la riproduzione</string>
     <string name="playback_failed">Riproduzione fallita!</string>
     <string name="previous_lower">precedente</string>
     <string name="next_lower">successivo</string>
     <string name="theme">Tema chiaro/scuro</string>
-    <string name="theme_long">Scelta del tema chiaro/scuro</string>
+    <string name="theme_long">Tema chiaro/scuro</string>
     <string name="video_use_hw_accel">Accelerazione hardware</string>
     <string name="use_hw_accel">Decodifica accelerata</string>
     <string name="use_hw_accel_long">Usa l\'accelerazione hardware per la decodifica video (%s)</string>
@@ -337,8 +336,8 @@
     <string name="location_rationale_title">Posizione richiesta</string>
     <string name="location_rationale">DreamDroid richiede la posizione approssimativa per la commutazione automatica del tema chiaro/scuro.
 \nI dati sulla posizione sono usati solo per selezionare il tema corretto e non vengono registrati/condivisi.</string>
-    <string name="video_enable_gestures_long">Abilitare i gesti per il controllo di volume e luminosità</string>
-    <string name="video_enable_gestures">Abilita gesti</string>
+    <string name="video_enable_gestures_long">Abilita i gesti per il controllo di volume e luminosità</string>
+    <string name="video_enable_gestures">Gesti</string>
     <string name="online_picons">Usa picon online</string>
     <string name="online_picons_long">Non usare picon sincronizzati ma caricali direttamente tramite http(s). Può causare traffico considerevole!</string>
     <string name="audio_track">Traccia audio</string>
