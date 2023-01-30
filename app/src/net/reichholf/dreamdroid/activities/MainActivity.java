@@ -29,6 +29,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.material.appbar.AppBarLayout;
@@ -79,7 +80,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			"powerstate_dialog", "sendmessage_dialog", "sleeptimer_dialog", "sleeptimer_progress_dialog");
 
 	private boolean mSlider;
-	private boolean mIsPaused;
 	private boolean mIsDrawerOpen;
 	private TextView mActiveProfile;
 	private TextView mConnectionState;
@@ -107,6 +107,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 	}
 
+	private boolean isPaused() {
+		return !getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+	}
+
 	@NonNull
 	public Context getProfileCheckContext() {
 		return this;
@@ -117,7 +121,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	public void onProfileChecked(@NonNull final ExtendedHashMap result) {
-		if (mIsPaused || checkNavigationHelper())
+		if (isPaused() || checkNavigationHelper())
 			return;
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true);
@@ -205,9 +209,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onResume() {
 		super.onResume();
-		// There's several cases where onResume will be called twice without onPause in between which causes some unnecessary double reinits.
-		// To catch that we check if mNavigationHelper is actually null, which it'll only be on first start or after onPause has been called.
-		mIsPaused = false;
 		checkNavigationHelper();
 	}
 
@@ -229,11 +230,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onPause() {
-		mIsPaused = true;
-		//TODO preserve/restore mNavigationHelper properly
 		mNavigationHelper = null;
 		super.onPause();
 	}
+
+
 
 	@Override
 	public void onStop() {
@@ -446,7 +447,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onProfileChanged(@NonNull Profile p) {
-		if (mIsPaused)
+		if (isPaused())
 			return;
 
 		setProfileName();
@@ -691,7 +692,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		Log.w(DreamDroid.LOG_TAG, key);
 		if (DreamDroid.PREFS_KEY_THEME_TYPE.equals(key)) {
 			DreamDroid.setTheme(this);
-			if (!mIsPaused)
+			if (!isPaused())
 				recreate();
 		}
 	}
