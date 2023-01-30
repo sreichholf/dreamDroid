@@ -180,14 +180,15 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	private void initialize() {
+		cleanup();
+		mPlayer = VLCPlayer.get();
+
 		mSurfaceFrame = findViewById(R.id.player_surface_frame);
 		mSurfaceView = findViewById(R.id.player_surface);
 		mSubtitlesSurfaceView = findViewById(R.id.subtitles_surface);
 		mSubtitlesSurfaceView.setZOrderMediaOverlay(true);
 		mSubtitlesSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
-		if (mPlayer == null)
-			mPlayer = VLCPlayer.get();
 		mPlayer.attach(this, mSurfaceView, mSubtitlesSurfaceView);
 
 		VLCPlayer.getMediaPlayer().getVLCVout().addCallback(this);
@@ -213,6 +214,12 @@ public class VideoActivity extends AppCompatActivity implements IVLCVout.OnNewVi
 	}
 
 	private void cleanup() {
+		cleanup(false);
+	}
+
+	private void cleanup(boolean force) {
+		if (mPlayer == null && force)
+			mPlayer = VLCPlayer.get();
 		if(mPlayer == null)
 			return;
 		mPlayer.detach();
