@@ -374,4 +374,5 @@
 \n¡Cambiar esto REINICIARÁ la aplicación!</string>
     <string name="dynamic_theme_colors">Colores de tema dinámicos</string>
     <string name="encoder_user">Usuario del codificador</string>
+    <string name="trust_all_certs">Todos los certificados</string>
 </resources>
