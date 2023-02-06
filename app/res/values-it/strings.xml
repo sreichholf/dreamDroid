@@ -275,7 +275,7 @@
     <string name="enable">Abilita</string>
     <string name="disable">Disabilita</string>
     <string name="epg_sync">Sincronizzazione EPG in corso</string>
-    <string name="epg_sync_finished">La guida programmi è stata sincronizzata</string>
+    <string name="epg_sync_finished">Sincronizzazione EPG terminata</string>
     <string name="disable_fab_reload">Pulsante di ricarica mobile</string>
     <string name="disable_fab_reload_long">Il tasto ricarica verrà invece inserito nella ActionBar</string>
     <string name="reset_default">Ripristina predefinito</string>
