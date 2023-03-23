@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="description">الوصف</string>
     <string name="title">العنوان</string>
     <string name="app_name_release">دريم درويد</string>
-
     <string-array name="servicelist">
         <item>قائمة الخدمات</item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
-
     <string name="timer">المؤقت</string>
     <string name="play">تشغيل</string>
     <string name="add_to_playlist">إضافة لقائمة التشغيل</string>
@@ -29,14 +26,12 @@
     <string name="service">الخدمة</string>
     <string name="afterevent">بعد الحدث</string>
     <string name="location">الموقع</string>
-
     <string-array name="afterevents">
         <item>لا شيء</item>
         <item>الاستعداد</item>
         <item>العميق الاستعداد</item>
         <item>أوتوماتيك</item>
     </string-array>
-
     <string name="begin_time">وقت البدء</string>
     <string name="repeatings">التكرار</string>
     <string name="end_time">وقت النهاية</string>
@@ -76,7 +71,6 @@
     <string name="set_time_end">تاريخ ووقت النهاية</string>
     <string name="apply">تنفيذ</string>
     <string name="reload">اعادة تحميل</string>
-
     <string-array name="weekdays_short">
         <item>الاثن</item>
         <item>ثلاثاء</item>
@@ -95,7 +89,6 @@
         <item>السبت</item>
         <item>الأحد</item>
     </string-array>
-
     <string name="none">لا شيء</string>
     <string name="choose_days">اختر الايام</string>
     <string name="mo_to_fr">الاثنين الى الجمعة</string>
@@ -118,14 +111,12 @@
     <string name="message_text_hint">أدخل الرسالة</string>
     <string name="send">ارسال</string>
     <string name="type">اكتب</string>
-
     <string-array name="message_types">
         <item>انواع الرسائل</item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
-
     <string name="virtual_remote">الريموت الوهمي</string>
     <string name="login">دخول</string>
     <string name="login_enabled">مكن من الدخول بكلمة السر</string>
@@ -189,15 +180,13 @@
     <string name="in_standby">الجهاز مطفأ</string>
     <string name="is_running">الجهاز شغال</string>
     <string name="similar">مشابه</string>
-
     <string-array name="timer_state">
         <item>حالة المؤقت</item>
-        <item></item>
-        <item></item>
-        <item></item>
-        <item></item>
+        <item/>
+        <item/>
+        <item/>
+        <item/>
     </string-array>
-
     <string name="sleeptimer">مؤقت النوم</string>
     <string name="current_volume">درجة الصوت %s</string>
     <string name="muted">كتم الصوت</string>
@@ -232,4 +221,5 @@
     <string name="donation_error">نأسف - لقد فشلت عملية التبرع</string>
     <string name="share">مشاركة</string>
     <string name="restart">إعادة؟</string>
+    <string name="app_name_tv_release">دريم درويد تي في</string>
 </resources>
