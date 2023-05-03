@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="description">Popis</string>
     <string name="title">Název</string>
     <string name="mo">Mo</string>
     <string name="app_name_release">DreamDroid</string>
-
     <string-array name="servicelist">
         <item>Bouquety (TV)</item>
         <item>Poskytovatelé (TV)</item>
@@ -14,20 +12,17 @@
         <item>Poskytovatelé (Rádio)</item>
         <item>Všechny služby (Rádio)</item>
     </string-array>
-
     <string name="timer">Časovač</string>
     <string name="mediaplayer">Mediaplayer</string>
     <string name="service">Služba</string>
     <string name="afterevent">Po události</string>
     <string name="location">Umístění</string>
-
     <string-array name="afterevents">
         <item>Nic</item>
         <item>Pohotovostní režim</item>
         <item>Hluboký spánek</item>
         <item>Automaticky</item>
     </string-array>
-
     <string name="begin_time">Čas zahájení</string>
     <string name="repeatings">Opakování</string>
     <string name="end_time">Čas ukončení</string>
@@ -69,7 +64,6 @@
     <string name="set_time_end">Koncové datum a čas</string>
     <string name="apply">Použít</string>
     <string name="reload">Obnovit</string>
-
     <string-array name="weekdays_short">
         <item>Po</item>
         <item>Út</item>
@@ -88,7 +82,6 @@
         <item>Sobota</item>
         <item>Neděle</item>
     </string-array>
-
     <string name="none">Žádné</string>
     <string name="choose_days">Vyberte dny</string>
     <string name="mo_to_fr">Pondělí až pátek</string>
@@ -110,14 +103,12 @@
     <string name="message_text_hint">Vložte text zprávy</string>
     <string name="send">Poslat</string>
     <string name="type">Typ</string>
-
     <string-array name="message_types">
         <item>AnoNe</item>
         <item>Varování</item>
         <item>Info</item>
         <item>Chyba</item>
     </string-array>
-
     <string name="virtual_remote">Virtuální ovladač</string>
     <string name="login_enabled">Povolit přihlášení</string>
     <string name="wait_request_finished">Počkejte prosím dokud neskončí aktuální požadavek</string>
@@ -162,7 +153,7 @@
     <string name="default_bouquet_not_set">Výchozí bouquet nelze nastavit!</string>
     <string name="loading">Načítání...</string>
     <string name="about">O dreamdroid</string>
-<string name="license">LICENCE:
+    <string name="license">LICENCE:
 \nLicencováno pod Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link">Zdrojový kód dostupný na: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktivní profil</string>
@@ -185,7 +176,6 @@
     <string name="stream_host_long">Hostitel/IP pro sledování videa ze sítě (nepovinné)</string>
     <string name="stream_current">Sledovat aktuální</string>
     <string name="similar">Podobné</string>
-
     <string-array name="timer_state">
         <item>čekání...</item>
         <item>připraven...</item>
@@ -197,7 +187,6 @@
         <item>nahrát</item>
         <item>přepnout</item>
     </string-array>
-
     <string name="sleeptimer">Časovač usnutí</string>
     <string name="current_volume">Hlasitost je nastavena na %s</string>
     <string name="muted">Ztišeno</string>
@@ -219,12 +208,34 @@
     <string name="force_tablet_layout">Vynutit vzhled pro tablet</string>
     <string name="mobile_imdb">Použít mobilní verzi imdb.com</string>
     <string name="mobile_imdb_long">Použít m.imdb.com namísto www.imdb.com</string>
-    <string name="searching">Vyhledávám&#8230;</string>
-    <string name="searching_known_devices">Vyhledávám dreamboxy na lokální síti. To může trvat několik minut&#8230;</string>
+    <string name="searching">Vyhledávám…</string>
+    <string name="searching_known_devices">Vyhledávám dreamboxy na lokální síti. To může trvat několik minut…</string>
     <string name="autodiscover_dreamboxes">Automatické vyhledání dreamboxů</string>
     <string name="autodiscovery_failed">Na lokální síti nebylo možné nalézt žádný dreambox!</string>
     <string name="add_all">Přidat vše</string>
     <string name="error_parsing">Došlo k chybě při parsování dat!</string>
     <string name="enabled">Zapnuto</string>
     <string name="signal_meter">Síla signálu</string>
+    <string name="app_name_tv_release">dreamDroidTV</string>
+    <string name="play">přehrát</string>
+    <string name="add_to_playlist">přidat do seznamu</string>
+    <string name="navigation_back_media">zpět</string>
+    <string name="home_media">Domů</string>
+    <string name="close_media">zavřít přehrávač</string>
+    <string name="next_media">další</string>
+    <string name="play_media">přehrát</string>
+    <string name="previous_media">předchozí</string>
+    <string name="stop_media">stop</string>
+    <string name="playlist">seznam přehrávek</string>
+    <string name="filebrowser">prohlížeč souborů</string>
+    <string name="delete_from_playlist">odebrat ze seznamu</string>
+    <string name="ssid">název WiFi</string>
+    <string name="live">živě</string>
+    <string name="hdd_capacity">%1$s (%2$s volné)</string>
+    <string name="seconds">sekund</string>
+    <string name="login">přihlášení</string>
+    <string name="defaultOnNoWifi">předvolený profil ne na WiFi</string>
+    <string name="remote_widget_config_title_profile">zvolit profil pro použití s widget</string>
+    <string name="remote_widget_config_title_style">zvolit mód dálkového ovládání</string>
+    <string name="auto_switch_profile_wifi_based">aut.přepínání profilů</string>
 </resources>
