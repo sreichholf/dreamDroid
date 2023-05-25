@@ -238,7 +238,7 @@
     <string name="remote_widget_config_title_style">zvolit mód dálkového ovládání</string>
     <string name="auto_switch_profile_wifi_based">aut.přepínání profilů</string>
     <string name="app_name_debug">dreamDroid DBG</string>
-    <string name="app_name_tv_debug">dreamDroidTV DBG</string>
+    <string name="app_name_tv_debug">dreamDroidTV DBG_</string>
     <string name="auto_switch_profile_wifi_based_long">aut.přepínání profilů podle připojené WiFi</string>
     <string name="profile_name">název profilu</string>
     <string name="changelog">protokol změn</string>
