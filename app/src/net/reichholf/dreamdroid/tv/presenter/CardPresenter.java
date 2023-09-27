@@ -73,7 +73,7 @@ public class CardPresenter extends Presenter {
 		mDefaultBackgroundColor =
 				ResourcesCompat.getColor(res, R.color.primary_dreamdroid, theme);
 		mSelectedBackgroundColor =
-				ResourcesCompat.getColor(res, R.color.primary_material_dark, theme);
+				ResourcesCompat.getColor(res, androidx.appcompat.R.color.primary_material_dark, theme);
 		mDefaultCardImage =
 				ResourcesCompat.getDrawable(res, (R.drawable.dreamdroid_logo_simple), theme);
 
@@ -114,7 +114,7 @@ public class CardPresenter extends Presenter {
 		// Both background colors should be set because the view's
 		// background is temporarily visible during animations.
 		view.setBackgroundColor(color);
-		View info = view.findViewById(R.id.info_field);
+		View info = view.findViewById(androidx.leanback.R.id.info_field);
 		if (info != null)
 			info.setBackgroundColor(color);
 	}

@@ -8,7 +8,6 @@ import androidx.leanback.widget.BaseCardView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +33,7 @@ public class TextCardView extends BaseCardView {
     }
 
     public TextCardView(@NonNull Context context, AttributeSet attrs) {
-        this(context, attrs, R.attr.imageCardViewStyle);
+        this(context, attrs, androidx.leanback.R.attr.imageCardViewStyle);
     }
 
 

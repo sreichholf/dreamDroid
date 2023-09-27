@@ -97,7 +97,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         ctx.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, typed_value, true);
         mSwipeRefreshLayout.setProgressViewOffset(false, 0, getAppCompatActivity().getResources().getDimensionPixelSize(typed_value.resourceId));
 
-        ctx.getTheme().resolveAttribute(R.attr.colorAccent, typed_value, true);
+        ctx.getTheme().resolveAttribute(androidx.appcompat.R.attr.colorAccent, typed_value, true);
         int accent = ContextCompat.getColor(ctx, typed_value.resourceId);
         mSwipeRefreshLayout.setColorSchemeColors(accent);
     }

@@ -2,8 +2,6 @@ package net.reichholf.dreamdroid.adapter.recyclerview;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.TypedValue;
@@ -30,7 +28,7 @@ public class ProfileAdapter extends BaseAdapter<ProfileAdapter.ProfileViewHolder
 	public ProfileAdapter(@NonNull Context context, ArrayList<ExtendedHashMap> data) {
 		super(data);
 		TypedValue colorValue = new TypedValue();
-		context.getTheme().resolveAttribute(R.attr.colorAccent, colorValue, true);
+		context.getTheme().resolveAttribute(androidx.appcompat.R.attr.colorAccent, colorValue, true);
 		mActiveColor = colorValue.data;
 	}
 

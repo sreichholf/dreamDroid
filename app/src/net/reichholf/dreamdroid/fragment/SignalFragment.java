@@ -94,7 +94,7 @@ public class SignalFragment extends BaseHttpFragment {
 		View view = inflater.inflate(R.layout.signal, container, false);
 
 		mSnr = view.findViewById(R.id.gauge_view1);
-		int textColor = MaterialColors.getColor(mSnr, R.attr.colorOnSurface);
+		int textColor = MaterialColors.getColor(mSnr, com.google.android.material.R.attr.colorOnSurface);
 		mSnr.setValueColor(textColor);
 		mSnr.setMinValueTextColor(textColor);
 		mSnr.setMaxValueTextColor(textColor);
