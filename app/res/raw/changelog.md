@@ -1,5 +1,11 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 1.14.458
+* FIX: broken profile init upon app start/resume always causing a blank screen after starting
+* FIX: Font colors in signal gauge
+* DEV: Replace all uses of AsyncTask
+* DEV: Upgrade gradle 
+
 ## 1.13.457
 * FIX: Don't reset the port to protocol default when editing an existing profile
 * FIX: Marked entries are now properly highlighted again (Profiles, Timers, etc)
