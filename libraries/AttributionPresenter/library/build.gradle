@@ -4,8 +4,7 @@ group = 'com.github.franmontiel'
 version = '1.0.1'
 
 android {
-    compileSdk 32
-    buildToolsVersion '31.0.0'
+    compileSdk 33
 
     defaultConfig {
         minSdkVersion 15

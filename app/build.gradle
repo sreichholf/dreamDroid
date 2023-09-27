@@ -8,7 +8,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.0'
+        classpath 'com.android.tools.build:gradle:8.1.1'
     }
     ext.kotlin_version = '1.6.21'
     dependencies {
@@ -70,8 +70,8 @@ dependencies {
 }
 
 android {
-    compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
-    buildToolsVersion project.BUILD_TOOLS_VERSION
+    namespace = "net.reichholf.dreamdroid"
+    compileSdk Integer.parseInt(project.COMPILE_SDK_VERSION)
 
     defaultConfig {
         versionCode 457
