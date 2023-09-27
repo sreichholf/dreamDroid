@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="description">Popis</string>
     <string name="title">Název</string>
     <string name="mo">Mo</string>
     <string name="app_name_release">DreamDroid</string>
-
     <string-array name="servicelist">
         <item>Bouquety (TV)</item>
         <item>Poskytovatelé (TV)</item>
@@ -14,20 +12,17 @@
         <item>Poskytovatelé (Rádio)</item>
         <item>Všechny služby (Rádio)</item>
     </string-array>
-
     <string name="timer">Časovač</string>
     <string name="mediaplayer">Mediaplayer</string>
     <string name="service">Služba</string>
     <string name="afterevent">Po události</string>
     <string name="location">Umístění</string>
-
     <string-array name="afterevents">
         <item>Nic</item>
         <item>Pohotovostní režim</item>
         <item>Hluboký spánek</item>
         <item>Automaticky</item>
     </string-array>
-
     <string name="begin_time">Čas zahájení</string>
     <string name="repeatings">Opakování</string>
     <string name="end_time">Čas ukončení</string>
@@ -69,7 +64,6 @@
     <string name="set_time_end">Koncové datum a čas</string>
     <string name="apply">Použít</string>
     <string name="reload">Obnovit</string>
-
     <string-array name="weekdays_short">
         <item>Po</item>
         <item>Út</item>
@@ -88,7 +82,6 @@
         <item>Sobota</item>
         <item>Neděle</item>
     </string-array>
-
     <string name="none">Žádné</string>
     <string name="choose_days">Vyberte dny</string>
     <string name="mo_to_fr">Pondělí až pátek</string>
@@ -110,14 +103,12 @@
     <string name="message_text_hint">Vložte text zprávy</string>
     <string name="send">Poslat</string>
     <string name="type">Typ</string>
-
     <string-array name="message_types">
         <item>AnoNe</item>
         <item>Varování</item>
         <item>Info</item>
         <item>Chyba</item>
     </string-array>
-
     <string name="virtual_remote">Virtuální ovladač</string>
     <string name="login_enabled">Povolit přihlášení</string>
     <string name="wait_request_finished">Počkejte prosím dokud neskončí aktuální požadavek</string>
@@ -162,8 +153,7 @@
     <string name="default_bouquet_not_set">Výchozí bouquet nelze nastavit!</string>
     <string name="loading">Načítání...</string>
     <string name="about">O dreamdroid</string>
-<string name="license">LICENCE:
-\nLicencováno pod Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
+    <string name="license">licence</string>
     <string name="source_code_link">Zdrojový kód dostupný na: http://github.com/sreichholf/dreamDroid</string>
     <string name="active_profile">Aktivní profil</string>
     <string name="connection_state">Stav připojení</string>
@@ -185,7 +175,6 @@
     <string name="stream_host_long">Hostitel/IP pro sledování videa ze sítě (nepovinné)</string>
     <string name="stream_current">Sledovat aktuální</string>
     <string name="similar">Podobné</string>
-
     <string-array name="timer_state">
         <item>čekání...</item>
         <item>připraven...</item>
@@ -197,7 +186,6 @@
         <item>nahrát</item>
         <item>přepnout</item>
     </string-array>
-
     <string name="sleeptimer">Časovač usnutí</string>
     <string name="current_volume">Hlasitost je nastavena na %s</string>
     <string name="muted">Ztišeno</string>
@@ -219,12 +207,171 @@
     <string name="force_tablet_layout">Vynutit vzhled pro tablet</string>
     <string name="mobile_imdb">Použít mobilní verzi imdb.com</string>
     <string name="mobile_imdb_long">Použít m.imdb.com namísto www.imdb.com</string>
-    <string name="searching">Vyhledávám&#8230;</string>
-    <string name="searching_known_devices">Vyhledávám dreamboxy na lokální síti. To může trvat několik minut&#8230;</string>
+    <string name="searching">Vyhledávám…</string>
+    <string name="searching_known_devices">Vyhledávám dreamboxy na lokální síti. To může trvat několik minut…</string>
     <string name="autodiscover_dreamboxes">Automatické vyhledání dreamboxů</string>
     <string name="autodiscovery_failed">Na lokální síti nebylo možné nalézt žádný dreambox!</string>
     <string name="add_all">Přidat vše</string>
     <string name="error_parsing">Došlo k chybě při parsování dat!</string>
     <string name="enabled">Zapnuto</string>
     <string name="signal_meter">Síla signálu</string>
+    <string name="app_name_tv_release">dreamDroidTV</string>
+    <string name="play">přehrát</string>
+    <string name="add_to_playlist">přidat do seznamu</string>
+    <string name="navigation_back_media">zpět</string>
+    <string name="home_media">Domů</string>
+    <string name="close_media">zavřít přehrávač</string>
+    <string name="next_media">další</string>
+    <string name="play_media">přehrát</string>
+    <string name="previous_media">předchozí</string>
+    <string name="stop_media">stop</string>
+    <string name="playlist">seznam přehrávek</string>
+    <string name="filebrowser">prohlížeč souborů</string>
+    <string name="delete_from_playlist">odebrat ze seznamu</string>
+    <string name="ssid">název WiFi</string>
+    <string name="live">živě</string>
+    <string name="hdd_capacity">%1$s (%2$s volné)</string>
+    <string name="seconds">sekund</string>
+    <string name="login">přihlášení</string>
+    <string name="defaultOnNoWifi">předvolený profil ne na WiFi</string>
+    <string name="remote_widget_config_title_profile">zvolit profil pro použití s widget</string>
+    <string name="remote_widget_config_title_style">zvolit mód dálkového ovládání</string>
+    <string name="auto_switch_profile_wifi_based">aut.přepínání profilů</string>
+    <string name="app_name_debug">dreamDroid DBG</string>
+    <string name="app_name_tv_debug">dreamDroidTV DBG_</string>
+    <string name="auto_switch_profile_wifi_based_long">aut.přepínání profilů podle připojené WiFi</string>
+    <string name="profile_name">název profilu</string>
+    <string name="changelog">protokol změn</string>
+    <string name="license_gplv3">Licence :
+\nDreamDroid je volný Software !
+\nLicencováno na základě GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.html</string>
+    <string name="connection">připojení</string>
+    <string name="profiles_long">správa profilů připojení</string>
+    <string name="accoustic_feedback">akustická zpětná vazba</string>
+    <string name="use_light_theme_long">použít světlé téma místo hlavního tmavého</string>
+    <string name="use_light_theme">použít světlé téma</string>
+    <string name="leave_confirm">Chcete odejít \?</string>
+    <string name="leave_confirm_long">Chcete ukončit dreamDroid \?</string>
+    <string name="sent_as">odeslat jako %s</string>
+    <string name="watch_on_dream">sledovat na Dreambox</string>
+    <string name="sent_from_dreamdroid">odesláno z DreamDroid na %s</string>
+    <string name="no_profile_available">Chybí profil připojení ! Nakonfigurujte alespoň jeden profil pomocí hlavní aplikace !</string>
+    <string name="confirm_app_close">před ukončením aplikace požádat o potvrzení</string>
+    <string name="confirm_app_close_long">pro uzavření aplikace požádat o potvrzení</string>
+    <string name="play_button_as_play_pause">použít tlačítko Play jako tl. Play/Pause</string>
+    <string name="play_button_as_play_pause_long">použít tlačítko Play jako tl. Play/Pause ve widgetu a ve vzdálené aplikaci</string>
+    <string name="login_movies">přihlášení (videa)</string>
+    <string name="ssl_movies">https (videa)</string>
+    <string name="login_live">přihlášení (živě)</string>
+    <string name="appearance">vzhled</string>
+    <string name="usability">použitelnost</string>
+    <string name="use_picons">použít ikony</string>
+    <string name="use_picons_long">Povolit použití ikon v určitých oblastech.
+\nVyžaduje ikony ve : /{ExternalStorageDir}/dreamDroid/picons</string>
+    <string name="sync_picons">synchronizace ikon</string>
+    <string name="sync_picons_long">synchronizace ikon do /{ExternalStorageDir}/dreamDroid/picons pomocí aktuálně nakonfigurovaného profilu připojení</string>
+    <string name="sync_picons_path">ikony - vzdálená cesta</string>
+    <string name="sync_picons_path_long">složka pro ikony v dreamboxu</string>
+    <string name="connecting">...připojuji...</string>
+    <string name="connected">připojeno</string>
+    <string name="logged_in">přihlášený v</string>
+    <string name="getting_list_of_files">...načítám seznam souborů...</string>
+    <string name="picon_sync_finished">úspěšně staženo %s ikon</string>
+    <string name="drawer_open">otevřít navigační složku</string>
+    <string name="drawer_close">zavřít navigační složku</string>
+    <string name="enable_animations_long">povolit další animace</string>
+    <string name="enable_animations">povolit animace</string>
+    <string name="use_name_as_picon_filename_long">použít název kanálu jako název souboru pro ikony</string>
+    <string name="use_name_as_picon_filename">ikony podle názvu kanálu</string>
+    <string name="picons">ikony</string>
+    <string name="developer_settings">nastavení vývojáře</string>
+    <string name="dump_xml">obsah výpisu XML</string>
+    <string name="dump_xml_long">vložit obsah XML do externí paměti</string>
+    <string name="enable">povolit</string>
+    <string name="disable">zakázat</string>
+    <string name="epg_sync">synchronizace EPG</string>
+    <string name="epg_sync_finished">EPG byla synchronizována</string>
+    <string name="disable_fab_reload">zakázat plovoucí tlačítko zpět.načtení</string>
+    <string name="disable_fab_reload_long">obnoveným bude v panelu nahrazeno</string>
+    <string name="reset_default">reset předvolby</string>
+    <string name="max_grid_cols">max.počet sloupců v seznamu</string>
+    <string name="max_grid_cols_long">Max.počet sloupců v seznamu</string>
+    <string name="default_to_full_vrm_long">předvolit jednoduché virtuální vzdálené rozvržení</string>
+    <string name="default_to_full_vrm">předvolit jako jednoduché vzdálené</string>
+    <string name="donate_sum">Darujte %s</string>
+    <string name="donate">Darujte</string>
+    <string name="donation_thanks">Velice děkuji za váš dar !</string>
+    <string name="donation_error">Váš dar nedošel, je nám líto ! (%s)</string>
+    <string name="share">sdílení</string>
+    <string name="restart">Restartovat \?</string>
+    <string name="theme_change_restart">Změna tématu vyžaduje obnovení grafiky ! Restartovat DreamDroid \?</string>
+    <string name="host_not_found">Hostitel nebyl nalezený !</string>
+    <string name="auth_error">Autorizace selhala ! Zkontrolujte uživatele a heslo.</string>
+    <string name="developer_settings_enable">povolit nastavení vývojáře</string>
+    <string name="use_fake_picon">byla použita vadná ikona</string>
+    <string name="use_fake_picon_long">Byla použita vadná ikona (picon_default.png), abyste se vyhnuli problémům s autorskými právy na snímcích obrazovky</string>
+    <string name="host_unreach">Nepodařilo se připojit k hostiteli</string>
+    <string name="next_event">další událost</string>
+    <string name="use_encoder">použít kodér pro streamování</string>
+    <string name="encoder_path">cesta sdílení</string>
+    <string name="audio_bitrate">datový tok audia</string>
+    <string name="video_bitrate">datový tok videa</string>
+    <string name="encoder_port">port sdílení</string>
+    <string name="settings_and_about">nastavení a info</string>
+    <string name="tools">nástroje</string>
+    <string name="control">ovládání</string>
+    <string name="picon_sync_started">Synchronizace ikon byla spuštěna. Podrobnosti viz oblast oznámení.</string>
+    <string name="picon_sync_running">Je spuštěna další synchronizace ikon !</string>
+    <string name="streaming">Streamování</string>
+    <string name="integrated_video_player">integrovaný přehrávač videa</string>
+    <string name="integrated_video_player_long">při přehrávání streamů použít integrovaný přehrávač videa</string>
+    <string name="playback_failed">Přehrávání selhalo !</string>
+    <string name="previous_lower">předchozí</string>
+    <string name="next_lower">další</string>
+    <string name="theme">téma den/noc</string>
+    <string name="theme_long">volba motivů den/noc</string>
+    <string name="video_use_hw_accel">hardwarová akcelerace</string>
+    <string name="use_hw_accel">zrychlené dekódování</string>
+    <string name="use_hw_accel_long">pro dekódování videa použít hardware akceleraci (%s)</string>
+    <string name="video_player">přehrávač videa</string>
+    <string name="location_rationale_title">požadováno umístění</string>
+    <string name="location_rationale">DreamDroid vyžaduje přibližné umístění pro aut. přepínání motivů den/noc.
+\nPoloha není součástí žádné protokolování, ani nebude použita pro nic jiného než přepínání motivů !</string>
+    <string name="video_enable_gestures_long">povolit gesta pro ovládání hlasitosti a jasu</string>
+    <string name="video_enable_gestures">povolit gesta</string>
+    <string name="online_picons">použít online ikony</string>
+    <string name="online_picons_long">Nepoužívejte synchronizované ikony, ale načtěte je přímo prostřednictvím http(s). Může to způsobit velké zatížení provozu !</string>
+    <string name="audio_track">audio stopa</string>
+    <string name="subtitle">titulky</string>
+    <string name="audio_tracks">audio stopy</string>
+    <string name="subtitles">titulky</string>
+    <string name="no_tracks">K dispozici nejsou žádné stopy !</string>
+    <string name="preferences">preference</string>
+    <string name="backup">záloha</string>
+    <string name="backup_current_profile">aktuální</string>
+    <string name="backup_export">export</string>
+    <string name="backup_import">import</string>
+    <string name="backup_settings">nastavení</string>
+    <string name="backup_profiles">profily</string>
+    <string name="backup_export_settings">export nastavení</string>
+    <string name="backup_export_profiles">export profilů</string>
+    <string name="backup_export_successful">Export byl úspěšný</string>
+    <string name="backup_import_successful">Import byl úspěšný</string>
+    <string name="backup_export_missing_permission">Přidejte oprávnění k používání úložiště pro tuto funkci !</string>
+    <string name="licenses">licence</string>
+    <string name="encoder">kodér</string>
+    <string name="direct_streaming">přímé sdílení</string>
+    <string name="backup_import_error">Import zálohy selhal !</string>
+    <string name="tv">TV</string>
+    <string name="radio">Rádio</string>
+    <string name="live_movie">TV a video</string>
+    <string name="detail">detaily</string>
+    <string name="begin_date">začátek datum</string>
+    <string name="end_date">konec datumu</string>
+    <string name="encoder_user">uživatel kodéru</string>
+    <string name="encoder_pass">heslo kodéru</string>
+    <string name="dynamic_theme_colors_long">Použijte barvy dynamických motivů.
+\nZměna vyžaduje restart aplikace !</string>
+    <string name="dynamic_theme_colors">barvy dynamických motivů</string>
+    <string name="trust_all_certs">všechny certifikáty</string>
 </resources>
