@@ -24,11 +24,10 @@ public class SleepTimerTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, 
 
 	@NonNull
 	@Override
-	protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+	protected Boolean doInBackground(ArrayList<NameValuePair> params) {
 		if (isCancelled())
 			return false;
-		publishProgress();
-		String xml = mHandler.get(getHttpClient(), params[0]);
+		String xml = mHandler.get(getHttpClient(), params);
 
 		if (xml != null) {
 			ExtendedHashMap result = new ExtendedHashMap();

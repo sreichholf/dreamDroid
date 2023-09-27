@@ -20,7 +20,7 @@ public class CheckProfileTask extends AsyncHttpTaskBase<Void, String, ExtendedHa
 
 	@Nullable
 	@Override
-	protected ExtendedHashMap doInBackground(Void... params) {
+	protected ExtendedHashMap doInBackground(Void params) {
 		CheckProfileTaskHandler taskHandler = (CheckProfileTaskHandler) mTaskHandler.get();
 		if (isInvalid(taskHandler))
 			return null;
@@ -29,10 +29,10 @@ public class CheckProfileTask extends AsyncHttpTaskBase<Void, String, ExtendedHa
 	}
 
 	@Override
-	protected void onProgressUpdate(String... progress) {
+	protected void onProgressUpdate(String progress) {
 		CheckProfileTaskHandler taskHandler = (CheckProfileTaskHandler) mTaskHandler.get();
 		if (taskHandler != null)
-			taskHandler.onProfileCheckProgress(progress[0]);
+			taskHandler.onProfileCheckProgress(progress);
 	}
 
 	@Override

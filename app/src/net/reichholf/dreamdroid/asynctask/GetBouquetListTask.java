@@ -41,7 +41,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 
 	@NonNull
 	@Override
-	protected Boolean doInBackground(Void... unused) {
+	protected Boolean doInBackground(Void unused) {
 		mBouquets = new Bouquets();
 		if (isCancelled())
 			return false;

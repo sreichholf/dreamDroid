@@ -14,7 +14,7 @@ public class DetectDevicesTask extends AsyncHttpTaskBase<Void, Void, ArrayList<P
 
 	@NonNull
 	@Override
-	protected ArrayList<Profile> doInBackground(Void... params) {
+	protected ArrayList<Profile> doInBackground(Void params) {
 		if (isCancelled())
 			return new ArrayList<>();
 		return DeviceDetector.getAvailableHosts();

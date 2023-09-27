@@ -18,9 +18,9 @@ public class SetPowerStateTask extends AsyncHttpTaskBase<String, String, Boolean
 
 	@NonNull
 	@Override
-	protected Boolean doInBackground(String... params) {
+	protected Boolean doInBackground(String params) {
 		PowerStateRequestHandler handler = new PowerStateRequestHandler();
-		String xml = handler.get(getHttpClient(), PowerState.getStateParams(params[0]));
+		String xml = handler.get(getHttpClient(), PowerState.getStateParams(params));
 
 		if (xml != null) {
 			if (isCancelled())

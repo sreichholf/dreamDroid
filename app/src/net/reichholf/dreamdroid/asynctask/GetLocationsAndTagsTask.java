@@ -12,7 +12,7 @@ public class GetLocationsAndTagsTask extends AsyncHttpTaskBase<Void, String, Boo
 
 	@NonNull
 	@Override
-	protected Boolean doInBackground(Void... params) {
+	protected Boolean doInBackground(Void params) {
 		GetLocationsAndTagsTaskHandler taskHandler = (GetLocationsAndTagsTaskHandler) mTaskHandler.get();
 		if (isInvalid(taskHandler))
 			return false;
@@ -34,12 +34,12 @@ public class GetLocationsAndTagsTask extends AsyncHttpTaskBase<Void, String, Boo
 	}
 
 	@Override
-	protected void onProgressUpdate(String... progress) {
+	protected void onProgressUpdate(String progress) {
 		GetLocationsAndTagsTaskHandler taskHandler = (GetLocationsAndTagsTaskHandler) mTaskHandler.get();
 		if (isInvalid(taskHandler))
 			return ;
 
-		taskHandler.onGetLocationsAndTagsProgress(taskHandler.getString(R.string.loading), progress[0]);
+		taskHandler.onGetLocationsAndTagsProgress(taskHandler.getString(R.string.loading), progress);
 	}
 
 	@Override

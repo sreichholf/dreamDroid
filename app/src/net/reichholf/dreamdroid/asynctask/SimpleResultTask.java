@@ -8,7 +8,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 
 import java.util.ArrayList;
 
-public class SimpleResultTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, Void, Boolean> {
+public class SimpleResultTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, String, Boolean> {
 	protected ExtendedHashMap mResult;
 	protected SimpleResultRequestHandler mHandler;
 	public SimpleResultTask(SimpleResultRequestHandler handler, SimpleResultTaskHandler taskHandler) {
@@ -18,11 +18,10 @@ public class SimpleResultTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>
 
 	@NonNull
 	@Override
-	protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+	protected Boolean doInBackground(ArrayList<NameValuePair> params) {
 		if (isCancelled())
 			return false;
-		publishProgress();
-		String xml = mHandler.get(getHttpClient(), params[0]);
+		String xml = mHandler.get(getHttpClient(), params);
 
 		if (xml != null) {
 			ExtendedHashMap result = mHandler.parseSimpleResult(xml);
@@ -36,10 +35,6 @@ public class SimpleResultTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>
 		}
 
 		return false;
-	}
-
-	@Override
-	protected void onProgressUpdate(Void... progress) {
 	}
 
 	protected void onPostExecute(Boolean result) {

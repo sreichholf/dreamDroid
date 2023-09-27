@@ -18,12 +18,11 @@ public class SetVolumeTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, V
 
 	@NonNull
 	@Override
-	protected Boolean doInBackground(ArrayList<NameValuePair>... params) {
+	protected Boolean doInBackground(ArrayList<NameValuePair> params) {
 		if (isCancelled())
 			return false;
-		publishProgress();
 		mHandler = new VolumeRequestHandler();
-		String xml = mHandler.get(getHttpClient(), params[0]);
+		String xml = mHandler.get(getHttpClient(), params);
 
 		if (xml != null) {
 			ExtendedHashMap volume = new ExtendedHashMap();

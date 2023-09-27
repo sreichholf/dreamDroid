@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference;
 /**
  * Created by Stephan on 27.12.2015.
  */
-public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+public abstract class AsyncHttpTaskBase<Params, Progress, Result> extends AsyncTaskExecutorService<Params, Progress, Result> {
 	protected WeakReference<AsyncHttpTaskBaseHandler> mTaskHandler;
 	private SimpleHttpClient mShc;
 	public AsyncHttpTaskBase(AsyncHttpTaskBaseHandler taskHandler) {
