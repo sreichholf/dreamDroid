@@ -41,13 +41,9 @@ public class HalfGauge extends AbstractGauge {
 	private int minValueTextColor = Color.GRAY;
 	private int maxValueTextColor = Color.GRAY;
 
+	private final RectF ovalRect = new RectF(190f, 190f, 210f, 210f);
 
-	private Runnable runnable = new Runnable() {
-		@Override
-		public void run() {
-			invalidate();
-		}
-	};
+	private Runnable runnable = this::invalidate;
 
 	public HalfGauge(Context context) {
 		super(context);
@@ -116,7 +112,7 @@ public class HalfGauge extends AbstractGauge {
 		canvas.scale(getScaleRatio(), getScaleRatio());
 		canvas.rotate(getNeedleAngle(), getRectRight() / 2f, getRectBottom() / 2f);
 		canvas.drawLine(-30f, 400f / 2f, 400f / 2f, 400f / 2f, getNeedlePaint());
-		canvas.drawOval(new RectF(190f, 190f, 210f, 210f), getNeedlePaint());
+		canvas.drawOval(ovalRect, getNeedlePaint());
 		canvas.restore();
 
 
