@@ -209,7 +209,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	@Override
 	public void onResume() {
 		super.onResume();
-		checkNavigationHelper();
+		checkNavigationHelper(true);
 	}
 
 	@Override
@@ -219,10 +219,14 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	}
 
 	private boolean checkNavigationHelper() {
+		return checkNavigationHelper(false);
+	}
+
+	private boolean checkNavigationHelper(boolean isResume) {
 		if (mNavigationHelper == null) {
 			//TODO preserve/restore mNavigationHelper properly
 			mNavigationHelper = new NavigationHelper(this);
-			onProfileChanged(DreamDroid.getCurrentProfile());
+			onProfileChanged(DreamDroid.getCurrentProfile(), isResume);
 			return true;
 		}
 		return false;
@@ -447,7 +451,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public void onProfileChanged(@NonNull Profile p) {
-		if (isPaused())
+		onProfileChanged(p, false);
+	}
+
+	public void onProfileChanged(@NonNull Profile p, boolean isResuming) {
+		if (!isResuming && isPaused())
 			return;
 
 		setProfileName();
