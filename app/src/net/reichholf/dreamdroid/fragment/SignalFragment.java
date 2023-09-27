@@ -25,6 +25,7 @@ import androidx.loader.content.Loader;
 
 import com.ekndev.gaugelibrary.HalfGauge;
 import com.ekndev.gaugelibrary.Range;
+import com.google.android.material.color.MaterialColors;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
@@ -93,6 +94,10 @@ public class SignalFragment extends BaseHttpFragment {
 		View view = inflater.inflate(R.layout.signal, container, false);
 
 		mSnr = view.findViewById(R.id.gauge_view1);
+		int textColor = MaterialColors.getColor(mSnr, R.attr.colorOnSurface);
+		mSnr.setValueColor(textColor);
+		mSnr.setMinValueTextColor(textColor);
+		mSnr.setMaxValueTextColor(textColor);
 
 		Range range = new Range();
 		range.setColor(Color.parseColor("#ce0000"));
