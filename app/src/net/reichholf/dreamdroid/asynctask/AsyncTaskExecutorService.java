@@ -7,11 +7,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 
 	private ExecutorService executor;
 	private Handler handler;
+	private Future future;
 
 	protected AsyncTaskExecutorService() {
 		executor = Executors.newSingleThreadExecutor(r -> {
@@ -36,7 +38,6 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 	}
 
 	protected void onPreExecute() {
-		// Override this method whereever you want to perform task before background execution get started
 	}
 
 	protected abstract Result doInBackground(Params params);
@@ -44,10 +45,8 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 	protected abstract void onPostExecute(Result result);
 
 	protected void onProgressUpdate(@NotNull Progress value) {
-		// Override this method whereever you want update a progress result
 	}
 
-	// used for push progress resport to UI
 	public void publishProgress(@NotNull Progress value) {
 		getHandler().post(() -> onProgressUpdate(value));
 	}
@@ -59,23 +58,19 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 	public void execute(Params params) {
 		getHandler().post(() -> {
 			onPreExecute();
-			executor.execute(() -> {
+			future = executor.submit(() -> {
 				Result result = doInBackground(params);
 				getHandler().post(() -> onPostExecute(result));
 			});
 		});
 	}
 
-	public void cancel(boolean ignored) {
-		shutDown();
-	}
-	public void shutDown() {
-		if (executor != null) {
-			executor.shutdownNow();
-		}
+	public void cancel(boolean mayInterruptIfRunning) {
+		if (future != null && !future.isDone())
+			future.cancel(mayInterruptIfRunning);
 	}
 
 	public boolean isCancelled() {
-		return executor == null || executor.isTerminated() || executor.isShutdown();
+		return future.isCancelled() || executor == null || executor.isTerminated() || executor.isShutdown();
 	}
 }
