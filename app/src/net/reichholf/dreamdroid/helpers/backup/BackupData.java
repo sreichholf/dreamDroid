@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.helpers.backup;
 
+import android.net.Uri;
+
 import net.reichholf.dreamdroid.Profile;
 
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ import java.util.List;
 public class BackupData {
     private List<GenericSetting> mSettings = new ArrayList<>();
     private List<Profile> mProfiles = new ArrayList<>();
+
+    private Uri mUri;
 
     public List<GenericSetting> getSettings() {
         return mSettings;
@@ -36,5 +40,12 @@ public class BackupData {
         mProfiles = profiles;
     }
 
+    public Uri getUri() {
+        return mUri;
+    }
+
+    public void setUri(Uri uri) {
+        mUri = uri;
+    }
 
 }

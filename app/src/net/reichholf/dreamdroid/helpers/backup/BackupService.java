@@ -1,12 +1,17 @@
 package net.reichholf.dreamdroid.helpers.backup;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -16,6 +21,9 @@ import net.reichholf.dreamdroid.room.AppDatabase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +32,7 @@ import java9.util.function.Consumer;
 import java9.util.stream.StreamSupport;
 
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
+import static android.os.Environment.getDownloadCacheDirectory;
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
 /**
@@ -60,17 +69,27 @@ public class BackupService {
         String jsonContent = gson.toJson(data);
         PrintWriter out = null;
         try {
-            File backupDirectory = getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS);
-            File backupFile = new File(backupDirectory, "dreamdroid_backup.json");
-            out = new PrintWriter(backupFile);
+            String filename = "dreamdroid_backup.json";
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, filename);
+            contentValues.put(MediaStore.Files.FileColumns.MIME_TYPE, "application/json");
+            contentValues.put(MediaStore.Files.FileColumns.DATE_ADDED, System.currentTimeMillis()/1000);
+            contentValues.put(MediaStore.Files.FileColumns.DATE_MODIFIED, System.currentTimeMillis()/1000);
+            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, true);
+            Uri fileUri = mContext.getContentResolver().insert(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL), contentValues);
+
+            OutputStream os = mContext.getContentResolver().openOutputStream(fileUri, "w");
+            os.write(jsonContent.getBytes());
+            os.close();
+
+            contentValues.clear();
+            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 0);
+            mContext.getContentResolver().update(fileUri, contentValues, null, null);
         } catch (FileNotFoundException e) {
             Log.e(TAG, "Export unable to create export file to write the backup to.", e);
-            return;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        Log.i(TAG, "Export content: " + jsonContent);
-        out.println(jsonContent);
-        out.flush();
-        out.close();
     }
 
     public void doImport(String content) {

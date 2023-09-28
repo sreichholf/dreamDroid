@@ -1,10 +1,8 @@
 package net.reichholf.dreamdroid.fragment;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
 
 import androidx.activity.result.ActivityResult;
@@ -24,13 +21,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.app.ActivityCompat;
 import androidx.core.view.MenuProvider;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.helpers.backup.BackupData;
 import net.reichholf.dreamdroid.helpers.backup.BackupService;
@@ -50,10 +45,10 @@ import static net.reichholf.dreamdroid.helpers.Statics.ITEM_BACKUP_IMPORT;
 /**
  * Created by GAigner on 01/09/18.
  */
-public class BackupFragment extends BaseFragment implements MenuProvider {
+public class BackupFragment extends BaseFragment {
+
 	private static final String TAG = BackupFragment.class.getSimpleName();
 
-	@Nullable
 	private BackupService mBackupService;
 	private BackupData mBackupData;
 
@@ -65,18 +60,6 @@ public class BackupFragment extends BaseFragment implements MenuProvider {
 	private ActivityResultLauncher<Intent> mPickImportFile = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(), result -> onImportFilePicked(result)
 	);
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		getAppCompatActivity().addMenuProvider(this);
-		requestStoragePermission();
-
-	}
-
-	@Override
-	public void onCreateMenu(Menu menu, @NonNull MenuInflater inflater) {
-		inflater.inflate(R.menu.backup, menu);
-	}
 
 	private void loadBackupData() {
 		mBackupData = mBackupService.getBackupData();
@@ -87,40 +70,15 @@ public class BackupFragment extends BaseFragment implements MenuProvider {
 		mBackupService = new BackupService(getContext());
 		mBackupView = inflater.inflate(R.layout.backup, null);
 		mSettingsSwitch = mBackupView.findViewById(R.id.backup_export_settings);
+		mBackupView.findViewById(R.id.buttonExport).setOnClickListener(view -> {
+			doExport();
+			loadBackupData();
+			showToast(getString(R.string.backup_export_successful));
+		});
+		mBackupView.findViewById(R.id.buttonImport).setOnClickListener(view -> doImport());
 		loadBackupData();
 		refreshView();
 		return mBackupView;
-	}
-
-	@Override
-	public boolean onMenuItemSelected(@NonNull MenuItem item) {
-		if (!hasStoragePermission()) {
-			requestStoragePermission();
-			return false;
-		}
-
-		switch (item.getItemId()) {
-			case (ITEM_BACKUP_EXPORT):
-				doExport();
-				loadBackupData();
-				showToast(getString(R.string.backup_export_successful));
-				break;
-			case ITEM_BACKUP_IMPORT:
-				doImport();
-				break;
-			default:
-				return false;
-		}
-		return false;
-	}
-
-	private boolean hasStoragePermission() {
-		return ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-	}
-
-	private void requestStoragePermission() {
-		if (!hasStoragePermission())
-			ActivityCompat.requestPermissions(getAppCompatActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, BaseActivity.REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_BACKUP);
 	}
 
 	private void refreshView() {
@@ -174,6 +132,7 @@ public class BackupFragment extends BaseFragment implements MenuProvider {
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		return false;
 	}
+
 	protected void onImportFilePicked(ActivityResult result) {
 		if (result.getResultCode() == Activity.RESULT_OK) {
 			Intent data = result.getData();
