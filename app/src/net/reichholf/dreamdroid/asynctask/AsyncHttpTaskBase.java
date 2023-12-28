@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.asynctask;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
 import androidx.annotation.Nullable;
 

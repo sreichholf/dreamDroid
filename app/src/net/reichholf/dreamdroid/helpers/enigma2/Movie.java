@@ -10,12 +10,10 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 /**
  * @author sreichholf

@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.widget.helper;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -16,8 +14,6 @@ import android.view.View;
 import android.widget.Checkable;
 
 import net.reichholf.dreamdroid.R;
-
-import static android.os.Build.VERSION_CODES.HONEYCOMB;
 
 public class ItemSelectionSupport {
 	public static final int INVALID_POSITION = -1;

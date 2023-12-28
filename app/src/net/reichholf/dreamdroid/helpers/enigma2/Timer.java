@@ -23,7 +23,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;

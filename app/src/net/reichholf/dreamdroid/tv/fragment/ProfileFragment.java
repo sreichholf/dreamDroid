@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.tv.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -11,9 +10,7 @@ import androidx.leanback.preference.LeanbackPreferenceFragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.preference.PreferenceScreen;
 
 import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;

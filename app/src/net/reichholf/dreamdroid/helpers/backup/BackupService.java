@@ -4,14 +4,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.documentfile.provider.DocumentFile;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,9 +17,7 @@ import com.google.gson.GsonBuilder;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.room.AppDatabase;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -30,10 +26,6 @@ import java.util.Map;
 
 import java9.util.function.Consumer;
 import java9.util.stream.StreamSupport;
-
-import static android.os.Environment.DIRECTORY_DOWNLOADS;
-import static android.os.Environment.getDownloadCacheDirectory;
-import static android.os.Environment.getExternalStoragePublicDirectory;
 
 /**
  * Created by GAigner on 01/09/18.

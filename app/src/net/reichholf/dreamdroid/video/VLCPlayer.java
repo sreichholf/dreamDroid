@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.video;
 
-import android.content.Context;
 import android.net.Uri;
 import android.view.SurfaceView;
 
@@ -10,8 +9,6 @@ import androidx.annotation.Nullable;
 import org.videolan.libvlc.interfaces.IVLCVout;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
-
-import java.util.ArrayList;
 
 /**
  * Created by reichi on 16/02/16.

@@ -8,9 +8,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -19,9 +16,7 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.view.MenuProvider;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
@@ -38,9 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java9.util.stream.StreamSupport;
-
-import static net.reichholf.dreamdroid.helpers.Statics.ITEM_BACKUP_EXPORT;
-import static net.reichholf.dreamdroid.helpers.Statics.ITEM_BACKUP_IMPORT;
 
 /**
  * Created by GAigner on 01/09/18.

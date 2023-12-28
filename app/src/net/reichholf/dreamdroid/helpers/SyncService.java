@@ -4,8 +4,6 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
-import net.reichholf.dreamdroid.DreamDroid;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 //import net.reichholf.dreamdroid.helpers.enigma2.epgsync.EpgDatabase;
 import net.reichholf.dreamdroid.service.HttpIntentService;
 

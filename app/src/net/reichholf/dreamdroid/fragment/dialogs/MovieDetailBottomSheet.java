@@ -18,7 +18,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import butterknife.BindView;
 import butterknife.ButterKnife;

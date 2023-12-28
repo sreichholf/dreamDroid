@@ -32,7 +32,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by Stephan on 03.05.2015.
