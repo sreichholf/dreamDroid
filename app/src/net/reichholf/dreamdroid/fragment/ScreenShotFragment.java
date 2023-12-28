@@ -35,10 +35,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
-import androidx.core.view.MenuItemCompat;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.loader.content.Loader;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -94,12 +92,6 @@ public class ScreenShotFragment extends BaseFragment implements
 	@Nullable
 	private MediaScannerConnection mScannerConn;
 	private HttpFragmentHelper mHttpHelper;
-
-	private ActivityResultLauncher<String> mStoragePermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
-			result -> {
-				if (result)
-					reload();
-			});
 
 	@Override
 	public void onRefresh() {
@@ -201,10 +193,7 @@ public class ScreenShotFragment extends BaseFragment implements
 		mScannerConn.connect();
 
 		if (mRawImage.length == 0) {
-			if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-				reload();
-			else
-				mStoragePermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+			reload();
 		} else {
 			onScreenshotAvailable(mRawImage);
 		}
@@ -373,7 +362,7 @@ public class ScreenShotFragment extends BaseFragment implements
 			ContentResolver resolver = getAppCompatActivity().getApplicationContext().getContentResolver();
 			Uri imageContentUri = resolver.insert(imageCollection, imageDetails);
 			try {
-				ParcelFileDescriptor pfd = resolver.openFileDescriptor(imageContentUri, "w", null);
+				ParcelFileDescriptor pfd = resolver.openFileDescriptor(imageContentUri, "w");
 				out = new FileOutputStream(pfd.getFileDescriptor());
 				out.write(mRawImage);
 				out.close();
