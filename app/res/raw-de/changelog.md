@@ -1,6 +1,6 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
-## 1.15.459
+## 1.15.460
 * FIX: Screenshots sind wieder aktiviert
 
 ## 1.14.458

@@ -1,6 +1,6 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
-## 1.15.459
+## 1.15.460
 * FIX: reenable screenshots
 
 ## 1.14.458
