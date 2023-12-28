@@ -3,14 +3,15 @@ package net.reichholf.dreamdroid.fragment.helper;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import com.google.android.material.navigation.NavigationView;
-
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
+
+import com.google.android.material.navigation.NavigationView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -24,7 +25,6 @@ import net.reichholf.dreamdroid.fragment.BackupFragment;
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
-import net.reichholf.dreamdroid.fragment.MediaPlayerFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
@@ -248,10 +248,10 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 getSleepTimer(true);
                 break;
 
-            case R.id.menu_navigation_mediaplayer:
-                clearBackStack();
-                getMainActivity().showDetails(MediaPlayerFragment.class);
-                break;
+//            case R.id.menu_navigation_mediaplayer:
+//                clearBackStack();
+//                getMainActivity().showDetails(MediaPlayerFragment.class);
+//                break;
 
             case R.id.menu_navigation_profiles:
                 clearBackStack();

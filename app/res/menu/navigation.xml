@@ -35,11 +35,11 @@
                         android:checked="false"
                         android:icon="?attr/ic_menu_power_off"
                         android:title="@string/powercontrol"/>
-                    <item
-                        android:id="@+id/menu_navigation_mediaplayer"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_music"
-                        android:title="@string/mediaplayer"/>
+<!--                    <item-->
+<!--                        android:id="@+id/menu_navigation_mediaplayer"-->
+<!--                        android:checked="false"-->
+<!--                        android:icon="?attr/ic_menu_music"-->
+<!--                        android:title="@string/mediaplayer"/>-->
                     <item
                         android:id="@+id/menu_navigation_zap"
                         android:checked="false"
