@@ -1,5 +1,16 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 1.15.459
+* FIX: Screenshots sind wieder aktiviert
+
+## 1.14.458
+* FIX: Initialisierung der Verbindung beim App-Start
+* FIX: Schriftfarben in der Signalanzeige
+* FIX: Backup & restore
+* FIX: Screenshot & Mediaplayer sind bis auf Weiteres deaktiviert
+* DEV: AsyncTask ersetzt
+* DEV: Upgrade gradle
+
 ## 1.13.457
 * FIX: Beim Bearbeiten eines Profils wurde der Port immer auf Protkoll-Standard zurückgesetzt (jedoch immer korrekt gespeichert)
 * FIX: Markierte Einträge werden wieder hervorgehoben
