@@ -1,3 +1,13 @@
+# Looking for a Maintainer
+I am currently looking for someone to take over maintenance and potentially even the actual play store app entry of dreamdroid.
+I will personally not continue development of dreamDroid.
+Should there be any requirement to update it in order not to be thrown out of the play store I will remove it from the play store.
+
+As apps can be transferred to different accounts I could think of transferring dreamDroid's play store appearance to another developer.
+
+If you have serious interest about overtaking please contact me.
+If you have serious interest about making money with my and other people's work go and f* yourself.
+
 DreamDroid [![Build Status](https://travis-ci.org/sreichholf/dreamDroid.svg?branch=master)](https://travis-ci.org/sreichholf/dreamDroid)
 ==========
 
