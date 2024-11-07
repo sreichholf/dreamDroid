@@ -32,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -161,6 +162,14 @@ public class SimpleHttpClient {
 	public String buildServiceStreamUrl(String ref) {
 		if (mProfile.getHost().equals("dreamdroid.org"))
 			return BIG_BUCK_BUNNY_URL;
+
+		if (ref.contains("http")) { // service ref already is a http stream url
+			try{
+				return java.net.URLDecoder.decode(ref.substring(ref.indexOf("http")), "utf-8").replace(" ","%20");
+			} catch (UnsupportedEncodingException e) {
+			}
+		}
+
 		try {
 			ref = URLEncoder.encode(ref, "utf-8").replace("+", "%20");
 		} catch (UnsupportedEncodingException e) {
