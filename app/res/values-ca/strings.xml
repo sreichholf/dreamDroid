@@ -15,19 +15,6 @@
     </string-array>
 
     <string name="timer">Temporitzador</string>
-    <string name="mediaplayer">Reproductor</string>
-    <string name="play">Reprodueix</string>
-    <string name="add_to_playlist">Afegeix a la llista de reproducció</string>
-    <string name="navigation_back_media">Enrera</string>
-    <string name="home_media">Inici</string>
-    <string name="close_media">Tanca el reproductor</string>
-    <string name="next_media">Següent</string>
-    <string name="play_media">Reprodueix</string>
-    <string name="previous_media">Anterior</string>
-    <string name="stop_media">Atura</string>
-    <string name="playlist">Llista de reproducció</string>
-    <string name="filebrowser">Gestor de fitxers</string>
-    <string name="delete_from_playlist">Elimina de la llista</string>
     <string name="service">Serveis</string>
     <string name="location">Localització</string>
 

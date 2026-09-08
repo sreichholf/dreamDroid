@@ -211,7 +211,6 @@
     <string name="screenshot_saved">تصویر در \'%s\' ذخیره شد</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">هیچ پخش کننده ای برای نمایش جریان های تصویری روی دستگاه نصب نشده است</string>
-    <string name="mediaplayer">پخش کننده صوت و تصویر</string>
     <string name="edit_profile">ویرایش نمایه</string>
     <string name="force_tablet_layout_long">اجبار برای نمایش طرح بندی تبلت بهینه شده</string>
     <string name="force_tablet_layout">اجبار برای نمایش طرح بندی تبلت </string>

@@ -211,7 +211,6 @@
     <string name="screenshot_saved">Знімок екрану збережено до  \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Програвач потокового відео не встановлено на вашому пристрої!</string>
-    <string name="mediaplayer">Програвач</string>
     <string name="edit_profile">Редагувати профіль</string>
     <string name="force_tablet_layout_long">Компонування оптимізоване для планшетів</string>
     <string name="force_tablet_layout">Вигляд як на планшеті</string>

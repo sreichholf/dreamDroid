@@ -30,8 +30,7 @@
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/ptr_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/listView2Header">
+            android:layout_height="wrap_content">
 
             <net.reichholf.dreamdroid.widget.AutofitRecyclerView
                 android:id="@+id/list2"

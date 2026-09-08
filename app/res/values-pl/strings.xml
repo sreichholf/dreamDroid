@@ -16,19 +16,6 @@
     </string-array>
 
     <string name="timer">Zaplanowane zadania</string>
-    <string name="mediaplayer">Odtwarzacz multimedialny</string>
-    <string name="play">Odtwarzaj</string>
-    <string name="add_to_playlist">Dodaj do listy odtwarzania</string>
-    <string name="navigation_back_media">Wstecz</string>
-    <string name="home_media">Menu Główne Media</string>
-    <string name="close_media">Zamknij Mediaplayer</string>
-    <string name="next_media">Następny</string>
-    <string name="play_media">Odtwarzaj</string>
-    <string name="previous_media">Poprzedni</string>
-    <string name="stop_media">Stop</string>
-    <string name="playlist">Lista odtwarzania</string>
-    <string name="filebrowser">Przeglądarka plików</string>
-    <string name="delete_from_playlist">Usuń z listy odtwarzania</string>
     <string name="service">Kanał</string>
     <string name="afterevent">Po Wydarzeniu</string>
     <string name="location">Lokalizacja</string>

@@ -29,7 +29,6 @@
         <item name="ic_media_next">@drawable/ic_media_next_light</item>
         <item name="ic_menu_about">@drawable/ic_menu_about_light</item>
         <item name="ic_menu_changelog">@drawable/ic_menu_changelog_light</item>
-        <item name="ic_menu_clear_playlist">@drawable/ic_menu_clear_playlist_light</item>
         <item name="ic_menu_clock">@drawable/ic_menu_clock_light</item>
         <item name="ic_menu_close">@drawable/ic_menu_close_light</item>
         <item name="ic_menu_device">@drawable/ic_menu_device_light</item>
@@ -39,7 +38,6 @@
         <item name="ic_menu_list">@drawable/ic_menu_list_light</item>
         <item name="ic_menu_mail">@drawable/ic_menu_mail_light</item>
         <item name="ic_menu_movie">@drawable/ic_menu_movie_light</item>
-        <item name="ic_menu_music">@drawable/ic_menu_music_light</item>
         <item name="ic_menu_picture">@drawable/ic_menu_picture_light</item>
         <item name="ic_menu_power_off">@drawable/ic_menu_power_light</item>
         <item name="ic_menu_profiles">@drawable/ic_menu_profiles_light</item>
@@ -199,7 +197,6 @@
         <item name="ic_media_next">@drawable/ic_media_next_dark</item>
         <item name="ic_menu_about">@drawable/ic_menu_about_dark</item>
         <item name="ic_menu_changelog">@drawable/ic_menu_changelog_dark</item>
-        <item name="ic_menu_clear_playlist">@drawable/ic_menu_close_dark</item>
         <item name="ic_menu_clock">@drawable/ic_menu_clock_dark</item>
         <item name="ic_menu_close">@drawable/ic_menu_close_dark</item>
         <item name="ic_menu_device">@drawable/ic_menu_device_dark</item>
@@ -209,7 +206,6 @@
         <item name="ic_menu_list">@drawable/ic_menu_list_dark</item>
         <item name="ic_menu_mail">@drawable/ic_menu_mail_dark</item>
         <item name="ic_menu_movie">@drawable/ic_menu_movie_dark</item>
-        <item name="ic_menu_music">@drawable/ic_menu_music_dark</item>
         <item name="ic_menu_picture">@drawable/ic_menu_picture_dark</item>
         <item name="ic_menu_power_off">@drawable/ic_menu_power_dark</item>
         <item name="ic_menu_profiles">@drawable/ic_menu_profiles_dark</item>

@@ -12,17 +12,6 @@
         <item/>
     </string-array>
     <string name="timer">المؤقت</string>
-    <string name="play">تشغيل</string>
-    <string name="add_to_playlist">إضافة لقائمة التشغيل</string>
-    <string name="navigation_back_media">الى الخلف</string>
-    <string name="home_media">الرئيسية</string>
-    <string name="next_media">التالي</string>
-    <string name="play_media">تشغيل</string>
-    <string name="previous_media">السابق</string>
-    <string name="stop_media">ايقاف</string>
-    <string name="playlist">قائمة التشغيل</string>
-    <string name="filebrowser">تصفح الملفات</string>
-    <string name="delete_from_playlist">حذف من القائمة</string>
     <string name="service">الخدمة</string>
     <string name="afterevent">بعد الحدث</string>
     <string name="location">الموقع</string>

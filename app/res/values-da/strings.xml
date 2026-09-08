@@ -209,7 +209,6 @@
     <string name="screenshot_saved">Skærmbillede gemt i \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Ingen streaming afspiller installeret</string>
-    <string name="mediaplayer">Mediaplayer</string>
     <string name="edit_profile">Ændre profil</string>
     <string name="force_tablet_layout_long">Gennemtving optimeret opsætning for Tablet</string>
     <string name="force_tablet_layout">Gennemtving opsætning for Tablet</string>

@@ -151,7 +151,6 @@
     <string name="simple_remote">yksinkertainen säädin</string>
     <string name="screenshot_saved">Ruudunkaappaus tallennettu \'%s\'</string>
     <string name="missing_stream_player">Ei asennettua ohjelmaa videotoistoon !</string>
-    <string name="mediaplayer">Mediasoitin</string>
     <string name="edit_profile">Muokkaa Profiilia</string>
 
 </resources>

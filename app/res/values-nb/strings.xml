@@ -16,19 +16,6 @@
     </string-array>
 
     <string name="timer">Timer</string>
-    <string name="mediaplayer">Mediaspiller</string>
-    <string name="play">Play</string>
-    <string name="add_to_playlist">Legg til spilleliste</string>
-    <string name="navigation_back_media">Tilbake</string>
-    <string name="home_media">Hjem</string>
-    <string name="close_media">Steng mediaspiller</string>
-    <string name="next_media">Neste</string>
-    <string name="play_media">Play</string>
-    <string name="previous_media">Tidligere</string>
-    <string name="stop_media">Stopp</string>
-    <string name="playlist">Spilleliste</string>
-    <string name="filebrowser">Filutforsker</string>
-    <string name="delete_from_playlist">Slett fra spilleliste</string>
     <string name="service">Service</string>
     <string name="afterevent">Etterpå</string>
     <string name="location">Lokasjon</string>

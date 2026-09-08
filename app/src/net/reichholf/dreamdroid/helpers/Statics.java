@@ -21,9 +21,6 @@ public class Statics {
 	public static final int ACTION_DELETE_CONFIRMED = 0xc011;
 	public static final int ACTION_EDIT = 0xc012;
 	public static final int ACTION_LEAVE_CONFIRMED = 0xc015;
-	public static final int ACTION_ADD_TO_PLAYLIST = 0xc17;
-	public static final int ACTION_PLAY_MEDIA = 0xc18;
-	public static final int ACTION_DELETE_FROM_PLAYLIST = 0xc19;
 	public static final int ACTION_LOCATION_RATIONALE_DONE = 0xc23;
 	public static final int ACTION_NONE = 0xcfff;
 
@@ -48,7 +45,6 @@ public class Statics {
 	public static final int ITEM_CHECK_CONN = R.id.menu_check_connectivity;
     public static final int ITEM_CHANGELOG = R.id.menu_navigation_changelog;
 	public static final int ITEM_SLEEPTIMER = 0x6020;
-	public static final int ITEM_MEDIA_PLAYER = 0x6021;
 	public static final int ITEM_PROFILES = R.id.menu_navigation_profiles;
 	public static final int ITEM_ADD_PROFILE = 0x6023;
 	public static final int ITEM_RELOAD = R.id.menu_reload;
@@ -89,12 +85,6 @@ public class Statics {
 	public static final int REQUEST_DONATE = 0x1337;
 
 	public static final int RESULT_NONE = -9999;
-
-	public static final int ITEM_MEDIA_HOME = R.id.menu_home_media;
-	public static final int ITEM_MEDIA_BACK = R.id.menu_navigation_back_media;
-	public static final int ITEM_MEDIA_CLOSE = R.id.menu_close_media;
-
-
 
 	public static final String INTENT_ACTION_PICK_BOUQUET = "pick_bouquet";
 	public static final String TAG_PICON = "picon";

@@ -16,16 +16,6 @@
     </string-array>
 
     <string name="timer">Časovač</string>
-    <string name="mediaplayer">Prehrávač médií</string>
-    <string name="play">Prehraj</string>
-    <string name="add_to_playlist">Pridaj do palylistu</string>
-    <string name="navigation_back_media">Naspäť</string>
-    <string name="home_media">Domov</string>
-    <string name="close_media">Zavri prehrávač médií</string>
-    <string name="next_media">Ďalší</string>
-    <string name="play_media">Prehraj</string>
-    <string name="previous_media">Predchádzajúci</string>
-    <string name="delete_from_playlist">Vymaž z playlistu</string>
     <string name="service">Služba</string>
     <string name="afterevent">Po udalosti</string>
     <string name="location">Umiestnenie</string>

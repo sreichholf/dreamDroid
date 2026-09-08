@@ -13,19 +13,6 @@
         <item>Alle Kanäle (Radio)</item>
     </string-array>
     <string name="timer">Timer</string>
-    <string name="mediaplayer">Mediaplayer</string>
-    <string name="play">Play</string>
-    <string name="add_to_playlist">Zur Playlist hinzufügen</string>
-    <string name="navigation_back_media">Zurück</string>
-    <string name="home_media">Home</string>
-    <string name="close_media">Mediaplayer schließen</string>
-    <string name="next_media">Next</string>
-    <string name="play_media">Play</string>
-    <string name="previous_media">Previous</string>
-    <string name="stop_media">Stop</string>
-    <string name="playlist">Playlist</string>
-    <string name="filebrowser">Dateibrowser</string>
-    <string name="delete_from_playlist">Aus Playlist löschen</string>
     <string name="service">Kanal</string>
     <string name="afterevent">Anschlussereignis</string>
     <string name="location">Ort</string>

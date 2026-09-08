@@ -13,19 +13,6 @@
         <item>Tutti (Radio)</item>
     </string-array>
     <string name="timer">Timer</string>
-    <string name="mediaplayer">Lettore multimediale</string>
-    <string name="play">Play</string>
-    <string name="add_to_playlist">Aggiungi alla playlist</string>
-    <string name="navigation_back_media">Indietro</string>
-    <string name="home_media">Home</string>
-    <string name="close_media">Chiudi lettore multimediale</string>
-    <string name="next_media">Successivo</string>
-    <string name="play_media">Play</string>
-    <string name="previous_media">Precedente</string>
-    <string name="stop_media">Stop</string>
-    <string name="playlist">Playlist</string>
-    <string name="filebrowser">Sfoglia file</string>
-    <string name="delete_from_playlist">Rimuovi dalla playlist</string>
     <string name="service">Servizio</string>
     <string name="afterevent">Dopo l\'evento</string>
     <string name="location">Posizione</string>
