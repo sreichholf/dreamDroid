@@ -54,8 +54,16 @@ fun AboutScreen(
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = content.version, style = MaterialTheme.typography.bodyLarge)
-        Text(text = content.license, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = content.version,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = content.license,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
         SourceLinkText(sourceLink = content.sourceLink)
         TextButton(onClick = onLicensesClick) {
             Text(content.licensesLabel)
