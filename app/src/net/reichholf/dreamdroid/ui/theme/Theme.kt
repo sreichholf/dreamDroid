@@ -2,10 +2,12 @@ package net.reichholf.dreamdroid.ui.theme
 
 import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import net.reichholf.dreamdroid.DreamDroid
@@ -14,10 +16,12 @@ import net.reichholf.dreamdroid.R
 @Composable
 fun DreamDroidTheme(content: @Composable () -> Unit) {
     val dark = isDreamDroidDark(LocalContext.current)
-    MaterialTheme(
-        colorScheme = if (dark) dreamDroidDarkColorScheme() else dreamDroidLightColorScheme(),
-        content = content,
-    )
+    val scheme = if (dark) dreamDroidDarkColorScheme() else dreamDroidLightColorScheme()
+    MaterialTheme(colorScheme = scheme) {
+        // Dialog-hosted ComposeView inherits View contentColor (black in night). Override so
+        // Text() without an explicit color uses the DreamDroid scheme, not the XML dialog.
+        CompositionLocalProvider(LocalContentColor provides scheme.onSurface, content = content)
+    }
 }
 
 fun isDreamDroidDark(context: Context): Boolean {
