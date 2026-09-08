@@ -32,7 +32,7 @@ import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.SignalFragment;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.fragment.ZapFragment;
-import net.reichholf.dreamdroid.fragment.dialogs.AboutDialog;
+import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
@@ -233,7 +233,7 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 break;
 
             case R.id.menu_navigation_about:
-                getMainActivity().showDialogFragment(AboutDialog.newInstance(), "about_dialog");
+                getMainActivity().showDialogFragment(AboutComposeDialog.newInstance(), "about_dialog");
                 break;
 
             case Statics.ITEM_CHECK_CONN:
