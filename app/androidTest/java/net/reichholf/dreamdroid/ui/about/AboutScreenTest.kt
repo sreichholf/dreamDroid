@@ -13,7 +13,8 @@ class AboutScreenTest {
     @Test
     fun showsVersionSubstringAndLicensesButton() {
         composeRule.setContent {
-            AboutScreen(
+            AboutTheme {
+                AboutScreen(
                 content = AboutContent(
                     title = "About",
                     version = "dreamDroid 1.15.460-debug",

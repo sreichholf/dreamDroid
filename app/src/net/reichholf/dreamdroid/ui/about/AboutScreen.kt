@@ -19,7 +19,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.SpanStyle
@@ -100,7 +99,7 @@ private fun SourceLinkText(sourceLink: String) {
 }
 
 @Composable
-private fun AboutTheme(content: @Composable () -> Unit) {
+fun AboutTheme(content: @Composable () -> Unit) {
     val scheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
     MaterialTheme(colorScheme = scheme, content = content)
 }
@@ -108,6 +107,13 @@ private fun AboutTheme(content: @Composable () -> Unit) {
 class AboutComposeDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val host = this
+        val aboutContent = AboutContent(
+            title = getString(R.string.about),
+            version = DreamDroid.VERSION_STRING,
+            license = getString(R.string.license_gplv3),
+            sourceLink = getString(R.string.source_code_link),
+            licensesLabel = getString(R.string.licenses),
+        )
         val composeView = ComposeView(requireContext()).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -118,16 +124,9 @@ class AboutComposeDialog : DialogFragment() {
             setViewTreeSavedStateRegistryOwner(host)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent {
-                val resources = LocalContext.current
                 AboutTheme {
                     AboutScreen(
-                        content = AboutContent(
-                            title = resources.getString(R.string.about),
-                            version = DreamDroid.VERSION_STRING,
-                            license = resources.getString(R.string.license_gplv3),
-                            sourceLink = resources.getString(R.string.source_code_link),
-                            licensesLabel = resources.getString(R.string.licenses),
-                        ),
+                        content = aboutContent,
                         onLicensesClick = {
                             DreamDroidAttributionPresenter.newInstance(requireContext())
                                 .showDialog(getString(R.string.licenses))

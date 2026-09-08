@@ -9,7 +9,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.0'
     }
-    ext.kotlin_version = '1.9.22'
+    ext.kotlin_version = '1.9.24'
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
@@ -63,9 +63,11 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
     implementation 'androidx.slidingpanelayout:slidingpanelayout:1.2.0'
 
-    def composeBom = platform('androidx.compose:compose-bom:2024.02.02')
+    def composeBom = platform('androidx.compose:compose-bom:2024.04.01')
     implementation composeBom
     androidTestImplementation composeBom
+    implementation 'androidx.compose.runtime:runtime'
+    implementation 'androidx.compose.foundation:foundation'
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.activity:activity-compose'
@@ -75,6 +77,12 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test:runner:1.5.2'
     testImplementation 'junit:junit:4.13.2'
+}
+
+configurations.configureEach { cfg ->
+    if (cfg.name.startsWith("kotlinCompilerPluginClasspath") && !cfg.name.contains("Native")) {
+        project.dependencies.add(cfg.name, "androidx.compose.compiler:compiler:1.5.14")
+    }
 }
 
 android {
@@ -95,6 +103,7 @@ android {
                 java {
                     srcDirs = ['src']
                     exclude 'test/**'
+                    exclude 'androidTest/**'
                 }
                 res.srcDirs = ['res']
             }
@@ -102,7 +111,7 @@ android {
                 java.srcDirs = ['src/test/java']
             }
             androidTest {
-                java.srcDirs = ['src/androidTest/java']
+                java.srcDirs = ['androidTest/java']
             }
         }
     }
@@ -174,6 +183,6 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.10'
+        kotlinCompilerExtensionVersion '1.5.14'
     }
 }
