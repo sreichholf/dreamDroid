@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
 import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,6 +41,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteReques
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.services.TimerListItem;
+import net.reichholf.dreamdroid.ui.services.TimerListMapperKt;
+import net.reichholf.dreamdroid.ui.services.TimerListState;
+import net.reichholf.dreamdroid.ui.services.TimerListStateKt;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import java.util.ArrayList;
@@ -99,6 +104,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	@Nullable
 	private ProgressDialog mProgress;
 	protected int mCurrentPos;
+	private TimerListState mListState;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -111,11 +117,12 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		mCurrentPos = -1;
 		mIsActionMode = false;
 		mReload = true;
+		mListState = new TimerListState();
 	}
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_recycler_content, container, false);
+		View view = inflater.inflate(R.layout.compose_swipe_list, container, false);
 		registerFab(R.id.fab_main, R.string.new_timer, R.drawable.ic_action_fab_add, v -> onItemSelected(Statics.ITEM_NEW_TIMER));
 		return view;
 	}
@@ -124,6 +131,19 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		setAdapter();
+		ComposeView compose = view.findViewById(R.id.compose_list);
+		TimerListStateKt.bindTimerListScreen(
+				compose,
+				mListState,
+				item -> {
+					onComposeClick(item, false);
+					return kotlin.Unit.INSTANCE;
+				},
+				item -> {
+					onComposeClick(item, true);
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 	}
 
 	protected void startActionMode() {
@@ -197,6 +217,24 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	private void setAdapter() {
 		mAdapter = new TimerAdapter(getAppCompatActivity(), mMapList);
 		getRecyclerView().setAdapter(mAdapter);
+	}
+
+	@Override
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		super.onLoadFinished(loader, result);
+		if (getAppCompatActivity() != null) {
+			mListState.replaceAll(TimerListMapperKt.timerListItemsFrom(getAppCompatActivity(), mMapList));
+		}
+	}
+
+	private void onComposeClick(@NonNull TimerListItem item, boolean isLong) {
+		int position = item.getIndex();
+		if (isLong) {
+			onItemLongClick(getRecyclerView(), getView(), position, position);
+		} else {
+			onItemClick(getRecyclerView(), getView(), position, position);
+		}
 	}
 
 	/**

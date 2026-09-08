@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.fragment;
 
 import android.content.ActivityNotFoundException;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -20,6 +19,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,7 +46,10 @@ import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.room.AppDatabase;
-import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
+import net.reichholf.dreamdroid.ui.services.ServiceListItem;
+import net.reichholf.dreamdroid.ui.services.ServiceListMapperKt;
+import net.reichholf.dreamdroid.ui.services.ServiceListState;
+import net.reichholf.dreamdroid.ui.services.ServiceListStateKt;
 
 import java.util.ArrayList;
 
@@ -76,6 +79,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	public String mRef;
 
 	private ArrayList<ExtendedHashMap> mHistory;
+	private ServiceListState mListState;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -100,6 +104,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 			mRef = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
 			mName = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
 		}
+		mListState = new ServiceListState();
 	}
 
 	@Override
@@ -115,21 +120,25 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.card_grid_content, container, false);
+		return inflater.inflate(R.layout.compose_swipe_list, container, false);
 	}
 
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
-		((AutofitRecyclerView) getRecyclerView()).setMaxSpanCount(
-				Integer.parseInt(
-						prefs.getString(
-								DreamDroid.PREFS_KEY_GRID_MAX_COLS,
-								Integer.toString(AutofitRecyclerView.DEFAULT_MAX_SPAN_COUNT)
-						)
-				)
-		);
 		super.onViewCreated(view, savedInstanceState);
+		ComposeView compose = view.findViewById(R.id.compose_list);
+		ServiceListStateKt.bindServiceListScreen(
+				compose,
+				mListState,
+				item -> {
+					onComposeClick(item, false);
+					return kotlin.Unit.INSTANCE;
+				},
+				item -> {
+					onComposeClick(item, true);
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 	}
 
 	@Override
@@ -147,6 +156,14 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	public boolean onItemLongClick(RecyclerView parent, @NonNull View view, int position, long id) {
 		onItemClick(parent, view, position, true);
 		return true;
+	}
+
+	private void onComposeClick(@NonNull ServiceListItem item, boolean isLong) {
+		View host = getView();
+		if (host == null) {
+			return;
+		}
+		onItemClick(host, host, item.getIndex(), isLong);
 	}
 
 	private void onItemClick(View l, @NonNull View v, int position, boolean isLong) {
@@ -265,6 +282,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		if (!isResumed())
 			return;
 		super.onLoadFinished(loader, result);
+		mListState.replaceAll(ServiceListMapperKt.serviceListItemsFrom(mMapList));
 	}
 
 	public void upOrReload() {
