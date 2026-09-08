@@ -20,6 +20,12 @@ Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets 
 
 `verify-dreamdroid.py` is for a single look when you need a screenshot or a shell-only path that has no test yet. It is not the verification loop.
 
+## Cloud Agent environment
+
+Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 17 + the Android SDK (build-tools 34, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
+
+Nested KVM guest execution hangs on Cursor Cloud VMs: `/dev/kvm` exists and `kvm-ok` passes, but under `-enable-kvm` the guest vCPU never runs (0% CPU, no kernel output). The emulator therefore runs under software (`-accel off`, TCG). It works but is slow, so APK installs need a raised adb timeout (`~/.gradle/init.gradle` sets `adbOptions.timeOutInMs`). Set `DREAMDROID_EMU_ACCEL=auto` to try KVM on a host that supports nested virt.
+
 ## Other traps
 
 - `main` is the rewrite. Do not merge rewrite work into `master`.

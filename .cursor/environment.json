@@ -1,0 +1,6 @@
+{
+  "name": "dreamDroid",
+  "user": "ubuntu",
+  "install": "bash .cursor/cloud/install.sh",
+  "start": "bash .cursor/cloud/start.sh"
+}
