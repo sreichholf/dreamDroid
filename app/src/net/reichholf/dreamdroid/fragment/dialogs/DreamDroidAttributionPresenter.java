@@ -90,11 +90,6 @@ public class DreamDroidAttributionPresenter {
 						.addLicense(License.APACHE)
 						.setWebsite("https://github.com/CodeAndMagic/GaugeView")
 						.build(),
-					new Attribution.Builder("android-retrostreams")
-						.addCopyrightNotice("Copyright (c) 2018 Stefan Zobel <spliterator@gmail.com>")
-						.addLicense(License.GPL_2)
-						.setWebsite("https://github.com/retrostreams/android-retrostreams")
-						.build(),
 					new Attribution.Builder("Android-State")
 						.addCopyrightNotice("Copyright (c) 2017 Evernote Corporation.")
 						.addLicense("Eclipse Public License - v 1.0","https://www.eclipse.org/legal/epl-v10.html")

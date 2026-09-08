@@ -32,8 +32,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import java9.util.stream.StreamSupport;
-
 /**
  * Created by GAigner on 01/09/18.
  */
@@ -109,9 +107,11 @@ public class BackupFragment extends BaseFragment {
 		if (!mSettingsSwitch.isChecked()) {
 			mBackupData.setSettings(null);
 		}
-		StreamSupport.stream(mProfileSwitches).filter(p -> !p.isChecked()).forEach(checkBox -> {
-			mBackupData.getProfiles().remove(StreamSupport.stream(mBackupData.getProfiles()).filter(p -> p.getId() == checkBox.getId()).findFirst().get());
-		});
+		for (SwitchCompat checkBox : mProfileSwitches) {
+			if (!checkBox.isChecked()) {
+				mBackupData.getProfiles().removeIf(p -> p.getId() == checkBox.getId());
+			}
+		}
 		mBackupService.doExport(mBackupData);
 	}
 

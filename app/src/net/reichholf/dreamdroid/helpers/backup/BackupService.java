@@ -24,9 +24,6 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
-import java9.util.function.Consumer;
-import java9.util.stream.StreamSupport;
-
 /**
  * Created by GAigner on 01/09/18.
  */
@@ -46,13 +43,15 @@ public class BackupService {
     @NonNull
 	public BackupData getBackupData() {
         BackupData export = new BackupData();
-        StreamSupport.stream(mPreferences.getAll().entrySet()).forEach((Consumer<Map.Entry<String, ?>>) entry -> {
+        for (Map.Entry<String, ?> entry : mPreferences.getAll().entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue().toString();
             String type = entry.getValue().getClass().getSimpleName();
             export.addGenericSetting(new GenericSetting(key, value, type));
-        });
-        StreamSupport.stream(mProfiles.getProfiles()).forEach(profile -> export.addProfile(profile));
+        }
+        for (Profile profile : mProfiles.getProfiles()) {
+            export.addProfile(profile);
+        }
         return export;
     }
 
