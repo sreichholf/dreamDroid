@@ -71,7 +71,7 @@ public class CheckProfile {
 					addEntry(resultList, R.string.port, false, Integer.toString(port));
 					DeviceInfoRequestHandler dirh = new DeviceInfoRequestHandler();
 
-					SimpleHttpClient shc = SimpleHttpClient.getInstance();
+					SimpleHttpClient shc = SimpleHttpClient.getInstance(profile);
 					String xml = profile.getCachedDeviceInfo();
 					if(xml == null)
 						xml = dirh.get(shc);
