@@ -56,7 +56,6 @@ dependencies {
     implementation project(':libraries:AttributionPresenter:library')
     implementation project(':libraries:simple-gauge-android:gaugelibrary')
     implementation 'com.google.code.gson:gson:2.9.0'
-    implementation 'net.sourceforge.streamsupport:android-retrostreams:1.7.1'
     implementation 'com.evernote:android-state:1.4.1'
     annotationProcessor 'com.evernote:android-state-processor:1.4.1'
     implementation 'com.github.livefront:bridge:v2.0.2'

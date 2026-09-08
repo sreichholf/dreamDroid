@@ -17,11 +17,12 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | pr-client | [#165](https://github.com/sreichholf/dreamDroid/pull/165) | merged | `de010cb4` |
 | pr-profiles | [#168](https://github.com/sreichholf/dreamDroid/pull/168) | merged | `e7563787` |
 | pr-services | [#169](https://github.com/sreichholf/dreamDroid/pull/169) | merged | squash `f125c117` |
-| TV/Movies/Timer rows | [#170](https://github.com/sreichholf/dreamDroid/pull/170) | open on `pr-service-lists` | Compose lists hosted in the existing Java fragments. Not on `main` yet. |
+| TV/Movies/Timer rows | [#170](https://github.com/sreichholf/dreamDroid/pull/170) | merged | `dbd20628` |
+| skill+plan | [#171](https://github.com/sreichholf/dreamDroid/pull/171) | merged | `b98ac193` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
-Wave 2 (operator choice): finish TV & Movies lists, then delete dead weight. Lists are #170. Dead-weight deletes are next and must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): finish TV & Movies lists, then delete dead weight. Lists #170 are on `main`. This PR is dead-weight (4). Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
 ### Operator overrides (this program)
 
@@ -36,7 +37,7 @@ Wave 2 (operator choice): finish TV & Movies lists, then delete dead weight. Lis
 ### Not done, recorded so it is not pretended done
 
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
-- On `main`, phone channel lists are still `ServiceListPageFragment` + `ServiceAdapter`. Hub chrome is Compose. Compose rows live in #170.
+- Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for `ShareActivity` / video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - `ProfileAdapter` remains for `ShareActivity`.
 - `app/res/service_list_pager.xml` (not under `layout/`) is a leftover stub. Inflater uses `R.layout.service_list_pager`.
 
@@ -178,7 +179,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 
 - [x] `app/src/net/reichholf/dreamdroid/ui/services/TvMoviesScreen.kt`, `TvMoviesDestination.kt`, `TvMoviesHubState.kt`.
 - [x] `ServiceListPager.java` hosts Compose header + destination bar. XML `TabLayout` / activity bottom nav gone (`GONE` leftover id ok).
-- [ ] Phone Recycler adapters **not** deleted on `main`. That is [#170](https://github.com/sreichholf/dreamDroid/pull/170).
+- [x] Phone Recycler adapters on the pager path deleted on `main` via [#170](https://github.com/sreichholf/dreamDroid/pull/170). Adapters used outside the pager path remain.
 
 **Build.**
 
@@ -249,13 +250,13 @@ This was never "replace the phone app with Compose." The original boxes named fi
 
 ### Still Java/XML phone screens (drawer and related)
 
-Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies **tabs/bar**. The pager pages behind those tabs are still fragments until #170 lands.
+Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies **tabs/bar**. The pager pages behind those tabs landed as Compose in #170.
 
 | Surface | Code | Notes |
 | --- | --- | --- |
-| Channel / bouquet rows | `ServiceListPageFragment`, `ServiceAdapter` | Hub leftover on `main`. Zap, long-press, picons, popup menu. Compose in #170. |
-| Movies list | `MovieListFragment` | Hub Movies destination. Compose in #170. |
-| Timer list / edit | `TimerListFragment`, `TimerEditFragment` | Hub Timer destination. List Compose in #170; edit stays XML. |
+| Channel / bouquet rows | Compose on `main` via #170 | Zap, long-press, picons, popup menu. |
+| Movies list | Compose on `main` via #170 | Hub Movies destination. |
+| Timer list / edit | Compose list on `main` via #170; `TimerEditFragment` | List Compose; edit stays XML. |
 | Profile add/edit | `ProfileEditFragment` | List is Compose; form is XML. Autodiscovery stays Java. |
 | Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
 | Zap | `ZapFragment`, `ZapAdapter` | |
@@ -279,7 +280,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 - Typed `EnigmaClient` exists. Almost every list still loads `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
 - Enigma2 HTTP is still `HttpURLConnection` + `asynctask/*`. Picons still Picasso + OkHttp 3.14.9.
 - Room holds `profile` only. `DatabaseHelper` / `dreamdroid` SQLite still exist for migration and backup.
-- `android-retrostreams`, ButterKnife (5 files), `legacy-support-v4`, `legacy-preference-v14`, multidex.
+- ButterKnife (5 files), `legacy-support-v4`, `legacy-preference-v14`, multidex.
 
 ### Explicitly frozen
 
@@ -289,10 +290,10 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
-1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **In progress as #170.**
+1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main`.**
 2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
-4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen), retrostreams, preference-v14, unused MediaPlayer entry, leftover `res/service_list_pager.xml`. Small PRs, high delete ratio. **Next after #170.**
+4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen), retrostreams, preference-v14, unused MediaPlayer entry, leftover `res/service_list_pager.xml`. Small PRs, high delete ratio. **This PR.**
 5. **TV program** — Leanback → Compose for TV. Separate program. Do not mix into phone PRs.
 
 Recommended default if the operator just says go: (1) then (4), keep (3) and (5) as later programs.
