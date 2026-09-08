@@ -144,7 +144,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 				setConnectionState(getString(R.string.ok), true);
 			}
 			mNavigationHelper.setAvailableFeatures();
-			if (getCurrentDetailFragment() == null) {
+			// First-start already navigated to Profiles. The fragment commit is still pending, so
+			// mDetailFragment can still be null here; do not overwrite Profiles with services.
+			if (!isFirstStart && getCurrentDetailFragment() == null) {
 				mNavigationHelper.navigateTo(R.id.menu_navigation_services);
 			}
 		}
