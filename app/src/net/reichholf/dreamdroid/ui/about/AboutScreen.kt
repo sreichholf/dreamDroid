@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.ui.about
 import android.app.Dialog
 import android.os.Bundle
 import android.view.ViewGroup
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,8 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -34,6 +31,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.dialogs.DreamDroidAttributionPresenter
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 data class AboutContent(
     val title: String,
@@ -98,12 +96,6 @@ private fun SourceLinkText(sourceLink: String) {
     )
 }
 
-@Composable
-fun AboutTheme(content: @Composable () -> Unit) {
-    val scheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
-    MaterialTheme(colorScheme = scheme, content = content)
-}
-
 class AboutComposeDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val host = this
@@ -124,7 +116,7 @@ class AboutComposeDialog : DialogFragment() {
             setViewTreeSavedStateRegistryOwner(host)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent {
-                AboutTheme {
+                DreamDroidTheme {
                     AboutScreen(
                         content = aboutContent,
                         onLicensesClick = {
