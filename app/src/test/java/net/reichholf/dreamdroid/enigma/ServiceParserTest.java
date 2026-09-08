@@ -31,4 +31,14 @@ public class ServiceParserTest {
         assertEquals("1:64:1:0:0:0:0:0:0:0:", services.get(2).getReference());
         assertEquals("--------", services.get(2).getName());
     }
+
+    @Test
+    public void emptyXmlYieldsNoServices() {
+        assertEquals(0, ServiceParser.INSTANCE.parse("").size());
+    }
+
+    @Test
+    public void malformedXmlYieldsNoServices() {
+        assertEquals(0, ServiceParser.INSTANCE.parse("<e2servicelist><e2service>").size());
+    }
 }
