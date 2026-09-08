@@ -5,21 +5,16 @@ import android.content.res.Resources;
 import androidx.annotation.NonNull;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.enigma.Service;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 
 import java.util.ArrayList;
 
-/**
- * @author sreichholf Fetches a service list async. Does all the
- *         error-handling, refreshing and title-setting
- */
 public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean> {
 	public class Bouquets {
-		public ArrayList<ExtendedHashMap> tv;
-		public ArrayList<ExtendedHashMap> radio;
+		public ArrayList<Service> tv;
+		public ArrayList<Service> radio;
 
 		public Bouquets() {
 			tv = new ArrayList<>();
@@ -35,8 +30,8 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 	public GetBouquetListTask(AsyncHttpTaskBaseHandler taskHandler) {
 		super(taskHandler);
 		GetBouquetListTaskHandler t = (GetBouquetListTaskHandler) mTaskHandler.get();
-		mTV = t.getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
-		mRadio = t.getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
+		mTV = t.getResources().getStringArray(R.array.servicerefstv)[0];
+		mRadio = t.getResources().getStringArray(R.array.servicerefsradio)[0];
 	}
 
 	@NonNull
@@ -46,18 +41,19 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		if (isCancelled())
 			return false;
 
-		AbstractListRequestHandler handler = new ServiceListRequestHandler();
-		addBouquets(handler, mTV, mBouquets.tv);
-		addBouquets(handler, mRadio, mBouquets.radio);
+		addBouquets(mTV, mBouquets.tv);
+		addBouquets(mRadio, mBouquets.radio);
 
 		return true;
 	}
 
-	private boolean addBouquets(@NonNull AbstractListRequestHandler handler, String ref, ArrayList<ExtendedHashMap> target) {
+	private boolean addBouquets(String ref, ArrayList<Service> target) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("sRef", ref));
-		String xml = handler.getList(getHttpClient(), params);
-		return xml != null && !isCancelled() && handler.parseList(xml, target);
+		if (isCancelled())
+			return false;
+		target.addAll(HttpFragmentHelper.fetchServices(getHttpClient(), params));
+		return true;
 	}
 
 	@Override

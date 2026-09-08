@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2servicelist>
+	<e2service>
+		<e2servicereference>1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "userbouquet.favourites.tv" ORDER BY bouquet</e2servicereference>
+		<e2servicename>Favourites (TV)</e2servicename>
+	</e2service>
+	<e2service>
+		<e2servicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Das Erste HD</e2servicename>
+	</e2service>
+	<e2service>
+		<e2servicereference>1:64:1:0:0:0:0:0:0:0:</e2servicereference>
+		<e2servicename>--------</e2servicename>
+	</e2service>
+</e2servicelist>

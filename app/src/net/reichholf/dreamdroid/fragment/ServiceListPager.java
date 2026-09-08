@@ -23,10 +23,9 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
 import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
+import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
 
 import java.util.ArrayList;
 
@@ -70,7 +69,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 	@Override
 	public void onGetLocationsAndTagsProgress(String title, String progress) {
-		// skip
 	}
 
 	@Override
@@ -80,14 +78,14 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	}
 
 	public class ServicelistAdapter extends FragmentStateAdapter {
-		ArrayList<ExtendedHashMap> mItems;
+		ArrayList<Service> mItems;
 
 		public ServicelistAdapter(@NonNull Fragment fragment) {
 			super(fragment);
 			mItems = new ArrayList();
 		}
 
-		public ExtendedHashMap get(int i) {
+		public Service get(int i) {
 			return mItems.get(i);
 		}
 
@@ -95,7 +93,7 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			mItems.clear();
 		}
 
-		public void add(ExtendedHashMap e) {
+		public void add(Service e) {
 			mItems.add(e);
 		}
 
@@ -105,9 +103,9 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			Fragment f = new ServiceListPageFragment();
 
 			Bundle args = new Bundle();
-			ExtendedHashMap service = mItems.get(position);
-			args.putString(Service.KEY_REFERENCE, service.getString(Service.KEY_REFERENCE));
-			args.putString(Service.KEY_NAME, service.getString(Service.KEY_NAME));
+			Service service = mItems.get(position);
+			args.putString(Event.KEY_SERVICE_REFERENCE, service.getReference());
+			args.putString(Event.KEY_SERVICE_NAME, service.getName());
 			f.setArguments(args);
 			return f;
 		}
@@ -120,8 +118,8 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		}
 
 		public int indexOf(@NonNull String ref) {
-			for (ExtendedHashMap bouquet : mItems) {
-				if (ref != null && ref.equals(bouquet.get(Service.KEY_REFERENCE)))
+			for (Service bouquet : mItems) {
+				if (ref != null && ref.equals(bouquet.getReference()))
 					return mItems.indexOf(bouquet);
 			}
 			return -1;
@@ -251,10 +249,10 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 				super.onPageSelected(position);
 				switch(mMode) {
 					case MODE_TV:
-						mCurrentTv = mTvListAdapter.get(position).getString(Service.KEY_REFERENCE, null);
+						mCurrentTv = mTvListAdapter.get(position).getReference();
 						break;
 					case MODE_RADIO:
-						mCurrentRadio = mRadioListAdapter.get(position).getString(Service.KEY_REFERENCE, null);
+						mCurrentRadio = mRadioListAdapter.get(position).getReference();
 						break;
 					case MODE_MOVIES:
 						mCurrentMovie = mMovielistAdapter.get(position);
@@ -267,7 +265,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		mMovielistAdapter = new MovieListAdapter(this);
 		mTimerListAdapter = new TimerListAdapter(this);
 
-		//selectedItemId = mTabLayout.getSelectedTabPosition()
 		if (MODE_MOVIES.equals(mMode)) {
 			mPager.setAdapter(mMovielistAdapter);
 		} else if (MODE_RADIO.equals(mMode)){
@@ -353,9 +350,9 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		if (MODE_MOVIES.equals(mMode) && mMovielistAdapter.getItemCount() > position)
 			return mMovielistAdapter.get(position);
 		if (MODE_TV.equals(mMode) && mTvListAdapter.getItemCount() > position)
-			return mTvListAdapter.get(position).getString(Service.KEY_NAME);
+			return mTvListAdapter.get(position).getName();
 		if (MODE_RADIO.equals(mMode) && mRadioListAdapter.getItemCount() > position)
-			return mRadioListAdapter.get(position).getString(Service.KEY_NAME);
+			return mRadioListAdapter.get(position).getName();
 
 		return getString(R.string.not_available);
 	}
@@ -389,14 +386,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		int start = 0;
 		if (mBouquets != null && mBouquets.tv.size() > 0) {
 			start = 1;
-			for (ExtendedHashMap bouquet : mBouquets.tv)
+			for (Service bouquet : mBouquets.tv)
 				mTvListAdapter.add(bouquet);
 		}
 		for (int i = start; i < servicelist.length; i++) {
-			ExtendedHashMap bouquet = new ExtendedHashMap();
-			bouquet.put(Event.KEY_SERVICE_NAME, servicelist[i]);
-			bouquet.put(Event.KEY_SERVICE_REFERENCE, servicerefs[i]);
-			mTvListAdapter.add(bouquet);
+			mTvListAdapter.add(new Service(servicerefs[i], servicelist[i]));
 		}
 
 		mTvListAdapter.notifyDataSetChanged();
@@ -423,14 +417,11 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		int start = 0;
 		if (mBouquets != null && mBouquets.radio.size() > 0) {
 			start = 1;
-			for (ExtendedHashMap bouquet : mBouquets.radio)
+			for (Service bouquet : mBouquets.radio)
 				mRadioListAdapter.add(bouquet);
 		}
 		for (int i = start; i < servicelist.length; i++) {
-			ExtendedHashMap bouquet = new ExtendedHashMap();
-			bouquet.put(Event.KEY_SERVICE_NAME, servicelist[i]);
-			bouquet.put(Event.KEY_SERVICE_REFERENCE, servicerefs[i]);
-			mRadioListAdapter.add(bouquet);
+			mRadioListAdapter.add(new Service(servicerefs[i], servicelist[i]));
 		}
 
 		mRadioListAdapter.notifyDataSetChanged();

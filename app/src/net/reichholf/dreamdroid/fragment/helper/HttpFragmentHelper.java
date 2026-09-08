@@ -31,6 +31,8 @@ import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
+import net.reichholf.dreamdroid.enigma.EnigmaClient;
+import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -43,10 +45,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * @author sre
- */
 public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHandler, SetVolumeTask.SetVolumeTaskHandler {
     public static final int LOADER_DEFAULT_ID = 0;
     private Fragment mFragment;
@@ -83,7 +83,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         mSwipeRefreshLayout = view.findViewById(R.id.ptr_layout);
         if (mSwipeRefreshLayout != null) {
-            // Now setup the SwipeRefreshLayout
             mSwipeRefreshLayout.setOnRefreshListener((SwipeRefreshLayout.OnRefreshListener) mFragment);
         }
     }
@@ -131,7 +130,7 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(getAppCompatActivity() == null) //not attached to activity
+        if(getAppCompatActivity() == null)
             return false;
         if (PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean("volume_control", false)) {
             switch (keyCode) {
@@ -158,11 +157,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
             mVolumeTask.cancel(true);
     }
 
-    /**
-     * Called after a Button has been clicked
-     *
-     * @param set value to set
-     */
     @SuppressWarnings("unchecked")
     private void onVolumeButtonClicked(String set) {
         ArrayList<NameValuePair> params = new ArrayList<>();
@@ -175,10 +169,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         mVolumeTask.execute(params);
     }
 
-    /**
-     * @param handler
-     * @param params
-     */
     @SuppressWarnings("unchecked")
     public void execSimpleResultTask(SimpleResultRequestHandler handler, ArrayList<NameValuePair> params) {
         if (mSimpleResultTask != null) {
@@ -211,10 +201,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         mShowToastOnSimpleResult = show;
     }
 
-    /**
-     * @param success
-     * @param volume
-     */
     public void onVolumeSet(boolean success, @NonNull ExtendedHashMap volume) {
         if (!mFragment.isAdded())
             return;
@@ -235,9 +221,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         showToast(text);
     }
 
-    /**
-     * @param toastText
-     */
     private void showToast(String toastText) {
         Toast toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG);
         toast.show();
@@ -255,18 +238,12 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         onLoadStarted();
     }
 
-    /**
-     * @param title
-     */
     public void finishProgress(String title) {
         getBaseFragment().setCurrentTitle(title);
         getAppCompatActivity().setTitle(title);
         onLoadFinished();
     }
 
-    /**
-     * @param event
-     */
     public void findSimilarEvents(@NonNull ExtendedHashMap event) {
         EpgSearchFragment f = new EpgSearchFragment();
         Bundle args = new Bundle();
@@ -295,11 +272,20 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         return mShc;
     }
 
+    @NonNull
+    public List<Service> fetchServices(@NonNull List<NameValuePair> params) {
+        return fetchServices(mShc, params);
+    }
+
+    @NonNull
+    public static List<Service> fetchServices(@NonNull SimpleHttpClient shc, @NonNull List<NameValuePair> params) {
+        return EnigmaClient.getServicesBlocking(shc, params);
+    }
+
     public void onLoadStarted() {
         if (mIsReloading)
             return;
         mIsReloading = true;
-        //The SDK check is a workaround for broken pull-to-refresh with ActionBarCompat
         if (mSwipeRefreshLayout != null) {
             if (!mSwipeRefreshLayout.isRefreshing())
                 mSwipeRefreshLayout.setRefreshing(true);
