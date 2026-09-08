@@ -13,13 +13,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,6 +48,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestH
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.services.MovieListItem;
+import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
+import net.reichholf.dreamdroid.ui.services.MovieListState;
+import net.reichholf.dreamdroid.ui.services.MovieListStateKt;
 
 import java.util.ArrayList;
 
@@ -62,6 +69,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	@State public ArrayList<String> mSelectedTags;
 	@State public ArrayList<String> mOldTags;
 	@State public ExtendedHashMap mMovie;
+	private MovieListState mListState;
 
 	@Nullable
 	private ProgressDialog mProgress;
@@ -79,6 +87,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 			mOldTags = new ArrayList<>();
 		}
 		setInitialLocation(savedInstanceState);
+		mListState = new MovieListState();
 	}
 
 	protected void setInitialLocation(@Nullable Bundle savedInstanceState) {
@@ -99,6 +108,30 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 			}
 		}
 		mReload = true;
+	}
+
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.compose_swipe_list, container, false);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		ComposeView compose = view.findViewById(R.id.compose_list);
+		MovieListStateKt.bindMovieListScreen(
+				compose,
+				mListState,
+				item -> {
+					onComposeClick(item, false);
+					return kotlin.Unit.INSTANCE;
+				},
+				item -> {
+					onComposeClick(item, true);
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 	}
 
 	@Override
@@ -241,6 +274,15 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 			return;
 		super.onLoadFinished(loader, result);
 		getAppCompatActivity().setTitle(mCurrentLocation);
+		mListState.replaceAll(MovieListMapperKt.movieListItemsFrom(mMapList));
+	}
+
+	private void onComposeClick(@NonNull MovieListItem item, boolean isLong) {
+		View host = getView();
+		if (host == null) {
+			return;
+		}
+		onMovieItemClick(host, item.getIndex(), isLong);
 	}
 
 	public void setLocation(int index) {
