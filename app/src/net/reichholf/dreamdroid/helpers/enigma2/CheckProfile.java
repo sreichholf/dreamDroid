@@ -20,13 +20,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequest
 
 import java.util.ArrayList;
 
-/**
- * Check a profile for data-consistency and connectivity. Checks hostname, port,
- * connectivity & webinterface version
- * 
- * @author sre
- * 
- */
 public class CheckProfile {
 	public static final String LOG_TAG = "CheckProfile";
 
@@ -44,10 +37,6 @@ public class CheckProfile {
 	@NonNull
 	public static int[] CURRENT_VERSION = { 0, 0, 0 };
 
-	/**
-	 * @param profile
-	 * @return
-	 */
 	@NonNull
 	public static ExtendedHashMap checkProfile(@NonNull Profile profile, Context context) {
 		CURRENT_VERSION = new int[]{ 0, 0, 0 };
@@ -104,14 +93,16 @@ public class CheckProfile {
 								setError(checkResult, true, true, R.string.version_too_low);
 							}
 						} else {
-							// TODO Parser-Error
+							addEntry(resultList, R.string.connection, true, String.valueOf(host), R.string.get_content_error);
+							setError(checkResult, true, R.string.get_content_error);
 						}
 
 					} else if (shc.hasError()) {
 						addEntry(resultList, R.string.connection, true, String.valueOf(host), R.string.connection_error, shc.getErrorText(context));
 						setError(checkResult, true, R.string.connection_error, shc.getErrorText(context));
 					} else if (xml == null) {
-						// TODO Unexpected Error
+						addEntry(resultList, R.string.connection, true, String.valueOf(host), R.string.get_content_error);
+						setError(checkResult, true, R.string.get_content_error);
 					}
 				} else {
 					addEntry(resultList, R.string.port, true, String.valueOf(port), R.string.port_out_of_range);
@@ -158,13 +149,6 @@ public class CheckProfile {
 		return -1;
 	}
 
-	/**
-	 * @param resultList
-	 * @param checkTypeId
-	 * @param hasError
-	 * @param value
-	 * @param errorTextId
-	 */
 	private static void addEntry(@NonNull ArrayList<ExtendedHashMap> resultList, int checkTypeId, boolean hasError,
 								 String value, int errorTextId){
 		addEntry(resultList, checkTypeId, hasError, value, errorTextId, null);

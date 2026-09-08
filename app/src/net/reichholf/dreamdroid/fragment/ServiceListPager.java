@@ -69,7 +69,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 
 	@Override
 	public void onGetLocationsAndTagsProgress(String title, String progress) {
-		// skip
 	}
 
 	@Override
@@ -266,7 +265,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		mMovielistAdapter = new MovieListAdapter(this);
 		mTimerListAdapter = new TimerListAdapter(this);
 
-		//selectedItemId = mTabLayout.getSelectedTabPosition()
 		if (MODE_MOVIES.equals(mMode)) {
 			mPager.setAdapter(mMovielistAdapter);
 		} else if (MODE_RADIO.equals(mMode)){

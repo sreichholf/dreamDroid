@@ -137,8 +137,8 @@ android {
         abi {
             enable true
             reset()
-            include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a' //select ABIs to build APKs for
-            universalApk true //generate an additional APK that contains all the ABIs
+            include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+            universalApk true
         }
     }
 
@@ -165,7 +165,6 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
-            // Add build date object to BuildConfig
             buildConfigField "long", "BUILD_TIME", "" + System.currentTimeMillis() + "L"
             resValue "string", "app_name", "@string/app_name_release"
             resValue "string", "app_name_tv", "@string/app_name_tv_release"

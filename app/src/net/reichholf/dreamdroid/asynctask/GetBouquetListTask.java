@@ -11,10 +11,6 @@ import net.reichholf.dreamdroid.helpers.NameValuePair;
 
 import java.util.ArrayList;
 
-/**
- * @author sreichholf Fetches a service list async. Does all the
- *         error-handling, refreshing and title-setting
- */
 public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean> {
 	public class Bouquets {
 		public ArrayList<Service> tv;
@@ -34,8 +30,8 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 	public GetBouquetListTask(AsyncHttpTaskBaseHandler taskHandler) {
 		super(taskHandler);
 		GetBouquetListTaskHandler t = (GetBouquetListTaskHandler) mTaskHandler.get();
-		mTV = t.getResources().getStringArray(R.array.servicerefs)[0]; //Favorites TV;
-		mRadio = t.getResources().getStringArray(R.array.servicerefs)[3]; // Favorites Radio
+		mTV = t.getResources().getStringArray(R.array.servicerefstv)[0];
+		mRadio = t.getResources().getStringArray(R.array.servicerefsradio)[0];
 	}
 
 	@NonNull
