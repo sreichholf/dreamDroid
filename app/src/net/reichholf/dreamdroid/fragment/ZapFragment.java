@@ -20,19 +20,23 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.adapter.recyclerview.ZapAdapter;
+import net.reichholf.dreamdroid.asynctask.GetServiceListTask;
+import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
 import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -41,12 +45,17 @@ import java.util.ArrayList;
  * As a GridView is also using a ListAdapter, this avoids having to copy existing code
  */
 
-public class ZapFragment extends BaseHttpRecyclerFragment {
+public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceListTask.GetServiceListTaskHandler {
 	@NonNull
-	public static String BUNDLE_KEY_CURRENT_BOUQUET = "currentBouquet";
+	public static String BUNDLE_KEY_CURRENT_BOUQUET_REFERENCE = "currentBouquetReference";
+	@NonNull
+	public static String BUNDLE_KEY_CURRENT_BOUQUET_NAME = "currentBouquetName";
 
-	private ExtendedHashMap mCurrentBouquet;
+	private Service mCurrentBouquet;
+	private final ArrayList<Service> mServices = new ArrayList<>();
 	private boolean mWaitingForPicker;
+	@Nullable
+	private GetServiceListTask mServiceListTask;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -55,9 +64,16 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		if (mCurrentBouquet == null) {
 			mReload = true;
 			initTitle("");
-			mCurrentBouquet = new ExtendedHashMap();
-			mCurrentBouquet.put(Service.KEY_REFERENCE, DreamDroid.getCurrentProfile().getDefaultBouquetTv());
-			mCurrentBouquet.put(Service.KEY_NAME, DreamDroid.getCurrentProfile().getDefaultBouquetTvName());
+			if (savedInstanceState != null && savedInstanceState.containsKey(BUNDLE_KEY_CURRENT_BOUQUET_REFERENCE)) {
+				mCurrentBouquet = new Service(
+						savedInstanceState.getString(BUNDLE_KEY_CURRENT_BOUQUET_REFERENCE, ""),
+						savedInstanceState.getString(BUNDLE_KEY_CURRENT_BOUQUET_NAME, "")
+				);
+			} else {
+				String ref = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
+				String name = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
+				mCurrentBouquet = new Service(ref != null ? ref : "", name != null ? name : "");
+			}
 			mWaitingForPicker = false;
 		}
 	}
@@ -77,15 +93,26 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		mAdapter = new ZapAdapter(getContext(), mMapList);
+		mAdapter = new ZapAdapter(getContext(), mServices);
 		getRecyclerView().setAdapter(mAdapter);
+		super.onActivityCreated(savedInstanceState);
 	}
 
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
-		outState.putSerializable(BUNDLE_KEY_CURRENT_BOUQUET, mCurrentBouquet);
+		if (mCurrentBouquet != null) {
+			outState.putString(BUNDLE_KEY_CURRENT_BOUQUET_REFERENCE, mCurrentBouquet.getReference());
+			outState.putString(BUNDLE_KEY_CURRENT_BOUQUET_NAME, mCurrentBouquet.getName());
+		}
 		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onDestroy() {
+		if (mServiceListTask != null) {
+			mServiceListTask.cancel(true);
+		}
+		super.onDestroy();
 	}
 
 	@Override
@@ -97,16 +124,15 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	@Override
 	public void onItemClick(RecyclerView rv, View v, int position, long id) {
-		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
+		String ref = mServices.get(position).getReference();
 		zapTo(ref);
 	}
 
 	@Override
 	public boolean onItemLongClick(RecyclerView rv, View v, int position, long id) {
-		String ref = mMapList.get(position).getString(Service.KEY_REFERENCE);
-		String name = mMapList.get(position).getString(Service.KEY_NAME);
+		Service service = mServices.get(position);
 		try {
-			startActivity(IntentFactory.getStreamServiceIntent(getAppCompatActivity(), ref, name));
+			startActivity(IntentFactory.getStreamServiceIntent(getAppCompatActivity(), service.getReference(), service.getName()));
 		} catch (ActivityNotFoundException e) {
 			showToast(getText(R.string.missing_stream_player));
 		}
@@ -116,60 +142,88 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle bundle) {
+		// Zap no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
 		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, bundle);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		// Unused: channel rows come from GetServiceListTask / EnigmaClient.
 	}
 
 	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
 		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new NameValuePair("sRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
+		String ref = mCurrentBouquet != null ? mCurrentBouquet.getReference() : "";
+		params.add(new NameValuePair("sRef", ref));
 
 		return params;
 	}
 
 	@Override
 	protected void reload() {
-		if (mCurrentBouquet != null && !mCurrentBouquet.isEmpty())
-			super.reload();
-		else if (!mWaitingForPicker)
+		if (mCurrentBouquet != null) {
+			mReload = false;
+			if (mServices.isEmpty())
+				setEmptyText(getText(R.string.loading), R.drawable.ic_loading_48dp);
+			else
+				setEmptyText(null);
+			loadServices();
+		} else if (!mWaitingForPicker)
 			pickBouquet();
+	}
+
+	private void loadServices() {
+		mHttpHelper.onLoadStarted();
+		if (!"".equals(getBaseTitle().trim())) {
+			setCurrentTitle(getString(R.string.loading));
+		}
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (mServiceListTask != null) {
+			mServiceListTask.cancel(true);
+		}
+		mServiceListTask = new GetServiceListTask(this);
+		mServiceListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+	}
+
+	@Override
+	public void onServiceListReady(boolean success, @NonNull List<Service> services, @Nullable String errorText) {
+		mHttpHelper.onLoadFinished();
+		mServices.clear();
+		if (mAdapter != null) {
+			mAdapter.notifyDataSetChanged();
+		}
+		if (!success) {
+			setEmptyText(errorText);
+			return;
+		}
+		setEmptyText(null);
+		List<Service> rows = ZapListMapper.rowsFrom(services);
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+
+		if (rows.isEmpty()) {
+			setEmptyText(getText(R.string.no_list_item));
+		} else {
+			mServices.addAll(rows);
+		}
+		if (mAdapter != null) {
+			mAdapter.notifyDataSetChanged();
+		}
 	}
 
 	@Nullable
 	@Override
 	public String getLoadFinishedTitle() {
-		if (mCurrentBouquet != null)
-			return mCurrentBouquet.getString(Service.KEY_NAME, super.getLoadFinishedTitle());
+		if (mCurrentBouquet != null && mCurrentBouquet.getName() != null && !mCurrentBouquet.getName().isEmpty())
+			return mCurrentBouquet.getName();
 		return super.getLoadFinishedTitle();
-	}
-
-	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-
-		mMapList.clear();
-		mAdapter.notifyDataSetChanged();
-		if (result.isError()) {
-			setEmptyText(result.getErrorText());
-			return;
-		}
-		setEmptyText(null);
-
-		ArrayList<ExtendedHashMap> list = result.getResult();
-		setCurrentTitle(getLoadFinishedTitle());
-		getAppCompatActivity().setTitle(getCurrentTitle());
-
-		if (list.size() == 0) {
-			setEmptyText(getText(R.string.no_list_item));
-		} else {
-			for (ExtendedHashMap service : list) {
-				if (!Service.isMarker(service.getString(Service.KEY_REFERENCE)))
-					mMapList.add(service);
-			}
-		}
-		mAdapter.notifyDataSetChanged();
-		mHttpHelper.onLoadFinished();
 	}
 
 	@Override
@@ -188,9 +242,9 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 			return;
 		switch (requestCode) {
 			case Statics.REQUEST_PICK_BOUQUET:
-				ExtendedHashMap bouquet = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
-				String reference = bouquet.getString(Service.KEY_REFERENCE, "");
-				if (!reference.equals(mCurrentBouquet.getString(Service.KEY_REFERENCE))) {
+				ExtendedHashMap bouquetMap = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
+				Service bouquet = ZapListMapper.bouquetFrom(bouquetMap);
+				if (!bouquet.getReference().equals(mCurrentBouquet.getReference())) {
 					mCurrentBouquet = bouquet;
 					getRecyclerView().smoothScrollToPosition(0);
 				}
@@ -207,7 +261,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		Bundle args = new Bundle();
 
 		ExtendedHashMap data = new ExtendedHashMap();
-		data.put(Service.KEY_REFERENCE, "default");
+		data.put(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE, "default");
 
 		args.putSerializable(sData, data);
 		args.putString("action", Statics.INTENT_ACTION_PICK_BOUQUET);

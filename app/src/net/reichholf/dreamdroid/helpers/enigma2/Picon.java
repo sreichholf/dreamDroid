@@ -48,15 +48,19 @@ public class Picon {
 	}
 
 	public static String getPiconFileName(@NonNull Context context, @NonNull ExtendedHashMap service, boolean useName) {
+		return getPiconFileName(context, service.getString(Event.KEY_SERVICE_REFERENCE), service.getString(Event.KEY_SERVICE_NAME), useName);
+	}
+
+	public static String getPiconFileName(@NonNull Context context, @Nullable String reference, @Nullable String name, boolean useName) {
 		String root = getBasepath(context);
 		if(PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, false))
 			return  String.format("%spicon_default.png", root);
 
 		String fileName;
 		if(useName){
-			fileName = service.getString(Event.KEY_SERVICE_NAME);
+			fileName = name;
 		} else {
-			fileName = service.getString(Event.KEY_SERVICE_REFERENCE);
+			fileName = reference;
 			if (fileName == null || !fileName.contains(":"))
 				return fileName;
 
@@ -76,6 +80,10 @@ public class Picon {
 	}
 
 	public static void setPiconForView(@NonNull Context context, @Nullable ImageView piconView, @NonNull ExtendedHashMap service, @NonNull String tag, Callback callback) {
+		setPiconForView(context, piconView, service.getString(Event.KEY_SERVICE_REFERENCE), service.getString(Event.KEY_SERVICE_NAME), tag, callback);
+	}
+
+	public static void setPiconForView(@NonNull Context context, @Nullable ImageView piconView, @Nullable String reference, @Nullable String name, @NonNull String tag, Callback callback) {
 		if (piconView == null) {
 			return;
 		}
@@ -86,7 +94,7 @@ public class Picon {
 			return;
 		}
 		boolean useName = sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false);
-		String fileName = getPiconFileName(context, service, useName);
+		String fileName = getPiconFileName(context, reference, name, useName);
 		if (fileName == null) {
 			piconView.setVisibility(View.GONE);
 			return;
