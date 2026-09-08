@@ -20,7 +20,7 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | TV/Movies/Timer rows | [#170](https://github.com/sreichholf/dreamDroid/pull/170) | merged | `dbd20628` |
 | skill+plan | [#171](https://github.com/sreichholf/dreamDroid/pull/171) | merged | `b98ac193` |
 | dead-weight | [#172](https://github.com/sreichholf/dreamDroid/pull/172) | merged | `970ad4bc` drop android-retrostreams + leftover `app/res/service_list_pager.xml` |
-| Zap typed rows | this PR | open on `cursor/zap-typed-list-36ce` | Feed typed `enigma.Service` into Zap. XML grid stays. |
+| Zap typed rows | [#173](https://github.com/sreichholf/dreamDroid/pull/173) | open on `cursor/zap-typed-list-36ce` | Feed typed `enigma.Service` into Zap. XML grid stays. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
@@ -207,7 +207,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 
 ## Type Zap list rows (pr-zap)
 
-**Depends on.** pr-client. **This PR, `--base main`.**
+**Depends on.** pr-client. **[#173](https://github.com/sreichholf/dreamDroid/pull/173), `--base main`.**
 
 **Files.**
 
