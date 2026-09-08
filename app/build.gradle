@@ -1,7 +1,6 @@
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
         flatDir{
             dirs 'libs'
         }
@@ -21,7 +20,7 @@ apply plugin: 'kotlin-android'
 
 repositories {
     google()
-    jcenter()
+    mavenCentral()
     maven { url "https://jitpack.io" }
 }
 
@@ -51,7 +50,7 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.8'
     implementation 'commons-net:commons-net:3.6'
     implementation 'commons-io:commons-io:2.6'
-    implementation 'org.openhab.jmdns:jmdns:3.4.2'
+    implementation 'org.jmdns:jmdns:3.5.9'
     implementation 'io.noties.markwon:core:4.6.2'
     implementation project(':libraries:AttributionPresenter:library')
     implementation project(':libraries:simple-gauge-android:gaugelibrary')
@@ -62,11 +61,8 @@ dependencies {
     implementation 'com.github.livefront:bridge:v2.0.2'
     implementation 'com.jakewharton:butterknife:10.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
-    //noinspection KtxExtensionAvailable
-    implementation 'androidx.navigation:navigation-fragment:2.5.3'
-    //noinspection KtxExtensionAvailable
-    implementation 'androidx.navigation:navigation-ui:2.5.3'
     implementation 'androidx.slidingpanelayout:slidingpanelayout:1.2.0'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 android {
@@ -76,14 +72,21 @@ android {
     defaultConfig {
         versionCode 460
         versionName="1.15.460"
-        minSdkVersion 17
+        minSdkVersion 26
         targetSdkVersion 34
         multiDexEnabled true
+        buildConfigField "int", "MIN_SDK", "${minSdkVersion.apiLevel}"
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
-                java.srcDirs = ['src']
+                java {
+                    srcDirs = ['src']
+                    exclude 'test/**'
+                }
                 res.srcDirs = ['res']
+            }
+            test {
+                java.srcDirs = ['src/test/java']
             }
         }
     }
@@ -141,8 +144,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     lint {
         abortOnError false
