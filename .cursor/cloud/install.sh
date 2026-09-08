@@ -62,24 +62,6 @@ fi
 echo "== install: point Gradle at the SDK (local.properties) =="
 printf 'sdk.dir=%s\n' "$ANDROID_SDK_ROOT" > "$REPO_ROOT/local.properties"
 
-echo "== install: raise adb install timeout for connected tests (TCG is slow) =="
-mkdir -p "$HOME/.gradle"
-cat > "$HOME/.gradle/init.gradle" <<'GRADLE'
-// Cloud Agent: the dreamDroid emulator runs under software (TCG) emulation
-// because nested KVM guest execution hangs on Cursor Cloud VMs. APK installs
-// are therefore slow, so raise the adb install/exec timeout for connected tests.
-allprojects {
-    plugins.withId("com.android.application") {
-        try {
-            def android = extensions.getByName("android")
-            android.adbOptions.timeOutInMs = 1_200_000
-        } catch (Throwable t) {
-            logger.lifecycle("init.gradle: could not set adbOptions.timeOutInMs: " + t)
-        }
-    }
-}
-GRADLE
-
 echo "== install: warm Gradle build (assembleGoogleDebug + test APK) =="
 cd "$REPO_ROOT"
 JAVA_HOME="$JAVA_HOME" ./gradlew --no-daemon \

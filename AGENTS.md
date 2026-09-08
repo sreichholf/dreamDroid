@@ -24,7 +24,14 @@ Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets 
 
 Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 17 + the Android SDK (build-tools 34, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
 
-Nested KVM guest execution hangs on Cursor Cloud VMs: `/dev/kvm` exists and `kvm-ok` passes, but under `-enable-kvm` the guest vCPU never runs (0% CPU, no kernel output). The emulator therefore runs under software (`-accel off`, TCG). It works but is slow, so APK installs need a raised adb timeout (`~/.gradle/init.gradle` sets `adbOptions.timeOutInMs`). Set `DREAMDROID_EMU_ACCEL=auto` to try KVM on a host that supports nested virt.
+Nested KVM guest execution hangs on Cursor Cloud VMs: `/dev/kvm` exists and `kvm-ok` passes, but under `-enable-kvm` the guest vCPU never runs (0% CPU, no kernel output). The emulator therefore runs under software (`-accel off`, TCG). It works but is slow. Set `DREAMDROID_EMU_ACCEL=auto` to try KVM on a host that supports nested virt.
+
+Because of the slow emulator, the stock `:app:connectedGoogleDebugAndroidTest` task fails: UTP pushes the ~196 MB universal debug APK over ddmlib's sync protocol and the per-read socket timeout fires (it ignores `adbOptions.timeOutInMs`). On the Cloud VM, verify with the helper instead, which streams the standalone x86_64 APK and runs `am instrument`:
+
+```bash
+bash .cursor/cloud/connected-test.sh            # whole suite
+bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScreenTest
+```
 
 ## Other traps
 
