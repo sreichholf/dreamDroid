@@ -31,6 +31,8 @@ import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
+import net.reichholf.dreamdroid.enigma.EnigmaClient;
+import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -43,6 +45,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author sre
@@ -293,6 +296,16 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
 
     public SimpleHttpClient getHttpClient() {
         return mShc;
+    }
+
+    @NonNull
+    public List<Service> fetchServices(@NonNull List<NameValuePair> params) {
+        return fetchServices(mShc, params);
+    }
+
+    @NonNull
+    public static List<Service> fetchServices(@NonNull SimpleHttpClient shc, @NonNull List<NameValuePair> params) {
+        return EnigmaClient.getServicesBlocking(shc, params);
     }
 
     public void onLoadStarted() {
