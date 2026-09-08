@@ -9,4 +9,5 @@ gen/
 build/
 *.iml
 local.properties
+.cursor/skills/verify-dreamdroid/artifacts/
 app/manifest-merger-release-report.txt
