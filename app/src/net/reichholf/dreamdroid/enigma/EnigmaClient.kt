@@ -152,13 +152,6 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
 
         @JvmStatic
-        fun getSignalBlocking(http: SimpleHttpClient): Signal? {
-            return runBlocking {
-                EnigmaClient(http).getSignal()
-            }
-        }
-
-        @JvmStatic
         fun getTimersBlocking(http: SimpleHttpClient): List<Timer>? {
             return runBlocking {
                 EnigmaClient(http).getTimers()
