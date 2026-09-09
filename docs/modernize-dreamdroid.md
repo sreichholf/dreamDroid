@@ -57,7 +57,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | hub-nownext-typed | [#209](https://github.com/sreichholf/dreamDroid/pull/209) | merged | typed `ServiceNowNext` for `/web/epgnownext` into hub TV/Radio `ServiceListPageFragment`; hash only at detail/timer/stream edge. |
 | movies-typed | [#210](https://github.com/sreichholf/dreamDroid/pull/210) | merged | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
 | leanback-dive | [#211](https://github.com/sreichholf/dreamDroid/pull/211) | merged | Phase 0 Leanback inventory + risks + agreed Phase 3 PR order (docs only; no TV code). |
-| drawer-compose | [#212](https://github.com/sreichholf/dreamDroid/pull/212) | open | Phase 2.1a: Compose drawer chrome (`DrawerScreen` in `ComposeView`); keep `DrawerLayout` + fragment host + `NavigationHelper.navigateTo`; no `NavHost` yet. |
+| drawer-compose | [#212](https://github.com/sreichholf/dreamDroid/pull/212) | merged | Phase 2.1a: Compose drawer chrome (`DrawerScreen` in `ComposeView`); keep `DrawerLayout` + fragment host + `NavigationHelper.navigateTo`; no `NavHost` yet. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -83,7 +83,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Wave 3 phone Compose screens complete on `main` through #206; CI #204.
 - Appendix G phone UI checklist: all 19 items merged.
 - Remaining typed API (not Wave 3 UI): none on phone list paths (hub now/next #209; movies list #210; detail edge #206). Phase 0 Leanback dive #211 on `main`.
-- Phase 2.1a (this PR): Compose drawer menu chrome; full Compose Navigation / `NavHost` still later.
+- Phase 2.1a drawer chrome **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). Full Compose Navigation / `NavHost` still later (2.1b).
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -533,7 +533,7 @@ Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone B
 | 1 | typed hub now/next | **merged** [#209](https://github.com/sreichholf/dreamDroid/pull/209) |
 | 2 | typed movies list path | **merged** [#210](https://github.com/sreichholf/dreamDroid/pull/210) |
 
-Next after Phase 2.1a lands: Phase 2.2 HTTP/async, then state/rotation, Room, VLC (product decision), widgets. Phase 3 Leanback only after Phase 0 dive (done #211) and preferably after HTTP direction is clear for the hub.
+Next after Phase 2.1a (#212): Phase 2.2 HTTP/async, then state/rotation, Room, VLC (product decision), widgets. Phase 3 Leanback only after Phase 0 dive (done #211) and preferably after HTTP direction is clear for the hub.
 
 ### Phase 2 — Phone chassis (still not Leanback)
 
@@ -541,7 +541,7 @@ One program each, still one PR (or small PR series) at a time:
 
 | Order | Program | What |
 | --- | --- | --- |
-| 1a | Drawer chrome (Compose) | Replace `NavigationView` menu with Compose `DrawerScreen` in `ComposeView`; keep XML profile header, `DrawerLayout`, fragment `detail_view`, and `NavigationHelper.navigateTo`. `res/menu/navigation.xml` kept for destination ids. **[#212](https://github.com/sreichholf/dreamDroid/pull/212).** |
+| 1a | Drawer chrome (Compose) | Replace `NavigationView` menu with Compose `DrawerScreen` in `ComposeView`; keep XML profile header, `DrawerLayout`, fragment `detail_view`, and `NavigationHelper.navigateTo`. `res/menu/navigation.xml` kept for destination ids. **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). |
 | 1b | Drawer Navigation (later) | `MainActivity` + destinations → Compose Navigation / `NavHost`; retire dual-pane XML host gradually. Do **not** start until chrome is stable. |
 | 2 | HTTP / async stack | Replace `HttpURLConnection` + `AsyncTask`/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
