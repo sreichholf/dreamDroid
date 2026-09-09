@@ -566,7 +566,7 @@ One program each, still one PR (or small PR series) at a time:
 | 2e | HTTP / async — Movies | `MovieListFragment` → `lifecycleScope` + suspend `EnigmaClient.getMovies()`; delete `GetMovieListTask`. **merged** [#217](https://github.com/sreichholf/dreamDroid/pull/217). |
 | 2f | HTTP / async — Hub now/next | `ServiceListPageFragment` → `lifecycleScope` + suspend `EnigmaClient.getEpgNowNext()`; delete `GetEpgNowNextTask`. **merged** [#218](https://github.com/sreichholf/dreamDroid/pull/218). |
 | 2g | HTTP / async — Service list | `ZapFragment` + `TimerServicePickFragment` → `lifecycleScope` + suspend `EnigmaClient.getServices()`; delete `GetServiceListTask`. Keep `GetBouquetListTask` for a later slice. **merged** [#219](https://github.com/sreichholf/dreamDroid/pull/219). |
-| 2h | HTTP / async — Event list | `ServiceEpgListFragment` + `EpgBouquetFragment` + `EpgSearchFragment` → `lifecycleScope` + suspend `EnigmaClient.getEvents(uri)`; delete `GetEventListTask`. **(this PR).** |
+| 2h | HTTP / async — Event list | `ServiceEpgListFragment` + `EpgBouquetFragment` + `EpgSearchFragment` → `lifecycleScope` + suspend `EnigmaClient.getEvents(uri)`; delete `GetEventListTask`. **[#220](https://github.com/sreichholf/dreamDroid/pull/220).** |
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2h: bouquet Get*Task, locations/tags, mutations/`SimpleResultTask`, Loader chassis. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
