@@ -13,21 +13,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.compose.ui.platform.ComposeView;
 
-import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.recyclerview.ProfileAdapter;
 import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -35,32 +31,33 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.room.AppDatabase;
-import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
+import net.reichholf.dreamdroid.ui.profiles.ProfileListItem;
+import net.reichholf.dreamdroid.ui.share.ShareProfilesListState;
+import net.reichholf.dreamdroid.ui.share.ShareProfilesListStateKt;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * @author sre
+ * Share / view intent → pick a profile (Compose) → play on the box via MEDIA_PLAYER_PLAY.
  */
-public class ShareActivity extends AppCompatActivity implements SimpleResultTask.SimpleResultTaskHandler, ItemClickSupport.OnItemClickListener {
+public class ShareActivity extends AppCompatActivity implements SimpleResultTask.SimpleResultTaskHandler {
 	@NonNull
 	public static String LOG_TAG = ShareActivity.class.getSimpleName();
 
-	private RecyclerView mProfilesView;
 	private SimpleResultTask mSimpleResultTask;
 	private SimpleHttpClient mShc;
-	private ProfileAdapter mAdapter;
-	private ArrayList<ExtendedHashMap> mProfileMapList;
+	private ShareProfilesListState mListState;
 	@Nullable
 	private ProgressDialog mProgress;
 	private String mTitle;
 
-	List<Profile> mProfiles;
-
-	protected ItemClickSupport mItemClickSupport;
+	private List<Profile> mProfiles;
+	private final Map<Integer, Profile> mProfilesById = new HashMap<>();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -70,10 +67,19 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 		setTitle(getText(R.string.watch_on_dream));
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		mProfilesView = findViewById(R.id.profilelist);
-		mProfilesView.setLayoutManager(new LinearLayoutManager(this));
-		mItemClickSupport = ItemClickSupport.addTo(mProfilesView);
-		mItemClickSupport.setOnItemClickListener(this);
+		mListState = new ShareProfilesListState();
+		ComposeView compose = findViewById(R.id.compose_profiles);
+		ShareProfilesListStateKt.bindShareProfilesScreen(
+				compose,
+				mListState,
+				item -> {
+					Profile profile = mProfilesById.get(item.getId());
+					if (profile != null) {
+						playOnDream(profile);
+					}
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 		load();
 	}
 
@@ -86,12 +92,6 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 		if (mSimpleResultTask != null)
 			mSimpleResultTask.cancel(true);
 		super.onDestroy();
-	}
-
-	@Override
-	public void onItemClick(RecyclerView recyclerView, View v, int position, long id) {
-		Profile profile = mProfiles.get(position);
-		playOnDream(profile);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -148,20 +148,16 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 
 	public void load() {
 		Profile.ProfileDao dao = AppDatabase.profiles(getContext());
-		mProfileMapList = new ArrayList<>();
-		mProfileMapList.clear();
 		mProfiles = dao.getProfiles();
+		mProfilesById.clear();
 		if (mProfiles.size() > 1) {
+			ArrayList<ProfileListItem> items = new ArrayList<>();
 			for (Profile m : mProfiles) {
-				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(DatabaseHelper.KEY_PROFILE_PROFILE, m.getName());
-				map.put(DatabaseHelper.KEY_PROFILE_HOST, m.getHost());
-				mProfileMapList.add(map);
+				int id = m.getId() == null ? 0 : m.getId();
+				mProfilesById.put(id, m);
+				items.add(new ProfileListItem(id, m.getName(), m.getHost(), false));
 			}
-
-			mAdapter = new ProfileAdapter(getContext(), mProfileMapList );
-			mProfilesView.setAdapter(mAdapter);
-			mAdapter.notifyDataSetChanged();
+			mListState.replaceAll(items);
 		} else {
 			if (mProfiles.size() == 1) {
 				playOnDream(mProfiles.get(0));

@@ -17,8 +17,8 @@
 
     </androidx.appcompat.widget.Toolbar>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/profilelist"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_profiles"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </LinearLayout>
