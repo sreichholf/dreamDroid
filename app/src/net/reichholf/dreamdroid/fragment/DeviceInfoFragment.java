@@ -45,12 +45,14 @@ public class DeviceInfoFragment extends BaseHttpFragment
 	private GetDeviceInfoTask mDeviceInfoTask;
 
 	private DeviceInfoUiState mUiState;
+	private boolean mDeviceInfoReady;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.device_info));
 		mUiState = new DeviceInfoUiState();
+		mDeviceInfoReady = false;
 	}
 
 	@Override
@@ -68,7 +70,9 @@ public class DeviceInfoFragment extends BaseHttpFragment
 			mReload = true;
 		}
 		super.onViewCreated(view, savedInstanceState);
+		// Use needReload, not mReload: reload() clears mReload while the task is still in flight.
 		if (!needReload) {
+			mDeviceInfoReady = true;
 			applyInfo(mInfo);
 		}
 	}
@@ -109,7 +113,9 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		if (!isAdded()) {
 			return;
 		}
-		mUiState.beginLoading();
+		if (!mDeviceInfoReady) {
+			mUiState.beginLoading();
+		}
 		mHttpHelper.onLoadStarted();
 		if (!"".equals(getBaseTitle().trim())) {
 			setCurrentTitle(getString(R.string.loading));
@@ -134,16 +140,19 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (success && info != null) {
-			mInfo = info;
-			applyInfo(info);
-		} else {
-			applyInfo(null);
+		if (!success || info == null) {
+			if (!mDeviceInfoReady) {
+				applyInfo(null);
+			}
 			if (errorText != null && !errorText.isEmpty()) {
 				showToast(errorText);
 			} else {
 				showToast(getText(R.string.not_available));
 			}
+			return;
 		}
+		mDeviceInfoReady = true;
+		mInfo = info;
+		applyInfo(info);
 	}
 }
