@@ -45,7 +45,8 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | drawer-dialogs-compose | [#198](https://github.com/sreichholf/dreamDroid/pull/198) | merged | Sleep timer / send message / power / changelog / connection error → Compose; drop sleeptimer/send_message XML. |
 | device-info-typed | [#199](https://github.com/sreichholf/dreamDroid/pull/199) | merged | typed `enigma.DeviceInfo` for `/web/deviceinfo`; XML UI stays; CheckProfile uses typed parse. |
 | signal-typed | [#200](https://github.com/sreichholf/dreamDroid/pull/200) | merged | typed `enigma.Signal` for `/web/signal`; poll via `GetSignalTask`; async cancel fixes. |
-| device-info-compose | [#201](https://github.com/sreichholf/dreamDroid/pull/201) | open | `DeviceInfoFragment` Compose UI + `DeviceInfoScreenTest`; keep last-good on failed refresh. |
+| device-info-compose | [#201](https://github.com/sreichholf/dreamDroid/pull/201) | merged | `DeviceInfoFragment` Compose UI + `DeviceInfoScreenTest`; keep last-good on failed refresh.
+| signal-compose | [#202](https://github.com/sreichholf/dreamDroid/pull/202) | open | `SignalFragment` Compose + HalfGauge `AndroidView` + `SignalScreenTest`.
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
