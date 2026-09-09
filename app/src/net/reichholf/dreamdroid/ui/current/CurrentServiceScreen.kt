@@ -97,34 +97,6 @@ class CurrentServiceUiState {
         nextDescription = ""
         ready = false
     }
-
-    /** Test / preview helper that seeds display fields without a full [CurrentService]. */
-    fun seedForTest(
-        serviceName: String,
-        provider: String,
-        nowTitle: String,
-        nowStart: String,
-        nowDuration: String,
-        nowDescription: String,
-        nextTitle: String,
-        nextStart: String,
-        nextDuration: String,
-        nextDescription: String,
-        serviceReference: String = "",
-    ) {
-        this.serviceName = serviceName
-        this.provider = provider
-        this.serviceReference = serviceReference
-        this.nowTitle = nowTitle
-        this.nowStart = nowStart
-        this.nowDuration = nowDuration
-        this.nowDescription = nowDescription
-        this.nextTitle = nextTitle
-        this.nextStart = nextStart
-        this.nextDuration = nextDuration
-        this.nextDescription = nextDescription
-        ready = true
-    }
 }
 
 @Composable
