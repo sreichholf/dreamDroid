@@ -370,15 +370,15 @@ Wave 1 was a beachhead: minSdk 26, Compose BOM, About, Profiles list, a typed cl
 
 This was never "replace the phone app with Compose." The original boxes named five PRs. Everything else stayed on purpose or by omission.
 
-### Still Java/XML phone screens (drawer and related)
+### Phone drawer / related surfaces (Wave 3 Compose on `main`)
 
-Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187), Settings (#188), Backup (#189), Current event (#190), PickService (#191), EPG bouquet (#192), EPG search (#193), Service EPG (#194). The pager pages behind those tabs landed as Compose in #170.
+Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187), Settings (#188), Backup (#189), Current event (#190), PickService (#191), EPG bouquet (#192), EPG search (#193), Service EPG (#194), timer edit (#205), timer service pick (#207), movie detail (#206), EPG detail (#197), drawer dialogs (#198), device info (#201), signal (#202), Share profiles (#196). The pager pages behind those tabs landed as Compose in #170.
 
 | Surface | Code | Notes |
 | --- | --- | --- |
 | Channel / bouquet rows | Compose on `main` via #170 | Long-press, picons, popup menu. |
 | Movies list | Compose on `main` via #170 | Hub Movies destination. |
-| Timer list / edit | Compose list on `main` via #170/#203; edit open #205 | List typed+Compose; edit Compose form (hash save/pick). |
+| Timer list / edit | Compose list on `main` via #170/#203; edit #205; service pick #207 | List typed+Compose; edit Compose form (hash save/pick). |
 | Profile add/edit | Compose on `main` via #184 | Form Compose; list was #168. Autodiscovery stays Java. |
 | Share / pick profile | Compose on `main` via #196 | Compose list; Room profiles; dropped `ProfileAdapter`. |
 | Zap | Compose on `main` via #185 | Compose grid + Picasso picons. Rows typed `enigma.Service` (#173). Picker list typing on `main` via #181. |
@@ -406,7 +406,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 - Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
 - Enigma2 HTTP is still `HttpURLConnection` + `asynctask/*`. Picons still Picasso + OkHttp 3.14.9.
 - Room holds `profile` only. `DatabaseHelper` / `dreamdroid` SQLite still exist for migration and backup.
-- ButterKnife (5 files). `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
+- ButterKnife (4 files: phone `VideoOverlayFragment` + 3 Leanback TV). `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
 
 ### Explicitly frozen
 
@@ -468,22 +468,16 @@ Goal: a short inventory + migration risks doc (can live as a subsection here or 
 - Risks: Leanback browse/focus model ≠ phone Material 3; TV prefs are Leanback Preference; custom TLS/Picasso in TV `MainActivity`; phone detail Compose will not auto-cover TV dialogs.
 - Deliverable: agreed PR order for TV (browse hub first vs prefs first vs details first). **No code until dive lands.**
 
-### Phase 1 — Finish phone Wave 3 leftovers (Appendix G)
+### Phase 1 — Remaining phone typed API (Wave 3 UI done)
 
-One PR each, typed API first where noted:
+Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone ButterKnife left only on `VideoOverlayFragment` (VLC / Phase 2). Next phone data work, one PR each:
 
 | Order | Slug | Notes |
 | --- | --- | --- |
 | 1 | typed hub now/next | `ServiceListPage` events — unlocks cleaner rows |
-| 2 | typed movies + `movie-detail-compose` | Drop phone ButterKnife on movie detail |
-| 3 | typed timers + `timer-edit-compose` + `timer-service-pick-compose` | |
-| 4 | typed device-info + `device-info-compose` | |
-| 5 | typed signal + `signal-compose` | Gauge lib wrap or replace |
-| 6 | `epg-detail-compose` | Accept typed `Event`; hash edge gone |
-| 7 | `drawer-dialogs-compose` | Sleep / message / power / changelog / connection (split if large) |
-| 8 | `share-profiles-compose` | Drop `ProfileAdapter` if unused elsewhere |
+| 2 | typed movies list path | Detail edge already typed in #206 |
 
-Gate: instrumented Compose tests; Bugbot; land when authorized.
+Gate: unit + assemble; instrumented tests when the PR touches UI; Bugbot; land when authorized.
 
 ### Phase 2 — Phone chassis (still not Leanback)
 
