@@ -420,7 +420,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
-2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Done on `main`:** Zap #173, Service EPG #176, bouquet EPG #179, search EPG #180, PickService #181, CurrentService #183, timers #203, device info #199, signal #200, hub now/next #209. **In flight:** movies list (this PR).
+2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Done on `main`:** Zap #173, Service EPG #176, bouquet EPG #179, search EPG #180, PickService #181, CurrentService #183, timers #203, device info #199, signal #200, hub now/next #209, movies list #210.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
 4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen). `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in **#175** (merged). #177: dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. ButterKnife still open while TV is frozen.
 5. **TV program** — Leanback → Compose for TV. Separate program. Do not mix into phone PRs.
@@ -473,7 +473,7 @@ Inventory of `app/src/.../tv/` (12 Java files, ~1.3k LOC). **No TV Compose code 
 | PreferenceActivity | `tv/activities/PreferenceActivity.java` | Host for Leanback prefs |
 | RootBrowseFragment | `tv/fragment/RootBrowseFragment.java` | Hub: bouquet/service/movie rows, settings row, stream/prefs |
 | BaseHttpBrowseFragment | `tv/fragment/abs/BaseHttpBrowseFragment.java` | Leanback browse + loader callbacks over `ExtendedHashMap` |
-| SettingsFragment / PrefsFragment / ProfileFragment | `tv/fragment/` | Leanback settings router, shared `R.xml.preferences`, profile editor |
+| SettingsFragment / PrefsFragment / ProfileFragment | `tv/fragment/` | Leanback settings router; `PrefsFragment` loads `R.xml.preferences`; `ProfileFragment` loads `R.xml.profile_preferences` |
 | EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen XML detail dialogs (`AbstractDialog` + ButterKnife) |
 | CardPresenter / TextCardView / BrowseItem | `tv/presenter/`, `tv/view/`, `tv/BrowseItem.java` | Card presenters + hash payload wrapper |
 
