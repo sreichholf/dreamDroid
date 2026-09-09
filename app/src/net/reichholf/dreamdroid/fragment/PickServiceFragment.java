@@ -14,7 +14,8 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
+import net.reichholf.dreamdroid.enigma.BouquetListLoadKt;
+import net.reichholf.dreamdroid.enigma.Bouquets;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -29,19 +30,21 @@ import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Bouquet / service picker. Compose Material 3 list of typed {@link Service};
  * the result Intent still carries one {@link ExtendedHashMap} under
  * {@link #KEY_BOUQUET} mapped at send time so Zap / EpgBouquet consumers stay unchanged.
  */
-public class PickServiceFragment extends BaseHttpRecyclerFragment
-		implements GetBouquetListTask.GetBouquetListTaskHandler {
+public class PickServiceFragment extends BaseHttpRecyclerFragment {
 	public static final String KEY_BOUQUET = "bouquet";
 
 	private final ArrayList<Service> mServices = new ArrayList<>();
 	private PickServiceListState mListState;
 	@Nullable
-	private GetBouquetListTask mBouquetListTask;
+	private Job mLoadJob;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -79,11 +82,23 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mBouquetListTask != null) {
-			mBouquetListTask.cancel(true);
+	public void onDestroyView() {
+		cancelLoad(true);
+		if (mServices.isEmpty()) {
+			mReload = true;
 		}
-		super.onDestroy();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob == null) {
+			return;
+		}
+		mLoadJob.cancel(null);
+		mLoadJob = null;
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+		}
 	}
 
 	@Override
@@ -107,7 +122,7 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from GetBouquetListTask / EnigmaClient.
+		// Unused: rows come from BouquetListLoad / EnigmaClient.
 	}
 
 	@Override
@@ -128,15 +143,15 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (mBouquetListTask != null) {
-			mBouquetListTask.cancel(true);
-		}
-		mBouquetListTask = new GetBouquetListTask(this);
-		mBouquetListTask.execute();
+		cancelLoad(false);
+		mLoadJob = BouquetListLoadKt.launchBouquetListLoad(this, (result, bouquets, errorText) -> {
+			onBouquetListReady(result, bouquets, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
-	@Override
-	public void onBouquetListReady(boolean result, GetBouquetListTask.Bouquets bouquets, String errorText) {
+	private void onBouquetListReady(boolean result, Bouquets bouquets, String errorText) {
+		mLoadJob = null;
 		mHttpHelper.onLoadFinished();
 		mServices.clear();
 		mListState.replaceAll(java.util.Collections.emptyList());
