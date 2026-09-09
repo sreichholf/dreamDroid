@@ -18,6 +18,8 @@ Use `JAVA_HOME` pointing at JDK 17. Tests live in `app/androidTest/java`. Add Co
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 
+CI: `.github/workflows/android-ci.yml` (PRs + `main`) runs `:app:testGoogleDebugUnitTest`, assemble, androidTest compile, and `connectedGoogleDebugAndroidTest` on an API 30 emulator. Pass `-Pci` in CI so ABI splits are off (one APK). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
+
 `verify-dreamdroid.py` is for a single look when you need a screenshot or a shell-only path that has no test yet. It is not the verification loop.
 
 ## Cloud Agent environment
