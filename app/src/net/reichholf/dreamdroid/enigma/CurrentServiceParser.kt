@@ -46,6 +46,7 @@ private class CurrentServiceHandler : DefaultHandler() {
     private var inEventServiceName = false
     private var inEventId = false
     private var inEventTitle = false
+    private var inEventName = false
     private var inEventDescription = false
     private var inEventStart = false
     private var inEventDuration = false
@@ -58,6 +59,7 @@ private class CurrentServiceHandler : DefaultHandler() {
 
     private val eventId = StringBuilder()
     private val title = StringBuilder()
+    private val eventName = StringBuilder()
     private val start = StringBuilder()
     private val duration = StringBuilder()
     private val currentTime = StringBuilder()
@@ -84,6 +86,7 @@ private class CurrentServiceHandler : DefaultHandler() {
                 inEvent = true
                 eventId.setLength(0)
                 title.setLength(0)
+                eventName.setLength(0)
                 start.setLength(0)
                 duration.setLength(0)
                 currentTime.setLength(0)
@@ -96,6 +99,7 @@ private class CurrentServiceHandler : DefaultHandler() {
             "e2eventservicename" -> if (inEvent) inEventServiceName = true
             "e2eventid" -> if (inEvent) inEventId = true
             "e2eventtitle" -> if (inEvent) inEventTitle = true
+            "e2eventname" -> if (inEvent) inEventName = true
             "e2eventdescription" -> if (inEvent) inEventDescription = true
             "e2eventstart" -> if (inEvent) inEventStart = true
             "e2eventduration" -> if (inEvent) inEventDuration = true
@@ -125,6 +129,7 @@ private class CurrentServiceHandler : DefaultHandler() {
             "e2eventservicename" -> inEventServiceName = false
             "e2eventid" -> inEventId = false
             "e2eventtitle" -> inEventTitle = false
+            "e2eventname" -> inEventName = false
             "e2eventdescription" -> inEventDescription = false
             "e2eventstart" -> inEventStart = false
             "e2eventduration" -> inEventDuration = false
@@ -157,6 +162,7 @@ private class CurrentServiceHandler : DefaultHandler() {
             inEventServiceName -> eventServiceName.append(ch, startIdx, length)
             inEventId -> eventId.append(ch, startIdx, length)
             inEventTitle -> title.append(ch, startIdx, length)
+            inEventName -> eventName.append(ch, startIdx, length)
             inEventDescription -> description.append(ch, startIdx, length)
             inEventStart -> start.append(ch, startIdx, length)
             inEventDuration -> duration.append(ch, startIdx, length)
@@ -169,6 +175,10 @@ private class CurrentServiceHandler : DefaultHandler() {
         val startRaw = start.toString().trim()
         val durationRaw = duration.toString().trim()
         var titleRaw = title.toString().trim()
+        if (titleRaw.isEmpty() || Python.NONE == titleRaw) {
+            // WebInterface 1.5 may send e2eventname instead of e2eventtitle.
+            titleRaw = eventName.toString().trim()
+        }
         if (titleRaw.isEmpty() || Python.NONE == titleRaw) {
             titleRaw = "N/A"
         }
