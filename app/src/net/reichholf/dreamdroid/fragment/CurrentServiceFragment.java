@@ -178,8 +178,10 @@ public class CurrentServiceFragment extends BaseHttpFragment
 			mNext = content.getNext();
 			mUiState.apply(content);
 		} else {
-			mCurrentServiceReady = false;
-			mUiState.clear();
+			// Empty payload: toast, keep last good UI when we had one; otherwise leave blanks (ready).
+			if (!mCurrentServiceReady) {
+				mUiState.apply(null);
+			}
 			showToast(getText(R.string.not_available));
 		}
 	}

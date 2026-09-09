@@ -65,7 +65,8 @@ class CurrentServiceUiState {
 
     fun apply(current: CurrentService?) {
         if (current == null || current.isEmpty()) {
-            clear()
+            // Request finished with nothing usable: stop Loading placeholders without inventing data.
+            ready = true
             return
         }
         val service = current.service
