@@ -34,6 +34,16 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
+    suspend fun getCurrent(): CurrentService? {
+        return withContext(Dispatchers.IO) {
+            if (!http.fetchPageContent(URIStore.CURRENT, ArrayList())) {
+                null
+            } else {
+                CurrentServiceParser.parse(http.pageContentString)
+            }
+        }
+    }
+
     companion object {
         @JvmStatic
         fun getServicesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Service> {
@@ -51,6 +61,13 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         ): List<Event> {
             return runBlocking {
                 EnigmaClient(http).getEvents(params, uri)
+            }
+        }
+
+        @JvmStatic
+        fun getCurrentBlocking(http: SimpleHttpClient): CurrentService? {
+            return runBlocking {
+                EnigmaClient(http).getCurrent()
             }
         }
     }

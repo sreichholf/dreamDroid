@@ -24,30 +24,32 @@ import com.evernote.android.state.State;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.asynctask.GetCurrentServiceTask;
+import net.reichholf.dreamdroid.enigma.CurrentService;
+import net.reichholf.dreamdroid.enigma.Event;
+import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.CurrentService;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
-
-import java.util.ArrayList;
+import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 
 /**
- * Shows some information about the service currently running on TV
+ * Shows some information about the service currently running on TV.
+ * Holds typed {@link CurrentService}; detail/timer still take ExtendedHashMap at the edge.
  * 
  * @author sreichholf
  * 
  */
-public class CurrentServiceFragment extends BaseHttpFragment {
+public class CurrentServiceFragment extends BaseHttpFragment
+		implements GetCurrentServiceTask.GetCurrentServiceTaskHandler {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "CurrentServiceFragment";
 
@@ -67,17 +69,21 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	protected ProgressDialog mProgress;
 
 	@Nullable
-	private ExtendedHashMap mService;
-	private ExtendedHashMap mNow;
-	private ExtendedHashMap mNext;
+	private Service mService;
+	@Nullable
+	private Event mNow;
+	@Nullable
+	private Event mNext;
 	private boolean mCurrentServiceReady;
 
 	@Nullable
-	@State public ExtendedHashMap mCurrent;
+	@State public CurrentService mCurrent;
 	@Nullable
 	@State public ExtendedHashMap mCurrentItem;
 
-	@SuppressWarnings("unchecked")
+	@Nullable
+	private GetCurrentServiceTask mCurrentServiceTask;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -116,8 +122,16 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 			mReload = true;
 
 		super.onViewCreated(view, savedInstanceState);
-		if(!mReload)
-			applyData(0, mCurrent);
+		if (!mReload)
+			applyCurrent(mCurrent);
+	}
+
+	@Override
+	public void onDestroy() {
+		if (mCurrentServiceTask != null) {
+			mCurrentServiceTask.cancel(true);
+		}
+		super.onDestroy();
 	}
 
 	/**
@@ -139,12 +153,11 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	 */
 	@Override
 	protected boolean onItemSelected(int id) {
-		if(!mCurrentServiceReady){
+		if (!mCurrentServiceReady) {
 			showToast(getText(R.string.not_available));
 			return true;
 		}
 
-		String ref;
 		switch (id) {
 		case Statics.ITEM_NOW:
 			showEpgDetail(mNow);
@@ -153,22 +166,24 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 			showEpgDetail(mNext);
 			return true;
 		case Statics.ITEM_STREAM:
-			ref = mService.getString(Service.KEY_REFERENCE);
-			String name = mService.getString(Service.KEY_NAME);
-			if (!"".equals(ref) && ref != null) {
-				streamService(ref, name);
-			} else {
-				showToast(getText(R.string.not_available));
+			if (mService != null) {
+				String ref = mService.getReference();
+				String name = mService.getName();
+				if (ref != null && !"".equals(ref)) {
+					streamService(ref, name);
+					return true;
+				}
 			}
+			showToast(getText(R.string.not_available));
 			return true;
 		default:
 			return super.onItemSelected(id);
 		}
 	}
 
-	private void showEpgDetail(@Nullable ExtendedHashMap event) {
+	private void showEpgDetail(@Nullable Event event) {
 		if (event != null) {
-			mCurrentItem = event;
+			mCurrentItem = EpgListMapper.toExtendedHashMap(event);
 			Bundle args = new Bundle();
 			args.putSerializable("currentItem", mCurrentItem);
 			((MultiPaneHandler) getAppCompatActivity()).showDialogFragment(EpgDetailBottomSheet.class, args,
@@ -180,34 +195,36 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	 * Called after loading the current service has finished to update the
 	 * GUI-Content
 	 */
-	@Override
-	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
+	private void applyCurrent(@Nullable CurrentService content) {
 		if (content != null && !content.isEmpty()) {
 			mCurrent = content;
 			mCurrentServiceReady = true;
 
-			mService = (ExtendedHashMap) mCurrent.get(CurrentService.KEY_SERVICE);
-			@SuppressWarnings("unchecked")
-			ArrayList<ExtendedHashMap> events = (ArrayList<ExtendedHashMap>) mCurrent.get(CurrentService.KEY_EVENTS);
-			mNow = events.get(0);
-			mNext = events.get(1);
+			mService = content.getService();
+			mNow = content.getNow();
+			mNext = content.getNext();
 
-			mServiceName.setText(mService.getString(CurrentService.KEY_SERVICE_NAME));
-			mProvider.setText(mService.getString(CurrentService.KEY_SERVICE_PROVIDER));
+			mServiceName.setText(mService != null ? mService.getName() : "");
+			mProvider.setText(mService != null ? mService.getProvider() : "");
 			// Now
-			mNowStart.setText(mNow.getString(Event.KEY_EVENT_START_READABLE));
-			mNowTitle.setText(mNow.getString(Event.KEY_EVENT_TITLE));
-			mNowDesc.setText(mNow.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED, ""));
-			mNowDuration.setText(mNow.getString(Event.KEY_EVENT_DURATION_READABLE));
+			mNowStart.setText(mNow != null ? mNow.getStartReadable() : "");
+			mNowTitle.setText(mNow != null ? mNow.getTitle() : "");
+			mNowDesc.setText(mNow != null ? mNow.getDescriptionExtended() : "");
+			mNowDuration.setText(mNow != null ? mNow.getDurationReadable() : "");
 			// Next
-			mNextStart.setText(mNext.getString(Event.KEY_EVENT_START_READABLE));
-			mNextTitle.setText(mNext.getString(Event.KEY_EVENT_TITLE));
-			mNextDesc.setText(mNext.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED, ""));
-			mNextDuration.setText(mNext.getString(Event.KEY_EVENT_DURATION_READABLE));
+			mNextStart.setText(mNext != null ? mNext.getStartReadable() : "");
+			mNextTitle.setText(mNext != null ? mNext.getTitle() : "");
+			mNextDesc.setText(mNext != null ? mNext.getDescriptionExtended() : "");
+			mNextDuration.setText(mNext != null ? mNext.getDurationReadable() : "");
 
-			ImageView piconView = getView().findViewById(R.id.picon);
-			Picon.setPiconForView(getAppCompatActivity(), piconView, mService, Statics.TAG_PICON);
+			View root = getView();
+			if (root != null && mService != null) {
+				ImageView piconView = root.findViewById(R.id.picon);
+				Picon.setPiconForView(getAppCompatActivity(), piconView, mService.getReference(), mService.getName(),
+						Statics.TAG_PICON, null);
+			}
 		} else {
+			mCurrentServiceReady = false;
 			showToast(getText(R.string.not_available));
 		}
 	}
@@ -279,7 +296,51 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+		// Current service no longer starts this loader. BaseHttpFragment still requires LoaderCallbacks.
 		return new AsyncSimpleLoader(getAppCompatActivity(), new CurrentServiceRequestHandler(),
 				args);
+	}
+
+	@Override
+	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader,
+			@NonNull LoaderResult<ExtendedHashMap> result) {
+		// Unused: content comes from GetCurrentServiceTask / EnigmaClient.
+	}
+
+	@Override
+	protected void reload() {
+		mReload = false;
+		loadCurrentService();
+	}
+
+	private void loadCurrentService() {
+		mHttpHelper.onLoadStarted();
+		if (!"".equals(getBaseTitle().trim())) {
+			setCurrentTitle(getString(R.string.loading));
+		}
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (mCurrentServiceTask != null) {
+			mCurrentServiceTask.cancel(true);
+		}
+		mCurrentServiceTask = new GetCurrentServiceTask(this);
+		mCurrentServiceTask.execute();
+	}
+
+	@Override
+	public void onCurrentServiceReady(boolean success, @Nullable CurrentService current,
+			@Nullable String errorText) {
+		mHttpHelper.onLoadFinished();
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (!success) {
+			mCurrentServiceReady = false;
+			showToast(errorText != null ? errorText : getText(R.string.not_available));
+			return;
+		}
+		applyCurrent(current);
 	}
 }
