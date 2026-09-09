@@ -1,6 +1,9 @@
 package net.reichholf.dreamdroid.enigma
 
-data class Service(
+import java.io.Serializable
+
+data class Service @JvmOverloads constructor(
     val reference: String,
-    val name: String
-)
+    val name: String,
+    val provider: String = ""
+) : Serializable

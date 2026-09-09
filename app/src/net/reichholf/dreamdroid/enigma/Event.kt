@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.Serializable
+
 data class Event(
     val eventId: String = "",
     val title: String = "",
@@ -13,4 +15,4 @@ data class Event(
     val startReadable: String = "",
     val startTimeReadable: String = "",
     val durationReadable: String = ""
-)
+) : Serializable
