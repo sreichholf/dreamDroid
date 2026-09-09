@@ -9,30 +9,28 @@ package net.reichholf.dreamdroid.fragment;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.evernote.android.state.State;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.asynctask.GetDeviceInfoTask;
-import net.reichholf.dreamdroid.enigma.DeviceHdd;
-import net.reichholf.dreamdroid.enigma.DeviceFrontend;
 import net.reichholf.dreamdroid.enigma.DeviceInfo;
-import net.reichholf.dreamdroid.enigma.DeviceNic;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.device.DeviceInfoScreenKt;
+import net.reichholf.dreamdroid.ui.device.DeviceInfoUiState;
 
 /**
  * Shows device-specific information for the active profile.
- * Typed {@link DeviceInfo}; XML UI stays until device-info Compose.
+ * Compose Material 3 UI; typed {@link DeviceInfo}.
  *
  * @author sreichholf
  *
@@ -43,40 +41,23 @@ public class DeviceInfoFragment extends BaseHttpFragment
 	@State
 	public DeviceInfo mInfo;
 
-	private TextView mGuiVersion;
-	private TextView mImageVersion;
-	private TextView mInterfaceVersion;
-	private TextView mFrontprocessorVersion;
-	private TextView mDeviceName;
-	private LinearLayout mFrontendsList;
-	private LinearLayout mNicsList;
-	private LinearLayout mHddsList;
-	private LayoutInflater mInflater;
-
 	@Nullable
 	private GetDeviceInfoTask mDeviceInfoTask;
+
+	private DeviceInfoUiState mUiState;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.device_info));
+		mUiState = new DeviceInfoUiState();
 	}
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mInflater = getLayoutInflater();
-		View view = mInflater.inflate(R.layout.device_info, null);
-
-		mGuiVersion = view.findViewById(R.id.GuiVersion);
-		mImageVersion = view.findViewById(R.id.ImageVersion);
-		mInterfaceVersion = view.findViewById(R.id.InterfaceVersion);
-		mFrontprocessorVersion = view.findViewById(R.id.FrontprocessorVersion);
-		mDeviceName = view.findViewById(R.id.DeviceName);
-
-		mFrontendsList = view.findViewById(R.id.FrontendsList);
-		mNicsList = view.findViewById(R.id.NicsList);
-		mHddsList = view.findViewById(R.id.HddsList);
-
+		View view = inflater.inflate(R.layout.device_info, container, false);
+		ComposeView compose = view.findViewById(R.id.compose_device_info);
+		DeviceInfoScreenKt.bindDeviceInfoScreen(compose, mUiState);
 		return view;
 	}
 
@@ -88,7 +69,7 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		}
 		super.onViewCreated(view, savedInstanceState);
 		if (!needReload) {
-			onInfoReady(mInfo);
+			applyInfo(mInfo);
 		}
 	}
 
@@ -101,42 +82,9 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		super.onDestroy();
 	}
 
-	private void onInfoReady(@NonNull DeviceInfo info) {
-		mFrontendsList.removeAllViews();
-		for (DeviceFrontend frontend : info.getFrontends()) {
-			View item = mInflater.inflate(R.layout.two_line_list_item, null);
-			TextView title = item.findViewById(android.R.id.text1);
-			title.setText(frontend.getName());
-			TextView desc = item.findViewById(android.R.id.text2);
-			desc.setText(frontend.getModel());
-			mFrontendsList.addView(item);
-		}
-
-		mNicsList.removeAllViews();
-		for (DeviceNic nic : info.getNics()) {
-			View item = mInflater.inflate(R.layout.two_line_list_item, null);
-			TextView title = item.findViewById(android.R.id.text1);
-			title.setText(nic.getName());
-			TextView desc = item.findViewById(android.R.id.text2);
-			desc.setText(nic.getIp());
-			mNicsList.addView(item);
-		}
-
-		mHddsList.removeAllViews();
-		for (DeviceHdd hdd : info.getHdds()) {
-			View item = mInflater.inflate(R.layout.two_line_list_item, null);
-			TextView title = item.findViewById(android.R.id.text1);
-			title.setText(hdd.getModel());
-			TextView desc = item.findViewById(android.R.id.text2);
-			desc.setText(String.format(getString(R.string.hdd_capacity), hdd.getCapacity(), hdd.getFree()));
-			mHddsList.addView(item);
-		}
-
-		mGuiVersion.setText(info.getGuiVersion());
-		mImageVersion.setText(info.getImageVersion());
-		mInterfaceVersion.setText(info.getInterfaceVersion());
-		mFrontprocessorVersion.setText(info.getFrontProcessorVersion());
-		mDeviceName.setText(info.getDeviceName());
+	private void applyInfo(@Nullable DeviceInfo info) {
+		mUiState.apply(info, (capacity, free) ->
+				String.format(getString(R.string.hdd_capacity), capacity, free));
 	}
 
 	@NonNull
@@ -187,8 +135,9 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		}
 		if (success && info != null) {
 			mInfo = info;
-			onInfoReady(info);
+			applyInfo(info);
 		} else {
+			applyInfo(null);
 			if (errorText != null && !errorText.isEmpty()) {
 				showToast(errorText);
 			} else {
