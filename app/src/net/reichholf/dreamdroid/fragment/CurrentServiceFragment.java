@@ -105,11 +105,13 @@ public class CurrentServiceFragment extends BaseHttpFragment
 
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-		if (mCurrent == null || mCurrent.isEmpty())
+		boolean needReload = mCurrent == null || mCurrent.isEmpty();
+		if (needReload)
 			mReload = true;
 
 		super.onViewCreated(view, savedInstanceState);
-		if (!mReload)
+		// Use needReload, not mReload: reload() clears mReload while the task is still in flight.
+		if (!needReload)
 			applyCurrent(mCurrent);
 	}
 
