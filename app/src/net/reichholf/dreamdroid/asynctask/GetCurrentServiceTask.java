@@ -16,7 +16,7 @@ public class GetCurrentServiceTask extends AsyncHttpTaskBase<Void, String, Boole
 
 	@NonNull
 	@Override
-	protected Boolean doInBackground(Void... voids) {
+	protected Boolean doInBackground(Void unused) {
 		mCurrent = null;
 		if (isCancelled()) {
 			return false;

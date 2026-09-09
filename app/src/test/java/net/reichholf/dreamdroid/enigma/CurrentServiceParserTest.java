@@ -27,13 +27,6 @@ public class CurrentServiceParserTest {
         assertEquals("1:0:1:6DCA:44D:1:C00000:0:0:0:", service.getReference());
         assertEquals("Das Erste HD", service.getName());
         assertEquals("ARD", service.getProvider());
-        assertEquals("1280", service.getVideoWidth());
-        assertEquals("720", service.getVideoHeight());
-        assertEquals("1280x720", service.getVideoSize());
-        assertEquals("True", service.getWidescreen());
-        assertEquals("101", service.getApid());
-        assertEquals("102", service.getVpid());
-        assertEquals("28000", service.getSid());
 
         Event now = current.getNow();
         assertNotNull(now);

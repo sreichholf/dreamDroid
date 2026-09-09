@@ -41,18 +41,6 @@ private class CurrentServiceHandler : DefaultHandler() {
     private var inServiceReference = false
     private var inServiceName = false
     private var inProviderName = false
-    private var inVideoWidth = false
-    private var inVideoHeight = false
-    private var inVideoSize = false
-    private var inIsWideScreen = false
-    private var inApid = false
-    private var inVpid = false
-    private var inPcrPid = false
-    private var inPmtPid = false
-    private var inTxtPid = false
-    private var inTsid = false
-    private var inOnid = false
-    private var inSid = false
 
     private var inEventServiceReference = false
     private var inEventServiceName = false
@@ -67,18 +55,6 @@ private class CurrentServiceHandler : DefaultHandler() {
     private val serviceReference = StringBuilder()
     private val serviceName = StringBuilder()
     private val provider = StringBuilder()
-    private val videoWidth = StringBuilder()
-    private val videoHeight = StringBuilder()
-    private val videoSize = StringBuilder()
-    private val widescreen = StringBuilder()
-    private val apid = StringBuilder()
-    private val vpid = StringBuilder()
-    private val pcrPid = StringBuilder()
-    private val pmtPid = StringBuilder()
-    private val txtPid = StringBuilder()
-    private val tsid = StringBuilder()
-    private val onid = StringBuilder()
-    private val sid = StringBuilder()
 
     private val eventId = StringBuilder()
     private val title = StringBuilder()
@@ -100,34 +76,10 @@ private class CurrentServiceHandler : DefaultHandler() {
                 serviceReference.setLength(0)
                 serviceName.setLength(0)
                 provider.setLength(0)
-                videoWidth.setLength(0)
-                videoHeight.setLength(0)
-                videoSize.setLength(0)
-                widescreen.setLength(0)
-                apid.setLength(0)
-                vpid.setLength(0)
-                pcrPid.setLength(0)
-                pmtPid.setLength(0)
-                txtPid.setLength(0)
-                tsid.setLength(0)
-                onid.setLength(0)
-                sid.setLength(0)
             }
             "e2servicereference" -> if (inService) inServiceReference = true
             "e2servicename" -> if (inService) inServiceName = true
             "e2providername" -> if (inService) inProviderName = true
-            "e2videowidth" -> if (inService) inVideoWidth = true
-            "e2videoheight" -> if (inService) inVideoHeight = true
-            "e2servicevideosize" -> if (inService) inVideoSize = true
-            "e2iswidescreen" -> if (inService) inIsWideScreen = true
-            "e2apid" -> if (inService) inApid = true
-            "e2vpid" -> if (inService) inVpid = true
-            "e2pcrpid" -> if (inService) inPcrPid = true
-            "e2pmtpid" -> if (inService) inPmtPid = true
-            "e2txtpid" -> if (inService) inTxtPid = true
-            "e2tsid" -> if (inService) inTsid = true
-            "e2onid" -> if (inService) inOnid = true
-            "e2sid" -> if (inService) inSid = true
             "e2event" -> {
                 inEvent = true
                 eventId.setLength(0)
@@ -159,36 +111,12 @@ private class CurrentServiceHandler : DefaultHandler() {
                 service = Service(
                     reference = serviceReference.toString().trim(),
                     name = serviceName.toString().replace("\\p{Cntrl}".toRegex(), "").trim(),
-                    provider = provider.toString().trim(),
-                    videoWidth = videoWidth.toString().trim(),
-                    videoHeight = videoHeight.toString().trim(),
-                    videoSize = videoSize.toString().trim(),
-                    widescreen = widescreen.toString().trim(),
-                    apid = apid.toString().trim(),
-                    vpid = vpid.toString().trim(),
-                    pcrPid = pcrPid.toString().trim(),
-                    pmtPid = pmtPid.toString().trim(),
-                    txtPid = txtPid.toString().trim(),
-                    tsid = tsid.toString().trim(),
-                    onid = onid.toString().trim(),
-                    sid = sid.toString().trim()
+                    provider = provider.toString().trim()
                 )
             }
             "e2servicereference" -> inServiceReference = false
             "e2servicename" -> inServiceName = false
             "e2providername" -> inProviderName = false
-            "e2videowidth" -> inVideoWidth = false
-            "e2videoheight" -> inVideoHeight = false
-            "e2servicevideosize" -> inVideoSize = false
-            "e2iswidescreen" -> inIsWideScreen = false
-            "e2apid" -> inApid = false
-            "e2vpid" -> inVpid = false
-            "e2pcrpid" -> inPcrPid = false
-            "e2pmtpid" -> inPmtPid = false
-            "e2txtpid" -> inTxtPid = false
-            "e2tsid" -> inTsid = false
-            "e2onid" -> inOnid = false
-            "e2sid" -> inSid = false
             "e2event" -> {
                 inEvent = false
                 events.add(buildEvent())
@@ -218,18 +146,6 @@ private class CurrentServiceHandler : DefaultHandler() {
                 inServiceReference -> serviceReference.append(ch, startIdx, length)
                 inServiceName -> serviceName.append(ch, startIdx, length)
                 inProviderName -> provider.append(ch, startIdx, length)
-                inVideoWidth -> videoWidth.append(ch, startIdx, length)
-                inVideoHeight -> videoHeight.append(ch, startIdx, length)
-                inVideoSize -> videoSize.append(ch, startIdx, length)
-                inIsWideScreen -> widescreen.append(ch, startIdx, length)
-                inApid -> apid.append(ch, startIdx, length)
-                inVpid -> vpid.append(ch, startIdx, length)
-                inPcrPid -> pcrPid.append(ch, startIdx, length)
-                inPmtPid -> pmtPid.append(ch, startIdx, length)
-                inTxtPid -> txtPid.append(ch, startIdx, length)
-                inTsid -> tsid.append(ch, startIdx, length)
-                inOnid -> onid.append(ch, startIdx, length)
-                inSid -> sid.append(ch, startIdx, length)
             }
             return
         }

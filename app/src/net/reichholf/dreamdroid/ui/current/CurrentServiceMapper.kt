@@ -30,18 +30,6 @@ object CurrentServiceMapper {
         map.put(ServiceKeys.KEY_REFERENCE, service.reference)
         map.put(ServiceKeys.KEY_NAME, service.name)
         map.put(CurrentServiceKeys.KEY_SERVICE_PROVIDER, service.provider)
-        map.put(CurrentServiceKeys.KEY_SERVICE_VIDEO_WIDTH, service.videoWidth)
-        map.put(CurrentServiceKeys.KEY_SERVICE_VIDEO_HEIGHT, service.videoHeight)
-        map.put(CurrentServiceKeys.KEY_SERVICE_VIDEO_SIZE, service.videoSize)
-        map.put(CurrentServiceKeys.KEY_SERVICE_IS_WIDESCREEN, service.widescreen)
-        map.put(CurrentServiceKeys.KEY_SERVICE_APID, service.apid)
-        map.put(CurrentServiceKeys.KEY_SERVICE_VPID, service.vpid)
-        map.put(CurrentServiceKeys.KEY_SERVICE_PCRPID, service.pcrPid)
-        map.put(CurrentServiceKeys.KEY_SERVICE_PMTPID, service.pmtPid)
-        map.put(CurrentServiceKeys.KEY_SERVICE_TXTPID, service.txtPid)
-        map.put(CurrentServiceKeys.KEY_SERVICE_TSID, service.tsid)
-        map.put(CurrentServiceKeys.KEY_SERVICE_ONID, service.onid)
-        map.put(CurrentServiceKeys.KEY_SERVICE_SID, service.sid)
         return map
     }
 
