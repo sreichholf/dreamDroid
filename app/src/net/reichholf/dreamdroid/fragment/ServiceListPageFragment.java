@@ -29,7 +29,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
-import net.reichholf.dreamdroid.asynctask.GetEpgNowNextTask;
+import net.reichholf.dreamdroid.enigma.EpgNowNextLoadKt;
 import net.reichholf.dreamdroid.enigma.Event;
 import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
@@ -52,6 +52,9 @@ import net.reichholf.dreamdroid.ui.services.ServiceListState;
 import net.reichholf.dreamdroid.ui.services.ServiceListStateKt;
 
 import java.util.ArrayList;
+
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
 import java.util.List;
 
 
@@ -63,8 +66,7 @@ import java.util.List;
  *
  * @author sreichholf
  */
-public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment
-		implements GetEpgNowNextTask.GetEpgNowNextTaskHandler {
+public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	@Nullable
 	@State
 	public String mName;
@@ -76,7 +78,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment
 	private final ArrayList<ServiceNowNext> mRows = new ArrayList<>();
 	private ServiceListState mListState;
 	@Nullable
-	private GetEpgNowNextTask mEpgNowNextTask;
+	private Job mLoadJob;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -145,11 +147,23 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mEpgNowNextTask != null) {
-			mEpgNowNextTask.cancel(true);
+	public void onDestroyView() {
+		cancelLoad(true);
+		if (mRows.isEmpty()) {
+			mReload = true;
 		}
-		super.onDestroy();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob == null) {
+			return;
+		}
+		mLoadJob.cancel(null);
+		mLoadJob = null;
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+		}
 	}
 
 	@Override
@@ -272,7 +286,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from GetEpgNowNextTask / EnigmaClient.
+		// Unused: rows come from EnigmaClient coroutines.
 	}
 
 	@Override
@@ -286,19 +300,25 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment
 	}
 
 	private void loadEpgNowNext() {
+		if (!isAdded() || getView() == null) {
+			return;
+		}
 		mHttpHelper.onLoadStarted();
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getString(R.string.loading));
 		}
-		if (mEpgNowNextTask != null) {
-			mEpgNowNextTask.cancel(true);
-		}
-		mEpgNowNextTask = new GetEpgNowNextTask(this);
-		mEpgNowNextTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+		cancelLoad(false);
+		ArrayList<NameValuePair> params = getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID);
+		mLoadJob = EpgNowNextLoadKt.launchEpgNowNextLoad(this, params, (success, rows, errorText) -> {
+			onEpgNowNextReady(success, rows, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
-	@Override
-	public void onEpgNowNextReady(boolean success, @NonNull List<ServiceNowNext> rows, @Nullable String errorText) {
+	private void onEpgNowNextReady(boolean success, @NonNull List<ServiceNowNext> rows, @Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
 		mHttpHelper.onLoadFinished();
 		if (!isResumed()) {
 			return;

@@ -132,17 +132,5 @@ class EnigmaClient(private val http: SimpleHttpClient) {
             }
         }
 
-        @JvmStatic
-        @JvmOverloads
-        fun getEpgNowNextBlocking(
-            http: SimpleHttpClient,
-            params: List<NameValuePair>,
-            uri: String = URIStore.EPG_NOWNEXT
-        ): List<ServiceNowNext> {
-            return runBlocking {
-                EnigmaClient(http).getEpgNowNext(params, uri)
-            }
-        }
-
     }
 }
