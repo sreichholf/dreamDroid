@@ -34,7 +34,6 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.reichholf.dreamdroid.BuildConfig;
@@ -61,6 +60,7 @@ import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+import net.reichholf.dreamdroid.ui.drawer.DrawerListState;
 
 import java.util.Arrays;
 import java.util.List;
@@ -89,6 +89,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Nullable
 	private NavigationHelper mNavigationHelper;
+	@Nullable
+	private DrawerListState mDrawerListState;
 	@Nullable
 	private Fragment mDetailFragment;
 
@@ -227,7 +229,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	private boolean checkNavigationHelper(boolean isResume) {
 		if (mNavigationHelper == null) {
 			//TODO preserve/restore mNavigationHelper properly
-			mNavigationHelper = new NavigationHelper(this);
+			// Keep DrawerListState across pause/resume so the Compose drawer
+			// highlight survives helper recreation (NavigationView used to keep
+			// checked state on the view itself).
+			if (mDrawerListState == null) {
+				mDrawerListState = new DrawerListState();
+			}
+			mNavigationHelper = new NavigationHelper(this, mDrawerListState);
 			onProfileChanged(DreamDroid.getCurrentProfile(), isResume);
 			return true;
 		}
@@ -333,15 +341,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			};
 			mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-			NavigationView navigationView = findViewById(R.id.navigation_view);
-			View navHeader = navigationView.getHeaderView(0);
-			View profileChooser = navHeader.findViewById(R.id.drawer_profile);
+			View profileChooser = findViewById(R.id.drawer_profile);
 			profileChooser.setOnClickListener(view -> {
 				checkNavigationHelper();
 				mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
 			});
-			mActiveProfile = navHeader.findViewById(R.id.drawer_profile_name);
-			mConnectionState = navHeader.findViewById(R.id.drawer_profile_status);
+			mActiveProfile = findViewById(R.id.drawer_profile_name);
+			mConnectionState = findViewById(R.id.drawer_profile_status);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}

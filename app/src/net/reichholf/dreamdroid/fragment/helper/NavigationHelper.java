@@ -3,15 +3,11 @@ package net.reichholf.dreamdroid.fragment.helper;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.fragment.app.FragmentManager;
-
-import com.google.android.material.navigation.NavigationView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -48,13 +44,17 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
+import net.reichholf.dreamdroid.ui.drawer.DrawerListState;
+import net.reichholf.dreamdroid.ui.drawer.DrawerScreenKt;
 
 import java.util.ArrayList;
+
+import kotlin.Unit;
 
 /**
  * Created by Stephan on 25.12.2015.
  */
-public class NavigationHelper implements NavigationView.OnNavigationItemSelectedListener, SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
+public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
 
     @NonNull
 	protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_remote, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
@@ -64,13 +64,21 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     protected SleepTimerTask mSleepTimerTask;
     protected SimpleResultTask mSimpleResultTask;
     protected SimpleHttpClient mShc;
+    protected final DrawerListState mDrawerState;
 
     protected int mSelectedItemId;
 
-    public NavigationHelper(MainActivity activity) {
+    public NavigationHelper(MainActivity activity, @NonNull DrawerListState drawerState) {
         mActivity = activity;
-        mSelectedItemId = -1;
-        getNavigationView().setNavigationItemSelectedListener(this);
+        mDrawerState = drawerState;
+        mSelectedItemId = drawerState.getSelectedItemId();
+        ComposeView drawerCompose = activity.findViewById(R.id.drawer_compose);
+        if (drawerCompose != null) {
+            DrawerScreenKt.bindDrawerScreen(drawerCompose, mDrawerState, itemId -> {
+                onNavigationItemClick(itemId);
+                return Unit.INSTANCE;
+            });
+        }
     }
 
     protected SimpleHttpClient getHttpClient() {
@@ -81,17 +89,6 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
 
     protected MainActivity getMainActivity() {
         return mActivity;
-    }
-
-    @Nullable
-	protected NavigationView getNavigationView() {
-        if (mActivity == null)
-            return null;
-        return (NavigationView) getMainActivity().findViewById(R.id.navigation_view);
-    }
-
-    protected View getHeaderView() {
-        return getNavigationView().getHeaderView(0);
     }
 
     protected void clearBackStack() {
@@ -134,21 +131,16 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
     protected void setSelectedItem(int itemId) {
         if (isDialogItem(itemId))
             return;
-        if(itemId == R.id.menu_navigation_profiles) {
-            getNavigationView().setCheckedItem(R.id.menu_none);
+        if (itemId == R.id.menu_navigation_profiles) {
+            mDrawerState.clearSelection();
             return;
         }
-        getNavigationView().setCheckedItem(itemId);
+        mDrawerState.select(itemId);
         mSelectedItemId = itemId;
     }
 
     public void navigateTo(int itemId) {
         onNavigationItemClick(itemId);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        return onNavigationItemClick(item.getItemId());
     }
 
     protected boolean isDialogItem(int itemId) {

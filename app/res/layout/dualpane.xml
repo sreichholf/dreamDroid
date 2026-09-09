@@ -87,13 +87,24 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <com.google.android.material.navigation.NavigationView
-        style="@style/NavigationView"
+    <LinearLayout
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:headerLayout="@layout/navigation_header"
-        app:menu="@menu/navigation"/>
+        android:background="?attr/colorSurface"
+        android:clickable="true"
+        android:focusable="true"
+        android:minWidth="280dp"
+        android:orientation="vertical">
+
+        <include layout="@layout/navigation_header"/>
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/drawer_compose"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
 
 </net.reichholf.dreamdroid.widget.DrawerLayout>
