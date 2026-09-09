@@ -26,10 +26,10 @@ import android.widget.Toast;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.asynctask.SetVolumeTask;
 import net.reichholf.dreamdroid.enigma.EnigmaClient;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
+import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
@@ -50,7 +50,7 @@ import java.util.List;
 import kotlin.Unit;
 import kotlinx.coroutines.Job;
 
-public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
+public class HttpFragmentHelper {
     public static final int LOADER_DEFAULT_ID = 0;
     private Fragment mFragment;
     @Nullable
@@ -62,7 +62,8 @@ public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
 
     @Nullable
     protected Job mSimpleResultJob;
-    protected SetVolumeTask mVolumeTask;
+    @Nullable
+    protected Job mVolumeJob;
 
     protected boolean mShowToastOnSimpleResult = true;
 
@@ -120,7 +121,6 @@ public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
     }
 
     @Nullable
-	@Override
     public String getString(int resId) {
         if (mFragment != null)
             return mFragment.getActivity().getString(resId);
@@ -128,7 +128,6 @@ public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
     }
 
     @Nullable
-	@Override
     public Context getContext() {
         return getAppCompatActivity();
     }
@@ -159,20 +158,25 @@ public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
             mSimpleResultJob.cancel(null);
             mSimpleResultJob = null;
         }
-        if (mVolumeTask != null)
-            mVolumeTask.cancel(true);
+        if (mVolumeJob != null) {
+            mVolumeJob.cancel(null);
+            mVolumeJob = null;
+        }
     }
 
     @SuppressWarnings("unchecked")
     private void onVolumeButtonClicked(String set) {
         ArrayList<NameValuePair> params = new ArrayList<>();
         params.add(new NameValuePair("set", set));
-        if (mVolumeTask != null) {
-            mVolumeTask.cancel(true);
+        if (mVolumeJob != null) {
+            mVolumeJob.cancel(null);
         }
 
-        mVolumeTask = new SetVolumeTask(this);
-        mVolumeTask.execute(params);
+        mVolumeJob = VolumePowerSleepLoadKt.launchVolumeSetLoad(mFragment, params, (success, volume) -> {
+            mVolumeJob = null;
+            onVolumeSet(success, volume);
+            return Unit.INSTANCE;
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -208,7 +212,7 @@ public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
         mShowToastOnSimpleResult = show;
     }
 
-    public void onVolumeSet(boolean success, @NonNull ExtendedHashMap volume) {
+    private void onVolumeSet(boolean success, @NonNull ExtendedHashMap volume) {
         if (!mFragment.isAdded())
             return;
         String text = mFragment.getString(R.string.get_content_error);
