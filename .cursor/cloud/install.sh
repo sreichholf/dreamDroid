@@ -6,6 +6,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
+JAVA_HOME_17="/usr/lib/jvm/java-17-openjdk-amd64"
 CMDLINE_TOOLS_VERSION="11076708"
 AVD_NAME="dreamdroid-verify"
 SYSTEM_IMAGE="system-images;android-34;google_apis;x86_64"
@@ -16,17 +17,37 @@ SDK_PACKAGES=(
   "emulator"
   "$SYSTEM_IMAGE"
 )
+ENV_FILE="$HOME/.cursor/dreamdroid/env.sh"
 
 echo "== install: system packages (JDK 17, KVM, tools) =="
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
   openjdk-17-jdk qemu-kvm unzip curl
 
-# AGP 8.2's jlink transform fails on JDK 21, so pin the JVM default to 17.
-sudo update-java-alternatives -s java-1.17.0-openjdk-amd64 >/dev/null 2>&1 || true
-export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+# AGP 8.2's jlink transform fails on JDK 21, so pin the JVM to 17 and fail if
+# that JDK is missing. Also write env.sh so later shells (start/tests) inherit it.
+if [ ! -x "$JAVA_HOME_17/bin/java" ]; then
+  echo "install: JDK 17 missing at $JAVA_HOME_17" >&2
+  exit 1
+fi
+sudo update-java-alternatives -s java-1.17.0-openjdk-amd64 >/dev/null 2>&1 || \
+  echo "install: update-java-alternatives failed; relying on JAVA_HOME=$JAVA_HOME_17" >&2
+export JAVA_HOME="$JAVA_HOME_17"
+export PATH="$JAVA_HOME/bin:$PATH"
+mkdir -p "$(dirname "$ENV_FILE")"
+cat > "$ENV_FILE" <<EOF
+export JAVA_HOME="$JAVA_HOME_17"
+export PATH="\$JAVA_HOME/bin:\$PATH"
+export ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT"
+export ANDROID_HOME="$ANDROID_SDK_ROOT"
+EOF
 echo "JAVA_HOME=$JAVA_HOME"
 java -version
+java -version 2>&1 | grep -q 'version "17\.' || {
+  echo "install: expected JDK 17 on PATH, got:" >&2
+  java -version >&2
+  exit 1
+}
 
 echo "== install: Android command-line tools =="
 mkdir -p "$ANDROID_SDK_ROOT"
@@ -70,6 +91,7 @@ JAVA_HOME="$JAVA_HOME" ./gradlew --no-daemon \
 echo "== install: bake a booted quickboot snapshot into the base image =="
 # Boot the emulator once now so a fresh agent's start.sh loads a warm snapshot
 # instead of a ~10 min cold TCG boot. Best effort: never fail install on this.
+# emu_wait_boot has a hard timeout so a stuck emulator cannot hang install forever.
 if [ -w /dev/kvm ] || sudo chmod 666 /dev/kvm 2>/dev/null; then :; fi
 # shellcheck source=/dev/null
 source "$REPO_ROOT/.cursor/cloud/emulator.sh"

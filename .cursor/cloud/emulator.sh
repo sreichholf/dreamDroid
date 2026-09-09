@@ -15,13 +15,18 @@ ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
 SERIAL="emulator-5554"
 LOG_DIR="$HOME/.cursor/dreamdroid"
 EMU_LOG="$LOG_DIR/emulator.log"
-BOOT_TIMEOUT_SECS="${DREAMDROID_BOOT_TIMEOUT:-900}"
+# Whole wait (device online + boot_completed) must finish within this budget.
+BOOT_TIMEOUT_SECS="${DREAMDROID_BOOT_TIMEOUT:-600}"
 mkdir -p "$LOG_DIR"
 
 emu_kvm_perms() {
   if [ -e /dev/kvm ] && [ ! -w /dev/kvm ]; then
     sudo chmod 666 /dev/kvm 2>/dev/null || true
   fi
+}
+
+emu_is_online() {
+  "$ADB" devices 2>/dev/null | grep -q "^${SERIAL}[[:space:]]\+device$"
 }
 
 emu_is_booted() {
@@ -54,14 +59,13 @@ emu_launch() {
     > "$EMU_LOG" 2>&1 &
 }
 
-# Wait until the device reports boot completed.
+# Wait until the device reports boot completed. Never blocks forever:
+# polls for device online and boot_completed under BOOT_TIMEOUT_SECS.
 emu_wait_boot() {
-  echo "emulator: waiting for device"
-  "$ADB" wait-for-device
-  echo "emulator: waiting for boot (timeout ${BOOT_TIMEOUT_SECS}s)"
+  echo "emulator: waiting for device + boot (timeout ${BOOT_TIMEOUT_SECS}s)"
   local deadline=$(( $(date +%s) + BOOT_TIMEOUT_SECS ))
   while [ "$(date +%s)" -lt "$deadline" ]; do
-    if emu_is_booted; then
+    if emu_is_online && emu_is_booted; then
       "$ADB" -s "$SERIAL" shell input keyevent 82 >/dev/null 2>&1 || true
       echo "emulator: boot completed"
       "$ADB" devices

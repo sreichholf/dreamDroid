@@ -7,6 +7,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="$HOME/.cursor/dreamdroid/env.sh"
+if [ -f "$ENV_FILE" ]; then
+  # shellcheck source=/dev/null
+  source "$ENV_FILE"
+fi
+export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
+export PATH="$JAVA_HOME/bin:$PATH"
+export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
+export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/emulator.sh"
 

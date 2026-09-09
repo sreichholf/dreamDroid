@@ -12,10 +12,16 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SCRIPT_DIR="$REPO_ROOT/.cursor/cloud"
+ENV_FILE="$HOME/.cursor/dreamdroid/env.sh"
+if [ -f "$ENV_FILE" ]; then
+  # shellcheck source=/dev/null
+  source "$ENV_FILE"
+fi
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/emulator.sh"
 
 export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
+export PATH="$JAVA_HOME/bin:$PATH"
 APP_APK="$REPO_ROOT/app/build/outputs/apk/google/debug/app-google-x86_64-debug.apk"
 TEST_APK="$REPO_ROOT/app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk"
 TEST_RUNNER="net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner"
