@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2deviceinfo>
+	<e2enigmaversion>2016-07-28-vti-master (d75da0c)</e2enigmaversion>
+	<e2imageversion>9.0.3.</e2imageversion>
+	<e2webifversion>1.7.4</e2webifversion>
+	<e2fpversion>0</e2fpversion>
+	<e2devicename>Solo4K</e2devicename>
+	<e2frontends>
+		<e2frontend>
+			<e2name>Tuner A</e2name>
+			<e2model>Vuplus DVB-S NIM(7376 FBC) (DVB-S2)</e2model>
+		</e2frontend>
+		<e2frontend>
+			<e2name>Tuner B</e2name>
+			<e2model>Vuplus DVB-T NIM(TT3L10) (DVB-T2)</e2model>
+		</e2frontend>
+	</e2frontends>
+	<e2network>
+		<e2interface>
+			<e2name>eth0</e2name>
+			<e2mac>00:1d:ec:0a:be:ae</e2mac>
+			<e2dhcp>True</e2dhcp>
+			<e2ip>192.168.0.8</e2ip>
+			<e2gateway>192.168.0.1</e2gateway>
+			<e2netmask>255.255.255.0</e2netmask>
+		</e2interface>
+	</e2network>
+	<e2hdds>
+		<e2hdd>
+			<e2model>ATA(ST2000LM003 HN-M)</e2model>
+			<e2capacity>1.82 TB</e2capacity>
+			<e2free>1405.121 GB</e2free>
+		</e2hdd>
+	</e2hdds>
+</e2deviceinfo>

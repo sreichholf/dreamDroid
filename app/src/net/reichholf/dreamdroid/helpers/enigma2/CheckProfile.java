@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.enigma.DeviceInfo;
+import net.reichholf.dreamdroid.enigma.DeviceInfoParser;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
@@ -67,13 +69,16 @@ public class CheckProfile {
 
 					if (xml != null && !shc.hasError()) {
 						profile.setCachedDeviceInfo(xml);
-						ExtendedHashMap deviceInfo = new ExtendedHashMap();
+						DeviceInfo deviceInfo = DeviceInfoParser.INSTANCE.parse(xml);
 
-						if (dirh.parse(xml, deviceInfo)) {
+						if (deviceInfo != null && !deviceInfo.isEmpty()) {
 							addEntry(resultList, R.string.device_name, false,
-									deviceInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
+									deviceInfo.getDeviceName());
 
-							String version = deviceInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION, "0");
+							String version = deviceInfo.getInterfaceVersion();
+							if (version == null || version.isEmpty()) {
+								version = "0";
+							}
 							int vc = checkVersion(version);
 							if (vc >= 0) {
 								int[] requiredForSleeptimer = { 1, 6, 5 };
