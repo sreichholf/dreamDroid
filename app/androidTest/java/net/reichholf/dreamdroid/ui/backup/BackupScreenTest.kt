@@ -27,7 +27,7 @@ class BackupScreenTest {
     @Test
     fun keyLabelsAndButtonsVisible() {
         val state = BackupUiState().apply {
-            setProfiles(
+            replaceProfiles(
                 listOf(
                     BackupProfileToggle(
                         id = 1,

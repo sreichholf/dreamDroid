@@ -40,7 +40,7 @@ class BackupUiState {
     /** Matches legacy XML SwitchCompat default (unchecked). */
     var exportSettings by mutableStateOf(false)
 
-    fun setProfiles(items: List<BackupProfileToggle>) {
+    fun replaceProfiles(items: List<BackupProfileToggle>) {
         profiles = items
     }
 
@@ -49,7 +49,7 @@ class BackupUiState {
         currentProfileId: Int,
         currentProfileLabel: String,
     ) {
-        setProfiles(
+        replaceProfiles(
             profiles.map { profile ->
                 val id = profile.id
                 var label = String.format("%s (%s)", profile.name, profile.host)
