@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.device
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -11,6 +12,7 @@ import net.reichholf.dreamdroid.enigma.DeviceHdd
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.DeviceNic
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -68,6 +70,8 @@ class DeviceInfoScreenTest {
                 DeviceInfoScreen(state = DeviceInfoUiState())
             }
         }
-        composeRule.onNodeWithText("Loading…").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Loading", substring = true).fetchSemanticsNodes().let {
+            assertTrue("expected Loading placeholders", it.isNotEmpty())
+        }
     }
 }

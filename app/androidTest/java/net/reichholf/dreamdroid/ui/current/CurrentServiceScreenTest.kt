@@ -44,8 +44,8 @@ class CurrentServiceScreenTest {
                 )
             }
         }
-        composeRule.onAllNodesWithText("Loading").fetchSemanticsNodes().let {
-            assertTrue(it.isNotEmpty())
+        composeRule.onAllNodesWithText("Loading", substring = true).fetchSemanticsNodes().let {
+            assertTrue("expected Loading placeholders", it.isNotEmpty())
         }
     }
 

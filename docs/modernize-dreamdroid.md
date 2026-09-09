@@ -6,6 +6,8 @@ Rewrite trunk is **`main`**. `master` is last 1.15 stable. Do not merge `master`
 
 Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap loops. See [`AGENTS.md`](../AGENTS.md). AVD `dreamdroid-verify`. JDK 17. Debug package `net.reichholf.dreamdroid.debug`.
 
+GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/android-ci.yml) runs on PRs/`main` — unit tests + assemble + androidTest compile (JDK 17), plus instrumented Compose tests on an API 30 emulator (`-Pci` disables ABI splits for a single installable APK).
+
 ## Status as of 2026-09-09
 
 | Unit | GitHub | State | Head / merge |
@@ -47,13 +49,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | signal-typed | [#200](https://github.com/sreichholf/dreamDroid/pull/200) | merged | typed `enigma.Signal` for `/web/signal`; poll via `GetSignalTask`; async cancel fixes. |
 | device-info-compose | [#201](https://github.com/sreichholf/dreamDroid/pull/201) | merged | `DeviceInfoFragment` Compose UI + `DeviceInfoScreenTest`; keep last-good on failed refresh.
 | signal-compose | [#202](https://github.com/sreichholf/dreamDroid/pull/202) | merged | `SignalFragment` Compose + HalfGauge `AndroidView` + `SignalScreenTest`.
-| timers-typed | [#203](https://github.com/sreichholf/dreamDroid/pull/203) | open | typed `enigma.Timer` for `/web/timerlist`; Compose list via typed model; edit/delete hash at edge.
+| timers-typed | [#203](https://github.com/sreichholf/dreamDroid/pull/203) | merged | typed `enigma.Timer` for `/web/timerlist`; Compose list via typed model; edit/delete hash at edge. |
+| ci-basic-tests | [#204](https://github.com/sreichholf/dreamDroid/pull/204) | open | GitHub Actions: unit+assemble+androidTest compile on PRs; API 30 emulator on `main` / `workflow_dispatch` only. Fixes for Virtual Remote layer-list icons + multi-match Loading/https assertions. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #202**. Open: timers typed #203. Still open after that: timer-edit, movie detail, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #203**. Still open in G: timer-edit, movie detail, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
@@ -70,9 +73,10 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Wave 3 Compose landed through #198; typed device-info #199 + signal #200 on `main`. Open Compose: device-info #201, signal #202; typed timers #203.
-- Appendix G still open: device-info Compose (this PR #201), signal Compose #202, timer-edit, movie detail, timer service pick.
-- Remaining typed API: hub now/next, movies, timers (#203 open).
+- Wave 3 Compose landed through #202; typed device-info #199, signal #200, timers #203 on `main`.
+- Appendix G still open: timer-edit, movie detail, timer service pick.
+- Remaining typed API: hub now/next, movies.
+- CI: GitHub Actions workflow in this PR (unit + instrumented).
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
 ## How to read this

@@ -1,0 +1,110 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Unit tests + assemble
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      # ubuntu-latest ships an Android SDK; this accepts licenses and ensures cmdline tools.
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # One Gradle invocation keeps the daemon warm (do not pass --no-daemon with setup-gradle).
+      # Compiling androidTest catches broken Compose tests without an emulator.
+      - name: Unit tests + assemble + compile androidTest
+        run: >
+          ./gradlew
+          :app:testGoogleDebugUnitTest
+          :app:assembleGoogleDebug
+          :app:compileGoogleDebugAndroidTestKotlin
+          :app:compileGoogleDebugAndroidTestJavaWithJavac
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: |
+            app/build/reports/tests/testGoogleDebugUnitTest/
+            app/build/test-results/testGoogleDebugUnitTest/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # Emulator jobs are free on this public repo but slow (~20–40+ min) and flaky.
+  # Keep them off pull_request; run on main pushes and manual workflow_dispatch.
+  androidTest:
+    name: Instrumented Compose tests
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Instrumented tests (googleDebug)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: pixel_4
+          disable-animations: true
+          # -Pci disables ABI splits so connectedAndroidTest installs one APK.
+          # Do not pass -Pandroid.testInstrumentationRunnerArguments… (breaks flavors).
+          script: ./gradlew -Pci :app:connectedGoogleDebugAndroidTest
+
+      - name: Upload instrumented test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: androidTest-reports
+          path: |
+            app/build/reports/androidTests/connected/
+            app/build/outputs/androidTest-results/
+          if-no-files-found: ignore
+          retention-days: 14
