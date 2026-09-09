@@ -313,7 +313,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     @Nullable
-    @Nullable
     public static net.reichholf.dreamdroid.enigma.DeviceInfo fetchDeviceInfo(@NonNull SimpleHttpClient shc) {
         return EnigmaClient.getDeviceInfoBlocking(shc);
     }
