@@ -60,6 +60,7 @@ import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
+import net.reichholf.dreamdroid.ui.drawer.DrawerListState;
 
 import java.util.Arrays;
 import java.util.List;
@@ -88,6 +89,8 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Nullable
 	private NavigationHelper mNavigationHelper;
+	@Nullable
+	private DrawerListState mDrawerListState;
 	@Nullable
 	private Fragment mDetailFragment;
 
@@ -226,7 +229,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	private boolean checkNavigationHelper(boolean isResume) {
 		if (mNavigationHelper == null) {
 			//TODO preserve/restore mNavigationHelper properly
-			mNavigationHelper = new NavigationHelper(this);
+			// Keep DrawerListState across pause/resume so the Compose drawer
+			// highlight survives helper recreation (NavigationView used to keep
+			// checked state on the view itself).
+			if (mDrawerListState == null) {
+				mDrawerListState = new DrawerListState();
+			}
+			mNavigationHelper = new NavigationHelper(this, mDrawerListState);
 			onProfileChanged(DreamDroid.getCurrentProfile(), isResume);
 			return true;
 		}

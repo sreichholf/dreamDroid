@@ -57,7 +57,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | hub-nownext-typed | [#209](https://github.com/sreichholf/dreamDroid/pull/209) | merged | typed `ServiceNowNext` for `/web/epgnownext` into hub TV/Radio `ServiceListPageFragment`; hash only at detail/timer/stream edge. |
 | movies-typed | [#210](https://github.com/sreichholf/dreamDroid/pull/210) | merged | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
 | leanback-dive | [#211](https://github.com/sreichholf/dreamDroid/pull/211) | merged | Phase 0 Leanback inventory + risks + agreed Phase 3 PR order (docs only; no TV code). |
-| drawer-compose | (this PR) | open | Phase 2.1a: Compose drawer chrome (`DrawerScreen` in `ComposeView`); keep `DrawerLayout` + fragment host + `NavigationHelper.navigateTo`; no `NavHost` yet. |
+| drawer-compose | [#212](https://github.com/sreichholf/dreamDroid/pull/212) | open | Phase 2.1a: Compose drawer chrome (`DrawerScreen` in `ComposeView`); keep `DrawerLayout` + fragment host + `NavigationHelper.navigateTo`; no `NavHost` yet. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -541,7 +541,7 @@ One program each, still one PR (or small PR series) at a time:
 
 | Order | Program | What |
 | --- | --- | --- |
-| 1a | Drawer chrome (Compose) | Replace `NavigationView` menu with Compose `DrawerScreen` in `ComposeView`; keep XML profile header, `DrawerLayout`, fragment `detail_view`, and `NavigationHelper.navigateTo`. `res/menu/navigation.xml` kept for destination ids. **This PR.** |
+| 1a | Drawer chrome (Compose) | Replace `NavigationView` menu with Compose `DrawerScreen` in `ComposeView`; keep XML profile header, `DrawerLayout`, fragment `detail_view`, and `NavigationHelper.navigateTo`. `res/menu/navigation.xml` kept for destination ids. **[#212](https://github.com/sreichholf/dreamDroid/pull/212).** |
 | 1b | Drawer Navigation (later) | `MainActivity` + destinations → Compose Navigation / `NavHost`; retire dual-pane XML host gradually. Do **not** start until chrome is stable. |
 | 2 | HTTP / async stack | Replace `HttpURLConnection` + `AsyncTask`/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |

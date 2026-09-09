@@ -68,10 +68,10 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
 
     protected int mSelectedItemId;
 
-    public NavigationHelper(MainActivity activity) {
+    public NavigationHelper(MainActivity activity, @NonNull DrawerListState drawerState) {
         mActivity = activity;
-        mSelectedItemId = -1;
-        mDrawerState = new DrawerListState();
+        mDrawerState = drawerState;
+        mSelectedItemId = drawerState.getSelectedItemId();
         ComposeView drawerCompose = activity.findViewById(R.id.drawer_compose);
         if (drawerCompose != null) {
             DrawerScreenKt.bindDrawerScreen(drawerCompose, mDrawerState, itemId -> {
