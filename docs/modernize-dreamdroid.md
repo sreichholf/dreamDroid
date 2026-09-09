@@ -29,13 +29,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | EPG search typed rows | [#180](https://github.com/sreichholf/dreamDroid/pull/180) | merged | `4f3249b2` typed `enigma.Event` into `EpgSearchFragment`; reuses `EpgBouquetAdapter`. Drop unused `EpgAdapter`. |
 | PickService typed list | [#181](https://github.com/sreichholf/dreamDroid/pull/181) | merged | `ce7cfb1d` typed `enigma.Service` into `PickServiceFragment`; load via `GetBouquetListTask`. Intent still maps one `ExtendedHashMap` at send. |
 | CurrentService typed | [#183](https://github.com/sreichholf/dreamDroid/pull/183) | merged | typed `enigma.CurrentService` for `/web/getcurrent`; XML UI stays; hash only at EPG detail/timer edge. |
-| profile-edit-compose ([#184](https://github.com/sreichholf/dreamDroid/pull/184)) | — | open | open on `cursor/profile-edit-compose-c88a` — `ProfileEditFragment` Compose form + `ProfileEditScreenTest` |
+| profile-edit-compose | [#184](https://github.com/sreichholf/dreamDroid/pull/184) | merged | `ProfileEditFragment` Compose form + `ProfileEditScreenTest`. |
+| zap-compose | — | open | open on `cursor/zap-compose-c88a` — `ZapFragment` Compose grid + `ZapScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. First screen (`profile-edit-compose`) is open on `cursor/profile-edit-compose-c88a`.
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. `profile-edit-compose` is on `main` as #184. Next screen (`zap-compose`) is open on `cursor/zap-compose-c88a`.
 
 ### Operator overrides (this program)
 
@@ -53,7 +54,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for `ShareActivity` / video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - `ProfileAdapter` remains for `ShareActivity`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Zap still XML. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker list typing is on `main` via #181 (Intent still one `ExtendedHashMap` at send).
+- Zap Compose grid is open on `cursor/zap-compose-c88a`. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker list typing is on `main` via #181 (Intent still one `ExtendedHashMap` at send).
+- Profile edit form is Compose on `main` via #184.
 - Service EPG list still XML. Rows are typed `enigma.Event` on `main` via #176. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Dead `EpgTimelineFragment` removed in #177.
 - EPG bouquet still XML. Rows are typed `enigma.Event` on `main` via #179. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
 - EPG search still XML. Rows are typed `enigma.Event` on `main` via #180. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
@@ -349,16 +351,16 @@ This was never "replace the phone app with Compose." The original boxes named fi
 
 ### Still Java/XML phone screens (drawer and related)
 
-Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies **tabs/bar**. The pager pages behind those tabs landed as Compose in #170.
+Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**. The pager pages behind those tabs landed as Compose in #170. Zap Compose is open on `cursor/zap-compose-c88a`.
 
 | Surface | Code | Notes |
 | --- | --- | --- |
 | Channel / bouquet rows | Compose on `main` via #170 | Long-press, picons, popup menu. |
 | Movies list | Compose on `main` via #170 | Hub Movies destination. |
 | Timer list / edit | Compose list on `main` via #170; `TimerEditFragment` | List Compose; edit stays XML. |
-| Profile add/edit | `ProfileEditFragment` | List is Compose; form is XML. Autodiscovery stays Java. |
+| Profile add/edit | Compose on `main` via #184 | Form Compose; list was #168. Autodiscovery stays Java. |
 | Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
-| Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (#173). Picker list typing on `main` via #181. |
+| Zap | open `cursor/zap-compose-c88a` | Compose grid + Picasso picons. Rows typed `enigma.Service` (#173). Picker list typing on `main` via #181. |
 | Service EPG list | `ServiceEpgListFragment`, `ServiceEpgAdapter` | XML list. Rows are typed `enigma.Event` (#176). Detail/timer edge still hash. |
 | EPG bouquet | `EpgBouquetFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#179). Detail/timer edge still hash. |
 | EPG search | `EpgSearchFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#180). Detail/timer edge still hash. |
@@ -408,9 +410,9 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 
 | # | PR slug | Class | Opened how | Wait for typed API? |
 | --- | --- | --- | --- | --- |
-| 1 | `profile-edit-compose` | `ProfileEditFragment` | Profiles FAB/row → `SimpleToolbarFragmentActivity` | No (Room) — **open** on `cursor/profile-edit-compose-c88a` |
+| 1 | `profile-edit-compose` | `ProfileEditFragment` | Profiles FAB/row → `SimpleToolbarFragmentActivity` | No (Room) — **merged** [#184](https://github.com/sreichholf/dreamDroid/pull/184) |
 | 2 | `current-event-compose` | `CurrentServiceFragment` | Drawer current | Yes — type current-service first |
-| 3 | `zap-compose` | `ZapFragment` | Drawer zap | No (rows already typed #173) |
+| 3 | `zap-compose` | `ZapFragment` | Drawer zap | No (rows already typed #173) — **open** on `cursor/zap-compose-c88a` |
 | 4 | `virtual-remote-compose` | `VirtualRemotePagerFragment` / `VirtualRemoteFragment` | Drawer remote | No |
 | 5 | `device-info-compose` | `DeviceInfoFragment` | Drawer device info | Prefer type device-info first |
 | 6 | `signal-compose` | `SignalFragment` | Drawer signal | Prefer type signal first |

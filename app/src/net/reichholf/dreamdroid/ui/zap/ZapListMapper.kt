@@ -4,7 +4,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 
 /**
- * Zap keeps XML rows. Channel rows come typed from
+ * Zap channel grid filters and bouquet Intent mapping. Channel rows come typed from
  * [net.reichholf.dreamdroid.enigma.EnigmaClient]. The bouquet picker holds typed
  * [Service] and maps one [ExtendedHashMap] only when putting the Intent extra.
  */
