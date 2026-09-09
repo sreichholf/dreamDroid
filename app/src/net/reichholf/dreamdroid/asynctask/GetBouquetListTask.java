@@ -43,8 +43,10 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 
 		addBouquets(mTV, mBouquets.tv);
 		addBouquets(mRadio, mBouquets.radio);
-
-		return true;
+		boolean hadError = getHttpClient().hasError();
+		boolean hasAny = !mBouquets.tv.isEmpty() || !mBouquets.radio.isEmpty();
+		// Keep partial roots (e.g. TV ok, radio failed). Fail only when empty and HTTP erred.
+		return hasAny || !hadError;
 	}
 
 	private boolean addBouquets(String ref, ArrayList<Service> target) {
@@ -53,7 +55,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		if (isCancelled())
 			return false;
 		target.addAll(HttpFragmentHelper.fetchServices(getHttpClient(), params));
-		return true;
+		return !getHttpClient().hasError();
 	}
 
 	@Override
@@ -62,7 +64,8 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		if (isInvalid(taskHandler))
 			return;
 
-		taskHandler.onBouquetListReady(result, mBouquets, getErrorText());
+		boolean success = Boolean.TRUE.equals(result);
+		taskHandler.onBouquetListReady(success, mBouquets, success ? null : getErrorText());
 	}
 
 	public interface GetBouquetListTaskHandler extends AsyncHttpTaskBaseHandler {

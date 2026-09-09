@@ -5,70 +5,148 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
-import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.NameValuePair;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.loader.AsyncFavListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
-import net.reichholf.dreamdroid.view.recyclerview.DividerItemDecoration;
-
-import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
+import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.adapter.recyclerview.ServiceNameAdapter;
+import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
+import net.reichholf.dreamdroid.enigma.Service;
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
+import net.reichholf.dreamdroid.helpers.NameValuePair;
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
+import net.reichholf.dreamdroid.loader.AsyncListLoader;
+import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
+import net.reichholf.dreamdroid.view.recyclerview.DividerItemDecoration;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Created by Stephan on 09.11.2014.
+ * Bouquet / service picker. Rows are typed {@link Service}; the result Intent still
+ * carries one {@link ExtendedHashMap} under {@link #KEY_BOUQUET} mapped at send time
+ * so Zap / EpgBouquet consumers stay unchanged.
  */
-public class PickServiceFragment extends BaseHttpRecyclerFragment {
-	public ExtendedHashMap mCurrentBouquet;
+public class PickServiceFragment extends BaseHttpRecyclerFragment
+		implements GetBouquetListTask.GetBouquetListTaskHandler {
 	public static final String KEY_BOUQUET = "bouquet";
 
+	private final ArrayList<Service> mServices = new ArrayList<>();
+	@Nullable
+	private GetBouquetListTask mBouquetListTask;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mReload = true;
 		super.onCreate(savedInstanceState);
-		ExtendedHashMap up = new ExtendedHashMap();
-		up.put(Service.KEY_REFERENCE, AsyncFavListLoader.REF_FAVS);
-		up.put(Service.KEY_NAME, getString(R.string.services));
-		mCurrentBouquet = up;
+		initTitle(getString(R.string.services));
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		mAdapter = new SimpleTextAdapter(mMapList, android.R.layout.simple_list_item_1,
-				new String[]{Event.KEY_SERVICE_NAME}, new int[]{android.R.id.text1});
+		mAdapter = new ServiceNameAdapter(mServices, android.R.layout.simple_list_item_1);
 		getRecyclerView().setAdapter(mAdapter);
 		getRecyclerView().addItemDecoration(new DividerItemDecoration(getAppCompatActivity(), null));
+		super.onActivityCreated(savedInstanceState);
+	}
+
+	@Override
+	public void onDestroy() {
+		if (mBouquetListTask != null) {
+			mBouquetListTask.cancel(true);
+		}
+		super.onDestroy();
 	}
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
-		mCurrentBouquet = mMapList.get(position);
+		Service selected = mServices.get(position);
 		Intent data = new Intent();
-		data.putExtra(KEY_BOUQUET, mCurrentBouquet);
+		data.putExtra(KEY_BOUQUET, ZapListMapper.toBouquetMap(selected));
 		finish(Activity.RESULT_OK, data);
 	}
 
 	@NonNull
 	@Override
 	public ArrayList<NameValuePair> getHttpParams(int loader) {
-		ArrayList<NameValuePair> params = new ArrayList<>();
-		params.add(new NameValuePair("bRef", mCurrentBouquet.getString(Service.KEY_REFERENCE)));
-		return params;
+		return new ArrayList<>();
 	}
 
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle args) {
-		return new AsyncFavListLoader(getAppCompatActivity(), args);
+		// Picker no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
+		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, args);
 	}
 
+	@Override
+	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		// Unused: rows come from GetBouquetListTask / EnigmaClient.
+	}
+
+	@Override
+	protected void reload() {
+		mReload = false;
+		if (mServices.isEmpty())
+			setEmptyText(getText(R.string.loading), R.drawable.ic_loading_48dp);
+		else
+			setEmptyText(null);
+		loadBouquets();
+	}
+
+	private void loadBouquets() {
+		mHttpHelper.onLoadStarted();
+		if (!"".equals(getBaseTitle().trim())) {
+			setCurrentTitle(getString(R.string.loading));
+		}
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (mBouquetListTask != null) {
+			mBouquetListTask.cancel(true);
+		}
+		mBouquetListTask = new GetBouquetListTask(this);
+		mBouquetListTask.execute();
+	}
+
+	@Override
+	public void onBouquetListReady(boolean result, GetBouquetListTask.Bouquets bouquets, String errorText) {
+		mHttpHelper.onLoadFinished();
+		mServices.clear();
+		if (mAdapter != null) {
+			mAdapter.notifyDataSetChanged();
+		}
+		if (!result) {
+			setEmptyText(errorText);
+			return;
+		}
+		setEmptyText(null);
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+
+		List<Service> rows = new ArrayList<>();
+		if (bouquets != null) {
+			if (bouquets.tv != null) {
+				rows.addAll(bouquets.tv);
+			}
+			if (bouquets.radio != null) {
+				rows.addAll(bouquets.radio);
+			}
+		}
+		if (rows.isEmpty()) {
+			setEmptyText(getText(R.string.no_list_item));
+		} else {
+			mServices.addAll(rows);
+		}
+		if (mAdapter != null) {
+			mAdapter.notifyDataSetChanged();
+		}
+	}
 }

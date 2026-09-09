@@ -171,7 +171,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment
 			return;
 		switch (requestCode) {
 			case Statics.REQUEST_PICK_BOUQUET:
-				// PickServiceFragment still returns ExtendedHashMap; take reference/name here.
+				// PickServiceFragment maps typed Service → ExtendedHashMap only at Intent send.
 				ExtendedHashMap service = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
 				String reference = service.getString(Service.KEY_REFERENCE);
 				if (!reference.equals(mReference)) {
