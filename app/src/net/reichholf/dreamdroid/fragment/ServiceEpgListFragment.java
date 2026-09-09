@@ -1,21 +1,17 @@
-/* © 2010 Stephan Reichholf <stephan at reichholf dot net>
- * 
- * Licensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported
- * http://creativecommons.org/licenses/by-nc-sa/3.0/
- */
-
 package net.reichholf.dreamdroid.fragment;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.adapter.recyclerview.ServiceEpgAdapter;
 import net.reichholf.dreamdroid.asynctask.GetEventListTask;
 import net.reichholf.dreamdroid.enigma.Event;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
@@ -27,19 +23,22 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestH
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
+import net.reichholf.dreamdroid.ui.epg.ServiceEpgListState;
+import net.reichholf.dreamdroid.ui.epg.ServiceEpgListStateKt;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shows the EPG of a service. Timers can be set via integrated detail dialog.
- * Rows are typed {@link Event}; detail/timer still take ExtendedHashMap at the edge.
+ * Shows the EPG of a service. Compose Material 3 list of typed {@link Event};
+ * detail/timer still take ExtendedHashMap at the edge.
  *
  * @author sreichholf
  */
 public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment
 		implements GetEventListTask.GetEventListTaskHandler {
 	private final ArrayList<Event> mEvents = new ArrayList<>();
+	private ServiceEpgListState mListState;
 	@Nullable
 	private GetEventListTask mEventListTask;
 
@@ -48,16 +47,37 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment
 		mCardListStyle = true;
 		mEnableReload = true;
 		super.onCreate(savedInstanceState);
+		mListState = new ServiceEpgListState();
 		initTitle(getString(R.string.epg));
 
 		mReference = getDataForKey(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE);
 		mName = getDataForKey(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME);
 	}
 
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.compose_swipe_list, container, false);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		ComposeView compose = view.findViewById(R.id.compose_list);
+		ServiceEpgListStateKt.bindServiceEpgScreen(
+				compose,
+				mListState,
+				event -> {
+					mCurrentItem = EpgListMapper.toExtendedHashMap(event);
+					EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(mCurrentItem);
+					getMultiPaneHandler().showDialogFragment(epgDetailBottomSheet, "epg_detail_dialog");
+					return kotlin.Unit.INSTANCE;
+				}
+		);
+	}
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		mAdapter = new ServiceEpgAdapter(mEvents);
-		getRecyclerView().setAdapter(mAdapter);
 		super.onActivityCreated(savedInstanceState);
 
 		if (mReference != null) {
@@ -78,10 +98,7 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
-		Event event = mEvents.get(position);
-		mCurrentItem = EpgListMapper.toExtendedHashMap(event);
-		EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(mCurrentItem);
-		getMultiPaneHandler().showDialogFragment(epgDetailBottomSheet, "epg_detail_dialog");
+		// Compose owns clicks.
 	}
 
 	@NonNull
@@ -144,9 +161,7 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment
 	public void onEventListReady(boolean success, @NonNull List<Event> events, @Nullable String errorText) {
 		mHttpHelper.onLoadFinished();
 		mEvents.clear();
-		if (mAdapter != null) {
-			mAdapter.notifyDataSetChanged();
-		}
+		mListState.replaceAll(java.util.Collections.emptyList());
 		if (!success) {
 			setEmptyText(errorText);
 			return;
@@ -161,9 +176,7 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment
 			setEmptyText(getText(R.string.no_list_item));
 		} else {
 			mEvents.addAll(events);
-		}
-		if (mAdapter != null) {
-			mAdapter.notifyDataSetChanged();
+			mListState.replaceAll(events);
 		}
 	}
 }
