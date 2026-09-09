@@ -22,7 +22,7 @@ Use `JAVA_HOME` pointing at JDK 17. Tests live in `app/androidTest/java`. Add Co
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 
-CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `:app:testGoogleDebugUnitTest`, assemble, androidTest compile (all with `-Pci` to skip ABI splits). Emulator `connectedGoogleDebugAndroidTest` (API 30) runs on `main` pushes and manual `workflow_dispatch` only (slow/flaky on PR). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
+CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `:app:testGoogleDebugUnitTest`, assemble, androidTest compile (all with `-Pci` to skip ABI splits); uploads `dreamdroid-google-debug-apk` (2-day retention). Emulator `connectedGoogleDebugAndroidTest` (API 30) runs on `main` pushes and manual `workflow_dispatch` only (slow/flaky on PR). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
 
 `verify-dreamdroid.py` is for a single look when you need a screenshot or a shell-only path that has no test yet. It is not the verification loop.
 

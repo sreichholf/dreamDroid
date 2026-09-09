@@ -75,6 +75,15 @@ jobs:
           :app:compileGoogleDebugAndroidTestKotlin
           :app:compileGoogleDebugAndroidTestJavaWithJavac
 
+      - name: Upload googleDebug APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: dreamdroid-google-debug-apk
+          # -Pci builds one APK (no ABI splits). Path still matches the debug output.
+          path: app/build/outputs/apk/google/debug/*.apk
+          if-no-files-found: error
+          retention-days: 2
+
       - name: Upload unit test reports
         if: always()
         uses: actions/upload-artifact@v6
