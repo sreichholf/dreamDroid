@@ -164,7 +164,6 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
         switch (itemId) {
             case R.id.menu_navigation_services:
                 clearBackStack();
-                //getMainActivity().showDetails(ServiceListFragment.class);
                 getMainActivity().showDetails(ServiceListPager.class);
                 break;
 

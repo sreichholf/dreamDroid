@@ -340,7 +340,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		data.put(Service.KEY_REFERENCE, "default");
 
 		Intent intent = new Intent(getContext(), SimpleToolbarFragmentActivity.class);
-		intent.putExtra("fragmentClass", ServiceListFragment.class);
+		intent.putExtra("fragmentClass", TimerServicePickFragment.class);
 		intent.putExtra("titleResource", R.string.service);
 		intent.putExtra("action", Intent.ACTION_PICK);
 		intent.putExtra("serializableData", data);
