@@ -55,4 +55,21 @@ public class ZapListMapperTest {
         assertEquals("", bouquet.getReference());
         assertEquals("", bouquet.getName());
     }
+
+    @Test
+    public void toBouquetMapWritesReferenceAndName() {
+        Service service = new Service("1:7:1:0:0:0:0:0:0:0:", "Favourites (TV)");
+        ExtendedHashMap map = ZapListMapper.toBouquetMap(service);
+        assertEquals("1:7:1:0:0:0:0:0:0:0:", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE));
+        assertEquals("Favourites (TV)", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME));
+        assertEquals(service.getReference(), ZapListMapper.bouquetFrom(map).getReference());
+        assertEquals(service.getName(), ZapListMapper.bouquetFrom(map).getName());
+    }
+
+    @Test
+    public void toBouquetMapNullIsEmptyKeys() {
+        ExtendedHashMap map = ZapListMapper.toBouquetMap(null);
+        assertEquals("", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE));
+        assertEquals("", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME));
+    }
 }

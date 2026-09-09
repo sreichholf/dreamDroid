@@ -26,11 +26,12 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | Event typed rows (ServiceEpgList) | [#176](https://github.com/sreichholf/dreamDroid/pull/176) | merged | typed `enigma.Event` into `ServiceEpgListFragment`. XML list stays. Bouquet/search EPG not migrated. |
 | dead-weight (EPG timeline + prefs + menus + bottom nav) | [#177](https://github.com/sreichholf/dreamDroid/pull/177) | merged | `c89afc11` drop dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. Keep ButterKnife. |
 | EPG bouquet typed rows | [#179](https://github.com/sreichholf/dreamDroid/pull/179) | merged | `21b6db59` typed `enigma.Event` into `EpgBouquetFragment` / `EpgBouquetAdapter`. Search EPG not migrated. |
-| EPG search typed rows | [#180](https://github.com/sreichholf/dreamDroid/pull/180) | open | typed `enigma.Event` into `EpgSearchFragment`; reuses `EpgBouquetAdapter`. Drop unused `EpgAdapter`. |
+| EPG search typed rows | [#180](https://github.com/sreichholf/dreamDroid/pull/180) | merged | `4f3249b2` typed `enigma.Event` into `EpgSearchFragment`; reuses `EpgBouquetAdapter`. Drop unused `EpgAdapter`. |
+| PickService typed list | open (`cursor/pick-service-typed-c88a`) | open | typed `enigma.Service` into `PickServiceFragment`; load via `GetBouquetListTask`. Intent still maps one `ExtendedHashMap` at send. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) Zap typing (#173) plus Service EPG typing (#176) and bouquet EPG typing (#179) are on `main`. EPG search typed rows are open on `cursor/epg-search-typed-c88a`. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) Zap typing (#173) plus Service EPG typing (#176), bouquet EPG typing (#179), and EPG search typing (#180) are on `main`. PickService typed list is open on `cursor/pick-service-typed-c88a`. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
 ### Operator overrides (this program)
 
@@ -48,10 +49,10 @@ Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#1
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for `ShareActivity` / video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - `ProfileAdapter` remains for `ShareActivity`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Zap still XML. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker still returns `ExtendedHashMap`; Zap converts at the fragment boundary.
+- Zap still XML. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker list typing is open on `cursor/pick-service-typed-c88a` (Intent still one `ExtendedHashMap` at send).
 - Service EPG list still XML. Rows are typed `enigma.Event` on `main` via #176. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Dead `EpgTimelineFragment` removed in #177.
 - EPG bouquet still XML. Rows are typed `enigma.Event` on `main` via #179. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
-- EPG search typed rows are in progress on `cursor/epg-search-typed-c88a` (`EpgSearchFragment` / shared `EpgBouquetAdapter`).
+- EPG search still XML. Rows are typed `enigma.Event` on `main` via #180. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
 
 ## How to read this
 
@@ -223,7 +224,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 
 - [x] `ZapFragment` / `ZapAdapter` hold `enigma.Service`. XML `zap_grid_item` stays.
 - [x] Fetch via `GetServiceListTask` → `HttpFragmentHelper.fetchServices` → `EnigmaClient`.
-- [x] `ZapListMapper` drops markers and converts the bouquet-picker `ExtendedHashMap` at the fragment boundary.
+- [x] `ZapListMapper` drops markers; `toBouquetMap` / `bouquetFrom` convert picker Intent `ExtendedHashMap` at the fragment boundary.
 - [x] `Picon` accepts reference + name so Zap does not rebuild hashes for picons.
 - [ ] Drawer shell, EPG, current event, Compose Navigation **not** in this PR.
 
@@ -257,8 +258,8 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 - [x] `HttpFragmentHelper.fetchEvents` / `GetEventListTask` accept optional URI (default `URIStore.EPG_SERVICE`; bouquet uses `URIStore.EPG_BOUQUET`).
 - [x] `EpgBouquetFragment` / `EpgBouquetAdapter` hold `List<Event>`. XML `epg_multi_service_list_item` stays.
 - [x] `EpgListMapper.toExtendedHashMap` at detail/timer edge only. Do not rewrite `EpgDetailBottomSheet`.
-- [x] Bouquet picker (`PickServiceFragment`) still returns `ExtendedHashMap`; reference/name taken at the fragment boundary.
-- [ ] `EpgSearchFragment`, drawer shell, Compose Navigation **not** in this PR. Search typing is the next unit below.
+- [x] Bouquet picker list typing is a separate unit (`cursor/pick-service-typed-c88a`); Intent still maps one `ExtendedHashMap` at send for Zap/EpgBouquet.
+- [ ] Drawer shell, Compose Navigation **not** in this PR. Search typing landed as #180; picker typing is the next unit below.
 
 **Verify, unit.**
 
@@ -266,7 +267,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 
 ## Type EPG search list rows (pr-epg-search)
 
-**Depends on.** #179. **Open on `cursor/epg-search-typed-c88a`.**
+**Depends on.** #179. **On `main` as [#180](https://github.com/sreichholf/dreamDroid/pull/180).**
 
 **Files.**
 
@@ -279,6 +280,22 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 **Verify, unit.**
 
 - [x] Existing `EventParserTest` / `EpgListMapperTest`. `:app:testGoogleDebugUnitTest`. Assemble googleDebug.
+
+## Type PickService list (pr-pick-service)
+
+**Depends on.** #173, #180. **Open on `cursor/pick-service-typed-c88a`.**
+
+**Files.**
+
+- [x] `PickServiceFragment` / `ServiceNameAdapter` hold `List<Service>`.
+- [x] Load fav TV+Radio roots via `GetBouquetListTask` → `HttpFragmentHelper.fetchServices` → `EnigmaClient`.
+- [x] Intent `KEY_BOUQUET` still one `ExtendedHashMap` mapped at send (`ZapListMapper.toBouquetMap`). Zap / EpgBouquet consumers unchanged.
+- [x] Delete unused `AsyncFavListLoader`.
+- [ ] Drawer shell, Compose Navigation **not** in this PR.
+
+**Verify, unit.**
+
+- [x] `ZapListMapperTest` (`toBouquetMap` / `bouquetFrom`). `:app:testGoogleDebugUnitTest`. Assemble googleDebug.
 
 ## Appendix A. Prototype evidence
 
@@ -337,10 +354,11 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 | Timer list / edit | Compose list on `main` via #170; `TimerEditFragment` | List Compose; edit stays XML. |
 | Profile add/edit | `ProfileEditFragment` | List is Compose; form is XML. Autodiscovery stays Java. |
 | Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
-| Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (#173). Picker still `ExtendedHashMap`. |
+| Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (#173). Picker list typing open on `cursor/pick-service-typed-c88a`. |
 | Service EPG list | `ServiceEpgListFragment`, `ServiceEpgAdapter` | XML list. Rows are typed `enigma.Event` (#176). Detail/timer edge still hash. |
 | EPG bouquet | `EpgBouquetFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#179). Detail/timer edge still hash. |
-| EPG search | `EpgSearchFragment`, `EpgBouquetAdapter` | XML list. Typed `enigma.Event` on open branch `cursor/epg-search-typed-c88a`. Detail/timer edge still hash. |
+| EPG search | `EpgSearchFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#180). Detail/timer edge still hash. |
+| Bouquet picker | `PickServiceFragment`, `ServiceNameAdapter` | XML list. Typed `enigma.Service` on open branch `cursor/pick-service-typed-c88a`. Intent still one hash at send. |
 | EPG detail | `EpgDetailBottomSheet` | ButterKnife. |
 | Current event | `CurrentServiceFragment` | |
 | Virtual remote | `VirtualRemoteFragment`, `VirtualRemotePagerFragment` | |
@@ -357,7 +375,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 
 ### Still the old data stack
 
-- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` on `cursor/epg-search-typed-c88a`. Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
+- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is open on `cursor/pick-service-typed-c88a`. Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
 - Enigma2 HTTP is still `HttpURLConnection` + `asynctask/*`. Picons still Picasso + OkHttp 3.14.9.
 - Room holds `profile` only. `DatabaseHelper` / `dreamdroid` SQLite still exist for migration and backup.
 - ButterKnife (5 files). `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
@@ -371,12 +389,12 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
-2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Zap typed on `main` as #173.** Service EPG list typed on `main` as #176. EPG bouquet typed on `main` as #179. EPG search typing open on `cursor/epg-search-typed-c88a`. Current event remains hash.
+2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Zap typed on `main` as #173.** Service EPG list typed on `main` as #176. EPG bouquet typed on `main` as #179. EPG search typed on `main` as #180. PickService typing open on `cursor/pick-service-typed-c88a`. Current event remains hash.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
 4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen). `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in **#175** (merged). #177: dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. ButterKnife still open while TV is frozen.
 5. **TV program** — Leanback → Compose for TV. Separate program. Do not mix into phone PRs.
 
-Recommended default if the operator just says go: (1) then (4), then (2) one list path at a time; keep (3) and (5) as later programs. Zap typing is on `main` as #173. Service EPG list typing is on `main` as #176. Bouquet EPG typing is on `main` as #179. EPG search typing is open on `cursor/epg-search-typed-c88a`. Next after that: current event, or Profile edit Compose.
+Recommended default if the operator just says go: (1) then (4), then (2) one list path at a time; keep (3) and (5) as later programs. Zap typing is on `main` as #173. Service EPG list typing is on `main` as #176. Bouquet EPG typing is on `main` as #179. EPG search typing is on `main` as #180. PickService typing is open on `cursor/pick-service-typed-c88a`. Next after that: current event, or Profile edit Compose.
 
 ## Appendix F. Links
 
