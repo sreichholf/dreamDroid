@@ -67,7 +67,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-servicelist | [#219](https://github.com/sreichholf/dreamDroid/pull/219) | merged | Phase 2.2g: Zap + TimerServicePick service list via `lifecycleScope` + suspend `EnigmaClient.getServices()`; drop `GetServiceListTask`. Keep `GetBouquetListTask`. |
 | http-async-eventlist | [#220](https://github.com/sreichholf/dreamDroid/pull/220) | merged | Phase 2.2h: Service/bouquet/search EPG via `lifecycleScope` + suspend `EnigmaClient.getEvents()`; drop `GetEventListTask`. |
 | http-async-bouquetlist | [#222](https://github.com/sreichholf/dreamDroid/pull/222) | merged | Phase 2.2i: Hub/pick/timer bouquet roots via `lifecycleScope` + `EnigmaClient.getServices()`; drop `GetBouquetListTask`. |
-| http-async-locations-tags | (this PR) | open | Phase 2.2j: Locations/tags prefetch via `lifecycleScope` + `DreamDroid.loadLocations/Tags`; drop `GetLocationsAndTagsTask`. |
+| http-async-locations-tags | [#223](https://github.com/sreichholf/dreamDroid/pull/223) | open | Phase 2.2j: Locations/tags prefetch via `lifecycleScope` + `DreamDroid.loadLocations/Tags`; drop `GetLocationsAndTagsTask`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -572,7 +572,7 @@ One program each, still one PR (or small PR series) at a time:
 | 2g | HTTP / async — Service list | `ZapFragment` + `TimerServicePickFragment` → `lifecycleScope` + suspend `EnigmaClient.getServices()`; delete `GetServiceListTask`. Keep `GetBouquetListTask` for a later slice. **merged** [#219](https://github.com/sreichholf/dreamDroid/pull/219). |
 | 2h | HTTP / async — Event list | `ServiceEpgListFragment` + `EpgBouquetFragment` + `EpgSearchFragment` → `lifecycleScope` + suspend `EnigmaClient.getEvents(uri)`; delete `GetEventListTask`. **merged** [#220](https://github.com/sreichholf/dreamDroid/pull/220). |
 | 2i | HTTP / async — Bouquet list | `ServiceListPager` + `PickServiceFragment` + `TimerServicePickFragment` → `lifecycleScope` + `EnigmaClient.getServices()` for TV/Radio roots; delete `GetBouquetListTask`. **merged** [#222](https://github.com/sreichholf/dreamDroid/pull/222). |
-| 2j | HTTP / async — Locations/tags | `ServiceListPager` + `TimerEditFragment` → `lifecycleScope` + `DreamDroid.loadLocations/Tags`; delete `GetLocationsAndTagsTask`. **(this PR).** |
+| 2j | HTTP / async — Locations/tags | `ServiceListPager` + `TimerEditFragment` → `lifecycleScope` + `DreamDroid.loadLocations/Tags`; delete `GetLocationsAndTagsTask`. **[#223](https://github.com/sreichholf/dreamDroid/pull/223).** |
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2j: mutations/`SimpleResultTask`, Loader chassis. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
