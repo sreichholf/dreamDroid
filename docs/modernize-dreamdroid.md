@@ -58,7 +58,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | movies-typed | [#210](https://github.com/sreichholf/dreamDroid/pull/210) | merged | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
 | leanback-dive | [#211](https://github.com/sreichholf/dreamDroid/pull/211) | merged | Phase 0 Leanback inventory + risks + agreed Phase 3 PR order (docs only; no TV code). |
 | drawer-compose | [#212](https://github.com/sreichholf/dreamDroid/pull/212) | merged | Phase 2.1a: Compose drawer chrome (`DrawerScreen` in `ComposeView`); keep `DrawerLayout` + fragment host + `NavigationHelper.navigateTo`; no `NavHost` yet. |
-| http-async-deviceinfo | [#213](https://github.com/sreichholf/dreamDroid/pull/213) | open | Phase 2.2 beachhead: Device Info load via `lifecycleScope` + suspend `EnigmaClient.getDeviceInfo()`; drop `GetDeviceInfoTask` / `runBlocking` on that path. Keep `HttpURLConnection` / OkHttp 3. |
+| http-async-deviceinfo | [#213](https://github.com/sreichholf/dreamDroid/pull/213) | merged | Phase 2.2 beachhead: Device Info load via `lifecycleScope` + suspend `EnigmaClient.getDeviceInfo()`; drop `GetDeviceInfoTask` / `runBlocking` on that path. Keep `HttpURLConnection` / OkHttp 3. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
