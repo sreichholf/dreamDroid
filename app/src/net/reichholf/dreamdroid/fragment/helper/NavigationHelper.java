@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.fragment.app.FragmentManager;
 
@@ -15,8 +16,8 @@ import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.asynctask.SetPowerStateTask;
-import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.asynctask.SleepTimerTask;
+import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.fragment.BackupFragment;
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment;
@@ -50,11 +51,12 @@ import net.reichholf.dreamdroid.ui.drawer.DrawerScreenKt;
 import java.util.ArrayList;
 
 import kotlin.Unit;
+import kotlinx.coroutines.Job;
 
 /**
  * Created by Stephan on 25.12.2015.
  */
-public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler, SimpleResultTask.SimpleResultTaskHandler {
+public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler {
 
     @NonNull
 	protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_remote, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
@@ -62,7 +64,8 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
     MainActivity mActivity;
     protected SetPowerStateTask mSetPowerStateTask;
     protected SleepTimerTask mSleepTimerTask;
-    protected SimpleResultTask mSimpleResultTask;
+    @Nullable
+    protected Job mSimpleResultJob;
     protected SimpleHttpClient mShc;
     protected final DrawerListState mDrawerState;
 
@@ -316,23 +319,24 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
     }
 
     public void execSimpleResultTask(SimpleResultRequestHandler handler, ArrayList<NameValuePair> params) {
-        if (mSimpleResultTask != null) {
-            mSimpleResultTask.cancel(true);
+        if (mSimpleResultJob != null) {
+            mSimpleResultJob.cancel(null);
         }
-
-        mSimpleResultTask = new SimpleResultTask(handler, this);
-        mSimpleResultTask.execute(params);
+        mSimpleResultJob = SimpleResultLoadKt.launchSimpleResultLoad(mActivity, handler, params, (success, result, http) -> {
+            mSimpleResultJob = null;
+            onSimpleResult(success, result, http);
+            return Unit.INSTANCE;
+        });
     }
 
-    @Override
-    public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
+    private void onSimpleResult(boolean success, @NonNull ExtendedHashMap result, @NonNull SimpleHttpClient http) {
         String toastText = getString(R.string.get_content_error);
         String stateText = result.getString(SimpleResult.KEY_STATE_TEXT);
 
         if (stateText != null && !"".equals(stateText)) {
             toastText = stateText;
-        } else if (mShc.hasError()) {
-            toastText = mShc.getErrorText(getContext());
+        } else if (http.hasError()) {
+            toastText = http.getErrorText(getContext());
         }
 
         showToast(toastText);

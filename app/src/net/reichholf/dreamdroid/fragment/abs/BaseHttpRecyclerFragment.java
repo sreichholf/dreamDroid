@@ -20,7 +20,6 @@ import android.view.View;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.TabbedNavigationActivity;
-import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
@@ -37,7 +36,7 @@ import java.util.ArrayList;
  * Created by Stephan on 03.05.2015.
  */
 public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, SimpleResultTask.SimpleResultTaskHandler, ActionDialog.DialogActionListener {
+		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, ActionDialog.DialogActionListener {
 
 	protected final String sData = "data";
 

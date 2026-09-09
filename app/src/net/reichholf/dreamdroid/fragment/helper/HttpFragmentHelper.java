@@ -27,12 +27,12 @@ import android.widget.Toast;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.asynctask.SetVolumeTask;
-import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
+import net.reichholf.dreamdroid.enigma.EnigmaClient;
+import net.reichholf.dreamdroid.enigma.Service;
+import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
-import net.reichholf.dreamdroid.enigma.EnigmaClient;
-import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
@@ -47,7 +47,10 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHandler, SetVolumeTask.SetVolumeTaskHandler {
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
+public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
     public static final int LOADER_DEFAULT_ID = 0;
     private Fragment mFragment;
     @Nullable
@@ -57,7 +60,8 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     protected SimpleHttpClient mShc;
     protected boolean mIsReloading = false;
 
-    protected SimpleResultTask mSimpleResultTask;
+    @Nullable
+    protected Job mSimpleResultJob;
     protected SetVolumeTask mVolumeTask;
 
     protected boolean mShowToastOnSimpleResult = true;
@@ -151,8 +155,10 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     public void onDestroy() {
-        if (mSimpleResultTask != null)
-            mSimpleResultTask.cancel(true);
+        if (mSimpleResultJob != null) {
+            mSimpleResultJob.cancel(null);
+            mSimpleResultJob = null;
+        }
         if (mVolumeTask != null)
             mVolumeTask.cancel(true);
     }
@@ -171,16 +177,17 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
 
     @SuppressWarnings("unchecked")
     public void execSimpleResultTask(SimpleResultRequestHandler handler, ArrayList<NameValuePair> params) {
-        if (mSimpleResultTask != null) {
-            mSimpleResultTask.cancel(true);
+        if (mSimpleResultJob != null) {
+            mSimpleResultJob.cancel(null);
         }
-
-        mSimpleResultTask = new SimpleResultTask(handler, this);
-        mSimpleResultTask.execute(params);
+        mSimpleResultJob = SimpleResultLoadKt.launchSimpleResultLoad(mFragment, handler, params, (success, result, http) -> {
+            mSimpleResultJob = null;
+            onSimpleResult(success, result, http);
+            return Unit.INSTANCE;
+        });
     }
 
-    @Override
-    public void onSimpleResult(boolean success, @NonNull ExtendedHashMap result) {
+    private void onSimpleResult(boolean success, @NonNull ExtendedHashMap result, @NonNull SimpleHttpClient http) {
         if (!mFragment.isAdded())
             return;
         String toastText = (String) mFragment.getText(R.string.get_content_error);
@@ -188,13 +195,13 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
 
         if (stateText != null && !"".equals(stateText)) {
             toastText = stateText;
-        } else if (mShc.hasError()) {
-            toastText = mShc.getErrorText(getContext());
+        } else if (http.hasError()) {
+            toastText = http.getErrorText(getContext());
         }
 
         if(mShowToastOnSimpleResult)
             showToast(toastText);
-        ((SimpleResultTask.SimpleResultTaskHandler)mFragment).onSimpleResult(success, result);
+        ((IHttpBase)mFragment).onSimpleResult(success, result);
     }
 
     public void showToastOnSimpleResult(boolean show) {
