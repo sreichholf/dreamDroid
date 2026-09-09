@@ -51,15 +51,15 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | signal-compose | [#202](https://github.com/sreichholf/dreamDroid/pull/202) | merged | `SignalFragment` Compose + HalfGauge `AndroidView` + `SignalScreenTest`.
 | timers-typed | [#203](https://github.com/sreichholf/dreamDroid/pull/203) | merged | typed `enigma.Timer` for `/web/timerlist`; Compose list via typed model; edit/delete hash at edge. |
 | ci-basic-tests | [#204](https://github.com/sreichholf/dreamDroid/pull/204) | merged | GitHub Actions: unit+assemble+androidTest compile on PRs; API 30 emulator on `main` / `workflow_dispatch` only. |
-| timer-edit-compose | [#205](https://github.com/sreichholf/dreamDroid/pull/205) | open | `TimerEditFragment` Compose form + `TimerEditScreenTest`. |
+| timer-edit-compose | [#205](https://github.com/sreichholf/dreamDroid/pull/205) | open | `TimerEditFragment` Compose form + `TimerEditScreenTest`; hash at save/pick edge; drop `timer_edit.xml`. |
 | movie-detail-compose | [#206](https://github.com/sreichholf/dreamDroid/pull/206) | open | `MovieDetailBottomSheet` Compose + typed `enigma.Movie` edge. |
-| timer-service-pick-compose | [#207](https://github.com/sreichholf/dreamDroid/pull/207) | open | `TimerServicePickFragment` Compose bouquet→service pick; drop unused `ServiceListFragment` + `dual_list_view`. |
+| timer-service-pick-compose | [#207](https://github.com/sreichholf/dreamDroid/pull/207) | merged | `TimerServicePickFragment` Compose bouquet→service pick; drop unused `ServiceListFragment` + `dual_list_view`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183/#203) are on `main`. Remaining typed API: hub now/next, movies list path. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #204**. Open: timer-edit #205, movie detail #206, timer service pick #207 (this PR). Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #207**. Open: timer-edit #205 (this PR), movie detail #206. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
@@ -76,8 +76,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Wave 3 Compose landed through #203; CI #204 on `main`. Open: timer-edit #205, movie-detail #206, timer-service-pick #207 (this PR).
-- Appendix G still open: those three PRs only.
+- Wave 3: CI #204 + timer-service-pick #207 on `main`. Open: timer-edit #205 (this PR), movie-detail #206.
+- Appendix G still open: timer-edit, movie-detail.
 - Remaining typed API: hub now/next, movies list path.
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
@@ -378,23 +378,23 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | --- | --- | --- |
 | Channel / bouquet rows | Compose on `main` via #170 | Long-press, picons, popup menu. |
 | Movies list | Compose on `main` via #170 | Hub Movies destination. |
-| Timer list / edit | Compose list on `main` via #170; `TimerEditFragment` | List Compose; edit stays XML. |
+| Timer list / edit | Compose list on `main` via #170/#203; edit open #205 | List typed+Compose; edit Compose form (hash save/pick). |
 | Profile add/edit | Compose on `main` via #184 | Form Compose; list was #168. Autodiscovery stays Java. |
-| Share / pick profile | open `cursor/share-profiles-compose-c88a` | Compose list; Room profiles; drops `ProfileAdapter`. |
+| Share / pick profile | Compose on `main` via #196 | Compose list; Room profiles; dropped `ProfileAdapter`. |
 | Zap | Compose on `main` via #185 | Compose grid + Picasso picons. Rows typed `enigma.Service` (#173). Picker list typing on `main` via #181. |
 | Service EPG list | Compose on `main` via #194 | Compose list; typed `enigma.Event` (#176). Detail/timer edge still hash. |
 | EPG bouquet | Compose on `main` via #192 | Compose list; typed `enigma.Event` (#179). Shared `EpgBouquetScreen` with search. Detail/timer edge still hash. |
 | EPG search | Compose on `main` via #193 | Compose list; typed `enigma.Event` (#180). Dropped `EpgBouquetAdapter`. Detail/timer edge still hash. |
 | Bouquet picker | Compose on `main` via #191 | Compose list; typed `enigma.Service` (#181). Intent still one hash at send. |
-| EPG detail | open `cursor/epg-detail-compose-c88a` | Compose sheet; typed `Event` + hash/`showNext` overload for hub/video. |
+| EPG detail | Compose on `main` via #197 | Compose sheet; typed `Event` + hash/`showNext` overload for hub/video. |
 | Current event | Compose on `main` via #190 | Compose now/next + stream; typed `enigma.CurrentService` (#183). Detail/timer edge still hash. |
 | Virtual remote | Compose on `main` via #186 | Compose pad + HTTP keys; tablet screenshot host kept. |
-| Device info | `DeviceInfoFragment` | |
-| Signal | `SignalFragment` + vendored gauge lib | |
+| Device info | Compose on `main` via #201 | Typed #199 + Compose UI. |
+| Signal | Compose on `main` via #202 | Typed #200 + HalfGauge `AndroidView`. |
 | Screenshot | Compose on `main` via #187 | Compose + PhotoView AndroidView; reload/share/save kept. |
 | Settings | Compose on `main` via #188 | Compose preference list; same PreferenceManager keys as `R.xml.preferences`. TV Leanback prefs unchanged. |
 | Backup | Compose on `main` via #189 | Compose import/export + toggles; legacy SQLite + Room via `BackupService`. |
-| Sleep timer / send message / power / changelog | dialogs | |
+| Sleep timer / send message / power / changelog | Compose on `main` via #198 | Drawer dialogs Compose. |
 | Mediaplayer | removed (#175) | Drawer entry was commented; UI stack deleted. `URIStore.MEDIA_PLAYER_PLAY` kept for `ShareActivity`. |
 | Streaming | `VideoActivity`, `VideoOverlayFragment`, VLC | Explicitly out of wave 1. |
 | Widget | `appwidget/` | |
