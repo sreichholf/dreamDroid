@@ -27,7 +27,7 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | dead-weight (EPG timeline + prefs + menus + bottom nav) | [#177](https://github.com/sreichholf/dreamDroid/pull/177) | merged | `c89afc11` drop dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. Keep ButterKnife. |
 | EPG bouquet typed rows | [#179](https://github.com/sreichholf/dreamDroid/pull/179) | merged | `21b6db59` typed `enigma.Event` into `EpgBouquetFragment` / `EpgBouquetAdapter`. Search EPG not migrated. |
 | EPG search typed rows | [#180](https://github.com/sreichholf/dreamDroid/pull/180) | merged | `4f3249b2` typed `enigma.Event` into `EpgSearchFragment`; reuses `EpgBouquetAdapter`. Drop unused `EpgAdapter`. |
-| PickService typed list | open (`cursor/pick-service-typed-c88a`) | open | typed `enigma.Service` into `PickServiceFragment`; load via `GetBouquetListTask`. Intent still maps one `ExtendedHashMap` at send. |
+| PickService typed list | [#181](https://github.com/sreichholf/dreamDroid/pull/181) | open | typed `enigma.Service` into `PickServiceFragment`; load via `GetBouquetListTask`. Intent still maps one `ExtendedHashMap` at send. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
