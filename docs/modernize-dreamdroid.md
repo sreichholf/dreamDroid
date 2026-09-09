@@ -56,7 +56,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | timer-service-pick-compose | [#207](https://github.com/sreichholf/dreamDroid/pull/207) | merged | `TimerServicePickFragment` Compose bouquet→service pick; drop unused `ServiceListFragment` + `dual_list_view`. |
 | hub-nownext-typed | [#209](https://github.com/sreichholf/dreamDroid/pull/209) | merged | typed `ServiceNowNext` for `/web/epgnownext` into hub TV/Radio `ServiceListPageFragment`; hash only at detail/timer/stream edge. |
 | movies-typed | [#210](https://github.com/sreichholf/dreamDroid/pull/210) | merged | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
-| leanback-dive | open | — | Phase 0 Leanback inventory + risks + agreed Phase 3 PR order (docs only; no TV code). |
+| leanback-dive | [#211](https://github.com/sreichholf/dreamDroid/pull/211) | merged | Phase 0 Leanback inventory + risks + agreed Phase 3 PR order (docs only; no TV code). |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -497,7 +497,7 @@ Phone leftover: `VideoOverlayFragment` (Phase 2 VLC). ButterKnife cannot be drop
 - `Picon`, `IntentFactory` → `VideoActivity` / integrated player
 - `AbstractDialog.setTextOrHide` in TV detail dialogs
 - `DreamDroidTrustManager` + Picasso OkHttp in TV `MainActivity` (app-wide side effects)
-- Shared `R.xml.preferences`; dialogs reuse phone XML layouts
+- Shared prefs XML (`R.xml.preferences` / `R.xml.profile_preferences`); EPG detail may share phone dialog XML, while `MovieDetailDialog` uses TV-only `layout-television/movie_epg_dialog` (phone layout removed in #206)
 
 Phone Compose detail screens do **not** cover TV dialogs.
 
