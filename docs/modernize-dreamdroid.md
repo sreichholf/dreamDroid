@@ -64,7 +64,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-timers | [#216](https://github.com/sreichholf/dreamDroid/pull/216) | merged | Phase 2.2d: Timer list via `lifecycleScope` + suspend `EnigmaClient.getTimers()`; drop `GetTimerListTask`; keep generation guards. |
 | http-async-movies | [#217](https://github.com/sreichholf/dreamDroid/pull/217) | merged | Phase 2.2e: Movies list via `lifecycleScope` + suspend `EnigmaClient.getMovies()`; drop `GetMovieListTask`; keep locs/tags prefetch + pending-when-not-resumed. |
 | http-async-epgnownext | [#218](https://github.com/sreichholf/dreamDroid/pull/218) | merged | Phase 2.2f: Hub now/next via `lifecycleScope` + suspend `EnigmaClient.getEpgNowNext()`; drop `GetEpgNowNextTask`. |
-| http-async-servicelist | (this PR) | open | Phase 2.2g: Zap + TimerServicePick service list via `lifecycleScope` + suspend `EnigmaClient.getServices()`; drop `GetServiceListTask`. Keep `GetBouquetListTask`. |
+| http-async-servicelist | [#219](https://github.com/sreichholf/dreamDroid/pull/219) | open | Phase 2.2g: Zap + TimerServicePick service list via `lifecycleScope` + suspend `EnigmaClient.getServices()`; drop `GetServiceListTask`. Keep `GetBouquetListTask`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
