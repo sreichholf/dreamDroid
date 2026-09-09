@@ -27,11 +27,13 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | dead-weight (EPG timeline + prefs + menus + bottom nav) | [#177](https://github.com/sreichholf/dreamDroid/pull/177) | merged | `c89afc11` drop dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. Keep ButterKnife. |
 | EPG bouquet typed rows | [#179](https://github.com/sreichholf/dreamDroid/pull/179) | merged | `21b6db59` typed `enigma.Event` into `EpgBouquetFragment` / `EpgBouquetAdapter`. Search EPG not migrated. |
 | EPG search typed rows | [#180](https://github.com/sreichholf/dreamDroid/pull/180) | merged | `4f3249b2` typed `enigma.Event` into `EpgSearchFragment`; reuses `EpgBouquetAdapter`. Drop unused `EpgAdapter`. |
-| PickService typed list | [#181](https://github.com/sreichholf/dreamDroid/pull/181) | open | typed `enigma.Service` into `PickServiceFragment`; load via `GetBouquetListTask`. Intent still maps one `ExtendedHashMap` at send. |
+| PickService typed list | [#181](https://github.com/sreichholf/dreamDroid/pull/181) | merged | `ce7cfb1d` typed `enigma.Service` into `PickServiceFragment`; load via `GetBouquetListTask`. Intent still maps one `ExtendedHashMap` at send. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) Zap typing (#173) plus Service EPG typing (#176), bouquet EPG typing (#179), and EPG search typing (#180) are on `main`. PickService typed list is open on `cursor/pick-service-typed-c88a`. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181) are on `main`. Remaining typed API: current event, hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs.
 
 ### Operator overrides (this program)
 
@@ -49,7 +51,7 @@ Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#1
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for `ShareActivity` / video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - `ProfileAdapter` remains for `ShareActivity`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Zap still XML. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker list typing is open on `cursor/pick-service-typed-c88a` (Intent still one `ExtendedHashMap` at send).
+- Zap still XML. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker list typing is on `main` via #181 (Intent still one `ExtendedHashMap` at send).
 - Service EPG list still XML. Rows are typed `enigma.Event` on `main` via #176. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Dead `EpgTimelineFragment` removed in #177.
 - EPG bouquet still XML. Rows are typed `enigma.Event` on `main` via #179. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
 - EPG search still XML. Rows are typed `enigma.Event` on `main` via #180. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
@@ -354,7 +356,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 | Timer list / edit | Compose list on `main` via #170; `TimerEditFragment` | List Compose; edit stays XML. |
 | Profile add/edit | `ProfileEditFragment` | List is Compose; form is XML. Autodiscovery stays Java. |
 | Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
-| Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (#173). Picker list typing open on `cursor/pick-service-typed-c88a`. |
+| Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (#173). Picker list typing on `main` via #181. |
 | Service EPG list | `ServiceEpgListFragment`, `ServiceEpgAdapter` | XML list. Rows are typed `enigma.Event` (#176). Detail/timer edge still hash. |
 | EPG bouquet | `EpgBouquetFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#179). Detail/timer edge still hash. |
 | EPG search | `EpgSearchFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#180). Detail/timer edge still hash. |
@@ -375,7 +377,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 
 ### Still the old data stack
 
-- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is open on `cursor/pick-service-typed-c88a`. Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
+- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
 - Enigma2 HTTP is still `HttpURLConnection` + `asynctask/*`. Picons still Picasso + OkHttp 3.14.9.
 - Room holds `profile` only. `DatabaseHelper` / `dreamdroid` SQLite still exist for migration and backup.
 - ButterKnife (5 files). `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
@@ -389,12 +391,42 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
-2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Zap typed on `main` as #173.** Service EPG list typed on `main` as #176. EPG bouquet typed on `main` as #179. EPG search typed on `main` as #180. PickService typing open on `cursor/pick-service-typed-c88a`. Current event remains hash.
+2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Done on `main`:** Zap #173, Service EPG #176, bouquet EPG #179, search EPG #180, PickService #181. **Still hash:** current event, hub now/next channel rows, movies list fetch, timers list fetch, device info, signal.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
 4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen). `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in **#175** (merged). #177: dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. ButterKnife still open while TV is frozen.
 5. **TV program** — Leanback → Compose for TV. Separate program. Do not mix into phone PRs.
 
-Recommended default if the operator just says go: (1) then (4), then (2) one list path at a time; keep (3) and (5) as later programs. Zap typing is on `main` as #173. Service EPG list typing is on `main` as #176. Bouquet EPG typing is on `main` as #179. EPG search typing is on `main` as #180. PickService typing is open on `cursor/pick-service-typed-c88a`. Next after that: current event, or Profile edit Compose.
+Recommended default: finish remaining typed API paths (shape 2), then wave 3 Compose screens (Appendix G). Keep drawer shell (3) and TV (5) as later programs.
+
+## Appendix G. Wave 3 — remaining non-Compose phone UIs
+
+One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Profiles (#168). Prefer instrumented Compose tests. Do **not** start the drawer shell here. Do **not** mix Leanback TV.
+
+**Order:** finish remaining typed API first where noted; screens marked “no API wait” may run as soon as the typed-API queue is clear (or in parallel only if they do not fight the same files).
+
+| # | PR slug | Class | Opened how | Wait for typed API? |
+| --- | --- | --- | --- | --- |
+| 1 | `profile-edit-compose` | `ProfileEditFragment` | Profiles FAB/row → `SimpleToolbarFragmentActivity` | No (Room) |
+| 2 | `current-event-compose` | `CurrentServiceFragment` | Drawer current | Yes — type current-service first |
+| 3 | `zap-compose` | `ZapFragment` | Drawer zap | No (rows already typed #173) |
+| 4 | `virtual-remote-compose` | `VirtualRemotePagerFragment` / `VirtualRemoteFragment` | Drawer remote | No |
+| 5 | `device-info-compose` | `DeviceInfoFragment` | Drawer device info | Prefer type device-info first |
+| 6 | `signal-compose` | `SignalFragment` | Drawer signal | Prefer type signal first |
+| 7 | `screenshot-compose` | `ScreenShotFragment` | Drawer screenshot | No |
+| 8 | `settings-compose` | `MyPreferenceFragment` | Drawer settings | No |
+| 9 | `backup-compose` | `BackupFragment` | Drawer backup | No |
+| 10 | `timer-edit-compose` | `TimerEditFragment` | Hub / EPG → timer edit | Yes — type timers list/edit path |
+| 11 | `movie-detail-compose` | `MovieDetailBottomSheet` | Movies row tap | Yes — typed `enigma.Movie` edge (ButterKnife) |
+| 12 | `epg-detail-compose` | `EpgDetailBottomSheet` | EPG / current / channel popup | Yes — accept typed `enigma.Event` |
+| 13 | `drawer-dialogs-compose` | Sleep timer / send message / power / changelog / connection error | Drawer dialogs | Partial (sleep-timer result optional) |
+| 14 | `epg-bouquet-compose` | `EpgBouquetFragment` | Drawer EPG | No for list (rows typed #179); detail with #12 |
+| 15 | `epg-search-compose` | `EpgSearchFragment` | Toolbar search | No for list (rows typed #180) |
+| 16 | `service-epg-compose` | `ServiceEpgListFragment` | Channel → EPG | No for list (rows typed #176) |
+| 17 | `pick-service-compose` | `PickServiceFragment` | Zap / EPG bouquet pick | No for list (rows typed #181) |
+| 18 | `timer-service-pick-compose` | `ServiceListFragment` (pick mode) | Timer edit service pick | Yes — type pick path |
+| 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) |
+
+**Out of this wave:** drawer shell (`MainActivity` / `NavigationHelper`), Leanback `tv/`, VLC `VideoActivity` / `VideoOverlayFragment`, home-screen widgets.
 
 ## Appendix F. Links
 
