@@ -54,6 +54,16 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
+    suspend fun getSignal(): Signal? {
+        return withContext(Dispatchers.IO) {
+            if (!http.fetchPageContent(URIStore.SIGNAL, ArrayList())) {
+                null
+            } else {
+                SignalParser.parse(http.pageContentString)
+            }
+        }
+    }
+
     companion object {
         @JvmStatic
         fun getServicesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Service> {
@@ -85,6 +95,13 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         fun getDeviceInfoBlocking(http: SimpleHttpClient): DeviceInfo? {
             return runBlocking {
                 EnigmaClient(http).getDeviceInfo()
+            }
+        }
+
+        @JvmStatic
+        fun getSignalBlocking(http: SimpleHttpClient): Signal? {
+            return runBlocking {
+                EnigmaClient(http).getSignal()
             }
         }
     }

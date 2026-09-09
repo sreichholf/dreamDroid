@@ -20,6 +20,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.loader.content.Loader;
 
@@ -28,15 +29,19 @@ import com.ekndev.gaugelibrary.Range;
 import com.google.android.material.color.MaterialColors;
 
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.asynctask.GetSignalTask;
+import net.reichholf.dreamdroid.enigma.Signal;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
-import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.Signal;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
-public class SignalFragment extends BaseHttpFragment {
+/**
+ * Live tuner signal meter. Typed {@link Signal}; XML gauge UI stays until signal Compose.
+ */
+public class SignalFragment extends BaseHttpFragment
+		implements GetSignalTask.GetSignalTaskHandler {
 	private static final String TAG = SignalFragment.class.getSimpleName();
 
 	private static int sMaxSnrDb = 20;
@@ -53,6 +58,9 @@ public class SignalFragment extends BaseHttpFragment {
 	private boolean mIsUpdating = false;
 	private double mSnrDb = sMinSnrDb;
 	private long mStartTime;
+
+	@Nullable
+	private GetSignalTask mSignalTask;
 
 	@NonNull
 	private Handler mHandler = new Handler();
@@ -90,6 +98,15 @@ public class SignalFragment extends BaseHttpFragment {
 	}
 
 	@Override
+	public void onDestroy() {
+		if (mSignalTask != null) {
+			mSignalTask.cancel(true);
+			mSignalTask = null;
+		}
+		super.onDestroy();
+	}
+
+	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.signal, container, false);
 
@@ -119,13 +136,11 @@ public class SignalFragment extends BaseHttpFragment {
 		range4.setFrom(80.0);
 		range4.setTo(100.0);
 
-		//add color ranges to gauge
 		mSnr.addRange(range);
 		mSnr.addRange(range2);
 		mSnr.addRange(range3);
 		mSnr.addRange(range4);
 
-		//set min max and current value
 		mSnr.setMinValue(0.0);
 		mSnr.setMaxValue(100.0);
 		mSnr.setValue(0.0);
@@ -164,65 +179,86 @@ public class SignalFragment extends BaseHttpFragment {
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		AsyncSimpleLoader loader = new AsyncSimpleLoader(getAppCompatActivity(), new SignalRequestHandler(), args);
-		mIsUpdating = true;
-		return loader;
+		// Unused: content comes from GetSignalTask / EnigmaClient.
+		return new AsyncSimpleLoader(getAppCompatActivity(), new SignalRequestHandler(), args);
 	}
 
 	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader, @NonNull LoaderResult<ExtendedHashMap> result) {
-		if (result.isError()) {
-			mEnabled.setChecked(false);
-		}
-		super.onLoadFinished(loader, result);
+	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
+		// Unused: content comes from GetSignalTask / EnigmaClient.
 	}
 
-	@Override
-	public void applyData(int loaderId, @NonNull ExtendedHashMap content) {
+	private void applySignal(@NonNull Signal signal) {
 		long stopTime = System.currentTimeMillis();
 		long time = stopTime - mStartTime;
-		Log.w(TAG, "requets & parsing took: " + time + "ms");
+		Log.w(TAG, "request & parsing took: " + time + "ms");
 
-		if (!mEnabled.isChecked())
-			return;
-		String _snr = content.getString(Signal.KEY_SNR).replace("%", "").trim();
-
-		int snr = 0;
-		try {
-			snr = Integer.parseInt(_snr);
-		} catch (NumberFormatException ex) {
-		}
-
-		try {
-			mSnrDb = Double.parseDouble(content.getString(Signal.KEY_SNRDB, "7").replaceAll("(?i)dB", "").trim());
-		} catch (NumberFormatException ex) {
+		mSnrDb = signal.getSnrDb();
+		if (mSnrDb < sMinSnrDb) {
 			mSnrDb = sMinSnrDb;
 		}
-
-		mSnr.setValue(snr);
-		mSnrdb.setText(content.getString(Signal.KEY_SNRDB, "-").trim());
-		mBer.setText(content.getString(Signal.KEY_BER, "-").trim());
-		mAgc.setText(content.getString(Signal.KEY_AGC, "-").trim());
-
-		mIsUpdating = false;
-		reload();
+		mSnr.setValue(signal.getSnrPercent());
+		mSnrdb.setText(displayOrDash(signal.getSnrDbRaw()));
+		mBer.setText(displayOrDash(signal.getBerRaw()));
+		mAgc.setText(displayOrDash(signal.getAgcRaw()));
 	}
 
+	@NonNull
+	private static String displayOrDash(@Nullable String raw) {
+		if (raw == null || raw.trim().isEmpty()) {
+			return "-";
+		}
+		return raw.trim();
+	}
+
+	@Override
 	protected void reload() {
 		mStartTime = System.currentTimeMillis();
 		if (!"".equals(getBaseTitle().trim()))
 			setCurrentTitle(getBaseTitle() + " - " + getString(R.string.loading));
 
-		getAppCompatActivity().setTitle(getCurrentTitle());
-		getLoaderManager().restartLoader(0, getLoaderBundle(HttpFragmentHelper.LOADER_DEFAULT_ID), this);
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		loadSignal();
+	}
+
+	private void loadSignal() {
+		if (!isAdded() || mIsUpdating) {
+			return;
+		}
+		mIsUpdating = true;
+		if (mSignalTask != null) {
+			mSignalTask.cancel(true);
+		}
+		mSignalTask = new GetSignalTask(this);
+		mSignalTask.execute();
+	}
+
+	@Override
+	public void onSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
+		mIsUpdating = false;
+		if (!isAdded()) {
+			return;
+		}
+		if (!mEnabled.isChecked()) {
+			return;
+		}
+		if (!success || signal == null) {
+			mEnabled.setChecked(false);
+			if (errorText != null && !errorText.isEmpty()) {
+				showToast(errorText);
+			}
+			return;
+		}
+		applySignal(signal);
+		reload();
 	}
 
 	private void startPolling() {
 		mIsUpdating = false;
 		if (mEnabled.isChecked()) {
 			reload();
-			// mHandler.removeCallbacks(mUpdateTask);
-			// mHandler.post(mUpdateTask);
 			if (mSound.isChecked()) {
 				mHandler.removeCallbacks(mPlaySoundTask);
 				mHandler.post(mPlaySoundTask);
@@ -233,6 +269,11 @@ public class SignalFragment extends BaseHttpFragment {
 	private void stopPolling() {
 		mHandler.removeCallbacks(mPlaySoundTask);
 		mHandler.removeCallbacks(mUpdateTask);
+		if (mSignalTask != null) {
+			mSignalTask.cancel(true);
+			mSignalTask = null;
+		}
+		mIsUpdating = false;
 		mSnr.setValue(0);
 		mSnrdb.setText("-");
 		mBer.setText("-");
