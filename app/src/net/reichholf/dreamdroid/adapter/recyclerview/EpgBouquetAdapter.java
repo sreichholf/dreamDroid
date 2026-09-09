@@ -17,8 +17,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import java.util.List;
 
 /**
- * XML multi-service EPG rows bound to typed Event. Detail sheet still receives ExtendedHashMap at the edge.
- * EpgSearch keeps {@link EpgAdapter} on ExtendedHashMap.
+ * XML multi-service EPG rows bound to typed Event ({@code epg_multi_service_list_item}).
+ * Shared by bouquet EPG and EPG search. Detail sheet still receives ExtendedHashMap at the edge.
  */
 public class EpgBouquetAdapter extends RecyclerView.Adapter<EpgBouquetAdapter.EventViewHolder> {
 	private final List<Event> mData;
