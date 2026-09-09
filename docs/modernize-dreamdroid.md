@@ -50,7 +50,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | device-info-compose | [#201](https://github.com/sreichholf/dreamDroid/pull/201) | merged | `DeviceInfoFragment` Compose UI + `DeviceInfoScreenTest`; keep last-good on failed refresh.
 | signal-compose | [#202](https://github.com/sreichholf/dreamDroid/pull/202) | merged | `SignalFragment` Compose + HalfGauge `AndroidView` + `SignalScreenTest`.
 | timers-typed | [#203](https://github.com/sreichholf/dreamDroid/pull/203) | merged | typed `enigma.Timer` for `/web/timerlist`; Compose list via typed model; edit/delete hash at edge. |
-| ci-basic-tests | [#204](https://github.com/sreichholf/dreamDroid/pull/204) | open | GitHub Actions: unit tests + assemble + androidTest compile; instrumented suite on API 30 emulator (`-Pci`). |
+| ci-basic-tests | [#204](https://github.com/sreichholf/dreamDroid/pull/204) | open | GitHub Actions: unit+assemble+androidTest compile on PRs; API 30 emulator on `main` / `workflow_dispatch` only. Fixes for Virtual Remote layer-list icons + multi-match Loading/https assertions. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 

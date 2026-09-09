@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -53,8 +54,11 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  # Emulator jobs are free on this public repo but slow (~20–40+ min) and flaky.
+  # Keep them off pull_request; run on main pushes and manual workflow_dispatch.
   androidTest:
     name: Instrumented Compose tests
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
