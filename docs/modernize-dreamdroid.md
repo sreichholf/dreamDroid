@@ -55,7 +55,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | movie-detail-compose | [#206](https://github.com/sreichholf/dreamDroid/pull/206) | merged | `MovieDetailBottomSheet` Compose + typed `enigma.Movie` edge; drop phone ButterKnife on detail + `movie_epg_dialog` phone layout. |
 | timer-service-pick-compose | [#207](https://github.com/sreichholf/dreamDroid/pull/207) | merged | `TimerServicePickFragment` Compose bouquet→service pick; drop unused `ServiceListFragment` + `dual_list_view`. |
 | hub-nownext-typed | [#209](https://github.com/sreichholf/dreamDroid/pull/209) | merged | typed `ServiceNowNext` for `/web/epgnownext` into hub TV/Radio `ServiceListPageFragment`; hash only at detail/timer/stream edge. |
-| movies-typed | open | — | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
+| movies-typed | [#210](https://github.com/sreichholf/dreamDroid/pull/210) | merged | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
