@@ -65,6 +65,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-movies | [#217](https://github.com/sreichholf/dreamDroid/pull/217) | merged | Phase 2.2e: Movies list via `lifecycleScope` + suspend `EnigmaClient.getMovies()`; drop `GetMovieListTask`; keep locs/tags prefetch + pending-when-not-resumed. |
 | http-async-epgnownext | [#218](https://github.com/sreichholf/dreamDroid/pull/218) | merged | Phase 2.2f: Hub now/next via `lifecycleScope` + suspend `EnigmaClient.getEpgNowNext()`; drop `GetEpgNowNextTask`. |
 | http-async-servicelist | [#219](https://github.com/sreichholf/dreamDroid/pull/219) | merged | Phase 2.2g: Zap + TimerServicePick service list via `lifecycleScope` + suspend `EnigmaClient.getServices()`; drop `GetServiceListTask`. Keep `GetBouquetListTask`. |
+| http-async-eventlist | [#220](https://github.com/sreichholf/dreamDroid/pull/220) | merged | Phase 2.2h: Service/bouquet/search EPG via `lifecycleScope` + suspend `EnigmaClient.getEvents()`; drop `GetEventListTask`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -97,7 +98,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.2d Timer list coroutines **merged** [#216](https://github.com/sreichholf/dreamDroid/pull/216).
 - Phase 2.2e Movies list coroutines **merged** [#217](https://github.com/sreichholf/dreamDroid/pull/217).
 - Phase 2.2f Hub now/next coroutines **merged** [#218](https://github.com/sreichholf/dreamDroid/pull/218).
-- Phase 2.2g (this PR): Zap + TimerServicePick service-list coroutine load (`GetServiceListTask`).
+- Phase 2.2g Zap + TimerServicePick service-list coroutines **merged** [#219](https://github.com/sreichholf/dreamDroid/pull/219).
+- Phase 2.2h Service/bouquet/search EPG event-list coroutines **merged** [#220](https://github.com/sreichholf/dreamDroid/pull/220).
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -563,8 +565,9 @@ One program each, still one PR (or small PR series) at a time:
 | 2d | HTTP / async — Timers | `TimerListFragment` → `lifecycleScope` + suspend `EnigmaClient.getTimers()`; delete `GetTimerListTask`; keep generation guards. **merged** [#216](https://github.com/sreichholf/dreamDroid/pull/216). |
 | 2e | HTTP / async — Movies | `MovieListFragment` → `lifecycleScope` + suspend `EnigmaClient.getMovies()`; delete `GetMovieListTask`. **merged** [#217](https://github.com/sreichholf/dreamDroid/pull/217). |
 | 2f | HTTP / async — Hub now/next | `ServiceListPageFragment` → `lifecycleScope` + suspend `EnigmaClient.getEpgNowNext()`; delete `GetEpgNowNextTask`. **merged** [#218](https://github.com/sreichholf/dreamDroid/pull/218). |
-| 2g | HTTP / async — Service list | `ZapFragment` + `TimerServicePickFragment` → `lifecycleScope` + suspend `EnigmaClient.getServices()`; delete `GetServiceListTask`. Keep `GetBouquetListTask` for a later slice. **(this PR).** |
-| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2g: bouquet Get*Task, event list Get*Task, locations/tags, mutations/`SimpleResultTask`, Loader chassis. |
+| 2g | HTTP / async — Service list | `ZapFragment` + `TimerServicePickFragment` → `lifecycleScope` + suspend `EnigmaClient.getServices()`; delete `GetServiceListTask`. Keep `GetBouquetListTask` for a later slice. **merged** [#219](https://github.com/sreichholf/dreamDroid/pull/219). |
+| 2h | HTTP / async — Event list | `ServiceEpgListFragment` + `EpgBouquetFragment` + `EpgSearchFragment` → `lifecycleScope` + suspend `EnigmaClient.getEvents(uri)`; delete `GetEventListTask`. **merged** [#220](https://github.com/sreichholf/dreamDroid/pull/220). |
+| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2h: bouquet Get*Task, locations/tags, mutations/`SimpleResultTask`, Loader chassis. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
 | 5 | VLC / streaming | `VideoActivity` + `VideoOverlayFragment` (ButterKnife) — product decision before rewrite |

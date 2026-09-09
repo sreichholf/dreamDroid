@@ -13,8 +13,8 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.GetEventListTask;
 import net.reichholf.dreamdroid.enigma.Event;
+import net.reichholf.dreamdroid.enigma.EventListLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
@@ -31,6 +31,9 @@ import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * EPG search results. Compose Material 3 list of typed {@link Event}; detail/timer still
  * take ExtendedHashMap at the edge. Reuses {@code EpgBouquetScreen} row UI (same multi-service
@@ -38,12 +41,11 @@ import java.util.List;
  *
  * @author sre
  */
-public class EpgSearchFragment extends BaseHttpRecyclerEventFragment
-		implements GetEventListTask.GetEventListTaskHandler {
+public class EpgSearchFragment extends BaseHttpRecyclerEventFragment {
 	private final ArrayList<Event> mEvents = new ArrayList<>();
 	private EpgBouquetListState mListState;
 	@Nullable
-	private GetEventListTask mEventListTask;
+	private Job mLoadJob;
 	private String mNeedle;
 
 	@Override
@@ -89,11 +91,23 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mEventListTask != null) {
-			mEventListTask.cancel(true);
+	public void onDestroyView() {
+		cancelLoad(true);
+		if (mEvents.isEmpty()) {
+			mReload = true;
 		}
-		super.onDestroy();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob == null) {
+			return;
+		}
+		mLoadJob.cancel(null);
+		mLoadJob = null;
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+		}
 	}
 
 	@Override
@@ -126,7 +140,7 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from GetEventListTask / EnigmaClient.
+		// Unused: rows come from EventListLoad / EnigmaClient.
 	}
 
 	@Override
@@ -150,15 +164,16 @@ public class EpgSearchFragment extends BaseHttpRecyclerEventFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (mEventListTask != null) {
-			mEventListTask.cancel(true);
-		}
-		mEventListTask = new GetEventListTask(this, URIStore.EPG_SEARCH);
-		mEventListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+		cancelLoad(false);
+		ArrayList<NameValuePair> params = getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID);
+		mLoadJob = EventListLoadKt.launchEventListLoad(this, params, URIStore.EPG_SEARCH, (success, events, errorText) -> {
+			onEventListReady(success, events, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
-	@Override
-	public void onEventListReady(boolean success, @NonNull List<Event> events, @Nullable String errorText) {
+	private void onEventListReady(boolean success, @NonNull List<Event> events, @Nullable String errorText) {
+		mLoadJob = null;
 		mHttpHelper.onLoadFinished();
 		mEvents.clear();
 		mListState.replaceAll(java.util.Collections.emptyList());
