@@ -19,12 +19,13 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | pr-services | [#169](https://github.com/sreichholf/dreamDroid/pull/169) | merged | squash `f125c117` |
 | TV/Movies/Timer rows | [#170](https://github.com/sreichholf/dreamDroid/pull/170) | merged | `dbd20628` |
 | skill+plan | [#171](https://github.com/sreichholf/dreamDroid/pull/171) | merged | `b98ac193` |
-| dead-weight | [#172](https://github.com/sreichholf/dreamDroid/pull/172) | merged | `970ad4bc` drop android-retrostreams + leftover `app/res/service_list_pager.xml` |
-| Zap typed rows | [#173](https://github.com/sreichholf/dreamDroid/pull/173) | open on `cursor/zap-typed-list-36ce` | Feed typed `enigma.Service` into Zap. XML grid stays. |
+| dead-weight (retrostreams + stub) | [#172](https://github.com/sreichholf/dreamDroid/pull/172) | merged | `970ad4bc` drop android-retrostreams + leftover `app/res/service_list_pager.xml` |
+| Zap typed rows | [#173](https://github.com/sreichholf/dreamDroid/pull/173) | merged | `452f7c80` typed `enigma.Service` into Zap. XML grid stays. |
+| dead-weight (MediaPlayer + MultiDex lib + orphan layouts) | [#175](https://github.com/sreichholf/dreamDroid/pull/175) | open | drop unused MediaPlayer UI, `androidx.multidex` install helper, orphan XML. Keep `multiDexEnabled`, `MEDIA_PLAYER_PLAY`, ButterKnife. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170) and (4) dead-weight (#172) are on `main`. This PR is shape (2): retire `ExtendedHashMap` on the Zap list path. Do not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172), and (2) Zap typing (#173) are on `main`. [#175](https://github.com/sreichholf/dreamDroid/pull/175) continues dead-weight (4). Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
 ### Operator overrides (this program)
 
@@ -41,7 +42,8 @@ Wave 2 (operator choice): (1) TV & Movies lists (#170) and (4) dead-weight (#172
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for `ShareActivity` / video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - `ProfileAdapter` remains for `ShareActivity`.
-- Zap still XML. Rows are typed `enigma.Service` in this PR. Bouquet picker still returns `ExtendedHashMap`; Zap converts at the fragment boundary.
+- Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
+- Zap still XML. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker still returns `ExtendedHashMap`; Zap converts at the fragment boundary.
 
 ## How to read this
 
@@ -278,7 +280,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 | Timer list / edit | Compose list on `main` via #170; `TimerEditFragment` | List Compose; edit stays XML. |
 | Profile add/edit | `ProfileEditFragment` | List is Compose; form is XML. Autodiscovery stays Java. |
 | Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
-| Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (this PR). Picker still `ExtendedHashMap`. |
+| Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (#173). Picker still `ExtendedHashMap`. |
 | EPG bouquet / search / timeline | `EpgBouquetFragment`, `EpgSearchFragment`, `EpgTimelineFragment`, `ServiceEpgListFragment`, `EpgAdapter` | |
 | EPG detail | `EpgDetailBottomSheet` | ButterKnife. |
 | Current event | `CurrentServiceFragment` | |
@@ -289,7 +291,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 | Settings | `MyPreferenceFragment`, `legacy-preference-v14` | |
 | Backup | `BackupFragment`, `DreamDroidBackupAgent` | Still talks to legacy SQLite. |
 | Sleep timer / send message / power / changelog | dialogs | |
-| Mediaplayer | `MediaPlayerFragment` | Drawer entry commented out; code remains. |
+| Mediaplayer | removed (#175) | Drawer entry was commented; UI stack deleted. `URIStore.MEDIA_PLAYER_PLAY` kept for `ShareActivity`. |
 | Streaming | `VideoActivity`, `VideoOverlayFragment`, VLC | Explicitly out of wave 1. |
 | Widget | `appwidget/` | |
 | Shell | `MainActivity`, `NavigationHelper`, drawer XML, `BaseFragment` tree, Evernote `@State` + Bridge | |
@@ -299,7 +301,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 - Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
 - Enigma2 HTTP is still `HttpURLConnection` + `asynctask/*`. Picons still Picasso + OkHttp 3.14.9.
 - Room holds `profile` only. `DatabaseHelper` / `dreamdroid` SQLite still exist for migration and backup.
-- ButterKnife (5 files), `legacy-support-v4`, `legacy-preference-v14`, multidex.
+- ButterKnife (5 files), `legacy-support-v4`, `legacy-preference-v14`. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
 
 ### Explicitly frozen
 
@@ -310,12 +312,12 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
-2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **This PR types Zap.** EPG and current event remain.
+2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Zap typed on `main` as #173.** EPG and current event remain.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
-4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen), preference-v14, unused MediaPlayer entry. `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. Small PRs, high delete ratio.
+4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen), preference-v14, unused MediaPlayer entry. `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in [#175](https://github.com/sreichholf/dreamDroid/pull/175). Still open later: preference-v14, legacy-support-v4, dead `EpgTimelineFragment`, unused menus, GONE bottom nav.
 5. **TV program** — Leanback → Compose for TV. Separate program. Do not mix into phone PRs.
 
-Recommended default if the operator just says go: (1) then (4), then (2), keep (3) and (5) as later programs.
+Recommended default if the operator just says go: (1) then (4), then (2) one list path at a time; keep (3) and (5) as later programs. Zap typing is on `main` as #173. Next typed path: Event list or Profile edit Compose.
 
 ## Appendix F. Links
 

@@ -16,19 +16,6 @@
     </string-array>
 
     <string name="timer">Timer</string>
-    <string name="mediaplayer">Mediaspelare</string>
-    <string name="play">Spela</string>
-    <string name="add_to_playlist">Lägg till i spellists</string>
-    <string name="navigation_back_media">Tillbaka</string>
-    <string name="home_media">Hem</string>
-    <string name="close_media">Stänga mediaspelaren</string>
-    <string name="next_media">Nästa</string>
-    <string name="play_media">Spela</string>
-    <string name="previous_media">Tidigare</string>
-    <string name="stop_media">Stop</string>
-    <string name="playlist">Spellista</string>
-    <string name="filebrowser">Filhanterare</string>
-    <string name="delete_from_playlist">Ta bort från spellista</string>
     <string name="service">Kanal</string>
     <string name="afterevent">Efter avslut</string>
     <string name="location">Ställen</string>

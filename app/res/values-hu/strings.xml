@@ -212,7 +212,6 @@
     <string name="screenshot_saved">Pillanatkép mentve \'%s-on\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Nincs streamelésre alkalmas lejátszó telepítve a telefonon!</string>
-    <string name="mediaplayer">Médialejátszó</string>
     <string name="edit_profile">Profil szerkesztése</string>
     <string name="force_tablet_layout_long">Tabletre optimalizált megjelenés</string>
     <string name="force_tablet_layout">Tablet megjelenés</string>

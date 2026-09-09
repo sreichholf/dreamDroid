@@ -13,7 +13,6 @@
         <item>Všechny služby (Rádio)</item>
     </string-array>
     <string name="timer">Časovač</string>
-    <string name="mediaplayer">Mediaplayer</string>
     <string name="service">Služba</string>
     <string name="afterevent">Po události</string>
     <string name="location">Umístění</string>
@@ -216,18 +215,6 @@
     <string name="enabled">Zapnuto</string>
     <string name="signal_meter">Síla signálu</string>
     <string name="app_name_tv_release">dreamDroidTV</string>
-    <string name="play">přehrát</string>
-    <string name="add_to_playlist">přidat do seznamu</string>
-    <string name="navigation_back_media">zpět</string>
-    <string name="home_media">Domů</string>
-    <string name="close_media">zavřít přehrávač</string>
-    <string name="next_media">další</string>
-    <string name="play_media">přehrát</string>
-    <string name="previous_media">předchozí</string>
-    <string name="stop_media">stop</string>
-    <string name="playlist">seznam přehrávek</string>
-    <string name="filebrowser">prohlížeč souborů</string>
-    <string name="delete_from_playlist">odebrat ze seznamu</string>
     <string name="ssid">název WiFi</string>
     <string name="live">živě</string>
     <string name="hdd_capacity">%1$s (%2$s volné)</string>

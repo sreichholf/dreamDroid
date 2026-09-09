@@ -248,11 +248,6 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 getSleepTimer(true);
                 break;
 
-//            case R.id.menu_navigation_mediaplayer:
-//                clearBackStack();
-//                getMainActivity().showDetails(MediaPlayerFragment.class);
-//                break;
-
             case R.id.menu_navigation_profiles:
                 clearBackStack();
                 getMainActivity().showDetails(ProfileListFragment.class);

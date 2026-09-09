@@ -16,19 +16,6 @@
     </string-array>
 
     <string name="timer">Temporizador</string>
-    <string name="mediaplayer">Reprodutor mídia</string>
-    <string name="play">Reproduzir</string>
-    <string name="add_to_playlist">Adicionar aos Favoritos</string>
-    <string name="navigation_back_media">Retroceder</string>
-    <string name="home_media">Inicio</string>
-    <string name="close_media">Fechar Reprodutor mídia</string>
-    <string name="next_media">Próximo</string>
-    <string name="play_media">Reproduzir</string>
-    <string name="previous_media">Anterior</string>
-    <string name="stop_media">Parar</string>
-    <string name="playlist">Lista Favoritos</string>
-    <string name="filebrowser">Explorar de Ficheiros</string>
-    <string name="delete_from_playlist">Apagar da Lista Favoritos</string>
     <string name="service">Serviço</string>
     <string name="afterevent">Depois do evento</string>
     <string name="location">Localização</string>

@@ -15,7 +15,6 @@
     <attr name="ic_media_next" format="reference"/>
     <attr name="ic_menu_about" format="reference"/>
     <attr name="ic_menu_changelog" format="reference"/>
-    <attr name="ic_menu_clear_playlist" format="reference"/>
     <attr name="ic_menu_clock" format="reference"/>
     <attr name="ic_menu_close" format="reference"/>
     <attr name="ic_menu_device" format="reference"/>
@@ -25,7 +24,6 @@
     <attr name="ic_menu_list" format="reference"/>
     <attr name="ic_menu_mail" format="reference"/>
     <attr name="ic_menu_movie" format="reference"/>
-    <attr name="ic_menu_music" format="reference"/>
     <attr name="ic_menu_picture" format="reference"/>
     <attr name="ic_menu_power_off" format="reference"/>
     <attr name="ic_menu_profiles" format="reference"/>

@@ -16,19 +16,6 @@
 </string-array>
 
 <string name="timer">Taimer</string>
-<string name="mediaplayer">Meediapleier</string>
-<string name="play">Esita</string>
-<string name="add_to_playlist">Lisa nimekirja</string>
-<string name="navigation_back_media">Tagasi</string>
-<string name="home_media">Avaleht</string>
-<string name="close_media">Sulge meediapleier</string>
-<string name="next_media">Järgmine</string>
-<string name="play_media">Esita</string>
-<string name="previous_media">Eelmine</string>
-<string name="stop_media">Peata</string>
-<string name="playlist">Pleilist</string>
-<string name="filebrowser">Failihaldur</string>
-<string name="delete_from_playlist">Kustuta pleilistist</string>
 <string name="service">Kanal</string>
 <string name="afterevent">Saate lõpus</string>
 <string name="location">Asukoht</string>

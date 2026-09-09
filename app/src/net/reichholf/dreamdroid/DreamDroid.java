@@ -25,7 +25,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.multidex.MultiDex;
 import androidx.preference.PreferenceManager;
 
 import com.evernote.android.state.StateSaver;
@@ -135,12 +134,6 @@ public class DreamDroid extends Application {
 			return instance;
 		}
 
-	}
-
-	@Override
-	protected void attachBaseContext(Context base) {
-		super.attachBaseContext(base);
-		MultiDex.install(this);
 	}
 
 	@NonNull
