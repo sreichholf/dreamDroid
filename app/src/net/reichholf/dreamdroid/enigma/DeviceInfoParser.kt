@@ -171,7 +171,7 @@ private class DeviceInfoHandler : DefaultHandler() {
     }
 
     private fun finalizeResult() {
-        result = DeviceInfo(
+        val built = DeviceInfo(
             guiVersion = guiVersion.toString().trim(),
             imageVersion = imageVersion.toString().trim(),
             interfaceVersion = interfaceVersion.toString().trim(),
@@ -181,6 +181,7 @@ private class DeviceInfoHandler : DefaultHandler() {
             nics = nics.toList(),
             hdds = hdds.toList(),
         )
+        result = if (built.isEmpty()) null else built
     }
 
     override fun characters(ch: CharArray, startIdx: Int, length: Int) {

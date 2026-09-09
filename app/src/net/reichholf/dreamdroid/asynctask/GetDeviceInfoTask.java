@@ -25,7 +25,8 @@ public class GetDeviceInfoTask extends AsyncHttpTaskBase<Void, String, Boolean> 
 		if (getHttpClient().hasError()) {
 			return false;
 		}
-		return mInfo != null;
+		// Successful SAX can still yield an empty object; treat that as parse failure.
+		return mInfo != null && !mInfo.isEmpty();
 	}
 
 	@Override

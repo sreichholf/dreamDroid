@@ -52,4 +52,10 @@ public class DeviceInfoParserTest {
     public void malformedXmlYieldsNull() {
         assertNull(DeviceInfoParser.INSTANCE.parse("<e2deviceinfo><e2devicename>Solo"));
     }
+
+    @Test
+    public void emptyDeviceInfoElementYieldsNull() {
+        assertNull(DeviceInfoParser.INSTANCE.parse(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><e2deviceinfo></e2deviceinfo>"));
+    }
 }
