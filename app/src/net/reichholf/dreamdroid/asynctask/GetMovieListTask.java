@@ -26,6 +26,17 @@ public class GetMovieListTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>
 		if (isCancelled()) {
 			return false;
 		}
+		// Match AsyncListLoader requireLocsAndTags=true used by the old movies loader.
+		if (net.reichholf.dreamdroid.DreamDroid.getLocations().size() <= 1) {
+			if (!net.reichholf.dreamdroid.DreamDroid.loadLocations(getHttpClient())) {
+				android.util.Log.e(net.reichholf.dreamdroid.DreamDroid.LOG_TAG, "ERROR loading locations");
+			}
+		}
+		if (net.reichholf.dreamdroid.DreamDroid.getTags().size() <= 1) {
+			if (!net.reichholf.dreamdroid.DreamDroid.loadTags(getHttpClient())) {
+				android.util.Log.e(net.reichholf.dreamdroid.DreamDroid.LOG_TAG, "ERROR loading tags");
+			}
+		}
 		List<NameValuePair> requestParams = params != null ? params : new ArrayList<>();
 		List<Movie> fetched = HttpFragmentHelper.fetchMovies(getHttpClient(), requestParams);
 		if (getHttpClient().hasError()) {
