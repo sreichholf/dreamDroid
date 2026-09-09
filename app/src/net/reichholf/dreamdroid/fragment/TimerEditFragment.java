@@ -31,7 +31,7 @@ import com.google.android.material.timepicker.TimeFormat;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
-import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
+import net.reichholf.dreamdroid.enigma.LocationsAndTagsLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
@@ -53,14 +53,16 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Activity for Editing existing or initial timers. Compose Material 3 form;
  * save/pick still use ExtendedHashMap at the edge.
  *
  * @author sreichholf
  */
-public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener,
-		GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler {
+public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
 
@@ -84,7 +86,8 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	@Nullable
 	private ProgressDialog mProgress;
 
-	private GetLocationsAndTagsTask mGetLocationsAndTagsTask;
+	@Nullable
+	private Job mLocationsAndTagsJob;
 	private TimerEditState mEditState;
 
 	private int mBegin;
@@ -101,8 +104,10 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	@Override
 	public void onDestroy() {
-		if (mGetLocationsAndTagsTask != null)
-			mGetLocationsAndTagsTask.cancel(true);
+		if (mLocationsAndTagsJob != null) {
+			mLocationsAndTagsJob.cancel(null);
+			mLocationsAndTagsJob = null;
+		}
 		super.onDestroy();
 	}
 
@@ -122,8 +127,17 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			mSelectedTags = new ArrayList<>();
 
 			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
-				mGetLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
-				mGetLocationsAndTagsTask.execute();
+				mLocationsAndTagsJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(
+						this,
+						(title, progress) -> {
+							onGetLocationsAndTagsProgress(title, progress);
+							return Unit.INSTANCE;
+						},
+						() -> {
+							mLocationsAndTagsJob = null;
+							onLocationsAndTagsReady();
+							return Unit.INSTANCE;
+						});
 			} else {
 				reload();
 			}
@@ -526,8 +540,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			updateEnd(cal);
 	}
 
-	@Override
-	public void onGetLocationsAndTagsProgress(String title, String progress) {
+	private void onGetLocationsAndTagsProgress(String title, String progress) {
 
 		if (mLocationsAndTagsProgress != null) {
 			if (!mLocationsAndTagsProgress.isShowing()) {
@@ -541,8 +554,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	}
 
-	@Override
-	public void onLocationsAndTagsReady() {
+	private void onLocationsAndTagsReady() {
 		if (mLocationsAndTagsProgress != null) {
 			mLocationsAndTagsProgress.dismiss();
 			mLocationsAndTagsProgress = null;
