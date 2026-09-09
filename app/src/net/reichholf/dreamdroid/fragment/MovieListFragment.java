@@ -31,15 +31,17 @@ import com.evernote.android.state.State;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
+import net.reichholf.dreamdroid.asynctask.GetMovieListTask;
+import net.reichholf.dreamdroid.enigma.Movie;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
@@ -54,13 +56,16 @@ import net.reichholf.dreamdroid.ui.services.MovieListState;
 import net.reichholf.dreamdroid.ui.services.MovieListStateKt;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Allows browsing recorded movies. Supports filtering by tags and locations
+ * Allows browsing recorded movies. Supports filtering by tags and locations.
+ * Compose Material 3 list of typed {@link Movie}; delete/stream still take ExtendedHashMap at the edge.
  *
  * @author sreichholf
  */
-public class MovieListFragment extends BaseHttpRecyclerFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
+public class MovieListFragment extends BaseHttpRecyclerFragment
+		implements MultiChoiceDialog.MultiChoiceDialogListener, GetMovieListTask.GetMovieListTaskHandler {
 	public static String ARGUMENT_LOCATION = "location";
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
@@ -69,7 +74,10 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	@State public ArrayList<String> mSelectedTags;
 	@State public ArrayList<String> mOldTags;
 	@State public ExtendedHashMap mMovie;
+	private final ArrayList<Movie> mMovies = new ArrayList<>();
 	private MovieListState mListState;
+	@Nullable
+	private GetMovieListTask mMovieListTask;
 
 	@Nullable
 	private ProgressDialog mProgress;
@@ -137,11 +145,22 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		mAdapter = new SimpleTextAdapter(mMapList, R.layout.movie_list_item, new String[]{
-				Movie.KEY_TITLE, Movie.KEY_SERVICE_NAME, Movie.KEY_FILE_SIZE_READABLE, Movie.KEY_TIME_READABLE,
-				Movie.KEY_LENGTH}, new int[]{R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
+				net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_TITLE,
+				net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_SERVICE_NAME,
+				net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_SIZE_READABLE,
+				net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_TIME_READABLE,
+				net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_LENGTH}, new int[]{R.id.movie_title, R.id.service_name, R.id.file_size, R.id.event_start,
 				R.id.event_duration});
 		getRecyclerView().setAdapter(mAdapter);
 		super.onActivityCreated(savedInstanceState);
+	}
+
+	@Override
+	public void onDestroy() {
+		if (mMovieListTask != null) {
+			mMovieListTask.cancel(true);
+		}
+		super.onDestroy();
 	}
 
 	@Override
@@ -184,21 +203,24 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 
 	@Override
 	public void onItemClick(RecyclerView parent, @NonNull View view, int position, long id) {
-		onMovieItemClick(view, position, false);
+		// Compose owns clicks.
 	}
 
 	@Override
 	public boolean onItemLongClick(RecyclerView parent, @NonNull View view, int position, long id) {
-		onMovieItemClick(view, position, true);
 		return true;
 	}
 
 	private void onMovieItemClick(@NonNull View view, int position, boolean isLong) {
-	mMovie = mMapList.get(position);
+		if (position < 0 || position >= mMovies.size()) {
+			return;
+		}
+		Movie typed = mMovies.get(position);
+		mMovie = MovieListMapperKt.movieToExtendedHashMap(typed);
 		boolean isInsta = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity()).getBoolean(
 				DreamDroid.PREFS_KEY_INSTANT_ZAP, false);
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
-			zapTo(mMovie.getString(Movie.KEY_REFERENCE));
+			zapTo(typed.getReference());
 		} else {
 			showPopupMenu(view);
 		}
@@ -223,7 +245,8 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 
 		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.deleting), true);
 		mReloadOnSimpleResult = true;
-		execSimpleResultTask(new MovieDeleteRequestHandler(), Movie.getDeleteParams(mMovie));
+		execSimpleResultTask(new MovieDeleteRequestHandler(),
+				net.reichholf.dreamdroid.helpers.enigma2.Movie.getDeleteParams(mMovie));
 	}
 
 	@Override
@@ -261,20 +284,60 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		return new AsyncListLoader(getAppCompatActivity(), new MovieListRequestHandler(), true, args);
+		// Movies list no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
+		return new AsyncListLoader(getAppCompatActivity(), new MovieListRequestHandler(), false, args);
 	}
 
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		//when popping fromt he backstack (e.g. after epg search) onStart will restore the loader which will in return call onLoadfinished
-		//because this in done twice (in onStart and in onResumed and we are not ready to handle this before onResume, we ignore any onLoadFinished
-		//that happens while we are not in a Resumed state
-		if (!isResumed())
+		// Unused: rows come from GetMovieListTask / EnigmaClient.
+	}
+
+	@Override
+	protected void reload() {
+		mReload = false;
+		if (mMovies.isEmpty())
+			setEmptyText(getText(R.string.loading), R.drawable.ic_loading_48dp);
+		else
+			setEmptyText(null);
+		loadMovies();
+	}
+
+	private void loadMovies() {
+		mHttpHelper.onLoadStarted();
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getString(R.string.loading));
+		}
+		if (mMovieListTask != null) {
+			mMovieListTask.cancel(true);
+		}
+		mMovieListTask = new GetMovieListTask(this);
+		mMovieListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+	}
+
+	@Override
+	public void onMovieListReady(boolean success, @NonNull List<Movie> movies, @Nullable String errorText) {
+		mHttpHelper.onLoadFinished();
+		if (!isResumed()) {
 			return;
-		super.onLoadFinished(loader, result);
-		getAppCompatActivity().setTitle(mCurrentLocation);
-		mListState.replaceAll(MovieListMapperKt.movieListItemsFrom(mMapList));
+		}
+		mMovies.clear();
+		mListState.replaceAll(java.util.Collections.emptyList());
+		if (!success) {
+			setEmptyText(errorText);
+			return;
+		}
+		setEmptyText(null);
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(mCurrentLocation);
+		}
+		if (movies.isEmpty()) {
+			setEmptyText(getText(R.string.no_list_item));
+		} else {
+			mMovies.addAll(movies);
+			mListState.replaceAll(MovieListMapperKt.movieListItemsFromMovies(mMovies));
+		}
 	}
 
 	private void onComposeClick(@NonNull MovieListItem item, boolean isLong) {
@@ -301,21 +364,28 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 	public boolean onMovieAction(int action) {
 		switch (action) {
 			case R.id.menu_info: {
-				if(mMovie.getString(Movie.KEY_DESCRIPTION_EXTENDED) == null){
+				if(mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_DESCRIPTION_EXTENDED) == null){
 					showToast(getString(R.string.no_epg_available));
 					break;
 				}
-				getMultiPaneHandler().showDialogFragment(MovieDetailBottomSheet.newInstance(new Movie(mMovie)), "movie_detail_dialog");
+				Movie typed = findSelectedTypedMovie();
+				if (typed != null) {
+					getMultiPaneHandler().showDialogFragment(MovieDetailBottomSheet.newInstance(typed), "movie_detail_dialog");
+				} else {
+					getMultiPaneHandler().showDialogFragment(
+							MovieDetailBottomSheet.newInstance(new net.reichholf.dreamdroid.helpers.enigma2.Movie(mMovie)),
+							"movie_detail_dialog");
+				}
 				break;
 			}
 
 			case R.id.menu_zap:
-				zapTo(mMovie.getString(Movie.KEY_REFERENCE));
+				zapTo(mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_REFERENCE));
 				break;
 
 			case R.id.menu_delete:
 				getMultiPaneHandler().showDialogFragment(
-						PositiveNegativeDialog.newInstance(mMovie.getString(Movie.KEY_TITLE), R.string.delete_confirm,
+						PositiveNegativeDialog.newInstance(mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_TITLE), R.string.delete_confirm,
 								android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
 								Statics.ACTION_NONE), "dialog_delete_movie_confirm");
 				break;
@@ -326,7 +396,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 
 			case R.id.menu_download:
 				ArrayList<NameValuePair> params = new ArrayList<>();
-				params.add(new NameValuePair("file", mMovie.getString(Movie.KEY_FILE_NAME)));
+				params.add(new NameValuePair("file", mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_NAME)));
 				String url = getHttpClient().buildUrl(URIStore.FILE, params);
 
 				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -335,8 +405,11 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 
 			case R.id.menu_stream:
 				try {
-					startActivity(IntentFactory.getStreamFileIntent(getAppCompatActivity(), mMovie.getString(Movie.KEY_REFERENCE), mMovie.getString(Movie.KEY_FILE_NAME),
-							mMovie.getString(Movie.KEY_TITLE), mMovie));
+					startActivity(IntentFactory.getStreamFileIntent(getAppCompatActivity(),
+							mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_REFERENCE),
+							mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_NAME),
+							mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_TITLE),
+							mMovie));
 				} catch (ActivityNotFoundException e) {
 					showToast(getText(R.string.missing_stream_player));
 				}
@@ -345,6 +418,21 @@ public class MovieListFragment extends BaseHttpRecyclerFragment implements Multi
 				return false;
 		}
 		return true;
+	}
+
+	@Nullable
+	private Movie findSelectedTypedMovie() {
+		if (mMovie == null) {
+			return null;
+		}
+		String ref = mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_REFERENCE);
+		String file = mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_NAME);
+		for (Movie movie : mMovies) {
+			if (movie.getReference().equals(ref) && movie.getFileName().equals(file)) {
+				return movie;
+			}
+		}
+		return null;
 	}
 
 	@Override

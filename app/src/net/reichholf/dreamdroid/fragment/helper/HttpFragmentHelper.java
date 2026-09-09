@@ -340,6 +340,13 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
         return EnigmaClient.getTimersBlocking(shc);
     }
 
+    @NonNull
+    public static List<net.reichholf.dreamdroid.enigma.Movie> fetchMovies(
+            @NonNull SimpleHttpClient shc,
+            @NonNull List<NameValuePair> params) {
+        return EnigmaClient.getMoviesBlocking(shc, params);
+    }
+
     public void onLoadStarted() {
         if (mIsReloading)
             return;
