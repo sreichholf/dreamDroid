@@ -8,12 +8,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 
 	private ExecutorService executor;
 	private Handler handler;
-	private Future future;
+	private Future<?> future;
 	private volatile boolean cancelled;
 
 	protected AsyncTaskExecutorService() {
@@ -59,17 +60,31 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 	public void execute(Params params) {
 		cancelled = false;
 		getHandler().post(() -> {
+			if (cancelled) {
+				shutdownExecutor();
+				return;
+			}
 			onPreExecute();
-			future = executor.submit(() -> {
-				Result result = doInBackground(params);
-				getHandler().post(() -> {
-					try {
-						onPostExecute(result);
-					} finally {
-						shutdownExecutor();
-					}
+			if (cancelled) {
+				shutdownExecutor();
+				return;
+			}
+			try {
+				future = executor.submit(() -> {
+					Result result = doInBackground(params);
+					getHandler().post(() -> {
+						try {
+							if (!cancelled) {
+								onPostExecute(result);
+							}
+						} finally {
+							shutdownExecutor();
+						}
+					});
 				});
-			});
+			} catch (RejectedExecutionException ignored) {
+				shutdownExecutor();
+			}
 		});
 	}
 
@@ -78,7 +93,11 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 		if (future != null && !future.isDone()) {
 			future.cancel(mayInterruptIfRunning);
 		}
-		shutdownExecutor();
+		// If execute() has not submitted yet, its posted callback will see
+		// cancelled and shut down. If it already submitted, shut down now.
+		if (future != null) {
+			shutdownExecutor();
+		}
 	}
 
 	public boolean isCancelled() {
