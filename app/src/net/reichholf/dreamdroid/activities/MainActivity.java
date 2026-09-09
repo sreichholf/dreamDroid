@@ -43,7 +43,7 @@ import net.reichholf.dreamdroid.ProfileChangedListener;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.asynctask.CheckProfileTask;
+import net.reichholf.dreamdroid.enigma.ProfileDetectLoadKt;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
@@ -65,13 +65,16 @@ import net.reichholf.dreamdroid.ui.drawer.DrawerListState;
 import java.util.Arrays;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * @author sre
  */
 public class MainActivity extends BaseActivity implements MultiPaneHandler, ProfileChangedListener,
 		ActionDialog.DialogActionListener, SleepTimerDialog.SleepTimerDialogActionListener,
 		SendMessageDialog.SendMessageDialogActionListener, MultiChoiceDialog.MultiChoiceDialogListener,
-		SearchView.OnQueryTextListener, SharedPreferences.OnSharedPreferenceChangeListener, CheckProfileTask.CheckProfileTaskHandler {
+		SearchView.OnQueryTextListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -85,7 +88,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	private TextView mConnectionState;
 
 	@Nullable
-	private CheckProfileTask mCheckProfileTask;
+	private Job mCheckProfileJob;
 
 	@Nullable
 	private NavigationHelper mNavigationHelper;
@@ -118,7 +121,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		return this;
 	}
 
-	public void onProfileCheckProgress(String state) {
+	private void onProfileCheckProgress(String state) {
 		setConnectionState(state, false);
 	}
 
@@ -255,9 +258,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onStop() {
-		if (mCheckProfileTask != null) {
-			mCheckProfileTask.cancel(true);
-			mCheckProfileTask = null;
+		if (mCheckProfileJob != null) {
+			mCheckProfileJob.cancel(null);
+			mCheckProfileJob = null;
 		}
 		super.onStop();
 	}
@@ -471,15 +474,28 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 		setProfileName();
 		if (p.getCachedDeviceInfo() == null) {
-			if (p.equals(mCurrentProfile) && mCheckProfileTask != null)
+			if (p.equals(mCurrentProfile) && mCheckProfileJob != null)
 				return;
 			mCurrentProfile = p;
-			if (mCheckProfileTask != null) {
-				mCheckProfileTask.cancel(true);
-				mCheckProfileTask = null;
+			if (mCheckProfileJob != null) {
+				mCheckProfileJob.cancel(null);
+				mCheckProfileJob = null;
 			}
-			mCheckProfileTask = new CheckProfileTask(p, this);
-			mCheckProfileTask.execute();
+			mCheckProfileJob = ProfileDetectLoadKt.launchCheckProfileLoad(
+					this,
+					p,
+					getProfileCheckContext(),
+					state -> {
+						onProfileCheckProgress(state);
+						return Unit.INSTANCE;
+					},
+					result -> {
+						mCheckProfileJob = null;
+						if (result != null) {
+							onProfileChecked(result);
+						}
+						return Unit.INSTANCE;
+					});
 		} else {
 			onProfileChecked(CheckProfile.checkProfile(p, this));
 		}

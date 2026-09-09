@@ -30,7 +30,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
-import net.reichholf.dreamdroid.asynctask.DetectDevicesTask;
+import net.reichholf.dreamdroid.enigma.ProfileDetectLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.IndeterminateProgress;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
@@ -44,12 +44,15 @@ import net.reichholf.dreamdroid.ui.profiles.ProfilesListStateKt;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Shows a list of all connection profiles
  *
  * @author sre
  */
-public class ProfileListFragment extends BaseFragment implements DetectDevicesTask.DetectDevicesTaskHandler {
+public class ProfileListFragment extends BaseFragment {
 
 	private boolean mIsActionMode;
 	private boolean mIsActionModeRequired;
@@ -63,7 +66,7 @@ public class ProfileListFragment extends BaseFragment implements DetectDevicesTa
 	private ArrayList<Profile> mDetectedProfiles;
 
 	@Nullable
-	private DetectDevicesTask mDetectDevicesTask;
+	private Job mDetectDevicesJob;
 
 	@Nullable
 	private IndeterminateProgress mProgress;
@@ -116,9 +119,9 @@ public class ProfileListFragment extends BaseFragment implements DetectDevicesTa
 
 	private void detectDevices() {
 		if (mDetectedProfiles == null) {
-			if (mDetectDevicesTask != null) {
-				mDetectDevicesTask.cancel(true);
-				mDetectDevicesTask = null;
+			if (mDetectDevicesJob != null) {
+				mDetectDevicesJob.cancel(null);
+				mDetectDevicesJob = null;
 			}
 
 			if (mProgress != null) {
@@ -129,8 +132,11 @@ public class ProfileListFragment extends BaseFragment implements DetectDevicesTa
 			mProgress = IndeterminateProgress.newInstance(R.string.searching, R.string.searching_known_devices);
 			mProgress.setCancelable(false);
 			getMultiPaneHandler().showDialogFragment(mProgress, "dialog_devicesearch_indeterminate");
-			mDetectDevicesTask = new DetectDevicesTask(this);
-			mDetectDevicesTask.execute();
+			mDetectDevicesJob = ProfileDetectLoadKt.launchDetectDevicesLoad(this, profiles -> {
+				mDetectDevicesJob = null;
+				onDevicesDetected(profiles);
+				return Unit.INSTANCE;
+			});
 		} else {
 			if (mDetectedProfiles.size() == 0) {
 				mDetectedProfiles = null;
@@ -150,8 +156,7 @@ public class ProfileListFragment extends BaseFragment implements DetectDevicesTa
 		reloadProfiles();
 	}
 
-	@Override
-	public void onDevicesDetected(@NonNull ArrayList<Profile> profiles) {
+	private void onDevicesDetected(@NonNull ArrayList<Profile> profiles) {
 		mProgress = (IndeterminateProgress) getFragmentManager().findFragmentByTag("dialog_devicesearch_indeterminate");
 		if (mProgress != null) {
 			mProgress.dismiss();
@@ -234,9 +239,9 @@ public class ProfileListFragment extends BaseFragment implements DetectDevicesTa
 
 	@Override
 	public void onPause() {
-		if (mDetectDevicesTask != null) {
-			mDetectDevicesTask.cancel(true);
-			mDetectDevicesTask = null;
+		if (mDetectDevicesJob != null) {
+			mDetectDevicesJob.cancel(null);
+			mDetectDevicesJob = null;
 		}
 		IndeterminateProgress progress = (IndeterminateProgress) getFragmentManager().findFragmentByTag("dialog_devicesearch_indeterminate");
 		if (progress != null) {
