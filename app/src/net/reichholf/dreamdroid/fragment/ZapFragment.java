@@ -19,8 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.asynctask.GetServiceListTask;
 import net.reichholf.dreamdroid.enigma.Service;
+import net.reichholf.dreamdroid.enigma.ServiceListLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -37,12 +37,15 @@ import net.reichholf.dreamdroid.ui.zap.ZapListStateKt;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 
 /**
  * Zap channel grid. Compose Material 3 grid; zap HTTP stays in HttpFragmentHelper.
  */
 
-public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceListTask.GetServiceListTaskHandler {
+public class ZapFragment extends BaseHttpRecyclerFragment {
 	@NonNull
 	public static String BUNDLE_KEY_CURRENT_BOUQUET_REFERENCE = "currentBouquetReference";
 	@NonNull
@@ -53,7 +56,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 	private ZapListState mListState;
 	private boolean mWaitingForPicker;
 	@Nullable
-	private GetServiceListTask mServiceListTask;
+	private Job mLoadJob;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -123,11 +126,23 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mServiceListTask != null) {
-			mServiceListTask.cancel(true);
+	public void onDestroyView() {
+		cancelLoad(true);
+		if (mServices.isEmpty()) {
+			mReload = true;
 		}
-		super.onDestroy();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob == null) {
+			return;
+		}
+		mLoadJob.cancel(null);
+		mLoadJob = null;
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+		}
 	}
 
 	@Override
@@ -157,7 +172,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: channel rows come from GetServiceListTask / EnigmaClient.
+		// Unused: channel rows come from ServiceListLoad / EnigmaClient.
 	}
 
 	@NonNull
@@ -191,15 +206,16 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (mServiceListTask != null) {
-			mServiceListTask.cancel(true);
-		}
-		mServiceListTask = new GetServiceListTask(this);
-		mServiceListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+		cancelLoad(false);
+		ArrayList<NameValuePair> params = getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID);
+		mLoadJob = ServiceListLoadKt.launchServiceListLoad(this, params, (success, services, errorText) -> {
+			onServiceListReady(success, services, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
-	@Override
-	public void onServiceListReady(boolean success, @NonNull List<Service> services, @Nullable String errorText) {
+	private void onServiceListReady(boolean success, @NonNull List<Service> services, @Nullable String errorText) {
+		mLoadJob = null;
 		mHttpHelper.onLoadFinished();
 		mServices.clear();
 		mListState.replaceAll(java.util.Collections.emptyList());

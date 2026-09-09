@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
-import net.reichholf.dreamdroid.asynctask.GetServiceListTask;
 import net.reichholf.dreamdroid.enigma.Service;
+import net.reichholf.dreamdroid.enigma.ServiceListLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -33,14 +33,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Timer service picker. Compose Material 3: bouquet list then channel list via typed
  * {@link Service}. Result Intent still carries one {@link ExtendedHashMap} under
  * {@link #sData} so {@link TimerEditFragment} stays unchanged at the edge.
  */
 public class TimerServicePickFragment extends BaseHttpRecyclerFragment
-		implements GetBouquetListTask.GetBouquetListTaskHandler,
-		GetServiceListTask.GetServiceListTaskHandler {
+		implements GetBouquetListTask.GetBouquetListTaskHandler {
 
 	private final ArrayList<Service> mBouquets = new ArrayList<>();
 	private final ArrayList<Service> mServices = new ArrayList<>();
@@ -50,8 +52,8 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 	@Nullable
 	private GetBouquetListTask mBouquetListTask;
 	@Nullable
-	private GetServiceListTask mServiceListTask;
-	/** Bumped when starting a load so late AsyncTask callbacks are ignored. */
+	private Job mServiceLoadJob;
+	/** Bumped when starting a load so late callbacks are ignored. */
 	private int mLoadGeneration;
 	private int mBouquetReadyForGeneration;
 	private int mServiceReadyForGeneration;
@@ -109,13 +111,36 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 	}
 
 	@Override
+	public void onDestroyView() {
+		cancelServiceLoad(true);
+		if (mBouquetListTask != null) {
+			mBouquetListTask.cancel(true);
+			mBouquetListTask = null;
+			mHttpHelper.onLoadFinished();
+		}
+		if (mBouquets.isEmpty() && mServices.isEmpty()) {
+			mReload = true;
+		}
+		super.onDestroyView();
+	}
+
+	private void cancelServiceLoad(boolean finishUi) {
+		if (mServiceLoadJob == null) {
+			return;
+		}
+		mServiceLoadJob.cancel(null);
+		mServiceLoadJob = null;
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+		}
+	}
+
+	@Override
 	public void onDestroy() {
 		if (mBouquetListTask != null) {
 			mBouquetListTask.cancel(true);
 		}
-		if (mServiceListTask != null) {
-			mServiceListTask.cancel(true);
-		}
+		cancelServiceLoad(false);
 		super.onDestroy();
 	}
 
@@ -143,7 +168,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from GetBouquetListTask / GetServiceListTask.
+		// Unused: rows come from GetBouquetListTask / ServiceListLoad.
 	}
 
 	@Override
@@ -170,10 +195,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		mCurrentBouquet = null;
 		mServices.clear();
 		mLoadGeneration++;
-		if (mServiceListTask != null) {
-			mServiceListTask.cancel(true);
-			mServiceListTask = null;
-		}
+		cancelServiceLoad(false);
 		mBackCallback.setEnabled(false);
 		if (!mBouquets.isEmpty()) {
 			setEmptyText(null);
@@ -215,10 +237,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (mServiceListTask != null) {
-			mServiceListTask.cancel(true);
-			mServiceListTask = null;
-		}
+		cancelServiceLoad(false);
 		if (mBouquetListTask != null) {
 			mBouquetListTask.cancel(true);
 		}
@@ -239,14 +258,16 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 			mBouquetListTask.cancel(true);
 			mBouquetListTask = null;
 		}
-		if (mServiceListTask != null) {
-			mServiceListTask.cancel(true);
-		}
+		cancelServiceLoad(false);
 		mLoadGeneration++;
 		mServiceReadyForGeneration = mLoadGeneration;
 		setBaseTitle(title);
-		mServiceListTask = new GetServiceListTask(this);
-		mServiceListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+		ArrayList<NameValuePair> params = getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID);
+		final int generation = mServiceReadyForGeneration;
+		mServiceLoadJob = ServiceListLoadKt.launchServiceListLoad(this, params, (success, services, errorText) -> {
+			onServiceListReady(generation, success, services, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
 	@Override
@@ -283,9 +304,10 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		}
 	}
 
-	@Override
-	public void onServiceListReady(boolean success, @NonNull List<Service> services, @Nullable String errorText) {
-		if (mServiceReadyForGeneration != mLoadGeneration || mCurrentBouquet == null) {
+	private void onServiceListReady(int generation, boolean success, @NonNull List<Service> services,
+			@Nullable String errorText) {
+		mServiceLoadJob = null;
+		if (generation != mLoadGeneration || mCurrentBouquet == null) {
 			return;
 		}
 		mHttpHelper.onLoadFinished();
