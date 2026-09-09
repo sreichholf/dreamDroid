@@ -1,9 +1,8 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -69,59 +68,70 @@ fun EpgDetailScreen(
     onSimilar: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-    ) {
-        Text(
-            text = content.title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        if (content.serviceName.isNotEmpty()) {
+    // Body scrolls; action panel stays pinned like the old XML buttonPanel.
+    Column(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 360.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp, bottom = 8.dp),
+        ) {
             Text(
-                text = content.serviceName,
-                style = MaterialTheme.typography.titleMedium,
+                text = content.title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            if (content.serviceName.isNotEmpty()) {
+                Text(
+                    text = content.serviceName,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+            if (content.description.isNotEmpty()) {
+                Text(
+                    text = content.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+            Text(
+                text = content.dateLine,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp),
-            )
-        }
-        if (content.description.isNotEmpty()) {
-            Text(
-                text = content.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(top = 8.dp),
             )
+            if (content.descriptionExtended.isNotEmpty()) {
+                Text(
+                    text = content.descriptionExtended,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
         }
-        Text(
-            text = content.dateLine,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        if (content.descriptionExtended.isNotEmpty()) {
-            Text(
-                text = content.descriptionExtended,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onSetTimer, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.set_timer))
-        }
-        TextButton(onClick = onEditTimer, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.edit_timer))
-        }
-        TextButton(onClick = onImdb, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.imdb))
-        }
-        TextButton(onClick = onSimilar, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.similar))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
+        ) {
+            Button(onClick = onSetTimer, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.set_timer))
+            }
+            TextButton(onClick = onEditTimer, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.edit_timer))
+            }
+            TextButton(onClick = onImdb, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.imdb))
+            }
+            TextButton(onClick = onSimilar, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.similar))
+            }
         }
     }
 }
