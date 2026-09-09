@@ -29,8 +29,8 @@ import com.evernote.android.state.State;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.TimerAdapter;
-import net.reichholf.dreamdroid.asynctask.GetTimerListTask;
 import net.reichholf.dreamdroid.enigma.Timer;
+import net.reichholf.dreamdroid.enigma.TimerListLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -53,14 +53,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Activity to show a List of all existing timers of the target device.
  * Compose list of typed {@link Timer}; edit/delete still take ExtendedHashMap at the edge.
+ * Load via coroutine + {@code EnigmaClient.getTimers()}.
  *
  * @author sreichholf
  */
-public class TimerListFragment extends BaseHttpRecyclerFragment
-		implements GetTimerListTask.GetTimerListTaskHandler {
+public class TimerListFragment extends BaseHttpRecyclerFragment {
 	@NonNull
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
@@ -113,10 +116,8 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 	private TimerListState mListState;
 	private final ArrayList<Timer> mTimers = new ArrayList<>();
 	@Nullable
-	private GetTimerListTask mTimerListTask;
-	@Nullable
-	private GetTimerListTask.GetTimerListTaskHandler mTimerListTaskHandler;
-	/** Bumped on each new fetch so stale GetTimerListTask callbacks are ignored. */
+	private Job mLoadJob;
+	/** Bumped on each new fetch / stop so stale load callbacks are ignored. */
 	private int mTimerListGeneration = 0;
 
 	@Override
@@ -160,24 +161,36 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 	}
 
 	@Override
-	public void onDestroy() {
+	public void onDestroyView() {
+		endActionMode();
 		mTimerListGeneration++;
-		if (mTimerListTask != null) {
-			mTimerListTask.cancel(true);
+		cancelLoad(true);
+		// viewLifecycleOwner cancels the Job with the view; re-fetch after recreate if empty.
+		if (mTimers.isEmpty()) {
+			mReload = true;
 		}
-		super.onDestroy();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob == null) {
+			return;
+		}
+		mLoadJob.cancel(null);
+		mLoadJob = null;
+		if (finishUi) {
+			finishLoadUi();
+		}
+	}
+
+	private void finishLoadUi() {
+		mHttpHelper.onLoadFinished();
 	}
 
 	protected void startActionMode() {
 		mTimer = mMapList.get(mCurrentPos);
 		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
 		mSelectionSupport.setItemChecked(mCurrentPos, true);
-	}
-
-	@Override
-	public void onDestroyView() {
-		endActionMode();
-		super.onDestroyView();
 	}
 
 	/*
@@ -251,7 +264,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from GetTimerListTask / EnigmaClient.
+		// Unused: rows come from EnigmaClient coroutines.
 	}
 
 	@Override
@@ -265,6 +278,9 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 	}
 
 	private void loadTimers() {
+		if (!isAdded() || getView() == null) {
+			return;
+		}
 		mHttpHelper.onLoadStarted();
 		if (!"".equals(getBaseTitle().trim())) {
 			setCurrentTitle(getString(R.string.loading));
@@ -273,42 +289,21 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 		final int generation = ++mTimerListGeneration;
-		if (mTimerListTask != null) {
-			mTimerListTask.cancel(true);
-		}
-		// Keep a strong ref: GetTimerListTask only holds WeakReference to the handler.
-		mTimerListTaskHandler = new GetTimerListTask.GetTimerListTaskHandler() {
-			@Nullable
-			@Override
-			public String getString(int resId) {
-				return TimerListFragment.this.getString(resId);
+		cancelLoad(false);
+		mLoadJob = TimerListLoadKt.launchTimerListLoad(this, (success, timers, errorText) -> {
+			if (generation != mTimerListGeneration) {
+				return Unit.INSTANCE;
 			}
-
-			@Nullable
-			@Override
-			public android.content.Context getContext() {
-				return TimerListFragment.this.getContext();
-			}
-
-			@Override
-			public void onTimerListReady(boolean success, @NonNull List<Timer> timers, @Nullable String errorText) {
-				if (generation != mTimerListGeneration) {
-					return;
-				}
-				handleTimerListReady(success, timers, errorText);
-			}
-		};
-		mTimerListTask = new GetTimerListTask(mTimerListTaskHandler);
-		mTimerListTask.execute((Void) null);
-	}
-
-	@Override
-	public void onTimerListReady(boolean success, @NonNull List<Timer> timers, @Nullable String errorText) {
-		handleTimerListReady(success, timers, errorText);
+			handleTimerListReady(success, timers, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
 	private void handleTimerListReady(boolean success, @NonNull List<Timer> timers, @Nullable String errorText) {
-		mHttpHelper.onLoadFinished();
+		if (!isAdded()) {
+			return;
+		}
+		finishLoadUi();
 		mTimers.clear();
 		mMapList.clear();
 		mListState.replaceAll(Collections.emptyList());

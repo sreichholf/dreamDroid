@@ -145,13 +145,6 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
 
         @JvmStatic
-        fun getTimersBlocking(http: SimpleHttpClient): List<Timer>? {
-            return runBlocking {
-                EnigmaClient(http).getTimers()
-            }
-        }
-
-        @JvmStatic
         fun getMoviesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Movie>? {
             return runBlocking {
                 EnigmaClient(http).getMovies(params)

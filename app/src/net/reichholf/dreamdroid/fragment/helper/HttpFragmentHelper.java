@@ -311,11 +311,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     @Nullable
-    public static List<net.reichholf.dreamdroid.enigma.Timer> fetchTimers(@NonNull SimpleHttpClient shc) {
-        return EnigmaClient.getTimersBlocking(shc);
-    }
-
-    @Nullable
     public static List<net.reichholf.dreamdroid.enigma.Movie> fetchMovies(
             @NonNull SimpleHttpClient shc,
             @NonNull List<NameValuePair> params) {
