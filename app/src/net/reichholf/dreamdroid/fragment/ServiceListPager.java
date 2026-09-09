@@ -17,8 +17,9 @@ import com.evernote.android.state.State;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
 import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
+import net.reichholf.dreamdroid.enigma.BouquetListLoadKt;
+import net.reichholf.dreamdroid.enigma.Bouquets;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -28,7 +29,10 @@ import net.reichholf.dreamdroid.ui.services.TvMoviesHubStateKt;
 
 import java.util.ArrayList;
 
-public class ServiceListPager extends BaseHttpFragment implements GetBouquetListTask.GetBouquetListTaskHandler, GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler {
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
+public class ServiceListPager extends BaseHttpFragment implements GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler {
 	private static final String MODE_TV = "TV";
 	private static final String MODE_RADIO = "Radio";
 	private static final String MODE_MOVIES = "Movies";
@@ -55,11 +59,12 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	TimerListAdapter mTimerListAdapter;
 
 	TvMoviesHubState mHubState;
-	GetBouquetListTask mBouquetListTask;
+	@Nullable
+	private Job mBouquetLoadJob;
 	GetLocationsAndTagsTask mLocationsAndTagsTask;
 
 	@Nullable
-	private GetBouquetListTask.Bouquets mBouquets;
+	private Bouquets mBouquets;
 
 	@Override
 	public void onGetLocationsAndTagsProgress(String title, String progress) {
@@ -262,17 +267,28 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 			mHubState.setSelected(TvMoviesDestination.TV);
 		}
 
-		if (mBouquetListTask != null) {
-			mBouquetListTask.cancel(true);
+		if (mBouquetLoadJob != null) {
+			mBouquetLoadJob.cancel(null);
 		}
-		mBouquetListTask = new GetBouquetListTask(this);
-		mBouquetListTask.execute();
+		mBouquetLoadJob = BouquetListLoadKt.launchBouquetListLoad(this, (result, bouquets, errorText) -> {
+			onBouquetListReady(result, bouquets, errorText);
+			return Unit.INSTANCE;
+		});
 
 		if (mLocationsAndTagsTask != null) {
 			mLocationsAndTagsTask.cancel(true);
 		}
 		mLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
 		mLocationsAndTagsTask.execute();
+	}
+
+	@Override
+	public void onDestroyView() {
+		if (mBouquetLoadJob != null) {
+			mBouquetLoadJob.cancel(null);
+			mBouquetLoadJob = null;
+		}
+		super.onDestroyView();
 	}
 
 	@Override
@@ -299,8 +315,8 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		return false;
 	}
 
-	@Override
-	public void onBouquetListReady(boolean result, GetBouquetListTask.Bouquets bouquets, String errorText) {
+	private void onBouquetListReady(boolean result, Bouquets bouquets, String errorText) {
+		mBouquetLoadJob = null;
 		mBouquets = bouquets;
 		if (errorText != null && !errorText.isEmpty())
 			mHubState.setError(errorText);

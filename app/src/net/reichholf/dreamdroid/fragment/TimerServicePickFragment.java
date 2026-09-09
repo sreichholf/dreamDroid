@@ -15,7 +15,8 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.GetBouquetListTask;
+import net.reichholf.dreamdroid.enigma.BouquetListLoadKt;
+import net.reichholf.dreamdroid.enigma.Bouquets;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.enigma.ServiceListLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
@@ -41,8 +42,7 @@ import kotlinx.coroutines.Job;
  * {@link Service}. Result Intent still carries one {@link ExtendedHashMap} under
  * {@link #sData} so {@link TimerEditFragment} stays unchanged at the edge.
  */
-public class TimerServicePickFragment extends BaseHttpRecyclerFragment
-		implements GetBouquetListTask.GetBouquetListTaskHandler {
+public class TimerServicePickFragment extends BaseHttpRecyclerFragment {
 
 	private final ArrayList<Service> mBouquets = new ArrayList<>();
 	private final ArrayList<Service> mServices = new ArrayList<>();
@@ -50,7 +50,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 	@Nullable
 	private Service mCurrentBouquet;
 	@Nullable
-	private GetBouquetListTask mBouquetListTask;
+	private Job mBouquetLoadJob;
 	@Nullable
 	private Job mServiceLoadJob;
 	/** Bumped when starting a load so late callbacks are ignored. */
@@ -112,16 +112,23 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 
 	@Override
 	public void onDestroyView() {
+		cancelBouquetLoad(true);
 		cancelServiceLoad(true);
-		if (mBouquetListTask != null) {
-			mBouquetListTask.cancel(true);
-			mBouquetListTask = null;
-			mHttpHelper.onLoadFinished();
-		}
 		if (mBouquets.isEmpty() && mServices.isEmpty()) {
 			mReload = true;
 		}
 		super.onDestroyView();
+	}
+
+	private void cancelBouquetLoad(boolean finishUi) {
+		if (mBouquetLoadJob == null) {
+			return;
+		}
+		mBouquetLoadJob.cancel(null);
+		mBouquetLoadJob = null;
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+		}
 	}
 
 	private void cancelServiceLoad(boolean finishUi) {
@@ -133,15 +140,6 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		if (finishUi) {
 			mHttpHelper.onLoadFinished();
 		}
-	}
-
-	@Override
-	public void onDestroy() {
-		if (mBouquetListTask != null) {
-			mBouquetListTask.cancel(true);
-		}
-		cancelServiceLoad(false);
-		super.onDestroy();
 	}
 
 	@Override
@@ -168,7 +166,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 	@Override
 	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from GetBouquetListTask / ServiceListLoad.
+		// Unused: rows come from BouquetListLoad / ServiceListLoad.
 	}
 
 	@Override
@@ -238,13 +236,14 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 		cancelServiceLoad(false);
-		if (mBouquetListTask != null) {
-			mBouquetListTask.cancel(true);
-		}
+		cancelBouquetLoad(false);
 		mLoadGeneration++;
 		mBouquetReadyForGeneration = mLoadGeneration;
-		mBouquetListTask = new GetBouquetListTask(this);
-		mBouquetListTask.execute();
+		final int generation = mBouquetReadyForGeneration;
+		mBouquetLoadJob = BouquetListLoadKt.launchBouquetListLoad(this, (result, bouquets, errorText) -> {
+			onBouquetListReady(generation, result, bouquets, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
 	private void loadServices() {
@@ -254,10 +253,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (mBouquetListTask != null) {
-			mBouquetListTask.cancel(true);
-			mBouquetListTask = null;
-		}
+		cancelBouquetLoad(false);
 		cancelServiceLoad(false);
 		mLoadGeneration++;
 		mServiceReadyForGeneration = mLoadGeneration;
@@ -270,9 +266,9 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		});
 	}
 
-	@Override
-	public void onBouquetListReady(boolean result, GetBouquetListTask.Bouquets bouquets, String errorText) {
-		if (mBouquetReadyForGeneration != mLoadGeneration || mCurrentBouquet != null) {
+	private void onBouquetListReady(int generation, boolean result, Bouquets bouquets, String errorText) {
+		mBouquetLoadJob = null;
+		if (generation != mLoadGeneration || mCurrentBouquet != null) {
 			return;
 		}
 		mHttpHelper.onLoadFinished();
