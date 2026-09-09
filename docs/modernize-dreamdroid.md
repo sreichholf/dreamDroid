@@ -42,13 +42,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | epg-search-compose | [#193](https://github.com/sreichholf/dreamDroid/pull/193) | merged | `EpgSearchFragment` Compose list; dropped `EpgBouquetAdapter` + multi-service row XML. |
 | share-profiles-compose | [#196](https://github.com/sreichholf/dreamDroid/pull/196) | merged | `ShareActivity` Compose list + `ShareProfilesScreenTest`; dropped `ProfileAdapter`.
 | epg-detail-compose | [#197](https://github.com/sreichholf/dreamDroid/pull/197) | merged | `EpgDetailBottomSheet` Compose + typed `Event`; pinned actions outside scroll.
-| drawer-dialogs-compose | [#198](https://github.com/sreichholf/dreamDroid/pull/198) | open | Sleep timer / send message / power / changelog / connection error → Compose; drop sleeptimer/send_message XML.
+| drawer-dialogs-compose | [#198](https://github.com/sreichholf/dreamDroid/pull/198) | merged | Sleep timer / send message / power / changelog / connection error → Compose; drop sleeptimer/send_message XML. |
+| device-info-typed | [#199](https://github.com/sreichholf/dreamDroid/pull/199) | open | typed `enigma.DeviceInfo` for `/web/deviceinfo`; XML UI stays; CheckProfile uses typed parse. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, signal (device info typed in this PR). Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #197** (Share #196, EPG detail #197). `drawer-dialogs-compose` is open as [#198](https://github.com/sreichholf/dreamDroid/pull/198). Still open in G: device-info, signal, timer-edit, movie detail, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #198** (Share #196, EPG detail #197, drawer dialogs #198). Still open in G: device-info Compose (after this typed PR), signal, timer-edit, movie detail, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
