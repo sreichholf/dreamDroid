@@ -141,11 +141,7 @@ public class PickServiceFragment extends BaseHttpRecyclerFragment
 			}
 		}
 		if (rows.isEmpty()) {
-			if (errorText != null && !errorText.isEmpty()) {
-				setEmptyText(errorText);
-			} else {
-				setEmptyText(getText(R.string.no_list_item));
-			}
+			setEmptyText(getText(R.string.no_list_item));
 		} else {
 			mServices.addAll(rows);
 		}
