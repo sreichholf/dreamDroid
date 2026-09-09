@@ -40,12 +40,13 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | epg-bouquet-compose | [#192](https://github.com/sreichholf/dreamDroid/pull/192) | merged | `EpgBouquetFragment` Compose list + `EpgBouquetScreenTest`.
 | service-epg-compose | [#194](https://github.com/sreichholf/dreamDroid/pull/194) | merged | `ServiceEpgListFragment` Compose list + `ServiceEpgScreenTest`.
 | epg-search-compose | [#193](https://github.com/sreichholf/dreamDroid/pull/193) | merged | `EpgSearchFragment` Compose list; dropped `EpgBouquetAdapter` + multi-service row XML. |
+| share-profiles-compose | — | open | open on `cursor/share-profiles-compose-c88a` — `ShareActivity` Compose list + `ShareProfilesScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #194** (profile-edit, zap, remote, screenshot, settings, backup, current-event, pick-service, EPG bouquet/search/service-epg). Still open in G: device-info, signal, timer-edit, movie/EPG detail, drawer dialogs, timer service pick, Share. Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #194**. `share-profiles-compose` is open on `cursor/share-profiles-compose-c88a`. Still open in G: device-info, signal, timer-edit, movie/EPG detail, drawer dialogs, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
@@ -60,11 +61,10 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 ### Not done, recorded so it is not pretended done
 
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
-- Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for `ShareActivity` / video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
-- `ProfileAdapter` remains for `ShareActivity`.
-- Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
+- Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - Wave 3 Compose landed through #194: profile-edit #184, zap #185, remote #186, screenshot #187, settings #188, backup #189, current-event #190, pick-service #191, EPG bouquet #192, EPG search #193 (dropped `EpgBouquetAdapter`), service EPG #194.
-- Appendix G still open: device-info, signal, timer-edit, movie detail, EPG detail, drawer dialogs, timer service pick, Share profiles.
+- Share profiles Compose is open on `cursor/share-profiles-compose-c88a` (drops `ProfileAdapter`).
+- Appendix G still open: device-info, signal, timer-edit, movie detail, EPG detail, drawer dialogs, timer service pick.
 - Remaining typed API: hub now/next, movies, timers, device info, signal.
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
@@ -158,7 +158,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 - [x] `ProfileListFragment` hosts `ComposeView`. XML `fab_main` hidden. Compose FAB uses `R.string.profile_add`.
 - [x] `MainActivity.onProfileChecked`: after `navigateTo(Profiles)`, skip `navigateTo(services)` when `isFirstStart` even if `mDetailFragment` is still null after `commit()`.
 - [x] Room `AppDatabase.profiles()` kept.
-- [ ] `ProfileAdapter` **not** deleted. `ShareActivity` still uses it.
+- [x] `ProfileAdapter` deleted with `share-profiles-compose` (was Share-only).
 
 **Build.**
 
@@ -367,7 +367,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Movies list | Compose on `main` via #170 | Hub Movies destination. |
 | Timer list / edit | Compose list on `main` via #170; `TimerEditFragment` | List Compose; edit stays XML. |
 | Profile add/edit | Compose on `main` via #184 | Form Compose; list was #168. Autodiscovery stays Java. |
-| Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
+| Share / pick profile | open `cursor/share-profiles-compose-c88a` | Compose list; Room profiles; drops `ProfileAdapter`. |
 | Zap | Compose on `main` via #185 | Compose grid + Picasso picons. Rows typed `enigma.Service` (#173). Picker list typing on `main` via #181. |
 | Service EPG list | Compose on `main` via #194 | Compose list; typed `enigma.Event` (#176). Detail/timer edge still hash. |
 | EPG bouquet | Compose on `main` via #192 | Compose list; typed `enigma.Event` (#179). Shared `EpgBouquetScreen` with search. Detail/timer edge still hash. |
@@ -436,7 +436,7 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 16 | `service-epg-compose` | `ServiceEpgListFragment` | Channel → EPG | No for list (rows typed #176) — **merged** [#194](https://github.com/sreichholf/dreamDroid/pull/194) |
 | 17 | `pick-service-compose` | `PickServiceFragment` | Zap / EPG bouquet pick | No for list (rows typed #181) — **merged** [#191](https://github.com/sreichholf/dreamDroid/pull/191) |
 | 18 | `timer-service-pick-compose` | `ServiceListFragment` (pick mode) | Timer edit service pick | Yes — type pick path |
-| 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) |
+| 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) — **open** on `cursor/share-profiles-compose-c88a` |
 
 **Out of this wave:** drawer shell (`MainActivity` / `NavigationHelper`), Leanback `tv/`, VLC `VideoActivity` / `VideoOverlayFragment`, home-screen widgets.
 
