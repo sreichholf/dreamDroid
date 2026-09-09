@@ -22,7 +22,11 @@ public class GetCurrentServiceTask extends AsyncHttpTaskBase<Void, String, Boole
 			return false;
 		}
 		mCurrent = HttpFragmentHelper.fetchCurrentService(getHttpClient());
-		return !getHttpClient().hasError();
+		if (getHttpClient().hasError()) {
+			return false;
+		}
+		// HTTP ok but SAX/parser failed — not a successful load.
+		return mCurrent != null;
 	}
 
 	@Override
@@ -31,8 +35,16 @@ public class GetCurrentServiceTask extends AsyncHttpTaskBase<Void, String, Boole
 		if (isInvalid(handler)) {
 			return;
 		}
-		boolean success = Boolean.TRUE.equals(result);
-		handler.onCurrentServiceReady(success, mCurrent, success ? null : getErrorText());
+		boolean success = Boolean.TRUE.equals(result) && mCurrent != null;
+		String errorText = null;
+		if (!success) {
+			if (getHttpClient().hasError()) {
+				errorText = getErrorText();
+			} else {
+				errorText = handler.getString(net.reichholf.dreamdroid.R.string.error_parsing);
+			}
+		}
+		handler.onCurrentServiceReady(success, mCurrent, errorText);
 	}
 
 	public interface GetCurrentServiceTaskHandler extends AsyncHttpTaskBaseHandler {
