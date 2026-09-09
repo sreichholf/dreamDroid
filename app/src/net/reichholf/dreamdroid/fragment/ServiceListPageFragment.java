@@ -300,6 +300,9 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment
 	@Override
 	public void onEpgNowNextReady(boolean success, @NonNull List<ServiceNowNext> rows, @Nullable String errorText) {
 		mHttpHelper.onLoadFinished();
+		if (!isResumed()) {
+			return;
+		}
 		getAppCompatActivity().supportInvalidateOptionsMenu();
 		mRows.clear();
 		mListState.replaceAll(java.util.Collections.emptyList());
