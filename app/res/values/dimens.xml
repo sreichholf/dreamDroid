@@ -18,7 +18,6 @@
     <dimen name="app_defaultsize_h">598.0dip</dimen>
     <dimen name="app_minimumsize_w">632.0dip</dimen>
     <dimen name="app_minimumsize_h">598.0dip</dimen>
-    <dimen name="multiepg_row_height">100dp</dimen>
     <dimen name="single_dp">1dp</dimen>
     <dimen name="fab_min_significant_scroll">8dp</dimen>
     <dimen name="keyline1">16dip</dimen>

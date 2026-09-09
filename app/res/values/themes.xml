@@ -8,7 +8,7 @@
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
         <item name="cardPreventCornerOverlap">true</item>
         <item name="cardBackgroundColor">@color/cardview_light_background</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground
         </item>
         <item name="actionModeStyle">@style/ActionModeStyle</item>
@@ -176,7 +176,7 @@
         <item name="android:windowTranslucentStatus">@bool/requireTranslucentStatusbar</item>
         <item name="cardPreventCornerOverlap">true</item>
         <item name="cardBackgroundColor">@color/cardview_dark_background</item>
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:activatedBackgroundIndicator">?android:attr/selectableItemBackground
         </item>
         <item name="actionModeShareDrawable">@drawable/ic_action_share</item>

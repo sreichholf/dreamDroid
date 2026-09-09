@@ -209,10 +209,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		View bottomNav = getAppCompatActivity().findViewById(R.id.bottom_navigation);
-		if (bottomNav != null)
-			bottomNav.setVisibility(View.GONE);
-
 		ComposeView header = view.findViewById(R.id.tv_movies_header);
 		ComposeView nav = view.findViewById(R.id.tv_movies_nav);
 		TvMoviesHubStateKt.bindTvMoviesHeader(header, mHubState, index -> {
@@ -284,9 +280,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		super.onPause();
 		if (mMode.equals(MODE_TIMER))
 			mPager.setAdapter(null);
-		View bottomNav = getAppCompatActivity().findViewById(R.id.bottom_navigation);
-		if (bottomNav != null)
-			bottomNav.setVisibility(View.GONE);
 	}
 
 	@Override
@@ -294,9 +287,6 @@ public class ServiceListPager extends BaseHttpFragment implements GetBouquetList
 		super.onResume();
 		if (mMode.equals(MODE_TIMER))
 			mPager.setAdapter(mTimerListAdapter);
-		View bottomNav = getAppCompatActivity().findViewById(R.id.bottom_navigation);
-		if (bottomNav != null)
-			bottomNav.setVisibility(View.GONE);
 	}
 
 	@Override

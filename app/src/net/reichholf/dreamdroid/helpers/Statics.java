@@ -73,10 +73,6 @@ public class Statics {
 	public static final int ITEM_PICK_END_TIME= 0x6044;
 	public static final int ITEM_EDIT = R.id.menu_edit;
 
-	public static final int ITEM_BACKUP_EXPORT = R.id.menu_export;
-	public static final int ITEM_BACKUP_IMPORT = R.id.menu_import;
-
-
 	public static final int REQUEST_EDIT_TIMER = 0x5000;
 	public static final int REQUEST_PICK_SERVICE = 0x5001;
 	public static final int REQUEST_PICK_BOUQUET = 0x5002;
