@@ -14,6 +14,7 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 	private ExecutorService executor;
 	private Handler handler;
 	private Future future;
+	private volatile boolean cancelled;
 
 	protected AsyncTaskExecutorService() {
 		executor = Executors.newSingleThreadExecutor(r -> {
@@ -56,21 +57,43 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 	}
 
 	public void execute(Params params) {
+		cancelled = false;
 		getHandler().post(() -> {
 			onPreExecute();
 			future = executor.submit(() -> {
 				Result result = doInBackground(params);
-				getHandler().post(() -> onPostExecute(result));
+				getHandler().post(() -> {
+					try {
+						onPostExecute(result);
+					} finally {
+						shutdownExecutor();
+					}
+				});
 			});
 		});
 	}
 
 	public void cancel(boolean mayInterruptIfRunning) {
-		if (future != null && !future.isDone())
+		cancelled = true;
+		if (future != null && !future.isDone()) {
 			future.cancel(mayInterruptIfRunning);
+		}
+		shutdownExecutor();
 	}
 
 	public boolean isCancelled() {
-		return future.isCancelled() || executor == null || executor.isTerminated() || executor.isShutdown();
+		if (cancelled) {
+			return true;
+		}
+		if (future != null && future.isCancelled()) {
+			return true;
+		}
+		return executor == null || executor.isTerminated() || executor.isShutdown();
+	}
+
+	private void shutdownExecutor() {
+		if (executor != null && !executor.isShutdown()) {
+			executor.shutdownNow();
+		}
 	}
 }
