@@ -9,5 +9,8 @@ data class Event(
     val description: String = "",
     val descriptionExtended: String = "",
     val serviceReference: String = "",
-    val serviceName: String = ""
+    val serviceName: String = "",
+    val startReadable: String = "",
+    val startTimeReadable: String = "",
+    val durationReadable: String = ""
 )

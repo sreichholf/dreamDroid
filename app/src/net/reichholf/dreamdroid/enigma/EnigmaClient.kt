@@ -20,11 +20,37 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
+    suspend fun getEvents(
+        params: List<NameValuePair> = emptyList(),
+        uri: String = URIStore.EPG_SERVICE
+    ): List<Event> {
+        return withContext(Dispatchers.IO) {
+            val requestParams = ArrayList(params)
+            if (!http.fetchPageContent(uri, requestParams)) {
+                emptyList()
+            } else {
+                EventParser.parse(http.pageContentString)
+            }
+        }
+    }
+
     companion object {
         @JvmStatic
         fun getServicesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Service> {
             return runBlocking {
                 EnigmaClient(http).getServices(params)
+            }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun getEventsBlocking(
+            http: SimpleHttpClient,
+            params: List<NameValuePair>,
+            uri: String = URIStore.EPG_SERVICE
+        ): List<Event> {
+            return runBlocking {
+                EnigmaClient(http).getEvents(params, uri)
             }
         }
     }
