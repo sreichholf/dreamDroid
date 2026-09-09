@@ -22,8 +22,8 @@ import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.GetSignalTask;
 import net.reichholf.dreamdroid.enigma.Signal;
+import net.reichholf.dreamdroid.enigma.SignalLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHandler;
@@ -32,11 +32,14 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.signal.SignalScreenKt;
 import net.reichholf.dreamdroid.ui.signal.SignalUiState;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Live tuner signal meter. Compose Material 3 UI; typed {@link Signal}; HalfGauge via AndroidView.
+ * Polls via coroutine + {@code EnigmaClient.getSignal()} (generation-guarded).
  */
-public class SignalFragment extends BaseHttpFragment
-		implements GetSignalTask.GetSignalTaskHandler {
+public class SignalFragment extends BaseHttpFragment {
 	private static final String TAG = SignalFragment.class.getSimpleName();
 
 	private static int sMaxSnrDb = 20;
@@ -47,14 +50,11 @@ public class SignalFragment extends BaseHttpFragment
 	private boolean mIsUpdating = false;
 	private double mSnrDb = sMinSnrDb;
 	private long mStartTime;
-	/** Bumped on each new fetch / stop so stale GetSignalTask callbacks are ignored. */
+	/** Bumped on each new fetch / stop so stale load callbacks are ignored. */
 	private int mSignalGeneration = 0;
 
 	@Nullable
-	private GetSignalTask mSignalTask;
-	/** Strong ref so AsyncHttpTaskBase's WeakReference does not drop the callback. */
-	@Nullable
-	private GetSignalTask.GetSignalTaskHandler mSignalTaskHandler;
+	private Job mLoadJob;
 
 	private SignalUiState mUiState;
 
@@ -101,13 +101,16 @@ public class SignalFragment extends BaseHttpFragment
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mSignalTask != null) {
-			mSignalTask.cancel(true);
-			mSignalTask = null;
+	public void onDestroyView() {
+		cancelLoad();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad() {
+		if (mLoadJob != null) {
+			mLoadJob.cancel(null);
+			mLoadJob = null;
 		}
-		mSignalTaskHandler = null;
-		super.onDestroy();
 	}
 
 	@Override
@@ -143,13 +146,13 @@ public class SignalFragment extends BaseHttpFragment
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		// Unused: content comes from GetSignalTask / EnigmaClient.
+		// Unused: content comes from EnigmaClient coroutines.
 		return new AsyncSimpleLoader(getAppCompatActivity(), new SignalRequestHandler(), args);
 	}
 
 	@Override
 	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
-		// Unused: content comes from GetSignalTask / EnigmaClient.
+		// Unused: content comes from EnigmaClient coroutines.
 	}
 
 	private void applySignal(@NonNull Signal signal) {
@@ -174,42 +177,19 @@ public class SignalFragment extends BaseHttpFragment
 	}
 
 	private void loadSignal() {
-		if (!isAdded() || mIsUpdating) {
+		if (!isAdded() || getView() == null || mIsUpdating) {
 			return;
 		}
 		mIsUpdating = true;
 		final int generation = ++mSignalGeneration;
-		if (mSignalTask != null) {
-			mSignalTask.cancel(true);
-		}
-		mSignalTaskHandler = new GetSignalTask.GetSignalTaskHandler() {
-			@Override
-			public void onSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
-				if (generation != mSignalGeneration) {
-					return;
-				}
-				handleSignalReady(success, signal, errorText);
+		cancelLoad();
+		mLoadJob = SignalLoadKt.launchSignalLoad(this, (success, signal, errorText) -> {
+			if (generation != mSignalGeneration) {
+				return Unit.INSTANCE;
 			}
-
-			@Nullable
-			@Override
-			public String getString(int resId) {
-				return SignalFragment.this.getString(resId);
-			}
-
-			@Nullable
-			@Override
-			public android.content.Context getContext() {
-				return SignalFragment.this.getContext();
-			}
-		};
-		mSignalTask = new GetSignalTask(mSignalTaskHandler);
-		mSignalTask.execute();
-	}
-
-	@Override
-	public void onSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
-		handleSignalReady(success, signal, errorText);
+			handleSignalReady(success, signal, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
 	private void handleSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
@@ -255,11 +235,7 @@ public class SignalFragment extends BaseHttpFragment
 		mHandler.removeCallbacks(mPlaySoundTask);
 		mHandler.removeCallbacks(mUpdateTask);
 		mSignalGeneration++;
-		if (mSignalTask != null) {
-			mSignalTask.cancel(true);
-			mSignalTask = null;
-		}
-		mSignalTaskHandler = null;
+		cancelLoad();
 		mIsUpdating = false;
 		mUiState.clearMeter();
 		restoreTitle();
