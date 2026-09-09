@@ -24,11 +24,11 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | Cloud Agent env | [#174](https://github.com/sreichholf/dreamDroid/pull/174) | merged | Cloud Agent `environment.json` / install helpers. |
 | dead-weight (MediaPlayer + MultiDex lib + orphan layouts) | [#175](https://github.com/sreichholf/dreamDroid/pull/175) | merged | drop unused MediaPlayer UI, `androidx.multidex` install helper, orphan XML. Keep `multiDexEnabled`, `MEDIA_PLAYER_PLAY`, ButterKnife. |
 | Event typed rows (ServiceEpgList) | [#176](https://github.com/sreichholf/dreamDroid/pull/176) | merged | typed `enigma.Event` into `ServiceEpgListFragment`. XML list stays. Bouquet/search EPG not migrated. |
-| dead-weight (EPG timeline + prefs + menus + bottom nav) | [#177](https://github.com/sreichholf/dreamDroid/pull/177) | open | drop dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. Keep ButterKnife. |
+| dead-weight (EPG timeline + prefs + menus + bottom nav) | [#177](https://github.com/sreichholf/dreamDroid/pull/177) | merged | `c89afc11` drop dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. Keep ButterKnife. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) Zap typing (#173) plus Service EPG typing (#176) are on `main` or in flight. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) Zap typing (#173) plus Service EPG typing (#176) are on `main`. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
 ### Operator overrides (this program)
 
