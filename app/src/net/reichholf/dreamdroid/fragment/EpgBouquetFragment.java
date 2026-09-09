@@ -147,7 +147,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment
 				mListState,
 				event -> {
 					mCurrentItem = EpgListMapper.toExtendedHashMap(event);
-					EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(mCurrentItem);
+					EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(event);
 					getMultiPaneHandler().showDialogFragment(epgDetailBottomSheet, "epg_detail_dialog");
 					return kotlin.Unit.INSTANCE;
 				}
