@@ -68,11 +68,9 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Wave 3 Compose landed through #198: profile-edit #184 … service EPG #194, Share #196, EPG detail #197, drawer dialogs #198. Typed device-info #199 on `main`.
-- Share profiles Compose merged as [#196](https://github.com/sreichholf/dreamDroid/pull/196) (dropped `ProfileAdapter`).
-- EPG detail Compose merged as [#197](https://github.com/sreichholf/dreamDroid/pull/197).
-- Appendix G still open: device-info Compose #201, signal Compose (typed first — this PR #200), timer-edit, movie detail, timer service pick.
-- Remaining typed API: hub now/next, movies, timers.
+- Wave 3 Compose landed through #198; typed device-info #199 + signal #200 on `main`. Open Compose: device-info #201, signal #202; typed timers #203.
+- Appendix G still open: device-info Compose (this PR #201), signal Compose #202, timer-edit, movie detail, timer service pick.
+- Remaining typed API: hub now/next, movies, timers (#203 open).
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
 ## How to read this
