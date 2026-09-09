@@ -56,17 +56,18 @@ public class MovieParserTest {
                 + "<e2filesize>0</e2filesize>"
                 + "</e2movie></e2movielist>";
         List<Movie> movies = MovieParser.INSTANCE.parse(xml);
+        assertNotNull(movies);
         assertEquals(1, movies.size());
         assertEquals("ZDFHD", movies.get(0).getServiceName());
     }
 
     @Test
-    public void emptyXmlYieldsNoMovies() {
-        assertEquals(0, MovieParser.INSTANCE.parse("").size());
+    public void emptyXmlYieldsNull() {
+        assertEquals(null, MovieParser.INSTANCE.parse(""));
     }
 
     @Test
-    public void malformedXmlYieldsNoMovies() {
-        assertEquals(0, MovieParser.INSTANCE.parse("<e2movielist><e2movie>").size());
+    public void malformedXmlYieldsNull() {
+        assertEquals(null, MovieParser.INSTANCE.parse("<e2movielist><e2movie>"));
     }
 }
