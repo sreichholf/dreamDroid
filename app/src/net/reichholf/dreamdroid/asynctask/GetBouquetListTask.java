@@ -42,11 +42,11 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 			return false;
 
 		addBouquets(mTV, mBouquets.tv);
-		if (getHttpClient().hasError()) {
-			return false;
-		}
 		addBouquets(mRadio, mBouquets.radio);
-		return !getHttpClient().hasError();
+		boolean hadError = getHttpClient().hasError();
+		boolean hasAny = !mBouquets.tv.isEmpty() || !mBouquets.radio.isEmpty();
+		// Keep partial roots (e.g. TV ok, radio failed). Fail only when empty and HTTP erred.
+		return hasAny || !hadError;
 	}
 
 	private boolean addBouquets(String ref, ArrayList<Service> target) {
