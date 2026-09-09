@@ -152,13 +152,6 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
 
         @JvmStatic
-        fun getDeviceInfoBlocking(http: SimpleHttpClient): DeviceInfo? {
-            return runBlocking {
-                EnigmaClient(http).getDeviceInfo()
-            }
-        }
-
-        @JvmStatic
         fun getSignalBlocking(http: SimpleHttpClient): Signal? {
             return runBlocking {
                 EnigmaClient(http).getSignal()
