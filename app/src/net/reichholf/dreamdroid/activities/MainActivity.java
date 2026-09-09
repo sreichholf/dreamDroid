@@ -34,7 +34,6 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.reichholf.dreamdroid.BuildConfig;
@@ -333,15 +332,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			};
 			mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-			NavigationView navigationView = findViewById(R.id.navigation_view);
-			View navHeader = navigationView.getHeaderView(0);
-			View profileChooser = navHeader.findViewById(R.id.drawer_profile);
+			View profileChooser = findViewById(R.id.drawer_profile);
 			profileChooser.setOnClickListener(view -> {
 				checkNavigationHelper();
 				mNavigationHelper.navigateTo(R.id.menu_navigation_profiles);
 			});
-			mActiveProfile = navHeader.findViewById(R.id.drawer_profile_name);
-			mConnectionState = navHeader.findViewById(R.id.drawer_profile_status);
+			mActiveProfile = findViewById(R.id.drawer_profile_name);
+			mConnectionState = findViewById(R.id.drawer_profile_status);
 		} else {
 			getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 		}
