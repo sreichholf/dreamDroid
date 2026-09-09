@@ -61,6 +61,18 @@ class DeviceInfoUiState {
         hdds = info.hdds.map { DeviceInfoRow(it.model, hddCapacityFormat(it.capacity, it.free)) }
         ready = true
     }
+
+    fun beginLoading() {
+        ready = false
+        guiVersion = ""
+        imageVersion = ""
+        interfaceVersion = ""
+        frontProcessorVersion = ""
+        deviceName = ""
+        frontends = emptyList()
+        nics = emptyList()
+        hdds = emptyList()
+    }
 }
 
 @Composable

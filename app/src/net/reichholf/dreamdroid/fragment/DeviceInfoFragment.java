@@ -109,6 +109,7 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		if (!isAdded()) {
 			return;
 		}
+		mUiState.beginLoading();
 		mHttpHelper.onLoadStarted();
 		if (!"".equals(getBaseTitle().trim())) {
 			setCurrentTitle(getString(R.string.loading));
