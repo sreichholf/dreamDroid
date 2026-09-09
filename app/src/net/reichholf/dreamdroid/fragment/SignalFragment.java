@@ -63,6 +63,9 @@ public class SignalFragment extends BaseHttpFragment
 
 	@Nullable
 	private GetSignalTask mSignalTask;
+	/** Strong ref so AsyncHttpTaskBase's WeakReference does not drop the callback. */
+	@Nullable
+	private GetSignalTask.GetSignalTaskHandler mSignalTaskHandler;
 
 	@NonNull
 	private Handler mHandler = new Handler();
@@ -234,13 +237,13 @@ public class SignalFragment extends BaseHttpFragment
 		if (mSignalTask != null) {
 			mSignalTask.cancel(true);
 		}
-		mSignalTask = new GetSignalTask(new GetSignalTask.GetSignalTaskHandler() {
+		mSignalTaskHandler = new GetSignalTask.GetSignalTaskHandler() {
 			@Override
 			public void onSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
 				if (generation != mSignalGeneration) {
 					return;
 				}
-				SignalFragment.this.onSignalReady(success, signal, errorText);
+				handleSignalReady(success, signal, errorText);
 			}
 
 			@Nullable
@@ -254,16 +257,22 @@ public class SignalFragment extends BaseHttpFragment
 			public android.content.Context getContext() {
 				return SignalFragment.this.getContext();
 			}
-		});
+		};
+		mSignalTask = new GetSignalTask(mSignalTaskHandler);
 		mSignalTask.execute();
 	}
 
 	@Override
 	public void onSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
+		handleSignalReady(success, signal, errorText);
+	}
+
+	private void handleSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
 		mIsUpdating = false;
 		if (!isAdded()) {
 			return;
 		}
+		restoreTitle();
 		if (!mEnabled.isChecked()) {
 			return;
 		}
@@ -276,6 +285,13 @@ public class SignalFragment extends BaseHttpFragment
 		}
 		applySignal(signal);
 		reload();
+	}
+
+	private void restoreTitle() {
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
 	}
 
 	private void startPolling() {
@@ -297,11 +313,13 @@ public class SignalFragment extends BaseHttpFragment
 			mSignalTask.cancel(true);
 			mSignalTask = null;
 		}
+		mSignalTaskHandler = null;
 		mIsUpdating = false;
 		mSnr.setValue(0);
 		mSnrdb.setText("-");
 		mBer.setText("-");
 		mAgc.setText("-");
+		restoreTitle();
 	}
 
 	void playSound(double freqOfTone) {
