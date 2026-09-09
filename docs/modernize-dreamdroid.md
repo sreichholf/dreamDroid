@@ -31,13 +31,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | CurrentService typed | [#183](https://github.com/sreichholf/dreamDroid/pull/183) | merged | typed `enigma.CurrentService` for `/web/getcurrent`; XML UI stays; hash only at EPG detail/timer edge. |
 | profile-edit-compose | [#184](https://github.com/sreichholf/dreamDroid/pull/184) | merged | `ProfileEditFragment` Compose form + `ProfileEditScreenTest`. |
 | zap-compose | [#185](https://github.com/sreichholf/dreamDroid/pull/185) | merged | `55ecc5df` `ZapFragment` Compose grid + `ZapScreenTest`. |
-| virtual-remote-compose ([#186](https://github.com/sreichholf/dreamDroid/pull/186)) | — | open | open on `cursor/virtual-remote-compose-c88a` — `VirtualRemoteFragment` Compose pad + `VirtualRemoteScreenTest` |
+| virtual-remote-compose | [#186](https://github.com/sreichholf/dreamDroid/pull/186) | merged | `bd2ccfb9` `VirtualRemoteFragment` Compose pad + `VirtualRemoteScreenTest`. |
+| screenshot-compose | — | open | open on `cursor/screenshot-compose-c88a` — `ScreenShotFragment` Compose + PhotoView + `ScreenshotScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. `profile-edit-compose` is on `main` as #184. `zap-compose` is on `main` as #185. Next screen (`virtual-remote-compose`) is open on `cursor/virtual-remote-compose-c88a`.
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. `profile-edit-compose` is on `main` as #184. `zap-compose` is on `main` as #185. `virtual-remote-compose` is on `main` as #186. Next screen (`screenshot-compose`) is open on `cursor/screenshot-compose-c88a`.
 
 ### Operator overrides (this program)
 
@@ -57,7 +58,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
 - Zap Compose grid is on `main` via #185. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker list typing is on `main` via #181 (Intent still one `ExtendedHashMap` at send).
 - Profile edit form is Compose on `main` via #184.
-- Virtual remote Compose pad is open on `cursor/virtual-remote-compose-c88a`.
+- Virtual remote Compose pad is on `main` via #186. Tablet screenshot host kept.
+- Screenshot Compose is open on `cursor/screenshot-compose-c88a`.
 - Service EPG list still XML. Rows are typed `enigma.Event` on `main` via #176. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Dead `EpgTimelineFragment` removed in #177.
 - EPG bouquet still XML. Rows are typed `enigma.Event` on `main` via #179. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
 - EPG search still XML. Rows are typed `enigma.Event` on `main` via #180. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
@@ -353,7 +355,7 @@ This was never "replace the phone app with Compose." The original boxes named fi
 
 ### Still Java/XML phone screens (drawer and related)
 
-Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185). The pager pages behind those tabs landed as Compose in #170. Virtual remote Compose is open on `cursor/virtual-remote-compose-c88a`.
+Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186). The pager pages behind those tabs landed as Compose in #170. Screenshot Compose is open on `cursor/screenshot-compose-c88a`.
 
 | Surface | Code | Notes |
 | --- | --- | --- |
@@ -369,10 +371,10 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Bouquet picker | `PickServiceFragment`, `ServiceNameAdapter` | XML list. Typed `enigma.Service` on `main` via #181. Intent still one hash at send. |
 | EPG detail | `EpgDetailBottomSheet` | ButterKnife. |
 | Current event | `CurrentServiceFragment` | Typed `enigma.CurrentService` on `main` via #183. Detail/timer edge still hash. |
-| Virtual remote | open `cursor/virtual-remote-compose-c88a` | Compose pad + HTTP keys; tablet screenshot host kept. |
+| Virtual remote | Compose on `main` via #186 | Compose pad + HTTP keys; tablet screenshot host kept. |
 | Device info | `DeviceInfoFragment` | |
 | Signal | `SignalFragment` + vendored gauge lib | |
-| Screenshot | `ScreenShotFragment` + PhotoView | |
+| Screenshot | open `cursor/screenshot-compose-c88a` | Compose + PhotoView AndroidView; reload/share/save kept. |
 | Settings | `MyPreferenceFragment`, `androidx.preference` | `legacy-preference-v14` removed; phone themes use `PreferenceThemeOverlay`. |
 | Backup | `BackupFragment`, `DreamDroidBackupAgent` | Still talks to legacy SQLite. |
 | Sleep timer / send message / power / changelog | dialogs | |
@@ -415,10 +417,10 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 1 | `profile-edit-compose` | `ProfileEditFragment` | Profiles FAB/row → `SimpleToolbarFragmentActivity` | No (Room) — **merged** [#184](https://github.com/sreichholf/dreamDroid/pull/184) |
 | 2 | `current-event-compose` | `CurrentServiceFragment` | Drawer current | Yes — type current-service first |
 | 3 | `zap-compose` | `ZapFragment` | Drawer zap | No (rows already typed #173) — **merged** [#185](https://github.com/sreichholf/dreamDroid/pull/185) |
-| 4 | `virtual-remote-compose` | `VirtualRemotePagerFragment` / `VirtualRemoteFragment` | Drawer remote | No — **open** on `cursor/virtual-remote-compose-c88a` |
+| 4 | `virtual-remote-compose` | `VirtualRemotePagerFragment` / `VirtualRemoteFragment` | Drawer remote | No — **merged** [#186](https://github.com/sreichholf/dreamDroid/pull/186) |
 | 5 | `device-info-compose` | `DeviceInfoFragment` | Drawer device info | Prefer type device-info first |
 | 6 | `signal-compose` | `SignalFragment` | Drawer signal | Prefer type signal first |
-| 7 | `screenshot-compose` | `ScreenShotFragment` | Drawer screenshot | No |
+| 7 | `screenshot-compose` | `ScreenShotFragment` | Drawer screenshot | No — **open** on `cursor/screenshot-compose-c88a` |
 | 8 | `settings-compose` | `MyPreferenceFragment` | Drawer settings | No |
 | 9 | `backup-compose` | `BackupFragment` | Drawer backup | No |
 | 10 | `timer-edit-compose` | `TimerEditFragment` | Hub / EPG → timer edit | Yes — type timers list/edit path |

@@ -11,7 +11,6 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
@@ -31,13 +30,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.core.content.FileProvider;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.loader.content.Loader;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.evernote.android.state.State;
-import com.github.chrisbanes.photoview.PhotoView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
@@ -48,6 +46,8 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.loader.AsyncByteLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.screenshot.ScreenshotScreenKt;
+import net.reichholf.dreamdroid.ui.screenshot.ScreenshotUiState;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,12 +56,13 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
 /**
- * Allows fetching and showing the actual TV-Screen content
+ * Allows fetching and showing the actual TV-Screen content.
+ * Phone UI is Compose Material 3 with PhotoView zoom via AndroidView.
  *
  * @author sre
  */
 public class ScreenShotFragment extends BaseFragment implements
-		LoaderCallbacks<LoaderResult<byte[]>>, SwipeRefreshLayout.OnRefreshListener {
+		LoaderCallbacks<LoaderResult<byte[]>> {
 	public static final int TYPE_OSD = 0;
 	public static final int TYPE_VIDEO = 1;
 	public static final int TYPE_ALL = 2;
@@ -77,7 +78,6 @@ public class ScreenShotFragment extends BaseFragment implements
 
 	private boolean mSetTitle;
 	private boolean mActionsEnabled;
-	private PhotoView mImageView;
 	private int mType;
 	private int mFormat;
 	private int mSize;
@@ -87,11 +87,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	@Nullable
 	private MediaScannerConnection mScannerConn;
 	private HttpFragmentHelper mHttpHelper;
-
-	@Override
-	public void onRefresh() {
-		reload();
-	}
+	private ScreenshotUiState mUiState;
 
 	@Override
 	public boolean hasHeader() {
@@ -152,11 +148,6 @@ public class ScreenShotFragment extends BaseFragment implements
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.screenshot, null);
-
-		mImageView = view.findViewById(R.id.screenshoot);
-		mImageView.setBackgroundColor(Color.BLACK);
-
 		Bundle extras = getArguments();
 
 		if (extras == null) {
@@ -171,14 +162,40 @@ public class ScreenShotFragment extends BaseFragment implements
 		if (mRawImage == null) {
 			mRawImage = new byte[0];
 		}
-		return view;
+
+		mUiState = new ScreenshotUiState();
+		mUiState.setActionsEnabled(mActionsEnabled);
+		if (mRawImage.length > 0) {
+			mUiState.setBitmap(BitmapFactory.decodeByteArray(mRawImage, 0, mRawImage.length));
+		}
+
+		ComposeView composeView = new ComposeView(requireContext());
+		composeView.setLayoutParams(new ViewGroup.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT
+		));
+		ScreenshotScreenKt.bindScreenshotScreen(
+				composeView,
+				mUiState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					share();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					saveToFile();
+					return kotlin.Unit.INSTANCE;
+				}
+		);
+		return composeView;
 	}
 
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		mHttpHelper.onViewCreated(view, savedInstanceState);
-		SwipeRefreshLayout SwipeRefreshLayout = view.findViewById(R.id.ptr_layout);
-		SwipeRefreshLayout.setEnabled(false);
 	}
 
 	@Override
@@ -275,11 +292,16 @@ public class ScreenShotFragment extends BaseFragment implements
 		if (!isAdded())
 			return;
 		mRawImage = bytes;
-		mImageView.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
-		mImageView.getAttacher().update();
+		if (mUiState != null) {
+			mUiState.setBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+			mUiState.setLoading(false);
+		}
 	}
 
-	protected void reload() {
+	public void reload() {
+		if (mUiState != null) {
+			mUiState.setLoading(true);
+		}
 		mHttpHelper.onLoadStarted();
 		ArrayList<NameValuePair> params = new ArrayList<>();
 
@@ -392,6 +414,9 @@ public class ScreenShotFragment extends BaseFragment implements
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<byte[]>> loader, @NonNull LoaderResult<byte[]> result) {
 		mHttpHelper.onLoadFinished();
+		if (mUiState != null) {
+			mUiState.setLoading(false);
+		}
 		if (!result.isError()) {
 			if (result.getResult().length > 0)
 				onScreenshotAvailable(result.getResult());
@@ -405,6 +430,9 @@ public class ScreenShotFragment extends BaseFragment implements
 	@Override
 	public void onLoaderReset(@NonNull Loader<LoaderResult<byte[]>> loader) {
 		mHttpHelper.onLoadFinished();
+		if (mUiState != null) {
+			mUiState.setLoading(false);
+		}
 	}
 
 	protected void showToast(String toastText) {
