@@ -29,7 +29,7 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | EPG search typed rows | [#180](https://github.com/sreichholf/dreamDroid/pull/180) | merged | `4f3249b2` typed `enigma.Event` into `EpgSearchFragment`; reuses `EpgBouquetAdapter`. Drop unused `EpgAdapter`. |
 | PickService typed list | [#181](https://github.com/sreichholf/dreamDroid/pull/181) | merged | `ce7cfb1d` typed `enigma.Service` into `PickServiceFragment`; load via `GetBouquetListTask`. Intent still maps one `ExtendedHashMap` at send. |
 | CurrentService typed | [#183](https://github.com/sreichholf/dreamDroid/pull/183) | merged | typed `enigma.CurrentService` for `/web/getcurrent`; XML UI stays; hash only at EPG detail/timer edge. |
-| profile-edit-compose | — | open | open on `cursor/profile-edit-compose-c88a` — `ProfileEditFragment` Compose form + `ProfileEditScreenTest` |
+| profile-edit-compose ([#184](https://github.com/sreichholf/dreamDroid/pull/184)) | — | open | open on `cursor/profile-edit-compose-c88a` — `ProfileEditFragment` Compose form + `ProfileEditScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
