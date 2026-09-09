@@ -9,13 +9,15 @@ import java.io.StringReader
 import javax.xml.parsers.SAXParserFactory
 
 object TimerParser {
-    fun parse(xml: String): List<Timer> {
+    /**
+     * @return parsed timers, or null when XML cannot be parsed (distinct from a valid empty list).
+     */
+    fun parse(xml: String): List<Timer>? {
         if (xml.isEmpty()) {
-            return emptyList()
+            return null
         }
         return parseSanitized(xml, aggressive = false)
             ?: parseSanitized(xml, aggressive = true)
-            ?: emptyList()
     }
 
     private fun parseSanitized(xml: String, aggressive: Boolean): List<Timer>? {

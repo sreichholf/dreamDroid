@@ -20,6 +20,7 @@ public class TimerListMapperTest {
         assertNotNull(in);
         String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         List<Timer> timers = TimerParser.INSTANCE.parse(xml);
+        assertNotNull(timers);
         Timer timer = timers.get(0);
 
         ExtendedHashMap map = TimerListMapper.toExtendedHashMap(timer);

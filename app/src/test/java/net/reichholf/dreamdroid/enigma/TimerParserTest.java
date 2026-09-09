@@ -19,6 +19,7 @@ public class TimerParserTest {
         String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         long started = System.nanoTime();
         List<Timer> timers = TimerParser.INSTANCE.parse(xml);
+        assertNotNull(timers);
         long elapsedNanos = System.nanoTime() - started;
         System.out.println("TimerParser.parse nanos=" + elapsedNanos);
 
@@ -60,13 +61,21 @@ public class TimerParserTest {
     }
 
     @Test
-    public void emptyXmlYieldsNoTimers() {
-        assertEquals(0, TimerParser.INSTANCE.parse("").size());
+    public void emptyXmlYieldsNull() {
+        assertEquals(null, TimerParser.INSTANCE.parse(""));
     }
 
     @Test
-    public void malformedXmlYieldsNoTimers() {
-        assertEquals(0, TimerParser.INSTANCE.parse("<e2timerlist><e2timer>").size());
+    public void malformedXmlYieldsNull() {
+        assertEquals(null, TimerParser.INSTANCE.parse("<e2timerlist><e2timer>"));
+    }
+
+    @Test
+    public void emptyTimerListYieldsEmptyList() {
+        List<Timer> timers = TimerParser.INSTANCE.parse(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><e2timerlist></e2timerlist>");
+        assertNotNull(timers);
+        assertEquals(0, timers.size());
     }
 
     @Test
@@ -92,6 +101,7 @@ public class TimerParserTest {
                 + "</e2timer>"
                 + "</e2timerlist>";
         List<Timer> timers = TimerParser.INSTANCE.parse(xml);
+        assertNotNull(timers);
         assertEquals(1, timers.size());
         assertEquals("News", timers.get(0).getName());
         assertEquals("TVChannel", timers.get(0).getServiceName());

@@ -114,6 +114,8 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 	private final ArrayList<Timer> mTimers = new ArrayList<>();
 	@Nullable
 	private GetTimerListTask mTimerListTask;
+	/** Bumped on each new fetch so stale GetTimerListTask callbacks are ignored. */
+	private int mTimerListGeneration = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -157,6 +159,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 
 	@Override
 	public void onDestroy() {
+		mTimerListGeneration++;
 		if (mTimerListTask != null) {
 			mTimerListTask.cancel(true);
 		}
@@ -267,15 +270,40 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
+		final int generation = ++mTimerListGeneration;
 		if (mTimerListTask != null) {
 			mTimerListTask.cancel(true);
 		}
-		mTimerListTask = new GetTimerListTask(this);
+		mTimerListTask = new GetTimerListTask(new GetTimerListTask.GetTimerListTaskHandler() {
+			@Nullable
+			@Override
+			public String getString(int resId) {
+				return TimerListFragment.this.getString(resId);
+			}
+
+			@Nullable
+			@Override
+			public android.content.Context getContext() {
+				return TimerListFragment.this.getContext();
+			}
+
+			@Override
+			public void onTimerListReady(boolean success, @NonNull List<Timer> timers, @Nullable String errorText) {
+				if (generation != mTimerListGeneration) {
+					return;
+				}
+				handleTimerListReady(success, timers, errorText);
+			}
+		});
 		mTimerListTask.execute((Void) null);
 	}
 
 	@Override
 	public void onTimerListReady(boolean success, @NonNull List<Timer> timers, @Nullable String errorText) {
+		handleTimerListReady(success, timers, errorText);
+	}
+
+	private void handleTimerListReady(boolean success, @NonNull List<Timer> timers, @Nullable String errorText) {
 		mHttpHelper.onLoadFinished();
 		mTimers.clear();
 		mMapList.clear();
