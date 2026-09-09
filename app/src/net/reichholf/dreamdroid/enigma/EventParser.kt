@@ -13,16 +13,22 @@ object EventParser {
         if (xml.isEmpty()) {
             return emptyList()
         }
+        return parseSanitized(xml, aggressive = false)
+            ?: parseSanitized(xml, aggressive = true)
+            ?: emptyList()
+    }
+
+    private fun parseSanitized(xml: String, aggressive: Boolean): List<Event>? {
         return try {
             val handler = EventListHandler()
             val factory = SAXParserFactory.newInstance()
             factory.isValidating = false
             val reader = factory.newSAXParser().xmlReader
             reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(xml)))
+            reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
             handler.events
         } catch (e: Exception) {
-            emptyList()
+            null
         }
     }
 }
