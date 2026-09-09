@@ -26,8 +26,11 @@ APP_APK="$REPO_ROOT/app/build/outputs/apk/google/debug/app-google-x86_64-debug.a
 TEST_APK="$REPO_ROOT/app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk"
 TEST_RUNNER="net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner"
 FILTER="${1:-}"
-
-if [ ! -f "$APP_APK" ] || [ ! -f "$TEST_APK" ]; then
+# Always assemble so snapshot-warmed APKs cannot mask a newer checkout.
+# Set DREAMDROID_SKIP_ASSEMBLE=1 only when you intentionally reuse existing APKs.
+if [ "${DREAMDROID_SKIP_ASSEMBLE:-0}" = "1" ] && [ -f "$APP_APK" ] && [ -f "$TEST_APK" ]; then
+  echo "== connected-test: reusing existing APKs (DREAMDROID_SKIP_ASSEMBLE=1) =="
+else
   echo "== connected-test: building debug + androidTest APKs =="
   (cd "$REPO_ROOT" && ./gradlew --no-daemon :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest)
 fi
