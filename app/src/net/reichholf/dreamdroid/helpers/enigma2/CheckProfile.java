@@ -68,10 +68,10 @@ public class CheckProfile {
 						xml = dirh.get(shc);
 
 					if (xml != null && !shc.hasError()) {
-						profile.setCachedDeviceInfo(xml);
 						DeviceInfo deviceInfo = DeviceInfoParser.INSTANCE.parse(xml);
 
 						if (deviceInfo != null && !deviceInfo.isEmpty()) {
+							profile.setCachedDeviceInfo(xml);
 							addEntry(resultList, R.string.device_name, false,
 									deviceInfo.getDeviceName());
 
@@ -98,6 +98,7 @@ public class CheckProfile {
 								setError(checkResult, true, true, R.string.version_too_low);
 							}
 						} else {
+							profile.setCachedDeviceInfo(null);
 							addEntry(resultList, R.string.connection, true, String.valueOf(host), R.string.get_content_error);
 							setError(checkResult, true, R.string.get_content_error);
 						}
