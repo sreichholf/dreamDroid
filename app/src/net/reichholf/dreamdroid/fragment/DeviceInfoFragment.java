@@ -161,6 +161,13 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		if (!isAdded()) {
 			return;
 		}
+		mHttpHelper.onLoadStarted();
+		if (!"".equals(getBaseTitle().trim())) {
+			setCurrentTitle(getString(R.string.loading));
+		}
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
 		if (mDeviceInfoTask != null) {
 			mDeviceInfoTask.cancel(true);
 		}
@@ -172,6 +179,11 @@ public class DeviceInfoFragment extends BaseHttpFragment
 	public void onDeviceInfoReady(boolean success, @Nullable DeviceInfo info, @Nullable String errorText) {
 		if (!isAdded()) {
 			return;
+		}
+		mHttpHelper.onLoadFinished();
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 		if (success && info != null) {
 			mInfo = info;
