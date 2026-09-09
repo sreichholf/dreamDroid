@@ -33,8 +33,8 @@ import net.reichholf.dreamdroid.fragment.SignalFragment;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.fragment.ZapFragment;
 import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
+import net.reichholf.dreamdroid.fragment.dialogs.PowerStateDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -223,12 +223,8 @@ public class NavigationHelper implements NavigationView.OnNavigationItemSelected
                 break;
 
             case R.id.menu_navigation_power:
-                CharSequence[] actions = {getText(R.string.standby), getText(R.string.restart_gui),
-                        getText(R.string.reboot), getText(R.string.shutdown)};
-                int[] actionIds = {Statics.ITEM_TOGGLE_STANDBY, Statics.ITEM_RESTART_GUI, Statics.ITEM_REBOOT,
-                        Statics.ITEM_SHUTDOWN};
                 getMainActivity().showDialogFragment(
-                        SimpleChoiceDialog.newInstance(getString(R.string.powercontrol), actions, actionIds),
+                        PowerStateDialog.newInstance(),
                         "powerstate_dialog");
                 break;
 
