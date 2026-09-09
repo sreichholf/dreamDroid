@@ -46,6 +46,15 @@ jobs:
           :app:compileGoogleDebugAndroidTestKotlin
           :app:compileGoogleDebugAndroidTestJavaWithJavac
 
+      - name: Upload googleDebug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dreamdroid-google-debug-apk
+          # ABI splits + universal from assembleGoogleDebug (arm64 for phones).
+          path: app/build/outputs/apk/google/debug/*.apk
+          if-no-files-found: error
+          retention-days: 2
+
       - name: Upload unit test reports
         if: always()
         uses: actions/upload-artifact@v4
