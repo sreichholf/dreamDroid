@@ -10,12 +10,16 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 /**
  * Phase 2.2 beachhead: load typed device info via coroutines (no executor / runBlocking).
  * Call from a fragment that already has a view ([Fragment.getViewLifecycleOwner]).
+ *
+ * Uses a dedicated [SimpleHttpClient] per load (same as the old GetDeviceInfoTask),
+ * not the fragment helper’s shared client — [SimpleHttpClient] is not thread-safe and
+ * Job.cancel does not abort in-flight HttpURLConnection I/O.
  */
 fun Fragment.launchDeviceInfoLoad(
-    http: SimpleHttpClient,
     onResult: (success: Boolean, info: DeviceInfo?, errorText: String?) -> Unit,
 ): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
+        val http = SimpleHttpClient.getInstance()
         val info = EnigmaClient(http).getDeviceInfo()
         if (!isAdded) {
             return@launch

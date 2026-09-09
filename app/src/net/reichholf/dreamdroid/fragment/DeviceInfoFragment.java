@@ -130,7 +130,7 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 		cancelLoad();
-		mLoadJob = DeviceInfoLoadKt.launchDeviceInfoLoad(this, getHttpClient(), (success, info, errorText) -> {
+		mLoadJob = DeviceInfoLoadKt.launchDeviceInfoLoad(this, (success, info, errorText) -> {
 			onDeviceInfoReady(success, info, errorText);
 			return Unit.INSTANCE;
 		});

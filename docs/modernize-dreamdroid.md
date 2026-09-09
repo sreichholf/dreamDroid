@@ -58,7 +58,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | movies-typed | [#210](https://github.com/sreichholf/dreamDroid/pull/210) | merged | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
 | leanback-dive | [#211](https://github.com/sreichholf/dreamDroid/pull/211) | merged | Phase 0 Leanback inventory + risks + agreed Phase 3 PR order (docs only; no TV code). |
 | drawer-compose | [#212](https://github.com/sreichholf/dreamDroid/pull/212) | merged | Phase 2.1a: Compose drawer chrome (`DrawerScreen` in `ComposeView`); keep `DrawerLayout` + fragment host + `NavigationHelper.navigateTo`; no `NavHost` yet. |
-| http-async-deviceinfo | (this PR) | open | Phase 2.2 beachhead: Device Info load via `lifecycleScope` + suspend `EnigmaClient.getDeviceInfo()`; drop `GetDeviceInfoTask` / `runBlocking` on that path. Keep `HttpURLConnection` / OkHttp 3. |
+| http-async-deviceinfo | [#213](https://github.com/sreichholf/dreamDroid/pull/213) | open | Phase 2.2 beachhead: Device Info load via `lifecycleScope` + suspend `EnigmaClient.getDeviceInfo()`; drop `GetDeviceInfoTask` / `runBlocking` on that path. Keep `HttpURLConnection` / OkHttp 3. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -545,7 +545,7 @@ One program each, still one PR (or small PR series) at a time:
 | --- | --- | --- |
 | 1a | Drawer chrome (Compose) | Replace `NavigationView` menu with Compose `DrawerScreen` in `ComposeView`; keep XML profile header, `DrawerLayout`, fragment `detail_view`, and `NavigationHelper.navigateTo`. `res/menu/navigation.xml` kept for destination ids. **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). |
 | 1b | Drawer Navigation (later) | `MainActivity` + destinations → Compose Navigation / `NavHost`; retire dual-pane XML host gradually. Do **not** start until chrome is stable. |
-| 2a | HTTP / async — Device Info | `DeviceInfoFragment` → `lifecycleScope` + suspend `EnigmaClient.getDeviceInfo()`; delete `GetDeviceInfoTask`. **This PR.** Keep `SimpleHttpClient`/`HttpURLConnection`. Follow-ons: Signal, list Get*Tasks, then mutations/`SimpleResultTask`, then Loader chassis. |
+| 2a | HTTP / async — Device Info | `DeviceInfoFragment` → `lifecycleScope` + suspend `EnigmaClient.getDeviceInfo()`; delete `GetDeviceInfoTask`. **[#213](https://github.com/sreichholf/dreamDroid/pull/213).** Keep `SimpleHttpClient`/`HttpURLConnection`. Follow-ons: Signal, list Get*Tasks, then mutations/`SimpleResultTask`, then Loader chassis. |
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
