@@ -31,7 +31,7 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | CurrentService typed | [#183](https://github.com/sreichholf/dreamDroid/pull/183) | merged | typed `enigma.CurrentService` for `/web/getcurrent`; XML UI stays; hash only at EPG detail/timer edge. |
 | profile-edit-compose | [#184](https://github.com/sreichholf/dreamDroid/pull/184) | merged | `ProfileEditFragment` Compose form + `ProfileEditScreenTest`. |
 | zap-compose | [#185](https://github.com/sreichholf/dreamDroid/pull/185) | merged | `55ecc5df` `ZapFragment` Compose grid + `ZapScreenTest`. |
-| virtual-remote-compose | — | open | open on `cursor/virtual-remote-compose-c88a` — `VirtualRemoteFragment` Compose pad + `VirtualRemoteScreenTest` |
+| virtual-remote-compose ([#186](https://github.com/sreichholf/dreamDroid/pull/186)) | — | open | open on `cursor/virtual-remote-compose-c88a` — `VirtualRemoteFragment` Compose pad + `VirtualRemoteScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
