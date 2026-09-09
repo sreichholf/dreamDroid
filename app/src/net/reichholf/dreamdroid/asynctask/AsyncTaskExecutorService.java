@@ -8,12 +8,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 
 	private ExecutorService executor;
 	private Handler handler;
-	private Future future;
+	private Future<?> future;
+	private volatile boolean cancelled;
 
 	protected AsyncTaskExecutorService() {
 		executor = Executors.newSingleThreadExecutor(r -> {
@@ -56,21 +58,61 @@ public abstract class AsyncTaskExecutorService<Params, Progress, Result> {
 	}
 
 	public void execute(Params params) {
+		cancelled = false;
 		getHandler().post(() -> {
+			if (cancelled) {
+				shutdownExecutor();
+				return;
+			}
 			onPreExecute();
-			future = executor.submit(() -> {
-				Result result = doInBackground(params);
-				getHandler().post(() -> onPostExecute(result));
-			});
+			if (cancelled) {
+				shutdownExecutor();
+				return;
+			}
+			try {
+				future = executor.submit(() -> {
+					Result result = doInBackground(params);
+					getHandler().post(() -> {
+						try {
+							if (!cancelled) {
+								onPostExecute(result);
+							}
+						} finally {
+							shutdownExecutor();
+						}
+					});
+				});
+			} catch (RejectedExecutionException ignored) {
+				shutdownExecutor();
+			}
 		});
 	}
 
 	public void cancel(boolean mayInterruptIfRunning) {
-		if (future != null && !future.isDone())
+		cancelled = true;
+		if (future != null && !future.isDone()) {
 			future.cancel(mayInterruptIfRunning);
+		}
+		// If execute() has not submitted yet, its posted callback will see
+		// cancelled and shut down. If it already submitted, shut down now.
+		if (future != null) {
+			shutdownExecutor();
+		}
 	}
 
 	public boolean isCancelled() {
-		return future.isCancelled() || executor == null || executor.isTerminated() || executor.isShutdown();
+		if (cancelled) {
+			return true;
+		}
+		if (future != null && future.isCancelled()) {
+			return true;
+		}
+		return executor == null || executor.isTerminated() || executor.isShutdown();
+	}
+
+	private void shutdownExecutor() {
+		if (executor != null && !executor.isShutdown()) {
+			executor.shutdownNow();
+		}
 	}
 }
