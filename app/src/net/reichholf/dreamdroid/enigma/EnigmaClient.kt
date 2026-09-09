@@ -34,6 +34,33 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
+    suspend fun getEpgNowNext(
+        params: List<NameValuePair> = emptyList(),
+        uri: String = URIStore.EPG_NOWNEXT
+    ): List<ServiceNowNext> {
+        return withContext(Dispatchers.IO) {
+            val requestParams = ArrayList(params)
+            if (!http.fetchPageContent(uri, requestParams)) {
+                emptyList()
+            } else {
+                val xml = http.pageContentString
+                if (uri == URIStore.EPG_NOWNEXT) {
+                    EpgNowNextParser.parse(xml)
+                } else {
+                    // /web/epgnow (and other flat event lists): one service row per event, no pairing.
+                    EventParser.parse(xml).map { event ->
+                        ServiceNowNext(
+                            serviceReference = event.serviceReference,
+                            serviceName = event.serviceName,
+                            now = event,
+                            next = null,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     suspend fun getCurrent(): CurrentService? {
         return withContext(Dispatchers.IO) {
             if (!http.fetchPageContent(URIStore.CURRENT, ArrayList())) {
@@ -91,6 +118,18 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         ): List<Event> {
             return runBlocking {
                 EnigmaClient(http).getEvents(params, uri)
+            }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun getEpgNowNextBlocking(
+            http: SimpleHttpClient,
+            params: List<NameValuePair>,
+            uri: String = URIStore.EPG_NOWNEXT
+        ): List<ServiceNowNext> {
+            return runBlocking {
+                EnigmaClient(http).getEpgNowNext(params, uri)
             }
         }
 
