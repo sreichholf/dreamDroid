@@ -62,7 +62,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-signal | [#214](https://github.com/sreichholf/dreamDroid/pull/214) | merged | Phase 2.2b: Signal meter poll via `lifecycleScope` + suspend `EnigmaClient.getSignal()`; drop `GetSignalTask`; keep generation guards + dedicated client per fetch. |
 | http-async-current | [#215](https://github.com/sreichholf/dreamDroid/pull/215) | merged | Phase 2.2c: Current Service load via `lifecycleScope` + suspend `EnigmaClient.getCurrent()`; drop `GetCurrentServiceTask`. |
 | http-async-timers | [#216](https://github.com/sreichholf/dreamDroid/pull/216) | merged | Phase 2.2d: Timer list via `lifecycleScope` + suspend `EnigmaClient.getTimers()`; drop `GetTimerListTask`; keep generation guards. |
-| http-async-movies | (this PR) | open | Phase 2.2e: Movies list via `lifecycleScope` + suspend `EnigmaClient.getMovies()`; drop `GetMovieListTask`; keep locs/tags prefetch + pending-when-not-resumed. |
+| http-async-movies | [#217](https://github.com/sreichholf/dreamDroid/pull/217) | open | Phase 2.2e: Movies list via `lifecycleScope` + suspend `EnigmaClient.getMovies()`; drop `GetMovieListTask`; keep locs/tags prefetch + pending-when-not-resumed. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -557,7 +557,7 @@ One program each, still one PR (or small PR series) at a time:
 | 2b | HTTP / async — Signal | `SignalFragment` poll → `lifecycleScope` + suspend `EnigmaClient.getSignal()`; delete `GetSignalTask`; keep generation guards. **merged** [#214](https://github.com/sreichholf/dreamDroid/pull/214). |
 | 2c | HTTP / async — Current Service | `CurrentServiceFragment` → `lifecycleScope` + suspend `EnigmaClient.getCurrent()`; delete `GetCurrentServiceTask`. **merged** [#215](https://github.com/sreichholf/dreamDroid/pull/215). |
 | 2d | HTTP / async — Timers | `TimerListFragment` → `lifecycleScope` + suspend `EnigmaClient.getTimers()`; delete `GetTimerListTask`; keep generation guards. **merged** [#216](https://github.com/sreichholf/dreamDroid/pull/216). |
-| 2e | HTTP / async — Movies | `MovieListFragment` → `lifecycleScope` + suspend `EnigmaClient.getMovies()`; delete `GetMovieListTask`. **This PR.** |
+| 2e | HTTP / async — Movies | `MovieListFragment` → `lifecycleScope` + suspend `EnigmaClient.getMovies()`; delete `GetMovieListTask`. **[#217](https://github.com/sreichholf/dreamDroid/pull/217).** |
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2b: list Get*Tasks, mutations/`SimpleResultTask`, Loader chassis. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
