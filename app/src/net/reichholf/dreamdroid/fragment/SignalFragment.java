@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment;
 
-import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -16,17 +15,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SwitchCompat;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
-
-import com.ekndev.gaugelibrary.HalfGauge;
-import com.ekndev.gaugelibrary.Range;
-import com.google.android.material.color.MaterialColors;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.asynctask.GetSignalTask;
@@ -36,9 +29,11 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.signal.SignalScreenKt;
+import net.reichholf.dreamdroid.ui.signal.SignalUiState;
 
 /**
- * Live tuner signal meter. Typed {@link Signal}; XML gauge UI stays until signal Compose.
+ * Live tuner signal meter. Compose Material 3 UI; typed {@link Signal}; HalfGauge via AndroidView.
  */
 public class SignalFragment extends BaseHttpFragment
 		implements GetSignalTask.GetSignalTaskHandler {
@@ -48,12 +43,6 @@ public class SignalFragment extends BaseHttpFragment
 	private static int sMinSnrDb = 5;
 	private static int sMaxDelay = 1000;
 	private static int sMinDelay = 150;
-	HalfGauge mSnr;
-	CheckBox mSound;
-	SwitchCompat mEnabled;
-	TextView mSnrdb;
-	TextView mBer;
-	TextView mAgc;
 
 	private boolean mIsUpdating = false;
 	private double mSnrDb = sMinSnrDb;
@@ -66,6 +55,8 @@ public class SignalFragment extends BaseHttpFragment
 	/** Strong ref so AsyncHttpTaskBase's WeakReference does not drop the callback. */
 	@Nullable
 	private GetSignalTask.GetSignalTaskHandler mSignalTaskHandler;
+
+	private SignalUiState mUiState;
 
 	@NonNull
 	private Handler mHandler = new Handler();
@@ -91,6 +82,13 @@ public class SignalFragment extends BaseHttpFragment
 	};
 
 	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		initTitles(getString(R.string.signal_meter));
+		mUiState = new SignalUiState();
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
 		startPolling();
@@ -108,76 +106,37 @@ public class SignalFragment extends BaseHttpFragment
 			mSignalTask.cancel(true);
 			mSignalTask = null;
 		}
+		mSignalTaskHandler = null;
 		super.onDestroy();
 	}
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.signal, container, false);
-
-		mSnr = view.findViewById(R.id.gauge_view1);
-		int textColor = MaterialColors.getColor(mSnr, com.google.android.material.R.attr.colorOnSurface);
-		mSnr.setValueColor(textColor);
-		mSnr.setMinValueTextColor(textColor);
-		mSnr.setMaxValueTextColor(textColor);
-
-		Range range = new Range();
-		range.setColor(Color.parseColor("#ce0000"));
-		range.setFrom(0.0);
-		range.setTo(50.0);
-
-		Range range2 = new Range();
-		range2.setColor(Color.parseColor("#e37700"));
-		range2.setFrom(50.0);
-		range2.setTo(65.0);
-
-		Range range3 = new Range();
-		range3.setColor(Color.parseColor("#e3e500"));
-		range3.setFrom(65.0);
-		range3.setTo(80.0);
-
-		Range range4 = new Range();
-		range4.setColor(Color.parseColor("#00b20b"));
-		range4.setFrom(80.0);
-		range4.setTo(100.0);
-
-		mSnr.addRange(range);
-		mSnr.addRange(range2);
-		mSnr.addRange(range3);
-		mSnr.addRange(range4);
-
-		mSnr.setMinValue(0.0);
-		mSnr.setMaxValue(100.0);
-		mSnr.setValue(0.0);
-
-		mEnabled = view.findViewById(R.id.toggle_enabled);
-		mEnabled.setChecked(true);
-		mEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
-			if (isChecked) {
-				startPolling();
-			} else {
-				stopPolling();
-			}
-		});
-
-		mSound = view.findViewById(R.id.check_accoustic_feedback);
-		mSound.setChecked(false);
-		mSound.setOnCheckedChangeListener((buttonView, isChecked) -> {
-			if (isChecked) {
-				if (mEnabled.isChecked()) {
-					mHandler.removeCallbacks(mPlaySoundTask);
-					mHandler.post(mPlaySoundTask);
+		ComposeView compose = view.findViewById(R.id.compose_signal);
+		SignalScreenKt.bindSignalScreen(
+				compose,
+				mUiState,
+				enabled -> {
+					if (enabled) {
+						startPolling();
+					} else {
+						stopPolling();
+					}
+					return kotlin.Unit.INSTANCE;
+				},
+				acoustic -> {
+					if (acoustic) {
+						if (mUiState.getEnabled()) {
+							mHandler.removeCallbacks(mPlaySoundTask);
+							mHandler.post(mPlaySoundTask);
+						}
+					} else {
+						mHandler.removeCallbacks(mPlaySoundTask);
+					}
+					return kotlin.Unit.INSTANCE;
 				}
-			} else {
-				mHandler.removeCallbacks(mPlaySoundTask);
-			}
-		});
-
-		mSnrdb = view.findViewById(R.id.text_snrdb);
-		mBer = view.findViewById(R.id.text_ber);
-		mAgc = view.findViewById(R.id.text_agc);
-		view.setKeepScreenOn(true);
-
+		);
 		return view;
 	}
 
@@ -198,22 +157,8 @@ public class SignalFragment extends BaseHttpFragment
 		long time = stopTime - mStartTime;
 		Log.w(TAG, "request & parsing took: " + time + "ms");
 
-		mSnrDb = signal.getSnrDb();
-		if (mSnrDb < sMinSnrDb) {
-			mSnrDb = sMinSnrDb;
-		}
-		mSnr.setValue(signal.getSnrPercent());
-		mSnrdb.setText(displayOrDash(signal.getSnrDbRaw()));
-		mBer.setText(displayOrDash(signal.getBerRaw()));
-		mAgc.setText(displayOrDash(signal.getAgcRaw()));
-	}
-
-	@NonNull
-	private static String displayOrDash(@Nullable String raw) {
-		if (raw == null || raw.trim().isEmpty()) {
-			return "-";
-		}
-		return raw.trim();
+		mUiState.apply(signal, sMinSnrDb);
+		mSnrDb = mUiState.getSnrDb();
 	}
 
 	@Override
@@ -273,11 +218,12 @@ public class SignalFragment extends BaseHttpFragment
 			return;
 		}
 		restoreTitle();
-		if (!mEnabled.isChecked()) {
+		if (!mUiState.getEnabled()) {
 			return;
 		}
 		if (!success || signal == null) {
-			mEnabled.setChecked(false);
+			mUiState.setEnabled(false);
+			stopPolling();
 			if (errorText != null && !errorText.isEmpty()) {
 				showToast(errorText);
 			}
@@ -296,9 +242,9 @@ public class SignalFragment extends BaseHttpFragment
 
 	private void startPolling() {
 		mIsUpdating = false;
-		if (mEnabled.isChecked()) {
+		if (mUiState.getEnabled()) {
 			reload();
-			if (mSound.isChecked()) {
+			if (mUiState.getAcousticFeedback()) {
 				mHandler.removeCallbacks(mPlaySoundTask);
 				mHandler.post(mPlaySoundTask);
 			}
@@ -315,10 +261,7 @@ public class SignalFragment extends BaseHttpFragment
 		}
 		mSignalTaskHandler = null;
 		mIsUpdating = false;
-		mSnr.setValue(0);
-		mSnrdb.setText("-");
-		mBer.setText("-");
-		mAgc.setText("-");
+		mUiState.clearMeter();
 		restoreTitle();
 	}
 
