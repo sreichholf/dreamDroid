@@ -35,13 +35,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | screenshot-compose | [#187](https://github.com/sreichholf/dreamDroid/pull/187) | merged | `527e4c7f` `ScreenShotFragment` Compose + PhotoView + `ScreenshotScreenTest`. |
 | settings-compose | [#188](https://github.com/sreichholf/dreamDroid/pull/188) | merged | `63ea96ba` `MyPreferenceFragment` Compose prefs + `SettingsScreenTest`. |
 | backup-compose | [#189](https://github.com/sreichholf/dreamDroid/pull/189) | merged | `16e86fa2` `BackupFragment` Compose + `BackupScreenTest`. |
-| current-event-compose | — | open | open on `cursor/current-event-compose-c88a` — `CurrentServiceFragment` Compose + `CurrentServiceScreenTest` |
+| current-event-compose | [#190](https://github.com/sreichholf/dreamDroid/pull/190) | merged | `CurrentServiceFragment` Compose + `CurrentServiceScreenTest`.
+| pick-service-compose | — | open | open on `cursor/pick-service-compose-c88a` — `PickServiceFragment` Compose list + `PickServiceScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. `profile-edit-compose` is on `main` as #184. `zap-compose` is on `main` as #185. `virtual-remote-compose` is on `main` as #186. `screenshot-compose` is on `main` as #187. `settings-compose` is on `main` as #188. `backup-compose` is on `main` as #189. Next screen (`current-event-compose`) is open on `cursor/current-event-compose-c88a`.
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. `profile-edit-compose` is on `main` as #184. `zap-compose` is on `main` as #185. `virtual-remote-compose` is on `main` as #186. `screenshot-compose` is on `main` as #187. `settings-compose` is on `main` as #188. `backup-compose` is on `main` as #189. `current-event-compose` is on `main` as #190. `pick-service-compose` is open on `cursor/pick-service-compose-c88a`.
 
 ### Operator overrides (this program)
 
@@ -65,7 +66,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Screenshot Compose is on `main` via #187.
 - Settings Compose is on `main` via #188.
 - Backup Compose is on `main` via #189.
-- Current event Compose is open on `cursor/current-event-compose-c88a`.
+- Current event Compose is on `main` via #190.
+- PickService Compose list is open on `cursor/pick-service-compose-c88a`. Rows typed `enigma.Service` (#181); Intent still one hash at send. Dropped `ServiceNameAdapter` / `DividerItemDecoration`.
 - Service EPG list still XML. Rows are typed `enigma.Event` on `main` via #176. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Dead `EpgTimelineFragment` removed in #177.
 - EPG bouquet still XML. Rows are typed `enigma.Event` on `main` via #179. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
 - EPG search still XML. Rows are typed `enigma.Event` on `main` via #180. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
@@ -303,7 +305,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 
 **Files.**
 
-- [x] `PickServiceFragment` / `ServiceNameAdapter` hold `List<Service>`.
+- [x] `PickServiceFragment` holds `List<Service>` (Compose list via `pick-service-compose`; was `ServiceNameAdapter`).
 - [x] Load fav TV+Radio roots via `GetBouquetListTask` → `HttpFragmentHelper.fetchServices` → `EnigmaClient`.
 - [x] Intent `KEY_BOUQUET` still one `ExtendedHashMap` mapped at send (`ZapListMapper.toBouquetMap`). Zap / EpgBouquet consumers unchanged.
 - [x] Delete unused `AsyncFavListLoader`.
@@ -361,7 +363,7 @@ This was never "replace the phone app with Compose." The original boxes named fi
 
 ### Still Java/XML phone screens (drawer and related)
 
-Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187), Settings (#188), Backup (#189). The pager pages behind those tabs landed as Compose in #170. Current event Compose is open on `cursor/current-event-compose-c88a`.
+Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187), Settings (#188), Backup (#189), Current event (#190). The pager pages behind those tabs landed as Compose in #170. PickService Compose is open on `cursor/pick-service-compose-c88a`.
 
 | Surface | Code | Notes |
 | --- | --- | --- |
@@ -374,9 +376,9 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Service EPG list | `ServiceEpgListFragment`, `ServiceEpgAdapter` | XML list. Rows are typed `enigma.Event` (#176). Detail/timer edge still hash. |
 | EPG bouquet | `EpgBouquetFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#179). Detail/timer edge still hash. |
 | EPG search | `EpgSearchFragment`, `EpgBouquetAdapter` | XML list. Rows are typed `enigma.Event` (#180). Detail/timer edge still hash. |
-| Bouquet picker | `PickServiceFragment`, `ServiceNameAdapter` | XML list. Typed `enigma.Service` on `main` via #181. Intent still one hash at send. |
+| Bouquet picker | open `cursor/pick-service-compose-c88a` | Compose list; typed `enigma.Service` (#181). Intent still one hash at send. |
 | EPG detail | `EpgDetailBottomSheet` | ButterKnife. |
-| Current event | open `cursor/current-event-compose-c88a` | Compose now/next + stream; typed `enigma.CurrentService` (#183). Detail/timer edge still hash. |
+| Current event | Compose on `main` via #190 | Compose now/next + stream; typed `enigma.CurrentService` (#183). Detail/timer edge still hash. |
 | Virtual remote | Compose on `main` via #186 | Compose pad + HTTP keys; tablet screenshot host kept. |
 | Device info | `DeviceInfoFragment` | |
 | Signal | `SignalFragment` + vendored gauge lib | |
@@ -421,7 +423,7 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | # | PR slug | Class | Opened how | Wait for typed API? |
 | --- | --- | --- | --- | --- |
 | 1 | `profile-edit-compose` | `ProfileEditFragment` | Profiles FAB/row → `SimpleToolbarFragmentActivity` | No (Room) — **merged** [#184](https://github.com/sreichholf/dreamDroid/pull/184) |
-| 2 | `current-event-compose` | `CurrentServiceFragment` | Drawer current | Typed #183 — **open** on `cursor/current-event-compose-c88a` |
+| 2 | `current-event-compose` | `CurrentServiceFragment` | Drawer current | Typed #183 — **merged** [#190](https://github.com/sreichholf/dreamDroid/pull/190) |
 | 3 | `zap-compose` | `ZapFragment` | Drawer zap | No (rows already typed #173) — **merged** [#185](https://github.com/sreichholf/dreamDroid/pull/185) |
 | 4 | `virtual-remote-compose` | `VirtualRemotePagerFragment` / `VirtualRemoteFragment` | Drawer remote | No — **merged** [#186](https://github.com/sreichholf/dreamDroid/pull/186) |
 | 5 | `device-info-compose` | `DeviceInfoFragment` | Drawer device info | Prefer type device-info first |
@@ -436,7 +438,7 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 14 | `epg-bouquet-compose` | `EpgBouquetFragment` | Drawer EPG | No for list (rows typed #179); detail with #12 |
 | 15 | `epg-search-compose` | `EpgSearchFragment` | Toolbar search | No for list (rows typed #180) |
 | 16 | `service-epg-compose` | `ServiceEpgListFragment` | Channel → EPG | No for list (rows typed #176) |
-| 17 | `pick-service-compose` | `PickServiceFragment` | Zap / EPG bouquet pick | No for list (rows typed #181) |
+| 17 | `pick-service-compose` | `PickServiceFragment` | Zap / EPG bouquet pick | No for list (rows typed #181) — **open** on `cursor/pick-service-compose-c88a` |
 | 18 | `timer-service-pick-compose` | `ServiceListFragment` (pick mode) | Timer edit service pick | Yes — type pick path |
 | 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) |
 
