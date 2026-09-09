@@ -165,6 +165,10 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		endActionMode();
 		mTimerListGeneration++;
 		cancelLoad(true);
+		// viewLifecycleOwner cancels the Job with the view; re-fetch after recreate if empty.
+		if (mTimers.isEmpty()) {
+			mReload = true;
+		}
 		super.onDestroyView();
 	}
 
