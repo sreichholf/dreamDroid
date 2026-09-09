@@ -11,14 +11,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.evernote.android.state.State;
 
@@ -32,18 +29,20 @@ import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.current.CurrentServiceScreenKt;
+import net.reichholf.dreamdroid.ui.current.CurrentServiceUiState;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 
 /**
  * Shows some information about the service currently running on TV.
- * Holds typed {@link CurrentService}; detail/timer still take ExtendedHashMap at the edge.
+ * Compose Material 3 UI; typed {@link CurrentService}; detail/timer still take
+ * ExtendedHashMap at the edge.
  * 
  * @author sreichholf
  * 
@@ -53,19 +52,6 @@ public class CurrentServiceFragment extends BaseHttpFragment
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "CurrentServiceFragment";
 
-	private TextView mServiceName;
-	private TextView mProvider;
-	private TextView mNowStart;
-	private TextView mNowTitle;
-	private TextView mNowDesc;
-	private TextView mNowDuration;
-	private TextView mNextStart;
-	private TextView mNextTitle;
-	private TextView mNextDesc;
-	private TextView mNextDuration;
-	private Button mStream;
-	private LinearLayout mNowLayout;
-	private LinearLayout mNextLayout;
 	protected ProgressDialog mProgress;
 
 	@Nullable
@@ -84,45 +70,48 @@ public class CurrentServiceFragment extends BaseHttpFragment
 	@Nullable
 	private GetCurrentServiceTask mCurrentServiceTask;
 
+	private CurrentServiceUiState mUiState;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.current_service));
 
 		mCurrentServiceReady = false;
+		mUiState = new CurrentServiceUiState();
 	}
 
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.current_service, container, false);
-
-		mServiceName = view.findViewById(R.id.service_name);
-		mProvider = view.findViewById(R.id.provider);
-		mNowStart = view.findViewById(R.id.event_now_start);
-		mNowTitle = view.findViewById(R.id.event_now_title);
-		mNowDesc = view.findViewById(R.id.event_now_desc);
-		mNowDuration = view.findViewById(R.id.event_now_duration);
-		mNextStart = view.findViewById(R.id.event_next_start);
-		mNextTitle = view.findViewById(R.id.event_next_title);
-		mNextDesc = view.findViewById(R.id.event_next_desc);
-		mNextDuration = view.findViewById(R.id.event_next_duration);
-		mStream = view.findViewById(R.id.ButtonStream);
-		mNowLayout = view.findViewById(R.id.layout_now);
-		mNextLayout = view.findViewById(R.id.layout_next);
-
-		registerOnClickListener(mNowLayout, Statics.ITEM_NOW);
-		registerOnClickListener(mNextLayout, Statics.ITEM_NEXT);
-		registerOnClickListener(mStream, Statics.ITEM_STREAM);
-
+		ComposeView compose = view.findViewById(R.id.compose_current);
+		CurrentServiceScreenKt.bindCurrentServiceScreen(
+				compose,
+				mUiState,
+				() -> {
+					onItemSelected(Statics.ITEM_NOW);
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onItemSelected(Statics.ITEM_NEXT);
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onItemSelected(Statics.ITEM_STREAM);
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 		return view;
 	}
 
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-		if (mCurrent == null || mCurrent.isEmpty())
+		boolean needReload = mCurrent == null || mCurrent.isEmpty();
+		if (needReload)
 			mReload = true;
 
 		super.onViewCreated(view, savedInstanceState);
-		if (!mReload)
+		// Use needReload, not mReload: reload() clears mReload while the task is still in flight.
+		if (!needReload)
 			applyCurrent(mCurrent);
 	}
 
@@ -132,20 +121,6 @@ public class CurrentServiceFragment extends BaseHttpFragment
 			mCurrentServiceTask.cancel(true);
 		}
 		super.onDestroy();
-	}
-
-	/**
-	 * Register an <code>OnClickListener</code> for a view and a specific item
-	 * ID (<code>ITEM_*</code> statics)
-	 * 
-	 * @param v
-	 *            The view an OnClickListener should be registered for
-	 * @param id
-	 *            The id used to identify the item clicked (<code>ITEM_*</code>
-	 *            statics)
-	 */
-	protected void registerOnClickListener(@NonNull View v, final int id) {
-		v.setOnClickListener(v1 -> onItemSelected(id));
 	}
 
 	/**
@@ -203,28 +178,12 @@ public class CurrentServiceFragment extends BaseHttpFragment
 			mService = content.getService();
 			mNow = content.getNow();
 			mNext = content.getNext();
-
-			mServiceName.setText(mService != null ? mService.getName() : "");
-			mProvider.setText(mService != null ? mService.getProvider() : "");
-			// Now
-			mNowStart.setText(mNow != null ? mNow.getStartReadable() : "");
-			mNowTitle.setText(mNow != null ? mNow.getTitle() : "");
-			mNowDesc.setText(mNow != null ? mNow.getDescriptionExtended() : "");
-			mNowDuration.setText(mNow != null ? mNow.getDurationReadable() : "");
-			// Next
-			mNextStart.setText(mNext != null ? mNext.getStartReadable() : "");
-			mNextTitle.setText(mNext != null ? mNext.getTitle() : "");
-			mNextDesc.setText(mNext != null ? mNext.getDescriptionExtended() : "");
-			mNextDuration.setText(mNext != null ? mNext.getDurationReadable() : "");
-
-			View root = getView();
-			if (root != null && mService != null) {
-				ImageView piconView = root.findViewById(R.id.picon);
-				Picon.setPiconForView(getAppCompatActivity(), piconView, mService.getReference(), mService.getName(),
-						Statics.TAG_PICON, null);
-			}
+			mUiState.apply(content);
 		} else {
-			mCurrentServiceReady = false;
+			// Empty payload: toast, keep last good UI when we had one; otherwise leave blanks (ready).
+			if (!mCurrentServiceReady) {
+				mUiState.apply(null);
+			}
 			showToast(getText(R.string.not_available));
 		}
 	}
@@ -337,7 +296,10 @@ public class CurrentServiceFragment extends BaseHttpFragment
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 		if (!success) {
-			mCurrentServiceReady = false;
+			// Toast only when we already showed data; on first failure exit Loading placeholders.
+			if (!mCurrentServiceReady) {
+				mUiState.apply(null);
+			}
 			showToast(errorText != null ? errorText : getText(R.string.not_available));
 			return;
 		}
