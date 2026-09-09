@@ -18,8 +18,8 @@ import android.view.ViewGroup;
 import com.evernote.android.state.State;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.GetDeviceInfoTask;
 import net.reichholf.dreamdroid.enigma.DeviceInfo;
+import net.reichholf.dreamdroid.enigma.DeviceInfoLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
@@ -28,21 +28,23 @@ import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoScreenKt;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoUiState;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Shows device-specific information for the active profile.
- * Compose Material 3 UI; typed {@link DeviceInfo}.
+ * Compose Material 3 UI; typed {@link DeviceInfo} via coroutine + {@code EnigmaClient}.
  *
  * @author sreichholf
  *
  */
-public class DeviceInfoFragment extends BaseHttpFragment
-		implements GetDeviceInfoTask.GetDeviceInfoTaskHandler {
+public class DeviceInfoFragment extends BaseHttpFragment {
 	@Nullable
 	@State
 	public DeviceInfo mInfo;
 
 	@Nullable
-	private GetDeviceInfoTask mDeviceInfoTask;
+	private Job mLoadJob;
 
 	private DeviceInfoUiState mUiState;
 	private boolean mDeviceInfoReady;
@@ -70,7 +72,7 @@ public class DeviceInfoFragment extends BaseHttpFragment
 			mReload = true;
 		}
 		super.onViewCreated(view, savedInstanceState);
-		// Use needReload, not mReload: reload() clears mReload while the task is still in flight.
+		// Use needReload, not mReload: reload() clears mReload while the load is still in flight.
 		if (!needReload) {
 			mDeviceInfoReady = true;
 			applyInfo(mInfo);
@@ -78,12 +80,16 @@ public class DeviceInfoFragment extends BaseHttpFragment
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mDeviceInfoTask != null) {
-			mDeviceInfoTask.cancel(true);
-			mDeviceInfoTask = null;
+	public void onDestroyView() {
+		cancelLoad();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad() {
+		if (mLoadJob != null) {
+			mLoadJob.cancel(null);
+			mLoadJob = null;
 		}
-		super.onDestroy();
 	}
 
 	private void applyInfo(@Nullable DeviceInfo info) {
@@ -94,13 +100,13 @@ public class DeviceInfoFragment extends BaseHttpFragment
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		// Unused: content comes from GetDeviceInfoTask / EnigmaClient.
+		// Unused: content comes from EnigmaClient coroutines.
 		return new AsyncSimpleLoader(getAppCompatActivity(), new DeviceInfoRequestHandler(), args);
 	}
 
 	@Override
 	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
-		// Unused: content comes from GetDeviceInfoTask / EnigmaClient.
+		// Unused: content comes from EnigmaClient coroutines.
 	}
 
 	@Override
@@ -110,7 +116,7 @@ public class DeviceInfoFragment extends BaseHttpFragment
 	}
 
 	private void loadDeviceInfo() {
-		if (!isAdded()) {
+		if (!isAdded() || getView() == null) {
 			return;
 		}
 		if (!mDeviceInfoReady) {
@@ -123,15 +129,14 @@ public class DeviceInfoFragment extends BaseHttpFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (mDeviceInfoTask != null) {
-			mDeviceInfoTask.cancel(true);
-		}
-		mDeviceInfoTask = new GetDeviceInfoTask(this);
-		mDeviceInfoTask.execute();
+		cancelLoad();
+		mLoadJob = DeviceInfoLoadKt.launchDeviceInfoLoad(this, getHttpClient(), (success, info, errorText) -> {
+			onDeviceInfoReady(success, info, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
-	@Override
-	public void onDeviceInfoReady(boolean success, @Nullable DeviceInfo info, @Nullable String errorText) {
+	private void onDeviceInfoReady(boolean success, @Nullable DeviceInfo info, @Nullable String errorText) {
 		if (!isAdded()) {
 			return;
 		}
