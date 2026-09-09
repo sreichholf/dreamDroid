@@ -278,7 +278,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 
 **Verify, unit.**
 
-- [ ] Existing `EventParserTest` / `EpgListMapperTest`. `:app:testGoogleDebugUnitTest`. Assemble googleDebug.
+- [x] Existing `EventParserTest` / `EpgListMapperTest`. `:app:testGoogleDebugUnitTest`. Assemble googleDebug.
 
 ## Appendix A. Prototype evidence
 
