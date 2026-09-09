@@ -78,9 +78,23 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	private MovieListState mListState;
 	@Nullable
 	private GetMovieListTask mMovieListTask;
+	@Nullable
+	private PendingMovieList mPendingMovieList;
 
 	@Nullable
 	private ProgressDialog mProgress;
+
+	private static final class PendingMovieList {
+		final boolean success;
+		@NonNull final List<Movie> movies;
+		@Nullable final String errorText;
+
+		PendingMovieList(boolean success, @NonNull List<Movie> movies, @Nullable String errorText) {
+			this.success = success;
+			this.movies = movies;
+			this.errorText = errorText;
+		}
+	}
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -161,6 +175,16 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 			mMovieListTask.cancel(true);
 		}
 		super.onDestroy();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		if (mPendingMovieList != null) {
+			PendingMovieList pending = mPendingMovieList;
+			mPendingMovieList = null;
+			applyMovieList(pending.success, pending.movies, pending.errorText);
+		}
 	}
 
 	@Override
@@ -320,18 +344,23 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	public void onMovieListReady(boolean success, @NonNull List<Movie> movies, @Nullable String errorText) {
 		mHttpHelper.onLoadFinished();
 		if (!isResumed()) {
+			mPendingMovieList = new PendingMovieList(success, new ArrayList<>(movies), errorText);
 			return;
 		}
+		applyMovieList(success, movies, errorText);
+	}
+
+	private void applyMovieList(boolean success, @NonNull List<Movie> movies, @Nullable String errorText) {
 		mMovies.clear();
 		mListState.replaceAll(java.util.Collections.emptyList());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(mCurrentLocation != null ? mCurrentLocation : getBaseTitle());
+		}
 		if (!success) {
 			setEmptyText(errorText);
 			return;
 		}
 		setEmptyText(null);
-		if (getAppCompatActivity() != null) {
-			getAppCompatActivity().setTitle(mCurrentLocation);
-		}
 		if (movies.isEmpty()) {
 			setEmptyText(getText(R.string.no_list_item));
 		} else {
