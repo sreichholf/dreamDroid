@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.remote
 
+import android.content.res.ColorStateList
+import android.widget.ImageView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -17,14 +19,13 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.widget.ImageViewCompat
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
 
@@ -374,10 +377,25 @@ private fun IconRemoteKey(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            painter = painterResource(iconRes),
-            contentDescription = null,
-            tint = KeyOnDark,
+        // layer-list / rotate drawables are not VectorDrawables; painterResource cannot load them.
+        AndroidView(
+            factory = { context ->
+                ImageView(context).apply {
+                    scaleType = ImageView.ScaleType.CENTER_INSIDE
+                    setImageResource(iconRes)
+                    ImageViewCompat.setImageTintList(
+                        this,
+                        ColorStateList.valueOf(KeyOnDark.toArgb()),
+                    )
+                }
+            },
+            update = { imageView ->
+                imageView.setImageResource(iconRes)
+                ImageViewCompat.setImageTintList(
+                    imageView,
+                    ColorStateList.valueOf(KeyOnDark.toArgb()),
+                )
+            },
             modifier = Modifier.size(24.dp),
         )
     }

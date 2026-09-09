@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.profiles
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -43,7 +44,7 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithContentDescription("Profile name").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Hostname or IP").assertIsDisplayed()
         composeRule.onNodeWithText("443").assertIsDisplayed()
-        composeRule.onNodeWithText("https").assertIsDisplayed()
+        composeRule.onAllNodesWithText("https", substring = false).onFirst().assertIsDisplayed()
         composeRule.onNodeWithText("Enable Login").assertIsDisplayed()
         composeRule.onNodeWithText("Streaming").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Port (Live)").assertIsDisplayed()
