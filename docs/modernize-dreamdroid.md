@@ -34,7 +34,7 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | virtual-remote-compose | [#186](https://github.com/sreichholf/dreamDroid/pull/186) | merged | `bd2ccfb9` `VirtualRemoteFragment` Compose pad + `VirtualRemoteScreenTest`. |
 | screenshot-compose | [#187](https://github.com/sreichholf/dreamDroid/pull/187) | merged | `527e4c7f` `ScreenShotFragment` Compose + PhotoView + `ScreenshotScreenTest`. |
 | settings-compose | [#188](https://github.com/sreichholf/dreamDroid/pull/188) | merged | `63ea96ba` `MyPreferenceFragment` Compose prefs + `SettingsScreenTest`. |
-| backup-compose | — | open | open on `cursor/backup-compose-c88a` — `BackupFragment` Compose + `BackupScreenTest` |
+| backup-compose ([#189](https://github.com/sreichholf/dreamDroid/pull/189)) | — | open | open on `cursor/backup-compose-c88a` — `BackupFragment` Compose + `BackupScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
