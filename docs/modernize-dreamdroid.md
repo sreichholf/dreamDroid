@@ -41,13 +41,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | service-epg-compose | [#194](https://github.com/sreichholf/dreamDroid/pull/194) | merged | `ServiceEpgListFragment` Compose list + `ServiceEpgScreenTest`.
 | epg-search-compose | [#193](https://github.com/sreichholf/dreamDroid/pull/193) | merged | `EpgSearchFragment` Compose list; dropped `EpgBouquetAdapter` + multi-service row XML. |
 | share-profiles-compose | [#196](https://github.com/sreichholf/dreamDroid/pull/196) | merged | `ShareActivity` Compose list + `ShareProfilesScreenTest`; dropped `ProfileAdapter`.
-| epg-detail-compose | [#197](https://github.com/sreichholf/dreamDroid/pull/197) | open | `EpgDetailBottomSheet` Compose + typed `Event`; pinned actions outside scroll.
+| epg-detail-compose | [#197](https://github.com/sreichholf/dreamDroid/pull/197) | merged | `EpgDetailBottomSheet` Compose + typed `Event`; pinned actions outside scroll.
+| drawer-dialogs-compose | [#198](https://github.com/sreichholf/dreamDroid/pull/198) | open | Sleep timer / send message / power / changelog / connection error → Compose; drop sleeptimer/send_message XML.
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #196** (Share). `epg-detail-compose` is open as [#197](https://github.com/sreichholf/dreamDroid/pull/197). Still open in G: device-info, signal, timer-edit, movie detail, drawer dialogs, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #197** (Share #196, EPG detail #197). `drawer-dialogs-compose` is open as [#198](https://github.com/sreichholf/dreamDroid/pull/198). Still open in G: device-info, signal, timer-edit, movie detail, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
@@ -63,10 +64,11 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
-- Wave 3 Compose landed through #194: profile-edit #184, zap #185, remote #186, screenshot #187, settings #188, backup #189, current-event #190, pick-service #191, EPG bouquet #192, EPG search #193 (dropped `EpgBouquetAdapter`), service EPG #194.
+- Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
+- Wave 3 Compose landed through #197: profile-edit #184 … service EPG #194, Share #196, EPG detail #197. Open: drawer dialogs #198.
 - Share profiles Compose merged as [#196](https://github.com/sreichholf/dreamDroid/pull/196) (dropped `ProfileAdapter`).
-- EPG detail Compose is open as [#197](https://github.com/sreichholf/dreamDroid/pull/197) (typed `Event` + hash overload for hub/video).
-- Appendix G still open: device-info, signal, timer-edit, movie detail, drawer dialogs, timer service pick; plus open EPG detail #197.
+- EPG detail Compose merged as [#197](https://github.com/sreichholf/dreamDroid/pull/197).
+- Appendix G still open: device-info, signal, timer-edit, movie detail, timer service pick; plus open drawer dialogs #198.
 - Remaining typed API: hub now/next, movies, timers, device info, signal.
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
@@ -431,14 +433,14 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 9 | `backup-compose` | `BackupFragment` | Drawer backup | No — **merged** [#189](https://github.com/sreichholf/dreamDroid/pull/189) |
 | 10 | `timer-edit-compose` | `TimerEditFragment` | Hub / EPG → timer edit | Yes — type timers list/edit path |
 | 11 | `movie-detail-compose` | `MovieDetailBottomSheet` | Movies row tap | Yes — typed `enigma.Movie` edge (ButterKnife) |
-| 12 | `epg-detail-compose` | `EpgDetailBottomSheet` | EPG / current / channel popup | Yes — accept typed `enigma.Event` — **open** on `cursor/epg-detail-compose-c88a` |
-| 13 | `drawer-dialogs-compose` | Sleep timer / send message / power / changelog / connection error | Drawer dialogs | Partial (sleep-timer result optional) |
+| 12 | `epg-detail-compose` | `EpgDetailBottomSheet` | EPG / current / channel popup | Yes — accept typed `enigma.Event` — **merged** [#197](https://github.com/sreichholf/dreamDroid/pull/197) |
+| 13 | `drawer-dialogs-compose` | Sleep timer / send message / power / changelog / connection error | Drawer dialogs | Partial (sleep-timer result optional) — open [#198](https://github.com/sreichholf/dreamDroid/pull/198) |
 | 14 | `epg-bouquet-compose` | `EpgBouquetFragment` | Drawer EPG | No for list (rows typed #179); detail with #12 — **merged** [#192](https://github.com/sreichholf/dreamDroid/pull/192) |
 | 15 | `epg-search-compose` | `EpgSearchFragment` | Toolbar search | No for list (rows typed #180) — **merged** [#193](https://github.com/sreichholf/dreamDroid/pull/193) |
 | 16 | `service-epg-compose` | `ServiceEpgListFragment` | Channel → EPG | No for list (rows typed #176) — **merged** [#194](https://github.com/sreichholf/dreamDroid/pull/194) |
 | 17 | `pick-service-compose` | `PickServiceFragment` | Zap / EPG bouquet pick | No for list (rows typed #181) — **merged** [#191](https://github.com/sreichholf/dreamDroid/pull/191) |
 | 18 | `timer-service-pick-compose` | `ServiceListFragment` (pick mode) | Timer edit service pick | Yes — type pick path |
-| 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) — **open** on `cursor/share-profiles-compose-c88a` |
+| 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) — **merged** [#196](https://github.com/sreichholf/dreamDroid/pull/196) |
 
 **Out of this wave:** drawer shell (`MainActivity` / `NavigationHelper`), Leanback `tv/`, VLC `VideoActivity` / `VideoOverlayFragment`, home-screen widgets.
 
