@@ -105,6 +105,21 @@ public class NavigationHelper {
         }
     }
 
+    public void onDestroy() {
+        if (mPowerStateJob != null) {
+            mPowerStateJob.cancel(null);
+            mPowerStateJob = null;
+        }
+        if (mSleepTimerJob != null) {
+            mSleepTimerJob.cancel(null);
+            mSleepTimerJob = null;
+        }
+        if (mSimpleResultJob != null) {
+            mSimpleResultJob.cancel(null);
+            mSimpleResultJob = null;
+        }
+    }
+
     protected CharSequence getText(int resId) {
         return mActivity.getText(resId);
     }

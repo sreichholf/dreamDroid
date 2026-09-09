@@ -244,7 +244,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onPause() {
-		mNavigationHelper = null;
+		if (mNavigationHelper != null) {
+			mNavigationHelper.onDestroy();
+			mNavigationHelper = null;
+		}
 		super.onPause();
 	}
 
