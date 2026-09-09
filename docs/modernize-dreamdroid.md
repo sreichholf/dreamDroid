@@ -39,13 +39,13 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | pick-service-compose | [#191](https://github.com/sreichholf/dreamDroid/pull/191) | merged | `PickServiceFragment` Compose list + `PickServiceScreenTest`.
 | epg-bouquet-compose | [#192](https://github.com/sreichholf/dreamDroid/pull/192) | merged | `EpgBouquetFragment` Compose list + `EpgBouquetScreenTest`.
 | service-epg-compose | [#194](https://github.com/sreichholf/dreamDroid/pull/194) | merged | `ServiceEpgListFragment` Compose list + `ServiceEpgScreenTest`.
-| epg-search-compose | — | open | open on `cursor/epg-search-compose-c88a` — `EpgSearchFragment` Compose list (shared `EpgBouquetScreen`) |
+| epg-search-compose | [#193](https://github.com/sreichholf/dreamDroid/pull/193) | merged | `EpgSearchFragment` Compose list; dropped `EpgBouquetAdapter` + multi-service row XML. |
 
-Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
+Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. Drawer shell and Leanback TV stay later. Compose on `main` through #194. `epg-search-compose` is open on `cursor/epg-search-compose-c88a`.
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #194** (profile-edit, zap, remote, screenshot, settings, backup, current-event, pick-service, EPG bouquet/search/service-epg). Still open in G: device-info, signal, timer-edit, movie/EPG detail, drawer dialogs, timer service pick, Share. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
@@ -63,22 +63,10 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for `ShareActivity` / video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - `ProfileAdapter` remains for `ShareActivity`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Zap Compose grid is on `main` via #185. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker list typing is on `main` via #181 (Intent still one `ExtendedHashMap` at send).
-- Profile edit form is Compose on `main` via #184.
-- Virtual remote Compose pad is on `main` via #186. Tablet screenshot host kept.
-- Screenshot Compose is on `main` via #187.
-- Settings Compose is on `main` via #188.
-- Backup Compose is on `main` via #189.
-- Current event Compose is on `main` via #190.
-- PickService Compose list is on `main` via #191. Rows typed `enigma.Service` (#181); Intent still one hash at send.
-- EPG bouquet Compose is on `main` via #192. `EpgBouquetAdapter` kept for EPG search until search Compose lands.
-- Service EPG Compose is on `main` via #194.
-- EPG search Compose list is open on `cursor/epg-search-compose-c88a` (shared `EpgBouquetScreen`). Drops `EpgBouquetAdapter` + `epg_multi_service_list_item`.
-- Service EPG Compose is on `main` via #194. Detail/timer edge still hash. Dead `EpgTimelineFragment` removed in #177.
-- EPG bouquet Compose is on `main` via #192. Adapter kept for search until search Compose lands.
-- Service EPG Compose is on `main` via #194.
-- EPG search Compose list is open on `cursor/epg-search-compose-c88a` (shared `EpgBouquetScreen`). Drops `EpgBouquetAdapter` + `epg_multi_service_list_item`.
-- EPG search Compose is open on `cursor/epg-search-compose-c88a`. Rows typed `enigma.Event` (#180). Detail/timer edge still hash.
+- Wave 3 Compose landed through #194: profile-edit #184, zap #185, remote #186, screenshot #187, settings #188, backup #189, current-event #190, pick-service #191, EPG bouquet #192, EPG search #193 (dropped `EpgBouquetAdapter`), service EPG #194.
+- Appendix G still open: device-info, signal, timer-edit, movie detail, EPG detail, drawer dialogs, timer service pick, Share profiles.
+- Remaining typed API: hub now/next, movies, timers, device info, signal.
+- Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
 ## How to read this
 
@@ -371,7 +359,7 @@ This was never "replace the phone app with Compose." The original boxes named fi
 
 ### Still Java/XML phone screens (drawer and related)
 
-Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187), Settings (#188), Backup (#189), Current event (#190). The pager pages behind those tabs landed as Compose in #170. PickService Compose is on `main` via #191. EPG bouquet Compose is on `main` via #192. Service EPG Compose is on `main` via #194. EPG search Compose is open on `cursor/epg-search-compose-c88a`.
+Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187), Settings (#188), Backup (#189), Current event (#190), PickService (#191), EPG bouquet (#192), EPG search (#193), Service EPG (#194). The pager pages behind those tabs landed as Compose in #170.
 
 | Surface | Code | Notes |
 | --- | --- | --- |
@@ -382,10 +370,10 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
 | Zap | Compose on `main` via #185 | Compose grid + Picasso picons. Rows typed `enigma.Service` (#173). Picker list typing on `main` via #181. |
 | Service EPG list | Compose on `main` via #194 | Compose list; typed `enigma.Event` (#176). Detail/timer edge still hash. |
-| EPG bouquet | Compose on `main` via #192 | Compose list; typed `enigma.Event` (#179). Shared `EpgBouquetScreen` with search (#193). Detail/timer edge still hash. |
-| EPG search | open `cursor/epg-search-compose-c88a` | Compose list via shared `EpgBouquetScreen`; typed `enigma.Event` (#180). Detail/timer edge still hash. |
+| EPG bouquet | Compose on `main` via #192 | Compose list; typed `enigma.Event` (#179). Shared `EpgBouquetScreen` with search. Detail/timer edge still hash. |
+| EPG search | Compose on `main` via #193 | Compose list; typed `enigma.Event` (#180). Dropped `EpgBouquetAdapter`. Detail/timer edge still hash. |
 | Bouquet picker | Compose on `main` via #191 | Compose list; typed `enigma.Service` (#181). Intent still one hash at send. |
-| EPG detail | `EpgDetailBottomSheet` | ButterKnife. |
+| EPG detail | `EpgDetailBottomSheet` | Java/XML (`findViewById`). Accept typed `Event` in Compose later. |
 | Current event | Compose on `main` via #190 | Compose now/next + stream; typed `enigma.CurrentService` (#183). Detail/timer edge still hash. |
 | Virtual remote | Compose on `main` via #186 | Compose pad + HTTP keys; tablet screenshot host kept. |
 | Device info | `DeviceInfoFragment` | |
@@ -444,13 +432,81 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 12 | `epg-detail-compose` | `EpgDetailBottomSheet` | EPG / current / channel popup | Yes — accept typed `enigma.Event` |
 | 13 | `drawer-dialogs-compose` | Sleep timer / send message / power / changelog / connection error | Drawer dialogs | Partial (sleep-timer result optional) |
 | 14 | `epg-bouquet-compose` | `EpgBouquetFragment` | Drawer EPG | No for list (rows typed #179); detail with #12 — **merged** [#192](https://github.com/sreichholf/dreamDroid/pull/192) |
-| 15 | `epg-search-compose` | `EpgSearchFragment` | Toolbar search | No for list (rows typed #180) — **open** on `cursor/epg-search-compose-c88a` |
+| 15 | `epg-search-compose` | `EpgSearchFragment` | Toolbar search | No for list (rows typed #180) — **merged** [#193](https://github.com/sreichholf/dreamDroid/pull/193) |
 | 16 | `service-epg-compose` | `ServiceEpgListFragment` | Channel → EPG | No for list (rows typed #176) — **merged** [#194](https://github.com/sreichholf/dreamDroid/pull/194) |
 | 17 | `pick-service-compose` | `PickServiceFragment` | Zap / EPG bouquet pick | No for list (rows typed #181) — **merged** [#191](https://github.com/sreichholf/dreamDroid/pull/191) |
 | 18 | `timer-service-pick-compose` | `ServiceListFragment` (pick mode) | Timer edit service pick | Yes — type pick path |
 | 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) |
 
 **Out of this wave:** drawer shell (`MainActivity` / `NavigationHelper`), Leanback `tv/`, VLC `VideoActivity` / `VideoOverlayFragment`, home-screen widgets.
+
+## Appendix H. After Wave 3 — one-by-one modernization plan
+
+Operator intent: **migrate everything** (phone leftovers + Leanback), then operator usertests, then bugfix pass. Do **one PR at a time**. Do **not** start Leanback implementation until the dive below is written and accepted.
+
+### Phase 0 — Leanback dive (read-only, before any TV Compose PR)
+
+Goal: a short inventory + migration risks doc (can live as a subsection here or a linked note). Cover:
+
+- Surfaces: `tv/activities/MainActivity`, `PreferenceActivity`, `RootBrowseFragment`, `BaseHttpBrowseFragment`, Leanback prefs (`SettingsFragment` / `PrefsFragment` / `ProfileFragment`), `EpgDetailDialog` / `MovieDetailDialog`, `CardPresenter` / `TextCardView` / `BrowseItem`.
+- ButterKnife: 3 TV files (~15 binds) — blocks dropping ButterKnife until TV migrates or those call sites go.
+- Coupling: heavy use of phone `HttpFragmentHelper`, loaders, `ExtendedHashMap`, string-keyed helpers, `AbstractDialog`, `Picon`, `IntentFactory`.
+- Risks: Leanback browse/focus model ≠ phone Material 3; TV prefs are Leanback Preference; custom TLS/Picasso in TV `MainActivity`; phone detail Compose will not auto-cover TV dialogs.
+- Deliverable: agreed PR order for TV (browse hub first vs prefs first vs details first). **No code until dive lands.**
+
+### Phase 1 — Finish phone Wave 3 leftovers (Appendix G)
+
+One PR each, typed API first where noted:
+
+| Order | Slug | Notes |
+| --- | --- | --- |
+| 1 | typed hub now/next | `ServiceListPage` events — unlocks cleaner rows |
+| 2 | typed movies + `movie-detail-compose` | Drop phone ButterKnife on movie detail |
+| 3 | typed timers + `timer-edit-compose` + `timer-service-pick-compose` | |
+| 4 | typed device-info + `device-info-compose` | |
+| 5 | typed signal + `signal-compose` | Gauge lib wrap or replace |
+| 6 | `epg-detail-compose` | Accept typed `Event`; hash edge gone |
+| 7 | `drawer-dialogs-compose` | Sleep / message / power / changelog / connection (split if large) |
+| 8 | `share-profiles-compose` | Drop `ProfileAdapter` if unused elsewhere |
+
+Gate: instrumented Compose tests; Bugbot; land when authorized.
+
+### Phase 2 — Phone chassis (still not Leanback)
+
+One program each, still one PR (or small PR series) at a time:
+
+| Order | Program | What |
+| --- | --- | --- |
+| 1 | Drawer shell | `MainActivity` + `NavigationHelper` → Compose Navigation; retire dual-pane XML host gradually |
+| 2 | HTTP / async stack | Replace `HttpURLConnection` + `AsyncTask`/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump |
+| 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
+| 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
+| 5 | VLC / streaming | `VideoActivity` + `VideoOverlayFragment` (ButterKnife) — product decision before rewrite |
+| 6 | Widgets | `appwidget/` Virtual Remote — Compose Glance or keep XML |
+
+### Phase 3 — Leanback TV (after Phase 0 dive)
+
+Separate PRs; do not mix with phone shell PRs:
+
+1. Typed data path for TV browse (stop `ExtendedHashMap` in `BrowseItem`).
+2. TV detail dialogs → Compose (or shared phone detail with TV theme).
+3. Browse hub → TV Compose / foundational focus model.
+4. Leanback prefs → Compose preferences.
+5. Drop ButterKnife when zero call sites remain.
+
+### Phase 4 — Operator usertests
+
+Phone + TV smoke on real devices / boxes. File bugs; no drive-by refactors.
+
+### Phase 5 — Bugfix pass
+
+One PR per fix or small related cluster. Prefer regressions covered by Compose tests.
+
+### Explicit non-goals until Phases 0–3 clear
+
+- Do not merge `master` into `main`.
+- Do not bump OkHttp to 4 as a drive-by.
+- Do not rewrite VLC codecs or Enigma2 server side.
 
 ## Appendix F. Links
 
