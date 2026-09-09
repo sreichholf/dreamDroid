@@ -51,15 +51,15 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | signal-compose | [#202](https://github.com/sreichholf/dreamDroid/pull/202) | merged | `SignalFragment` Compose + HalfGauge `AndroidView` + `SignalScreenTest`.
 | timers-typed | [#203](https://github.com/sreichholf/dreamDroid/pull/203) | merged | typed `enigma.Timer` for `/web/timerlist`; Compose list via typed model; edit/delete hash at edge. |
 | ci-basic-tests | [#204](https://github.com/sreichholf/dreamDroid/pull/204) | merged | GitHub Actions: unit+assemble+androidTest compile on PRs; API 30 emulator on `main` / `workflow_dispatch` only. |
-| timer-edit-compose | [#205](https://github.com/sreichholf/dreamDroid/pull/205) | open | `TimerEditFragment` Compose form + `TimerEditScreenTest`; hash at save/pick edge; drop `timer_edit.xml`. |
-| movie-detail-compose | [#206](https://github.com/sreichholf/dreamDroid/pull/206) | open | `MovieDetailBottomSheet` Compose + typed `enigma.Movie` edge. |
+| timer-edit-compose | [#205](https://github.com/sreichholf/dreamDroid/pull/205) | merged | `TimerEditFragment` Compose form + `TimerEditScreenTest`; hash at save/pick edge; drop `timer_edit.xml`. |
+| movie-detail-compose | [#206](https://github.com/sreichholf/dreamDroid/pull/206) | open | `MovieDetailBottomSheet` Compose + typed `enigma.Movie` edge; drop phone ButterKnife on detail + `movie_epg_dialog` phone layout. |
 | timer-service-pick-compose | [#207](https://github.com/sreichholf/dreamDroid/pull/207) | merged | `TimerServicePickFragment` Compose bouquet→service pick; drop unused `ServiceListFragment` + `dual_list_view`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183/#203) are on `main`. Remaining typed API: hub now/next, movies list path. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #207**. Open: timer-edit #205 (this PR), movie detail #206. Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #205/#207**. Open: movie detail #206 (this PR). Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
@@ -76,9 +76,9 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
-- Wave 3: CI #204 + timer-service-pick #207 on `main`. Open: timer-edit #205 (this PR), movie-detail #206.
-- Appendix G still open: timer-edit, movie-detail.
-- Remaining typed API: hub now/next, movies list path.
+- Wave 3 phone Compose screens on `main` through #205/#207; CI #204. Open: movie-detail #206 (this PR).
+- Appendix G still open: movie-detail only.
+- Remaining typed API: hub now/next, movies list path (detail edge typed in this PR).
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
 ## How to read this
@@ -395,6 +395,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Settings | Compose on `main` via #188 | Compose preference list; same PreferenceManager keys as `R.xml.preferences`. TV Leanback prefs unchanged. |
 | Backup | Compose on `main` via #189 | Compose import/export + toggles; legacy SQLite + Room via `BackupService`. |
 | Sleep timer / send message / power / changelog | Compose on `main` via #198 | Drawer dialogs Compose. |
+| Movie detail | open #206 | Compose sheet; typed `enigma.Movie` + hash overload; drops phone ButterKnife on detail. |
 | Mediaplayer | removed (#175) | Drawer entry was commented; UI stack deleted. `URIStore.MEDIA_PLAYER_PLAY` kept for `ShareActivity`. |
 | Streaming | `VideoActivity`, `VideoOverlayFragment`, VLC | Explicitly out of wave 1. |
 | Widget | `appwidget/` | |
