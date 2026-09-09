@@ -42,9 +42,11 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 			return false;
 
 		addBouquets(mTV, mBouquets.tv);
+		if (getHttpClient().hasError()) {
+			return false;
+		}
 		addBouquets(mRadio, mBouquets.radio);
-
-		return true;
+		return !getHttpClient().hasError();
 	}
 
 	private boolean addBouquets(String ref, ArrayList<Service> target) {
@@ -53,7 +55,7 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		if (isCancelled())
 			return false;
 		target.addAll(HttpFragmentHelper.fetchServices(getHttpClient(), params));
-		return true;
+		return !getHttpClient().hasError();
 	}
 
 	@Override
@@ -62,7 +64,8 @@ public class GetBouquetListTask extends AsyncHttpTaskBase<Void, String, Boolean>
 		if (isInvalid(taskHandler))
 			return;
 
-		taskHandler.onBouquetListReady(result, mBouquets, getErrorText());
+		boolean success = Boolean.TRUE.equals(result);
+		taskHandler.onBouquetListReady(success, mBouquets, success ? null : getErrorText());
 	}
 
 	public interface GetBouquetListTaskHandler extends AsyncHttpTaskBaseHandler {
