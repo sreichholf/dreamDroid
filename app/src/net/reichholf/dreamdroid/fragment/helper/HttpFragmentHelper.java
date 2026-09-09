@@ -311,16 +311,6 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     @Nullable
-    public net.reichholf.dreamdroid.enigma.CurrentService fetchCurrentService() {
-        return fetchCurrentService(mShc);
-    }
-
-    @Nullable
-    public static net.reichholf.dreamdroid.enigma.CurrentService fetchCurrentService(@NonNull SimpleHttpClient shc) {
-        return EnigmaClient.getCurrentBlocking(shc);
-    }
-
-    @Nullable
     public static List<net.reichholf.dreamdroid.enigma.Timer> fetchTimers(@NonNull SimpleHttpClient shc) {
         return EnigmaClient.getTimersBlocking(shc);
     }
