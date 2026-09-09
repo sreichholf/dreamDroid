@@ -364,7 +364,9 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	public boolean onMovieAction(int action) {
 		switch (action) {
 			case R.id.menu_info: {
-				if(mMovie.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_DESCRIPTION_EXTENDED) == null){
+				String descriptionEx = mMovie.getString(
+						net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_DESCRIPTION_EXTENDED);
+				if (descriptionEx == null || descriptionEx.isEmpty()) {
 					showToast(getString(R.string.no_epg_available));
 					break;
 				}
