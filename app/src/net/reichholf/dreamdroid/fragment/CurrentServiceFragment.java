@@ -119,14 +119,30 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 
 	@Override
 	public void onDestroyView() {
-		cancelLoad();
+		cancelLoad(true);
 		super.onDestroyView();
 	}
 
-	private void cancelLoad() {
-		if (mLoadJob != null) {
-			mLoadJob.cancel(null);
-			mLoadJob = null;
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob == null) {
+			return;
+		}
+		mLoadJob.cancel(null);
+		mLoadJob = null;
+		// Cancelled jobs never reach onCurrentServiceReady — clear swipe/title when leaving.
+		if (finishUi) {
+			finishLoadUi();
+		}
+	}
+
+	private void finishLoadUi() {
+		mHttpHelper.onLoadFinished();
+		if (!isAdded()) {
+			return;
+		}
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 	}
 
@@ -289,7 +305,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		cancelLoad();
+		cancelLoad(false);
 		mLoadJob = CurrentServiceLoadKt.launchCurrentServiceLoad(this, (success, current, errorText) -> {
 			onCurrentServiceReady(success, current, errorText);
 			return Unit.INSTANCE;
@@ -301,11 +317,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 		if (!isAdded()) {
 			return;
 		}
-		mHttpHelper.onLoadFinished();
-		setCurrentTitle(getLoadFinishedTitle());
-		if (getAppCompatActivity() != null) {
-			getAppCompatActivity().setTitle(getCurrentTitle());
-		}
+		finishLoadUi();
 		if (!success) {
 			// Toast only when we already showed data; on first failure exit Loading placeholders.
 			if (!mCurrentServiceReady) {
