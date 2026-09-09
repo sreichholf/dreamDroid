@@ -33,13 +33,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | zap-compose | [#185](https://github.com/sreichholf/dreamDroid/pull/185) | merged | `55ecc5df` `ZapFragment` Compose grid + `ZapScreenTest`. |
 | virtual-remote-compose | [#186](https://github.com/sreichholf/dreamDroid/pull/186) | merged | `bd2ccfb9` `VirtualRemoteFragment` Compose pad + `VirtualRemoteScreenTest`. |
 | screenshot-compose | [#187](https://github.com/sreichholf/dreamDroid/pull/187) | merged | `527e4c7f` `ScreenShotFragment` Compose + PhotoView + `ScreenshotScreenTest`. |
-| settings-compose ([#188](https://github.com/sreichholf/dreamDroid/pull/188)) | — | open | open on `cursor/settings-compose-c88a` — `MyPreferenceFragment` Compose prefs + `SettingsScreenTest` |
+| settings-compose | [#188](https://github.com/sreichholf/dreamDroid/pull/188) | merged | `63ea96ba` `MyPreferenceFragment` Compose prefs + `SettingsScreenTest`. |
+| backup-compose ([#189](https://github.com/sreichholf/dreamDroid/pull/189)) | — | open | open on `cursor/backup-compose-c88a` — `BackupFragment` Compose + `BackupScreenTest` |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. `profile-edit-compose` is on `main` as #184. `zap-compose` is on `main` as #185. `virtual-remote-compose` is on `main` as #186. `screenshot-compose` is on `main` as #187. Next screen (`settings-compose`) is open on `cursor/settings-compose-c88a`.
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**, after the typed API queue. Checklist in Appendix G. Drawer shell and Leanback TV stay later programs. `profile-edit-compose` is on `main` as #184. `zap-compose` is on `main` as #185. `virtual-remote-compose` is on `main` as #186. `screenshot-compose` is on `main` as #187. `settings-compose` is on `main` as #188. Next screen (`backup-compose`) is open on `cursor/backup-compose-c88a`.
 
 ### Operator overrides (this program)
 
@@ -61,7 +62,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Profile edit form is Compose on `main` via #184.
 - Virtual remote Compose pad is on `main` via #186. Tablet screenshot host kept.
 - Screenshot Compose is on `main` via #187.
-- Settings Compose is open on `cursor/settings-compose-c88a`.
+- Settings Compose is on `main` via #188.
+- Backup Compose is open on `cursor/backup-compose-c88a`.
 - Service EPG list still XML. Rows are typed `enigma.Event` on `main` via #176. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Dead `EpgTimelineFragment` removed in #177.
 - EPG bouquet still XML. Rows are typed `enigma.Event` on `main` via #179. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
 - EPG search still XML. Rows are typed `enigma.Event` on `main` via #180. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge.
@@ -357,7 +359,7 @@ This was never "replace the phone app with Compose." The original boxes named fi
 
 ### Still Java/XML phone screens (drawer and related)
 
-Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187). The pager pages behind those tabs landed as Compose in #170. Settings Compose is open on `cursor/settings-compose-c88a`.
+Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies **tabs/bar**, Zap grid (#185), Virtual remote (#186), Screenshot (#187), Settings (#188). The pager pages behind those tabs landed as Compose in #170. Backup Compose is open on `cursor/backup-compose-c88a`.
 
 | Surface | Code | Notes |
 | --- | --- | --- |
@@ -377,8 +379,8 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Device info | `DeviceInfoFragment` | |
 | Signal | `SignalFragment` + vendored gauge lib | |
 | Screenshot | Compose on `main` via #187 | Compose + PhotoView AndroidView; reload/share/save kept. |
-| Settings | open `cursor/settings-compose-c88a` | Compose preference list; same PreferenceManager keys as `R.xml.preferences`. TV Leanback prefs unchanged. |
-| Backup | `BackupFragment`, `DreamDroidBackupAgent` | Still talks to legacy SQLite. |
+| Settings | Compose on `main` via #188 | Compose preference list; same PreferenceManager keys as `R.xml.preferences`. TV Leanback prefs unchanged. |
+| Backup | open `cursor/backup-compose-c88a` | Compose import/export + toggles; legacy SQLite + Room via `BackupService`. |
 | Sleep timer / send message / power / changelog | dialogs | |
 | Mediaplayer | removed (#175) | Drawer entry was commented; UI stack deleted. `URIStore.MEDIA_PLAYER_PLAY` kept for `ShareActivity`. |
 | Streaming | `VideoActivity`, `VideoOverlayFragment`, VLC | Explicitly out of wave 1. |
@@ -423,8 +425,8 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 5 | `device-info-compose` | `DeviceInfoFragment` | Drawer device info | Prefer type device-info first |
 | 6 | `signal-compose` | `SignalFragment` | Drawer signal | Prefer type signal first |
 | 7 | `screenshot-compose` | `ScreenShotFragment` | Drawer screenshot | No — **merged** [#187](https://github.com/sreichholf/dreamDroid/pull/187) |
-| 8 | `settings-compose` | `MyPreferenceFragment` | Drawer settings | No — **open** on `cursor/settings-compose-c88a` |
-| 9 | `backup-compose` | `BackupFragment` | Drawer backup | No |
+| 8 | `settings-compose` | `MyPreferenceFragment` | Drawer settings | No — **merged** [#188](https://github.com/sreichholf/dreamDroid/pull/188) |
+| 9 | `backup-compose` | `BackupFragment` | Drawer backup | No — **open** on `cursor/backup-compose-c88a` |
 | 10 | `timer-edit-compose` | `TimerEditFragment` | Hub / EPG → timer edit | Yes — type timers list/edit path |
 | 11 | `movie-detail-compose` | `MovieDetailBottomSheet` | Movies row tap | Yes — typed `enigma.Movie` edge (ButterKnife) |
 | 12 | `epg-detail-compose` | `EpgDetailBottomSheet` | EPG / current / channel popup | Yes — accept typed `enigma.Event` |
