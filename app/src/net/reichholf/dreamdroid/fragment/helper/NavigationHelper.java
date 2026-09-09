@@ -15,9 +15,8 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
-import net.reichholf.dreamdroid.asynctask.SetPowerStateTask;
-import net.reichholf.dreamdroid.asynctask.SleepTimerTask;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
+import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.BackupFragment;
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment;
@@ -56,14 +55,16 @@ import kotlinx.coroutines.Job;
 /**
  * Created by Stephan on 25.12.2015.
  */
-public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler, SleepTimerTask.SleepTimerTaskHandler {
+public class NavigationHelper {
 
     @NonNull
 	protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_remote, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
 
     MainActivity mActivity;
-    protected SetPowerStateTask mSetPowerStateTask;
-    protected SleepTimerTask mSleepTimerTask;
+    @Nullable
+    protected Job mPowerStateJob;
+    @Nullable
+    protected Job mSleepTimerJob;
     @Nullable
     protected Job mSimpleResultJob;
     protected SimpleHttpClient mShc;
@@ -104,12 +105,26 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
         }
     }
 
+    public void onDestroy() {
+        if (mPowerStateJob != null) {
+            mPowerStateJob.cancel(null);
+            mPowerStateJob = null;
+        }
+        if (mSleepTimerJob != null) {
+            mSleepTimerJob.cancel(null);
+            mSleepTimerJob = null;
+        }
+        if (mSimpleResultJob != null) {
+            mSimpleResultJob.cancel(null);
+            mSimpleResultJob = null;
+        }
+    }
+
     protected CharSequence getText(int resId) {
         return mActivity.getText(resId);
     }
 
-    @Override
-    public void onPowerStateSet(boolean success, @NonNull ExtendedHashMap result, String resultText) {
+    private void onPowerStateSet(boolean success, @NonNull ExtendedHashMap result, String resultText) {
         if (!success) {
             showToast(resultText);
             return;
@@ -122,8 +137,7 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
         }
     }
 
-    @Override
-    public String getString(int resId) {
+    protected String getString(int resId) {
         return mActivity.getString(resId);
     }
 
@@ -304,8 +318,7 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
         execSleepTimerTask(params, showDialogOnFinish);
     }
 
-    @Override
-    public void onSleepTimerSet(boolean success, @NonNull ExtendedHashMap result, boolean openDialog, String errorText) {
+    private void onSleepTimerSet(boolean success, @NonNull ExtendedHashMap result, boolean openDialog, String errorText) {
         if (success) {
             if (openDialog) {
                 getMainActivity().showDialogFragment(SleepTimerDialog.newInstance(result), "sleeptimer_dialog");
@@ -348,12 +361,20 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
      */
     @SuppressWarnings("unchecked")
     protected void execSleepTimerTask(ArrayList<NameValuePair> params, boolean showDialogOnFinish) {
-        if (mSleepTimerTask != null) {
-            mSleepTimerTask.cancel(true);
+        if (mSleepTimerJob != null) {
+            mSleepTimerJob.cancel(null);
         }
 
-        mSleepTimerTask = new SleepTimerTask(showDialogOnFinish, this);
-        mSleepTimerTask.execute(params);
+        mSleepTimerJob = VolumePowerSleepLoadKt.launchSleepTimerLoad(
+                mActivity,
+                params,
+                showDialogOnFinish,
+                mActivity,
+                (success, result, openDialog, errorText) -> {
+                    mSleepTimerJob = null;
+                    onSleepTimerSet(success, result, openDialog, errorText);
+                    return Unit.INSTANCE;
+                });
     }
 
     /**
@@ -361,12 +382,19 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
      *              <code>helpers.enigma2.PowerState.STATE_*</code>
      */
     protected void setPowerState(String state) {
-        if (mSetPowerStateTask != null) {
-            mSetPowerStateTask.cancel(true);
+        if (mPowerStateJob != null) {
+            mPowerStateJob.cancel(null);
         }
 
-        mSetPowerStateTask = new SetPowerStateTask(this);
-        mSetPowerStateTask.execute(state);
+        mPowerStateJob = VolumePowerSleepLoadKt.launchPowerStateSetLoad(
+                mActivity,
+                state,
+                mActivity,
+                (success, result, errorText) -> {
+                    mPowerStateJob = null;
+                    onPowerStateSet(success, result, errorText);
+                    return Unit.INSTANCE;
+                });
     }
 
     /**
@@ -403,7 +431,6 @@ public class NavigationHelper implements SetPowerStateTask.PowerStateTaskHandler
         onNavigationItemClick(action);
     }
 
-    @Override
     public Context getContext() {
         return getMainActivity();
     }
