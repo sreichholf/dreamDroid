@@ -21,8 +21,8 @@ import com.evernote.android.state.State;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.asynctask.GetCurrentServiceTask;
 import net.reichholf.dreamdroid.enigma.CurrentService;
+import net.reichholf.dreamdroid.enigma.CurrentServiceLoadKt;
 import net.reichholf.dreamdroid.enigma.Event;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
@@ -39,16 +39,18 @@ import net.reichholf.dreamdroid.ui.current.CurrentServiceScreenKt;
 import net.reichholf.dreamdroid.ui.current.CurrentServiceUiState;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Shows some information about the service currently running on TV.
  * Compose Material 3 UI; typed {@link CurrentService}; detail/timer still take
- * ExtendedHashMap at the edge.
+ * ExtendedHashMap at the edge. Load via coroutine + {@code EnigmaClient}.
  * 
  * @author sreichholf
  * 
  */
-public class CurrentServiceFragment extends BaseHttpFragment
-		implements GetCurrentServiceTask.GetCurrentServiceTaskHandler {
+public class CurrentServiceFragment extends BaseHttpFragment {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "CurrentServiceFragment";
 
@@ -68,7 +70,7 @@ public class CurrentServiceFragment extends BaseHttpFragment
 	@State public ExtendedHashMap mCurrentItem;
 
 	@Nullable
-	private GetCurrentServiceTask mCurrentServiceTask;
+	private Job mLoadJob;
 
 	private CurrentServiceUiState mUiState;
 
@@ -116,11 +118,16 @@ public class CurrentServiceFragment extends BaseHttpFragment
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mCurrentServiceTask != null) {
-			mCurrentServiceTask.cancel(true);
+	public void onDestroyView() {
+		cancelLoad();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad() {
+		if (mLoadJob != null) {
+			mLoadJob.cancel(null);
+			mLoadJob = null;
 		}
-		super.onDestroy();
 	}
 
 	/**
@@ -262,7 +269,7 @@ public class CurrentServiceFragment extends BaseHttpFragment
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader,
 			@NonNull LoaderResult<ExtendedHashMap> result) {
-		// Unused: content comes from GetCurrentServiceTask / EnigmaClient.
+		// Unused: content comes from EnigmaClient coroutines.
 	}
 
 	@Override
@@ -272,6 +279,9 @@ public class CurrentServiceFragment extends BaseHttpFragment
 	}
 
 	private void loadCurrentService() {
+		if (!isAdded() || getView() == null) {
+			return;
+		}
 		mHttpHelper.onLoadStarted();
 		if (!"".equals(getBaseTitle().trim())) {
 			setCurrentTitle(getString(R.string.loading));
@@ -279,16 +289,18 @@ public class CurrentServiceFragment extends BaseHttpFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
-		if (mCurrentServiceTask != null) {
-			mCurrentServiceTask.cancel(true);
-		}
-		mCurrentServiceTask = new GetCurrentServiceTask(this);
-		mCurrentServiceTask.execute();
+		cancelLoad();
+		mLoadJob = CurrentServiceLoadKt.launchCurrentServiceLoad(this, (success, current, errorText) -> {
+			onCurrentServiceReady(success, current, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
-	@Override
-	public void onCurrentServiceReady(boolean success, @Nullable CurrentService current,
+	private void onCurrentServiceReady(boolean success, @Nullable CurrentService current,
 			@Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
 		mHttpHelper.onLoadFinished();
 		setCurrentTitle(getLoadFinishedTitle());
 		if (getAppCompatActivity() != null) {
