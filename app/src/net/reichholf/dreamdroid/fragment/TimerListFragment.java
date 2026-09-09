@@ -114,6 +114,8 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 	private final ArrayList<Timer> mTimers = new ArrayList<>();
 	@Nullable
 	private GetTimerListTask mTimerListTask;
+	@Nullable
+	private GetTimerListTask.GetTimerListTaskHandler mTimerListTaskHandler;
 	/** Bumped on each new fetch so stale GetTimerListTask callbacks are ignored. */
 	private int mTimerListGeneration = 0;
 
@@ -274,7 +276,8 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 		if (mTimerListTask != null) {
 			mTimerListTask.cancel(true);
 		}
-		mTimerListTask = new GetTimerListTask(new GetTimerListTask.GetTimerListTaskHandler() {
+		// Keep a strong ref: GetTimerListTask only holds WeakReference to the handler.
+		mTimerListTaskHandler = new GetTimerListTask.GetTimerListTaskHandler() {
 			@Nullable
 			@Override
 			public String getString(int resId) {
@@ -294,7 +297,8 @@ public class TimerListFragment extends BaseHttpRecyclerFragment
 				}
 				handleTimerListReady(success, timers, errorText);
 			}
-		});
+		};
+		mTimerListTask = new GetTimerListTask(mTimerListTaskHandler);
 		mTimerListTask.execute((Void) null);
 	}
 
