@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.ComposeView;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.SimpleResultTask;
+import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -42,14 +42,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Share / view intent → pick a profile (Compose) → play on the box via MEDIA_PLAYER_PLAY.
  */
-public class ShareActivity extends AppCompatActivity implements SimpleResultTask.SimpleResultTaskHandler {
+public class ShareActivity extends AppCompatActivity {
 	@NonNull
 	public static String LOG_TAG = ShareActivity.class.getSimpleName();
 
-	private SimpleResultTask mSimpleResultTask;
+	@Nullable
+	private Job mSimpleResultJob;
 	private SimpleHttpClient mShc;
 	private ShareProfilesListState mListState;
 	@Nullable
@@ -89,8 +93,10 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 			mProgress.dismiss();
 			mProgress = null;
 		}
-		if (mSimpleResultTask != null)
-			mSimpleResultTask.cancel(true);
+		if (mSimpleResultJob != null) {
+			mSimpleResultJob.cancel(null);
+			mSimpleResultJob = null;
+		}
 		super.onDestroy();
 	}
 
@@ -147,7 +153,7 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 	}
 
 	public void load() {
-		Profile.ProfileDao dao = AppDatabase.profiles(getContext());
+		Profile.ProfileDao dao = AppDatabase.profiles(this);
 		mProfiles = dao.getProfiles();
 		mProfilesById.clear();
 		if (mProfiles.size() > 1) {
@@ -169,16 +175,19 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 
 	@SuppressWarnings("unchecked")
 	public void execSimpleResultTask(ArrayList<NameValuePair> params) {
-		if (mSimpleResultTask != null) {
-			mSimpleResultTask.cancel(true);
+		if (mSimpleResultJob != null) {
+			mSimpleResultJob.cancel(null);
 		}
 		mProgress = ProgressDialog.show(this, getString(R.string.loading), getString(R.string.loading));
 		SimpleResultRequestHandler handler = new SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY);
-		mSimpleResultTask = new SimpleResultTask(handler, this);
-		mSimpleResultTask.execute(params);
+		mSimpleResultJob = SimpleResultLoadKt.launchSimpleResultLoad(this, handler, params, (success, result, http) -> {
+			mSimpleResultJob = null;
+			onSimpleResult(success, result, http);
+			return Unit.INSTANCE;
+		});
 	}
 
-	public void onSimpleResult(boolean success, ExtendedHashMap result) {
+	public void onSimpleResult(boolean success, ExtendedHashMap result, SimpleHttpClient http) {
 		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
@@ -187,8 +196,8 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 		if (mTitle == null)
 			mTitle = "...";
 		String toastText = getString(R.string.sent_as, mTitle);
-		if (mShc.hasError()) {
-			toastText = mShc.getErrorText(this);
+		if (http.hasError()) {
+			toastText = http.getErrorText(this);
 		}
 
 		showToast(toastText);
@@ -198,11 +207,5 @@ public class ShareActivity extends AppCompatActivity implements SimpleResultTask
 	public void showToast(String text) {
 		Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
 		toast.show();
-	}
-
-	@NonNull
-	@Override
-	public Context getContext() {
-		return this;
 	}
 }
