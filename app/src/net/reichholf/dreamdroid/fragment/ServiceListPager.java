@@ -17,9 +17,9 @@ import com.evernote.android.state.State;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.asynctask.GetLocationsAndTagsTask;
 import net.reichholf.dreamdroid.enigma.BouquetListLoadKt;
 import net.reichholf.dreamdroid.enigma.Bouquets;
+import net.reichholf.dreamdroid.enigma.LocationsAndTagsLoadKt;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import kotlin.Unit;
 import kotlinx.coroutines.Job;
 
-public class ServiceListPager extends BaseHttpFragment implements GetLocationsAndTagsTask.GetLocationsAndTagsTaskHandler {
+public class ServiceListPager extends BaseHttpFragment {
 	private static final String MODE_TV = "TV";
 	private static final String MODE_RADIO = "Radio";
 	private static final String MODE_MOVIES = "Movies";
@@ -61,17 +61,13 @@ public class ServiceListPager extends BaseHttpFragment implements GetLocationsAn
 	TvMoviesHubState mHubState;
 	@Nullable
 	private Job mBouquetLoadJob;
-	GetLocationsAndTagsTask mLocationsAndTagsTask;
+	@Nullable
+	private Job mLocationsAndTagsJob;
 
 	@Nullable
 	private Bouquets mBouquets;
 
-	@Override
-	public void onGetLocationsAndTagsProgress(String title, String progress) {
-	}
-
-	@Override
-	public void onLocationsAndTagsReady() {
+	private void onLocationsAndTagsReady() {
 		if (mMode.equals((MODE_MOVIES)))
 			onMoviesSelected();
 	}
@@ -275,11 +271,17 @@ public class ServiceListPager extends BaseHttpFragment implements GetLocationsAn
 			return Unit.INSTANCE;
 		});
 
-		if (mLocationsAndTagsTask != null) {
-			mLocationsAndTagsTask.cancel(true);
+		if (mLocationsAndTagsJob != null) {
+			mLocationsAndTagsJob.cancel(null);
 		}
-		mLocationsAndTagsTask = new GetLocationsAndTagsTask(this);
-		mLocationsAndTagsTask.execute();
+		mLocationsAndTagsJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(
+				this,
+				(title, progress) -> Unit.INSTANCE,
+				() -> {
+					mLocationsAndTagsJob = null;
+					onLocationsAndTagsReady();
+					return Unit.INSTANCE;
+				});
 	}
 
 	@Override
@@ -287,6 +289,10 @@ public class ServiceListPager extends BaseHttpFragment implements GetLocationsAn
 		if (mBouquetLoadJob != null) {
 			mBouquetLoadJob.cancel(null);
 			mBouquetLoadJob = null;
+		}
+		if (mLocationsAndTagsJob != null) {
+			mLocationsAndTagsJob.cancel(null);
+			mLocationsAndTagsJob = null;
 		}
 		super.onDestroyView();
 	}
