@@ -66,7 +66,8 @@ else
 fi
 
 # `am instrument` exits 0 even when tests fail, so inspect the summary.
-if grep -qaE "^OK \([0-9]+ test" "$INSTR_LOG" && ! grep -qaE "^FAILURES!!!" "$INSTR_LOG"; then
+# Require a non-zero test count so mistyped -e class filters cannot pass empty.
+if grep -qaE '^OK \([1-9][0-9]* tests?\)' "$INSTR_LOG" && ! grep -qaE "^FAILURES!!!" "$INSTR_LOG"; then
   echo "== connected-test: PASSED =="
   exit 0
 fi
