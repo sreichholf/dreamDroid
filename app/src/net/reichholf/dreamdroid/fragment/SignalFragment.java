@@ -58,6 +58,8 @@ public class SignalFragment extends BaseHttpFragment
 	private boolean mIsUpdating = false;
 	private double mSnrDb = sMinSnrDb;
 	private long mStartTime;
+	/** Bumped on each new fetch / stop so stale GetSignalTask callbacks are ignored. */
+	private int mSignalGeneration = 0;
 
 	@Nullable
 	private GetSignalTask mSignalTask;
@@ -228,10 +230,31 @@ public class SignalFragment extends BaseHttpFragment
 			return;
 		}
 		mIsUpdating = true;
+		final int generation = ++mSignalGeneration;
 		if (mSignalTask != null) {
 			mSignalTask.cancel(true);
 		}
-		mSignalTask = new GetSignalTask(this);
+		mSignalTask = new GetSignalTask(new GetSignalTask.GetSignalTaskHandler() {
+			@Override
+			public void onSignalReady(boolean success, @Nullable Signal signal, @Nullable String errorText) {
+				if (generation != mSignalGeneration) {
+					return;
+				}
+				SignalFragment.this.onSignalReady(success, signal, errorText);
+			}
+
+			@Nullable
+			@Override
+			public String getString(int resId) {
+				return SignalFragment.this.getString(resId);
+			}
+
+			@Nullable
+			@Override
+			public android.content.Context getContext() {
+				return SignalFragment.this.getContext();
+			}
+		});
 		mSignalTask.execute();
 	}
 
@@ -269,6 +292,7 @@ public class SignalFragment extends BaseHttpFragment
 	private void stopPolling() {
 		mHandler.removeCallbacks(mPlaySoundTask);
 		mHandler.removeCallbacks(mUpdateTask);
+		mSignalGeneration++;
 		if (mSignalTask != null) {
 			mSignalTask.cancel(true);
 			mSignalTask = null;
