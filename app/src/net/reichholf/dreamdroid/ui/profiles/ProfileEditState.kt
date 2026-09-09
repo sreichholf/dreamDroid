@@ -65,8 +65,8 @@ class ProfileEditState {
 
     fun applyTo(profile: Profile) {
         profile.name = name
-        profile.host = host.trim()
-        profile.streamHost = streamHost.trim()
+        profile.setHost(host.trim())
+        profile.setStreamHost(streamHost.trim())
         profile.setPort(port, ssl, trustAllCerts)
         profile.setStreamPort(streamPort)
         profile.setFilePort(filePort)
