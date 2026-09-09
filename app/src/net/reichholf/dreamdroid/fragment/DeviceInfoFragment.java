@@ -16,24 +16,33 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.evernote.android.state.State;
+
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.asynctask.GetDeviceInfoTask;
+import net.reichholf.dreamdroid.enigma.DeviceHdd;
+import net.reichholf.dreamdroid.enigma.DeviceFrontend;
+import net.reichholf.dreamdroid.enigma.DeviceInfo;
+import net.reichholf.dreamdroid.enigma.DeviceNic;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.DeviceInfo;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 
-import java.util.ArrayList;
-
 /**
  * Shows device-specific information for the active profile.
- * 
+ * Typed {@link DeviceInfo}; XML UI stays until device-info Compose.
+ *
  * @author sreichholf
- * 
+ *
  */
-public class DeviceInfoFragment extends BaseHttpFragment {
-	private ExtendedHashMap mInfo;
+public class DeviceInfoFragment extends BaseHttpFragment
+		implements GetDeviceInfoTask.GetDeviceInfoTaskHandler {
+	@Nullable
+	@State
+	public DeviceInfo mInfo;
+
 	private TextView mGuiVersion;
 	private TextView mImageVersion;
 	private TextView mInterfaceVersion;
@@ -42,24 +51,19 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	private LinearLayout mFrontendsList;
 	private LinearLayout mNicsList;
 	private LinearLayout mHddsList;
-	private ArrayList<ExtendedHashMap> mFrontends;
-	private ArrayList<ExtendedHashMap> mNics;
-	private ArrayList<ExtendedHashMap> mHdds;
 	private LayoutInflater mInflater;
+
+	@Nullable
+	private GetDeviceInfoTask mDeviceInfoTask;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.device_info));
-		mInfo = new ExtendedHashMap();
 	}
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mFrontends = new ArrayList<>();
-		mNics = new ArrayList<>();
-		mHdds = new ArrayList<>();
-
 		mInflater = getLayoutInflater();
 		View view = mInflater.inflate(R.layout.device_info, null);
 
@@ -68,101 +72,128 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		mInterfaceVersion = view.findViewById(R.id.InterfaceVersion);
 		mFrontprocessorVersion = view.findViewById(R.id.FrontprocessorVersion);
 		mDeviceName = view.findViewById(R.id.DeviceName);
-		
+
 		mFrontendsList = view.findViewById(R.id.FrontendsList);
 		mNicsList = view.findViewById(R.id.NicsList);
 		mHddsList = view.findViewById(R.id.HddsList);
 
-		if (mInfo == null || mInfo.isEmpty()) {
-			mReload = true;
-		} else {
-			onInfoReady();
-		}
-
 		return view;
 	}
 
-	/**
-	 * Called when device info has been loaded and parsed successfully
-	 */
-	@SuppressWarnings("unchecked")
-	private void onInfoReady() {
-		mFrontends.clear();
-		mFrontends.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_FRONTENDS));
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		boolean needReload = mInfo == null || mInfo.isEmpty();
+		if (needReload) {
+			mReload = true;
+		}
+		super.onViewCreated(view, savedInstanceState);
+		if (!needReload) {
+			onInfoReady(mInfo);
+		}
+	}
 
+	@Override
+	public void onDestroy() {
+		if (mDeviceInfoTask != null) {
+			mDeviceInfoTask.cancel(true);
+			mDeviceInfoTask = null;
+		}
+		super.onDestroy();
+	}
+
+	private void onInfoReady(@NonNull DeviceInfo info) {
 		mFrontendsList.removeAllViews();
-
-		for (int i=0; i<mFrontends.size(); i++) {
+		for (DeviceFrontend frontend : info.getFrontends()) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
-			
 			TextView title = item.findViewById(android.R.id.text1);
-			title.setText((String) mFrontends.get(i).get(DeviceInfo.KEY_FRONTEND_NAME));
-			
+			title.setText(frontend.getName());
 			TextView desc = item.findViewById(android.R.id.text2);
-			desc.setText((String) mFrontends.get(i).get(DeviceInfo.KEY_FRONTEND_MODEL));
-			
+			desc.setText(frontend.getModel());
 			mFrontendsList.addView(item);
 		}
 
-		mNics.clear();
-		mNics.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_NICS));
-
 		mNicsList.removeAllViews();
-
-		for (int i=0; i<mNics.size(); i++) {
+		for (DeviceNic nic : info.getNics()) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
-			
 			TextView title = item.findViewById(android.R.id.text1);
-			title.setText((String) mNics.get(i).get(DeviceInfo.KEY_NIC_NAME));
-			
+			title.setText(nic.getName());
 			TextView desc = item.findViewById(android.R.id.text2);
-			desc.setText((String) mNics.get(i).get(DeviceInfo.KEY_NIC_IP));
-			
+			desc.setText(nic.getIp());
 			mNicsList.addView(item);
 		}
 
-		mHdds.clear();
-		mHdds.addAll((ArrayList<ExtendedHashMap>) mInfo.get(DeviceInfo.KEY_HDDS));
-
 		mHddsList.removeAllViews();
-
-		for (int i=0; i<mHdds.size(); i++) {
+		for (DeviceHdd hdd : info.getHdds()) {
 			View item = mInflater.inflate(R.layout.two_line_list_item, null);
-			
 			TextView title = item.findViewById(android.R.id.text1);
-			title.setText((String) mHdds.get(i).get(DeviceInfo.KEY_HDD_MODEL));
-			
+			title.setText(hdd.getModel());
 			TextView desc = item.findViewById(android.R.id.text2);
-			desc.setText(String.format(getString(R.string.hdd_capacity),
-					mHdds.get(i).get(DeviceInfo.KEY_HDD_CAPACITY),
-					mHdds.get(i).get(DeviceInfo.KEY_HDD_FREE_SPACE)));
-			
+			desc.setText(String.format(getString(R.string.hdd_capacity), hdd.getCapacity(), hdd.getFree()));
 			mHddsList.addView(item);
 		}
 
-		mGuiVersion.setText(mInfo.getString(DeviceInfo.KEY_GUI_VERSION));
-		mImageVersion.setText(mInfo.getString(DeviceInfo.KEY_IMAGE_VERSION));
-		mInterfaceVersion.setText(mInfo.getString(DeviceInfo.KEY_INTERFACE_VERSION));
-		mFrontprocessorVersion.setText(mInfo.getString(DeviceInfo.KEY_FRONT_PROCESSOR_VERSION));
-		mDeviceName.setText(mInfo.getString(DeviceInfo.KEY_DEVICE_NAME));
+		mGuiVersion.setText(info.getGuiVersion());
+		mImageVersion.setText(info.getImageVersion());
+		mInterfaceVersion.setText(info.getInterfaceVersion());
+		mFrontprocessorVersion.setText(info.getFrontProcessorVersion());
+		mDeviceName.setText(info.getDeviceName());
 	}
 
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
+		// Unused: content comes from GetDeviceInfoTask / EnigmaClient.
 		return new AsyncSimpleLoader(getAppCompatActivity(), new DeviceInfoRequestHandler(), args);
 	}
 
-	/*
-	 * You want override this if you don't override onLoadFinished!
-	 */
+	@Override
 	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
-		if (content != null) {
-			mInfo.clear();
-			mInfo.putAll(content);
-			onInfoReady();
+		// Unused: content comes from GetDeviceInfoTask / EnigmaClient.
+	}
+
+	@Override
+	protected void reload() {
+		mReload = false;
+		loadDeviceInfo();
+	}
+
+	private void loadDeviceInfo() {
+		if (!isAdded()) {
+			return;
+		}
+		mHttpHelper.onLoadStarted();
+		if (!"".equals(getBaseTitle().trim())) {
+			setCurrentTitle(getString(R.string.loading));
+		}
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (mDeviceInfoTask != null) {
+			mDeviceInfoTask.cancel(true);
+		}
+		mDeviceInfoTask = new GetDeviceInfoTask(this);
+		mDeviceInfoTask.execute();
+	}
+
+	@Override
+	public void onDeviceInfoReady(boolean success, @Nullable DeviceInfo info, @Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
+		mHttpHelper.onLoadFinished();
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (success && info != null) {
+			mInfo = info;
+			onInfoReady(info);
 		} else {
-			showToast(getText(R.string.not_available));
+			if (errorText != null && !errorText.isEmpty()) {
+				showToast(errorText);
+			} else {
+				showToast(getText(R.string.not_available));
+			}
 		}
 	}
 }
