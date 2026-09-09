@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
@@ -46,6 +47,8 @@ fun SleepTimerScreen(
     state: SleepTimerUiState,
     modifier: Modifier = Modifier,
 ) {
+    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val separatorColor = MaterialTheme.colorScheme.primary.toArgb()
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -58,6 +61,8 @@ fun SleepTimerScreen(
                     minValue = 0
                     maxValue = 999
                     value = state.minutes
+                    this.textColor = textColor
+                    this.separatorColor = separatorColor
                     setOnValueChangedListener { _, _, newVal ->
                         state.minutes = newVal
                     }
@@ -67,6 +72,12 @@ fun SleepTimerScreen(
             update = { picker ->
                 if (picker.value != state.minutes) {
                     picker.value = state.minutes
+                }
+                if (picker.textColor != textColor) {
+                    picker.textColor = textColor
+                }
+                if (picker.separatorColor != separatorColor) {
+                    picker.separatorColor = separatorColor
                 }
             },
         )
