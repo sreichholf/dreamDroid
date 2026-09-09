@@ -448,7 +448,7 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 15 | `epg-search-compose` | `EpgSearchFragment` | Toolbar search | No for list (rows typed #180) — **merged** [#193](https://github.com/sreichholf/dreamDroid/pull/193) |
 | 16 | `service-epg-compose` | `ServiceEpgListFragment` | Channel → EPG | No for list (rows typed #176) — **merged** [#194](https://github.com/sreichholf/dreamDroid/pull/194) |
 | 17 | `pick-service-compose` | `PickServiceFragment` | Zap / EPG bouquet pick | No for list (rows typed #181) — **merged** [#191](https://github.com/sreichholf/dreamDroid/pull/191) |
-| 18 | `timer-service-pick-compose` | `TimerServicePickFragment` (was `ServiceListFragment` pick) | Timer edit service pick | Typed bouquet+services — open [#207](https://github.com/sreichholf/dreamDroid/pull/207) |
+| 18 | `timer-service-pick-compose` | `TimerServicePickFragment` (was `ServiceListFragment` pick) | Timer edit service pick | Typed bouquet+services — **merged** [#207](https://github.com/sreichholf/dreamDroid/pull/207) |
 | 19 | `share-profiles-compose` | `ShareActivity` + `ProfileAdapter` | Share intent | No (Room) — **merged** [#196](https://github.com/sreichholf/dreamDroid/pull/196) |
 
 **Out of this wave:** drawer shell (`MainActivity` / `NavigationHelper`), Leanback `tv/`, VLC `VideoActivity` / `VideoOverlayFragment`, home-screen widgets.
