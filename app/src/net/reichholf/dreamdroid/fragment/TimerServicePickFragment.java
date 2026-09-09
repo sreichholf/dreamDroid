@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
@@ -29,6 +30,7 @@ import net.reichholf.dreamdroid.ui.pick.PickServiceListStateKt;
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,6 +51,11 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 	private GetBouquetListTask mBouquetListTask;
 	@Nullable
 	private GetServiceListTask mServiceListTask;
+	/** Bumped when starting a load so late AsyncTask callbacks are ignored. */
+	private int mLoadGeneration;
+	private int mBouquetReadyForGeneration;
+	private int mServiceReadyForGeneration;
+	private OnBackPressedCallback mBackCallback;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -63,6 +70,13 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 				mCurrentBouquet = new Service(ref, name != null ? name : "");
 			}
 		}
+		mBackCallback = new OnBackPressedCallback(mCurrentBouquet != null) {
+			@Override
+			public void handleOnBackPressed() {
+				showBouquetList();
+			}
+		};
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, mBackCallback);
 	}
 
 	@Nullable
@@ -152,6 +166,28 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		}
 	}
 
+	private void showBouquetList() {
+		mCurrentBouquet = null;
+		mServices.clear();
+		mLoadGeneration++;
+		if (mServiceListTask != null) {
+			mServiceListTask.cancel(true);
+			mServiceListTask = null;
+		}
+		mBackCallback.setEnabled(false);
+		if (!mBouquets.isEmpty()) {
+			setEmptyText(null);
+			mListState.replaceAll(mBouquets);
+			setCurrentTitle(getString(R.string.service));
+			if (getAppCompatActivity() != null) {
+				getAppCompatActivity().setTitle(getCurrentTitle());
+			}
+		} else {
+			mListState.replaceAll(Collections.emptyList());
+			loadBouquets();
+		}
+	}
+
 	private void onRowClick(@NonNull Service service) {
 		if (mCurrentBouquet == null) {
 			if (net.reichholf.dreamdroid.helpers.enigma2.Service.isMarker(service.getReference())) {
@@ -159,8 +195,9 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 			}
 			mCurrentBouquet = service;
 			mServices.clear();
-			mListState.replaceAll(java.util.Collections.emptyList());
+			mListState.replaceAll(Collections.emptyList());
 			setEmptyText(getText(R.string.loading), R.drawable.ic_loading_48dp);
+			mBackCallback.setEnabled(true);
 			loadServices();
 			return;
 		}
@@ -178,9 +215,15 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
+		if (mServiceListTask != null) {
+			mServiceListTask.cancel(true);
+			mServiceListTask = null;
+		}
 		if (mBouquetListTask != null) {
 			mBouquetListTask.cancel(true);
 		}
+		mLoadGeneration++;
+		mBouquetReadyForGeneration = mLoadGeneration;
 		mBouquetListTask = new GetBouquetListTask(this);
 		mBouquetListTask.execute();
 	}
@@ -192,20 +235,28 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
+		if (mBouquetListTask != null) {
+			mBouquetListTask.cancel(true);
+			mBouquetListTask = null;
+		}
 		if (mServiceListTask != null) {
 			mServiceListTask.cancel(true);
 		}
+		mLoadGeneration++;
+		mServiceReadyForGeneration = mLoadGeneration;
+		setBaseTitle(title);
 		mServiceListTask = new GetServiceListTask(this);
 		mServiceListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
-		// Keep intended finished title for onServiceListReady.
-		setBaseTitle(title);
 	}
 
 	@Override
 	public void onBouquetListReady(boolean result, GetBouquetListTask.Bouquets bouquets, String errorText) {
+		if (mBouquetReadyForGeneration != mLoadGeneration || mCurrentBouquet != null) {
+			return;
+		}
 		mHttpHelper.onLoadFinished();
 		mBouquets.clear();
-		mListState.replaceAll(java.util.Collections.emptyList());
+		mListState.replaceAll(Collections.emptyList());
 		if (!result) {
 			setEmptyText(errorText);
 			return;
@@ -234,15 +285,18 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment
 
 	@Override
 	public void onServiceListReady(boolean success, @NonNull List<Service> services, @Nullable String errorText) {
+		if (mServiceReadyForGeneration != mLoadGeneration || mCurrentBouquet == null) {
+			return;
+		}
 		mHttpHelper.onLoadFinished();
 		mServices.clear();
-		mListState.replaceAll(java.util.Collections.emptyList());
+		mListState.replaceAll(Collections.emptyList());
 		if (!success) {
 			setEmptyText(errorText);
 			return;
 		}
 		setEmptyText(null);
-		String title = mCurrentBouquet != null ? mCurrentBouquet.getName() : getString(R.string.service);
+		String title = mCurrentBouquet.getName();
 		setCurrentTitle(title);
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(title);
