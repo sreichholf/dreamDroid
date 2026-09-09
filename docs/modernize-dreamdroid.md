@@ -460,26 +460,77 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 
 Operator intent: **migrate everything** (phone leftovers + Leanback), then operator usertests, then bugfix pass. Do **one PR at a time**. Do **not** start Leanback implementation until the dive below is written and accepted.
 
-### Phase 0 — Leanback dive (read-only, before any TV Compose PR)
+### Phase 0 — Leanback dive (accepted)
 
-Goal: a short inventory + migration risks doc (can live as a subsection here or a linked note). Cover:
+Inventory of `app/src/.../tv/` (12 Java files, ~1.3k LOC). **No TV Compose code in this PR.** Phase 3 may start after this dive is on `main`.
 
-- Surfaces: `tv/activities/MainActivity`, `PreferenceActivity`, `RootBrowseFragment`, `BaseHttpBrowseFragment`, Leanback prefs (`SettingsFragment` / `PrefsFragment` / `ProfileFragment`), `EpgDetailDialog` / `MovieDetailDialog`, `CardPresenter` / `TextCardView` / `BrowseItem`.
-- ButterKnife: 3 TV files (~15 binds) — blocks dropping ButterKnife until TV migrates or those call sites go.
-- Coupling: heavy use of phone `HttpFragmentHelper`, loaders, `ExtendedHashMap`, string-keyed helpers, `AbstractDialog`, `Picon`, `IntentFactory`.
-- Risks: Leanback browse/focus model ≠ phone Material 3; TV prefs are Leanback Preference; custom TLS/Picasso in TV `MainActivity`; phone detail Compose will not auto-cover TV dialogs.
-- Deliverable: agreed PR order for TV (browse hub first vs prefs first vs details first). **No code until dive lands.**
+#### Surfaces
 
-### Phase 1 — Remaining phone typed API (Wave 3 UI done)
+| Surface | Path | Role |
+| --- | --- | --- |
+| MainActivity | `tv/activities/MainActivity.java` | TV host (`tv_main`); custom TLS + Picasso OkHttp singleton |
+| PreferenceActivity | `tv/activities/PreferenceActivity.java` | Host for Leanback prefs |
+| RootBrowseFragment | `tv/fragment/RootBrowseFragment.java` | Hub: bouquet/service/movie rows, settings row, stream/prefs |
+| BaseHttpBrowseFragment | `tv/fragment/abs/BaseHttpBrowseFragment.java` | Leanback browse + loader callbacks over `ExtendedHashMap` |
+| SettingsFragment / PrefsFragment / ProfileFragment | `tv/fragment/` | Leanback settings router, shared `R.xml.preferences`, profile editor |
+| EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen XML detail dialogs (`AbstractDialog` + ButterKnife) |
+| CardPresenter / TextCardView / BrowseItem | `tv/presenter/`, `tv/view/`, `tv/BrowseItem.java` | Card presenters + hash payload wrapper |
 
-Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone ButterKnife left only on `VideoOverlayFragment` (VLC / Phase 2). Next phone data work, one PR each:
+Entry: `TabbedNavigationActivity` → TV `MainActivity` when `DreamDroid.isTV()`. Detail dialogs under `tv/` are opened from phone `VideoOverlayFragment` (not from `RootBrowseFragment` clicks).
+
+#### ButterKnife (TV)
+
+| File | `@BindView` count |
+| --- | --- |
+| `MovieDetailDialog` | 8 |
+| `EpgDetailDialog` | 5 |
+| `TextCardView` | 2 |
+| **Total** | **15** (3 files) |
+
+Phone leftover: `VideoOverlayFragment` (Phase 2 VLC). ButterKnife cannot be dropped until TV + that site are gone.
+
+#### Coupling to phone stack
+
+- `ExtendedHashMap` / string-key `Event`/`Movie`/`Service` helpers in browse + cards + dialogs
+- `AsyncListLoader` + SAX handlers (`ServiceListRequestHandler`, `EpgNowNextListRequestHandler` / `EventListRequestHandler`, `MovieListRequestHandler`)
+- `Picon`, `IntentFactory` → `VideoActivity` / integrated player
+- `AbstractDialog.setTextOrHide` in TV detail dialogs
+- `DreamDroidTrustManager` + Picasso OkHttp in TV `MainActivity` (app-wide side effects)
+- Shared `R.xml.preferences`; dialogs reuse phone XML layouts
+
+Phone Compose detail screens do **not** cover TV dialogs.
+
+#### Risks
+
+- Leanback D-pad browse ≠ phone Material 3; hub needs a TV-first focus model
+- Hash-map data plane in every `BrowseItem` — Compose without typing rebinds string keys
+- Loader/SAX stack will be replaced in Phase 2 HTTP; hub Compose before typing/HTTP direction risks a double rewrite
+- Streaming UX tied to Phase 2 VLC/`VideoOverlayFragment` decisions
+- Detail dialogs mis-located under `tv/` but driven by phone overlay
+- No in-tree TV instrumented coverage for browse/prefs
+
+#### Agreed Phase 3 PR order
+
+Prefer **typed browse data → details → hub → prefs** (not prefs-first; not hub-first without typing):
+
+1. Typed TV browse data — stop `ExtendedHashMap` in `BrowseItem` / loaders; reuse phone typed client
+2. Detail dialogs → Compose (or shared phone detail + TV theme) — drops 13/15 TV binds
+3. Browse hub → TV Compose / foundational focus — needs typed data; kills `TextCardView` ButterKnife
+4. Leanback prefs → Compose preferences — isolated; same PreferenceManager keys
+5. Drop ButterKnife when zero call sites remain (TV + phone VLC)
+
+**Safe before full Phase 2:** typed TV browse data and detail Compose (careful with VLC hosts). **Defer hub Compose** until typed data lands and Phase 2 HTTP direction is at least sketched.
+
+### Phase 1 — Remaining phone typed API (done)
+
+Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone ButterKnife left only on `VideoOverlayFragment` (VLC / Phase 2). Phase 1 typed leftovers:
 
 | Order | Slug | Notes |
 | --- | --- | --- |
-| 1 | typed hub now/next | `ServiceListPage` events — **merged** [#209](https://github.com/sreichholf/dreamDroid/pull/209) |
-| 2 | typed movies list path | Detail edge already typed in #206 — open as `movies-typed` (this PR) |
+| 1 | typed hub now/next | **merged** [#209](https://github.com/sreichholf/dreamDroid/pull/209) |
+| 2 | typed movies list path | **merged** [#210](https://github.com/sreichholf/dreamDroid/pull/210) |
 
-Gate: unit + assemble; instrumented tests when the PR touches UI; Bugbot; land when authorized.
+Next: Phase 2 phone chassis (drawer shell first), then Phase 3 Leanback per the dive above.
 
 ### Phase 2 — Phone chassis (still not Leanback)
 
