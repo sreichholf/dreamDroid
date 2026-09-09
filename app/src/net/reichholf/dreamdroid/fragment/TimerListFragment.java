@@ -29,12 +29,13 @@ import com.evernote.android.state.State;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.TimerAdapter;
+import net.reichholf.dreamdroid.asynctask.GetTimerListTask;
+import net.reichholf.dreamdroid.enigma.Timer;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler;
@@ -42,19 +43,24 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestH
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.services.TimerListItem;
+import net.reichholf.dreamdroid.ui.services.TimerListMapper;
 import net.reichholf.dreamdroid.ui.services.TimerListMapperKt;
 import net.reichholf.dreamdroid.ui.services.TimerListState;
 import net.reichholf.dreamdroid.ui.services.TimerListStateKt;
 import net.reichholf.dreamdroid.widget.helper.ItemSelectionSupport;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * Activity to show a List of all existing timers of the target device
+ * Activity to show a List of all existing timers of the target device.
+ * Compose list of typed {@link Timer}; edit/delete still take ExtendedHashMap at the edge.
  *
  * @author sreichholf
  */
-public class TimerListFragment extends BaseHttpRecyclerFragment {
+public class TimerListFragment extends BaseHttpRecyclerFragment
+		implements GetTimerListTask.GetTimerListTaskHandler {
 	@NonNull
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
@@ -74,7 +80,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, @NonNull Menu menu) {
 			MenuItem toggle = menu.findItem(R.id.menu_toggle_enabled);
-			if (mTimer.getString(Timer.KEY_DISABLED).equals("0"))
+			if (mTimer.getString(net.reichholf.dreamdroid.helpers.enigma2.Timer.KEY_DISABLED).equals("0"))
 				toggle.setTitle(R.string.disable);
 			else
 				toggle.setTitle(R.string.enable);
@@ -105,6 +111,9 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	private ProgressDialog mProgress;
 	protected int mCurrentPos;
 	private TimerListState mListState;
+	private final ArrayList<Timer> mTimers = new ArrayList<>();
+	@Nullable
+	private GetTimerListTask mTimerListTask;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -146,6 +155,14 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		);
 	}
 
+	@Override
+	public void onDestroy() {
+		if (mTimerListTask != null) {
+			mTimerListTask.cancel(true);
+		}
+		super.onDestroy();
+	}
+
 	protected void startActionMode() {
 		mTimer = mMapList.get(mCurrentPos);
 		mActionMode = getAppCompatActivity().startSupportActionMode(mActionModeCallback);
@@ -185,7 +202,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	public boolean onItemSelected(int id) {
 		switch (id) {
 			case (Statics.ITEM_NEW_TIMER):
-				mTimer = Timer.getInitialTimer();
+				mTimer = net.reichholf.dreamdroid.helpers.enigma2.Timer.getInitialTimer();
 				editTimer(mTimer, true);
 				return true;
 			case (Statics.ITEM_CLEANUP):
@@ -208,7 +225,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	 * @param timer The timer to be edited
 	 */
 	private void editTimer(ExtendedHashMap timer, boolean create) {
-		Timer.edit(getMultiPaneHandler(), timer, this, create);
+		net.reichholf.dreamdroid.helpers.enigma2.Timer.edit(getMultiPaneHandler(), timer, this, create);
 	}
 
 	/**
@@ -219,12 +236,76 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		getRecyclerView().setAdapter(mAdapter);
 	}
 
+	@NonNull
+	@Override
+	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
+		// Timer list no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
+		return new AsyncListLoader(getAppCompatActivity(), new TimerListRequestHandler(), false, args);
+	}
+
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		super.onLoadFinished(loader, result);
+		// Unused: rows come from GetTimerListTask / EnigmaClient.
+	}
+
+	@Override
+	protected void reload() {
+		mReload = false;
+		if (mTimers.isEmpty())
+			setEmptyText(getText(R.string.loading), R.drawable.ic_loading_48dp);
+		else
+			setEmptyText(null);
+		loadTimers();
+	}
+
+	private void loadTimers() {
+		mHttpHelper.onLoadStarted();
+		if (!"".equals(getBaseTitle().trim())) {
+			setCurrentTitle(getString(R.string.loading));
+		}
 		if (getAppCompatActivity() != null) {
-			mListState.replaceAll(TimerListMapperKt.timerListItemsFrom(getAppCompatActivity(), mMapList));
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (mTimerListTask != null) {
+			mTimerListTask.cancel(true);
+		}
+		mTimerListTask = new GetTimerListTask(this);
+		mTimerListTask.execute((Void) null);
+	}
+
+	@Override
+	public void onTimerListReady(boolean success, @NonNull List<Timer> timers, @Nullable String errorText) {
+		mHttpHelper.onLoadFinished();
+		mTimers.clear();
+		mMapList.clear();
+		mListState.replaceAll(Collections.emptyList());
+		if (mAdapter != null) {
+			mAdapter.notifyDataSetChanged();
+		}
+		if (!success) {
+			setEmptyText(errorText);
+			return;
+		}
+		setEmptyText(null);
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+
+		if (timers.isEmpty()) {
+			setEmptyText(getText(R.string.no_list_item));
+		} else {
+			mTimers.addAll(timers);
+			for (Timer timer : timers) {
+				mMapList.add(TimerListMapper.toExtendedHashMap(timer));
+			}
+			if (getAppCompatActivity() != null) {
+				mListState.replaceAll(TimerListMapperKt.timerListItemsFrom(getAppCompatActivity(), mTimers));
+			}
+			if (mAdapter != null) {
+				mAdapter.notifyDataSetChanged();
+			}
 		}
 	}
 
@@ -241,7 +322,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	 * Confirmation dialog before timer deletion
 	 */
 	private void deleteTimerConfirm() {
-		PositiveNegativeDialog dia = PositiveNegativeDialog.newInstance(mTimer.getString(Timer.KEY_NAME),
+		PositiveNegativeDialog dia = PositiveNegativeDialog.newInstance(mTimer.getString(net.reichholf.dreamdroid.helpers.enigma2.Timer.KEY_NAME),
 				R.string.delete_confirm, android.R.string.yes, Statics.ACTION_DELETE_CONFIRMED, android.R.string.no,
 				Statics.ACTION_NONE);
 
@@ -259,7 +340,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 				mProgress.dismiss();
 			}
 		}
-		ArrayList<NameValuePair> params = Timer.getDeleteParams(timer);
+		ArrayList<NameValuePair> params = net.reichholf.dreamdroid.helpers.enigma2.Timer.getDeleteParams(timer);
 		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.deleting), true);
 		execSimpleResultTask(new TimerDeleteRequestHandler(), params);
 	}
@@ -267,12 +348,12 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	private void toggleTimerEnabled(@NonNull ExtendedHashMap timer) {
 		ExtendedHashMap timerNew = timer.clone();
 
-		if (timerNew.getString(Timer.KEY_DISABLED).equals("1"))
-			timerNew.put(Timer.KEY_DISABLED, "0");
+		if (timerNew.getString(net.reichholf.dreamdroid.helpers.enigma2.Timer.KEY_DISABLED).equals("1"))
+			timerNew.put(net.reichholf.dreamdroid.helpers.enigma2.Timer.KEY_DISABLED, "0");
 		else
-			timerNew.put(Timer.KEY_DISABLED, "1");
+			timerNew.put(net.reichholf.dreamdroid.helpers.enigma2.Timer.KEY_DISABLED, "1");
 
-		ArrayList<NameValuePair> params = Timer.getSaveParams(timerNew, timer);
+		ArrayList<NameValuePair> params = net.reichholf.dreamdroid.helpers.enigma2.Timer.getSaveParams(timerNew, timer);
 		mProgress = ProgressDialog.show(getAppCompatActivity(), "", getText(R.string.saving), true);
 		execSimpleResultTask(new TimerChangeRequestHandler(), params);
 	}
@@ -300,12 +381,6 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		super.onSimpleResult(success, result);
 
 		reload();
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		return new AsyncListLoader(getAppCompatActivity(), new TimerListRequestHandler(), false, args);
 	}
 
 	@Override

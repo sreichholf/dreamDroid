@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2timerlist>
+	<e2timer>
+		<e2servicereference>1:0:19:EF74:3F9:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SAT.1 HD</e2servicename>
+		<e2eit>39350</e2eit>
+		<e2name>Navy CIS: L.A.</e2name>
+		<e2description>Kein Rauch ohne Feuer</e2description>
+		<e2descriptionextended>Ein Feuerwehrmann stirbt bei einem Brand.</e2descriptionextended>
+		<e2disabled>0</e2disabled>
+		<e2timebegin>1476644933</e2timebegin>
+		<e2timeend>1476649083</e2timeend>
+		<e2duration>4150</e2duration>
+		<e2startprepare>1476644913</e2startprepare>
+		<e2justplay>0</e2justplay>
+		<e2afterevent>3</e2afterevent>
+		<e2location>None</e2location>
+		<e2tags></e2tags>
+		<e2logentries>[(1476254301, 15, 'record time changed')]</e2logentries>
+		<e2filename></e2filename>
+		<e2backoff>0</e2backoff>
+		<e2nextactivation></e2nextactivation>
+		<e2firsttryprepare>True</e2firsttryprepare>
+		<e2state>0</e2state>
+		<e2repeated>0</e2repeated>
+		<e2dontsave>0</e2dontsave>
+		<e2cancled>False</e2cancled>
+		<e2toggledisabled>1</e2toggledisabled>
+	</e2timer>
+	<e2timer>
+		<e2servicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Das Erste HD</e2servicename>
+		<e2eit>1</e2eit>
+		<e2name>Tagesschau</e2name>
+		<e2description>Nachrichten</e2description>
+		<e2descriptionextended/>
+		<e2disabled>1</e2disabled>
+		<e2timebegin>1893456000</e2timebegin>
+		<e2timeend>1893459600</e2timeend>
+		<e2duration>3600</e2duration>
+		<e2startprepare>1893455980</e2startprepare>
+		<e2justplay>1</e2justplay>
+		<e2afterevent>0</e2afterevent>
+		<e2location>/hdd/movie/</e2location>
+		<e2tags>news</e2tags>
+		<e2logentries/>
+		<e2filename/>
+		<e2backoff>0</e2backoff>
+		<e2nextactivation/>
+		<e2firsttryprepare>False</e2firsttryprepare>
+		<e2state>0</e2state>
+		<e2repeated>127</e2repeated>
+		<e2dontsave>0</e2dontsave>
+		<e2cancled>False</e2cancled>
+		<e2toggledisabled>0</e2toggledisabled>
+	</e2timer>
+</e2timerlist>
