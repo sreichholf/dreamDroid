@@ -180,10 +180,7 @@ public class HttpFragmentHelper implements SetVolumeTask.SetVolumeTaskHandler {
         if (mSimpleResultJob != null) {
             mSimpleResultJob.cancel(null);
         }
-        androidx.lifecycle.LifecycleOwner owner = mFragment.getView() != null
-                ? mFragment.getViewLifecycleOwner()
-                : mFragment;
-        mSimpleResultJob = SimpleResultLoadKt.launchSimpleResultLoad(owner, handler, params, (success, result, http) -> {
+        mSimpleResultJob = SimpleResultLoadKt.launchSimpleResultLoad(mFragment, handler, params, (success, result, http) -> {
             mSimpleResultJob = null;
             onSimpleResult(success, result, http);
             return Unit.INSTANCE;
