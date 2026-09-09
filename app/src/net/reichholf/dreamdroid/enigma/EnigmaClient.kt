@@ -43,7 +43,20 @@ class EnigmaClient(private val http: SimpleHttpClient) {
             if (!http.fetchPageContent(uri, requestParams)) {
                 emptyList()
             } else {
-                EpgNowNextParser.parse(http.pageContentString)
+                val xml = http.pageContentString
+                if (uri == URIStore.EPG_NOWNEXT) {
+                    EpgNowNextParser.parse(xml)
+                } else {
+                    // /web/epgnow (and other flat event lists): one service row per event, no pairing.
+                    EventParser.parse(xml).map { event ->
+                        ServiceNowNext(
+                            serviceReference = event.serviceReference,
+                            serviceName = event.serviceName,
+                            now = event,
+                            next = null,
+                        )
+                    }
+                }
             }
         }
     }

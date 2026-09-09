@@ -68,4 +68,24 @@ public class EpgNowNextParserTest {
         assertEquals("Solo", rows.get(0).getNow().getTitle());
         assertNull(rows.get(0).getNext());
     }
+
+    @Test
+    public void flatEpgNowMustNotPairUnrelatedServices() throws Exception {
+        // epgservice.xml is a flat two-event list for one service; treat like epgnow: one row each.
+        InputStream in = getClass().getResourceAsStream("/web/epgservice.xml");
+        assertNotNull(in);
+        String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        List<Event> events = EventParser.INSTANCE.parse(xml);
+        assertEquals(2, events.size());
+        // Client maps flat lists without pairing (see EnigmaClient.getEpgNowNext for non-NOWNEXT).
+        List<ServiceNowNext> rows = new java.util.ArrayList<>();
+        for (Event event : events) {
+            rows.add(new ServiceNowNext(event.getServiceReference(), event.getServiceName(), event, null));
+        }
+        assertEquals(2, rows.size());
+        assertEquals("Tagesschau", rows.get(0).getNow().getTitle());
+        assertNull(rows.get(0).getNext());
+        assertEquals("N/A", rows.get(1).getNow().getTitle());
+        assertNull(rows.get(1).getNext());
+    }
 }

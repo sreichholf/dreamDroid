@@ -5,7 +5,10 @@ package net.reichholf.dreamdroid.enigma
  *
  * Matches legacy [net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2EpgNowNextListHandler]:
  * consecutive `<e2event>` elements are positional now/next pairs. A trailing odd event becomes a
- * now-only row. Flat `/web/epgnow` lists are one event per row (next = null).
+ * now-only row.
+ *
+ * Do **not** use [parse] for flat `/web/epgnow` responses — [EnigmaClient.getEpgNowNext] maps those
+ * one event per row without pairing.
  */
 object EpgNowNextParser {
     fun parse(xml: String): List<ServiceNowNext> {
