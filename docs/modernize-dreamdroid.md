@@ -373,7 +373,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | EPG bouquet | Compose on `main` via #192 | Compose list; typed `enigma.Event` (#179). Shared `EpgBouquetScreen` with search. Detail/timer edge still hash. |
 | EPG search | Compose on `main` via #193 | Compose list; typed `enigma.Event` (#180). Dropped `EpgBouquetAdapter`. Detail/timer edge still hash. |
 | Bouquet picker | Compose on `main` via #191 | Compose list; typed `enigma.Service` (#181). Intent still one hash at send. |
-| EPG detail | `EpgDetailBottomSheet` | Still Java/XML; ButterKnife on phone? (check). Accept typed `Event` later. |
+| EPG detail | `EpgDetailBottomSheet` | Java/XML (`findViewById`). Accept typed `Event` in Compose later. |
 | Current event | Compose on `main` via #190 | Compose now/next + stream; typed `enigma.CurrentService` (#183). Detail/timer edge still hash. |
 | Virtual remote | Compose on `main` via #186 | Compose pad + HTTP keys; tablet screenshot host kept. |
 | Device info | `DeviceInfoFragment` | |
