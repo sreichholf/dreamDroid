@@ -292,8 +292,7 @@ public class CurrentServiceFragment extends BaseHttpFragment
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 		if (!success) {
-			mCurrentServiceReady = false;
-			mUiState.clear();
+			// Keep the last good UI; toast only so a failed refresh does not wipe the screen.
 			showToast(errorText != null ? errorText : getText(R.string.not_available));
 			return;
 		}

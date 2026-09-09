@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.ui.current
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -24,7 +26,61 @@ class CurrentServiceScreenTest {
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext,
-        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+        ).edit()
+            .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)
+            .commit()
+    }
+
+    @Test
+    fun notReadyShowsLoadingPlaceholders() {
+        val state = CurrentServiceUiState()
+        composeRule.setContent {
+            DreamDroidTheme {
+                CurrentServiceScreen(
+                    state = state,
+                    onNowClick = {},
+                    onNextClick = {},
+                    onStream = {},
+                )
+            }
+        }
+        composeRule.onAllNodesWithText("Loading").fetchSemanticsNodes().let {
+            assertTrue(it.isNotEmpty())
+        }
+    }
+
+    @Test
+    fun readyWithBlankNowDoesNotShowLoading() {
+        val current = CurrentService(
+            service = Service(
+                reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
+                name = "Das Erste HD",
+                provider = "ARD",
+            ),
+            now = null,
+            next = Event(
+                eventId = "39151",
+                title = "Wetter",
+                startReadable = "20:15",
+                durationReadable = "15",
+                descriptionExtended = "Der Wetterbericht.",
+            ),
+        )
+        val state = CurrentServiceUiState().apply { apply(current) }
+        composeRule.setContent {
+            DreamDroidTheme {
+                CurrentServiceScreen(
+                    state = state,
+                    onNowClick = {},
+                    onNextClick = {},
+                    onStream = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithText("Wetter").assertIsDisplayed()
+        composeRule.onNodeWithText("Loading").assertDoesNotExist()
     }
 
     @Test

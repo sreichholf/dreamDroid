@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.preference.PreferenceManager
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.helpers.Statics
@@ -109,6 +112,15 @@ fun CurrentServiceScreen(
 ) {
     val horz = dimensionResource(R.dimen.content_horz_padding)
     val vert = dimensionResource(R.dimen.content_vert_padding)
+    val context = LocalContext.current
+    val piconsEnabled = remember {
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
+    }
+    val loading = stringResource(R.string.loading)
+    fun displayOrLoading(value: String): String =
+        if (!state.ready) loading else value
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -122,7 +134,9 @@ fun CurrentServiceScreen(
                 .padding(bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (state.serviceReference.isNotEmpty() || state.serviceName.isNotEmpty()) {
+            if (piconsEnabled &&
+                (state.serviceReference.isNotEmpty() || state.serviceName.isNotEmpty())
+            ) {
                 ServicePicon(
                     reference = state.serviceReference,
                     name = state.serviceName,
@@ -133,7 +147,7 @@ fun CurrentServiceScreen(
                 )
             }
             Text(
-                text = state.serviceName.ifEmpty { stringResource(R.string.loading) },
+                text = displayOrLoading(state.serviceName),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
@@ -144,7 +158,7 @@ fun CurrentServiceScreen(
 
         SectionHeader(stringResource(R.string.provider))
         Text(
-            text = state.provider.ifEmpty { stringResource(R.string.loading) },
+            text = displayOrLoading(state.provider),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
@@ -155,6 +169,7 @@ fun CurrentServiceScreen(
 
         SectionHeader(stringResource(R.string.now))
         EventBlock(
+            ready = state.ready,
             title = state.nowTitle,
             start = state.nowStart,
             duration = state.nowDuration,
@@ -165,6 +180,7 @@ fun CurrentServiceScreen(
 
         SectionHeader(stringResource(R.string.next))
         EventBlock(
+            ready = state.ready,
             title = state.nextTitle,
             start = state.nextStart,
             duration = state.nextDuration,
@@ -198,6 +214,7 @@ private fun SectionHeader(text: String) {
 
 @Composable
 private fun EventBlock(
+    ready: Boolean,
     title: String,
     start: String,
     duration: String,
@@ -206,6 +223,7 @@ private fun EventBlock(
     modifier: Modifier = Modifier,
 ) {
     val loading = stringResource(R.string.loading)
+    fun displayOrLoading(value: String): String = if (!ready) loading else value
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -213,20 +231,20 @@ private fun EventBlock(
             .padding(3.dp),
     ) {
         Text(
-            text = title.ifEmpty { loading },
+            text = displayOrLoading(title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.fillMaxWidth(),
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = start.ifEmpty { loading },
+                text = displayOrLoading(start),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = duration.ifEmpty { loading },
+                text = displayOrLoading(duration),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.End,
@@ -235,7 +253,7 @@ private fun EventBlock(
             )
         }
         Text(
-            text = description.ifEmpty { loading },
+            text = displayOrLoading(description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
