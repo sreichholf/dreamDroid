@@ -6,15 +6,22 @@ import androidx.annotation.Nullable;
 import net.reichholf.dreamdroid.enigma.Event;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GetEventListTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>, String, Boolean> {
+	private final String mUri;
 	private ArrayList<Event> mEvents;
 
 	public GetEventListTask(GetEventListTaskHandler taskHandler) {
+		this(taskHandler, URIStore.EPG_SERVICE);
+	}
+
+	public GetEventListTask(GetEventListTaskHandler taskHandler, @NonNull String uri) {
 		super(taskHandler);
+		mUri = uri;
 	}
 
 	@NonNull
@@ -25,7 +32,7 @@ public class GetEventListTask extends AsyncHttpTaskBase<ArrayList<NameValuePair>
 			return false;
 		}
 		List<NameValuePair> requestParams = params != null ? params : new ArrayList<>();
-		mEvents.addAll(HttpFragmentHelper.fetchEvents(getHttpClient(), requestParams));
+		mEvents.addAll(HttpFragmentHelper.fetchEvents(getHttpClient(), requestParams, mUri));
 		return !getHttpClient().hasError();
 	}
 

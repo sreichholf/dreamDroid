@@ -288,8 +288,18 @@ public class HttpFragmentHelper implements SimpleResultTask.SimpleResultTaskHand
     }
 
     @NonNull
+    public List<net.reichholf.dreamdroid.enigma.Event> fetchEvents(@NonNull List<NameValuePair> params, @NonNull String uri) {
+        return fetchEvents(mShc, params, uri);
+    }
+
+    @NonNull
     public static List<net.reichholf.dreamdroid.enigma.Event> fetchEvents(@NonNull SimpleHttpClient shc, @NonNull List<NameValuePair> params) {
-        return EnigmaClient.getEventsBlocking(shc, params);
+        return fetchEvents(shc, params, net.reichholf.dreamdroid.helpers.enigma2.URIStore.EPG_SERVICE);
+    }
+
+    @NonNull
+    public static List<net.reichholf.dreamdroid.enigma.Event> fetchEvents(@NonNull SimpleHttpClient shc, @NonNull List<NameValuePair> params, @NonNull String uri) {
+        return EnigmaClient.getEventsBlocking(shc, params, uri);
     }
 
     public void onLoadStarted() {

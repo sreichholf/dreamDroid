@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.evernote.android.state.State;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -23,27 +24,39 @@ import com.google.android.material.timepicker.TimeFormat;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.adapter.recyclerview.EpgAdapter;
+import net.reichholf.dreamdroid.adapter.recyclerview.EpgBouquetAdapter;
+import net.reichholf.dreamdroid.asynctask.GetEventListTask;
+import net.reichholf.dreamdroid.enigma.Event;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerEventFragment;
+import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
+import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
- * Created by Stephan on 01.11.2014.
+ * Bouquet EPG at a chosen date/time. Rows are typed {@link Event}; detail/timer still take
+ * ExtendedHashMap at the edge. Bouquet picker still returns ExtendedHashMap; reference/name
+ * are taken at this fragment boundary.
  */
-public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
+public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment
+		implements GetEventListTask.GetEventListTaskHandler {
 	private static final String LOG_TAG = EpgBouquetFragment.class.getSimpleName();
+
+	private final ArrayList<Event> mEvents = new ArrayList<>();
+	@Nullable
+	private GetEventListTask mEventListTask;
 
 	private TextView mDateView;
 	private TextView mTimeView;
@@ -64,8 +77,8 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 				mTime = now;
 		}
 		if (mReference == null || mName == null) {
-			mReference = getArguments().getString(Event.KEY_SERVICE_REFERENCE, null);
-			mName = getArguments().getString(Event.KEY_SERVICE_NAME, null);
+			mReference = getArguments().getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE, null);
+			mName = getArguments().getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME, null);
 		}
 
 		mWaitingForPicker = false;
@@ -123,10 +136,19 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		setAdapter();
-		if (mMapList.size() <= 0)
+		mAdapter = new EpgBouquetAdapter(mEvents);
+		getRecyclerView().setAdapter(mAdapter);
+		if (mEvents.isEmpty())
 			Log.w(LOG_TAG, String.format("%s", mTime));
 		super.onActivityCreated(savedInstanceState);
+	}
+
+	@Override
+	public void onDestroy() {
+		if (mEventListTask != null) {
+			mEventListTask.cancel(true);
+		}
+		super.onDestroy();
 	}
 
 	@Override
@@ -135,6 +157,13 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 		inflater.inflate(R.menu.epgbouquet, menu);
 	}
 
+	@Override
+	public void onItemClick(RecyclerView parent, View view, int position, long id) {
+		Event event = mEvents.get(position);
+		mCurrentItem = EpgListMapper.toExtendedHashMap(event);
+		EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(mCurrentItem);
+		getMultiPaneHandler().showDialogFragment(epgDetailBottomSheet, "epg_detail_dialog");
+	}
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
@@ -142,6 +171,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 			return;
 		switch (requestCode) {
 			case Statics.REQUEST_PICK_BOUQUET:
+				// PickServiceFragment still returns ExtendedHashMap; take reference/name here.
 				ExtendedHashMap service = (ExtendedHashMap) data.getSerializableExtra(PickServiceFragment.KEY_BOUQUET);
 				String reference = service.getString(Service.KEY_REFERENCE);
 				if (!reference.equals(mReference)) {
@@ -158,21 +188,16 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 
 	@Override
 	protected void reload() {
-		if (mReference != null && !mReference.isEmpty())
-			super.reload();
-		else if (!mWaitingForPicker)
+		if (mReference != null && !mReference.isEmpty()) {
+			mReload = false;
+			if (mEvents.isEmpty())
+				setEmptyText(getText(R.string.loading), R.drawable.ic_loading_48dp);
+			else
+				setEmptyText(null);
+			loadEvents();
+		} else if (!mWaitingForPicker) {
 			pickBouquet();
-	}
-
-	/**
-	 * Initializes the <code>SimpleTextAdapter</code>
-	 */
-	private void setAdapter() {
-		mAdapter = new EpgAdapter(mMapList, R.layout.epg_multi_service_list_item, new String[]{
-				Event.KEY_EVENT_TITLE, Event.KEY_SERVICE_NAME, Event.KEY_EVENT_DESCRIPTION_EXTENDED, Event.KEY_EVENT_START_READABLE,
-				Event.KEY_EVENT_DURATION_READABLE}, new int[]{R.id.event_title, R.id.service_name, R.id.event_short, R.id.event_start,
-				R.id.event_duration});
-		getRecyclerView().setAdapter(mAdapter);
+		}
 	}
 
 	@NonNull
@@ -193,7 +218,56 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	@NonNull
 	@Override
 	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
+		// Bouquet EPG no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
 		return new AsyncListLoader(getAppCompatActivity(), new EventListRequestHandler(URIStore.EPG_BOUQUET), false, args);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
+							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
+		// Unused: rows come from GetEventListTask / EnigmaClient.
+	}
+
+	private void loadEvents() {
+		mHttpHelper.onLoadStarted();
+		if (!"".equals(getBaseTitle().trim())) {
+			setCurrentTitle(getString(R.string.loading));
+		}
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+		if (mEventListTask != null) {
+			mEventListTask.cancel(true);
+		}
+		mEventListTask = new GetEventListTask(this, URIStore.EPG_BOUQUET);
+		mEventListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+	}
+
+	@Override
+	public void onEventListReady(boolean success, @NonNull List<Event> events, @Nullable String errorText) {
+		mHttpHelper.onLoadFinished();
+		mEvents.clear();
+		if (mAdapter != null) {
+			mAdapter.notifyDataSetChanged();
+		}
+		if (!success) {
+			setEmptyText(errorText);
+			return;
+		}
+		setEmptyText(null);
+		setCurrentTitle(getLoadFinishedTitle());
+		if (getAppCompatActivity() != null) {
+			getAppCompatActivity().setTitle(getCurrentTitle());
+		}
+
+		if (events.isEmpty()) {
+			setEmptyText(getText(R.string.no_list_item));
+		} else {
+			mEvents.addAll(events);
+		}
+		if (mAdapter != null) {
+			mAdapter.notifyDataSetChanged();
+		}
 	}
 
 	@Override
@@ -261,6 +335,4 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 		Log.i(LOG_TAG, String.format("%s", mTime));
 		reload();
 	}
-
-
 }
