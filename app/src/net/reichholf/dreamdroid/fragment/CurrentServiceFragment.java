@@ -294,7 +294,10 @@ public class CurrentServiceFragment extends BaseHttpFragment
 			getAppCompatActivity().setTitle(getCurrentTitle());
 		}
 		if (!success) {
-			// Keep the last good UI; toast only so a failed refresh does not wipe the screen.
+			// Toast only when we already showed data; on first failure exit Loading placeholders.
+			if (!mCurrentServiceReady) {
+				mUiState.apply(null);
+			}
 			showToast(errorText != null ? errorText : getText(R.string.not_available));
 			return;
 		}
