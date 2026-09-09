@@ -23,11 +23,11 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | Zap typed rows | [#173](https://github.com/sreichholf/dreamDroid/pull/173) | merged | `452f7c80` typed `enigma.Service` into Zap. XML grid stays. |
 | Cloud Agent env | [#174](https://github.com/sreichholf/dreamDroid/pull/174) | merged | Cloud Agent `environment.json` / install helpers. |
 | dead-weight (MediaPlayer + MultiDex lib + orphan layouts) | [#175](https://github.com/sreichholf/dreamDroid/pull/175) | merged | drop unused MediaPlayer UI, `androidx.multidex` install helper, orphan XML. Keep `multiDexEnabled`, `MEDIA_PLAYER_PLAY`, ButterKnife. |
-| Event typed rows (ServiceEpgList) | this PR (`cursor/epg-typed-list-c88a`) | open | typed `enigma.Event` into `ServiceEpgListFragment`. XML list stays. Bouquet/search/timeline not migrated. |
+| Event typed rows (ServiceEpgList) | [#176](https://github.com/sreichholf/dreamDroid/pull/176) | open | typed `enigma.Event` into `ServiceEpgListFragment`. XML list stays. Bouquet/search/timeline not migrated. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175), and (2) Zap typing (#173) are on `main`. This PR continues shape (2) for the service EPG list path. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175), and (2) Zap typing (#173) are on `main`. [#176](https://github.com/sreichholf/dreamDroid/pull/176) continues shape (2) for the service EPG list path. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
 ### Operator overrides (this program)
 
@@ -46,7 +46,7 @@ Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#1
 - `ProfileAdapter` remains for `ShareActivity`.
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
 - Zap still XML. Rows are typed `enigma.Service` on `main` via #173. Bouquet picker still returns `ExtendedHashMap`; Zap converts at the fragment boundary.
-- Service EPG list still XML. Rows are typed `enigma.Event` in this PR. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Bouquet/search/timeline EPG remain hash maps.
+- Service EPG list still XML. Rows are typed `enigma.Event` in #176. Detail sheet / timer create still take `ExtendedHashMap` at the fragment edge. Bouquet/search/timeline EPG remain hash maps.
 
 ## How to read this
 
@@ -301,7 +301,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 | Profile add/edit | `ProfileEditFragment` | List is Compose; form is XML. Autodiscovery stays Java. |
 | Share / pick profile | `ShareActivity` + `ProfileAdapter` | |
 | Zap | `ZapFragment`, `ZapAdapter` | XML grid. Rows are typed `enigma.Service` (#173). Picker still `ExtendedHashMap`. |
-| Service EPG list | `ServiceEpgListFragment`, `ServiceEpgAdapter` | XML list. Rows are typed `enigma.Event` (this PR). Detail/timer edge still hash. |
+| Service EPG list | `ServiceEpgListFragment`, `ServiceEpgAdapter` | XML list. Rows are typed `enigma.Event` (#176). Detail/timer edge still hash. |
 | EPG bouquet / search / timeline | `EpgBouquetFragment`, `EpgSearchFragment`, `EpgTimelineFragment`, `EpgAdapter` | Still `ExtendedHashMap`. |
 | EPG detail | `EpgDetailBottomSheet` | ButterKnife. |
 | Current event | `CurrentServiceFragment` | |
@@ -319,7 +319,7 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 
 ### Still the old data stack
 
-- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (this PR). Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
+- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). Other lists still use `ExtendedHashMap` through SAX handlers, `AsyncListLoader`, and `HttpFragmentHelper`.
 - Enigma2 HTTP is still `HttpURLConnection` + `asynctask/*`. Picons still Picasso + OkHttp 3.14.9.
 - Room holds `profile` only. `DatabaseHelper` / `dreamdroid` SQLite still exist for migration and backup.
 - ButterKnife (5 files), `legacy-support-v4`, `legacy-preference-v14`. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
@@ -333,12 +333,12 @@ Compose on `main`: About dialog, Profiles list (not the edit form), TV & Movies 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
-2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Zap typed on `main` as #173.** Service EPG list typed in this PR. Bouquet/search/timeline EPG and current event remain.
+2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Zap typed on `main` as #173.** Service EPG list typed in #176. Bouquet/search/timeline EPG and current event remain.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
 4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen), preference-v14, unused MediaPlayer entry. `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in **#175** (merged). Still open later: preference-v14, legacy-support-v4, dead `EpgTimelineFragment`, unused menus, GONE bottom nav.
 5. **TV program** — Leanback → Compose for TV. Separate program. Do not mix into phone PRs.
 
-Recommended default if the operator just says go: (1) then (4), then (2) one list path at a time; keep (3) and (5) as later programs. Zap typing is on `main` as #173. Service EPG list typing is this PR. Next typed path: bouquet/search EPG or current event, or Profile edit Compose.
+Recommended default if the operator just says go: (1) then (4), then (2) one list path at a time; keep (3) and (5) as later programs. Zap typing is on `main` as #173. Service EPG list typing is #176. Next typed path: bouquet/search EPG or current event, or Profile edit Compose.
 
 ## Appendix F. Links
 
