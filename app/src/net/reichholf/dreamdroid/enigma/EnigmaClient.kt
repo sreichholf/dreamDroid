@@ -64,6 +64,16 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
+    suspend fun getTimers(): List<Timer>? {
+        return withContext(Dispatchers.IO) {
+            if (!http.fetchPageContent(URIStore.TIMER_LIST, ArrayList())) {
+                null
+            } else {
+                TimerParser.parse(http.pageContentString)
+            }
+        }
+    }
+
     companion object {
         @JvmStatic
         fun getServicesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Service> {
@@ -102,6 +112,13 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         fun getSignalBlocking(http: SimpleHttpClient): Signal? {
             return runBlocking {
                 EnigmaClient(http).getSignal()
+            }
+        }
+
+        @JvmStatic
+        fun getTimersBlocking(http: SimpleHttpClient): List<Timer>? {
+            return runBlocking {
+                EnigmaClient(http).getTimers()
             }
         }
     }

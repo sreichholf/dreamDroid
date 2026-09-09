@@ -46,13 +46,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | device-info-typed | [#199](https://github.com/sreichholf/dreamDroid/pull/199) | merged | typed `enigma.DeviceInfo` for `/web/deviceinfo`; XML UI stays; CheckProfile uses typed parse. |
 | signal-typed | [#200](https://github.com/sreichholf/dreamDroid/pull/200) | merged | typed `enigma.Signal` for `/web/signal`; poll via `GetSignalTask`; async cancel fixes. |
 | device-info-compose | [#201](https://github.com/sreichholf/dreamDroid/pull/201) | merged | `DeviceInfoFragment` Compose UI + `DeviceInfoScreenTest`; keep last-good on failed refresh.
-| signal-compose | [#202](https://github.com/sreichholf/dreamDroid/pull/202) | open | `SignalFragment` Compose + HalfGauge `AndroidView` + `SignalScreenTest`.
+| signal-compose | [#202](https://github.com/sreichholf/dreamDroid/pull/202) | merged | `SignalFragment` Compose + HalfGauge `AndroidView` + `SignalScreenTest`.
+| timers-typed | [#203](https://github.com/sreichholf/dreamDroid/pull/203) | open | typed `enigma.Timer` for `/web/timerlist`; Compose list via typed model; edit/delete hash at edge.
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #200**. Open: device-info Compose #201, signal Compose #202, timers typed #203. Still open after those: timer-edit, movie detail, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #202**. Open: timers typed #203. Still open after that: timer-edit, movie detail, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
