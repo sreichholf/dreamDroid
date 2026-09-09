@@ -12,37 +12,34 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.loader.content.Loader;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.adapter.recyclerview.ZapAdapter;
 import net.reichholf.dreamdroid.asynctask.GetServiceListTask;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
-import net.reichholf.dreamdroid.helpers.RecyclerViewPauseOnScrollListener;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.loader.AsyncListLoader;
 import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
-import net.reichholf.dreamdroid.widget.AutofitRecyclerView;
+import net.reichholf.dreamdroid.ui.zap.ZapListState;
+import net.reichholf.dreamdroid.ui.zap.ZapListStateKt;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * Created by reichi on 8/30/13.
- * This fragment is actually based on a GridView, it uses some small hacks to trick the ListFragment into working anyways
- * As a GridView is also using a ListAdapter, this avoids having to copy existing code
+ * Zap channel grid. Compose Material 3 grid; zap HTTP stays in HttpFragmentHelper.
  */
 
 public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceListTask.GetServiceListTaskHandler {
@@ -53,6 +50,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 
 	private Service mCurrentBouquet;
 	private final ArrayList<Service> mServices = new ArrayList<>();
+	private ZapListState mListState;
 	private boolean mWaitingForPicker;
 	@Nullable
 	private GetServiceListTask mServiceListTask;
@@ -61,6 +59,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 	public void onCreate(Bundle savedInstanceState) {
 		mEnableReload = false;
 		super.onCreate(savedInstanceState);
+		mListState = new ZapListState();
 		if (mCurrentBouquet == null) {
 			mReload = true;
 			initTitle("");
@@ -78,23 +77,39 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 		}
 	}
 
+	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.card_grid_content, container, false);
+		return inflater.inflate(R.layout.compose_swipe_list, container, false);
+	}
 
-		AutofitRecyclerView recyclerView = view.findViewById(android.R.id.list);
-		recyclerView.setLayoutManager(new GridLayoutManager(getAppCompatActivity(), 3));
-		RecyclerViewPauseOnScrollListener listener = new RecyclerViewPauseOnScrollListener(Statics.TAG_PICON, true, true);
-		recyclerView.addOnScrollListener(listener);
-		float colWidth = getResources().getDimension(R.dimen.zap_grid_item_height) / 9 * 16;
-		recyclerView.setColumnWidth((int) colWidth);
-		return view;
+	@Override
+	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		ComposeView compose = view.findViewById(R.id.compose_list);
+		ZapListStateKt.bindZapScreen(
+				compose,
+				mListState,
+				service -> {
+					zapTo(service.getReference());
+					return kotlin.Unit.INSTANCE;
+				},
+				service -> {
+					try {
+						startActivity(IntentFactory.getStreamServiceIntent(
+								getAppCompatActivity(),
+								service.getReference(),
+								service.getName()));
+					} catch (ActivityNotFoundException e) {
+						showToast(getText(R.string.missing_stream_player));
+					}
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		mAdapter = new ZapAdapter(getContext(), mServices);
-		getRecyclerView().setAdapter(mAdapter);
 		super.onActivityCreated(savedInstanceState);
 	}
 
@@ -124,19 +139,12 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 
 	@Override
 	public void onItemClick(RecyclerView rv, View v, int position, long id) {
-		String ref = mServices.get(position).getReference();
-		zapTo(ref);
+		// Clicks come from Compose; hidden RecyclerView is unused.
 	}
 
 	@Override
 	public boolean onItemLongClick(RecyclerView rv, View v, int position, long id) {
-		Service service = mServices.get(position);
-		try {
-			startActivity(IntentFactory.getStreamServiceIntent(getAppCompatActivity(), service.getReference(), service.getName()));
-		} catch (ActivityNotFoundException e) {
-			showToast(getText(R.string.missing_stream_player));
-		}
-		return true;
+		return false;
 	}
 
 	@NonNull
@@ -194,9 +202,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 	public void onServiceListReady(boolean success, @NonNull List<Service> services, @Nullable String errorText) {
 		mHttpHelper.onLoadFinished();
 		mServices.clear();
-		if (mAdapter != null) {
-			mAdapter.notifyDataSetChanged();
-		}
+		mListState.replaceAll(java.util.Collections.emptyList());
 		if (!success) {
 			setEmptyText(errorText);
 			return;
@@ -212,9 +218,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 			setEmptyText(getText(R.string.no_list_item));
 		} else {
 			mServices.addAll(rows);
-		}
-		if (mAdapter != null) {
-			mAdapter.notifyDataSetChanged();
+			mListState.replaceAll(rows);
 		}
 	}
 
@@ -246,7 +250,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment implements GetServiceL
 				Service bouquet = ZapListMapper.bouquetFrom(bouquetMap);
 				if (!bouquet.getReference().equals(mCurrentBouquet.getReference())) {
 					mCurrentBouquet = bouquet;
-					getRecyclerView().smoothScrollToPosition(0);
+					mListState.scrollToTop();
 				}
 				reload();
 				mWaitingForPicker = false;
