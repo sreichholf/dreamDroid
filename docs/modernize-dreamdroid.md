@@ -40,13 +40,14 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 | epg-bouquet-compose | [#192](https://github.com/sreichholf/dreamDroid/pull/192) | merged | `EpgBouquetFragment` Compose list + `EpgBouquetScreenTest`.
 | service-epg-compose | [#194](https://github.com/sreichholf/dreamDroid/pull/194) | merged | `ServiceEpgListFragment` Compose list + `ServiceEpgScreenTest`.
 | epg-search-compose | [#193](https://github.com/sreichholf/dreamDroid/pull/193) | merged | `EpgSearchFragment` Compose list; dropped `EpgBouquetAdapter` + multi-service row XML. |
-| share-profiles-compose | — | open | open on `cursor/share-profiles-compose-c88a` — `ShareActivity` Compose list + `ShareProfilesScreenTest` |
+| share-profiles-compose | [#196](https://github.com/sreichholf/dreamDroid/pull/196) | merged | `ShareActivity` Compose list + `ShareProfilesScreenTest`; dropped `ProfileAdapter`.
+| epg-detail-compose | [#197](https://github.com/sreichholf/dreamDroid/pull/197) | open | `EpgDetailBottomSheet` Compose + typed `Event`; pinned actions outside scroll.
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183) are on `main`. Remaining typed API: hub now/next, movies, timers, device info, signal. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #194**. `share-profiles-compose` is open on `cursor/share-profiles-compose-c88a`. Still open in G: device-info, signal, timer-edit, movie/EPG detail, drawer dialogs, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Landed on `main` through #196** (Share). `epg-detail-compose` is open as [#197](https://github.com/sreichholf/dreamDroid/pull/197). Still open in G: device-info, signal, timer-edit, movie detail, drawer dialogs, timer service pick. Drawer shell and Leanback TV are later programs (Appendix H).
 
 ### Operator overrides (this program)
 
@@ -63,8 +64,9 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Swarm live lanes, perf probes, and `media/pr-*-review.*` videos were **not** run. The operator accepted connectedAndroidTest and landed.
 - Hub + rows are Compose on `main` (#169/#170). `ServiceAdapter` remains for video overlay; a hidden RecyclerView may remain for `BaseRecyclerFragment`.
 - Wave 3 Compose landed through #194: profile-edit #184, zap #185, remote #186, screenshot #187, settings #188, backup #189, current-event #190, pick-service #191, EPG bouquet #192, EPG search #193 (dropped `EpgBouquetAdapter`), service EPG #194.
-- Share profiles Compose is open on `cursor/share-profiles-compose-c88a` (drops `ProfileAdapter`).
-- Appendix G still open: device-info, signal, timer-edit, movie detail, EPG detail, drawer dialogs, timer service pick.
+- Share profiles Compose merged as [#196](https://github.com/sreichholf/dreamDroid/pull/196) (dropped `ProfileAdapter`).
+- EPG detail Compose is open as [#197](https://github.com/sreichholf/dreamDroid/pull/197) (typed `Event` + hash overload for hub/video).
+- Appendix G still open: device-info, signal, timer-edit, movie detail, drawer dialogs, timer service pick; plus open EPG detail #197.
 - Remaining typed API: hub now/next, movies, timers, device info, signal.
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
@@ -373,7 +375,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | EPG bouquet | Compose on `main` via #192 | Compose list; typed `enigma.Event` (#179). Shared `EpgBouquetScreen` with search. Detail/timer edge still hash. |
 | EPG search | Compose on `main` via #193 | Compose list; typed `enigma.Event` (#180). Dropped `EpgBouquetAdapter`. Detail/timer edge still hash. |
 | Bouquet picker | Compose on `main` via #191 | Compose list; typed `enigma.Service` (#181). Intent still one hash at send. |
-| EPG detail | `EpgDetailBottomSheet` | Java/XML (`findViewById`). Accept typed `Event` in Compose later. |
+| EPG detail | open `cursor/epg-detail-compose-c88a` | Compose sheet; typed `Event` + hash/`showNext` overload for hub/video. |
 | Current event | Compose on `main` via #190 | Compose now/next + stream; typed `enigma.CurrentService` (#183). Detail/timer edge still hash. |
 | Virtual remote | Compose on `main` via #186 | Compose pad + HTTP keys; tablet screenshot host kept. |
 | Device info | `DeviceInfoFragment` | |
@@ -429,7 +431,7 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 | 9 | `backup-compose` | `BackupFragment` | Drawer backup | No — **merged** [#189](https://github.com/sreichholf/dreamDroid/pull/189) |
 | 10 | `timer-edit-compose` | `TimerEditFragment` | Hub / EPG → timer edit | Yes — type timers list/edit path |
 | 11 | `movie-detail-compose` | `MovieDetailBottomSheet` | Movies row tap | Yes — typed `enigma.Movie` edge (ButterKnife) |
-| 12 | `epg-detail-compose` | `EpgDetailBottomSheet` | EPG / current / channel popup | Yes — accept typed `enigma.Event` |
+| 12 | `epg-detail-compose` | `EpgDetailBottomSheet` | EPG / current / channel popup | Yes — accept typed `enigma.Event` — **open** on `cursor/epg-detail-compose-c88a` |
 | 13 | `drawer-dialogs-compose` | Sleep timer / send message / power / changelog / connection error | Drawer dialogs | Partial (sleep-timer result optional) |
 | 14 | `epg-bouquet-compose` | `EpgBouquetFragment` | Drawer EPG | No for list (rows typed #179); detail with #12 — **merged** [#192](https://github.com/sreichholf/dreamDroid/pull/192) |
 | 15 | `epg-search-compose` | `EpgSearchFragment` | Toolbar search | No for list (rows typed #180) — **merged** [#193](https://github.com/sreichholf/dreamDroid/pull/193) |

@@ -159,9 +159,8 @@ public class CurrentServiceFragment extends BaseHttpFragment
 	private void showEpgDetail(@Nullable Event event) {
 		if (event != null) {
 			mCurrentItem = EpgListMapper.toExtendedHashMap(event);
-			Bundle args = new Bundle();
-			args.putSerializable("currentItem", mCurrentItem);
-			((MultiPaneHandler) getAppCompatActivity()).showDialogFragment(EpgDetailBottomSheet.class, args,
+			EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(event);
+			((MultiPaneHandler) getAppCompatActivity()).showDialogFragment(epgDetailBottomSheet,
 					"current_epg_detail_dialog");
 		}
 	}
