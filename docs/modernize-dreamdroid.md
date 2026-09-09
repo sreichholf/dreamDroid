@@ -69,7 +69,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-bouquetlist | [#222](https://github.com/sreichholf/dreamDroid/pull/222) | merged | Phase 2.2i: Hub/pick/timer bouquet roots via `lifecycleScope` + `EnigmaClient.getServices()`; drop `GetBouquetListTask`. |
 | http-async-locations-tags | [#223](https://github.com/sreichholf/dreamDroid/pull/223) | merged | Phase 2.2j: Locations/tags prefetch via `lifecycleScope` + `DreamDroid.loadLocations/Tags`; drop `GetLocationsAndTagsTask`. |
 | http-async-simpleresult | [#224](https://github.com/sreichholf/dreamDroid/pull/224) | merged | Phase 2.2k: Mutations via `lifecycleScope` + `SimpleResultLoad`; drop `SimpleResultTask` (HttpFragmentHelper, NavigationHelper, ShareActivity). |
-| http-async-volume-power-sleep | [#225](https://github.com/sreichholf/dreamDroid/pull/225) | open | Phase 2.2l: Volume/power/sleeptimer via `lifecycleScope` + `VolumePowerSleepLoad`; drop `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. |
+| http-async-volume-power-sleep | [#225](https://github.com/sreichholf/dreamDroid/pull/225) | merged | Phase 2.2l: Volume/power/sleeptimer via `lifecycleScope` + `VolumePowerSleepLoad`; drop `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -107,7 +107,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.2i Hub/pick/timer bouquet-list coroutines **merged** [#222](https://github.com/sreichholf/dreamDroid/pull/222).
 - Phase 2.2j Locations/tags prefetch coroutines **merged** [#223](https://github.com/sreichholf/dreamDroid/pull/223).
 - Phase 2.2k SimpleResult mutations coroutines **merged** [#224](https://github.com/sreichholf/dreamDroid/pull/224).
-- Phase 2.2l (this PR): Volume / power / sleeptimer coroutine mutations.
+- Phase 2.2l Volume/power/sleeptimer coroutines **merged** [#225](https://github.com/sreichholf/dreamDroid/pull/225).
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -578,7 +578,7 @@ One program each, still one PR (or small PR series) at a time:
 | 2i | HTTP / async — Bouquet list | `ServiceListPager` + `PickServiceFragment` + `TimerServicePickFragment` → `lifecycleScope` + `EnigmaClient.getServices()` for TV/Radio roots; delete `GetBouquetListTask`. **merged** [#222](https://github.com/sreichholf/dreamDroid/pull/222). |
 | 2j | HTTP / async — Locations/tags | `ServiceListPager` + `TimerEditFragment` → `lifecycleScope` + `DreamDroid.loadLocations/Tags`; delete `GetLocationsAndTagsTask`. **merged** [#223](https://github.com/sreichholf/dreamDroid/pull/223). |
 | 2k | HTTP / async — SimpleResult mutations | `HttpFragmentHelper` + `NavigationHelper` + `ShareActivity` → `lifecycleScope` + `SimpleResultLoad`; delete `SimpleResultTask`. **merged** [#224](https://github.com/sreichholf/dreamDroid/pull/224). |
-| 2l | HTTP / async — Volume/power/sleep | `HttpFragmentHelper` + `NavigationHelper` → `lifecycleScope` + `VolumePowerSleepLoad`; delete `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. **[#225](https://github.com/sreichholf/dreamDroid/pull/225).** |
+| 2l | HTTP / async — Volume/power/sleep | `HttpFragmentHelper` + `NavigationHelper` → `lifecycleScope` + `VolumePowerSleepLoad`; delete `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. **merged** [#225](https://github.com/sreichholf/dreamDroid/pull/225). |
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2l: profile/detect tasks, Loader chassis. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
