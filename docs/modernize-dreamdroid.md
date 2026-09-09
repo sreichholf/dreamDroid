@@ -56,10 +56,11 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | timer-service-pick-compose | [#207](https://github.com/sreichholf/dreamDroid/pull/207) | merged | `TimerServicePickFragment` Compose bouquet→service pick; drop unused `ServiceListFragment` + `dual_list_view`. |
 | hub-nownext-typed | [#209](https://github.com/sreichholf/dreamDroid/pull/209) | merged | typed `ServiceNowNext` for `/web/epgnownext` into hub TV/Radio `ServiceListPageFragment`; hash only at detail/timer/stream edge. |
 | movies-typed | [#210](https://github.com/sreichholf/dreamDroid/pull/210) | merged | typed `enigma.Movie` for `/web/movielist` into hub `MovieListFragment`; hash only at delete/stream edge; detail uses typed sheet. |
+| leanback-dive | [#211](https://github.com/sreichholf/dreamDroid/pull/211) | merged | Phase 0 Leanback inventory + risks + agreed Phase 3 PR order (docs only; no TV code). |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
-Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183/#203/#209) are on `main`. Remaining typed API: movies list path (this PR). Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
+Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183/#203/#209/#210) are on `main`. Dead-weight deletes must not drop ButterKnife (still used by frozen Leanback TV).
 
 Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Wave 3 phone screens complete on `main` through #206** (plus CI #204). Drawer shell and Leanback TV are later programs (Appendix H).
 
@@ -80,7 +81,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Leftover `app/res/service_list_pager.xml` stub and `android-retrostreams` were removed in #172. Inflater still uses `R.layout.service_list_pager`.
 - Wave 3 phone Compose screens complete on `main` through #206; CI #204.
 - Appendix G phone UI checklist: all 19 items merged.
-- Remaining typed API (not Wave 3 UI): movies list path (this PR; hub now/next typed in #209; detail edge typed in #206).
+- Remaining typed API (not Wave 3 UI): none on phone list paths (hub now/next #209; movies list #210; detail edge #206). Phase 0 Leanback dive in this PR.
 - Out of wave: drawer shell, Leanback `tv/`, VLC, widgets. See Appendix H for the one-by-one plan after Wave 3.
 
 ## How to read this
@@ -379,7 +380,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Surface | Code | Notes |
 | --- | --- | --- |
 | Channel / bouquet rows | Compose on `main` via #170; typed now/next #209 | Long-press, picons, popup menu; `ServiceNowNext` load path. |
-| Movies list | Compose on `main` via #170; typed list in this PR | Hub Movies destination; `enigma.Movie` load path. |
+| Movies list | Compose on `main` via #170; typed list #210 | Hub Movies destination; `enigma.Movie` load path. |
 | Timer list / edit | Compose list on `main` via #170/#203; edit #205; service pick #207 | List typed+Compose; edit Compose form (hash save/pick). |
 | Profile add/edit | Compose on `main` via #184 | Form Compose; list was #168. Autodiscovery stays Java. |
 | Share / pick profile | Compose on `main` via #196 | Compose list; Room profiles; dropped `ProfileAdapter`. |
@@ -405,7 +406,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 
 ### Still the old data stack
 
-- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Hub TV/Radio now/next loads typed `ServiceNowNext` (#209). Movies list loads typed `enigma.Movie` (this PR). Leanback movie browse still uses hash SAX.
+- Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Hub TV/Radio now/next loads typed `ServiceNowNext` (#209). Movies list loads typed `enigma.Movie` (#210). Leanback movie browse still uses hash SAX.
 - Enigma2 HTTP is still `HttpURLConnection` + `asynctask/*`. Picons still Picasso + OkHttp 3.14.9.
 - Room holds `profile` only. `DatabaseHelper` / `dreamdroid` SQLite still exist for migration and backup.
 - ButterKnife (4 files: phone `VideoOverlayFragment` + 3 Leanback TV). `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
@@ -419,7 +420,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
-2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Done on `main`:** Zap #173, Service EPG #176, bouquet EPG #179, search EPG #180, PickService #181, CurrentService #183, timers #203, device info #199, signal #200, hub now/next #209. **In flight:** movies list (this PR).
+2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Done on `main`:** Zap #173, Service EPG #176, bouquet EPG #179, search EPG #180, PickService #181, CurrentService #183, timers #203, device info #199, signal #200, hub now/next #209, movies list #210.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
 4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen). `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in **#175** (merged). #177: dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. ButterKnife still open while TV is frozen.
 5. **TV program** — Leanback → Compose for TV. Separate program. Do not mix into phone PRs.
@@ -460,26 +461,77 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 
 Operator intent: **migrate everything** (phone leftovers + Leanback), then operator usertests, then bugfix pass. Do **one PR at a time**. Do **not** start Leanback implementation until the dive below is written and accepted.
 
-### Phase 0 — Leanback dive (read-only, before any TV Compose PR)
+### Phase 0 — Leanback dive (accepted)
 
-Goal: a short inventory + migration risks doc (can live as a subsection here or a linked note). Cover:
+Inventory of `app/src/.../tv/` (12 Java files, ~1.3k LOC). **No TV Compose code in this PR.** Phase 3 may start after this dive is on `main`.
 
-- Surfaces: `tv/activities/MainActivity`, `PreferenceActivity`, `RootBrowseFragment`, `BaseHttpBrowseFragment`, Leanback prefs (`SettingsFragment` / `PrefsFragment` / `ProfileFragment`), `EpgDetailDialog` / `MovieDetailDialog`, `CardPresenter` / `TextCardView` / `BrowseItem`.
-- ButterKnife: 3 TV files (~15 binds) — blocks dropping ButterKnife until TV migrates or those call sites go.
-- Coupling: heavy use of phone `HttpFragmentHelper`, loaders, `ExtendedHashMap`, string-keyed helpers, `AbstractDialog`, `Picon`, `IntentFactory`.
-- Risks: Leanback browse/focus model ≠ phone Material 3; TV prefs are Leanback Preference; custom TLS/Picasso in TV `MainActivity`; phone detail Compose will not auto-cover TV dialogs.
-- Deliverable: agreed PR order for TV (browse hub first vs prefs first vs details first). **No code until dive lands.**
+#### Surfaces
 
-### Phase 1 — Remaining phone typed API (Wave 3 UI done)
+| Surface | Path | Role |
+| --- | --- | --- |
+| MainActivity | `tv/activities/MainActivity.java` | TV host (`tv_main`); custom TLS + Picasso OkHttp singleton |
+| PreferenceActivity | `tv/activities/PreferenceActivity.java` | Host for Leanback prefs |
+| RootBrowseFragment | `tv/fragment/RootBrowseFragment.java` | Hub: bouquet/service/movie rows, settings row, stream/prefs |
+| BaseHttpBrowseFragment | `tv/fragment/abs/BaseHttpBrowseFragment.java` | Leanback browse + loader callbacks over `ExtendedHashMap` |
+| SettingsFragment / PrefsFragment / ProfileFragment | `tv/fragment/` | Leanback settings router; `PrefsFragment` loads `R.xml.preferences`; `ProfileFragment` loads `R.xml.profile_preferences` |
+| EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen XML detail dialogs (`AbstractDialog` + ButterKnife) |
+| CardPresenter / TextCardView / BrowseItem | `tv/presenter/`, `tv/view/`, `tv/BrowseItem.java` | Card presenters + hash payload wrapper |
 
-Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone ButterKnife left only on `VideoOverlayFragment` (VLC / Phase 2). Next phone data work, one PR each:
+Entry: `TabbedNavigationActivity` → TV `MainActivity` when `DreamDroid.isTV()`. Detail dialogs under `tv/` are opened from phone `VideoOverlayFragment` (not from `RootBrowseFragment` clicks).
+
+#### ButterKnife (TV)
+
+| File | `@BindView` count |
+| --- | --- |
+| `MovieDetailDialog` | 8 |
+| `EpgDetailDialog` | 5 |
+| `TextCardView` | 2 |
+| **Total** | **15** (3 files) |
+
+Phone leftover: `VideoOverlayFragment` (Phase 2 VLC). ButterKnife cannot be dropped until TV + that site are gone.
+
+#### Coupling to phone stack
+
+- `ExtendedHashMap` / string-key `Event`/`Movie`/`Service` helpers in browse + cards + dialogs
+- `AsyncListLoader` + SAX handlers (`ServiceListRequestHandler`, `EpgNowNextListRequestHandler` / `EventListRequestHandler`, `MovieListRequestHandler`)
+- `Picon`, `IntentFactory` → `VideoActivity` / integrated player
+- `AbstractDialog.setTextOrHide` in TV detail dialogs
+- `DreamDroidTrustManager` + Picasso OkHttp in TV `MainActivity` (app-wide side effects)
+- Shared prefs XML (`R.xml.preferences` / `R.xml.profile_preferences`); EPG detail may share phone dialog XML, while `MovieDetailDialog` uses TV-only `layout-television/movie_epg_dialog` (phone layout removed in #206)
+
+Phone Compose detail screens do **not** cover TV dialogs.
+
+#### Risks
+
+- Leanback D-pad browse ≠ phone Material 3; hub needs a TV-first focus model
+- Hash-map data plane in every `BrowseItem` — Compose without typing rebinds string keys
+- Loader/SAX stack will be replaced in Phase 2 HTTP; hub Compose before typing/HTTP direction risks a double rewrite
+- Streaming UX tied to Phase 2 VLC/`VideoOverlayFragment` decisions
+- Detail dialogs mis-located under `tv/` but driven by phone overlay
+- No in-tree TV instrumented coverage for browse/prefs
+
+#### Agreed Phase 3 PR order
+
+Prefer **typed browse data → details → hub → prefs** (not prefs-first; not hub-first without typing):
+
+1. Typed TV browse data — stop `ExtendedHashMap` in `BrowseItem` / loaders; reuse phone typed client
+2. Detail dialogs → Compose (or shared phone detail + TV theme) — drops 13/15 TV binds
+3. Browse hub → TV Compose / foundational focus — needs typed data; kills `TextCardView` ButterKnife
+4. Leanback prefs → Compose preferences — isolated; same PreferenceManager keys
+5. Drop ButterKnife when zero call sites remain (TV + phone VLC)
+
+**Safe before full Phase 2:** typed TV browse data and detail Compose (careful with VLC hosts). **Defer hub Compose** until typed data lands and Phase 2 HTTP direction is at least sketched.
+
+### Phase 1 — Remaining phone typed API (done)
+
+Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone ButterKnife left only on `VideoOverlayFragment` (VLC / Phase 2). Phase 1 typed leftovers:
 
 | Order | Slug | Notes |
 | --- | --- | --- |
-| 1 | typed hub now/next | `ServiceListPage` events — **merged** [#209](https://github.com/sreichholf/dreamDroid/pull/209) |
-| 2 | typed movies list path | Detail edge already typed in #206 — open as `movies-typed` (this PR) |
+| 1 | typed hub now/next | **merged** [#209](https://github.com/sreichholf/dreamDroid/pull/209) |
+| 2 | typed movies list path | **merged** [#210](https://github.com/sreichholf/dreamDroid/pull/210) |
 
-Gate: unit + assemble; instrumented tests when the PR touches UI; Bugbot; land when authorized.
+Next: Phase 2 phone chassis (drawer shell first), then Phase 3 Leanback per the dive above.
 
 ### Phase 2 — Phone chassis (still not Leanback)
 
@@ -496,7 +548,7 @@ One program each, still one PR (or small PR series) at a time:
 
 ### Phase 3 — Leanback TV (after Phase 0 dive)
 
-Separate PRs; do not mix with phone shell PRs:
+Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 
 1. Typed data path for TV browse (stop `ExtendedHashMap` in `BrowseItem`).
 2. TV detail dialogs → Compose (or shared phone detail with TV theme).
