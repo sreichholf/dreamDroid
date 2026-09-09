@@ -144,11 +144,5 @@ class EnigmaClient(private val http: SimpleHttpClient) {
             }
         }
 
-        @JvmStatic
-        fun getMoviesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Movie>? {
-            return runBlocking {
-                EnigmaClient(http).getMovies(params)
-            }
-        }
     }
 }

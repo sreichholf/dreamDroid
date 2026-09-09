@@ -31,8 +31,8 @@ import com.evernote.android.state.State;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
-import net.reichholf.dreamdroid.asynctask.GetMovieListTask;
 import net.reichholf.dreamdroid.enigma.Movie;
+import net.reichholf.dreamdroid.enigma.MovieListLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
@@ -58,14 +58,18 @@ import net.reichholf.dreamdroid.ui.services.MovieListStateKt;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlinx.coroutines.Job;
+
 /**
  * Allows browsing recorded movies. Supports filtering by tags and locations.
  * Compose Material 3 list of typed {@link Movie}; delete/stream still take ExtendedHashMap at the edge.
+ * Load via coroutine + {@code EnigmaClient.getMovies()}.
  *
  * @author sreichholf
  */
 public class MovieListFragment extends BaseHttpRecyclerFragment
-		implements MultiChoiceDialog.MultiChoiceDialogListener, GetMovieListTask.GetMovieListTaskHandler {
+		implements MultiChoiceDialog.MultiChoiceDialogListener {
 	public static String ARGUMENT_LOCATION = "location";
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
@@ -77,7 +81,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	private final ArrayList<Movie> mMovies = new ArrayList<>();
 	private MovieListState mListState;
 	@Nullable
-	private GetMovieListTask mMovieListTask;
+	private Job mLoadJob;
 	@Nullable
 	private PendingMovieList mPendingMovieList;
 
@@ -170,11 +174,23 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	}
 
 	@Override
-	public void onDestroy() {
-		if (mMovieListTask != null) {
-			mMovieListTask.cancel(true);
+	public void onDestroyView() {
+		cancelLoad(true);
+		if (mMovies.isEmpty()) {
+			mReload = true;
 		}
-		super.onDestroy();
+		super.onDestroyView();
+	}
+
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob == null) {
+			return;
+		}
+		mLoadJob.cancel(null);
+		mLoadJob = null;
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+		}
 	}
 
 	@Override
@@ -315,7 +331,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	@Override
 	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
 							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from GetMovieListTask / EnigmaClient.
+		// Unused: rows come from EnigmaClient coroutines.
 	}
 
 	@Override
@@ -329,19 +345,25 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	}
 
 	private void loadMovies() {
+		if (!isAdded() || getView() == null) {
+			return;
+		}
 		mHttpHelper.onLoadStarted();
 		if (getAppCompatActivity() != null) {
 			getAppCompatActivity().setTitle(getString(R.string.loading));
 		}
-		if (mMovieListTask != null) {
-			mMovieListTask.cancel(true);
-		}
-		mMovieListTask = new GetMovieListTask(this);
-		mMovieListTask.execute(getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID));
+		cancelLoad(false);
+		ArrayList<NameValuePair> params = getHttpParams(HttpFragmentHelper.LOADER_DEFAULT_ID);
+		mLoadJob = MovieListLoadKt.launchMovieListLoad(this, params, (success, movies, errorText) -> {
+			onMovieListReady(success, movies, errorText);
+			return Unit.INSTANCE;
+		});
 	}
 
-	@Override
-	public void onMovieListReady(boolean success, @NonNull List<Movie> movies, @Nullable String errorText) {
+	private void onMovieListReady(boolean success, @NonNull List<Movie> movies, @Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
 		mHttpHelper.onLoadFinished();
 		if (!isResumed()) {
 			mPendingMovieList = new PendingMovieList(success, new ArrayList<>(movies), errorText);
