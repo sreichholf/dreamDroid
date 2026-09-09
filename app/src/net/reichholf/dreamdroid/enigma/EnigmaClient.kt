@@ -34,6 +34,20 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
+    suspend fun getEpgNowNext(
+        params: List<NameValuePair> = emptyList(),
+        uri: String = URIStore.EPG_NOWNEXT
+    ): List<ServiceNowNext> {
+        return withContext(Dispatchers.IO) {
+            val requestParams = ArrayList(params)
+            if (!http.fetchPageContent(uri, requestParams)) {
+                emptyList()
+            } else {
+                EpgNowNextParser.parse(http.pageContentString)
+            }
+        }
+    }
+
     suspend fun getCurrent(): CurrentService? {
         return withContext(Dispatchers.IO) {
             if (!http.fetchPageContent(URIStore.CURRENT, ArrayList())) {
@@ -91,6 +105,18 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         ): List<Event> {
             return runBlocking {
                 EnigmaClient(http).getEvents(params, uri)
+            }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun getEpgNowNextBlocking(
+            http: SimpleHttpClient,
+            params: List<NameValuePair>,
+            uri: String = URIStore.EPG_NOWNEXT
+        ): List<ServiceNowNext> {
+            return runBlocking {
+                EnigmaClient(http).getEpgNowNext(params, uri)
             }
         }
 

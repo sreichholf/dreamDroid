@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2eventlist>
+	<e2event>
+		<e2eventid>100</e2eventid>
+		<e2eventstart>1893456000</e2eventstart>
+		<e2eventduration>3600</e2eventduration>
+		<e2eventcurrenttime>1893457800</e2eventcurrenttime>
+		<e2eventtitle>News Now</e2eventtitle>
+		<e2eventdescription>Now desc</e2eventdescription>
+		<e2eventdescriptionextended>Now extended.Line two.</e2eventdescriptionextended>
+		<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>Das Erste HD</e2eventservicename>
+	</e2event>
+	<e2event>
+		<e2eventid>101</e2eventid>
+		<e2eventstart>1893459600</e2eventstart>
+		<e2eventduration>1800</e2eventduration>
+		<e2eventcurrenttime>1893457800</e2eventcurrenttime>
+		<e2eventtitle>News Next</e2eventtitle>
+		<e2eventdescription>Next desc</e2eventdescription>
+		<e2eventdescriptionextended>Next extended</e2eventdescriptionextended>
+		<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>Das Erste HD</e2eventservicename>
+	</e2event>
+	<e2event>
+		<e2eventid>200</e2eventid>
+		<e2eventstart>1893456000</e2eventstart>
+		<e2eventduration>7200</e2eventduration>
+		<e2eventcurrenttime>1893457800</e2eventcurrenttime>
+		<e2eventtitle>Sport Now</e2eventtitle>
+		<e2eventdescription>Sport</e2eventdescription>
+		<e2eventdescriptionextended/>
+		<e2eventservicereference>1:0:1:6DCB:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>ZDF HD</e2eventservicename>
+	</e2event>
+	<e2event>
+		<e2eventid>201</e2eventid>
+		<e2eventstart>1893463200</e2eventstart>
+		<e2eventduration>3600</e2eventduration>
+		<e2eventcurrenttime>1893457800</e2eventcurrenttime>
+		<e2eventtitle>Sport Next</e2eventtitle>
+		<e2eventdescription/>
+		<e2eventdescriptionextended/>
+		<e2eventservicereference>1:0:1:6DCB:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>ZDF HD</e2eventservicename>
+	</e2event>
+	<e2event>
+		<e2eventid>300</e2eventid>
+		<e2eventstart>1893456000</e2eventstart>
+		<e2eventduration>600</e2eventduration>
+		<e2eventcurrenttime>1893457800</e2eventcurrenttime>
+		<e2eventtitle>Trailing Only</e2eventtitle>
+		<e2eventdescription/>
+		<e2eventdescriptionextended/>
+		<e2eventservicereference>1:0:1:6DCC:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>Arte HD</e2eventservicename>
+	</e2event>
+</e2eventlist>
