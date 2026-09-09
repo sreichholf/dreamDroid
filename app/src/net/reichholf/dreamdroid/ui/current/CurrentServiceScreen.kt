@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -113,10 +112,9 @@ fun CurrentServiceScreen(
     val horz = dimensionResource(R.dimen.content_horz_padding)
     val vert = dimensionResource(R.dimen.content_vert_padding)
     val context = LocalContext.current
-    val piconsEnabled = remember {
-        PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
-    }
+    // Read prefs each composition so Settings toggles apply when returning here.
+    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
     val loading = stringResource(R.string.loading)
     fun displayOrLoading(value: String): String =
         if (!state.ready) loading else value
