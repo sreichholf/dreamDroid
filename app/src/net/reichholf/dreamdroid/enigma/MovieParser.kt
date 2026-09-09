@@ -9,13 +9,15 @@ import java.io.StringReader
 import javax.xml.parsers.SAXParserFactory
 
 object MovieParser {
-    fun parse(xml: String): List<Movie> {
+    /**
+     * @return parsed movies, or null when XML cannot be parsed (distinct from a valid empty list).
+     */
+    fun parse(xml: String): List<Movie>? {
         if (xml.isEmpty()) {
-            return emptyList()
+            return null
         }
         return parseSanitized(xml, aggressive = false)
             ?: parseSanitized(xml, aggressive = true)
-            ?: emptyList()
     }
 
     private fun parseSanitized(xml: String, aggressive: Boolean): List<Movie>? {

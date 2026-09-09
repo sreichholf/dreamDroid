@@ -101,11 +101,11 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
-    suspend fun getMovies(params: List<NameValuePair> = emptyList()): List<Movie> {
+    suspend fun getMovies(params: List<NameValuePair> = emptyList()): List<Movie>? {
         return withContext(Dispatchers.IO) {
             val requestParams = ArrayList(params)
             if (!http.fetchPageContent(URIStore.MOVIES, requestParams)) {
-                emptyList()
+                null
             } else {
                 MovieParser.parse(http.pageContentString)
             }
@@ -173,7 +173,7 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
 
         @JvmStatic
-        fun getMoviesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Movie> {
+        fun getMoviesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Movie>? {
             return runBlocking {
                 EnigmaClient(http).getMovies(params)
             }

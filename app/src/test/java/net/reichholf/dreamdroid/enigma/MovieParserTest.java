@@ -18,6 +18,7 @@ public class MovieParserTest {
         assertNotNull(in);
         String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         List<Movie> movies = MovieParser.INSTANCE.parse(xml);
+        assertNotNull(movies);
         assertEquals(2, movies.size());
 
         Movie first = movies.get(0);

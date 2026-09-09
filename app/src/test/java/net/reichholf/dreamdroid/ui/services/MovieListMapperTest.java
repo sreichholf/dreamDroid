@@ -21,6 +21,7 @@ public class MovieListMapperTest {
         assertNotNull(in);
         String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         List<Movie> movies = MovieParser.INSTANCE.parse(xml);
+        assertNotNull(movies);
         List<MovieListItem> items = MovieListMapperKt.movieListItemsFromMovies(movies);
         assertEquals(2, items.size());
         assertEquals("Evening News", items.get(0).getTitle());
