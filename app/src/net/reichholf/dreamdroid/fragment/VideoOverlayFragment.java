@@ -30,9 +30,9 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.leanback.widget.HorizontalGridView;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
 import androidx.preference.PreferenceManager;
+
+import kotlinx.coroutines.Job;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,13 +51,10 @@ import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
+import net.reichholf.dreamdroid.enigma.EpgNowNextLoadKt;
+import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.services.ServiceListMapperKt;
 import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog;
 import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog;
 import net.reichholf.dreamdroid.video.VLCPlayer;
@@ -73,7 +70,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, ItemClickSupport.OnItemClickListener, ActionDialog.DialogActionListener {
+		ItemClickSupport.OnItemClickListener, ActionDialog.DialogActionListener {
 
 	public static final String DIALOG_TAG_AUDIO_TRACK = "dialog_audio_track";
 	public static final String DIALOG_TAG_SUBTITLE_TRACK = "dialog_subtitle_track";
@@ -152,6 +149,9 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private float mVolume;
 	private boolean mServicesViewVisible;
 
+	@Nullable
+	private Job mLoadJob;
+
 	public VideoOverlayFragment() {
 	}
 
@@ -176,7 +176,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mVolume = -1f;
 
 		autohide();
-		reload();
 	}
 
 	@Nullable
@@ -396,25 +395,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		onServiceInfoChanged(true);
 	}
 
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AbstractListRequestHandler handler;
-		if (DreamDroid.featureNowNext())
-			handler = new EpgNowNextListRequestHandler();
-		else
-			handler = new EventListRequestHandler(URIStore.EPG_NOW);
-		return new AsyncListLoader(getActivity(), handler, true, args);
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, @NonNull LoaderResult<ArrayList<ExtendedHashMap>> data) {
-		if (data.isError())
-			return;
+	private void applyServiceList(@NonNull ArrayList<ExtendedHashMap> services) {
 		mServiceList.clear();
 		if (mServicesView != null)
 			mServicesView.getAdapter().notifyDataSetChanged();
-		mServiceList.addAll(data.getResult());
+		mServiceList.addAll(services);
 		for (ExtendedHashMap service : mServiceList) {
 			if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef)) {
 				ExtendedHashMap oldServiceInfo = mServiceInfo;
@@ -434,11 +419,6 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			if (isOverlaysVisible() && mServicesViewVisible)
 				showZapOverlays();
 		}
-	}
-
-	@Override
-	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
-
 	}
 
 	private void zap() {
@@ -540,11 +520,37 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	public void reload() {
 		if ((mBouquetRef == null || mBouquetRef.isEmpty()) || getActivity() == null)
 			return;
+		if (!isAdded() || getView() == null)
+			return;
+		cancelLoad();
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("bRef", mBouquetRef));
-		Bundle args = new Bundle();
-		args.putSerializable("params", params);
-		getLoaderManager().restartLoader(1, args, this);
+		mLoadJob = EpgNowNextLoadKt.launchEpgNowNextLoad(this, params, (success, rows, errorText) -> {
+			onEpgNowNextReady(success, rows, errorText);
+			return kotlin.Unit.INSTANCE;
+		});
+	}
+
+	private void cancelLoad() {
+		if (mLoadJob != null) {
+			mLoadJob.cancel(null);
+			mLoadJob = null;
+		}
+	}
+
+	private void onEpgNowNextReady(boolean success, @NonNull java.util.List<ServiceNowNext> rows,
+			@Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
+		if (!success) {
+			return;
+		}
+		ArrayList<ExtendedHashMap> services = new ArrayList<>();
+		for (ServiceNowNext row : rows) {
+			services.add(ServiceListMapperKt.serviceNowNextToExtendedHashMap(row));
+		}
+		applyServiceList(services);
 	}
 
 	private void seek(int pos) {
@@ -732,6 +738,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	public void onPause() {
 		mHandler.removeCallbacks(mAutoHideRunnable);
 		mHandler.removeCallbacks(mIssueReloadRunnable);
+		cancelLoad();
 		super.onPause();
 	}
 
