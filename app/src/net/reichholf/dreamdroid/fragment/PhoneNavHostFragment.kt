@@ -6,6 +6,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavHostController
@@ -15,6 +16,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
+import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
@@ -50,6 +52,12 @@ class PhoneNavHostFragment : BaseFragment() {
     @Volatile
     private var navController: NavHostController? = null
 
+    private val backCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            navController?.popBackStack()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         mShouldRetainInstance = false
         super.onCreate(savedInstanceState)
@@ -67,6 +75,11 @@ class PhoneNavHostFragment : BaseFragment() {
             )
             bindPhoneNavHost(this@PhoneNavHostFragment)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
     }
 
     fun startRoute(): String {
@@ -90,48 +103,56 @@ class PhoneNavHostFragment : BaseFragment() {
     /** Nested destination fragment for the current NavHost route (if any). */
     fun getActiveLeaf(): Fragment? {
         val route = navController?.currentDestination?.route ?: startRoute()
-        return when (route) {
-            PhoneNavRoutes.DEVICE_INFO ->
+        return when {
+            route == PhoneNavRoutes.DEVICE_INFO ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_device_info_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.DEVICE_INFO)
-            PhoneNavRoutes.SIGNAL ->
+            route == PhoneNavRoutes.SIGNAL ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_signal_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SIGNAL)
-            PhoneNavRoutes.SCREENSHOT ->
+            route == PhoneNavRoutes.SCREENSHOT ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_screenshot_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SCREENSHOT)
-            PhoneNavRoutes.CURRENT ->
+            route == PhoneNavRoutes.CURRENT ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_current_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.CURRENT)
-            PhoneNavRoutes.ZAP ->
+            route == PhoneNavRoutes.ZAP ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_zap_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.ZAP)
-            PhoneNavRoutes.BACKUP ->
+            route == PhoneNavRoutes.BACKUP ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_backup_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.BACKUP)
-            PhoneNavRoutes.PROFILES ->
+            route == PhoneNavRoutes.PROFILES ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_profiles_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PROFILES)
-            PhoneNavRoutes.EPG ->
+            route == PhoneNavRoutes.EPG ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
-            PhoneNavRoutes.REMOTE ->
+            route == PhoneNavRoutes.REMOTE ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_remote_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.REMOTE)
-            PhoneNavRoutes.HUB ->
+            route == PhoneNavRoutes.HUB ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_hub_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB)
+            route == PhoneNavRoutes.SERVICE_EPG || route.startsWith("service_epg") ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_service_epg_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SERVICE_EPG)
             else -> null
         }
     }
 
     fun attachNavController(controller: NavHostController) {
         navController = controller
+        controller.addOnDestinationChangedListener { _, _, _ ->
+            backCallback.isEnabled = controller.previousBackStackEntry != null
+        }
+        backCallback.isEnabled = controller.previousBackStackEntry != null
     }
 
     fun detachNavController(controller: NavHostController) {
         if (navController === controller) {
             navController = null
+            backCallback.isEnabled = false
         }
     }
 
@@ -176,6 +197,16 @@ class PhoneNavHostFragment : BaseFragment() {
             return true
         }
         controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
+        return true
+    }
+
+    /**
+     * Push nested service EPG onto the NavHost back stack (hub → service EPG).
+     * Typed string args; back pops to the previous drawer leaf.
+     */
+    fun navigateToServiceEpg(serviceReference: String?, serviceName: String?): Boolean {
+        val controller = navController ?: return false
+        controller.navigateToServiceEpg(serviceReference.orEmpty(), serviceName)
         return true
     }
 
