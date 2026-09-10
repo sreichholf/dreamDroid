@@ -71,7 +71,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-simpleresult | [#224](https://github.com/sreichholf/dreamDroid/pull/224) | merged | Phase 2.2k: Mutations via `lifecycleScope` + `SimpleResultLoad`; drop `SimpleResultTask` (HttpFragmentHelper, NavigationHelper, ShareActivity). |
 | http-async-volume-power-sleep | [#225](https://github.com/sreichholf/dreamDroid/pull/225) | merged | Phase 2.2l: Volume/power/sleeptimer via `lifecycleScope` + `VolumePowerSleepLoad`; drop `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. |
 | http-async-profile-detect | [#226](https://github.com/sreichholf/dreamDroid/pull/226) | merged | Phase 2.2m: Profile check + device detect via `lifecycleScope`; drop `CheckProfileTask`/`DetectDevicesTask`. |
-| http-async-drop-asynctask-base | [#227](https://github.com/sreichholf/dreamDroid/pull/227) | open | Phase 2.2n: Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. |
+| http-async-drop-asynctask-base | [#227](https://github.com/sreichholf/dreamDroid/pull/227) | merged | Phase 2.2n: Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -111,7 +111,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.2k SimpleResult mutations coroutines **merged** [#224](https://github.com/sreichholf/dreamDroid/pull/224).
 - Phase 2.2l Volume/power/sleeptimer coroutines **merged** [#225](https://github.com/sreichholf/dreamDroid/pull/225).
 - Phase 2.2m Profile check + device-detect coroutines **merged** [#226](https://github.com/sreichholf/dreamDroid/pull/226).
-- Phase 2.2n (this PR): Retire unused AsyncTask base classes.
+- Phase 2.2n AsyncTask base retirement **merged** [#227](https://github.com/sreichholf/dreamDroid/pull/227).
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -584,7 +584,7 @@ One program each, still one PR (or small PR series) at a time:
 | 2k | HTTP / async — SimpleResult mutations | `HttpFragmentHelper` + `NavigationHelper` + `ShareActivity` → `lifecycleScope` + `SimpleResultLoad`; delete `SimpleResultTask`. **merged** [#224](https://github.com/sreichholf/dreamDroid/pull/224). |
 | 2l | HTTP / async — Volume/power/sleep | `HttpFragmentHelper` + `NavigationHelper` → `lifecycleScope` + `VolumePowerSleepLoad`; delete `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. **merged** [#225](https://github.com/sreichholf/dreamDroid/pull/225). |
 | 2m | HTTP / async — Profile/detect | `MainActivity` + `ProfileListFragment` → `lifecycleScope` profile check / device detect; delete `CheckProfileTask`/`DetectDevicesTask`. **merged** [#226](https://github.com/sreichholf/dreamDroid/pull/226). |
-| 2n | HTTP / async — Retire AsyncTask base | Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. **[#227](https://github.com/sreichholf/dreamDroid/pull/227).** |
+| 2n | HTTP / async — Retire AsyncTask base | Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. **merged** [#227](https://github.com/sreichholf/dreamDroid/pull/227). |
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2n: Loader chassis. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
