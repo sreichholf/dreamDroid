@@ -17,20 +17,16 @@ class ProfilesListState(initial: List<ProfileListItem> = emptyList()) {
 
 fun ComposeView.bindProfilesScreen(
     state: ProfilesListState,
-    addLabel: String,
     onProfileClick: (ProfileListItem) -> Unit,
     onProfileLongClick: (ProfileListItem) -> Unit,
-    onAddClick: () -> Unit,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
             ProfilesScreen(
                 profiles = state.items,
-                addLabel = addLabel,
                 onProfileClick = onProfileClick,
                 onProfileLongClick = onProfileLongClick,
-                onAddClick = onAddClick,
             )
         }
     }

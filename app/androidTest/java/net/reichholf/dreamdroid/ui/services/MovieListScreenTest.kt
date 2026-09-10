@@ -37,8 +37,8 @@ class MovieListScreenTest {
                             length = "90",
                         ),
                     ),
-                    onItemClick = {},
-                    onItemLongClick = {},
+                    onItemClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> },
                 )
             }
         }

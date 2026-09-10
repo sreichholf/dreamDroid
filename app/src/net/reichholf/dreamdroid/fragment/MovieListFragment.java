@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -49,6 +48,7 @@ import net.reichholf.dreamdroid.ui.services.MovieListItem;
 import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
 import net.reichholf.dreamdroid.ui.services.MovieListState;
 import net.reichholf.dreamdroid.ui.services.MovieListStateKt;
+import net.reichholf.dreamdroid.widget.AnchorPopup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -181,12 +181,12 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 					reload();
 					return kotlin.Unit.INSTANCE;
 				},
-				item -> {
-					onComposeClick(item, false);
+				(item, windowX, windowY) -> {
+					onComposeClick(item, false, windowX, windowY);
 					return kotlin.Unit.INSTANCE;
 				},
-				item -> {
-					onComposeClick(item, true);
+				(item, windowX, windowY) -> {
+					onComposeClick(item, true, windowX, windowY);
 					return kotlin.Unit.INSTANCE;
 				}
 		);
@@ -283,7 +283,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 		return true;
 	}
 
-	private void onMovieItemClick(@NonNull View view, int position, boolean isLong) {
+	private void onMovieItemClick(int position, boolean isLong, int windowX, int windowY) {
 		if (position < 0 || position >= mMovies.size()) {
 			return;
 		}
@@ -294,15 +294,19 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 		if ((isInsta && !isLong) || (!isInsta && isLong)) {
 			zapTo(typed.getReference());
 		} else {
-			showPopupMenu(view);
+			showPopupMenu(windowX, windowY);
 		}
 	}
 
-	public void showPopupMenu(@NonNull View v) {
-		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
-		menu.getMenuInflater().inflate(R.menu.popup_movielist, menu.getMenu());
-		menu.setOnMenuItemClickListener(menuItem -> onMovieAction(menuItem.getItemId()));
-		menu.show();
+	public void showPopupMenu(int windowX, int windowY) {
+		View root = getView();
+		if (!(root instanceof ViewGroup)) {
+			return;
+		}
+		AnchorPopup.showAtWindow((ViewGroup) root, windowX, windowY, menu -> {
+			menu.getMenuInflater().inflate(R.menu.popup_movielist, menu.getMenu());
+			menu.setOnMenuItemClickListener(menuItem -> onMovieAction(menuItem.getItemId()));
+		});
 	}
 
 	/**
@@ -410,12 +414,8 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 		}
 	}
 
-	private void onComposeClick(@NonNull MovieListItem item, boolean isLong) {
-		View host = getView();
-		if (host == null) {
-			return;
-		}
-		onMovieItemClick(host, item.getIndex(), isLong);
+	private void onComposeClick(@NonNull MovieListItem item, boolean isLong, int windowX, int windowY) {
+		onMovieItemClick(item.getIndex(), isLong, windowX, windowY);
 	}
 
 	public void setLocation(int index) {

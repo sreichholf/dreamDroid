@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,6 +43,7 @@ import net.reichholf.dreamdroid.ui.services.ServiceListItem;
 import net.reichholf.dreamdroid.ui.services.ServiceListMapperKt;
 import net.reichholf.dreamdroid.ui.services.ServiceListState;
 import net.reichholf.dreamdroid.ui.services.ServiceListStateKt;
+import net.reichholf.dreamdroid.widget.AnchorPopup;
 
 import java.util.ArrayList;
 
@@ -147,12 +147,12 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 					reload();
 					return kotlin.Unit.INSTANCE;
 				},
-				item -> {
-					onComposeClick(item, false);
+				(item, windowX, windowY) -> {
+					onComposeClick(item, false, windowX, windowY);
 					return kotlin.Unit.INSTANCE;
 				},
-				item -> {
-					onComposeClick(item, true);
+				(item, windowX, windowY) -> {
+					onComposeClick(item, true, windowX, windowY);
 					return kotlin.Unit.INSTANCE;
 				}
 		);
@@ -194,15 +194,11 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		return true;
 	}
 
-	private void onComposeClick(@NonNull ServiceListItem item, boolean isLong) {
-		View host = getView();
-		if (host == null) {
-			return;
-		}
-		onItemClick(host, item.getIndex(), isLong);
+	private void onComposeClick(@NonNull ServiceListItem item, boolean isLong, int windowX, int windowY) {
+		onItemClick(item.getIndex(), isLong, windowX, windowY);
 	}
 
-	private void onItemClick(@NonNull View v, int position, boolean isLong) {
+	private void onItemClick(int position, boolean isLong, int windowX, int windowY) {
 		if (position < 0 || position >= mRows.size()) {
 			return;
 		}
@@ -227,7 +223,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		if ((instantZap && !isLong) || (!instantZap && isLong)) {
 			zapTo(ref);
 		} else {
-			showPopupMenu(v, row);
+			showPopupMenu(windowX, windowY, row);
 		}
 	}
 
@@ -375,57 +371,61 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		getMultiPaneHandler().showDetails(f, true);
 	}
 
-	public void showPopupMenu(@NonNull View v, @NonNull ServiceNowNext row) {
-		PopupMenu menu = new PopupMenu(getAppCompatActivity(), v);
-		menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
-		menu.getMenu().findItem(R.id.menu_next_event).setVisible(DreamDroid.featureNowNext() && row.getNext() != null);
+	public void showPopupMenu(int windowX, int windowY, @NonNull ServiceNowNext row) {
+		View root = getView();
+		if (!(root instanceof ViewGroup)) {
+			return;
+		}
+		AnchorPopup.showAtWindow((ViewGroup) root, windowX, windowY, menu -> {
+			menu.getMenuInflater().inflate(R.menu.popup_servicelist, menu.getMenu());
+			menu.getMenu().findItem(R.id.menu_next_event).setVisible(DreamDroid.featureNowNext() && row.getNext() != null);
 
-		menu.setOnMenuItemClickListener(menuItem -> {
-			String ref = row.getServiceReference();
-			String name = row.getServiceName();
-			switch (menuItem.getItemId()) {
-				case R.id.menu_next_event: {
-					Event next = row.getNext();
-					if (next != null) {
-						mCurrentItem = EpgListMapper.toExtendedHashMap(next);
-						EpgDetailBottomSheet epgDialog = EpgDetailBottomSheet.newInstance(next);
-						getMultiPaneHandler().showDialogFragment(epgDialog, "epg_detail_dialog");
+			menu.setOnMenuItemClickListener(menuItem -> {
+				String ref = row.getServiceReference();
+				String name = row.getServiceName();
+				switch (menuItem.getItemId()) {
+					case R.id.menu_next_event: {
+						Event next = row.getNext();
+						if (next != null) {
+							mCurrentItem = EpgListMapper.toExtendedHashMap(next);
+							EpgDetailBottomSheet epgDialog = EpgDetailBottomSheet.newInstance(next);
+							getMultiPaneHandler().showDialogFragment(epgDialog, "epg_detail_dialog");
+						}
+						break;
 					}
-					break;
+					case R.id.menu_current_event: {
+						Event now = row.getNow();
+						if (now != null) {
+							mCurrentItem = EpgListMapper.toExtendedHashMap(now);
+							EpgDetailBottomSheet epgDialog = EpgDetailBottomSheet.newInstance(now);
+							getMultiPaneHandler().showDialogFragment(epgDialog, "epg_detail_dialog");
+						}
+						break;
+					}
+					case R.id.menu_browse_epg:
+						openEpg(ref, name);
+						break;
+					case R.id.menu_zap:
+						zapTo(ref);
+						break;
+					case R.id.menu_stream:
+						try {
+							startActivity(IntentFactory.getStreamServiceIntent(
+									getAppCompatActivity(),
+									ref,
+									name,
+									mRef,
+									ServiceListMapperKt.serviceNowNextToExtendedHashMap(row)));
+						} catch (ActivityNotFoundException e) {
+							showToast(getText(R.string.missing_stream_player));
+						}
+						break;
+					default:
+						return false;
 				}
-				case R.id.menu_current_event: {
-					Event now = row.getNow();
-					if (now != null) {
-						mCurrentItem = EpgListMapper.toExtendedHashMap(now);
-						EpgDetailBottomSheet epgDialog = EpgDetailBottomSheet.newInstance(now);
-						getMultiPaneHandler().showDialogFragment(epgDialog, "epg_detail_dialog");
-					}
-					break;
-				}
-				case R.id.menu_browse_epg:
-					openEpg(ref, name);
-					break;
-				case R.id.menu_zap:
-					zapTo(ref);
-					break;
-				case R.id.menu_stream:
-					try {
-						startActivity(IntentFactory.getStreamServiceIntent(
-								getAppCompatActivity(),
-								ref,
-								name,
-								mRef,
-								ServiceListMapperKt.serviceNowNextToExtendedHashMap(row)));
-					} catch (ActivityNotFoundException e) {
-						showToast(getText(R.string.missing_stream_player));
-					}
-					break;
-				default:
-					return false;
-			}
-			return true;
+				return true;
+			});
 		});
-		menu.show();
 	}
 
 	@Override
