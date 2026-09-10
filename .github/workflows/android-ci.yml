@@ -26,9 +26,30 @@ jobs:
           java-version: "17"
           distribution: temurin
 
-      # ubuntu-latest already ships Android SDK (platforms 34+, build-tools 34+,
-      # ANDROID_HOME). No setup-android — that action re-downloads cmdline-tools
-      # and was even pulling the emulator package on the unit job.
+      # ubuntu-latest already ships Android SDK + ANDROID_HOME. Do not use
+      # setup-android (re-downloads cmdline-tools / emulator). Preinstall the
+      # platform AGP still auto-fetches mid-build (33) so it cannot create
+      # $ANDROID_HOME/.temp/PackageOperation* entries that poison Gradle's
+      # configuration-cache fingerprints across runners.
+      - name: Ensure Android SDK platforms
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+          if [[ -z "$SDK" || ! -d "$SDK" ]]; then
+            echo "ANDROID_HOME/SDK root missing" >&2
+            exit 1
+          fi
+          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
+          if [[ -z "$SDKMANAGER" ]]; then
+            echo "sdkmanager not found under $SDK/cmdline-tools" >&2
+            ls -la "$SDK" >&2 || true
+            exit 1
+          fi
+          # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
+          # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
+          rm -rf "$SDK/.temp"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -38,25 +59,17 @@ jobs:
           # Same-repo PRs may write caches; forks stay read-only.
           cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
 
-      # Configuration cache lives under the project tree, not ~/.gradle — cache it
-      # explicitly so PR/main runs can skip the ~10–15 min cold configure.
-      - name: Cache Gradle configuration cache
-        uses: actions/cache@v5
-        with:
-          path: .gradle/configuration-cache
-          key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
-          restore-keys: |
-            gradle-config-cache-${{ runner.os }}-
-
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # One Gradle invocation keeps the daemon warm (do not pass --no-daemon with setup-gradle).
-      # -Pci disables ABI splits so we assemble one APK (libvlc natives × 5 was wasteful on PRs).
-      # Compiling androidTest catches broken Compose tests without an emulator.
+      # --no-configuration-cache: restoring a project config-cache across GHA
+      # runners cost ~26m validating an entry that then invalidated on an SDK
+      # .temp path; dependency/build caches already make the real work ~30s.
+      # -Pci disables ABI splits (one APK). androidTest compile catches broken
+      # Compose tests without an emulator.
       - name: Unit tests + assemble + compile androidTest
         run: >
-          ./gradlew -Pci
+          ./gradlew -Pci --no-configuration-cache
           :app:testGoogleDebugUnitTest
           :app:assembleGoogleDebug
           :app:compileGoogleDebugAndroidTestKotlin
@@ -96,18 +109,30 @@ jobs:
           java-version: "17"
           distribution: temurin
 
+      - name: Ensure Android SDK platforms
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+          if [[ -z "$SDK" || ! -d "$SDK" ]]; then
+            echo "ANDROID_HOME/SDK root missing" >&2
+            exit 1
+          fi
+          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
+          if [[ -z "$SDKMANAGER" ]]; then
+            echo "sdkmanager not found under $SDK/cmdline-tools" >&2
+            ls -la "$SDK" >&2 || true
+            exit 1
+          fi
+          # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
+          # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
+          rm -rf "$SDK/.temp"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: basic
-
-      - name: Cache Gradle configuration cache
-        uses: actions/cache@v5
-        with:
-          path: .gradle/configuration-cache
-          key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
-          restore-keys: |
-            gradle-config-cache-${{ runner.os }}-
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -122,7 +147,7 @@ jobs:
           disable-animations: true
           # -Pci disables ABI splits so connectedAndroidTest installs one APK.
           # Do not pass -Pandroid.testInstrumentationRunnerArguments… (breaks flavors).
-          script: ./gradlew -Pci :app:connectedGoogleDebugAndroidTest
+          script: ./gradlew -Pci --no-configuration-cache :app:connectedGoogleDebugAndroidTest
 
       - name: Upload instrumented test reports
         if: always()
