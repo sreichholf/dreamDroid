@@ -65,12 +65,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.SimpleNoTitleFragmentActivity"
-            android:theme="@style/Theme.DreamDroid.NoTitle"
-            android:uiOptions=""
-            android:exported="false"/>
-
-        <activity
             android:name=".activities.SimpleToolbarFragmentActivity"
             android:exported="false" />
 

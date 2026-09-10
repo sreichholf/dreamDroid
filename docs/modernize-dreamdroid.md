@@ -113,7 +113,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | anchor-popup-kotlin | [#273](https://github.com/sreichholf/dreamDroid/pull/273) | merged | Convert `AnchorPopup` to Kotlin; retab `WidgetRemoteRequest.kt`. Keep OkHttp 3.14.9. |
 | navhost-service-epg | [#274](https://github.com/sreichholf/dreamDroid/pull/274) | merged | Phase 2.1f beachhead: nested service EPG typed route on `PhoneNavHost`. Keep OkHttp 3.14.9. |
 | navhost-epg-search | [#275](https://github.com/sreichholf/dreamDroid/pull/275) | merged | Phase 2.1f continued: nested EPG search typed query route on `PhoneNavHost`. Keep OkHttp 3.14.9. |
-| navhost-pick-service | this PR | open | Phase 2.1f continued: nested bouquet pick on `PhoneNavHost` (host delivers result; no setTargetFragment). Keep OkHttp 3.14.9. |
+| navhost-pick-service | [#276](https://github.com/sreichholf/dreamDroid/pull/276) | merged | Phase 2.1f continued: nested bouquet pick on `PhoneNavHost` (host delivers result; no setTargetFragment). Keep OkHttp 3.14.9. |
+| navhost-phone-remote | this PR | open | Phase 2.1h beachhead: phone Virtual Remote on `PhoneNavHost` (same as tablet); drop `SimpleNoTitleFragmentActivity`. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -179,8 +180,9 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.1b NavHost dive **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254).
 - Phase 2.1c–e through hub **merged** [#255](https://github.com/sreichholf/dreamDroid/pull/255)–[#270](https://github.com/sreichholf/dreamDroid/pull/270).
 - Phase 2.6a widgets decision **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b **merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272).
-- **This PR** = convert `AnchorPopup` to Kotlin (new-code policy).
-- Out of wave still: optional 2.6c Compose config / 2.1f–h / Phase 4–5 operator. See Appendix H.
+- Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276).
+- **This PR** = Phase 2.1h beachhead: phone Virtual Remote on `PhoneNavHost`.
+- Out of wave still: optional 2.6c Compose config / 2.1g / further 2.1h / Phase 4–5 operator. See Appendix H.
 
 ## How to read this
 
@@ -876,19 +878,19 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | Backup leaf | `PhoneNavRoutes.BACKUP` + nested `BackupFragment` | **merged** [#265](https://github.com/sreichholf/dreamDroid/pull/265) |
 | Profiles leaf | `PhoneNavRoutes.PROFILES` + nested `ProfileListFragment` | **merged** [#266](https://github.com/sreichholf/dreamDroid/pull/266) (still clears drawer selection) |
 | EPG leaf | `PhoneNavRoutes.EPG` + nested `EpgBouquetFragment` | **merged** [#267](https://github.com/sreichholf/dreamDroid/pull/267) (default bouquet ref/name extras) |
-| Tablet remote leaf | `PhoneNavRoutes.REMOTE` + nested `VirtualRemotePagerFragment` | **merged** [#269](https://github.com/sreichholf/dreamDroid/pull/269) (phone still side activity) |
+| Remote leaf | `PhoneNavRoutes.REMOTE` + nested `VirtualRemotePagerFragment` | Tablet **merged** [#269](https://github.com/sreichholf/dreamDroid/pull/269); phone **this PR** (2.1h beachhead) |
 | Hub leaf | `PhoneNavRoutes.HUB` + nested `ServiceListPager` | **merged** [#270](https://github.com/sreichholf/dreamDroid/pull/270) |
 | Service EPG nested | `PhoneNavRoutes.SERVICE_EPG` typed ref/name | **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274) (2.1f beachhead) |
 | EPG search nested | `PhoneNavRoutes.EPG_SEARCH` typed query | **merged** [#275](https://github.com/sreichholf/dreamDroid/pull/275) |
-| Bouquet pick nested | `PhoneNavRoutes.PICK_SERVICE` | **this PR** (host `deliverPickResult`) |
+| Bouquet pick nested | `PhoneNavRoutes.PICK_SERVICE` | **merged** [#276](https://github.com/sreichholf/dreamDroid/pull/276) (host `deliverPickResult`) |
 | Host API | `MultiPaneHandler` | `isMultiPane()` always true on `MainActivity` (in-host detail, not master–detail columns) |
-| Nested | `FragmentHelper`, `HttpFragmentHelper` | FM back stack; pickers via `targetFragment` / `onActivityResult` |
-| Side hosts | `Simple*FragmentActivity`, `VideoActivity`, `ShareActivity` | Settings / profile+timer edit / stream / Share. Phone remote → `SimpleNoTitleFragmentActivity`; **tablet** remote stays in-host via `showDetails` |
+| Nested | `FragmentHelper`, `HttpFragmentHelper` | FM back stack; pickers via host / `onActivityResult` |
+| Side hosts | `Simple*FragmentActivity`, `VideoActivity`, `ShareActivity` | Settings / profile+timer edit / stream / Share. Remote is in-host on phone + tablet (**this PR**). |
 | Profiles | Profile header XML + first-start | Not in `DrawerScreen` / `navigation.xml`; opens `ProfileListFragment`, clears drawer selection |
 
 #### Agreed approach
 
-**A → hybrid beachhead:** add `navigation-compose`; host `NavHost` inside existing `MainActivity` / `detail_view` via `PhoneNavHostFragment`; migrate leaves (Device Info through hub + tablet remote) while `NavigationHelper` still drives phone remote via side activity. Keep `DrawerLayout` + profile header. Keep DialogFragments and side activities initially. Do **not** fold `VideoActivity` into the phone graph.
+**A → hybrid beachhead:** add `navigation-compose`; host `NavHost` inside existing `MainActivity` / `detail_view` via `PhoneNavHostFragment`; migrate leaves (Device Info through hub + remote on phone and tablet). Keep `DrawerLayout` + profile header. Keep DialogFragments and remaining side activities initially. Do **not** fold `VideoActivity` into the phone graph.
 
 #### Proposed PR slices
 
@@ -898,16 +900,16 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | 2.1c | Beachhead: `navigation-compose` + Device Info leaf | **merged** [#255](https://github.com/sreichholf/dreamDroid/pull/255) |
 | 2.1d | Drawer → `NavController` for migrated roots; stop `clearBackStack`+`showDetails` for those | **merged** [#256](https://github.com/sreichholf/dreamDroid/pull/256) |
 | 2.1e | More drawer roots | Through hub **merged** [#257](https://github.com/sreichholf/dreamDroid/pull/257)–[#270](https://github.com/sreichholf/dreamDroid/pull/270) |
-| 2.1f | Nested stack (EPG search / service EPG / pick-service) typed routes | Service EPG **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274); EPG search **merged** [#275](https://github.com/sreichholf/dreamDroid/pull/275). **This PR:** bouquet pick. |
+| 2.1f | Nested stack (EPG search / service EPG / pick-service) typed routes | **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276) |
 | 2.1g | Dialog policy (keep fragment dialogs or promote a few) | |
-| 2.1h | Optional side-activity convergence; retire `NavigationHelper` switch | No OkHttp 4; no widgets; no Media3 |
+| 2.1h | Optional side-activity convergence; retire `NavigationHelper` switch | **This PR:** phone remote on NavHost; drop `SimpleNoTitleFragmentActivity`. Further: settings/dialogs still side activity; optional retire switch. No OkHttp 4; no widgets; no Media3 |
 
 #### Explicit non-goals after 2.1e ([#270](https://github.com/sreichholf/dreamDroid/pull/270))
 
-- No phone remote activity convergence (stays `SimpleNoTitleFragmentActivity`) unless 2.1h
+- Phone remote side activity retired in 2.1h (**this PR**)
 - No VideoActivity / Glance widgets / TV Leanback / Media3
 - No OkHttp 4; do not merge master into main
-- Nested typed routes stay 2.1f
+- Nested typed routes done in 2.1f
 
 ### Phase 3 — Leanback TV (after Phase 0 dive)
 
@@ -921,7 +923,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 
-**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Nested service EPG / EPG search **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)/[#275](https://github.com/sreichholf/dreamDroid/pull/275). **This PR:** nested bouquet pick. Optional next: 2.1g–h / Phase 4–5 (operator).
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276). **This PR:** 2.1h beachhead phone remote on NavHost. Optional next: 2.1g / further 2.1h / Phase 4–5 (operator).
 
 ### Phase 4 — Operator usertests
 
