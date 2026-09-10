@@ -57,8 +57,6 @@ dependencies {
     implementation 'com.evernote:android-state:1.4.1'
     annotationProcessor 'com.evernote:android-state-processor:1.4.1'
     implementation 'com.github.livefront:bridge:v2.0.2'
-    implementation 'com.jakewharton:butterknife:10.2.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
     implementation 'androidx.slidingpanelayout:slidingpanelayout:1.2.0'
 
     def composeBom = platform('androidx.compose:compose-bom:2024.04.01')

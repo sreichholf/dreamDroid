@@ -19,13 +19,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -58,17 +56,15 @@ import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
 import net.reichholf.dreamdroid.ui.services.ServiceListMapperKt;
 import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog;
 import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog;
+import net.reichholf.dreamdroid.ui.video.VideoOverlayScreenKt;
+import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState;
 import net.reichholf.dreamdroid.video.VLCPlayer;
-import net.reichholf.dreamdroid.view.OnRepeatListener;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
 
 import org.videolan.libvlc.MediaPlayer;
 
 import java.util.ArrayList;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
 		ItemClickSupport.OnItemClickListener, ActionDialog.DialogActionListener {
@@ -109,41 +105,17 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
     protected ItemClickSupport mItemClickSupport;
 
-    @Nullable
-	@BindView(R.id.overlay_root)
-    protected View mOverlayRoot;
+	@Nullable
+	protected View mOverlayRoot;
 
 	@Nullable
-	@BindView(R.id.servicelist)
 	protected RecyclerView mServicesView;
 
-    @Nullable
-	@BindView(R.id.button_audio_track)
-	protected AppCompatImageButton mButtonAudioTrack;
+	@Nullable
+	protected ComposeView mComposeOverlay;
 
-    @Nullable
-	@BindView(R.id.button_info)
-	protected AppCompatImageButton mButtonInfo;
-
-    @Nullable
-	@BindView(R.id.button_list)
-	protected AppCompatImageButton mButtonList;
-
-    @Nullable
-	@BindView(R.id.button_subtitle_track)
-    protected AppCompatImageButton mButtonSubtitleTrack;
-
-    @Nullable
-	@BindView(R.id.button_rwd)
-	protected AppCompatImageButton mButtonRewind;
-
-    @Nullable
-	@BindView(R.id.button_play)
-	protected AppCompatImageButton mButtonPlay;
-
-    @Nullable
-	@BindView(R.id.button_fwd)
-	protected AppCompatImageButton mButtonForward;
+	@NonNull
+	protected final VideoOverlayUiState mOverlayUiState = new VideoOverlayUiState();
 
 	@Nullable
 	private GestureDetectorCompat mGestureDector;
@@ -192,15 +164,45 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.video_player_overlay, container, false);
-		ButterKnife.bind(this, view);
-		mButtonAudioTrack.setOnClickListener(v -> onSelectAudioTrack());
-		mButtonInfo.setOnClickListener(v -> onInfo());
-		mButtonList.setOnClickListener(v -> onList());
-		mButtonSubtitleTrack.setOnClickListener(v -> onSelectSubtitleTrack());
-		mButtonRewind.setOnTouchListener(new OnRepeatListener(v -> onRewind()));
-		mButtonPlay.setOnClickListener(v -> onPlay());
-		mButtonForward.setOnTouchListener(new OnRepeatListener(v -> onForward()));
-
+		mOverlayRoot = view.findViewById(R.id.overlay_root);
+		mServicesView = view.findViewById(R.id.servicelist);
+		mComposeOverlay = view.findViewById(R.id.compose_overlay);
+		VideoOverlayScreenKt.bindVideoOverlayScreen(
+				mComposeOverlay,
+				mOverlayUiState,
+				() -> {
+					onPlay();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onRewind();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onForward();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onInfo();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onList();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onSelectAudioTrack();
+					return kotlin.Unit.INSTANCE;
+				},
+				() -> {
+					onSelectSubtitleTrack();
+					return kotlin.Unit.INSTANCE;
+				},
+				progress -> {
+					seek(progress);
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 		return view;
 	}
 
@@ -216,7 +218,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				mServicesView.setLayoutManager(layoutManager);
 			}
 			if (mServiceList.isEmpty())
-				mButtonList.setVisibility(View.GONE);
+				mOverlayUiState.setShowListButton(false);
 			mServicesView.addItemDecoration(new SpacesItemDecoration(getActivity().getResources().getDimensionPixelSize(R.dimen.recylcerview_content_margin)));
 			mItemClickSupport = ItemClickSupport.addTo(mServicesView);
 			mItemClickSupport.setOnItemClickListener(this);
@@ -298,16 +300,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	public void onUpdateButtons() {
 		VLCPlayer player = VLCPlayer.get();
-		if(player == null)
+		if (player == null)
 			return;
-		if (player.getAudioTracksCount() <= 0)
-			mButtonAudioTrack.setVisibility(View.GONE);
-		else
-			mButtonAudioTrack.setVisibility(View.VISIBLE);
-		if (player.getSubtitleTracksCount() <= 0)
-			mButtonSubtitleTrack.setVisibility(View.GONE);
-		else
-			mButtonSubtitleTrack.setVisibility(View.VISIBLE);
+		mOverlayUiState.setShowAudioButton(player.getAudioTracksCount() > 0);
+		mOverlayUiState.setShowSubtitleButton(player.getSubtitleTracksCount() > 0);
 	}
 
 	private void onSelectAudioTrack() {
@@ -432,10 +428,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				mServicesView.getAdapter().notifyDataSetChanged();
 		}
 		if (mServiceList.isEmpty()) {
-			mButtonList.setVisibility(View.GONE);
+			mOverlayUiState.setShowListButton(false);
 			hideZapOverlays();
 		} else {
-			mButtonList.setVisibility(View.VISIBLE);
+			mOverlayUiState.setShowListButton(true);
 			if (isOverlaysVisible() && mServicesViewVisible)
 				showZapOverlays();
 		}
@@ -608,57 +604,43 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	private void updateViews() {
 		View view = getView();
+		if (view == null)
+			return;
 
-		TextView title = view.findViewById(R.id.title);
-		title.setText(mTitle);
-
-		if (VLCPlayer.get().isSeekable())
-			view.findViewById(R.id.pvr_controls).setVisibility(View.VISIBLE);
-		else
-			view.findViewById(R.id.pvr_controls).setVisibility(View.GONE);
-
-		View parentNow = view.findViewById(R.id.event_now);
-		View parentNext = view.findViewById(R.id.event_next);
+		mOverlayUiState.setTitle(mTitle != null ? mTitle : "");
+		VLCPlayer player = VLCPlayer.get();
+		mOverlayUiState.setShowPvrControls(player != null && player.isSeekable());
 
 		if (mMovie != null || mCurrentService != null) {
-			mButtonInfo.setVisibility(View.VISIBLE);
+			mOverlayUiState.setShowInfoButton(true);
 			if (isRecording()) {
 				String movieTitle = mMovie != null ? mMovie.getTitle() : null;
-				title.setText(movieTitle != null && !movieTitle.isEmpty() ? movieTitle : mTitle);
+				mOverlayUiState.setTitle(movieTitle != null && !movieTitle.isEmpty() ? movieTitle : (mTitle != null ? mTitle : ""));
 			} else if (mCurrentService != null) {
 				String serviceName = mCurrentService.getServiceName();
-				title.setText(serviceName != null && !serviceName.isEmpty() ? serviceName : mTitle);
-				TextView nowStart = view.findViewById(R.id.event_now_start);
-				TextView nowDuration = view.findViewById(R.id.event_now_duration);
-				TextView nowTitle = view.findViewById(R.id.event_now_title);
-
+				mOverlayUiState.setTitle(serviceName != null && !serviceName.isEmpty() ? serviceName : (mTitle != null ? mTitle : ""));
 				Event now = mCurrentService.getNow();
-				nowStart.setText(now != null ? now.getStartTimeReadable() : null);
-				nowTitle.setText(now != null ? now.getTitle() : null);
-				nowDuration.setText(now != null ? now.getDurationReadable() : null);
-
-				parentNow.setVisibility(View.VISIBLE);
+				mOverlayUiState.setNowStart(now != null && now.getStartTimeReadable() != null ? now.getStartTimeReadable() : "");
+				mOverlayUiState.setNowTitle(now != null && now.getTitle() != null ? now.getTitle() : "");
+				mOverlayUiState.setNowDuration(now != null && now.getDurationReadable() != null ? now.getDurationReadable() : "");
+				mOverlayUiState.setShowNow(true);
 			}
 
 			Event nextEvent = mCurrentService != null ? mCurrentService.getNext() : null;
 			String next = nextEvent != null ? nextEvent.getTitle() : null;
 			boolean hasNext = next != null && !"".equals(next);
 			if (hasNext) {
-				TextView nextStart = view.findViewById(R.id.event_next_start);
-				TextView nextDuration = view.findViewById(R.id.event_next_duration);
-				TextView nextTitle = view.findViewById(R.id.event_next_title);
-
-				nextStart.setText(nextEvent.getStartTimeReadable());
-				nextTitle.setText(nextEvent.getTitle());
-				nextDuration.setText(nextEvent.getDurationReadable());
-				parentNext.setVisibility(View.VISIBLE);
+				mOverlayUiState.setNextStart(nextEvent.getStartTimeReadable() != null ? nextEvent.getStartTimeReadable() : "");
+				mOverlayUiState.setNextTitle(nextEvent.getTitle() != null ? nextEvent.getTitle() : "");
+				mOverlayUiState.setNextDuration(nextEvent.getDurationReadable() != null ? nextEvent.getDurationReadable() : "");
+				mOverlayUiState.setHasNext(true);
 			} else {
-				parentNext.setVisibility(View.GONE);
+				mOverlayUiState.setHasNext(false);
 			}
 		} else {
-			parentNow.setVisibility(View.GONE);
-			parentNext.setVisibility(View.GONE);
-			mButtonInfo.setVisibility(View.GONE);
+			mOverlayUiState.setShowNow(false);
+			mOverlayUiState.setHasNext(false);
+			mOverlayUiState.setShowInfoButton(false);
 		}
 		updateProgress();
 		if (mServicesView != null && mServicesView.getAdapter() != null)
@@ -667,41 +649,16 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@SuppressLint("ClickableViewAccessibility")
 	protected void updateProgress() {
-		SeekBar serviceProgress = getView().findViewById(R.id.service_progress);
+		if (getView() == null)
+			return;
 		VLCPlayer player = VLCPlayer.get();
 		boolean isSeekable = player != null && player.isSeekable();
-		if (isSeekable) {
-			serviceProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-				@Override
-				public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-					if (fromUser) {
-						seek(progress);
-					}
-				}
-
-				@Override
-				public void onStartTrackingTouch(SeekBar seekBar) {
-
-				}
-
-				@Override
-				public void onStopTrackingTouch(SeekBar seekBar) {
-
-				}
-			});
-			serviceProgress.setOnTouchListener((view, motionEvent) -> false);
-		} else {
-			serviceProgress.setOnTouchListener((view, motionEvent) -> true);
-		}
-		serviceProgress.setFocusable(isSeekable);
-		serviceProgress.setClickable(isSeekable);
+		mOverlayUiState.setSeekable(isSeekable);
 		long len = -1;
 		long cur = -1;
 		if (mMovie != null || mCurrentService != null) {
-			View parentNow = getView().findViewById(R.id.event_now);
-			View parentNext = getView().findViewById(R.id.event_next);
 			if (isRecording()) {
-				long duration = player.getLength() / 1000;
+				long duration = player != null ? player.getLength() / 1000 : 0;
 				if (duration <= 0) {
 					String textLen = mMovie != null && mMovie.getLength() != null && !mMovie.getLength().isEmpty()
 							? mMovie.getLength() : "00:00";
@@ -714,20 +671,16 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 						Log.w(LOG_TAG, iobex.getLocalizedMessage());
 					}
 				}
-				if (duration > 0) {
-					TextView nowStart = getView().findViewById(R.id.event_now_start);
-					TextView nowDuration = getView().findViewById(R.id.event_now_duration);
-					TextView nowTitle = getView().findViewById(R.id.event_now_title);
-
-					long pos = (long) (duration * player.getPosition()); //getTime() may deliver quite bogous values when streaming from a dreambox so we don't use them.
-					nowStart.setText(DateTime.minutesAndSeconds((int) pos));
-					nowTitle.setText(mMovie != null ? mMovie.getServiceName() : "");
-					nowDuration.setText(DateTime.minutesAndSeconds((int) duration));
-					parentNow.setVisibility(View.VISIBLE);
+				if (duration > 0 && player != null) {
+					long pos = (long) (duration * player.getPosition());
+					mOverlayUiState.setNowStart(DateTime.minutesAndSeconds((int) pos));
+					mOverlayUiState.setNowTitle(mMovie != null && mMovie.getServiceName() != null ? mMovie.getServiceName() : "");
+					mOverlayUiState.setNowDuration(DateTime.minutesAndSeconds((int) duration));
+					mOverlayUiState.setShowNow(true);
 				} else {
-					parentNow.setVisibility(View.GONE);
+					mOverlayUiState.setShowNow(false);
 				}
-				parentNext.setVisibility(View.GONE);
+				mOverlayUiState.setHasNext(false);
 			} else if (mCurrentService != null && mCurrentService.getNow() != null) {
 				Event now = mCurrentService.getNow();
 				String duration = now.getDuration();
@@ -744,24 +697,24 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 				}
 			}
 		}
-		if (len <= 0) {
+		if (player != null && len <= 0) {
 			len = player.getLength() / 1000; //ms -> sec
 			cur = player.getTime() / 1000; //ms -> sec
 		}
 
-		if (len <= 0 && isSeekable) {
+		if (player != null && len <= 0 && isSeekable) {
 			len = sFakeLength;
 			cur = (long) (len * player.getPosition());
 		}
 
 		if (len > 0 && cur >= 0) {
-			serviceProgress.setEnabled(true);
-			serviceProgress.setKeyProgressIncrement((int) (len * sSeekStepSize));
-			serviceProgress.setVisibility(View.VISIBLE);
-			serviceProgress.setMax((int) len);
-			serviceProgress.setProgress((int) cur);
+			mOverlayUiState.setProgressEnabled(true);
+			mOverlayUiState.setProgressMax((int) len);
+			mOverlayUiState.setProgress((int) cur);
 		} else {
-			serviceProgress.setEnabled(false);
+			mOverlayUiState.setProgressEnabled(false);
+			mOverlayUiState.setProgressMax(0);
+			mOverlayUiState.setProgress(0);
 		}
 	}
 
