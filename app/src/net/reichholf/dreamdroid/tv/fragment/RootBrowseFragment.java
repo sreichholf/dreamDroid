@@ -374,9 +374,9 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 				return;
 			}
 			String type = settings.getKind() == BrowseItem.Kind.Preferences
-					? SettingsFragment.PREFS_TYPE_GENERIC : SettingsFragment.PREFS_TYPE_PROFILE;
+					? PreferenceActivity.PREFS_TYPE_GENERIC : PreferenceActivity.PREFS_TYPE_PROFILE;
 			Intent intent = new Intent(getContext(), PreferenceActivity.class);
-			intent.putExtra(SettingsFragment.KEY_PREFS_TYPE, type);
+			intent.putExtra(PreferenceActivity.KEY_PREFS_TYPE, type);
 			startActivityForResult(intent, REQUEST_CODE_PROFILE);
 			return;
 		}
