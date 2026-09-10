@@ -103,7 +103,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		mAdapter = new ServiceAdapter(getAppCompatActivity(), mMapList);
+		mAdapter = new ServiceAdapter(getAppCompatActivity(), mRows);
 		getRecyclerView().setAdapter(mAdapter);
 
 		super.onActivityCreated(savedInstanceState);

@@ -84,6 +84,31 @@ public class ServiceListMapperTest {
     }
 
     @Test
+    public void fromExtendedHashMapRoundTripsNowAndNext() {
+        Event now = new Event(
+                "1", "Now", "100", "60", "100", "d", "x",
+                "1:0:1:1:1:1:0:0:0:0:", "TV", "r", "t", "1"
+        );
+        Event next = new Event(
+                "2", "Next", "160", "60", "100", "d2", "x2",
+                "", "", "r2", "t2", "1"
+        );
+        ServiceNowNext row = new ServiceNowNext("1:0:1:1:1:1:0:0:0:0:", "TV", now, next);
+        ExtendedHashMap map = ServiceListMapperKt.serviceNowNextToExtendedHashMap(row);
+        ServiceNowNext back = ServiceListMapperKt.serviceNowNextFromExtendedHashMap(map);
+        assertEquals(row.getServiceReference(), back.getServiceReference());
+        assertEquals(row.getServiceName(), back.getServiceName());
+        assertNotNull(back.getNow());
+        assertEquals("Now", back.getNow().getTitle());
+        assertEquals("1", back.getNow().getEventId());
+        assertEquals("100", back.getNow().getStart());
+        assertNotNull(back.getNext());
+        assertEquals("Next", back.getNext().getTitle());
+        assertEquals("2", back.getNext().getEventId());
+        assertEquals("t2", back.getNext().getStartTimeReadable());
+    }
+
+    @Test
     public void emptyTypedListYieldsNoItems() {
         assertEquals(0, ServiceListMapperKt.serviceListItemsFromNowNext(Collections.emptyList()).size());
     }

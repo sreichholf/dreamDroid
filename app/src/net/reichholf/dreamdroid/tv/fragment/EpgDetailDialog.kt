@@ -14,15 +14,18 @@ import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.fragment.dialogs.AbstractDialog
-import net.reichholf.dreamdroid.helpers.enigma2.Event
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.helpers.enigma2.Event as HashEvent
+import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * TV fullscreen EPG detail. Reuses phone [EpgDetailScreen] under [DreamDroidTheme]
- * with actions hidden (Phase 3.1b).
+ * with actions hidden (Phase 3.1b). Prefers typed [Event]; hash kept for legacy callers.
  */
 class EpgDetailDialog : AbstractDialog() {
 
@@ -38,10 +41,18 @@ class EpgDetailDialog : AbstractDialog() {
         )
     }
 
+    private fun detailContent(minutesShort: String): EpgDetailContent? {
+        val args = requireArguments()
+        val typed = args.getSerializable(ARG_TYPED_EVENT) as? Event
+        if (typed != null) {
+            return typed.toEpgDetailContent(minutesShort)
+        }
+        val hash = args.getSerializable(ARG_HASH_EVENT) as? ExtendedHashMap ?: return null
+        return hash.toEpgDetailContent(false, minutesShort)
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val event = requireArguments().getSerializable(Event::class.java.simpleName) as Event
-        val minutesShort = getString(R.string.minutes_short)
-        val content = event.toEpgDetailContent(false, minutesShort)
+        val content = detailContent(getString(R.string.minutes_short))
         if (content != null) {
             return super.onCreateDialog(savedInstanceState)
         }
@@ -57,9 +68,7 @@ class EpgDetailDialog : AbstractDialog() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        val event = requireArguments().getSerializable(Event::class.java.simpleName) as Event
-        val minutesShort = getString(R.string.minutes_short)
-        val content = event.toEpgDetailContent(false, minutesShort) ?: return super.onCreateView(
+        val content = detailContent(getString(R.string.minutes_short)) ?: return super.onCreateView(
             inflater,
             container,
             savedInstanceState,
@@ -92,10 +101,22 @@ class EpgDetailDialog : AbstractDialog() {
     }
 
     companion object {
+        private const val ARG_TYPED_EVENT = "typedEvent"
+        private const val ARG_HASH_EVENT = "Event"
+
         @JvmStatic
         fun newInstance(epg: Event): EpgDetailDialog {
             val args = Bundle()
-            args.putSerializable(Event::class.java.simpleName, epg)
+            args.putSerializable(ARG_TYPED_EVENT, epg)
+            val fragment = EpgDetailDialog()
+            fragment.arguments = args
+            return fragment
+        }
+
+        @JvmStatic
+        fun newInstance(epg: HashEvent): EpgDetailDialog {
+            val args = Bundle()
+            args.putSerializable(ARG_HASH_EVENT, epg)
             val fragment = EpgDetailDialog()
             fragment.arguments = args
             return fragment
