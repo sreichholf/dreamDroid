@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 data class DeviceInfoRow(
@@ -208,11 +210,21 @@ private fun DeviceInfoSection(
     }
 }
 
-fun ComposeView.bindDeviceInfoScreen(state: DeviceInfoUiState) {
+fun ComposeView.bindDeviceInfoScreen(
+    state: DeviceInfoUiState,
+    refresh: ComposeRefreshState,
+    onRefresh: () -> Unit,
+) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
-            DeviceInfoScreen(state = state)
+            DreamDroidPullRefresh(
+                refreshing = refresh.isRefreshing,
+                onRefresh = onRefresh,
+                enabled = refresh.enabled,
+            ) {
+                DeviceInfoScreen(state = state)
+            }
         }
     }
 }

@@ -35,6 +35,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class CurrentServiceUiState {
@@ -291,6 +293,8 @@ private fun ServicePicon(
 
 fun ComposeView.bindCurrentServiceScreen(
     state: CurrentServiceUiState,
+    refresh: ComposeRefreshState,
+    onRefresh: () -> Unit,
     onNowClick: () -> Unit,
     onNextClick: () -> Unit,
     onStream: () -> Unit,
@@ -298,12 +302,18 @@ fun ComposeView.bindCurrentServiceScreen(
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
-            CurrentServiceScreen(
-                state = state,
-                onNowClick = onNowClick,
-                onNextClick = onNextClick,
-                onStream = onStream,
-            )
+            DreamDroidPullRefresh(
+                refreshing = refresh.isRefreshing,
+                onRefresh = onRefresh,
+                enabled = refresh.enabled,
+            ) {
+                CurrentServiceScreen(
+                    state = state,
+                    onNowClick = onNowClick,
+                    onNextClick = onNextClick,
+                    onStream = onStream,
+                )
+            }
         }
     }
 }
