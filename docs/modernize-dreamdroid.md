@@ -80,7 +80,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | tv-detail-compose | [#235](https://github.com/sreichholf/dreamDroid/pull/235) | merged | Phase 3.1b: TV `EpgDetailDialog` / `MovieDetailDialog` → Compose via shared phone screens + `DreamDroidTheme`; actions hidden on TV EPG; drop ButterKnife on those two dialogs. Keep OkHttp 3.14.9. |
 | tv-prefs-compose | [#236](https://github.com/sreichholf/dreamDroid/pull/236) | merged | Phase 3.1d: Leanback prefs → Compose (`TvSettingsScreen` + `ProfileEditScreen` in `PreferenceActivity`); same PreferenceManager keys. Keep OkHttp 3.14.9. |
 | tv-textcard-drop-butterknife | [#237](https://github.com/sreichholf/dreamDroid/pull/237) | merged | Drop ButterKnife on TV `TextCardView` (last TV binds); keep dep for `VideoOverlayFragment` (VLC). Keep OkHttp 3.14.9. |
-| tv-hub-focus-dive | this PR | open | Phase 3.1c dive (docs only): TV browse hub focus options + agreed hub Compose PR slices. No hub code. |
+| tv-hub-focus-dive | [#238](https://github.com/sreichholf/dreamDroid/pull/238) | merged | Phase 3.1c dive (docs only): TV browse hub focus options + agreed hub Compose PR slices. No hub code. |
+| tv-compose-textcard | this PR | open | Phase 3.1c-i: Leanback movie `TextCardView` → Compose body inside `BaseCardView`; keep rows/headers. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -129,7 +130,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 3.1b TV detail dialogs → Compose **merged** [#235](https://github.com/sreichholf/dreamDroid/pull/235).
 - Phase 3.1d Leanback prefs → Compose **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236).
 - TV `TextCardView` ButterKnife dropped **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237).
-- Phase 3.1c TV hub focus dive — **this PR** (docs only; no hub Compose yet).
+- Phase 3.1c TV hub focus dive **merged** [#238](https://github.com/sreichholf/dreamDroid/pull/238).
+- Phase 3.1c-i Compose `TextCardView` beachhead — **this PR**.
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -600,7 +602,7 @@ No in-tree `FocusRequester` / `androidx.tv` / TV LazyRow helpers today. No instr
 
 | Slice | Scope | Non-goals |
 | --- | --- | --- |
-| 3.1c-i | Compose card presenter beachhead (e.g. settings or movie `TextCardView` → Compose) inside Leanback rows | No full hub rewrite; no VLC |
+| 3.1c-i | Compose movie `TextCardView` inside Leanback rows | **this PR**. No full hub rewrite; no VLC |
 | 3.1c-ii | Service image cards → Compose (picon + now/next text) | Keep Leanback headers/rows |
 | 3.1c-iii | Decide keep Leanback shell vs full Compose hub; if full, add `androidx.tv` (or equivalent) + focus tests | No OkHttp 4; no ButterKnife library drop |
 | 3.1c-iv | If C: replace `RootBrowseFragment` / `BaseHttpBrowseFragment` with Compose hub host | Keep typed loads + Intent edge |
@@ -663,7 +665,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | --- | --- | --- |
 | 3.1a | Typed `BrowseItem` | Sealed Kotlin `Service`/`Movie`/`Settings`; hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. **merged** [#234](https://github.com/sreichholf/dreamDroid/pull/234). |
 | 3.1b | TV detail dialogs → Compose | Shared phone detail + `DreamDroidTheme`; hide EPG actions on TV; drop ButterKnife on Epg/Movie detail. Keep OkHttp 3.14.9. **merged** [#235](https://github.com/sreichholf/dreamDroid/pull/235). |
-| 3.1c | Browse hub → TV Compose | Focus dive **this PR** (docs). Implementation slices 3.1c-i… after dive on `main`. |
+| 3.1c | Browse hub → TV Compose | Focus dive **merged** [#238](https://github.com/sreichholf/dreamDroid/pull/238). **3.1c-i this PR:** Compose `TextCardView` inside Leanback. |
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Full library drop waits on phone `VideoOverlayFragment` (VLC). |
 
