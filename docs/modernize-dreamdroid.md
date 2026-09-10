@@ -76,6 +76,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-screenshot | [#230](https://github.com/sreichholf/dreamDroid/pull/230) | merged | Phase 2.2p: ScreenShot grab via `lifecycleScope` + `ScreenshotLoad`; drop `AsyncByteLoader`. |
 | http-async-videooverlay-epg | [#231](https://github.com/sreichholf/dreamDroid/pull/231) | merged | Phase 2.2q: VideoOverlay bouquet now/next via `lifecycleScope` + reuse `EpgNowNextLoad`; map with `serviceNowNextToExtendedHashMap`; drop LoaderCallbacks on overlay only. Keep ButterKnife/VLC UI. Keep OkHttp 3.14.9. |
 | http-async-tv-browse | [#232](https://github.com/sreichholf/dreamDroid/pull/232) | merged | Phase 2.2r: Leanback `RootBrowseFragment` → `lifecycleScope` + reuse `ServiceListLoad` / `EpgNowNextLoad` / `MovieListLoad` (+ locs/tags); drop TV `LoaderCallbacks` / `AsyncListLoader` / `LoaderResult`. Keep Leanback UI + `ExtendedHashMap` BrowseItem. Keep OkHttp 3.14.9. |
+| tv-browse-typed-item | this PR | open | Phase 3.1a: sealed Kotlin `BrowseItem` (`Service`/`Movie`/`Settings`); hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -120,6 +121,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.2p ScreenShot bytes **merged** [#230](https://github.com/sreichholf/dreamDroid/pull/230).
 - Phase 2.2q VideoOverlay now/next **merged** [#231](https://github.com/sreichholf/dreamDroid/pull/231).
 - Phase 2.2r Leanback RootBrowse coroutines **merged** [#232](https://github.com/sreichholf/dreamDroid/pull/232). HTTP Loader chassis retired (`loader/` package gone).
+- Phase 3.1a typed Leanback `BrowseItem` — **this PR** (sealed Kotlin; hash only at stream Intent edge).
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -513,7 +515,7 @@ Inventory of `app/src/.../tv/` (12 Java files, ~1.3k LOC). **No TV Compose code 
 | BaseHttpBrowseFragment | `tv/fragment/abs/BaseHttpBrowseFragment.java` | Leanback browse + loader callbacks over `ExtendedHashMap` |
 | SettingsFragment / PrefsFragment / ProfileFragment | `tv/fragment/` | Leanback settings router; `PrefsFragment` loads `R.xml.preferences`; `ProfileFragment` loads `R.xml.profile_preferences` |
 | EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen XML detail dialogs (`AbstractDialog` + ButterKnife) |
-| CardPresenter / TextCardView / BrowseItem | `tv/presenter/`, `tv/view/`, `tv/BrowseItem.java` | Card presenters + hash payload wrapper |
+| CardPresenter / TextCardView / BrowseItem | `tv/presenter/`, `tv/view/`, `tv/BrowseItem.kt` | Card presenters + typed sealed browse payload (Phase 3.1a) |
 
 Entry: `TabbedNavigationActivity` → TV `MainActivity` when `DreamDroid.isTV()`. Detail dialogs under `tv/` are opened from phone `VideoOverlayFragment` (not from `RootBrowseFragment` clicks).
 
@@ -530,8 +532,8 @@ Phone leftover: `VideoOverlayFragment` (Phase 2 VLC). ButterKnife cannot be drop
 
 #### Coupling to phone stack
 
-- `ExtendedHashMap` / string-key `Event`/`Movie`/`Service` helpers in browse + cards + dialogs
-- `AsyncListLoader` + SAX handlers (`ServiceListRequestHandler`, `EpgNowNextListRequestHandler` / `EventListRequestHandler`, `MovieListRequestHandler`)
+- Browse hub holds typed `Service` / `ServiceNowNext` / `Movie`; `ExtendedHashMap` only at stream Intent edge (Phase 3.1a). Detail dialogs still hash/string-key.
+- SAX handlers still used by typed client (`ServiceListRequestHandler`, `EpgNowNextListRequestHandler` / `EventListRequestHandler`, `MovieListRequestHandler`); `AsyncListLoader` retired in #232
 - `Picon`, `IntentFactory` → `VideoActivity` / integrated player
 - `AbstractDialog.setTextOrHide` in TV detail dialogs
 - `DreamDroidTrustManager` + Picasso OkHttp in TV `MainActivity` (app-wide side effects)
@@ -542,8 +544,8 @@ Phone Compose detail screens do **not** cover TV dialogs.
 #### Risks
 
 - Leanback D-pad browse ≠ phone Material 3; hub needs a TV-first focus model
-- Hash-map data plane in every `BrowseItem` — Compose without typing rebinds string keys
-- Loader/SAX stack will be replaced in Phase 2 HTTP; hub Compose before typing/HTTP direction risks a double rewrite
+- Typed `BrowseItem` landed (Phase 3.1a); hub Compose still needs a TV-first focus model
+- HTTP Loader paths retired through 2.2r; hub Compose before focus/typing details risks a double rewrite
 - Streaming UX tied to Phase 2 VLC/`VideoOverlayFragment` decisions
 - Detail dialogs mis-located under `tv/` but driven by phone overlay
 - No in-tree TV instrumented coverage for browse/prefs
@@ -552,13 +554,13 @@ Phone Compose detail screens do **not** cover TV dialogs.
 
 Prefer **typed browse data → details → hub → prefs** (not prefs-first; not hub-first without typing):
 
-1. Typed TV browse data — stop `ExtendedHashMap` in `BrowseItem` / loaders; reuse phone typed client
+1. Typed TV browse data — stop `ExtendedHashMap` in `BrowseItem`; reuse phone typed client — **this PR** (Phase 3.1a)
 2. Detail dialogs → Compose (or shared phone detail + TV theme) — drops 13/15 TV binds
 3. Browse hub → TV Compose / foundational focus — needs typed data; kills `TextCardView` ButterKnife
 4. Leanback prefs → Compose preferences — isolated; same PreferenceManager keys
 5. Drop ButterKnife when zero call sites remain (TV + phone VLC)
 
-**Safe before full Phase 2:** typed TV browse data and detail Compose (careful with VLC hosts). **Defer hub Compose** until typed data lands and Phase 2 HTTP direction is at least sketched.
+**Safe next:** TV detail Compose (careful with VLC hosts). **Defer hub Compose** until typed data is on `main` and a TV focus model is sketched.
 
 ### Phase 1 — Remaining phone typed API (done)
 
@@ -597,7 +599,7 @@ One program each, still one PR (or small PR series) at a time:
 | 2p | HTTP / async — ScreenShot bytes | `ScreenShotFragment` → `lifecycleScope` + `ScreenshotLoad` / `Request.getBytes`; delete `AsyncByteLoader`. **merged** [#230](https://github.com/sreichholf/dreamDroid/pull/230). |
 | 2q | HTTP / async — VideoOverlay now/next | `VideoOverlayFragment` → `lifecycleScope` + reuse `EpgNowNextLoad` / `serviceNowNextToExtendedHashMap`; drop overlay LoaderCallbacks only. Keep ButterKnife/VLC UI. Keep OkHttp 3.14.9. **merged** [#231](https://github.com/sreichholf/dreamDroid/pull/231). |
 | 2r | HTTP / async — Leanback RootBrowse | `RootBrowseFragment` → `lifecycleScope` + reuse `ServiceListLoad` / `EpgNowNextLoad` / `MovieListLoad` (+ locs/tags); drop TV LoaderCallbacks; delete `AsyncListLoader` / `LoaderResult`. Keep Leanback UI + ExtendedHashMap. Keep OkHttp 3.14.9. **merged** [#232](https://github.com/sreichholf/dreamDroid/pull/232). |
-| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. **Phone+TV Loader paths done through 2r.** Follow-ons: typed TV browse / VLC product decision / NavHost / state. |
+| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. **Phone+TV Loader paths done through 2r.** Follow-ons: typed TV browse (3.1a) / VLC product decision / NavHost / state. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
 | 5 | VLC / streaming | `VideoActivity` + `VideoOverlayFragment` (ButterKnife) — product decision before rewrite |
@@ -607,11 +609,13 @@ One program each, still one PR (or small PR series) at a time:
 
 Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 
-1. Typed data path for TV browse (stop `ExtendedHashMap` in `BrowseItem`).
-2. TV detail dialogs → Compose (or shared phone detail with TV theme).
-3. Browse hub → TV Compose / foundational focus model.
-4. Leanback prefs → Compose preferences.
-5. Drop ButterKnife when zero call sites remain.
+| Order | Slice | Notes |
+| --- | --- | --- |
+| 3.1a | Typed `BrowseItem` | Sealed Kotlin `Service`/`Movie`/`Settings`; hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. **this PR**. |
+| 3.1b | TV detail dialogs → Compose | Shared phone detail + TV theme where possible; drop ButterKnife on Epg/Movie detail. |
+| 3.1c | Browse hub → TV Compose | Foundational focus model; kill `TextCardView` ButterKnife. |
+| 3.1d | Leanback prefs → Compose | Same PreferenceManager keys. |
+| 3.1e | Drop ButterKnife | When zero call sites remain (TV + phone VLC). |
 
 ### Phase 4 — Operator usertests
 
