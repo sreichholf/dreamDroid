@@ -1,13 +1,18 @@
 package net.reichholf.dreamdroid.ui.remote
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -75,5 +80,28 @@ class VirtualRemoteScreenTest {
         composeRule.onNodeWithText("B-").assertIsDisplayed()
         composeRule.onNodeWithText("1").assertDoesNotExist()
         composeRule.onNodeWithContentDescription("Play").assertDoesNotExist()
+    }
+
+    @Test
+    fun fullRemoteIsHorizontallyCenteredInWideHost() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                VirtualRemoteScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    layout = VirtualRemoteLayout.Full,
+                    playButtonAsPlayPause = false,
+                    onKey = { _, _ -> },
+                )
+            }
+        }
+        val root = composeRule.onRoot().getBoundsInRoot()
+        val ok = composeRule.onNodeWithText("OK").getBoundsInRoot()
+        val okCenterX = (ok.left + ok.right) / 2
+        val rootCenterX = (root.left + root.right) / 2
+        // OK sits in the middle of the 3-wide nav pad, which is centered in the host.
+        assertTrue(
+            "OK center=$okCenterX root center=$rootCenterX",
+            kotlin.math.abs((okCenterX - rootCenterX).value) < 24f,
+        )
     }
 }

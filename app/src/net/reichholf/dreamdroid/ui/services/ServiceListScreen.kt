@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.preference.PreferenceManager
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
@@ -78,7 +80,6 @@ private fun ServiceRow(
                     text = item.name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
             if (item.kind == ServiceRowKind.CHANNEL) {
@@ -114,9 +115,16 @@ private fun ServiceRow(
 @Composable
 private fun ServicePicon(item: ServiceListItem) {
     val context = LocalContext.current
+    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
+    if (!piconsEnabled) {
+        return
+    }
     AndroidView(
         factory = { ctx -> ImageView(ctx) },
-        modifier = Modifier.size(48.dp),
+        modifier = Modifier
+            .padding(end = 8.dp)
+            .size(48.dp),
         update = { view ->
             val map = ExtendedHashMap()
             map.put(Service.KEY_REFERENCE, item.reference)

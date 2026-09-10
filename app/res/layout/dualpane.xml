@@ -59,29 +59,21 @@
             app:pressedTranslationZ="12dp"
             android:src="@drawable/ic_action_fab_add"/>
 
-        <LinearLayout
-            android:id="@+id/fab_layout"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginEnd="@dimen/fab_margin_right"
-            android:layout_marginRight="@dimen/fab_margin_right"
-            android:layout_marginTop="?attr/actionBarSize"
-            android:orientation="horizontal"
-            app:layout_anchor="@+id/detail_view"
-            app:layout_anchorGravity="top|end"/>
-
+        <!-- Gravity (not detail_view anchor): Compose LazyColumn nested scroll collapses
+             the AppBar and used to drag the top-anchored reload FAB off-screen. -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             style="@style/Widget.Material3.FloatingActionButton.Primary"
             android:id="@+id/fab_reload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/fab_margin_right"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:layout_marginEnd="@dimen/fab_margin_right"
+            android:layout_marginRight="@dimen/fab_margin_right"
             android:src="@drawable/ic_action_refresh"
             android:visibility="gone"
             app:elevation="6dp"
             app:fabSize="mini"
-            app:layout_anchor="@+id/fab_layout"
-            app:layout_anchorGravity="bottom|end"
             app:layout_behavior="net.reichholf.dreamdroid.widget.behaviour.ScrollAwareFABBehavior"
             app:pressedTranslationZ="12dp"/>
 
