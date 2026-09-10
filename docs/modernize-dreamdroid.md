@@ -512,7 +512,7 @@ Inventory of `app/src/.../tv/` (12 Java files, ~1.3k LOC). **No TV Compose code 
 | MainActivity | `tv/activities/MainActivity.java` | TV host (`tv_main`); custom TLS + Picasso OkHttp singleton |
 | PreferenceActivity | `tv/activities/PreferenceActivity.java` | Host for Leanback prefs |
 | RootBrowseFragment | `tv/fragment/RootBrowseFragment.java` | Hub: bouquet/service/movie rows, settings row, stream/prefs |
-| BaseHttpBrowseFragment | `tv/fragment/abs/BaseHttpBrowseFragment.java` | Leanback browse + loader callbacks over `ExtendedHashMap` |
+| BaseHttpBrowseFragment | `tv/fragment/abs/BaseHttpBrowseFragment.java` | Leanback browse host (LoaderCallbacks retired in #232) |
 | SettingsFragment / PrefsFragment / ProfileFragment | `tv/fragment/` | Leanback settings router; `PrefsFragment` loads `R.xml.preferences`; `ProfileFragment` loads `R.xml.profile_preferences` |
 | EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen XML detail dialogs (`AbstractDialog` + ButterKnife) |
 | CardPresenter / TextCardView / BrowseItem | `tv/presenter/`, `tv/view/`, `tv/BrowseItem.kt` | Card presenters + typed sealed browse payload (Phase 3.1a) |
