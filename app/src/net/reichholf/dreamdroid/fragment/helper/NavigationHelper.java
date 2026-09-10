@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -46,6 +47,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHan
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState;
 import net.reichholf.dreamdroid.ui.drawer.DrawerScreenKt;
+import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
 
 import java.util.ArrayList;
 
@@ -177,6 +179,14 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_device_info:
+                // Phase 2.1d: if NavHost is already the detail pane, navigate in-graph
+                // instead of clearBackStack + replace.
+                Fragment detail = getMainActivity().getSupportFragmentManager()
+                        .findFragmentById(R.id.detail_view);
+                if (detail instanceof PhoneNavHostFragment
+                        && ((PhoneNavHostFragment) detail).navigateToRoute(PhoneNavRoutes.DEVICE_INFO)) {
+                    break;
+                }
                 clearBackStack();
                 getMainActivity().showDetails(PhoneNavHostFragment.class);
                 break;
