@@ -19,7 +19,6 @@ import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.BackupFragment;
-import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
@@ -196,8 +195,7 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_current:
-                clearBackStack();
-                getMainActivity().showDetails(CurrentServiceFragment.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.CURRENT);
                 break;
 
             case R.id.menu_navigation_remote:
