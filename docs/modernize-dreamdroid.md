@@ -154,8 +154,9 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.3b DeviceInfoFragment `@State` beachhead **merged** [#247](https://github.com/sreichholf/dreamDroid/pull/247).
 - Phase 2.3c hub/EPG string-int `@State` **merged** [#249](https://github.com/sreichholf/dreamDroid/pull/249).
 - Phase 2.3d ScreenShot `@State` drop **merged** [#250](https://github.com/sreichholf/dreamDroid/pull/250).
-- **This PR** = Phase 2.3e hash-heavy `@State` fragments (timers, movies, current, BaseHttpRecyclerEvent).
-- Out of wave still: widgets, NavHost, MultiChoiceDialog + Bridge dep drop (2.3f). See Appendix H.
+- Phase 2.3e hash-heavy `@State` **merged** [#251](https://github.com/sreichholf/dreamDroid/pull/251).
+- **This PR** = Phase 2.3f MultiChoiceDialog Bundle + delete Evernote/Bridge deps.
+- Out of wave still: widgets, NavHost dive (2.1b). See Appendix H.
 
 ## How to read this
 
@@ -430,7 +431,7 @@ Two database files historically. Room `dreambox` holds `profile` and is included
 
 First-start skip-Profiles race is fixed on `main` in #168. Still wait for `Demo` after Changelog, not the word Profiles inside changelog text.
 
-Evernote `@State` plus Livefront Bridge is still load-bearing on rotation. Migrate only via Phase 2.3 slices (one fragment at a time); keep Bridge until the last `@State` consumer is gone. Do not big-bang remove either dependency.
+Evernote `@State` + Livefront Bridge retired in Phase 2.3 (**this PR** / 2.3f). Fragments use fragment-local `onSaveInstanceState` Bundles. Do not re-add those deps.
 
 VLC `VideoActivity` is out of this program.
 
@@ -475,7 +476,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 | Mediaplayer | removed (#175) | Drawer entry was commented; UI stack deleted. `URIStore.MEDIA_PLAYER_PLAY` kept for `ShareActivity`. |
 | Streaming | `VideoActivity`, `VideoOverlayFragment`, VLC | Explicitly out of wave 1. |
 | Widget | `appwidget/` | |
-| Shell | `MainActivity`, `NavigationHelper`, drawer XML, `BaseFragment` tree, Evernote `@State` + Bridge | |
+| Shell | `MainActivity`, `NavigationHelper`, drawer XML, `BaseFragment` tree | Bridge/`@State` retired Phase 2.3 |
 
 ### Still the old data stack
 
@@ -487,7 +488,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 ### Explicitly frozen
 
 - `app/src/.../tv/` Leanback. Operator picked phone first.
-- Rotation via Evernote State + Livefront Bridge until Phase 2.3 slices finish (through [#250](https://github.com/sreichholf/dreamDroid/pull/250); **this PR** / 2.3e; last consumer MultiChoiceDialog → 2.3f).
+- Rotation: fragment-local Bundle save (Evernote/Bridge removed Phase 2.3f **this PR**).
 - VLC playback.
 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
@@ -688,7 +689,7 @@ One program each, still one PR (or small PR series) at a time:
 | 2q | HTTP / async — VideoOverlay now/next | `VideoOverlayFragment` → `lifecycleScope` + reuse `EpgNowNextLoad` / `serviceNowNextToExtendedHashMap`; drop overlay LoaderCallbacks only. Keep ButterKnife/VLC UI. Keep OkHttp 3.14.9. **merged** [#231](https://github.com/sreichholf/dreamDroid/pull/231). |
 | 2r | HTTP / async — Leanback RootBrowse | `RootBrowseFragment` → `lifecycleScope` + reuse `ServiceListLoad` / `EpgNowNextLoad` / `MovieListLoad` (+ locs/tags); drop TV LoaderCallbacks; delete `AsyncListLoader` / `LoaderResult`. Keep Leanback UI + ExtendedHashMap. Keep OkHttp 3.14.9. **merged** [#232](https://github.com/sreichholf/dreamDroid/pull/232). |
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. **Phone+TV Loader paths done through 2r.** Follow-ons: typed TV browse (3.1a) / VLC product decision / NavHost / state. |
-| 3 | State / rotation | Through ScreenShot **merged** [#250](https://github.com/sreichholf/dreamDroid/pull/250). Hash-heavy **this PR** (2.3e). Then 2.3f MultiChoiceDialog + Bridge/Evernote dep drop. |
+| 3 | State / rotation | **this PR** completes 2.3f: MultiChoiceDialog Bundle + delete Evernote/Bridge. Prior slices [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#251](https://github.com/sreichholf/dreamDroid/pull/251). |
 | 4 | Data | Finish Room migration; BackupAgent → Room; drop legacy file after migrate. **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Shrink/remove `DatabaseHelper` later when migrate path is retired. |
 | 5 | VLC / streaming | Product decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243) (option A: keep libVLC + Compose overlay). Typed overlay **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244). Compose overlay + ButterKnife drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 | 6 | Widgets | `appwidget/` Virtual Remote — Compose Glance or keep XML |
@@ -751,48 +752,38 @@ Why:
 - No Enigma2 server / codec / stream-protocol work
 - No NavHost / widgets / full Compose hub (3.1c-iv) drive-bys
 
-### Phase 2.3 — State / rotation (through 2.3d [#250](https://github.com/sreichholf/dreamDroid/pull/250); 2.3e this PR)
+### Phase 2.3 — State / rotation (complete this PR / 2.3f)
 
-#### Chassis
+#### Chassis (after 2.3f)
 
-- Deps: `com.evernote:android-state:1.4.1` + processor; `com.github.livefront:bridge:v2.0.2`
-- `DreamDroid` initializes Bridge with StateSaver SavedStateHandler
-- Bridge.save/restore in `BaseFragment`, `BaseRecyclerFragment`, `BaseActivity`, `MultiChoiceDialog`; `Bridge.clear` only in `BaseFragment` and `BaseActivity`
+- Evernote `android-state` and Livefront Bridge **removed** (**this PR**)
+- Fragment/activity bases no longer call `Bridge.save/restore/clear`
+- `DreamDroid` no longer initializes Bridge/StateSaver
 
-#### @State inventory (remaining after 2.3e)
+#### @State inventory
 
-| File | Fields | Notes |
-| --- | --- | --- |
-| MultiChoiceDialog | boolean[] mCheckedItems | Dialog + Bridge — last consumer → 2.3f |
+None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle **this PR**).
 
-Done off `@State` this PR: `BaseHttpRecyclerEventFragment`, `CurrentServiceFragment` (typed `CurrentService` + hash item), `MovieListFragment` (location/tags/selected movie hash), `TimerListFragment`, `TimerEditFragment` (create-mode restore fixed). Lists still reload; selection/filters Bundled. Typed `Timer`/`Movie` selection rows deferred (hash still at edit/delete edges).
+#### Agreed approach (done)
 
-No SavedStateHandle / rememberSaveable in repo yet. Compose screens use ephemeral remember/mutableStateOf.
-
-#### Agreed approach
-
-**A → fragment-local save:** migrate one fragment at a time off `@State` onto `onSaveInstanceState` / `SavedStateHandle` (or `rememberSaveable` for Compose-owned state). Keep Bridge wiring until last `@State` consumer is gone, then delete Evernote + Bridge deps.
-
-Do **not** big-bang remove Bridge.
+**A → fragment-local save:** migrated one fragment at a time off `@State` onto `onSaveInstanceState`. Bridge kept until last consumer, then deleted with Evernote.
 
 #### Proposed PR slices
 
-| Slice | Scope | Non-goals |
+| Slice | Scope | Status |
 | --- | --- | --- |
 | 2.3a | Docs dive | **merged** [#246](https://github.com/sreichholf/dreamDroid/pull/246) |
-| 2.3b | DeviceInfoFragment beachhead — drop @State; Bundle Serializable `DeviceInfo` | **merged** [#247](https://github.com/sreichholf/dreamDroid/pull/247) |
-| 2.3c | Simple string/int fragments (ServiceListPage, ServiceListPager, EpgBouquet) | **merged** [#249](https://github.com/sreichholf/dreamDroid/pull/249) |
-| 2.3d | ScreenShotFragment byte[] — do not persist raw image; reload | **merged** [#250](https://github.com/sreichholf/dreamDroid/pull/250) |
-| 2.3e | Hash-heavy fragments (timers, movies, current, BaseHttpRecyclerEvent) | **this PR**; no Bridge dep drop |
-| 2.3f | MultiChoiceDialog + remove Bridge from bases; delete Evernote/Bridge deps | No OkHttp 4; no NavHost |
+| 2.3b | DeviceInfoFragment beachhead | **merged** [#247](https://github.com/sreichholf/dreamDroid/pull/247) |
+| 2.3c | Simple string/int fragments | **merged** [#249](https://github.com/sreichholf/dreamDroid/pull/249) |
+| 2.3d | ScreenShotFragment — no byte Bundle; reload | **merged** [#250](https://github.com/sreichholf/dreamDroid/pull/250) |
+| 2.3e | Hash-heavy fragments | **merged** [#251](https://github.com/sreichholf/dreamDroid/pull/251) |
+| 2.3f | MultiChoiceDialog + delete Evernote/Bridge | **this PR** |
 
-#### Explicit non-goals of 2.3e (this PR)
+#### Explicit non-goals of 2.3f (this PR)
 
-- No Bridge/Evernote dependency removal
-- No MultiChoiceDialog `@State` migration
-- No full typed Timer/Movie selection rewrite (hash still at edges)
 - No NavHost / widgets / Media3
 - No OkHttp 4; do not merge master into main
+- No SavedStateHandle / rememberSaveable rollout beyond fragment Bundles
 
 ### Phase 3 — Leanback TV (after Phase 0 dive)
 
@@ -806,7 +797,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 
-**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3a–d **merged** [#246](https://github.com/sreichholf/dreamDroid/pull/246)/[#247](https://github.com/sreichholf/dreamDroid/pull/247)/[#249](https://github.com/sreichholf/dreamDroid/pull/249)/[#250](https://github.com/sreichholf/dreamDroid/pull/250). **This PR:** Phase 2.3e hash-heavy `@State`. Next Appendix H: 2.3f MultiChoiceDialog + Bridge/Evernote dep drop, or NavHost dive / widgets — one PR at a time.
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete this PR** (2.3a–f through Bridge/Evernote drop). Next Appendix H: NavHost dive (2.1b) or widgets (2.6) — one PR at a time.
 
 ### Phase 4 — Operator usertests
 
