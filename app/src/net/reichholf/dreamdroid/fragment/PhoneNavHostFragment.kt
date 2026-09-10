@@ -71,6 +71,10 @@ class PhoneNavHostFragment : BaseFragment() {
     private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
     private var timerEditArgs: Bundle? = null
     private var timerEditTag: String = PhoneNavRoutes.TIMER_EDIT
+    private var pendingProfileEditRequested: Boolean = false
+    private var pendingProfileEdit: Profile? = null
+    private var pendingTimerEdit: ExtendedHashMap? = null
+    private var pendingTimerCreate: Boolean = false
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -203,6 +207,7 @@ class PhoneNavHostFragment : BaseFragment() {
             backCallback.isEnabled = controller.previousBackStackEntry != null
         }
         backCallback.isEnabled = controller.previousBackStackEntry != null
+        flushPendingNavigations()
     }
 
     fun detachNavController(controller: NavHostController) {
@@ -319,6 +324,38 @@ class PhoneNavHostFragment : BaseFragment() {
      * Pop the nested picker and forward [onActivityResult] to the prior leaf
      * (Zap / EPG bouquet). Used instead of [Fragment.setTargetFragment] under NavHost.
      */
+
+
+    /** Queue profile edit until [attachNavController] (host was just mounted). */
+    fun queueProfileEdit(profile: Profile?) {
+        pendingProfileEditRequested = true
+        pendingProfileEdit = profile
+        flushPendingNavigations()
+    }
+
+    /** Queue timer edit until [attachNavController] (host was just mounted). */
+    fun queueTimerEdit(timer: ExtendedHashMap, create: Boolean) {
+        pendingTimerEdit = timer
+        pendingTimerCreate = create
+        flushPendingNavigations()
+    }
+
+    private fun flushPendingNavigations() {
+        if (navController == null) return
+        if (pendingProfileEditRequested) {
+            pendingProfileEditRequested = false
+            val profile = pendingProfileEdit
+            pendingProfileEdit = null
+            navigateToProfileEdit(profile)
+        }
+        val timer = pendingTimerEdit
+        if (timer != null) {
+            pendingTimerEdit = null
+            val create = pendingTimerCreate
+            pendingTimerCreate = false
+            navigateToTimerEdit(timer, create)
+        }
+    }
 
     fun profileEditRouteTag(): String = profileEditTag
 

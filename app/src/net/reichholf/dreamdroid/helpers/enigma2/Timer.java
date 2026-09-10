@@ -12,10 +12,13 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import net.reichholf.dreamdroid.DreamDroid;
+import net.reichholf.dreamdroid.activities.MainActivity;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.TimerEditFragment;
@@ -256,15 +259,22 @@ public class Timer {
 			walker = walker.getParentFragment();
 		}
 
-		ExtendedHashMap data = new ExtendedHashMap();
-		data.put("timer", timer);
-		data.put("action", create ? DreamDroid.ACTION_CREATE : Intent.ACTION_EDIT);
-
-		Intent intent = new Intent(target.getContext(), SimpleToolbarFragmentActivity.class);
-		intent.putExtra("fragmentClass", TimerEditFragment.class);
-		intent.putExtra("titleResource", create ? R.string.new_timer : R.string.edit_timer);
-		//intent.putExtra("menuResource", R.menu.save);
-		intent.putExtra("serializableData", data);
-		target.getActivity().startActivityForResult(intent, Statics.REQUEST_EDIT_TIMER);
+		Activity activity = target.getActivity();
+		if (!(activity instanceof FragmentActivity)) {
+			return;
+		}
+		FragmentActivity fa = (FragmentActivity) activity;
+		Fragment detail = fa.getSupportFragmentManager().findFragmentById(R.id.detail_view);
+		if (detail instanceof PhoneNavHostFragment
+				&& ((PhoneNavHostFragment) detail).navigateToTimerEdit(timer, create)) {
+			return;
+		}
+		PhoneNavHostFragment host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.HUB);
+		host.queueTimerEdit(timer, create);
+		if (activity instanceof MainActivity) {
+			((MainActivity) activity).showDetails(host);
+		} else if (mph != null) {
+			mph.showDetails(host);
+		}
 	}
 }

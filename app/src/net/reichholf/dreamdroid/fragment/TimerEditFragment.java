@@ -31,7 +31,6 @@ import com.google.android.material.timepicker.TimeFormat;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
-import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.enigma.LocationsAndTagsLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog;
@@ -335,16 +334,7 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			}
 			walker = walker.getParentFragment();
 		}
-
-		ExtendedHashMap data = new ExtendedHashMap();
-		data.put(Service.KEY_REFERENCE, "default");
-
-		Intent intent = new Intent(getContext(), SimpleToolbarFragmentActivity.class);
-		intent.putExtra("fragmentClass", TimerServicePickFragment.class);
-		intent.putExtra("titleResource", R.string.service);
-		intent.putExtra("action", Intent.ACTION_PICK);
-		intent.putExtra("serializableData", data);
-		getActivity().startActivityForResult(intent, Statics.REQUEST_PICK_SERVICE);
+		// Timer edit is only hosted under PhoneNavHost after 2.1h; no side-activity fallback.
 	}
 
 	/**
