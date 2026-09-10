@@ -31,6 +31,8 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Home-screen Virtual Remote click handler. Runs RCU HTTP off the main thread
  * (replaces the old {@code JobIntentService} WidgetService path).
+ * Uses a small thread pool so rapid taps do not queue behind one request while
+ * holding {@link android.content.BroadcastReceiver.PendingResult} from {@code goAsync()}.
  */
 public final class WidgetRemoteRequest {
 	private static final String TAG = WidgetRemoteRequest.class.getSimpleName();
@@ -42,7 +44,7 @@ public final class WidgetRemoteRequest {
 	public static final String KEY_KEYID = "key_id";
 	public static final String KEY_WIDGETID = "widget_id";
 
-	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4);
 	private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
 	private WidgetRemoteRequest() {
