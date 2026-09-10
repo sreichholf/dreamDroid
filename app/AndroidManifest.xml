@@ -59,18 +59,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.SimpleFragmentActivity" android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
-            </intent-filter>
-        </activity>
-
         <meta-data
             android:name="com.google.android.backup.api_key"
             android:value="AEdPqrEAAAAIpJ1ddymOdlswxM_S0SOTS9GK0WKiqESIKU7KLw"/>
         <meta-data
             android:name="android.app.default_searchable"
-            android:value=".activities.SimpleFragmentActivity"/>
+            android:value=".activities.MainActivity"/>
 
         <activity
             android:name=".tv.activities.MainActivity"
@@ -131,7 +125,13 @@
         </activity>
         <activity
             android:name=".activities.MainActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".activities.VideoActivity"
