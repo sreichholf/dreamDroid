@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.view
 
 import android.content.Context
 import android.util.AttributeSet
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -42,6 +44,10 @@ open class TextCardView @JvmOverloads constructor(
         cardType = CARD_TYPE_MAIN_ONLY
         isFocusable = true
         isFocusableInTouchMode = true
+        // Leanback must keep focus on the card, not the Compose child.
+        descendantFocusability = FOCUS_BLOCK_DESCENDANTS
+        composeView.isFocusable = false
+        composeView.isFocusableInTouchMode = false
         val lp = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
         lp.viewType = LayoutParams.VIEW_TYPE_MAIN
         addView(composeView, lp)
@@ -97,17 +103,22 @@ fun TextCardContent(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.fillMaxWidth(),
         )
-        Text(
-            text = content,
-            color = bodyColor,
-            fontSize = 12.sp,
-            maxLines = 8,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodySmall,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(cardHeight)
                 .padding(top = 4.dp),
-        )
+            contentAlignment = Alignment.BottomStart,
+        ) {
+            Text(
+                text = content,
+                color = bodyColor,
+                fontSize = 12.sp,
+                maxLines = 8,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
