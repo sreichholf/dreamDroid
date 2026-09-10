@@ -30,6 +30,7 @@ import net.reichholf.dreamdroid.fragment.EpgSearchFragment
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.PickServiceFragment
+import net.reichholf.dreamdroid.fragment.ProfileEditFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
 import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
@@ -213,6 +214,18 @@ fun PhoneNavHost(
                             putSerializable("data", data)
                             putString("action", Statics.INTENT_ACTION_PICK_BOUQUET)
                         }
+                    }
+                },
+            )
+        }
+        composable(PhoneNavRoutes.PROFILE_EDIT) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_profile_edit_slot,
+                routeTag = hostFragment.profileEditRouteTag(),
+                createFragment = {
+                    ProfileEditFragment().apply {
+                        arguments = hostFragment.profileEditLeafArguments()
                     }
                 },
             )
