@@ -273,6 +273,15 @@ private fun NestedFragmentDestination(
     routeTag: String,
     createFragment: () -> Fragment,
 ) {
+    // Tear down the child Fragment when this route leaves composition. Without
+    // this, AndroidView drops the FragmentContainerView but leaves the leaf
+    // RESUMED under PhoneNavHostFragment — ServiceListPager's activity-scoped
+    // TV/Movies bottom bar then stays visible and blocks drawer Settings.
+    DisposableEffect(hostFragment, containerId, routeTag) {
+        onDispose {
+            removeNestedFragment(hostFragment, containerId, routeTag)
+        }
+    }
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
@@ -328,6 +337,26 @@ private fun commitNestedFragment(
     fm.beginTransaction()
         .replace(containerId, createFragment(), routeTag)
         .commitNow()
+}
+
+/**
+ * Remove a nested leaf when its Compose route leaves composition so
+ * [Fragment.onDestroyView] runs (e.g. hub clears [R.id.tv_movies_nav]).
+ */
+internal fun removeNestedFragment(
+    hostFragment: Fragment,
+    containerId: Int,
+    routeTag: String,
+) {
+    if (!hostFragment.isAdded) return
+    val fm = hostFragment.childFragmentManager
+    val existing = fm.findFragmentById(containerId) ?: return
+    if (existing.tag != routeTag) return
+    if (fm.isStateSaved) {
+        fm.beginTransaction().remove(existing).commitAllowingStateLoss()
+        return
+    }
+    fm.beginTransaction().remove(existing).commitNow()
 }
 
 /** Drawer-style top-level navigate: single-top + save/restore under the start destination. */
