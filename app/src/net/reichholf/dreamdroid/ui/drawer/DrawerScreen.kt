@@ -50,16 +50,15 @@ data class DrawerSection(
 )
 
 object DrawerDestinations {
-    val boxActions: List<DrawerMenuItem> = listOf(
+    val boxActions = listOf(
         DrawerMenuItem(R.id.menu_navigation_power, R.string.powercontrol, R.attr.ic_menu_power_off),
         DrawerMenuItem(R.id.menu_navigation_sleeptimer, R.string.sleeptimer, R.attr.ic_menu_sleeptimer),
         DrawerMenuItem(R.id.menu_navigation_message, R.string.send_message, R.attr.ic_menu_mail),
     )
-
-    val sections: List<DrawerSection> = listOf(
+    val sections = listOf(
         DrawerSection(
-            titleRes = R.string.control,
-            items = listOf(
+            R.string.control,
+            listOf(
                 DrawerMenuItem(R.id.menu_navigation_services, R.string.live_movie, R.attr.ic_menu_services),
                 DrawerMenuItem(R.id.menu_navigation_epg, R.string.epg, R.attr.ic_menu_epg),
                 DrawerMenuItem(R.id.menu_navigation_remote, R.string.virtual_remote, R.attr.ic_menu_remote),
@@ -68,19 +67,16 @@ object DrawerDestinations {
             ),
         ),
         DrawerSection(
-            titleRes = R.string.tools,
-            items = listOf(
+            R.string.tools,
+            listOf(
                 DrawerMenuItem(R.id.menu_navigation_screenshot, R.string.screenshot, R.attr.ic_menu_picture),
                 DrawerMenuItem(R.id.menu_navigation_device_info, R.string.device_info, R.attr.ic_menu_device),
                 DrawerMenuItem(R.id.menu_navigation_signal, R.string.signal_meter, R.attr.ic_menu_signal),
             ),
         ),
     )
-
-    val settings: DrawerMenuItem = DrawerMenuItem(
-        R.id.menu_navigation_settings,
-        R.string.settings,
-        R.attr.ic_menu_settings,
+    val settings = DrawerMenuItem(
+        R.id.menu_navigation_settings, R.string.settings, R.attr.ic_menu_settings,
     )
 }
 
@@ -106,19 +102,13 @@ private fun resolveThemeDrawable(@AttrRes attr: Int): Int {
 }
 
 @Composable
-private fun DrawerBoxActions(
-    onItemClick: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun DrawerBoxActions(onItemClick: (Int) -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         DrawerDestinations.boxActions.forEach { item ->
             val iconRes = resolveThemeDrawable(item.iconAttr)
-            val label = stringResource(item.titleRes)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -135,7 +125,7 @@ private fun DrawerBoxActions(
                     )
                 }
                 Text(
-                    text = label,
+                    text = stringResource(item.titleRes),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
@@ -153,6 +143,7 @@ private fun DrawerDestinationItem(
     item: DrawerMenuItem,
     selected: Boolean,
     onItemClick: (Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val iconRes = resolveThemeDrawable(item.iconAttr)
     NavigationDrawerItem(
@@ -161,10 +152,7 @@ private fun DrawerDestinationItem(
         onClick = { onItemClick(item.id) },
         icon = {
             if (iconRes != 0) {
-                Icon(
-                    painter = painterResource(iconRes),
-                    contentDescription = null,
-                )
+                Icon(painter = painterResource(iconRes), contentDescription = null)
             }
         },
         colors = NavigationDrawerItemDefaults.colors(
@@ -174,7 +162,7 @@ private fun DrawerDestinationItem(
             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unselectedTextColor = MaterialTheme.colorScheme.onSurface,
         ),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     )
 }
 
@@ -198,9 +186,7 @@ fun DrawerScreen(
                     text = stringResource(section.titleRes),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
                 )
                 section.items.forEach { item ->
                     DrawerDestinationItem(
@@ -212,20 +198,16 @@ fun DrawerScreen(
             }
         }
         HorizontalDivider()
-        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-            DrawerDestinationItem(
-                item = DrawerDestinations.settings,
-                selected = state.selectedItemId == DrawerDestinations.settings.id,
-                onItemClick = onItemClick,
-            )
-        }
+        DrawerDestinationItem(
+            item = DrawerDestinations.settings,
+            selected = state.selectedItemId == DrawerDestinations.settings.id,
+            onItemClick = onItemClick,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+        )
     }
 }
 
-fun ComposeView.bindDrawerScreen(
-    state: DrawerListState,
-    onItemClick: (Int) -> Unit,
-) {
+fun ComposeView.bindDrawerScreen(state: DrawerListState, onItemClick: (Int) -> Unit) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {

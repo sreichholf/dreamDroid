@@ -355,15 +355,13 @@ fun NavHostController.navigateToEpgSearch(query: String) {
     }
 }
 
-/** Nested Backup from Settings: push onto the back stack (back returns to Settings). */
+/** Nested Backup from Settings. Back returns to Settings. */
 fun NavHostController.navigateToBackup() {
     if (currentDestination?.route == PhoneNavRoutes.BACKUP) return
-    navigate(PhoneNavRoutes.BACKUP) {
-        launchSingleTop = true
-    }
+    navigate(PhoneNavRoutes.BACKUP) { launchSingleTop = true }
 }
 
-/** Drawer Settings: land on the Settings leaf, not a nested Backup restored on top. */
+/** Drawer Settings: land on Settings, not a nested Backup restored on top. */
 fun NavHostController.navigateDrawerSettings() {
     if (currentDestination?.route == PhoneNavRoutes.BACKUP) {
         if (popBackStack(PhoneNavRoutes.SETTINGS, false)) return

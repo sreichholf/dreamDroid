@@ -57,13 +57,10 @@ class DrawerScreenTest {
         var clicked = 0
         composeRule.setContent {
             DreamDroidTheme {
-                DrawerScreen(
-                    state = state,
-                    onItemClick = { id ->
-                        clicked = id
-                        state.select(id)
-                    },
-                )
+                DrawerScreen(state = state, onItemClick = { id ->
+                    clicked = id
+                    state.select(id)
+                })
             }
         }
 
@@ -79,12 +76,7 @@ class DrawerScreenTest {
         var clicked = 0
         composeRule.setContent {
             DreamDroidTheme {
-                DrawerScreen(
-                    state = state,
-                    onItemClick = { id ->
-                        clicked = id
-                    },
-                )
+                DrawerScreen(state = state, onItemClick = { clicked = it })
             }
         }
 
@@ -103,13 +95,10 @@ class DrawerScreenTest {
         var clicked = 0
         composeRule.setContent {
             DreamDroidTheme {
-                DrawerScreen(
-                    state = state,
-                    onItemClick = { id ->
-                        clicked = id
-                        state.select(id)
-                    },
-                )
+                DrawerScreen(state = state, onItemClick = { id ->
+                    clicked = id
+                    state.select(id)
+                })
             }
         }
 

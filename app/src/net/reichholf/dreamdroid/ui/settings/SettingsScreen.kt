@@ -271,21 +271,9 @@ fun SettingsScreen(
         )
 
         HorizontalDivider(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
-        ActionPreferenceRow(
-            title = stringResource(R.string.about),
-            summary = DreamDroid.VERSION_STRING,
-            onClick = onAbout,
-        )
-        ActionPreferenceRow(
-            title = stringResource(R.string.changelog),
-            summary = null,
-            onClick = onChangelog,
-        )
-        ActionPreferenceRow(
-            title = stringResource(R.string.backup),
-            summary = null,
-            onClick = onBackup,
-        )
+        ActionPreferenceRow(stringResource(R.string.about), DreamDroid.VERSION_STRING, onAbout)
+        ActionPreferenceRow(stringResource(R.string.changelog), null, onChangelog)
+        ActionPreferenceRow(stringResource(R.string.backup), null, onBackup)
     }
 
     listDialog?.let { dialog ->

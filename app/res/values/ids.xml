@@ -6,6 +6,12 @@
     <item name="recyclerview_item_selection_support" type="id"/>
     <item name="fab_scrolling_view_behavior_enabled" type="id"/>
     <item name="menu_navigation_profiles" type="id"/>
+    <item name="menu_navigation_power" type="id"/>
+    <item name="menu_navigation_sleeptimer" type="id"/>
+    <item name="menu_navigation_message" type="id"/>
+    <item name="menu_navigation_about" type="id"/>
+    <item name="menu_navigation_backup" type="id"/>
+    <item name="menu_navigation_changelog" type="id"/>
     <item name="menu_cancel" type="id"/>
     <item name="menu_check_connectivity" type="id"/>
     <item name="phone_nav_device_info_slot" type="id"/>

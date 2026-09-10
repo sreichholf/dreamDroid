@@ -237,10 +237,7 @@ class PhoneNavHostFragment : BaseFragment() {
         return true
     }
 
-    /**
-     * Push nested Backup onto the NavHost back stack (Settings → Backup).
-     * Back pops to Settings. Drawer selection stays on Settings.
-     */
+    /** Push nested Backup (Settings → Backup). Back returns to Settings. */
     fun navigateToBackup(): Boolean {
         val controller = navController ?: return false
         controller.navigateToBackup()

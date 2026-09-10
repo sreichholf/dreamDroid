@@ -67,37 +67,4 @@
             android:icon="?attr/ic_menu_settings"
             android:title="@string/settings"/>
     </group>
-    <!-- Action ids used by the drawer box strip and Settings footer; not destinations. -->
-    <group android:checkableBehavior="none">
-        <item
-            android:id="@+id/menu_navigation_power"
-            android:icon="?attr/ic_menu_power_off"
-            android:title="@string/powercontrol"
-            android:visible="false"/>
-        <item
-            android:id="@+id/menu_navigation_sleeptimer"
-            android:icon="?attr/ic_menu_sleeptimer"
-            android:title="@string/sleeptimer"
-            android:visible="false"/>
-        <item
-            android:id="@+id/menu_navigation_message"
-            android:icon="?attr/ic_menu_mail"
-            android:title="@string/send_message"
-            android:visible="false"/>
-        <item
-            android:id="@+id/menu_navigation_about"
-            android:icon="?attr/ic_menu_about"
-            android:title="@string/about"
-            android:visible="false"/>
-        <item
-            android:id="@+id/menu_navigation_backup"
-            android:icon="?attr/ic_import_export"
-            android:title="@string/backup"
-            android:visible="false"/>
-        <item
-            android:id="@+id/menu_navigation_changelog"
-            android:icon="?attr/ic_menu_changelog"
-            android:title="@string/changelog"
-            android:visible="false"/>
-    </group>
 </menu>

@@ -252,9 +252,8 @@ public class NavigationHelper {
                 Fragment backupHost = getMainActivity().getSupportFragmentManager()
                         .findFragmentById(R.id.detail_view);
                 if (backupHost instanceof PhoneNavHostFragment
-                        && ((PhoneNavHostFragment) backupHost).navigateToBackup()) {
+                        && ((PhoneNavHostFragment) backupHost).navigateToBackup())
                     break;
-                }
                 navigatePhoneNavRoot(PhoneNavRoutes.BACKUP);
                 break;
             }
