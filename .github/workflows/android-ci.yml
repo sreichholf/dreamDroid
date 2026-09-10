@@ -18,29 +18,45 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: temurin
 
-      # ubuntu-latest ships an Android SDK; this accepts licenses and ensures cmdline tools.
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # ubuntu-latest already ships Android SDK (platforms 34+, build-tools 34+,
+      # ANDROID_HOME). No setup-android — that action re-downloads cmdline-tools
+      # and was even pulling the emulator package on the unit job.
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          # Open-source cache provider (v6 default pulls proprietary gradle-actions-caching).
+          cache-provider: basic
+          # Same-repo PRs may write caches; forks stay read-only.
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+
+      # Configuration cache lives under the project tree, not ~/.gradle — cache it
+      # explicitly so PR/main runs can skip the ~10–15 min cold configure.
+      - name: Cache Gradle configuration cache
+        uses: actions/cache@v5
+        with:
+          path: .gradle/configuration-cache
+          key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-config-cache-${{ runner.os }}-
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       # One Gradle invocation keeps the daemon warm (do not pass --no-daemon with setup-gradle).
+      # -Pci disables ABI splits so we assemble one APK (libvlc natives × 5 was wasteful on PRs).
       # Compiling androidTest catches broken Compose tests without an emulator.
       - name: Unit tests + assemble + compile androidTest
         run: >
-          ./gradlew
+          ./gradlew -Pci
           :app:testGoogleDebugUnitTest
           :app:assembleGoogleDebug
           :app:compileGoogleDebugAndroidTestKotlin
@@ -48,7 +64,7 @@ jobs:
 
       - name: Upload unit test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: unit-test-reports
           path: |
@@ -66,7 +82,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Enable KVM
         run: |
@@ -75,13 +91,23 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: temurin
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - name: Cache Gradle configuration cache
+        uses: actions/cache@v5
+        with:
+          path: .gradle/configuration-cache
+          key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-config-cache-${{ runner.os }}-
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -100,7 +126,7 @@ jobs:
 
       - name: Upload instrumented test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: androidTest-reports
           path: |

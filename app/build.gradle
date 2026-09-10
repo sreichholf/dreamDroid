@@ -130,7 +130,7 @@ android {
     }
     splits {
         abi {
-            // CI passes -Pci so connectedGoogleDebugAndroidTest installs one APK.
+            // CI passes -Pci (unit + androidTest jobs) so we build one APK.
             enable !project.hasProperty("ci")
             reset()
             include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
