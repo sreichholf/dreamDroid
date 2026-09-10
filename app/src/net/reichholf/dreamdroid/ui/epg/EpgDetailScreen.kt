@@ -37,7 +37,7 @@ fun Event.toEpgDetailContent(minutesShort: String): EpgDetailContent? {
         title = title,
         serviceName = serviceName,
         description = description,
-        descriptionExtended = descriptionExtended,
+        descriptionExtended = descriptionExtended.replace("\\n", "\n"),
         dateLine = dateLine,
         isNext = false,
     )
@@ -54,7 +54,7 @@ fun ExtendedHashMap.toEpgDetailContent(showNext: Boolean, minutesShort: String):
         title = title,
         serviceName = getString(EventKeys.KEY_SERVICE_NAME).orEmpty(),
         description = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION, "").orEmpty(),
-        descriptionExtended = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED).orEmpty(),
+        descriptionExtended = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED).orEmpty().replace("\\n", "\n"),
         dateLine = dateLine,
         isNext = showNext,
     )
