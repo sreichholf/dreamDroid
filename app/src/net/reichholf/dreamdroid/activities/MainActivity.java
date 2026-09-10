@@ -656,6 +656,13 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onFragmentResume(@NonNull Fragment fragment) {
+		// Nested leaves live under PhoneNavHostFragment's child FragmentManager.
+		// showDetails()/hide() only work on the activity FM — calling them for a
+		// nested ServiceListPager / ProfileEditFragment crashes with
+		// "Cannot hide Fragment attached to a different FragmentManager".
+		if (isNestedInPhoneNavHost(fragment)) {
+			return;
+		}
 		if (!fragment.equals(mDetailFragment)) {
 			mDetailFragment = fragment;
 			showDetails(fragment);
@@ -664,7 +671,23 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public void onFragmentPause(Fragment fragment) {
-		mDetailFragment = null;
+		if (isNestedInPhoneNavHost(fragment)) {
+			return;
+		}
+		if (fragment.equals(mDetailFragment)) {
+			mDetailFragment = null;
+		}
+	}
+
+	private static boolean isNestedInPhoneNavHost(@NonNull Fragment fragment) {
+		Fragment parent = fragment.getParentFragment();
+		while (parent != null) {
+			if (parent instanceof PhoneNavHostFragment) {
+				return true;
+			}
+			parent = parent.getParentFragment();
+		}
+		return false;
 	}
 
 	@Override
