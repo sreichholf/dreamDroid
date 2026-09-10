@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
 
@@ -29,6 +30,7 @@ import com.google.android.material.timepicker.TimeFormat;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.enigma.LocationsAndTagsLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
@@ -325,6 +327,15 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	}
 
 	private void pickService() {
+		Fragment walker = getParentFragment();
+		while (walker != null) {
+			if (walker instanceof PhoneNavHostFragment
+					&& ((PhoneNavHostFragment) walker).navigateToTimerServicePick()) {
+				return;
+			}
+			walker = walker.getParentFragment();
+		}
+
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put(Service.KEY_REFERENCE, "default");
 
