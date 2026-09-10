@@ -12,7 +12,6 @@ import androidx.leanback.widget.Presenter;
 import androidx.leanback.widget.Row;
 import androidx.leanback.widget.RowPresenter;
 import androidx.core.content.ContextCompat;
-import androidx.loader.content.Loader;
 import android.widget.Toast;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -24,15 +23,15 @@ import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.AbstractListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EpgNowNextListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
+import net.reichholf.dreamdroid.enigma.EpgNowNextLoadKt;
+import net.reichholf.dreamdroid.enigma.LocationsAndTagsLoadKt;
+import net.reichholf.dreamdroid.enigma.MovieListLoadKt;
+import net.reichholf.dreamdroid.enigma.ServiceListLoadKt;
+import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
+import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
+import net.reichholf.dreamdroid.ui.services.ServiceListMapperKt;
+import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
 import net.reichholf.dreamdroid.tv.BrowseItem;
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity;
 import net.reichholf.dreamdroid.tv.fragment.abs.BaseHttpBrowseFragment;
@@ -41,6 +40,9 @@ import net.reichholf.dreamdroid.tv.presenter.CardPresenter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+
+import kotlinx.coroutines.Job;
 
 /**
  * Created by Stephan on 16.10.2016.
@@ -80,6 +82,14 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	ExtendedHashMap mSelectedBouquet;
 	@Nullable
 	ExtendedHashMap mSelectedService;
+
+	@Nullable
+	private Job mPrefetchJob;
+	private Job mBouquetJob;
+	@Nullable
+	private Job mServiceJob;
+	@Nullable
+	private Job mMovieJob;
 
 	private class BouquetHeaderItem extends HeaderItem {
 		private ExtendedHashMap mBouquet;
@@ -138,8 +148,7 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 	@Override
 	public void onPause() {
 		super.onPause();
-		getLoaderManager().destroyLoader(LOADER_SERVICELIST_ID);
-		getLoaderManager().destroyLoader(LOADER_BOUQUETLIST_ID);
+		cancelBouquetAndServiceLoads();
 	}
 
 	@Override
@@ -162,49 +171,36 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		super.onStop();
 	}
 
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		AbstractListRequestHandler handler = null;
-		switch(id) {
-		case LOADER_BOUQUETLIST_ID:
-			handler = new ServiceListRequestHandler();
-			break;
-		case LOADER_SERVICELIST_ID:
-			if (DreamDroid.featureNowNext())
-				handler = new EpgNowNextListRequestHandler();
-			else
-				handler = new EventListRequestHandler(URIStore.EPG_NOW);
-			break;
-		case LOADER_MOVIELIST_ID:
-			handler = new MovieListRequestHandler();
+	private void cancelBouquetAndServiceLoads() {
+		if (mPrefetchJob != null) {
+			mPrefetchJob.cancel(null);
+			mPrefetchJob = null;
 		}
-		if (handler != null)
-			return new AsyncListLoader(getActivity(), handler, true, args);
-		return null;
+		if (mServiceJob != null) {
+			mServiceJob.cancel(null);
+			mServiceJob = null;
+		}
+		if (mBouquetJob != null) {
+			mBouquetJob.cancel(null);
+			mBouquetJob = null;
+		}
 	}
 
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader, @NonNull LoaderResult<ArrayList<ExtendedHashMap>> data) {
-		if (data.isError()) {
-			Toast.makeText(getContext(), data.getErrorText(), Toast.LENGTH_LONG).show();
-			return;
+	private void cancelMovieLoad() {
+		if (mMovieJob != null) {
+			mMovieJob.cancel(null);
+			mMovieJob = null;
 		}
-		switch(loader.getId()) {
-			case LOADER_BOUQUETLIST_ID:
-				onLoadBouquetsFinished(data.getResult());
-				break;
-			case LOADER_SERVICELIST_ID:
-				onLoadServicesFinished(data.getResult());
-				break;
-			case LOADER_MOVIELIST_ID:
-				onLoadMoviesFinished(data.getResult());
-		}
+	}
 
+	private void cancelAllLoads() {
+		cancelBouquetAndServiceLoads();
+		cancelMovieLoad();
 	}
 
 	protected void load() {
 		mRequireReload = false;
+		cancelAllLoads();
 		resetRows();
 		Toast.makeText(getContext(), R.string.loading, Toast.LENGTH_LONG).show();
 		mBouquetQueue.clear();
@@ -215,19 +211,48 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		mLoadingLocation = null;
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		params.add(new NameValuePair("bRef", BOUQUETS_TV));
-		Bundle args = new Bundle();
-		args.putSerializable("params", params);
-		load(LOADER_BOUQUETLIST_ID, args);
+		if (!isAdded() || getView() == null) {
+			mRequireReload = true;
+			return;
+		}
+		final ArrayList<NameValuePair> bouquetParams = params;
+		mPrefetchJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(this,
+				(title, progress) -> kotlin.Unit.INSTANCE,
+				() -> {
+					if (!isAdded() || getView() == null) {
+						return kotlin.Unit.INSTANCE;
+					}
+					mBouquetJob = ServiceListLoadKt.launchServiceListLoad(this, bouquetParams,
+							(success, services, errorText) -> {
+								onBouquetsReady(success, services, errorText);
+								return kotlin.Unit.INSTANCE;
+							});
+					return kotlin.Unit.INSTANCE;
+				});
 	}
 
 	protected void reload() {
 
 	}
 
-	protected void load(int loader, Bundle args) {
-		getLoaderManager().restartLoader(loader, args, this);
+	private void onBouquetsReady(boolean success,
+			@NonNull List<net.reichholf.dreamdroid.enigma.Service> services,
+			@Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
+		if (!success) {
+			if (errorText != null) {
+				Toast.makeText(getContext(), errorText, Toast.LENGTH_LONG).show();
+			}
+			return;
+		}
+		ArrayList<ExtendedHashMap> bouquets = new ArrayList<>();
+		for (net.reichholf.dreamdroid.enigma.Service service : services) {
+			bouquets.add(ZapListMapper.toBouquetMap(service));
+		}
+		onLoadBouquetsFinished(bouquets);
 	}
-
 
 	protected void resetRows() {
 		//Remove everything but settings
@@ -279,9 +304,36 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 		ArrayList<NameValuePair> params = new ArrayList<>();
 		String ref = mLoadingBouquet.getString(Service.KEY_REFERENCE);
 		params.add(new NameValuePair("bRef", ref));
-		Bundle args = new Bundle();
-		args.putSerializable("params", params);
-		load(LOADER_SERVICELIST_ID, args);
+		if (!isAdded() || getView() == null) {
+			return;
+		}
+		if (mServiceJob != null) {
+			mServiceJob.cancel(null);
+			mServiceJob = null;
+		}
+		mServiceJob = EpgNowNextLoadKt.launchEpgNowNextLoad(this, params, (success, rows, errorText) -> {
+			onServicesReady(success, rows, errorText);
+			return kotlin.Unit.INSTANCE;
+		});
+	}
+
+	private void onServicesReady(boolean success, @NonNull List<ServiceNowNext> rows,
+			@Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
+		if (!success) {
+			if (errorText != null) {
+				Toast.makeText(getContext(), errorText, Toast.LENGTH_LONG).show();
+			}
+			loadNextBouquet();
+			return;
+		}
+		ArrayList<ExtendedHashMap> services = new ArrayList<>();
+		for (ServiceNowNext row : rows) {
+			services.add(ServiceListMapperKt.serviceNowNextToExtendedHashMap(row));
+		}
+		onLoadServicesFinished(services);
 	}
 
 	protected void addLocations() {
@@ -316,6 +368,24 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 			listRowAdapter.add(new BrowseItem(BrowseItem.Type.Movie, movie));
 			locs.add(movie);
 		}
+	}
+
+	private void onMoviesReady(boolean success, @NonNull List<net.reichholf.dreamdroid.enigma.Movie> movies,
+			@Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
+		if (!success) {
+			if (errorText != null) {
+				Toast.makeText(getContext(), errorText, Toast.LENGTH_LONG).show();
+			}
+			return;
+		}
+		ArrayList<ExtendedHashMap> mapped = new ArrayList<>();
+		for (net.reichholf.dreamdroid.enigma.Movie movie : movies) {
+			mapped.add(MovieListMapperKt.movieToExtendedHashMap(movie));
+		}
+		onLoadMoviesFinished(mapped);
 	}
 
 
@@ -365,11 +435,14 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 			if (mLocations.get(dirname).isEmpty()) {
 				ArrayList<NameValuePair> params = new ArrayList<>();
 				params.add(new NameValuePair("dirname", dirname));
-				Bundle args = new Bundle();
-				args.putSerializable("params", params);
 				mLoadingLocation = (ListRow) row;
-				if (mLoadingLocation != null)
-					load(LOADER_MOVIELIST_ID, args);
+				if (mLoadingLocation != null && isAdded() && getView() != null) {
+					cancelMovieLoad();
+					mMovieJob = MovieListLoadKt.launchMovieListLoad(this, params, (success, movies, errorText) -> {
+						onMoviesReady(success, movies, errorText);
+						return kotlin.Unit.INSTANCE;
+					});
+				}
 			}
 			return;
 		} else if (row instanceof ServiceRow) {
