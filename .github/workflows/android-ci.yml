@@ -26,21 +26,37 @@ jobs:
           java-version: "17"
           distribution: temurin
 
-      # ubuntu-latest ships an Android SDK; this accepts licenses and ensures cmdline tools.
+      # Unit job does not need the emulator package (setup-android installs it by default).
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: tools platform-tools platforms;android-34 build-tools;34.0.0
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          # Same-repo PRs may write caches; forks stay read-only.
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+
+      # Configuration cache lives under the project tree, not ~/.gradle — cache it
+      # explicitly so PR/main runs can skip the ~10–15 min cold configure.
+      - name: Cache Gradle configuration cache
+        uses: actions/cache@v4
+        with:
+          path: .gradle/configuration-cache
+          key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-config-cache-${{ runner.os }}-
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       # One Gradle invocation keeps the daemon warm (do not pass --no-daemon with setup-gradle).
+      # -Pci disables ABI splits so we assemble one APK (libvlc natives × 5 was wasteful on PRs).
       # Compiling androidTest catches broken Compose tests without an emulator.
       - name: Unit tests + assemble + compile androidTest
         run: >
-          ./gradlew
+          ./gradlew -Pci
           :app:testGoogleDebugUnitTest
           :app:assembleGoogleDebug
           :app:compileGoogleDebugAndroidTestKotlin
@@ -82,6 +98,14 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Gradle configuration cache
+        uses: actions/cache@v4
+        with:
+          path: .gradle/configuration-cache
+          key: gradle-config-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-config-cache-${{ runner.os }}-
 
       - name: Make gradlew executable
         run: chmod +x gradlew
