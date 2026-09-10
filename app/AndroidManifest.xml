@@ -64,9 +64,6 @@
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.SimpleToolbarFragmentActivity"
-            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.backup.api_key"

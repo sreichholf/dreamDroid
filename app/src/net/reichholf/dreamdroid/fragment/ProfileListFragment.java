@@ -29,7 +29,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
+import net.reichholf.dreamdroid.activities.MainActivity;
+import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import net.reichholf.dreamdroid.enigma.ProfileDetectLoadKt;
@@ -358,27 +360,22 @@ public class ProfileListFragment extends BaseFragment {
 	}
 
 	public static void openProfileEditActivity(@NonNull Activity activity, @Nullable Profile profile) {
-		if (activity instanceof FragmentActivity) {
-			Fragment detail = ((FragmentActivity) activity).getSupportFragmentManager()
-					.findFragmentById(R.id.detail_view);
-			if (detail instanceof PhoneNavHostFragment
-					&& ((PhoneNavHostFragment) detail).navigateToProfileEdit(profile)) {
-				return;
-			}
+		if (!(activity instanceof FragmentActivity)) {
+			return;
 		}
-
-		ExtendedHashMap data = new ExtendedHashMap();
-		data.put("action", Intent.ACTION_EDIT);
-
-		if (profile != null) {
-			data.put("profile", profile);
+		FragmentActivity fa = (FragmentActivity) activity;
+		Fragment detail = fa.getSupportFragmentManager().findFragmentById(R.id.detail_view);
+		if (detail instanceof PhoneNavHostFragment
+				&& ((PhoneNavHostFragment) detail).navigateToProfileEdit(profile)) {
+			return;
 		}
-
-		Intent intent = new Intent(activity, SimpleToolbarFragmentActivity.class);
-		intent.putExtra("fragmentClass", ProfileEditFragment.class);
-		intent.putExtra("titleResource", profile == null ? R.string.profile_add : R.string.edit_profile);
-		intent.putExtra("serializableData", data);
-		activity.startActivityForResult(intent, Statics.REQUEST_EDIT_PROFILE);
+		PhoneNavHostFragment host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.PROFILES);
+		host.queueProfileEdit(profile);
+		if (activity instanceof MainActivity) {
+			((MainActivity) activity).showDetails(host);
+		} else if (activity instanceof MultiPaneHandler) {
+			((MultiPaneHandler) activity).showDetails(host);
+		}
 	}
 
 	@Override
