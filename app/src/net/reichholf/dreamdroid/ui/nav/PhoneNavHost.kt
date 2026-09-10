@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.app.SearchManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ import net.reichholf.dreamdroid.fragment.BackupFragment
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
+import net.reichholf.dreamdroid.fragment.EpgSearchFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
@@ -37,8 +39,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Drawer leaves through hub; nested service EPG is the 2.1f beachhead.
- * Phone-only remote still uses a side activity.
+ * Phone shell [NavHost]. Drawer leaves through hub; nested service EPG and EPG search
+ * are the 2.1f beachheads. Phone-only remote still uses a side activity.
  */
 @Composable
 fun PhoneNavHost(
@@ -165,6 +167,26 @@ fun PhoneNavHost(
                 },
             )
         }
+        composable(
+            route = PhoneNavRoutes.EPG_SEARCH,
+            arguments = listOf(
+                navArgument(PhoneNavRoutes.ARG_QUERY) { type = NavType.StringType },
+            ),
+        ) { entry ->
+            val query = entry.arguments?.getString(PhoneNavRoutes.ARG_QUERY).orEmpty()
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_epg_search_slot,
+                routeTag = "epg_search:$query",
+                createFragment = {
+                    EpgSearchFragment().apply {
+                        arguments = Bundle().apply {
+                            putString(SearchManager.QUERY, query)
+                        }
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -248,6 +270,13 @@ fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: Stri
     val route = "service_epg/${Uri.encode(serviceRef)}" +
         "?serviceName=${Uri.encode(serviceName.orEmpty())}"
     navigate(route)
+}
+
+/** Nested EPG search: push onto the NavHost back stack (singleTop avoids duplicate same query). */
+fun NavHostController.navigateToEpgSearch(query: String) {
+    navigate("epg_search/${Uri.encode(query)}") {
+        launchSingleTop = true
+    }
 }
 
 fun ComposeView.bindPhoneNavHost(hostFragment: PhoneNavHostFragment) {

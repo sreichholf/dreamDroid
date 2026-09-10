@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
+import net.reichholf.dreamdroid.ui.nav.navigateToEpgSearch
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
 
 /**
@@ -137,6 +138,9 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.SERVICE_EPG || route.startsWith("service_epg") ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_service_epg_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SERVICE_EPG)
+            route == PhoneNavRoutes.EPG_SEARCH || route.startsWith("epg_search") ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_epg_search_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG_SEARCH)
             else -> null
         }
     }
@@ -207,6 +211,39 @@ class PhoneNavHostFragment : BaseFragment() {
     fun navigateToServiceEpg(serviceReference: String?, serviceName: String?): Boolean {
         val controller = navController ?: return false
         controller.navigateToServiceEpg(serviceReference.orEmpty(), serviceName)
+        return true
+    }
+
+    /**
+     * Push nested EPG search onto the NavHost back stack.
+     * Typed query string; back pops to the previous leaf.
+     * Resubmitting the same query remounts the leaf so results reload.
+     */
+    fun navigateToEpgSearch(query: String?): Boolean {
+        val controller = navController ?: return false
+        val q = query.orEmpty()
+        if (q.isEmpty()) return false
+        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_epg_search_slot)
+            ?: childFragmentManager.findFragmentByTag("epg_search:$q")
+        val onSearch = controller.currentDestination?.route == PhoneNavRoutes.EPG_SEARCH
+            || controller.currentDestination?.route?.startsWith("epg_search") == true
+        if (existing != null && !childFragmentManager.isStateSaved) {
+            childFragmentManager.beginTransaction().remove(existing).commitNow()
+        }
+        if (onSearch && !childFragmentManager.isStateSaved) {
+            childFragmentManager.beginTransaction()
+                .replace(
+                    R.id.phone_nav_epg_search_slot,
+                    EpgSearchFragment().apply {
+                        arguments = Bundle().apply {
+                            putString(android.app.SearchManager.QUERY, q)
+                        }
+                    },
+                    "epg_search:$q",
+                )
+                .commitNow()
+        }
+        controller.navigateToEpgSearch(q)
         return true
     }
 

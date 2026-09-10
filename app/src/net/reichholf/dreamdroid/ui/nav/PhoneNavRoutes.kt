@@ -19,6 +19,10 @@ object PhoneNavRoutes {
     /** Nested service EPG (typed string args). */
     const val SERVICE_EPG = "service_epg/{serviceRef}?serviceName={serviceName}"
 
+    /** Nested EPG search (typed query string). */
+    const val EPG_SEARCH = "epg_search/{query}"
+
     const val ARG_SERVICE_REF = "serviceRef"
     const val ARG_SERVICE_NAME = "serviceName"
+    const val ARG_QUERY = "query"
 }
