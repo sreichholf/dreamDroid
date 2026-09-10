@@ -272,9 +272,11 @@ fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: Stri
     navigate(route)
 }
 
-/** Nested EPG search: push onto the NavHost back stack. */
+/** Nested EPG search: push onto the NavHost back stack (singleTop avoids duplicate same query). */
 fun NavHostController.navigateToEpgSearch(query: String) {
-    navigate("epg_search/${Uri.encode(query)}")
+    navigate("epg_search/${Uri.encode(query)}") {
+        launchSingleTop = true
+    }
 }
 
 fun ComposeView.bindPhoneNavHost(hostFragment: PhoneNavHostFragment) {
