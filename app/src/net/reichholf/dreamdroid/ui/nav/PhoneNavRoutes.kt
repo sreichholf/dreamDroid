@@ -10,4 +10,5 @@ object PhoneNavRoutes {
     const val SCREENSHOT = "screenshot"
     const val CURRENT = "current"
     const val ZAP = "zap"
+    const val BACKUP = "backup"
 }
