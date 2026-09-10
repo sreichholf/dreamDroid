@@ -26,7 +26,6 @@ import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.ServiceListPager;
-import net.reichholf.dreamdroid.fragment.SignalFragment;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.fragment.ZapFragment;
 import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
@@ -107,6 +106,21 @@ public class NavigationHelper {
         }
     }
 
+    /**
+     * Open a migrated phone NavHost leaf. If {@link PhoneNavHostFragment} is already the
+     * detail pane, navigate in-graph; otherwise mount the host with [route] as start.
+     */
+    protected void navigatePhoneNavRoot(@NonNull String route) {
+        Fragment detail = getMainActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.detail_view);
+        if (detail instanceof PhoneNavHostFragment
+                && ((PhoneNavHostFragment) detail).navigateToRoute(route)) {
+            return;
+        }
+        clearBackStack();
+        getMainActivity().showDetails(PhoneNavHostFragment.newInstance(route));
+    }
+
     public void onDestroy() {
         if (mPowerStateJob != null) {
             mPowerStateJob.cancel(null);
@@ -179,16 +193,7 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_device_info:
-                // Phase 2.1d: if NavHost is already the detail pane, navigate in-graph
-                // instead of clearBackStack + replace.
-                Fragment detail = getMainActivity().getSupportFragmentManager()
-                        .findFragmentById(R.id.detail_view);
-                if (detail instanceof PhoneNavHostFragment
-                        && ((PhoneNavHostFragment) detail).navigateToRoute(PhoneNavRoutes.DEVICE_INFO)) {
-                    break;
-                }
-                clearBackStack();
-                getMainActivity().showDetails(PhoneNavHostFragment.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.DEVICE_INFO);
                 break;
 
             case R.id.menu_navigation_current:
@@ -268,8 +273,7 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_signal:
-                clearBackStack();
-                getMainActivity().showDetails(SignalFragment.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.SIGNAL);
                 break;
             case R.id.menu_navigation_zap:
                 clearBackStack();
