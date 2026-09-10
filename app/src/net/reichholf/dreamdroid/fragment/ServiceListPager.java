@@ -13,8 +13,6 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.evernote.android.state.State;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.enigma.BouquetListLoadKt;
@@ -38,17 +36,14 @@ public class ServiceListPager extends BaseHttpFragment {
 	private static final String MODE_MOVIES = "Movies";
 	private static final String MODE_TIMER = "Timer";
 
+	private static final String KEY_MODE = "hub_mode";
+	private static final String KEY_CURRENT_TV = "hub_current_tv";
+	private static final String KEY_CURRENT_RADIO = "hub_current_radio";
+	private static final String KEY_CURRENT_MOVIE = "hub_current_movie";
 
-	@State
 	public String mMode;
-
-	@State
 	public String mCurrentTv;
-
-	@State
 	public String mCurrentRadio;
-
-	@State
 	public String mCurrentMovie;
 
 	ViewPager2 mPager;
@@ -196,8 +191,23 @@ public class ServiceListPager extends BaseHttpFragment {
 		mHasFabReload = false;
 		mBouquets = null;
 		mHubState = new TvMoviesHubState();
+		if (savedInstanceState != null) {
+			mMode = savedInstanceState.getString(KEY_MODE);
+			mCurrentTv = savedInstanceState.getString(KEY_CURRENT_TV);
+			mCurrentRadio = savedInstanceState.getString(KEY_CURRENT_RADIO);
+			mCurrentMovie = savedInstanceState.getString(KEY_CURRENT_MOVIE);
+		}
 		if (mMode == null)
 			mMode = MODE_TV;
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		outState.putString(KEY_MODE, mMode);
+		outState.putString(KEY_CURRENT_TV, mCurrentTv);
+		outState.putString(KEY_CURRENT_RADIO, mCurrentRadio);
+		outState.putString(KEY_CURRENT_MOVIE, mCurrentMovie);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override

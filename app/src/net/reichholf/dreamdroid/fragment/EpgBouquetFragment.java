@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.evernote.android.state.State;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
@@ -53,6 +52,7 @@ import kotlinx.coroutines.Job;
  */
 public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	private static final String LOG_TAG = EpgBouquetFragment.class.getSimpleName();
+	private static final String KEY_TIME = "epg_bouquet_time";
 
 	private final ArrayList<Event> mEvents = new ArrayList<>();
 	private EpgBouquetListState mListState;
@@ -62,7 +62,6 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	private TextView mDateView;
 	private TextView mTimeView;
 	private boolean mWaitingForPicker;
-	@State
 	public int mTime;
 
 	@Override
@@ -73,10 +72,14 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 		mListState = new EpgBouquetListState();
 		initTitle(getString(R.string.epg));
 
-		int now = mTime = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
+		int now = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
 		if (savedInstanceState != null) {
-			if (mTime < now)
+			mTime = savedInstanceState.getInt(KEY_TIME, now);
+			if (mTime < now) {
 				mTime = now;
+			}
+		} else {
+			mTime = now;
 		}
 		if (mReference == null || mName == null) {
 			mReference = getArguments().getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE, null);
@@ -85,6 +88,12 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 
 		mWaitingForPicker = false;
 		mReload = true;
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		outState.putInt(KEY_TIME, mTime);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
