@@ -76,7 +76,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-screenshot | [#230](https://github.com/sreichholf/dreamDroid/pull/230) | merged | Phase 2.2p: ScreenShot grab via `lifecycleScope` + `ScreenshotLoad`; drop `AsyncByteLoader`. |
 | http-async-videooverlay-epg | [#231](https://github.com/sreichholf/dreamDroid/pull/231) | merged | Phase 2.2q: VideoOverlay bouquet now/next via `lifecycleScope` + reuse `EpgNowNextLoad`; map with `serviceNowNextToExtendedHashMap`; drop LoaderCallbacks on overlay only. Keep ButterKnife/VLC UI. Keep OkHttp 3.14.9. |
 | http-async-tv-browse | [#232](https://github.com/sreichholf/dreamDroid/pull/232) | merged | Phase 2.2r: Leanback `RootBrowseFragment` → `lifecycleScope` + reuse `ServiceListLoad` / `EpgNowNextLoad` / `MovieListLoad` (+ locs/tags); drop TV `LoaderCallbacks` / `AsyncListLoader` / `LoaderResult`. Keep Leanback UI + `ExtendedHashMap` BrowseItem. Keep OkHttp 3.14.9. |
-| tv-browse-typed-item | this PR | open | Phase 3.1a: sealed Kotlin `BrowseItem` (`Service`/`Movie`/`Settings`); hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. |
+| tv-browse-typed-item | [#234](https://github.com/sreichholf/dreamDroid/pull/234) | merged | Phase 3.1a: sealed Kotlin `BrowseItem` (`Service`/`Movie`/`Settings`); hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. |
+| tv-detail-compose | this PR | open | Phase 3.1b: TV `EpgDetailDialog` / `MovieDetailDialog` → Compose via shared phone screens + `DreamDroidTheme`; actions hidden on TV EPG; drop ButterKnife on those two dialogs. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -121,7 +122,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.2p ScreenShot bytes **merged** [#230](https://github.com/sreichholf/dreamDroid/pull/230).
 - Phase 2.2q VideoOverlay now/next **merged** [#231](https://github.com/sreichholf/dreamDroid/pull/231).
 - Phase 2.2r Leanback RootBrowse coroutines **merged** [#232](https://github.com/sreichholf/dreamDroid/pull/232). HTTP Loader chassis retired (`loader/` package gone).
-- Phase 3.1a typed Leanback `BrowseItem` — **this PR** (sealed Kotlin; hash only at stream Intent edge).
+- Phase 3.1a typed Leanback `BrowseItem` **merged** [#234](https://github.com/sreichholf/dreamDroid/pull/234).
+- Phase 3.1b TV detail dialogs → Compose — **this PR** (shared phone screens; hide EPG actions on TV).
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -514,7 +516,7 @@ Inventory of `app/src/.../tv/` (12 Java files, ~1.3k LOC). **No TV Compose code 
 | RootBrowseFragment | `tv/fragment/RootBrowseFragment.java` | Hub: bouquet/service/movie rows, settings row, stream/prefs |
 | BaseHttpBrowseFragment | `tv/fragment/abs/BaseHttpBrowseFragment.java` | Leanback browse host (LoaderCallbacks retired in #232) |
 | SettingsFragment / PrefsFragment / ProfileFragment | `tv/fragment/` | Leanback settings router; `PrefsFragment` loads `R.xml.preferences`; `ProfileFragment` loads `R.xml.profile_preferences` |
-| EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen XML detail dialogs (`AbstractDialog` + ButterKnife) |
+| EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen Compose detail dialogs (shared phone screens; Phase 3.1b) |
 | CardPresenter / TextCardView / BrowseItem | `tv/presenter/`, `tv/view/`, `tv/BrowseItem.kt` | Card presenters + typed sealed browse payload (Phase 3.1a) |
 
 Entry: `TabbedNavigationActivity` → TV `MainActivity` when `DreamDroid.isTV()`. Detail dialogs under `tv/` are opened from phone `VideoOverlayFragment` (not from `RootBrowseFragment` clicks).
@@ -523,23 +525,22 @@ Entry: `TabbedNavigationActivity` → TV `MainActivity` when `DreamDroid.isTV()`
 
 | File | `@BindView` count |
 | --- | --- |
-| `MovieDetailDialog` | 8 |
-| `EpgDetailDialog` | 5 |
 | `TextCardView` | 2 |
-| **Total** | **15** (3 files) |
+| **Total** | **2** (1 file) |
+
+TV EPG/Movie detail ButterKnife dropped in Phase 3.1b.
 
 Phone leftover: `VideoOverlayFragment` (Phase 2 VLC). ButterKnife cannot be dropped until TV + that site are gone.
 
 #### Coupling to phone stack
 
-- Browse hub holds typed `Service` / `ServiceNowNext` / `Movie`; `ExtendedHashMap` only at stream Intent edge (Phase 3.1a). Detail dialogs still hash/string-key.
+- Browse hub holds typed `Service` / `ServiceNowNext` / `Movie`; `ExtendedHashMap` only at stream Intent edge (Phase 3.1a). TV detail dialogs host shared Compose screens (Phase 3.1b); overlay still passes hash Event/Movie args.
 - SAX handlers still used by typed client (`ServiceListRequestHandler`, `EpgNowNextListRequestHandler` / `EventListRequestHandler`, `MovieListRequestHandler`); `AsyncListLoader` retired in #232
 - `Picon`, `IntentFactory` → `VideoActivity` / integrated player
-- `AbstractDialog.setTextOrHide` in TV detail dialogs
 - `DreamDroidTrustManager` + Picasso OkHttp in TV `MainActivity` (app-wide side effects)
-- Shared prefs XML (`R.xml.preferences` / `R.xml.profile_preferences`); EPG detail may share phone dialog XML, while `MovieDetailDialog` uses TV-only `layout-television/movie_epg_dialog` (phone layout removed in #206)
+- Shared prefs XML (`R.xml.preferences` / `R.xml.profile_preferences`)
 
-Phone Compose detail screens do **not** cover TV dialogs.
+Phone Compose detail screens are reused by TV dialog hosts (Phase 3.1b); TV EPG hides action buttons.
 
 #### Risks
 
@@ -554,13 +555,13 @@ Phone Compose detail screens do **not** cover TV dialogs.
 
 Prefer **typed browse data → details → hub → prefs** (not prefs-first; not hub-first without typing):
 
-1. Typed TV browse data — stop `ExtendedHashMap` in `BrowseItem`; reuse phone typed client — **this PR** (Phase 3.1a)
-2. Detail dialogs → Compose (or shared phone detail + TV theme) — drops 13/15 TV binds
+1. Typed TV browse data — stop `ExtendedHashMap` in `BrowseItem`; reuse phone typed client — **merged** [#234](https://github.com/sreichholf/dreamDroid/pull/234) (Phase 3.1a)
+2. Detail dialogs → Compose (shared phone detail + DreamDroidTheme) — **this PR** (Phase 3.1b); TV ButterKnife left on `TextCardView` only
 3. Browse hub → TV Compose / foundational focus — needs typed data; kills `TextCardView` ButterKnife
 4. Leanback prefs → Compose preferences — isolated; same PreferenceManager keys
 5. Drop ButterKnife when zero call sites remain (TV + phone VLC)
 
-**Safe next:** TV detail Compose (careful with VLC hosts). **Defer hub Compose** until typed data is on `main` and a TV focus model is sketched.
+**Safe next:** browse hub TV Compose / focus model, or Leanback prefs. **Defer full ButterKnife drop** until VLC overlay is rewritten.
 
 ### Phase 1 — Remaining phone typed API (done)
 
@@ -611,8 +612,8 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 
 | Order | Slice | Notes |
 | --- | --- | --- |
-| 3.1a | Typed `BrowseItem` | Sealed Kotlin `Service`/`Movie`/`Settings`; hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. **this PR**. |
-| 3.1b | TV detail dialogs → Compose | Shared phone detail + TV theme where possible; drop ButterKnife on Epg/Movie detail. |
+| 3.1a | Typed `BrowseItem` | Sealed Kotlin `Service`/`Movie`/`Settings`; hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. **merged** [#234](https://github.com/sreichholf/dreamDroid/pull/234). |
+| 3.1b | TV detail dialogs → Compose | Shared phone detail + `DreamDroidTheme`; hide EPG actions on TV; drop ButterKnife on Epg/Movie detail. Keep OkHttp 3.14.9. **this PR**. |
 | 3.1c | Browse hub → TV Compose | Foundational focus model; kill `TextCardView` ButterKnife. |
 | 3.1d | Leanback prefs → Compose | Same PreferenceManager keys. |
 | 3.1e | Drop ButterKnife | When zero call sites remain (TV + phone VLC). |

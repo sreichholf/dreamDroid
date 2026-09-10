@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as HashMovie
@@ -83,11 +84,13 @@ fun HashMovie.toTypedMovie(): Movie {
 fun MovieDetailScreen(
     content: MovieDetailContent,
     modifier: Modifier = Modifier,
+    /** Phone bottom sheet caps height; TV fullscreen passes null. */
+    heightCap: Dp? = 480.dp,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(max = 480.dp)
+            .then(if (heightCap != null) Modifier.heightIn(max = heightCap) else Modifier)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp, bottom = 24.dp),

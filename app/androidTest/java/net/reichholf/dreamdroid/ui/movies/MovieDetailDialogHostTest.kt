@@ -97,6 +97,29 @@ class MovieDetailDialogHostTest {
         }
     }
 
+
+    @Test
+    fun tvFullscreenRendersWithoutHeightCap() {
+        val content = MovieDetailContent(
+            title = "Tagesschau",
+            serviceName = "Das Erste HD",
+            description = "Evening news",
+            descriptionExtended = "Die Nachrichten um 20 Uhr.",
+            tags = listOf("News"),
+            length = "00:15",
+            date = "2026-09-09 20:00",
+            fileSize = "123 MB",
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                MovieDetailScreen(content = content, heightCap = null)
+            }
+        }
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("123 MB").assertIsDisplayed()
+        composeRule.onNodeWithText("News").assertIsDisplayed()
+    }
+
     @Test
     fun typedAndHashMappersMatch() {
         val map = ExtendedHashMap()
