@@ -49,8 +49,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Drawer leaves through hub + settings; nested service EPG, EPG search,
- * and bouquet pick are the 2.1f beachheads.
+ * Phone shell [NavHost]. Drawer leaves through hub + settings; Backup is nested from Settings.
+ * Nested service EPG, EPG search, and bouquet pick are the 2.1f beachheads.
  */
 @Composable
 fun PhoneNavHost(
@@ -352,6 +352,25 @@ fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: Stri
 fun NavHostController.navigateToEpgSearch(query: String) {
     navigate("epg_search/${Uri.encode(query)}") {
         launchSingleTop = true
+    }
+}
+
+/** Nested Backup from Settings: push onto the back stack (back returns to Settings). */
+fun NavHostController.navigateToBackup() {
+    if (currentDestination?.route == PhoneNavRoutes.BACKUP) return
+    navigate(PhoneNavRoutes.BACKUP) {
+        launchSingleTop = true
+    }
+}
+
+/** Drawer Settings: land on the Settings leaf, not a nested Backup restored on top. */
+fun NavHostController.navigateDrawerSettings() {
+    if (currentDestination?.route == PhoneNavRoutes.BACKUP) {
+        if (popBackStack(PhoneNavRoutes.SETTINGS, false)) return
+    }
+    navigateDrawerRoot(PhoneNavRoutes.SETTINGS)
+    if (currentDestination?.route == PhoneNavRoutes.BACKUP) {
+        popBackStack(PhoneNavRoutes.SETTINGS, false)
     }
 }
 

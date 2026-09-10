@@ -18,14 +18,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.compose.ui.platform.ComposeView;
+import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.material.color.DynamicColors;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.activities.MainActivity;
 import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
+import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
 import net.reichholf.dreamdroid.ui.settings.SettingsScreenKt;
 import net.reichholf.dreamdroid.ui.settings.SettingsState;
 
@@ -73,6 +76,21 @@ public class MyPreferenceFragment extends BaseFragment {
 			},
 			() -> {
 				startPiconSync();
+				return kotlin.Unit.INSTANCE;
+			},
+			() -> {
+				getMultiPaneHandler().showDialogFragment(AboutComposeDialog.newInstance(), "about_dialog");
+				return kotlin.Unit.INSTANCE;
+			},
+			() -> {
+				((MainActivity) getAppCompatActivity()).showChangeLog(false);
+				return kotlin.Unit.INSTANCE;
+			},
+			() -> {
+				Fragment parent = getParentFragment();
+				if (parent instanceof PhoneNavHostFragment) {
+					((PhoneNavHostFragment) parent).navigateToBackup();
+				}
 				return kotlin.Unit.INSTANCE;
 			}
 		);

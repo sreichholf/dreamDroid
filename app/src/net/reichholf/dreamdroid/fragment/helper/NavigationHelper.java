@@ -64,7 +64,6 @@ public class NavigationHelper {
 		sNavRootRoutes.put(R.id.menu_navigation_profiles, PhoneNavRoutes.PROFILES);
 		sNavRootRoutes.put(R.id.menu_navigation_signal, PhoneNavRoutes.SIGNAL);
 		sNavRootRoutes.put(R.id.menu_navigation_zap, PhoneNavRoutes.ZAP);
-		sNavRootRoutes.put(R.id.menu_navigation_backup, PhoneNavRoutes.BACKUP);
 	}
 
     MainActivity mActivity;
@@ -248,6 +247,17 @@ public class NavigationHelper {
             case R.id.menu_navigation_epg:
                 navigateToEpg();
                 break;
+
+            case R.id.menu_navigation_backup: {
+                Fragment backupHost = getMainActivity().getSupportFragmentManager()
+                        .findFragmentById(R.id.detail_view);
+                if (backupHost instanceof PhoneNavHostFragment
+                        && ((PhoneNavHostFragment) backupHost).navigateToBackup()) {
+                    break;
+                }
+                navigatePhoneNavRoot(PhoneNavRoutes.BACKUP);
+                break;
+            }
         }
         getMainActivity().showContent();
         return !isDialogItem(itemId);
