@@ -107,7 +107,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | navhost-remote-leaf | [#269](https://github.com/sreichholf/dreamDroid/pull/269) | merged | Phase 2.1e continued: tablet Virtual Remote on `PhoneNavHost`; phone still side activity. Keep OkHttp 3.14.9. |
 | navhost-hub-leaf | [#270](https://github.com/sreichholf/dreamDroid/pull/270) | merged | Phase 2.1e continued: hub `ServiceListPager` on `PhoneNavHost`. Keep OkHttp 3.14.9. |
 | widgets-2-6-dive | [#271](https://github.com/sreichholf/dreamDroid/pull/271) | merged | Phase 2.6: widgets product decision (keep XML RemoteViews; no Glance rewrite this program). Keep OkHttp 3.14.9. |
-| widgets-2-6b-cleanup | this PR | open | Phase 2.6b: drop JobIntentService widget click path; prefs delete `isFull`; remove dead SyncService/`HttpIntentService`. Keep OkHttp 3.14.9. |
+| widgets-2-6b-cleanup | this PR | open | Phase 2.6b: Kotlin coroutine widget click path (drop JobIntentService); prefs delete `isFull`; remove dead SyncService/`HttpIntentService`. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -772,7 +772,7 @@ Why:
 
 ### Phase 2.6 — Widgets / Virtual Remote home screen (decision [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b this PR)
 
-**Decision A** ([#271](https://github.com/sreichholf/dreamDroid/pull/271)): keep XML `RemoteViews` Virtual Remote widget; do **not** rewrite to Compose Glance in this program. **This PR (2.6b):** replace JobIntentService click path with executor + `goAsync`; delete empty zap stub / dead `SyncService` / `HttpIntentService`; prefs delete `isFull` on remove. No OkHttp 4.
+**Decision A** ([#271](https://github.com/sreichholf/dreamDroid/pull/271)): keep XML `RemoteViews` Virtual Remote widget; do **not** rewrite to Compose Glance in this program. **This PR (2.6b):** replace JobIntentService click path with Kotlin coroutines + `goAsync`; delete empty zap stub / dead `SyncService` / `HttpIntentService`; prefs delete `isFull` on remove. No OkHttp 4.
 
 #### Inventory (after 2.6b)
 
@@ -780,7 +780,7 @@ Why:
 | --- | --- | --- |
 | Provider | `appwidget/VirtualRemoteWidgetProvider.java` | `AppWidgetProvider`; builds full / QuickZap `RemoteViews`; RCU via `goAsync` |
 | Config | `appwidget/VirtualRemoteWidgetConfiguration.java` | Style + profile pick; Room `ProfileDao`; deletes profile + `isFull` prefs |
-| Click path | `appwidget/WidgetRemoteRequest.java` | Single-thread executor + SSL/toast helpers (no Service) |
+| Click path | `appwidget/WidgetRemoteRequest.kt` | Coroutines (`Dispatchers.IO`) + SSL/toast helpers (no Service) |
 | Layouts | `virtual_remote_appwidget*.xml` + `merge_*_widget.xml` | Dense RCU grids (~780 LOC merges) |
 | Key map | `VirtualRemoteFragment.getRemoteButtons` | Widget-only binder today |
 
@@ -814,7 +814,7 @@ Why:
 | Slice | Scope | Non-goals |
 | --- | --- | --- |
 | 2.6a | Docs decision on `main` | **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271). No widget code |
-| 2.6b | Replace `JobIntentService` click path; delete empty zap stub; prefs delete `isFull`; drop dead `SyncService`/`HttpIntentService` | **this PR**. No Glance; no OkHttp 4 |
+| 2.6b | Kotlin coroutine click path (`WidgetRemoteRequest.kt`); delete zap stub; prefs delete `isFull`; drop dead `SyncService`/`HttpIntentService` | **this PR**. No Glance; no OkHttp 4 |
 | 2.6c | Optional: Compose config activity | Keep RemoteViews grids |
 | 2.6d | Glance rewrite | **deferred** (not this program) |
 
