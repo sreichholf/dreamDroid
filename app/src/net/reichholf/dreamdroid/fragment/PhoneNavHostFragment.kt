@@ -7,20 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavHostController
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 
 /**
- * Phase 2.1c beachhead: hosts Compose [androidx.navigation.compose.NavHost] in the phone
- * detail pane. Device Info is the first leaf route; other destinations still use
- * [net.reichholf.dreamdroid.fragment.helper.NavigationHelper] + Fragment transactions.
- *
- * Activity callbacks and profile HTTP hooks must target the nested leaf, not this wrapper —
- * see [getActiveLeaf].
+ * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
+ * Device Info is the first leaf route; drawer re-selection uses [navigateToRoute]
+ * instead of replacing this fragment (Phase 2.1d).
  */
 class PhoneNavHostFragment : BaseFragment() {
+
+    @Volatile
+    private var navController: NavHostController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         mShouldRetainInstance = false
@@ -45,6 +46,34 @@ class PhoneNavHostFragment : BaseFragment() {
     fun getActiveLeaf(): Fragment? {
         return childFragmentManager.findFragmentById(R.id.phone_nav_device_info_slot)
             ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.DEVICE_INFO)
+    }
+
+    fun attachNavController(controller: NavHostController) {
+        navController = controller
+    }
+
+    fun detachNavController(controller: NavHostController) {
+        if (navController === controller) {
+            navController = null
+        }
+    }
+
+    /**
+     * Navigate within the hosted [androidx.navigation.NavHost] without replacing this
+     * fragment. No-op if the controller is not ready yet (first show still uses
+     * [net.reichholf.dreamdroid.activities.MainActivity.showDetails]).
+     *
+     * @return true if a navigation was requested
+     */
+    fun navigateToRoute(route: String): Boolean {
+        val controller = navController ?: return false
+        controller.navigate(route) {
+            launchSingleTop = true
+            popUpTo(controller.graph.startDestinationId) {
+                inclusive = false
+            }
+        }
+        return true
     }
 
     override fun onDrawerOpened() {

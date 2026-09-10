@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.nav
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -16,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
@@ -24,10 +26,14 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
  */
 @Composable
 fun PhoneNavHost(
-    hostFragment: Fragment,
+    hostFragment: PhoneNavHostFragment,
     navController: NavHostController = rememberNavController(),
     startDestination: String = PhoneNavRoutes.DEVICE_INFO,
 ) {
+    DisposableEffect(navController) {
+        hostFragment.attachNavController(navController)
+        onDispose { hostFragment.detachNavController(navController) }
+    }
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -85,7 +91,7 @@ private fun commitNestedDeviceInfo(fm: FragmentManager, containerId: Int) {
         .commitNow()
 }
 
-fun ComposeView.bindPhoneNavHost(hostFragment: Fragment) {
+fun ComposeView.bindPhoneNavHost(hostFragment: PhoneNavHostFragment) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
