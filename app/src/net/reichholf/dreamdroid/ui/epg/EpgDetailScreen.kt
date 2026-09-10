@@ -13,6 +13,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
@@ -36,7 +37,7 @@ fun Event.toEpgDetailContent(minutesShort: String): EpgDetailContent? {
         title = title,
         serviceName = serviceName,
         description = description,
-        descriptionExtended = descriptionExtended,
+        descriptionExtended = descriptionExtended.replace("\\n", "\n"),
         dateLine = dateLine,
         isNext = false,
     )
@@ -53,7 +54,7 @@ fun ExtendedHashMap.toEpgDetailContent(showNext: Boolean, minutesShort: String):
         title = title,
         serviceName = getString(EventKeys.KEY_SERVICE_NAME).orEmpty(),
         description = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION, "").orEmpty(),
-        descriptionExtended = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED).orEmpty(),
+        descriptionExtended = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED).orEmpty().replace("\\n", "\n"),
         dateLine = dateLine,
         isNext = showNext,
     )
@@ -67,13 +68,16 @@ fun EpgDetailScreen(
     onImdb: () -> Unit,
     onSimilar: () -> Unit,
     modifier: Modifier = Modifier,
+    showActions: Boolean = true,
+    /** Phone bottom sheet caps body height; TV fullscreen passes null. */
+    bodyHeightCap: Dp? = 360.dp,
 ) {
-    // Body scrolls; action panel stays pinned like the old XML buttonPanel.
+    // Body scrolls; action panel stays pinned like the old XML buttonPanel (when shown).
     Column(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 360.dp)
+                .then(if (bodyHeightCap != null) Modifier.heightIn(max = bodyHeightCap) else Modifier)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp, bottom = 8.dp),
@@ -114,23 +118,25 @@ fun EpgDetailScreen(
                 )
             }
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
-        ) {
-            Button(onClick = onSetTimer, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.set_timer))
-            }
-            TextButton(onClick = onEditTimer, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.edit_timer))
-            }
-            TextButton(onClick = onImdb, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.imdb))
-            }
-            TextButton(onClick = onSimilar, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.similar))
+        if (showActions) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 16.dp),
+            ) {
+                Button(onClick = onSetTimer, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.set_timer))
+                }
+                TextButton(onClick = onEditTimer, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.edit_timer))
+                }
+                TextButton(onClick = onImdb, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.imdb))
+                }
+                TextButton(onClick = onSimilar, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.similar))
+                }
             }
         }
     }

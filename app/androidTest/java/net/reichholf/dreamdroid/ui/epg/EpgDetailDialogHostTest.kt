@@ -97,4 +97,33 @@ class EpgDetailDialogHostTest {
             )
         }
     }
+
+    @Test
+    fun tvFullscreenHidesActions() {
+        val content = EpgDetailContent(
+            title = "Tagesschau",
+            serviceName = "Das Erste HD",
+            description = "News",
+            descriptionExtended = "Die Nachrichten um 20 Uhr.",
+            dateLine = "20:00 (15 min)",
+            isNext = false,
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgDetailScreen(
+                    content = content,
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = {},
+                    showActions = false,
+                    bodyHeightCap = null,
+                )
+            }
+        }
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("Die Nachrichten um 20 Uhr.").assertIsDisplayed()
+        composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
+        composeRule.onNodeWithText("Edit Timer").assertDoesNotExist()
+    }
 }
