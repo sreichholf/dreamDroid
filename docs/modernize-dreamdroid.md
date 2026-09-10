@@ -421,7 +421,7 @@ Two database files historically. Room `dreambox` holds `profile` and is included
 
 First-start skip-Profiles race is fixed on `main` in #168. Still wait for `Demo` after Changelog, not the word Profiles inside changelog text.
 
-Evernote `@State` plus Livefront Bridge is load-bearing on rotation. Do not migrate it in this program.
+Evernote `@State` plus Livefront Bridge is still load-bearing on rotation. Migrate only via Phase 2.3 slices (one fragment at a time); keep Bridge until the last `@State` consumer is gone. Do not big-bang remove either dependency.
 
 VLC `VideoActivity` is out of this program.
 
@@ -478,7 +478,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 ### Explicitly frozen
 
 - `app/src/.../tv/` Leanback. Operator picked phone first.
-- Rotation via Evernote State + Livefront Bridge.
+- Rotation via Evernote State + Livefront Bridge until Phase 2.3 slices finish (dive this PR; beachhead 2.3b).
 - VLC playback.
 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
@@ -750,7 +750,7 @@ Why:
 
 - Deps: `com.evernote:android-state:1.4.1` + processor; `com.github.livefront:bridge:v2.0.2`
 - `DreamDroid` initializes Bridge with StateSaver SavedStateHandler
-- Bridge.save/restore/clear in `BaseFragment`, `BaseRecyclerFragment`, `BaseActivity`, `MultiChoiceDialog`
+- Bridge.save/restore in `BaseFragment`, `BaseRecyclerFragment`, `BaseActivity`, `MultiChoiceDialog`; `Bridge.clear` only in `BaseFragment` and `BaseActivity`
 
 #### @State inventory (current)
 
