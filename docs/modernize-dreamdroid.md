@@ -84,7 +84,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | tv-compose-textcard | [#239](https://github.com/sreichholf/dreamDroid/pull/239) | merged | Phase 3.1c-i: Leanback movie `TextCardView` → Compose body inside `BaseCardView`; keep rows/headers. Keep OkHttp 3.14.9. |
 | tv-compose-imagecard | [#240](https://github.com/sreichholf/dreamDroid/pull/240) | merged | Phase 3.1c-ii: Leanback service/settings image cards → Compose text + ImageView picons inside `BaseCardView`; keep rows/headers. Keep OkHttp 3.14.9. |
 | docs-tv-hub-shell-decision | [#241](https://github.com/sreichholf/dreamDroid/pull/241) | merged | Phase 3.1c-iii (docs only): keep Leanback shell + Compose cards (option B); defer full Compose hub (C / 3.1c-iv). No hub code. Keep OkHttp 3.14.9. |
-| room-backup-finish | this PR | open | Phase 2.4: Android BackupAgent → Room `dreambox`; drop legacy `dreamdroid` file after migrate; widget stops using `DatabaseHelper` keys. Keep migrate-only `DatabaseHelper`. Keep OkHttp 3.14.9. |
+| room-backup-finish | this PR | open | Phase 2.4: Android BackupAgent includes Room `dreambox` (and legacy `dreamdroid` for restore compat); drop legacy file after migrate; widget stops using `DatabaseHelper` keys. Keep migrate-only `DatabaseHelper`. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -409,7 +409,7 @@ ButterKnife remains only on phone `VideoOverlayFragment` (VLC). Do not drop the 
 
 Two HTTP stacks. Box XML is `HttpURLConnection`. Picons are Picasso plus OkHttp 3.14.9.
 
-Two database files historically. Room `dreambox` holds `profile` and is what Android Backup backs up (**this PR**). Legacy SQLite `dreamdroid` remains only for first-run migrate, then is deleted once profiles are copied into Room. Do not drop `DatabaseHelper` until no install still needs that migrate path (or operator accepts migrate-from-backup-only).
+Two database files historically. Room `dreambox` holds `profile` and is included in Android Backup (**this PR**). Legacy SQLite `dreamdroid` stays on the BackupAgent file list so pre-cutover cloud snapshots still restore; after restore (or first-run migrate) copies profiles into Room, the legacy file is deleted. Do not drop `DatabaseHelper` until no install still needs that migrate path (or operator accepts migrate-from-backup-only).
 
 First-start skip-Profiles race is fixed on `main` in #168. Still wait for `Demo` after Changelog, not the word Profiles inside changelog text.
 
@@ -464,7 +464,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 
 - Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Hub TV/Radio now/next loads typed `ServiceNowNext` (#209). Movies list loads typed `enigma.Movie` (#210). Leanback movie browse still uses hash SAX.
 - Enigma2 HTTP still uses `HttpURLConnection` via `SimpleHttpClient` (coroutines + typed `EnigmaClient`). Picons still Picasso + OkHttp 3.14.9. `asynctask/*` retired.
-- Room holds `profile` only (`dreambox`). Android Backup points at Room (**this PR**). `DatabaseHelper` / `dreamdroid` SQLite remain migrate-only (deleted after successful copy).
+- Room holds `profile` only (`dreambox`). Android Backup includes Room and legacy `dreamdroid` for restore compat (**this PR**). After migrate/restore copy, legacy file is deleted; `DatabaseHelper` stays migrate-only.
 - ButterKnife (1 file: phone `VideoOverlayFragment` / VLC). TV binds cleared. `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
 
 ### Explicitly frozen
