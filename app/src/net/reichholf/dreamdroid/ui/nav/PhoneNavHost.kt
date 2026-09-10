@@ -28,6 +28,7 @@ import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.fragment.PickServiceFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
 import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
@@ -35,12 +36,15 @@ import net.reichholf.dreamdroid.fragment.ServiceListPager
 import net.reichholf.dreamdroid.fragment.SignalFragment
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment
 import net.reichholf.dreamdroid.fragment.ZapFragment
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
+import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Drawer leaves through hub; nested service EPG and EPG search
- * are the 2.1f beachheads. Phone-only remote still uses a side activity.
+ * Phone shell [NavHost]. Drawer leaves through hub; nested service EPG, EPG search,
+ * and bouquet pick are the 2.1f beachheads. Phone-only remote still uses a side activity.
  */
 @Composable
 fun PhoneNavHost(
@@ -182,6 +186,23 @@ fun PhoneNavHost(
                     EpgSearchFragment().apply {
                         arguments = Bundle().apply {
                             putString(SearchManager.QUERY, query)
+                        }
+                    }
+                },
+            )
+        }
+        composable(PhoneNavRoutes.PICK_SERVICE) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_pick_service_slot,
+                routeTag = PhoneNavRoutes.PICK_SERVICE,
+                createFragment = {
+                    PickServiceFragment().apply {
+                        arguments = Bundle().apply {
+                            val data = ExtendedHashMap()
+                            data.put(Service.KEY_REFERENCE, "default")
+                            putSerializable("data", data)
+                            putString("action", Statics.INTENT_ACTION_PICK_BOUQUET)
                         }
                     }
                 },
