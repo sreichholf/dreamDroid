@@ -14,6 +14,7 @@ object PhoneNavRoutes {
     const val PROFILES = "profiles"
     const val EPG = "epg"
     const val REMOTE = "remote"
+    const val SETTINGS = "settings"
     const val HUB = "hub"
 
     /** Nested service EPG (typed string args). */
