@@ -158,25 +158,8 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			}
 
 			mSelectedTags = new ArrayList<>();
-
-			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
-				mLocationsAndTagsJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(
-						this,
-						(title, progress) -> {
-							onGetLocationsAndTagsProgress(title, progress);
-							return Unit.INSTANCE;
-						},
-						() -> {
-							mLocationsAndTagsJob = null;
-							onLocationsAndTagsReady();
-							return Unit.INSTANCE;
-						});
-			} else {
-				reload();
-			}
-		} else {
-			reload();
 		}
+		ensureLocationsAndTagsThenReload();
 
 		ComposeView composeView = new ComposeView(requireContext());
 		composeView.setLayoutParams(new ViewGroup.LayoutParams(
@@ -575,6 +558,27 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			mLocationsAndTagsProgress = ProgressDialog.show(getAppCompatActivity(), title, progress);
 		}
 
+	}
+
+	private void ensureLocationsAndTagsThenReload() {
+		if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
+			if (mLocationsAndTagsJob != null) {
+				return;
+			}
+			mLocationsAndTagsJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(
+					this,
+					(title, progress) -> {
+						onGetLocationsAndTagsProgress(title, progress);
+						return Unit.INSTANCE;
+					},
+					() -> {
+						mLocationsAndTagsJob = null;
+						onLocationsAndTagsReady();
+						return Unit.INSTANCE;
+					});
+		} else {
+			reload();
+		}
 	}
 
 	private void onLocationsAndTagsReady() {
