@@ -23,8 +23,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.evernote.android.state.State;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.TimerAdapter;
@@ -60,6 +58,8 @@ import kotlinx.coroutines.Job;
  * @author sreichholf
  */
 public class TimerListFragment extends BaseHttpRecyclerFragment {
+	private static final String KEY_TIMER = "timer_selected";
+
 	@NonNull
 	private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
 
@@ -105,7 +105,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 			getRecyclerView().post(() -> mSelectionSupport.setChoiceMode(ItemSelectionSupport.ChoiceMode.SINGLE));
 		}
 	};
-	@State public ExtendedHashMap mTimer;
+	public ExtendedHashMap mTimer;
 	@Nullable
 	private ProgressDialog mProgress;
 	protected int mCurrentPos;
@@ -124,10 +124,24 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.timer));
 
+		if (savedInstanceState != null) {
+			@SuppressWarnings("deprecation")
+			ExtendedHashMap timer = (ExtendedHashMap) savedInstanceState.getSerializable(KEY_TIMER);
+			mTimer = timer;
+		}
+
 		mCurrentPos = -1;
 		mIsActionMode = false;
 		mReload = true;
 		mListState = new TimerListState();
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		if (mTimer != null) {
+			outState.putSerializable(KEY_TIMER, mTimer);
+		}
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override

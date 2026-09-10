@@ -9,8 +9,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
 
-import com.evernote.android.state.State;
-
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
@@ -27,13 +25,14 @@ import net.reichholf.dreamdroid.intents.IntentFactory;
 public abstract class BaseHttpRecyclerEventFragment extends BaseHttpRecyclerFragment implements
         ActionDialog.DialogActionListener {
 
+    private static final String KEY_REFERENCE = "reference";
+    private static final String KEY_NAME = "name";
+    private static final String KEY_CURRENT_ITEM = "currentItem";
+
     @Nullable
-	@State
     public String mReference;
     @Nullable
-	@State
     public String mName;
-    @State
     public ExtendedHashMap mCurrentItem;
 
     protected ProgressDialog mProgress;
@@ -41,13 +40,23 @@ public abstract class BaseHttpRecyclerEventFragment extends BaseHttpRecyclerFrag
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            mReference = savedInstanceState.getString(KEY_REFERENCE);
+            mName = savedInstanceState.getString(KEY_NAME);
+            @SuppressWarnings("deprecation")
+            ExtendedHashMap item = (ExtendedHashMap) savedInstanceState.getSerializable(KEY_CURRENT_ITEM);
+            mCurrentItem = item;
+        }
+        if (mCurrentItem == null) {
+            mCurrentItem = new ExtendedHashMap();
+        }
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putString("reference", mReference);
-        outState.putString("name", mName);
-        outState.putSerializable("currentItem", mCurrentItem);
+        outState.putString(KEY_REFERENCE, mReference);
+        outState.putString(KEY_NAME, mName);
+        outState.putSerializable(KEY_CURRENT_ITEM, mCurrentItem);
 
         super.onSaveInstanceState(outState);
     }

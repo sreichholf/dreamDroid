@@ -16,8 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.evernote.android.state.State;
-
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.enigma.CurrentService;
@@ -49,6 +47,8 @@ import kotlinx.coroutines.Job;
 public class CurrentServiceFragment extends BaseHttpFragment {
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "CurrentServiceFragment";
+	private static final String KEY_CURRENT = "current_service";
+	private static final String KEY_CURRENT_ITEM = "current_item";
 
 	protected ProgressDialog mProgress;
 
@@ -61,9 +61,9 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	private boolean mCurrentServiceReady;
 
 	@Nullable
-	@State public CurrentService mCurrent;
+	public CurrentService mCurrent;
 	@Nullable
-	@State public ExtendedHashMap mCurrentItem;
+	public ExtendedHashMap mCurrentItem;
 
 	@Nullable
 	private Job mLoadJob;
@@ -77,6 +77,25 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 
 		mCurrentServiceReady = false;
 		mUiState = new CurrentServiceUiState();
+		if (savedInstanceState != null) {
+			@SuppressWarnings("deprecation")
+			CurrentService current = (CurrentService) savedInstanceState.getSerializable(KEY_CURRENT);
+			mCurrent = current;
+			@SuppressWarnings("deprecation")
+			ExtendedHashMap item = (ExtendedHashMap) savedInstanceState.getSerializable(KEY_CURRENT_ITEM);
+			mCurrentItem = item;
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		if (mCurrent != null) {
+			outState.putSerializable(KEY_CURRENT, mCurrent);
+		}
+		if (mCurrentItem != null) {
+			outState.putSerializable(KEY_CURRENT_ITEM, mCurrentItem);
+		}
+		super.onSaveInstanceState(outState);
 	}
 
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
