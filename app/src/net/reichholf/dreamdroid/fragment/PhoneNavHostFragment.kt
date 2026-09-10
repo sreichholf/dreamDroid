@@ -15,6 +15,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
@@ -38,6 +40,8 @@ class PhoneNavHostFragment : BaseFragment() {
         private const val STATE_PICK_REQUEST_CODE = "phone_nav_pick_request_code"
         private const val STATE_PROFILE_EDIT_ARGS = "phone_nav_profile_edit_args"
         private const val STATE_PROFILE_EDIT_TAG = "phone_nav_profile_edit_tag"
+        private const val STATE_TIMER_EDIT_ARGS = "phone_nav_timer_edit_args"
+        private const val STATE_TIMER_EDIT_TAG = "phone_nav_timer_edit_tag"
 
         @JvmStatic
         fun newInstance(startRoute: String): PhoneNavHostFragment {
@@ -63,6 +67,8 @@ class PhoneNavHostFragment : BaseFragment() {
     private var pickRequestCode: Int = -1
     private var profileEditArgs: Bundle? = null
     private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
+    private var timerEditArgs: Bundle? = null
+    private var timerEditTag: String = PhoneNavRoutes.TIMER_EDIT
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -77,6 +83,8 @@ class PhoneNavHostFragment : BaseFragment() {
             pickRequestCode = savedInstanceState.getInt(STATE_PICK_REQUEST_CODE, -1)
             profileEditArgs = savedInstanceState.getBundle(STATE_PROFILE_EDIT_ARGS)
             profileEditTag = savedInstanceState.getString(STATE_PROFILE_EDIT_TAG, PhoneNavRoutes.PROFILE_EDIT)
+            timerEditArgs = savedInstanceState.getBundle(STATE_TIMER_EDIT_ARGS)
+            timerEditTag = savedInstanceState.getString(STATE_TIMER_EDIT_TAG, PhoneNavRoutes.TIMER_EDIT)
         }
     }
 
@@ -85,6 +93,8 @@ class PhoneNavHostFragment : BaseFragment() {
         outState.putInt(STATE_PICK_REQUEST_CODE, pickRequestCode)
         profileEditArgs?.let { outState.putBundle(STATE_PROFILE_EDIT_ARGS, it) }
         outState.putString(STATE_PROFILE_EDIT_TAG, profileEditTag)
+        timerEditArgs?.let { outState.putBundle(STATE_TIMER_EDIT_ARGS, it) }
+        outState.putString(STATE_TIMER_EDIT_TAG, timerEditTag)
     }
 
     override fun onCreateView(
@@ -173,6 +183,9 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.PROFILE_EDIT ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_profile_edit_slot)
                     ?: childFragmentManager.findFragmentByTag(profileEditTag)
+            route == PhoneNavRoutes.TIMER_EDIT ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_timer_edit_slot)
+                    ?: childFragmentManager.findFragmentByTag(timerEditTag)
             else -> null
         }
     }
@@ -339,6 +352,52 @@ class PhoneNavHostFragment : BaseFragment() {
             return true
         }
         controller.navigate(PhoneNavRoutes.PROFILE_EDIT)
+        return true
+    }
+
+
+    fun timerEditRouteTag(): String = timerEditTag
+
+    fun timerEditLeafArguments(): Bundle = timerEditArgs ?: Bundle()
+
+    /**
+     * Push nested timer create/edit. Service pick stays on [SimpleToolbarFragmentActivity].
+     * Result goes through [deliverPickResult] with [Statics.REQUEST_EDIT_TIMER].
+     */
+    fun navigateToTimerEdit(timer: ExtendedHashMap, create: Boolean): Boolean {
+        val controller = navController ?: return false
+        pickRequestCode = Statics.REQUEST_EDIT_TIMER
+        val data = ExtendedHashMap()
+        data.put("timer", timer)
+        data.put("action", if (create) DreamDroid.ACTION_CREATE else Intent.ACTION_EDIT)
+        timerEditArgs = Bundle().apply {
+            putSerializable(BaseHttpFragment.sData, data)
+        }
+        val ref = timer.getString(Timer.KEY_REFERENCE).orEmpty()
+        val begin = timer.getString(Timer.KEY_BEGIN).orEmpty()
+        timerEditTag = if (create) {
+            "timer_edit:new:$begin"
+        } else {
+            "timer_edit:$ref:$begin"
+        }
+        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_timer_edit_slot)
+            ?: childFragmentManager.findFragmentByTag(timerEditTag)
+        if (existing != null && !childFragmentManager.isStateSaved) {
+            childFragmentManager.beginTransaction().remove(existing).commitNow()
+        }
+        if (controller.currentDestination?.route == PhoneNavRoutes.TIMER_EDIT) {
+            if (!childFragmentManager.isStateSaved) {
+                childFragmentManager.beginTransaction()
+                    .replace(
+                        R.id.phone_nav_timer_edit_slot,
+                        TimerEditFragment().apply { arguments = timerEditLeafArguments() },
+                        timerEditTag,
+                    )
+                    .commitNow()
+            }
+            return true
+        }
+        controller.navigate(PhoneNavRoutes.TIMER_EDIT)
         return true
     }
 

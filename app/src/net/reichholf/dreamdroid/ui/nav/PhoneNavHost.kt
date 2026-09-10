@@ -31,6 +31,7 @@ import net.reichholf.dreamdroid.fragment.MyPreferenceFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.PickServiceFragment
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment
+import net.reichholf.dreamdroid.fragment.TimerEditFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
 import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
@@ -226,6 +227,18 @@ fun PhoneNavHost(
                 createFragment = {
                     ProfileEditFragment().apply {
                         arguments = hostFragment.profileEditLeafArguments()
+                    }
+                },
+            )
+        }
+        composable(PhoneNavRoutes.TIMER_EDIT) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_timer_edit_slot,
+                routeTag = hostFragment.timerEditRouteTag(),
+                createFragment = {
+                    TimerEditFragment().apply {
+                        arguments = hostFragment.timerEditLeafArguments()
                     }
                 },
             )
