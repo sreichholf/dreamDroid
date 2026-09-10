@@ -52,8 +52,17 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 		mRefreshState = new ComposeRefreshState();
 		initTitle(getString(R.string.epg));
 
-		mReference = getDataForKey(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE);
-		mName = getDataForKey(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME);
+		Bundle args = getArguments();
+		if (args != null) {
+			mReference = args.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE);
+			mName = args.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME);
+		}
+		if (mReference == null) {
+			mReference = getDataForKey(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE);
+		}
+		if (mName == null) {
+			mName = getDataForKey(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME);
+		}
 	}
 
 	@Nullable

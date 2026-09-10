@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -361,6 +362,14 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	 * @param nam The name of the Service for the reference
 	 */
 	public void openEpg(String ref, String nam) {
+		Fragment parent = getParentFragment();
+		while (parent != null) {
+			if (parent instanceof PhoneNavHostFragment) {
+				((PhoneNavHostFragment) parent).navigateToServiceEpg(ref, nam);
+				return;
+			}
+			parent = parent.getParentFragment();
+		}
 		ServiceEpgListFragment f = new ServiceEpgListFragment();
 		ExtendedHashMap map = new ExtendedHashMap();
 		map.put(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE, ref);

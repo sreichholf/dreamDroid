@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.net.Uri
+import android.os.Bundle
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -13,9 +15,11 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.BackupFragment
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment
@@ -24,15 +28,17 @@ import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
+import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
 import net.reichholf.dreamdroid.fragment.ServiceListPager
 import net.reichholf.dreamdroid.fragment.SignalFragment
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment
 import net.reichholf.dreamdroid.fragment.ZapFragment
+import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Migrated drawer leaves through hub (`ServiceListPager`)
- * and tablet Virtual Remote. Phone-only remote still uses a side activity.
+ * Phone shell [NavHost]. Drawer leaves through hub; nested service EPG is the 2.1f beachhead.
+ * Phone-only remote still uses a side activity.
  */
 @Composable
 fun PhoneNavHost(
@@ -133,6 +139,32 @@ fun PhoneNavHost(
                 createFragment = { ServiceListPager() },
             )
         }
+        composable(
+            route = PhoneNavRoutes.SERVICE_EPG,
+            arguments = listOf(
+                navArgument(PhoneNavRoutes.ARG_SERVICE_REF) { type = NavType.StringType },
+                navArgument(PhoneNavRoutes.ARG_SERVICE_NAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+            ),
+        ) { entry ->
+            val serviceRef = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_REF).orEmpty()
+            val serviceName = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_NAME).orEmpty()
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_service_epg_slot,
+                routeTag = PhoneNavRoutes.SERVICE_EPG,
+                createFragment = {
+                    ServiceEpgListFragment().apply {
+                        arguments = Bundle().apply {
+                            putString(Event.KEY_SERVICE_REFERENCE, serviceRef)
+                            putString(Event.KEY_SERVICE_NAME, serviceName)
+                        }
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -206,6 +238,13 @@ fun NavHostController.navigateDrawerRoot(route: String) {
         launchSingleTop = true
         restoreState = true
     }
+}
+
+/** Nested service EPG: push onto the NavHost back stack (back returns to hub). */
+fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: String?) {
+    val route = "service_epg/${Uri.encode(serviceRef)}" +
+        "?serviceName=${Uri.encode(serviceName.orEmpty())}"
+    navigate(route)
 }
 
 fun ComposeView.bindPhoneNavHost(hostFragment: PhoneNavHostFragment) {
