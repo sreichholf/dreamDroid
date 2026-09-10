@@ -178,8 +178,10 @@ public class CardPresenter extends Presenter {
 		net.reichholf.dreamdroid.enigma.Movie movie = item.getMovie();
 		TextCardView cardView = (TextCardView) viewHolder.view;
 		cardView.setTitleText(movie.getTitle());
-		if (!movie.getDescriptionExtended().isEmpty())
-			cardView.setContentText(movie.getDescriptionExtended());
+		// Match helpers.enigma2.Movie.descriptionExtended(): literal "\n" → newline.
+		String descriptionEx = movie.getDescriptionExtended().replace("\\n", "\n");
+		if (!descriptionEx.isEmpty())
+			cardView.setContentText(descriptionEx);
 		else
 			cardView.setContentText(movie.getDescription());
 	}
