@@ -74,7 +74,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-drop-asynctask-base | [#227](https://github.com/sreichholf/dreamDroid/pull/227) | merged | Phase 2.2n: Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. |
 | http-loader-chassis-stubs | [#229](https://github.com/sreichholf/dreamDroid/pull/229) | merged | Phase 2.2o: Drop dead `LoaderCallbacks` from phone HTTP bases + stub fragments; delete unused `AsyncSimpleLoader`. |
 | http-async-screenshot | [#230](https://github.com/sreichholf/dreamDroid/pull/230) | merged | Phase 2.2p: ScreenShot grab via `lifecycleScope` + `ScreenshotLoad`; drop `AsyncByteLoader`. |
-| http-async-videooverlay-epg | | open | Phase 2.2q: VideoOverlay bouquet now/next via `lifecycleScope` + reuse `EpgNowNextLoad`; map with `serviceNowNextToExtendedHashMap`; drop LoaderCallbacks on overlay only. Keep ButterKnife/VLC UI and `AsyncListLoader` for Leanback TV. Keep OkHttp 3.14.9. |
+| http-async-videooverlay-epg | [#231](https://github.com/sreichholf/dreamDroid/pull/231) | merged | Phase 2.2q: VideoOverlay bouquet now/next via `lifecycleScope` + reuse `EpgNowNextLoad`; map with `serviceNowNextToExtendedHashMap`; drop LoaderCallbacks on overlay only. Keep ButterKnife/VLC UI. Keep OkHttp 3.14.9. |
+| http-async-tv-browse | | open | Phase 2.2r: Leanback `RootBrowseFragment` → `lifecycleScope` + reuse `ServiceListLoad` / `EpgNowNextLoad` / `MovieListLoad` (+ locs/tags); drop TV `LoaderCallbacks` / `AsyncListLoader` / `LoaderResult`. Keep Leanback UI + `ExtendedHashMap` BrowseItem. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -117,7 +118,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.2n AsyncTask base retirement **merged** [#227](https://github.com/sreichholf/dreamDroid/pull/227).
 - Phase 2.2o Loader chassis stubs **merged** [#229](https://github.com/sreichholf/dreamDroid/pull/229).
 - Phase 2.2p ScreenShot bytes **merged** [#230](https://github.com/sreichholf/dreamDroid/pull/230).
-- Phase 2.2q (this PR): VideoOverlay now/next via coroutines; keep `AsyncListLoader` for Leanback.
+- Phase 2.2q VideoOverlay now/next **merged** [#231](https://github.com/sreichholf/dreamDroid/pull/231).
+- Phase 2.2r (this PR): Leanback RootBrowse via coroutines; delete `AsyncListLoader` / `LoaderResult`.
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -593,8 +595,9 @@ One program each, still one PR (or small PR series) at a time:
 | 2n | HTTP / async — Retire AsyncTask base | Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. **merged** [#227](https://github.com/sreichholf/dreamDroid/pull/227). |
 | 2o | HTTP / async — Loader chassis stubs | Drop `LoaderCallbacks` from `BaseHttpFragment`/`BaseHttpRecyclerFragment` + stub phone screens; gut `HttpFragmentHelper.reload()`; delete unused `AsyncSimpleLoader`. **merged** [#229](https://github.com/sreichholf/dreamDroid/pull/229). |
 | 2p | HTTP / async — ScreenShot bytes | `ScreenShotFragment` → `lifecycleScope` + `ScreenshotLoad` / `Request.getBytes`; delete `AsyncByteLoader`. **merged** [#230](https://github.com/sreichholf/dreamDroid/pull/230). |
-| 2q | HTTP / async — VideoOverlay now/next | `VideoOverlayFragment` → `lifecycleScope` + reuse `EpgNowNextLoad` / `serviceNowNextToExtendedHashMap`; drop overlay LoaderCallbacks only. Keep ButterKnife/VLC UI; keep `AsyncListLoader` for Leanback. Keep OkHttp 3.14.9. **(this PR).** |
-| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2q: Leanback TV loaders / VLC product decision. |
+| 2q | HTTP / async — VideoOverlay now/next | `VideoOverlayFragment` → `lifecycleScope` + reuse `EpgNowNextLoad` / `serviceNowNextToExtendedHashMap`; drop overlay LoaderCallbacks only. Keep ButterKnife/VLC UI. Keep OkHttp 3.14.9. **merged** [#231](https://github.com/sreichholf/dreamDroid/pull/231). |
+| 2r | HTTP / async — Leanback RootBrowse | `RootBrowseFragment` → `lifecycleScope` + reuse `ServiceListLoad` / `EpgNowNextLoad` / `MovieListLoad` (+ locs/tags); drop TV LoaderCallbacks; delete `AsyncListLoader` / `LoaderResult`. Keep Leanback UI + ExtendedHashMap. Keep OkHttp 3.14.9. **(this PR).** |
+| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2r: typed TV browse / VLC product decision / NavHost / state. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
 | 5 | VLC / streaming | `VideoActivity` + `VideoOverlayFragment` (ButterKnife) — product decision before rewrite |
