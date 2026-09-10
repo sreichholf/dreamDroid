@@ -29,4 +29,7 @@ object PhoneNavRoutes {
 
     /** Nested bouquet/service picker (Zap / EPG bouquet). */
     const val PICK_SERVICE = "pick_service"
+
+    /** Nested profile create/edit (args via host). */
+    const val PROFILE_EDIT = "profile_edit"
 }

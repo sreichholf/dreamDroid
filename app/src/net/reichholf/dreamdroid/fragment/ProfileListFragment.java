@@ -30,6 +30,8 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import net.reichholf.dreamdroid.enigma.ProfileDetectLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.IndeterminateProgress;
@@ -356,6 +358,15 @@ public class ProfileListFragment extends BaseFragment {
 	}
 
 	public static void openProfileEditActivity(@NonNull Activity activity, @Nullable Profile profile) {
+		if (activity instanceof FragmentActivity) {
+			Fragment detail = ((FragmentActivity) activity).getSupportFragmentManager()
+					.findFragmentById(R.id.detail_view);
+			if (detail instanceof PhoneNavHostFragment
+					&& ((PhoneNavHostFragment) detail).navigateToProfileEdit(profile)) {
+				return;
+			}
+		}
+
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put("action", Intent.ACTION_EDIT);
 

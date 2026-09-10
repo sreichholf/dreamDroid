@@ -10,7 +10,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavHostController
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
@@ -32,6 +36,8 @@ class PhoneNavHostFragment : BaseFragment() {
     companion object {
         const val ARG_START_ROUTE = "phone_nav_start_route"
         private const val STATE_PICK_REQUEST_CODE = "phone_nav_pick_request_code"
+        private const val STATE_PROFILE_EDIT_ARGS = "phone_nav_profile_edit_args"
+        private const val STATE_PROFILE_EDIT_TAG = "phone_nav_profile_edit_tag"
 
         @JvmStatic
         fun newInstance(startRoute: String): PhoneNavHostFragment {
@@ -55,6 +61,8 @@ class PhoneNavHostFragment : BaseFragment() {
     private var navController: NavHostController? = null
 
     private var pickRequestCode: Int = -1
+    private var profileEditArgs: Bundle? = null
+    private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -67,12 +75,16 @@ class PhoneNavHostFragment : BaseFragment() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
             pickRequestCode = savedInstanceState.getInt(STATE_PICK_REQUEST_CODE, -1)
+            profileEditArgs = savedInstanceState.getBundle(STATE_PROFILE_EDIT_ARGS)
+            profileEditTag = savedInstanceState.getString(STATE_PROFILE_EDIT_TAG, PhoneNavRoutes.PROFILE_EDIT)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(STATE_PICK_REQUEST_CODE, pickRequestCode)
+        profileEditArgs?.let { outState.putBundle(STATE_PROFILE_EDIT_ARGS, it) }
+        outState.putString(STATE_PROFILE_EDIT_TAG, profileEditTag)
     }
 
     override fun onCreateView(
@@ -158,6 +170,9 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.PICK_SERVICE ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_pick_service_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PICK_SERVICE)
+            route == PhoneNavRoutes.PROFILE_EDIT ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_profile_edit_slot)
+                    ?: childFragmentManager.findFragmentByTag(profileEditTag)
             else -> null
         }
     }
@@ -279,6 +294,54 @@ class PhoneNavHostFragment : BaseFragment() {
      * Pop the nested picker and forward [onActivityResult] to the prior leaf
      * (Zap / EPG bouquet). Used instead of [Fragment.setTargetFragment] under NavHost.
      */
+
+    fun profileEditRouteTag(): String = profileEditTag
+
+    fun profileEditLeafArguments(): Bundle {
+        return profileEditArgs ?: Bundle()
+    }
+
+    /**
+     * Push nested profile create/edit. Result goes through [deliverPickResult] with
+     * [Statics.REQUEST_EDIT_PROFILE] so [ProfileListFragment] can reload.
+     */
+    fun navigateToProfileEdit(profile: Profile?): Boolean {
+        val controller = navController ?: return false
+        pickRequestCode = Statics.REQUEST_EDIT_PROFILE
+        val data = ExtendedHashMap()
+        data.put("action", Intent.ACTION_EDIT)
+        if (profile != null) {
+            data.put("profile", profile)
+        }
+        profileEditArgs = Bundle().apply {
+            putSerializable(BaseHttpFragment.sData, data)
+        }
+        profileEditTag = if (profile != null) {
+            "profile_edit:${profile.id}"
+        } else {
+            "profile_edit:new"
+        }
+        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_profile_edit_slot)
+            ?: childFragmentManager.findFragmentByTag(profileEditTag)
+        if (existing != null && !childFragmentManager.isStateSaved) {
+            childFragmentManager.beginTransaction().remove(existing).commitNow()
+        }
+        if (controller.currentDestination?.route == PhoneNavRoutes.PROFILE_EDIT) {
+            if (!childFragmentManager.isStateSaved) {
+                childFragmentManager.beginTransaction()
+                    .replace(
+                        R.id.phone_nav_profile_edit_slot,
+                        ProfileEditFragment().apply { arguments = profileEditLeafArguments() },
+                        profileEditTag,
+                    )
+                    .commitNow()
+            }
+            return true
+        }
+        controller.navigate(PhoneNavRoutes.PROFILE_EDIT)
+        return true
+    }
+
     fun deliverPickResult(resultCode: Int, data: Intent?) {
         val controller = navController ?: return
         val code = pickRequestCode
