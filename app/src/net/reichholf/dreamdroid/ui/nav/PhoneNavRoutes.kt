@@ -25,4 +25,7 @@ object PhoneNavRoutes {
     const val ARG_SERVICE_REF = "serviceRef"
     const val ARG_SERVICE_NAME = "serviceName"
     const val ARG_QUERY = "query"
+
+    /** Nested bouquet/service picker (Zap / EPG bouquet). */
+    const val PICK_SERVICE = "pick_service"
 }

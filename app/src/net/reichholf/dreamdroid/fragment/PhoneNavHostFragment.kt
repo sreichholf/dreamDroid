@@ -31,6 +31,7 @@ class PhoneNavHostFragment : BaseFragment() {
 
     companion object {
         const val ARG_START_ROUTE = "phone_nav_start_route"
+        private const val STATE_PICK_REQUEST_CODE = "phone_nav_pick_request_code"
 
         @JvmStatic
         fun newInstance(startRoute: String): PhoneNavHostFragment {
@@ -53,6 +54,8 @@ class PhoneNavHostFragment : BaseFragment() {
     @Volatile
     private var navController: NavHostController? = null
 
+    private var pickRequestCode: Int = -1
+
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
             navController?.popBackStack()
@@ -62,6 +65,14 @@ class PhoneNavHostFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         mShouldRetainInstance = false
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            pickRequestCode = savedInstanceState.getInt(STATE_PICK_REQUEST_CODE, -1)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(STATE_PICK_REQUEST_CODE, pickRequestCode)
     }
 
     override fun onCreateView(
@@ -141,6 +152,9 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.EPG_SEARCH || route.startsWith("epg_search") ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_epg_search_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG_SEARCH)
+            route == PhoneNavRoutes.PICK_SERVICE ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_pick_service_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PICK_SERVICE)
             else -> null
         }
     }
@@ -245,6 +259,34 @@ class PhoneNavHostFragment : BaseFragment() {
         }
         controller.navigateToEpgSearch(q)
         return true
+    }
+
+    /**
+     * Push nested bouquet picker onto the NavHost back stack.
+     * Result is delivered via [deliverPickResult] when the picker finishes.
+     */
+    fun navigateToPickBouquet(requestCode: Int): Boolean {
+        val controller = navController ?: return false
+        pickRequestCode = requestCode
+        controller.navigate(PhoneNavRoutes.PICK_SERVICE)
+        return true
+    }
+
+    /**
+     * Pop the nested picker and forward [onActivityResult] to the prior leaf
+     * (Zap / EPG bouquet). Used instead of [Fragment.setTargetFragment] under NavHost.
+     */
+    fun deliverPickResult(resultCode: Int, data: Intent?) {
+        val controller = navController ?: return
+        val code = pickRequestCode
+        pickRequestCode = -1
+        if (!controller.popBackStack()) return
+        view?.post {
+            val leaf = getActiveLeaf()
+            if (code >= 0 && leaf != null && data != null) {
+                leaf.onActivityResult(code, resultCode, data)
+            }
+        }
     }
 
     @Deprecated("Deprecated in Java")

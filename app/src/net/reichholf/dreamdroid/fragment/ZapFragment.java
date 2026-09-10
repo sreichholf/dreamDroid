@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -269,6 +270,14 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	private void pickBouquet() {
 		mWaitingForPicker = true;
+		Fragment parent = getParentFragment();
+		while (parent != null) {
+			if (parent instanceof PhoneNavHostFragment) {
+				((PhoneNavHostFragment) parent).navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET);
+				return;
+			}
+			parent = parent.getParentFragment();
+		}
 		PickServiceFragment f = new PickServiceFragment();
 		Bundle args = new Bundle();
 

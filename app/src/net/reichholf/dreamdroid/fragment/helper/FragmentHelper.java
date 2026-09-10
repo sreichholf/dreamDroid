@@ -19,6 +19,7 @@ import android.view.View;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
 import net.reichholf.dreamdroid.helpers.Statics;
@@ -98,6 +99,14 @@ public class FragmentHelper {
 	}
 
 	public void finish(int resultCode, @Nullable Intent data) {
+		Fragment walker = mFragment.getParentFragment();
+		while (walker != null) {
+			if (walker instanceof PhoneNavHostFragment) {
+				((PhoneNavHostFragment) walker).deliverPickResult(resultCode, data);
+				return;
+			}
+			walker = walker.getParentFragment();
+		}
 		MultiPaneHandler mph = ((IMutliPaneContent) mFragment).getMultiPaneHandler();
 		if (mph.isMultiPane()) {
 			boolean explicitShow = false;
