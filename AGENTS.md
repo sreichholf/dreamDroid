@@ -4,6 +4,8 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 
 **New code is Kotlin.** Do not add new `.java` types for modernization work (helpers, UI, loaders, widgets). Edit existing Java surgically when needed; convert to Kotlin when touching a file heavily or extracting a new type. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`.
 
+**Indent:** preserve the file’s existing tabs-or-spaces. Most Java uses tabs; do not reindent whole files or expand tabs to spaces when editing. New Kotlin next to tabbed Java may use tabs. Avoid drive-by newline/brace restyles.
+
 Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). UI look helper: [`.cursor/skills/verify-dreamdroid/SKILL.md`](.cursor/skills/verify-dreamdroid/SKILL.md).
 
 ## Verify UI with instrumented tests
