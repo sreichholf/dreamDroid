@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.BackupFragment
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
+import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
@@ -28,8 +29,8 @@ import net.reichholf.dreamdroid.fragment.ZapFragment
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Migrated drawer leaves: Device Info, Signal, Screenshot, Current, Zap,
- * Backup, Profiles. Other destinations still go through [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
+ * Phone shell [NavHost]. Migrated drawer leaves through Profiles and EPG. Other destinations
+ * (hub, tablet remote) still go through [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
  */
 @Composable
 fun PhoneNavHost(
@@ -100,6 +101,18 @@ fun PhoneNavHost(
                 containerId = R.id.phone_nav_profiles_slot,
                 routeTag = PhoneNavRoutes.PROFILES,
                 createFragment = { ProfileListFragment() },
+            )
+        }
+        composable(PhoneNavRoutes.EPG) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_epg_slot,
+                routeTag = PhoneNavRoutes.EPG,
+                createFragment = {
+                    EpgBouquetFragment().apply {
+                        arguments = hostFragment.epgLeafArguments()
+                    }
+                },
             )
         }
     }

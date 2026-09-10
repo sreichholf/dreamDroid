@@ -11,17 +11,18 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavHostController
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
+import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
- * Migrated leaves: Device Info, Signal, Screenshot, Current, Zap, Backup, Profiles. Drawer selection uses [navigateToRoute] when this
- * host is already shown; [ARG_START_ROUTE] picks the first leaf when mounting.
+ * Migrated drawer leaves include Device Info through Profiles and EPG. Drawer selection uses
+ * [navigateToRoute] when this host is already shown; [ARG_START_ROUTE] picks the first leaf.
  *
  * [net.reichholf.dreamdroid.activities.abs.BaseActivity] only delivers [onActivityResult] to
- * top-level fragments; forward to the active leaf so Profiles edit/add still reloads the list.
+ * top-level fragments; forward to the active leaf (Profiles edit, EPG bouquet picker, Zap).
  */
 class PhoneNavHostFragment : BaseFragment() {
 
@@ -30,9 +31,17 @@ class PhoneNavHostFragment : BaseFragment() {
 
         @JvmStatic
         fun newInstance(startRoute: String): PhoneNavHostFragment {
+            return newInstance(startRoute, null)
+        }
+
+        @JvmStatic
+        fun newInstance(startRoute: String, leafExtras: Bundle?): PhoneNavHostFragment {
             return PhoneNavHostFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_START_ROUTE, startRoute)
+                    if (leafExtras != null) {
+                        putAll(leafExtras)
+                    }
                 }
             }
         }
@@ -64,6 +73,20 @@ class PhoneNavHostFragment : BaseFragment() {
         return arguments?.getString(ARG_START_ROUTE) ?: PhoneNavRoutes.DEVICE_INFO
     }
 
+    /** Args for nested [EpgBouquetFragment] (default TV bouquet from drawer). */
+    fun epgLeafArguments(): Bundle {
+        return Bundle().apply {
+            putString(
+                Event.KEY_SERVICE_REFERENCE,
+                arguments?.getString(Event.KEY_SERVICE_REFERENCE),
+            )
+            putString(
+                Event.KEY_SERVICE_NAME,
+                arguments?.getString(Event.KEY_SERVICE_NAME),
+            )
+        }
+    }
+
     /** Nested destination fragment for the current NavHost route (if any). */
     fun getActiveLeaf(): Fragment? {
         val route = navController?.currentDestination?.route ?: startRoute()
@@ -89,6 +112,9 @@ class PhoneNavHostFragment : BaseFragment() {
             PhoneNavRoutes.PROFILES ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_profiles_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PROFILES)
+            PhoneNavRoutes.EPG ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
             else -> null
         }
     }
@@ -113,6 +139,24 @@ class PhoneNavHostFragment : BaseFragment() {
     fun navigateToRoute(route: String): Boolean {
         val controller = navController ?: return false
         controller.navigateDrawerRoot(route)
+        return true
+    }
+
+    /**
+     * Open EPG with bouquet args. Remounts the nested leaf when args change so
+     * [EpgBouquetFragment] reads a fresh Bundle.
+     */
+    fun navigateToEpg(serviceReference: String?, serviceName: String?): Boolean {
+        val controller = navController ?: return false
+        val args = arguments ?: Bundle().also { arguments = it }
+        args.putString(Event.KEY_SERVICE_REFERENCE, serviceReference)
+        args.putString(Event.KEY_SERVICE_NAME, serviceName)
+        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
+            ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
+        if (existing != null && !childFragmentManager.isStateSaved) {
+            childFragmentManager.beginTransaction().remove(existing).commitNow()
+        }
+        controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
         return true
     }
 

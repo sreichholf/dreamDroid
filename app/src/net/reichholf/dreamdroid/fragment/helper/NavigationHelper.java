@@ -19,7 +19,6 @@ import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
-import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
@@ -273,20 +272,24 @@ public class NavigationHelper {
                 break;
             case Statics.ITEM_RELOAD:
                 return false;
-            case R.id.menu_navigation_epg:
-                clearBackStack();
-                Bundle args = new Bundle();
-
+            case R.id.menu_navigation_epg: {
+                Bundle epgArgs = new Bundle();
                 String ref = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
-                args.putString(Event.KEY_SERVICE_REFERENCE, ref);
-
+                epgArgs.putString(Event.KEY_SERVICE_REFERENCE, ref);
                 String name = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
-                args.putString(Event.KEY_SERVICE_NAME, name);
+                epgArgs.putString(Event.KEY_SERVICE_NAME, name);
 
-                EpgBouquetFragment f = new EpgBouquetFragment();
-                f.setArguments(args);
-                getMainActivity().showDetails(f);
+                Fragment detail = getMainActivity().getSupportFragmentManager()
+                        .findFragmentById(R.id.detail_view);
+                if (detail instanceof PhoneNavHostFragment
+                        && ((PhoneNavHostFragment) detail).navigateToEpg(ref, name)) {
+                    break;
+                }
+                clearBackStack();
+                getMainActivity().showDetails(
+                        PhoneNavHostFragment.newInstance(PhoneNavRoutes.EPG, epgArgs));
                 break;
+            }
             case R.id.menu_navigation_backup:
                 navigatePhoneNavRoot(PhoneNavRoutes.BACKUP);
                 break;
