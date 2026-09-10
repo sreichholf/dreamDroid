@@ -187,9 +187,9 @@ public class ServiceListPager extends BaseHttpFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 		// Nested under PhoneNavHostFragment (non-retained); keep hub non-retained too.
 		mShouldRetainInstance = false;
+		super.onCreate(savedInstanceState);
 		mHasFabReload = false;
 		mBouquets = null;
 		mHubState = new TvMoviesHubState();
