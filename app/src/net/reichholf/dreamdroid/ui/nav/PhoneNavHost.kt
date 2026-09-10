@@ -24,14 +24,15 @@ import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
+import net.reichholf.dreamdroid.fragment.ServiceListPager
 import net.reichholf.dreamdroid.fragment.SignalFragment
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment
 import net.reichholf.dreamdroid.fragment.ZapFragment
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Migrated drawer leaves through EPG and tablet Virtual Remote.
- * Hub (`ServiceListPager`) and phone-only remote activity still use NavigationHelper.
+ * Phone shell [NavHost]. Migrated drawer leaves through hub (`ServiceListPager`)
+ * and tablet Virtual Remote. Phone-only remote still uses a side activity.
  */
 @Composable
 fun PhoneNavHost(
@@ -122,6 +123,14 @@ fun PhoneNavHost(
                 containerId = R.id.phone_nav_remote_slot,
                 routeTag = PhoneNavRoutes.REMOTE,
                 createFragment = { VirtualRemotePagerFragment() },
+            )
+        }
+        composable(PhoneNavRoutes.HUB) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_hub_slot,
+                routeTag = PhoneNavRoutes.HUB,
+                createFragment = { ServiceListPager() },
             )
         }
     }
