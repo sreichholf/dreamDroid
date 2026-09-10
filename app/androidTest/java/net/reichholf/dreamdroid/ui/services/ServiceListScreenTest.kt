@@ -4,11 +4,13 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,8 +47,8 @@ class ServiceListScreenTest {
                             progress = 3,
                         ),
                     ),
-                    onItemClick = {},
-                    onItemLongClick = {},
+                    onItemClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> },
                 )
             }
         }
@@ -74,8 +76,8 @@ class ServiceListScreenTest {
                             kind = ServiceRowKind.CHANNEL,
                         ),
                     ),
-                    onItemClick = {},
-                    onItemLongClick = {},
+                    onItemClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> },
                 )
             }
         }
@@ -84,5 +86,41 @@ class ServiceListScreenTest {
         composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
             .assertIsDisplayed()
             .assertLeftPositionInRootIsEqualTo(20.dp)
+    }
+
+    @Test
+    fun channelTapReportsWindowPositionOfRowNotOrigin() {
+        var tapX = -1
+        var tapY = -1
+        composeRule.setContent {
+            DreamDroidTheme {
+                ServiceListScreen(
+                    items = listOf(
+                        ServiceListItem(
+                            index = 0,
+                            reference = "1:0:1:1:1:1:1:0:0:0:",
+                            name = "ARD",
+                            kind = ServiceRowKind.CHANNEL,
+                        ),
+                        ServiceListItem(
+                            index = 1,
+                            reference = "1:0:1:2:1:1:1:0:0:0:",
+                            name = "ZDF",
+                            kind = ServiceRowKind.CHANNEL,
+                        ),
+                    ),
+                    onItemClick = { _, x, y ->
+                        tapX = x
+                        tapY = y
+                    },
+                    onItemLongClick = { _, _, _ -> },
+                )
+            }
+        }
+        composeRule.onNodeWithText("ZDF").performClick()
+        composeRule.waitForIdle()
+        // Second row must not report the fragment-root origin (0,0) used by the old PopupMenu bug.
+        assertTrue("expected tapX >= 0, got $tapX", tapX >= 0)
+        assertTrue("expected second-row tapY > 0, got $tapY", tapY > 0)
     }
 }

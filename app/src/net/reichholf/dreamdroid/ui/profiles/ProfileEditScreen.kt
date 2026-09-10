@@ -42,6 +42,7 @@ fun ProfileEditScreen(
     modifier: Modifier = Modifier,
 ) {
     // Hosted under simple_layout_with_toolbar which already fits system windows.
+    // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

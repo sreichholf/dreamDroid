@@ -195,7 +195,7 @@ public class ProfileListFragment extends BaseFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mHasFabMain = false;
+		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 		initTitles(getString(R.string.profiles));
@@ -214,7 +214,6 @@ public class ProfileListFragment extends BaseFragment {
 		ProfilesListStateKt.bindProfilesScreen(
 			composeView,
 			mListState,
-			getString(R.string.profile_add),
 			item -> {
 				onProfileRowClick(item);
 				return kotlin.Unit.INSTANCE;
@@ -222,13 +221,15 @@ public class ProfileListFragment extends BaseFragment {
 			item -> {
 				onProfileRowLongClick(item);
 				return kotlin.Unit.INSTANCE;
-			},
-			() -> {
-				createProfile();
-				return kotlin.Unit.INSTANCE;
 			}
 		);
 		return composeView;
+	}
+
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		registerFab(R.id.fab_main, R.string.profile_add, R.drawable.ic_action_fab_add, v -> createProfile());
 	}
 
 	@Override

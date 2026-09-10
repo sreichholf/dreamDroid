@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.profiles
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -24,7 +23,7 @@ class ProfilesScreenTest {
     }
 
     @Test
-    fun showsDemoRowAndAddProfileFab() {
+    fun showsDemoRow() {
         composeRule.setContent {
             DreamDroidTheme {
                 ProfilesScreen(
@@ -36,15 +35,12 @@ class ProfilesScreenTest {
                             active = true,
                         ),
                     ),
-                    addLabel = "Add Profile",
                     onProfileClick = {},
                     onProfileLongClick = {},
-                    onAddClick = {},
                 )
             }
         }
         composeRule.onNodeWithText("Demo").assertIsDisplayed()
         composeRule.onNodeWithText("dreamdroid.org").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Add Profile").assertIsDisplayed()
     }
 }

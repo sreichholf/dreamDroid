@@ -21,8 +21,8 @@ fun ComposeView.bindServiceListScreen(
     state: ServiceListState,
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
-    onItemClick: (ServiceListItem) -> Unit,
-    onItemLongClick: (ServiceListItem) -> Unit,
+    onItemClick: ServiceListTap,
+    onItemLongClick: ServiceListTap,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {

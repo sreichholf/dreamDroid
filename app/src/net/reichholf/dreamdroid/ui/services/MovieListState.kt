@@ -21,8 +21,8 @@ fun ComposeView.bindMovieListScreen(
     state: MovieListState,
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
-    onItemClick: (MovieListItem) -> Unit,
-    onItemLongClick: (MovieListItem) -> Unit,
+    onItemClick: MovieListTap,
+    onItemLongClick: MovieListTap,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {

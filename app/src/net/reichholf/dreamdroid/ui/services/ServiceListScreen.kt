@@ -17,8 +17,16 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -29,20 +37,24 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
 import net.reichholf.dreamdroid.helpers.enigma2.Service
+import kotlin.math.roundToInt
+
+/** Window-space top-left of the tapped row — used to anchor View PopupMenus. */
+typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -> Unit
 
 @Composable
 fun ServiceListScreen(
     items: List<ServiceListItem>,
-    onItemClick: (ServiceListItem) -> Unit,
-    onItemLongClick: (ServiceListItem) -> Unit,
+    onItemClick: ServiceListTap,
+    onItemLongClick: ServiceListTap,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp)) {
         items(items, key = { "${it.index}:${it.reference}" }) { item ->
             ServiceRow(
                 item = item,
-                onClick = { onItemClick(item) },
-                onLongClick = { onItemLongClick(item) },
+                onClick = { x, y -> onItemClick(item, x, y) },
+                onLongClick = { x, y -> onItemLongClick(item, x, y) },
             )
         }
     }
@@ -52,8 +64,8 @@ fun ServiceListScreen(
 @Composable
 private fun ServiceRow(
     item: ServiceListItem,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
+    onClick: (windowX: Int, windowY: Int) -> Unit,
+    onLongClick: (windowX: Int, windowY: Int) -> Unit,
 ) {
     if (item.kind == ServiceRowKind.MARKER) {
         Text(
@@ -64,11 +76,26 @@ private fun ServiceRow(
         )
         return
     }
+    var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    fun windowTopLeft(): Pair<Int, Int> {
+        val bounds: Rect = coords?.boundsInWindow() ?: return 0 to 0
+        return bounds.left.roundToInt() to bounds.top.roundToInt()
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+            .onGloballyPositioned { coords = it }
+            .combinedClickable(
+                onClick = {
+                    val (x, y) = windowTopLeft()
+                    onClick(x, y)
+                },
+                onLongClick = {
+                    val (x, y) = windowTopLeft()
+                    onLongClick(x, y)
+                },
+            ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(Modifier.padding(12.dp)) {

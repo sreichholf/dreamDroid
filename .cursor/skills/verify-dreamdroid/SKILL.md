@@ -65,8 +65,7 @@ Prefer resource ids and visible text over coordinates. `tap --text About` matche
 | TV & Movies | text `TV & Movies` |
 | EPG / Virtual Remote / Zap / Current event | text `EPG`, `Virtual Remote`, `Zap`, `Current event` |
 | About | text `About` (opens a dialog) |
-| Add Profile FAB | content-desc from `R.string.profile_add` (Compose Scaffold FAB; not XML `fab_main`) |
-| Autodiscovery | text `Dreambox Autodiscovery` |
+| Add Profile FAB | `...:id/fab_main` content-desc from `R.string.profile_add` (shell XML FAB) || Autodiscovery | text `Dreambox Autodiscovery` |
 | TV/Radio/Movies/Timer tabs | text `TV`, `Radio`, `Movies`, `Timer` |
 
 - First-start after `--clear-data` shows Changelog. Dismiss with `back` before driving Profiles or the drawer. The changelog text contains the word `Profiles`, so `wait-text "Profiles"` is a false positive until the dialog is gone.
