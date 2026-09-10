@@ -68,17 +68,18 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
+        <!-- Gravity (not detail_view anchor): Compose nested scroll collapses the AppBar
+             and used to drag anchored FABs with the scrolling view (#248 reload; same for main). -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             style="@style/Widget.Material3.FloatingActionButton.Primary"
             android:id="@+id/fab_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
             android:layout_margin="@dimen/fab_margin_right"
             android:src="@drawable/ic_action_fab_add"
             android:visibility="gone"
             app:elevation="6dp"
-            app:layout_anchor="@+id/detail_view"
-            app:layout_anchorGravity="bottom|end|right"
             app:pressedTranslationZ="12dp" />
 
         <!-- Gravity (not detail_view anchor): Compose LazyColumn nested scroll collapses
