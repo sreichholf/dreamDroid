@@ -72,7 +72,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | http-async-volume-power-sleep | [#225](https://github.com/sreichholf/dreamDroid/pull/225) | merged | Phase 2.2l: Volume/power/sleeptimer via `lifecycleScope` + `VolumePowerSleepLoad`; drop `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. |
 | http-async-profile-detect | [#226](https://github.com/sreichholf/dreamDroid/pull/226) | merged | Phase 2.2m: Profile check + device detect via `lifecycleScope`; drop `CheckProfileTask`/`DetectDevicesTask`. |
 | http-async-drop-asynctask-base | [#227](https://github.com/sreichholf/dreamDroid/pull/227) | merged | Phase 2.2n: Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. |
-| http-loader-chassis-stubs | | open | Phase 2.2o: Drop dead `LoaderCallbacks` from phone HTTP bases + stub fragments; delete unused `AsyncSimpleLoader`. Keep `AsyncListLoader`/`AsyncByteLoader` for VideoOverlay, ScreenShot, TV. |
+| http-loader-chassis-stubs | [#229](https://github.com/sreichholf/dreamDroid/pull/229) | merged | Phase 2.2o: Drop dead `LoaderCallbacks` from phone HTTP bases + stub fragments; delete unused `AsyncSimpleLoader`. |
+| http-async-screenshot | | open | Phase 2.2p: ScreenShot grab via `lifecycleScope` + `ScreenshotLoad`; drop `AsyncByteLoader`. Keep `AsyncListLoader` for VideoOverlay + Leanback TV. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -113,7 +114,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.2l Volume/power/sleeptimer coroutines **merged** [#225](https://github.com/sreichholf/dreamDroid/pull/225).
 - Phase 2.2m Profile check + device-detect coroutines **merged** [#226](https://github.com/sreichholf/dreamDroid/pull/226).
 - Phase 2.2n AsyncTask base retirement **merged** [#227](https://github.com/sreichholf/dreamDroid/pull/227).
-- Phase 2.2o (this PR): Drop dead phone LoaderCallbacks chassis stubs; delete unused `AsyncSimpleLoader`.
+- Phase 2.2o Loader chassis stubs **merged** [#229](https://github.com/sreichholf/dreamDroid/pull/229).
+- Phase 2.2p (this PR): ScreenShot bytes via coroutines; delete `AsyncByteLoader`.
 - Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
 
 ## How to read this
@@ -587,8 +589,9 @@ One program each, still one PR (or small PR series) at a time:
 | 2l | HTTP / async — Volume/power/sleep | `HttpFragmentHelper` + `NavigationHelper` → `lifecycleScope` + `VolumePowerSleepLoad`; delete `SetVolumeTask`/`SetPowerStateTask`/`SleepTimerTask`. **merged** [#225](https://github.com/sreichholf/dreamDroid/pull/225). |
 | 2m | HTTP / async — Profile/detect | `MainActivity` + `ProfileListFragment` → `lifecycleScope` profile check / device detect; delete `CheckProfileTask`/`DetectDevicesTask`. **merged** [#226](https://github.com/sreichholf/dreamDroid/pull/226). |
 | 2n | HTTP / async — Retire AsyncTask base | Delete unused `AsyncHttpTaskBase` / `AsyncTaskExecutorService` and empty `asynctask/` package. **merged** [#227](https://github.com/sreichholf/dreamDroid/pull/227). |
-| 2o | HTTP / async — Loader chassis stubs | Drop `LoaderCallbacks` from `BaseHttpFragment`/`BaseHttpRecyclerFragment` + stub phone screens; gut `HttpFragmentHelper.reload()`; delete unused `AsyncSimpleLoader`. Keep live loaders for ScreenShot, VideoOverlay, Leanback. **(this PR).** |
-| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2o: ScreenShot bytes, VideoOverlay/TV loaders. |
+| 2o | HTTP / async — Loader chassis stubs | Drop `LoaderCallbacks` from `BaseHttpFragment`/`BaseHttpRecyclerFragment` + stub phone screens; gut `HttpFragmentHelper.reload()`; delete unused `AsyncSimpleLoader`. **merged** [#229](https://github.com/sreichholf/dreamDroid/pull/229). |
+| 2p | HTTP / async — ScreenShot bytes | `ScreenShotFragment` → `lifecycleScope` + `ScreenshotLoad` / `Request.getBytes`; delete `AsyncByteLoader`. Keep `AsyncListLoader` for VideoOverlay + Leanback. **(this PR).** |
+| 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. Follow-ons after 2p: VideoOverlay/TV loaders. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; shrink `DatabaseHelper` to backup-only then remove |
 | 5 | VLC / streaming | `VideoActivity` + `VideoOverlayFragment` (ButterKnife) — product decision before rewrite |
