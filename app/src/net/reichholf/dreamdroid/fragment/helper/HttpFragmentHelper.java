@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -260,9 +261,18 @@ public class HttpFragmentHelper {
     }
 
     public void findSimilarEvents(@NonNull ExtendedHashMap event) {
+        String query = event.getString(Event.KEY_EVENT_TITLE);
+        Fragment walker = mFragment;
+        while (walker != null) {
+            if (walker instanceof PhoneNavHostFragment
+                    && ((PhoneNavHostFragment) walker).navigateToEpgSearch(query)) {
+                return;
+            }
+            walker = walker.getParentFragment();
+        }
         EpgSearchFragment f = new EpgSearchFragment();
         Bundle args = new Bundle();
-        args.putString(SearchManager.QUERY, event.getString(Event.KEY_EVENT_TITLE));
+        args.putString(SearchManager.QUERY, query);
         f.setArguments(args);
 
         MultiPaneHandler m = (MultiPaneHandler) getAppCompatActivity();

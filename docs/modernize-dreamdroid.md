@@ -111,7 +111,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | widgets-2-6-dive | [#271](https://github.com/sreichholf/dreamDroid/pull/271) | merged | Phase 2.6: widgets product decision (keep XML RemoteViews; no Glance rewrite this program). Keep OkHttp 3.14.9. |
 | widgets-2-6b-cleanup | [#272](https://github.com/sreichholf/dreamDroid/pull/272) | merged | Phase 2.6b: Kotlin coroutine widget click path (drop JobIntentService); prefs delete `isFull`; remove dead SyncService/`HttpIntentService`. Keep OkHttp 3.14.9. |
 | anchor-popup-kotlin | [#273](https://github.com/sreichholf/dreamDroid/pull/273) | merged | Convert `AnchorPopup` to Kotlin; retab `WidgetRemoteRequest.kt`. Keep OkHttp 3.14.9. |
-| navhost-service-epg | this PR | open | Phase 2.1f beachhead: nested service EPG typed route on `PhoneNavHost`. Keep OkHttp 3.14.9. |
+| navhost-service-epg | [#274](https://github.com/sreichholf/dreamDroid/pull/274) | merged | Phase 2.1f beachhead: nested service EPG typed route on `PhoneNavHost`. Keep OkHttp 3.14.9. |
+| navhost-epg-search | this PR | open | Phase 2.1f continued: nested EPG search typed query route on `PhoneNavHost`. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -876,7 +877,8 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | EPG leaf | `PhoneNavRoutes.EPG` + nested `EpgBouquetFragment` | **merged** [#267](https://github.com/sreichholf/dreamDroid/pull/267) (default bouquet ref/name extras) |
 | Tablet remote leaf | `PhoneNavRoutes.REMOTE` + nested `VirtualRemotePagerFragment` | **merged** [#269](https://github.com/sreichholf/dreamDroid/pull/269) (phone still side activity) |
 | Hub leaf | `PhoneNavRoutes.HUB` + nested `ServiceListPager` | **merged** [#270](https://github.com/sreichholf/dreamDroid/pull/270) |
-| Service EPG nested | `PhoneNavRoutes.SERVICE_EPG` typed ref/name | **this PR** (2.1f beachhead) |
+| Service EPG nested | `PhoneNavRoutes.SERVICE_EPG` typed ref/name | **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274) (2.1f beachhead) |
+| EPG search nested | `PhoneNavRoutes.EPG_SEARCH` typed query | **this PR** |
 | Host API | `MultiPaneHandler` | `isMultiPane()` always true on `MainActivity` (in-host detail, not master–detail columns) |
 | Nested | `FragmentHelper`, `HttpFragmentHelper` | FM back stack; pickers via `targetFragment` / `onActivityResult` |
 | Side hosts | `Simple*FragmentActivity`, `VideoActivity`, `ShareActivity` | Settings / profile+timer edit / stream / Share. Phone remote → `SimpleNoTitleFragmentActivity`; **tablet** remote stays in-host via `showDetails` |
@@ -894,7 +896,7 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | 2.1c | Beachhead: `navigation-compose` + Device Info leaf | **merged** [#255](https://github.com/sreichholf/dreamDroid/pull/255) |
 | 2.1d | Drawer → `NavController` for migrated roots; stop `clearBackStack`+`showDetails` for those | **merged** [#256](https://github.com/sreichholf/dreamDroid/pull/256) |
 | 2.1e | More drawer roots | Through hub **merged** [#257](https://github.com/sreichholf/dreamDroid/pull/257)–[#270](https://github.com/sreichholf/dreamDroid/pull/270) |
-| 2.1f | Nested stack (EPG search / service EPG / pick-service) typed routes | **This PR:** service EPG beachhead. Search / pick later. Prefer typed args over hash Bundles |
+| 2.1f | Nested stack (EPG search / service EPG / pick-service) typed routes | Service EPG **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274). **This PR:** EPG search. Pick-service later. |
 | 2.1g | Dialog policy (keep fragment dialogs or promote a few) | |
 | 2.1h | Optional side-activity convergence; retire `NavigationHelper` switch | No OkHttp 4; no widgets; no Media3 |
 
@@ -917,7 +919,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 
-**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). **This PR:** 2.1f service-EPG nested typed route. Optional next: EPG search / pick-service / 2.1g–h / Phase 4–5 (operator).
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Service EPG nested **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274). **This PR:** nested EPG search. Optional next: pick-service / 2.1g–h / Phase 4–5 (operator).
 
 ### Phase 4 — Operator usertests
 

@@ -786,6 +786,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public boolean onQueryTextSubmit(String query) {
+		Fragment detail = getCurrentDetailFragment();
+		if (detail instanceof PhoneNavHostFragment
+				&& ((PhoneNavHostFragment) detail).navigateToEpgSearch(query)) {
+			return true;
+		}
 		Bundle args = new Bundle();
 		args.putString(SearchManager.QUERY, query);
 		Fragment f = new EpgSearchFragment();
