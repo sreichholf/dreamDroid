@@ -35,8 +35,20 @@ jobs:
         run: |
           set -euo pipefail
           SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
+          if [[ -z "$SDK" || ! -d "$SDK" ]]; then
+            echo "ANDROID_HOME/SDK root missing" >&2
+            exit 1
+          fi
+          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
+          if [[ -z "$SDKMANAGER" ]]; then
+            echo "sdkmanager not found under $SDK/cmdline-tools" >&2
+            ls -la "$SDK" >&2 || true
+            exit 1
+          fi
+          # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
+          # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
           rm -rf "$SDK/.temp"
 
       - name: Setup Gradle
@@ -101,8 +113,20 @@ jobs:
         run: |
           set -euo pipefail
           SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
+          if [[ -z "$SDK" || ! -d "$SDK" ]]; then
+            echo "ANDROID_HOME/SDK root missing" >&2
+            exit 1
+          fi
+          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
+          if [[ -z "$SDKMANAGER" ]]; then
+            echo "sdkmanager not found under $SDK/cmdline-tools" >&2
+            ls -la "$SDK" >&2 || true
+            exit 1
+          fi
+          # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
+          # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
           rm -rf "$SDK/.temp"
 
       - name: Setup Gradle
