@@ -15,8 +15,8 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/tv_movies_nav"
+    <!-- Destination bar lives on the activity Coordinator (tv_movies_nav); reserve its height. -->
+    <Space
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="@dimen/tv_movies_destination_bar_height" />
 </LinearLayout>
