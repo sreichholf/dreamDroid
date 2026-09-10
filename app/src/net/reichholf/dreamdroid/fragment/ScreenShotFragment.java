@@ -32,20 +32,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.core.content.FileProvider;
-import androidx.loader.app.LoaderManager.LoaderCallbacks;
-import androidx.loader.content.Loader;
 
 import com.evernote.android.state.State;
+
+import kotlinx.coroutines.Job;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
+import net.reichholf.dreamdroid.enigma.ScreenshotLoadKt;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.loader.AsyncByteLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotScreenKt;
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotUiState;
 
@@ -61,8 +59,7 @@ import java.util.GregorianCalendar;
  *
  * @author sre
  */
-public class ScreenShotFragment extends BaseFragment implements
-		LoaderCallbacks<LoaderResult<byte[]>> {
+public class ScreenShotFragment extends BaseFragment {
 	public static final int TYPE_OSD = 0;
 	public static final int TYPE_VIDEO = 1;
 	public static final int TYPE_ALL = 2;
@@ -88,6 +85,8 @@ public class ScreenShotFragment extends BaseFragment implements
 	private MediaScannerConnection mScannerConn;
 	private HttpFragmentHelper mHttpHelper;
 	private ScreenshotUiState mUiState;
+	@Nullable
+	private Job mLoadJob;
 
 	@Override
 	public boolean hasHeader() {
@@ -216,6 +215,7 @@ public class ScreenShotFragment extends BaseFragment implements
 	public void onPause() {
 		mScannerConn.disconnect();
 		mScannerConn = null;
+		cancelLoad(true);
 		super.onPause();
 	}
 
@@ -334,10 +334,45 @@ public class ScreenShotFragment extends BaseFragment implements
 
 		params.add(new NameValuePair("filename", mFilename));
 
-		Bundle args = new Bundle();
-		args.putString("uri", URIStore.SCREENSHOT);
-		args.putSerializable("params", params);
-		getLoaderManager().restartLoader(0, args, this);
+		cancelLoad();
+		mLoadJob = ScreenshotLoadKt.launchScreenshotLoad(this, params, (success, bytes, errorText) -> {
+			onScreenshotLoadFinished(success, bytes, errorText);
+			return kotlin.Unit.INSTANCE;
+		});
+	}
+
+	private void cancelLoad() {
+		cancelLoad(false);
+	}
+
+	private void cancelLoad(boolean finishUi) {
+		if (mLoadJob != null) {
+			mLoadJob.cancel(null);
+			mLoadJob = null;
+		}
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+			if (mUiState != null) {
+				mUiState.setLoading(false);
+			}
+		}
+	}
+
+	private void onScreenshotLoadFinished(boolean success, @Nullable byte[] bytes, @Nullable String errorText) {
+		if (!isAdded()) {
+			return;
+		}
+		mHttpHelper.onLoadFinished();
+		if (mUiState != null) {
+			mUiState.setLoading(false);
+		}
+		if (success && bytes != null && bytes.length > 0) {
+			onScreenshotAvailable(bytes);
+		} else if (errorText != null && !errorText.isEmpty()) {
+			showToast(errorText);
+		} else {
+			showToast(getString(R.string.error));
+		}
 	}
 
 	private void saveToFile() {
@@ -403,36 +438,6 @@ public class ScreenShotFragment extends BaseFragment implements
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<byte[]>> onCreateLoader(int id, Bundle args) {
-		return new AsyncByteLoader(getAppCompatActivity(), args);
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<byte[]>> loader, @NonNull LoaderResult<byte[]> result) {
-		mHttpHelper.onLoadFinished();
-		if (mUiState != null) {
-			mUiState.setLoading(false);
-		}
-		if (!result.isError()) {
-			if (result.getResult().length > 0)
-				onScreenshotAvailable(result.getResult());
-			else
-				showToast(getString(R.string.error));
-		} else {
-			showToast(result.getErrorText());
-		}
-	}
-
-	@Override
-	public void onLoaderReset(@NonNull Loader<LoaderResult<byte[]>> loader) {
-		mHttpHelper.onLoadFinished();
-		if (mUiState != null) {
-			mUiState.setLoading(false);
-		}
 	}
 
 	protected void showToast(String toastText) {
