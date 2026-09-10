@@ -592,7 +592,7 @@ Prefer **typed browse data → details → hub → prefs** (not prefs-first; not
 4. Leanback prefs → Compose — **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236) (Phase 3.1d)
 5. TV ButterKnife cleared — **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237); phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c)
 
-**Safe next after this dive lands:** Phase 2.5e optional VLC smoke, or Phase 2.1b NavHost dive / 2.3 state / 2.6 widgets.
+**Safe next after Phase 0 / 3.1c focus dive landed:** Phase 3 cards/prefs (done). Broader Appendix H next after Phase 2.3: **this PR** NavHost dive → 2.1c beachhead, or widgets (2.6).
 
 
 ### Phase 3.1c — TV hub focus dive (this PR; docs only)
