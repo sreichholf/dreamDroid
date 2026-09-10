@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,8 +41,11 @@ fun ProfileEditScreen(
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Hosted under simple_layout_with_toolbar which already fits system windows.
+    // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
             FloatingActionButton(onClick = onSave) {
                 Icon(

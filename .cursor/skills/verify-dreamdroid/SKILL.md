@@ -65,7 +65,7 @@ Prefer resource ids and visible text over coordinates. `tap --text About` matche
 | TV & Movies | text `TV & Movies` |
 | EPG / Virtual Remote / Zap / Current event | text `EPG`, `Virtual Remote`, `Zap`, `Current event` |
 | About | text `About` (opens a dialog) |
-| Add Profile FAB | `...:id/fab_main` content-desc `Add Profile` |
+| Add Profile FAB | `...:id/fab_main` content-desc from `R.string.profile_add` (shell XML FAB) |
 | Autodiscovery | text `Dreambox Autodiscovery` |
 | TV/Radio/Movies/Timer tabs | text `TV`, `Radio`, `Movies`, `Timer` |
 
