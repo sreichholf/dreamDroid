@@ -74,6 +74,7 @@ class PhoneNavHostFragment : BaseFragment() {
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
+            discardResultRequestCodeForCurrentRoute()
             navController?.popBackStack()
         }
     }
@@ -220,6 +221,7 @@ class PhoneNavHostFragment : BaseFragment() {
      */
     fun navigateToRoute(route: String): Boolean {
         val controller = navController ?: return false
+        resultRequestCodes.clear()
         controller.navigateDrawerRoot(route)
         return true
     }
@@ -231,6 +233,10 @@ class PhoneNavHostFragment : BaseFragment() {
      */
     fun navigateToEpg(serviceReference: String?, serviceName: String?): Boolean {
         val controller = navController ?: return false
+        // Drawer-style EPG open drops any nested edit/pick back stack entries.
+        if (controller.currentDestination?.route != PhoneNavRoutes.EPG) {
+            resultRequestCodes.clear()
+        }
         val args = arguments ?: Bundle().also { arguments = it }
         args.putString(Event.KEY_SERVICE_REFERENCE, serviceReference)
         args.putString(Event.KEY_SERVICE_NAME, serviceName)
@@ -409,6 +415,27 @@ class PhoneNavHostFragment : BaseFragment() {
 
     private fun pushResultRequestCode(code: Int) {
         resultRequestCodes.addLast(code)
+    }
+
+    /** True when this route pushed a pending [resultRequestCodes] entry. */
+    private fun isResultDestination(route: String?): Boolean {
+        if (route == null) return false
+        return route == PhoneNavRoutes.PICK_SERVICE
+            || route == PhoneNavRoutes.PROFILE_EDIT
+            || route == PhoneNavRoutes.TIMER_EDIT
+            || route == PhoneNavRoutes.TIMER_SERVICE_PICK
+    }
+
+    /**
+     * System/gesture back pops the NavHost without [deliverPickResult]; drop the
+     * matching pending request code so a later finish still sees the outer code
+     * (e.g. timer edit after canceling service pick).
+     */
+    private fun discardResultRequestCodeForCurrentRoute() {
+        val route = navController?.currentDestination?.route
+        if (isResultDestination(route) && resultRequestCodes.isNotEmpty()) {
+            resultRequestCodes.removeLast()
+        }
     }
 
     /**
