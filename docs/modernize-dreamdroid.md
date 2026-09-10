@@ -87,7 +87,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | room-backup-finish | [#242](https://github.com/sreichholf/dreamDroid/pull/242) | merged | Phase 2.4: Android BackupAgent includes Room `dreambox` (and legacy `dreamdroid` for restore compat); drop legacy file after migrate; widget stops using `DatabaseHelper` keys. Keep migrate-only `DatabaseHelper`. Keep OkHttp 3.14.9. |
 | docs-vlc-product-decision | [#243](https://github.com/sreichholf/dreamDroid/pull/243) | merged | Phase 2.5 (docs only): VLC/streaming inventory + product options; **decision A** keep libVLC + Compose overlay rewrite path. No player code. Keep OkHttp 3.14.9. |
 | vlc-overlay-typed-state | [#244](https://github.com/sreichholf/dreamDroid/pull/244) | merged | Phase 2.5b typed VideoOverlay state (`ServiceNowNext` / `Movie`); hash only at stream Intent / legacy edges. Keep OkHttp 3.14.9. |
-| vlc-overlay-compose | [#245](https://github.com/sreichholf/dreamDroid/pull/245) | merged | Phase 2.5c Compose overlay + ButterKnife drop |
+| vlc-overlay-compose | [#245](https://github.com/sreichholf/dreamDroid/pull/245) | merged | Phase 2.5c Compose overlay chrome (+ ButterKnife drop / 2.5d). Keep OkHttp 3.14.9. |
 | docs-state-rotation-dive | this PR | open | Phase 2.3 (docs only): Evernote @State + Livefront Bridge inventory + agreed migration slices. No code. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
@@ -417,7 +417,7 @@ ButterKnife library removed (**merged** [#245](https://github.com/sreichholf/dre
 
 Two HTTP stacks. Box XML is `HttpURLConnection`. Picons are Picasso plus OkHttp 3.14.9.
 
-Two database files historically. Room `dreambox` holds `profile` and is included in Android Backup (**this PR**). Legacy SQLite `dreamdroid` stays on the BackupAgent file list so pre-cutover cloud snapshots still restore; after restore (or first-run migrate) copies profiles into Room, the legacy file is deleted. Do not drop `DatabaseHelper` until no install still needs that migrate path (or operator accepts migrate-from-backup-only).
+Two database files historically. Room `dreambox` holds `profile` and is included in Android Backup (**merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242)). Legacy SQLite `dreamdroid` stays on the BackupAgent file list so pre-cutover cloud snapshots still restore; after restore (or first-run migrate) copies profiles into Room, the legacy file is deleted. Do not drop `DatabaseHelper` until no install still needs that migrate path (or operator accepts migrate-from-backup-only).
 
 First-start skip-Profiles race is fixed on `main` in #168. Still wait for `Demo` after Changelog, not the word Profiles inside changelog text.
 
@@ -472,7 +472,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 
 - Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Hub TV/Radio now/next loads typed `ServiceNowNext` (#209). Movies list loads typed `enigma.Movie` (#210). Leanback movie browse still uses hash SAX.
 - Enigma2 HTTP still uses `HttpURLConnection` via `SimpleHttpClient` (coroutines + typed `EnigmaClient`). Picons still Picasso + OkHttp 3.14.9. `asynctask/*` retired.
-- Room holds `profile` only (`dreambox`). Android Backup includes Room and legacy `dreamdroid` for restore compat (**this PR**). After migrate/restore copy, legacy file is deleted; `DatabaseHelper` stays migrate-only.
+- Room holds `profile` only (`dreambox`). Android Backup includes Room and legacy `dreamdroid` for restore compat (**merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242)). After migrate/restore copy, legacy file is deleted; `DatabaseHelper` stays migrate-only.
 - ButterKnife dependency removed (**merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245)). TV binds cleared earlier; phone VLC overlay chrome is Compose. `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
 
 ### Explicitly frozen
