@@ -26,11 +26,9 @@ jobs:
           java-version: "17"
           distribution: temurin
 
-      # Unit job does not need the emulator package (setup-android installs it by default).
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: tools platform-tools platforms;android-34 build-tools;34.0.0
+      # ubuntu-latest already ships Android SDK (platforms 34+, build-tools 34+,
+      # ANDROID_HOME). No setup-android — that action re-downloads cmdline-tools
+      # and was even pulling the emulator package on the unit job.
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
