@@ -16,7 +16,7 @@ import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
- * Migrated leaves: Device Info, Signal. Drawer selection uses [navigateToRoute] when this
+ * Migrated leaves: Device Info, Signal, Screenshot. Drawer selection uses [navigateToRoute] when this
  * host is already shown; [ARG_START_ROUTE] picks the first leaf when mounting.
  */
 class PhoneNavHostFragment : BaseFragment() {
@@ -70,6 +70,9 @@ class PhoneNavHostFragment : BaseFragment() {
             PhoneNavRoutes.SIGNAL ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_signal_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SIGNAL)
+            PhoneNavRoutes.SCREENSHOT ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_screenshot_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SCREENSHOT)
             else -> null
         }
     }

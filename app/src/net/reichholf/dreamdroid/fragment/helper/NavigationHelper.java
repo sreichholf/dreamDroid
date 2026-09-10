@@ -24,7 +24,6 @@ import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
-import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.fragment.ZapFragment;
@@ -225,8 +224,7 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_screenshot:
-                clearBackStack();
-                getMainActivity().showDetails(ScreenShotFragment.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.SCREENSHOT);
                 break;
 
             case Statics.ITEM_TOGGLE_STANDBY:
