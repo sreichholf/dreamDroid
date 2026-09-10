@@ -33,6 +33,9 @@ object PhoneNavRoutes {
     /** Nested profile create/edit (args via host). */
     const val PROFILE_EDIT = "profile_edit"
 
-    /** Nested timer create/edit (args via host). Service pick stays side activity. */
+    /** Nested timer create/edit (args via host). */
     const val TIMER_EDIT = "timer_edit"
+
+    /** Nested timer service pick (from timer edit). */
+    const val TIMER_SERVICE_PICK = "timer_service_pick"
 }

@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import android.app.SearchManager
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.ViewGroup
@@ -23,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.BackupFragment
+import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
@@ -32,6 +34,7 @@ import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.PickServiceFragment
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment
 import net.reichholf.dreamdroid.fragment.TimerEditFragment
+import net.reichholf.dreamdroid.fragment.TimerServicePickFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
 import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
@@ -239,6 +242,23 @@ fun PhoneNavHost(
                 createFragment = {
                     TimerEditFragment().apply {
                         arguments = hostFragment.timerEditLeafArguments()
+                    }
+                },
+            )
+        }
+        composable(PhoneNavRoutes.TIMER_SERVICE_PICK) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_timer_service_pick_slot,
+                routeTag = PhoneNavRoutes.TIMER_SERVICE_PICK,
+                createFragment = {
+                    TimerServicePickFragment().apply {
+                        arguments = Bundle().apply {
+                            val data = ExtendedHashMap()
+                            data.put(Service.KEY_REFERENCE, "default")
+                            putSerializable(BaseHttpFragment.sData, data)
+                            putString("action", Intent.ACTION_PICK)
+                        }
                     }
                 },
             )

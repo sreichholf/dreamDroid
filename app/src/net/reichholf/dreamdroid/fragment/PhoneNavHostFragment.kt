@@ -10,6 +10,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavHostController
+import java.util.ArrayDeque
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
@@ -37,7 +38,7 @@ class PhoneNavHostFragment : BaseFragment() {
 
     companion object {
         const val ARG_START_ROUTE = "phone_nav_start_route"
-        private const val STATE_PICK_REQUEST_CODE = "phone_nav_pick_request_code"
+        private const val STATE_PICK_REQUEST_CODES = "phone_nav_pick_request_codes"
         private const val STATE_PROFILE_EDIT_ARGS = "phone_nav_profile_edit_args"
         private const val STATE_PROFILE_EDIT_TAG = "phone_nav_profile_edit_tag"
         private const val STATE_TIMER_EDIT_ARGS = "phone_nav_timer_edit_args"
@@ -64,7 +65,8 @@ class PhoneNavHostFragment : BaseFragment() {
     @Volatile
     private var navController: NavHostController? = null
 
-    private var pickRequestCode: Int = -1
+    /** Stack of pending onActivityResult request codes (nested edit → service pick). */
+    private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
     private var profileEditArgs: Bundle? = null
     private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
     private var timerEditArgs: Bundle? = null
@@ -80,7 +82,8 @@ class PhoneNavHostFragment : BaseFragment() {
         mShouldRetainInstance = false
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
-            pickRequestCode = savedInstanceState.getInt(STATE_PICK_REQUEST_CODE, -1)
+            resultRequestCodes.clear()
+            savedInstanceState.getIntArray(STATE_PICK_REQUEST_CODES)?.forEach { resultRequestCodes.addLast(it) }
             profileEditArgs = savedInstanceState.getBundle(STATE_PROFILE_EDIT_ARGS)
             profileEditTag = savedInstanceState.getString(STATE_PROFILE_EDIT_TAG, PhoneNavRoutes.PROFILE_EDIT)
             timerEditArgs = savedInstanceState.getBundle(STATE_TIMER_EDIT_ARGS)
@@ -90,7 +93,7 @@ class PhoneNavHostFragment : BaseFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(STATE_PICK_REQUEST_CODE, pickRequestCode)
+        outState.putIntArray(STATE_PICK_REQUEST_CODES, resultRequestCodes.toIntArray())
         profileEditArgs?.let { outState.putBundle(STATE_PROFILE_EDIT_ARGS, it) }
         outState.putString(STATE_PROFILE_EDIT_TAG, profileEditTag)
         timerEditArgs?.let { outState.putBundle(STATE_TIMER_EDIT_ARGS, it) }
@@ -186,6 +189,9 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.TIMER_EDIT ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_timer_edit_slot)
                     ?: childFragmentManager.findFragmentByTag(timerEditTag)
+            route == PhoneNavRoutes.TIMER_SERVICE_PICK ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_timer_service_pick_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.TIMER_SERVICE_PICK)
             else -> null
         }
     }
@@ -298,7 +304,7 @@ class PhoneNavHostFragment : BaseFragment() {
      */
     fun navigateToPickBouquet(requestCode: Int): Boolean {
         val controller = navController ?: return false
-        pickRequestCode = requestCode
+        pushResultRequestCode(requestCode)
         controller.navigate(PhoneNavRoutes.PICK_SERVICE)
         return true
     }
@@ -320,7 +326,7 @@ class PhoneNavHostFragment : BaseFragment() {
      */
     fun navigateToProfileEdit(profile: Profile?): Boolean {
         val controller = navController ?: return false
-        pickRequestCode = Statics.REQUEST_EDIT_PROFILE
+        pushResultRequestCode(Statics.REQUEST_EDIT_PROFILE)
         val data = ExtendedHashMap()
         data.put("action", Intent.ACTION_EDIT)
         if (profile != null) {
@@ -361,12 +367,12 @@ class PhoneNavHostFragment : BaseFragment() {
     fun timerEditLeafArguments(): Bundle = timerEditArgs ?: Bundle()
 
     /**
-     * Push nested timer create/edit. Service pick stays on [SimpleToolbarFragmentActivity].
+     * Push nested timer create/edit. Service pick uses [navigateToTimerServicePick].
      * Result goes through [deliverPickResult] with [Statics.REQUEST_EDIT_TIMER].
      */
     fun navigateToTimerEdit(timer: ExtendedHashMap, create: Boolean): Boolean {
         val controller = navController ?: return false
-        pickRequestCode = Statics.REQUEST_EDIT_TIMER
+        pushResultRequestCode(Statics.REQUEST_EDIT_TIMER)
         val data = ExtendedHashMap()
         data.put("timer", timer)
         data.put("action", if (create) DreamDroid.ACTION_CREATE else Intent.ACTION_EDIT)
@@ -401,14 +407,28 @@ class PhoneNavHostFragment : BaseFragment() {
         return true
     }
 
+    private fun pushResultRequestCode(code: Int) {
+        resultRequestCodes.addLast(code)
+    }
+
+    /**
+     * Push nested timer service pick onto the NavHost back stack (from [TimerEditFragment]).
+     * Pushes [Statics.REQUEST_PICK_SERVICE] without clearing the pending edit request code.
+     */
+    fun navigateToTimerServicePick(): Boolean {
+        val controller = navController ?: return false
+        pushResultRequestCode(Statics.REQUEST_PICK_SERVICE)
+        controller.navigate(PhoneNavRoutes.TIMER_SERVICE_PICK)
+        return true
+    }
+
     fun deliverPickResult(resultCode: Int, data: Intent?) {
         val controller = navController ?: return
-        val code = pickRequestCode
-        pickRequestCode = -1
+        val code = if (resultRequestCodes.isEmpty()) -1 else resultRequestCodes.removeLast()
         if (!controller.popBackStack()) return
         view?.post {
             val leaf = getActiveLeaf()
-            // Profile edit finishes with a null Intent; bouquet pick sends extras.
+            // Profile/timer edit finish with a null Intent; service/bouquet pick send extras.
             if (code >= 0 && leaf != null) {
                 leaf.onActivityResult(code, resultCode, data)
             }

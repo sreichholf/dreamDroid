@@ -24,5 +24,6 @@
     <item name="phone_nav_pick_service_slot" type="id"/>
     <item name="phone_nav_profile_edit_slot" type="id"/>
     <item name="phone_nav_timer_edit_slot" type="id"/>
+    <item name="phone_nav_timer_service_pick_slot" type="id"/>
 
 </resources>
