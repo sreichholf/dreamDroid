@@ -115,6 +115,9 @@ class PhoneNavHostFragment : BaseFragment() {
             PhoneNavRoutes.EPG ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
+            PhoneNavRoutes.REMOTE ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_remote_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.REMOTE)
             else -> null
         }
     }
