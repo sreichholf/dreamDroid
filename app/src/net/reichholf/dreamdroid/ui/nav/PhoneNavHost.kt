@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -52,14 +53,36 @@ private fun NestedDeviceInfoDestination(hostFragment: Fragment) {
             }
         },
         update = { container ->
-            val fm = hostFragment.childFragmentManager
-            if (fm.findFragmentById(container.id) == null) {
-                fm.beginTransaction()
-                    .replace(container.id, DeviceInfoFragment(), PhoneNavRoutes.DEVICE_INFO)
-                    .commitNowAllowingStateLoss()
-            }
+            ensureNestedDeviceInfo(hostFragment, container.id)
         },
     )
+}
+
+/**
+ * Mount [DeviceInfoFragment] under the host when missing. Never uses
+ * `commitNowAllowingStateLoss`; if the child FM has already saved state, defer via
+ * [android.view.View.post] until a safe window (e.g. after rotation restore).
+ */
+internal fun ensureNestedDeviceInfo(hostFragment: Fragment, containerId: Int) {
+    if (!hostFragment.isAdded) return
+    val fm = hostFragment.childFragmentManager
+    if (fm.findFragmentById(containerId) != null) return
+    if (!fm.isStateSaved) {
+        commitNestedDeviceInfo(fm, containerId)
+        return
+    }
+    hostFragment.view?.post {
+        if (!hostFragment.isAdded) return@post
+        val childFm = hostFragment.childFragmentManager
+        if (childFm.findFragmentById(containerId) != null || childFm.isStateSaved) return@post
+        commitNestedDeviceInfo(childFm, containerId)
+    }
+}
+
+private fun commitNestedDeviceInfo(fm: FragmentManager, containerId: Int) {
+    fm.beginTransaction()
+        .replace(containerId, DeviceInfoFragment(), PhoneNavRoutes.DEVICE_INFO)
+        .commitNow()
 }
 
 fun ComposeView.bindPhoneNavHost(hostFragment: Fragment) {

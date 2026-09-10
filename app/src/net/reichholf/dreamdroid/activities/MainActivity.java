@@ -46,6 +46,7 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.enigma.ProfileDetectLoadKt;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
@@ -302,6 +303,21 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		return mDetailFragment;
 	}
 
+	/**
+	 * Detail pane content for callbacks. When the pane hosts {@link PhoneNavHostFragment},
+	 * prefer the nested NavHost leaf (e.g. Device Info) over the wrapper.
+	 */
+	@Nullable
+	private Fragment getDetailContentFragment() {
+		Fragment detail = getCurrentDetailFragment();
+		if (detail instanceof PhoneNavHostFragment) {
+			Fragment leaf = ((PhoneNavHostFragment) detail).getActiveLeaf();
+			if (leaf != null)
+				return leaf;
+		}
+		return detail;
+	}
+
 	private void initViews() {
 		setContentView(R.layout.dualpane);
 		Toolbar toolbar = findViewById(R.id.toolbar);
@@ -501,8 +517,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 		if (mNavigationHelper != null)
 			mNavigationHelper.onProfileChanged();
-		if (mDetailFragment != null && mDetailFragment instanceof IHttpBase)
-			((IHttpBase) mDetailFragment).onProfileChanged();
+		Fragment content = getDetailContentFragment();
+		if (content instanceof IHttpBase)
+			((IHttpBase) content).onProfileChanged();
 	}
 
 	/**
@@ -586,7 +603,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getDetailContentFragment();
 		if (callbackHandler != null)
 			if (callbackHandler.onKeyDown(keyCode, event))
 				return true;
@@ -607,7 +624,7 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getCurrentDetailFragment();
+		ActivityCallbackHandler callbackHandler = (ActivityCallbackHandler) getDetailContentFragment();
 		if (callbackHandler != null)
 			if (callbackHandler.onKeyUp(keyCode, event))
 				return true;
@@ -696,7 +713,9 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (mNavigationHelper != null)
 				mNavigationHelper.onDialogAction(action, details, dialogTag);
 		} else if (mDetailFragment != null) {
-			((ActionDialog.DialogActionListener) mDetailFragment).onDialogAction(action, details, dialogTag);
+			Fragment content = getDetailContentFragment();
+			if (content instanceof ActionDialog.DialogActionListener)
+				((ActionDialog.DialogActionListener) content).onDialogAction(action, details, dialogTag);
 		}
 		super.onDialogAction(action, details, dialogTag);
 	}
@@ -738,8 +757,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (mNavigationHelper != null)
 				((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogSelection(dialogTag, dialog, selected);
 		} else if (mDetailFragment != null) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment).onMultiChoiceDialogSelection(dialogTag,
-					dialog, selected);
+			Fragment content = getDetailContentFragment();
+			if (content instanceof MultiChoiceDialog.MultiChoiceDialogListener)
+				((MultiChoiceDialog.MultiChoiceDialogListener) content).onMultiChoiceDialogSelection(dialogTag,
+						dialog, selected);
 		}
 	}
 
@@ -749,8 +770,10 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (mNavigationHelper != null)
 				((MultiChoiceDialog.MultiChoiceDialogListener) mNavigationHelper).onMultiChoiceDialogFinish(dialogTag, result);
 		} else if (mDetailFragment != null) {
-			((MultiChoiceDialog.MultiChoiceDialogListener) mDetailFragment)
-					.onMultiChoiceDialogFinish(dialogTag, result);
+			Fragment content = getDetailContentFragment();
+			if (content instanceof MultiChoiceDialog.MultiChoiceDialogListener)
+				((MultiChoiceDialog.MultiChoiceDialogListener) content)
+						.onMultiChoiceDialogFinish(dialogTag, result);
 		}
 	}
 
