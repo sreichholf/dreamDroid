@@ -21,7 +21,6 @@ import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
-import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
@@ -262,8 +261,8 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_profiles:
-                clearBackStack();
-                getMainActivity().showDetails(ProfileListFragment.class);
+                // Clears drawer highlight (setSelectedItem); still uses NavHost when possible.
+                navigatePhoneNavRoot(PhoneNavRoutes.PROFILES);
                 break;
 
             case R.id.menu_navigation_signal:

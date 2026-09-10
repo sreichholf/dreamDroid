@@ -157,7 +157,10 @@ public class ProfileListFragment extends BaseFragment {
 	}
 
 	private void onDevicesDetected(@NonNull ArrayList<Profile> profiles) {
-		mProgress = (IndeterminateProgress) getFragmentManager().findFragmentByTag("dialog_devicesearch_indeterminate");
+		// Dialog was shown on the activity FM via MultiPaneHandler; do not use the
+		// fragment's getFragmentManager() (child FM when nested under PhoneNavHost).
+		mProgress = (IndeterminateProgress) requireActivity().getSupportFragmentManager()
+				.findFragmentByTag("dialog_devicesearch_indeterminate");
 		if (mProgress != null) {
 			mProgress.dismiss();
 			mProgress = null;
@@ -244,7 +247,8 @@ public class ProfileListFragment extends BaseFragment {
 			mDetectDevicesJob.cancel(null);
 			mDetectDevicesJob = null;
 		}
-		IndeterminateProgress progress = (IndeterminateProgress) getFragmentManager().findFragmentByTag("dialog_devicesearch_indeterminate");
+		IndeterminateProgress progress = (IndeterminateProgress) requireActivity().getSupportFragmentManager()
+				.findFragmentByTag("dialog_devicesearch_indeterminate");
 		if (progress != null) {
 			progress.dismiss();
 		}

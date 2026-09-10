@@ -11,4 +11,5 @@ object PhoneNavRoutes {
     const val CURRENT = "current"
     const val ZAP = "zap"
     const val BACKUP = "backup"
+    const val PROFILES = "profiles"
 }

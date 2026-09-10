@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -16,8 +17,11 @@ import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
- * Migrated leaves: Device Info, Signal, Screenshot, Current, Zap, Backup. Drawer selection uses [navigateToRoute] when this
+ * Migrated leaves: Device Info, Signal, Screenshot, Current, Zap, Backup, Profiles. Drawer selection uses [navigateToRoute] when this
  * host is already shown; [ARG_START_ROUTE] picks the first leaf when mounting.
+ *
+ * [net.reichholf.dreamdroid.activities.abs.BaseActivity] only delivers [onActivityResult] to
+ * top-level fragments; forward to the active leaf so Profiles edit/add still reloads the list.
  */
 class PhoneNavHostFragment : BaseFragment() {
 
@@ -82,6 +86,9 @@ class PhoneNavHostFragment : BaseFragment() {
             PhoneNavRoutes.BACKUP ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_backup_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.BACKUP)
+            PhoneNavRoutes.PROFILES ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_profiles_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PROFILES)
             else -> null
         }
     }
@@ -107,6 +114,12 @@ class PhoneNavHostFragment : BaseFragment() {
         val controller = navController ?: return false
         controller.navigateDrawerRoot(route)
         return true
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        getActiveLeaf()?.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onDrawerOpened() {
