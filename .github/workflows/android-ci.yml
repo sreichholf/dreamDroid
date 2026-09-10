@@ -31,8 +31,10 @@ jobs:
       # and was even pulling the emulator package on the unit job.
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
+          # Open-source cache provider (v6 default pulls proprietary gradle-actions-caching).
+          cache-provider: basic
           # Same-repo PRs may write caches; forks stay read-only.
           cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
 
@@ -95,7 +97,9 @@ jobs:
           distribution: temurin
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: Cache Gradle configuration cache
         uses: actions/cache@v5
