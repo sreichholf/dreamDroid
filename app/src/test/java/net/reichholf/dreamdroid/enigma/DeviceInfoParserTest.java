@@ -2,7 +2,11 @@ package net.reichholf.dreamdroid.enigma;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
@@ -57,5 +61,26 @@ public class DeviceInfoParserTest {
     public void emptyDeviceInfoElementYieldsNull() {
         assertNull(DeviceInfoParser.INSTANCE.parse(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><e2deviceinfo></e2deviceinfo>"));
+    }
+
+    @Test
+    public void deviceInfoSerializableRoundTrip() throws Exception {
+        InputStream in = getClass().getResourceAsStream("/web/deviceinfo.xml");
+        assertNotNull(in);
+        String xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        DeviceInfo info = DeviceInfoParser.INSTANCE.parse(xml);
+        assertNotNull(info);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(info);
+        }
+        DeviceInfo restored;
+        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
+            restored = (DeviceInfo) ois.readObject();
+        }
+        assertEquals(info, restored);
+        assertEquals("Solo4K", restored.getDeviceName());
+        assertEquals(2, restored.getFrontends().size());
     }
 }

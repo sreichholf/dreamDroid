@@ -14,13 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.evernote.android.state.State;
-
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.enigma.DeviceInfo;
 import net.reichholf.dreamdroid.enigma.DeviceInfoLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoScreenKt;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoUiState;
 
@@ -35,8 +32,9 @@ import kotlinx.coroutines.Job;
  *
  */
 public class DeviceInfoFragment extends BaseHttpFragment {
+	private static final String KEY_INFO = "device_info";
+
 	@Nullable
-	@State
 	public DeviceInfo mInfo;
 
 	@Nullable
@@ -51,6 +49,19 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		initTitles(getString(R.string.device_info));
 		mUiState = new DeviceInfoUiState();
 		mDeviceInfoReady = false;
+		if (savedInstanceState != null) {
+			@SuppressWarnings("deprecation")
+			DeviceInfo restored = (DeviceInfo) savedInstanceState.getSerializable(KEY_INFO);
+			mInfo = restored;
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		if (mInfo != null) {
+			outState.putSerializable(KEY_INFO, mInfo);
+		}
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
