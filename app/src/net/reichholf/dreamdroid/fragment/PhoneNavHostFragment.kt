@@ -144,7 +144,8 @@ class PhoneNavHostFragment : BaseFragment() {
 
     /**
      * Open EPG with bouquet args. Remounts the nested leaf when args change so
-     * [EpgBouquetFragment] reads a fresh Bundle.
+     * [EpgBouquetFragment] reads a fresh Bundle. When already on the EPG route,
+     * `launchSingleTop` would no-op — replace the child fragment directly.
      */
     fun navigateToEpg(serviceReference: String?, serviceName: String?): Boolean {
         val controller = navController ?: return false
@@ -155,6 +156,18 @@ class PhoneNavHostFragment : BaseFragment() {
             ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
         if (existing != null && !childFragmentManager.isStateSaved) {
             childFragmentManager.beginTransaction().remove(existing).commitNow()
+        }
+        if (controller.currentDestination?.route == PhoneNavRoutes.EPG) {
+            if (!childFragmentManager.isStateSaved) {
+                childFragmentManager.beginTransaction()
+                    .replace(
+                        R.id.phone_nav_epg_slot,
+                        EpgBouquetFragment().apply { arguments = epgLeafArguments() },
+                        PhoneNavRoutes.EPG,
+                    )
+                    .commitNow()
+            }
+            return true
         }
         controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
         return true
