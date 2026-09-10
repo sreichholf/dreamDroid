@@ -293,7 +293,7 @@ fun SettingsScreen(
     }
 }
 
-private data class ListDialogSpec(
+internal data class ListDialogSpec(
     val title: String,
     val entries: List<String>,
     val values: List<String>,
@@ -301,14 +301,14 @@ private data class ListDialogSpec(
     val key: String,
 )
 
-private data class EditDialogSpec(
+internal data class EditDialogSpec(
     val title: String,
     val value: String,
     val key: String,
 )
 
 @Composable
-private fun PreferenceCategoryHeader(title: String) {
+internal fun PreferenceCategoryHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleSmall,
@@ -318,7 +318,7 @@ private fun PreferenceCategoryHeader(title: String) {
 }
 
 @Composable
-private fun SwitchPreferenceRow(
+internal fun SwitchPreferenceRow(
     title: String,
     summary: String?,
     checked: Boolean,
@@ -362,7 +362,7 @@ private fun SwitchPreferenceRow(
 }
 
 @Composable
-private fun ListPreferenceRow(
+internal fun ListPreferenceRow(
     title: String,
     summary: String,
     onClick: () -> Unit,
@@ -372,7 +372,7 @@ private fun ListPreferenceRow(
 }
 
 @Composable
-private fun ActionPreferenceRow(
+internal fun ActionPreferenceRow(
     title: String,
     summary: String,
     onClick: () -> Unit,
@@ -400,7 +400,7 @@ private fun ActionPreferenceRow(
 }
 
 @Composable
-private fun ListPreferenceDialog(
+internal fun ListPreferenceDialog(
     spec: ListDialogSpec,
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit,
@@ -440,7 +440,7 @@ private fun ListPreferenceDialog(
 }
 
 @Composable
-private fun EditTextPreferenceDialog(
+internal fun EditTextPreferenceDialog(
     spec: EditDialogSpec,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
@@ -470,7 +470,7 @@ private fun EditTextPreferenceDialog(
     )
 }
 
-private fun entryLabel(entries: Array<String>, values: Array<String>, selected: String): String {
+internal fun entryLabel(entries: Array<String>, values: Array<String>, selected: String): String {
     val idx = values.indexOf(selected)
     return if (idx in entries.indices) entries[idx] else selected
 }
