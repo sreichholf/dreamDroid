@@ -8,6 +8,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -19,13 +20,12 @@ import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.BackupFragment;
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
-import net.reichholf.dreamdroid.fragment.DeviceInfoFragment;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.ServiceListPager;
-import net.reichholf.dreamdroid.fragment.SignalFragment;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.fragment.ZapFragment;
 import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
@@ -46,6 +46,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHan
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState;
 import net.reichholf.dreamdroid.ui.drawer.DrawerScreenKt;
+import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
 
 import java.util.ArrayList;
 
@@ -103,6 +104,21 @@ public class NavigationHelper {
         if (fm.getBackStackEntryCount() > 0) {
             fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
+    }
+
+    /**
+     * Open a migrated phone NavHost leaf. If {@link PhoneNavHostFragment} is already the
+     * detail pane, navigate in-graph; otherwise mount the host with [route] as start.
+     */
+    protected void navigatePhoneNavRoot(@NonNull String route) {
+        Fragment detail = getMainActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.detail_view);
+        if (detail instanceof PhoneNavHostFragment
+                && ((PhoneNavHostFragment) detail).navigateToRoute(route)) {
+            return;
+        }
+        clearBackStack();
+        getMainActivity().showDetails(PhoneNavHostFragment.newInstance(route));
     }
 
     public void onDestroy() {
@@ -177,8 +193,7 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_device_info:
-                clearBackStack();
-                getMainActivity().showDetails(DeviceInfoFragment.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.DEVICE_INFO);
                 break;
 
             case R.id.menu_navigation_current:
@@ -258,8 +273,7 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_signal:
-                clearBackStack();
-                getMainActivity().showDetails(SignalFragment.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.SIGNAL);
                 break;
             case R.id.menu_navigation_zap:
                 clearBackStack();

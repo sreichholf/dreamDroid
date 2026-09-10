@@ -89,16 +89,6 @@ public class DreamDroidAttributionPresenter {
 						.addCopyrightNotice("Copyright (c) 2012 Evelina Vrabie")
 						.addLicense(License.APACHE)
 						.setWebsite("https://github.com/CodeAndMagic/GaugeView")
-						.build(),
-					new Attribution.Builder("Android-State")
-						.addCopyrightNotice("Copyright (c) 2017 Evernote Corporation.")
-						.addLicense("Eclipse Public License - v 1.0","https://www.eclipse.org/legal/epl-v10.html")
-						.setWebsite("https://github.com/evernote/android-state")
-						.build(),
-					new Attribution.Builder("Bridge")
-						.addCopyrightNotice("Copyright 2017 Livefront")
-						.addLicense(License.APACHE)
-						.setWebsite("https://github.com/livefront/bridge")
 						.build()
 				)
 				.build();
