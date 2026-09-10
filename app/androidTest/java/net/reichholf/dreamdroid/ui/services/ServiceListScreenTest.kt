@@ -80,7 +80,8 @@ class ServiceListScreenTest {
             }
         }
         // Card padding 12dp + list horizontal padding 8dp = 20dp from root.
-        composeRule.onNodeWithText("ZDF")
+        // useUnmergedTree: combinedClickable merges semantics up to the Card (left=8dp).
+        composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
             .assertIsDisplayed()
             .assertLeftPositionInRootIsEqualTo(20.dp)
     }
