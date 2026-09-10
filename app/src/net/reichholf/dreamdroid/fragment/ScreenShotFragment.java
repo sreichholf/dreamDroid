@@ -33,8 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.core.content.FileProvider;
 
-import com.evernote.android.state.State;
-
 import kotlinx.coroutines.Job;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -79,7 +77,12 @@ public class ScreenShotFragment extends BaseFragment {
 	private int mFormat;
 	private int mSize;
 	private String mFilename;
-	@State
+	/**
+	 * Last screenshot bytes. Not persisted across process death (Bundle size risk);
+	 * {@link #onResume} reloads when empty. Config-change retention still keeps the field
+	 * when {@code mShouldRetainInstance} is true.
+	 */
+	@Nullable
 	public byte[] mRawImage;
 	@Nullable
 	private MediaScannerConnection mScannerConn;
