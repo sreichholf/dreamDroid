@@ -225,8 +225,9 @@ fun VideoOverlayScreen(
 }
 
 /**
- * IconButton that fires [onClick] immediately, then repeats while pressed
+ * IconButton that fires [onClick] on press-down, then repeats while held
  * (parity with [net.reichholf.dreamdroid.view.OnRepeatListener]: 500ms then every 300ms).
+ * Suppresses the IconButton release click so a hold does not seek one extra step.
  */
 @Composable
 private fun RepeatIconButton(
@@ -238,18 +239,29 @@ private fun RepeatIconButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
+    var suppressReleaseClick by remember { mutableStateOf(false) }
     LaunchedEffect(pressed) {
         if (!pressed) {
             return@LaunchedEffect
         }
-        // First fire is IconButton.onClick; hold-repeat starts after initial delay.
+        suppressReleaseClick = true
+        onClick()
         delay(initialDelayMs)
         while (true) {
             onClick()
             delay(repeatDelayMs)
         }
     }
-    IconButton(onClick = onClick, interactionSource = interactionSource) {
+    IconButton(
+        onClick = {
+            if (suppressReleaseClick) {
+                suppressReleaseClick = false
+                return@IconButton
+            }
+            onClick()
+        },
+        interactionSource = interactionSource,
+    ) {
         Icon(
             painter = painter,
             contentDescription = contentDescription,
