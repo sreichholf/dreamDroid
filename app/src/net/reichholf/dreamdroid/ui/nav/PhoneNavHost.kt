@@ -27,6 +27,7 @@ import net.reichholf.dreamdroid.fragment.CurrentServiceFragment
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment
+import net.reichholf.dreamdroid.fragment.MyPreferenceFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.PickServiceFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
@@ -43,8 +44,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Drawer leaves through hub; nested service EPG, EPG search,
- * and bouquet pick are the 2.1f beachheads. Phone-only remote still uses a side activity.
+ * Phone shell [NavHost]. Drawer leaves through hub + settings; nested service EPG, EPG search,
+ * and bouquet pick are the 2.1f beachheads.
  */
 @Composable
 fun PhoneNavHost(
@@ -135,6 +136,14 @@ fun PhoneNavHost(
                 containerId = R.id.phone_nav_remote_slot,
                 routeTag = PhoneNavRoutes.REMOTE,
                 createFragment = { VirtualRemotePagerFragment() },
+            )
+        }
+        composable(PhoneNavRoutes.SETTINGS) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_settings_slot,
+                routeTag = PhoneNavRoutes.SETTINGS,
+                createFragment = { MyPreferenceFragment() },
             )
         }
         composable(PhoneNavRoutes.HUB) {

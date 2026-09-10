@@ -143,6 +143,9 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.REMOTE ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_remote_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.REMOTE)
+            route == PhoneNavRoutes.SETTINGS ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_settings_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SETTINGS)
             route == PhoneNavRoutes.HUB ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_hub_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB)
