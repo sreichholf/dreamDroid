@@ -11,6 +11,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,17 +19,18 @@ import androidx.navigation.compose.rememberNavController
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.fragment.SignalFragment
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost] beachhead. Today only [PhoneNavRoutes.DEVICE_INFO]; other drawer
- * destinations still go through [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
+ * Phone shell [NavHost]. Migrated drawer leaves: Device Info, Signal. Other destinations still
+ * go through [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
  */
 @Composable
 fun PhoneNavHost(
     hostFragment: PhoneNavHostFragment,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = PhoneNavRoutes.DEVICE_INFO,
+    startDestination: String = hostFragment.startRoute(),
 ) {
     DisposableEffect(navController) {
         hostFragment.attachNavController(navController)
@@ -40,18 +42,36 @@ fun PhoneNavHost(
         modifier = Modifier.fillMaxSize(),
     ) {
         composable(PhoneNavRoutes.DEVICE_INFO) {
-            NestedDeviceInfoDestination(hostFragment = hostFragment)
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_device_info_slot,
+                routeTag = PhoneNavRoutes.DEVICE_INFO,
+                createFragment = { DeviceInfoFragment() },
+            )
+        }
+        composable(PhoneNavRoutes.SIGNAL) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_signal_slot,
+                routeTag = PhoneNavRoutes.SIGNAL,
+                createFragment = { SignalFragment() },
+            )
         }
     }
 }
 
 @Composable
-private fun NestedDeviceInfoDestination(hostFragment: Fragment) {
+private fun NestedFragmentDestination(
+    hostFragment: Fragment,
+    containerId: Int,
+    routeTag: String,
+    createFragment: () -> Fragment,
+) {
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
             FragmentContainerView(context).apply {
-                id = R.id.phone_nav_device_info_slot
+                id = containerId
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -59,36 +79,57 @@ private fun NestedDeviceInfoDestination(hostFragment: Fragment) {
             }
         },
         update = { container ->
-            ensureNestedDeviceInfo(hostFragment, container.id)
+            ensureNestedFragment(hostFragment, container.id, routeTag, createFragment)
         },
     )
 }
 
 /**
- * Mount [DeviceInfoFragment] under the host when missing. Never uses
+ * Mount [createFragment] under the host when missing. Never uses
  * `commitNowAllowingStateLoss`; if the child FM has already saved state, defer via
  * [android.view.View.post] until a safe window (e.g. after rotation restore).
  */
-internal fun ensureNestedDeviceInfo(hostFragment: Fragment, containerId: Int) {
+internal fun ensureNestedFragment(
+    hostFragment: Fragment,
+    containerId: Int,
+    routeTag: String,
+    createFragment: () -> Fragment,
+) {
     if (!hostFragment.isAdded) return
     val fm = hostFragment.childFragmentManager
     if (fm.findFragmentById(containerId) != null) return
     if (!fm.isStateSaved) {
-        commitNestedDeviceInfo(fm, containerId)
+        commitNestedFragment(fm, containerId, routeTag, createFragment)
         return
     }
     hostFragment.view?.post {
         if (!hostFragment.isAdded) return@post
         val childFm = hostFragment.childFragmentManager
         if (childFm.findFragmentById(containerId) != null || childFm.isStateSaved) return@post
-        commitNestedDeviceInfo(childFm, containerId)
+        commitNestedFragment(childFm, containerId, routeTag, createFragment)
     }
 }
 
-private fun commitNestedDeviceInfo(fm: FragmentManager, containerId: Int) {
+private fun commitNestedFragment(
+    fm: FragmentManager,
+    containerId: Int,
+    routeTag: String,
+    createFragment: () -> Fragment,
+) {
     fm.beginTransaction()
-        .replace(containerId, DeviceInfoFragment(), PhoneNavRoutes.DEVICE_INFO)
+        .replace(containerId, createFragment(), routeTag)
         .commitNow()
+}
+
+/** Drawer-style top-level navigate: single-top + save/restore under the start destination. */
+fun NavHostController.navigateDrawerRoot(route: String) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
 }
 
 fun ComposeView.bindPhoneNavHost(hostFragment: PhoneNavHostFragment) {

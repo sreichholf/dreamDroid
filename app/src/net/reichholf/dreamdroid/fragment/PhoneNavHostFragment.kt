@@ -12,13 +12,27 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
+import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
- * Device Info is the first leaf route; drawer re-selection uses [navigateToRoute]
- * instead of replacing this fragment (Phase 2.1d).
+ * Migrated leaves: Device Info, Signal. Drawer selection uses [navigateToRoute] when this
+ * host is already shown; [ARG_START_ROUTE] picks the first leaf when mounting.
  */
 class PhoneNavHostFragment : BaseFragment() {
+
+    companion object {
+        const val ARG_START_ROUTE = "phone_nav_start_route"
+
+        @JvmStatic
+        fun newInstance(startRoute: String): PhoneNavHostFragment {
+            return PhoneNavHostFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_START_ROUTE, startRoute)
+                }
+            }
+        }
+    }
 
     @Volatile
     private var navController: NavHostController? = null
@@ -42,10 +56,22 @@ class PhoneNavHostFragment : BaseFragment() {
         }
     }
 
-    /** Nested destination fragment currently shown under the NavHost (if any). */
+    fun startRoute(): String {
+        return arguments?.getString(ARG_START_ROUTE) ?: PhoneNavRoutes.DEVICE_INFO
+    }
+
+    /** Nested destination fragment for the current NavHost route (if any). */
     fun getActiveLeaf(): Fragment? {
-        return childFragmentManager.findFragmentById(R.id.phone_nav_device_info_slot)
-            ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.DEVICE_INFO)
+        val route = navController?.currentDestination?.route ?: startRoute()
+        return when (route) {
+            PhoneNavRoutes.DEVICE_INFO ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_device_info_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.DEVICE_INFO)
+            PhoneNavRoutes.SIGNAL ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_signal_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SIGNAL)
+            else -> null
+        }
     }
 
     fun attachNavController(controller: NavHostController) {
@@ -67,12 +93,7 @@ class PhoneNavHostFragment : BaseFragment() {
      */
     fun navigateToRoute(route: String): Boolean {
         val controller = navController ?: return false
-        controller.navigate(route) {
-            launchSingleTop = true
-            popUpTo(controller.graph.startDestinationId) {
-                inclusive = false
-            }
-        }
+        controller.navigateDrawerRoot(route)
         return true
     }
 

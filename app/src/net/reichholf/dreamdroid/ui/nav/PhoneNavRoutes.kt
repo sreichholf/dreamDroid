@@ -6,4 +6,5 @@ package net.reichholf.dreamdroid.ui.nav
  */
 object PhoneNavRoutes {
     const val DEVICE_INFO = "device_info"
+    const val SIGNAL = "signal"
 }
