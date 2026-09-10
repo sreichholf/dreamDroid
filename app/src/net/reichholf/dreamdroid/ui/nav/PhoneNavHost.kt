@@ -154,7 +154,7 @@ fun PhoneNavHost(
             NestedFragmentDestination(
                 hostFragment = hostFragment,
                 containerId = R.id.phone_nav_service_epg_slot,
-                routeTag = PhoneNavRoutes.SERVICE_EPG,
+                routeTag = "service_epg:$serviceRef",
                 createFragment = {
                     ServiceEpgListFragment().apply {
                         arguments = Bundle().apply {
