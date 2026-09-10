@@ -19,7 +19,7 @@ import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.BackupFragment;
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment;
-import net.reichholf.dreamdroid.fragment.DeviceInfoFragment;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
@@ -178,7 +178,7 @@ public class NavigationHelper {
 
             case R.id.menu_navigation_device_info:
                 clearBackStack();
-                getMainActivity().showDetails(DeviceInfoFragment.class);
+                getMainActivity().showDetails(PhoneNavHostFragment.class);
                 break;
 
             case R.id.menu_navigation_current:

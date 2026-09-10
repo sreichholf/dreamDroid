@@ -94,7 +94,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | state-screenshot | [#250](https://github.com/sreichholf/dreamDroid/pull/250) | merged | Phase 2.3d: ScreenShotFragment drops `@State` on `mRawImage`; do not Bundle the bytes — reload on process death. Keep Bridge. Keep OkHttp 3.14.9. |
 | state-hash-fragments | [#251](https://github.com/sreichholf/dreamDroid/pull/251) | merged | Phase 2.3e: timers/movies/current/BaseHttpRecyclerEvent drop `@State`; Bundle selection + filters (typed `CurrentService`). Keep Bridge for MultiChoiceDialog. Keep OkHttp 3.14.9. |
 | state-drop-bridge | [#252](https://github.com/sreichholf/dreamDroid/pull/252) | merged | Phase 2.3f: MultiChoiceDialog Bundle `boolean[]`; remove Livefront Bridge + Evernote android-state deps. Keep OkHttp 3.14.9. |
-| docs-navhost-dive | this PR | open | Phase 2.1b (docs only): phone NavHost / Compose Navigation inventory + agreed hybrid slices. No NavHost code. Keep OkHttp 3.14.9. |
+| docs-navhost-dive | [#254](https://github.com/sreichholf/dreamDroid/pull/254) | merged | Phase 2.1b (docs only): phone NavHost / Compose Navigation inventory + agreed hybrid slices. Keep OkHttp 3.14.9. |
+| navhost-deviceinfo-beachhead | this PR | open | Phase 2.1c: `navigation-compose` + `PhoneNavHostFragment` Device Info leaf; other drawer destinations still Fragment/`NavigationHelper`. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 

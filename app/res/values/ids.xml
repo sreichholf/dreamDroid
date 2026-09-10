@@ -8,5 +8,6 @@
     <item name="menu_navigation_profiles" type="id"/>
     <item name="menu_cancel" type="id"/>
     <item name="menu_check_connectivity" type="id"/>
+    <item name="phone_nav_device_info_slot" type="id"/>
 
 </resources>
