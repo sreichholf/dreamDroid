@@ -9,6 +9,7 @@ package net.reichholf.dreamdroid.activities;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -186,6 +187,23 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		DreamDroid.setCurrentProfileChangedListener(this);
 		PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 		showChangeLog(true);
+		handleSearchIntent(getIntent());
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+		handleSearchIntent(intent);
+	}
+
+	/** System / SearchView ACTION_SEARCH — same path as the toolbar query submit. */
+	private void handleSearchIntent(@Nullable Intent intent) {
+		if (intent == null || !Intent.ACTION_SEARCH.equals(intent.getAction()))
+			return;
+		String query = intent.getStringExtra(SearchManager.QUERY);
+		if (query != null)
+			onQueryTextSubmit(query);
 	}
 
 	/**
