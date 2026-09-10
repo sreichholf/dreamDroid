@@ -193,9 +193,9 @@ private fun NestedFragmentDestination(
 }
 
 /**
- * Mount [createFragment] under the host when missing. Never uses
- * `commitNowAllowingStateLoss`; if the child FM has already saved state, defer via
- * [android.view.View.post] until a safe window (e.g. after rotation restore).
+ * Mount [createFragment] under the host when missing or when [routeTag] changed
+ * (parameterized nested destinations). Never uses `commitNowAllowingStateLoss`;
+ * if the child FM has already saved state, defer via [android.view.View.post].
  */
 internal fun ensureNestedFragment(
     hostFragment: Fragment,
@@ -205,7 +205,8 @@ internal fun ensureNestedFragment(
 ) {
     if (!hostFragment.isAdded) return
     val fm = hostFragment.childFragmentManager
-    if (fm.findFragmentById(containerId) != null) return
+    val existing = fm.findFragmentById(containerId)
+    if (existing != null && existing.tag == routeTag) return
     if (!fm.isStateSaved) {
         commitNestedFragment(fm, containerId, routeTag, createFragment)
         return
@@ -213,7 +214,9 @@ internal fun ensureNestedFragment(
     hostFragment.view?.post {
         if (!hostFragment.isAdded) return@post
         val childFm = hostFragment.childFragmentManager
-        if (childFm.findFragmentById(containerId) != null || childFm.isStateSaved) return@post
+        if (childFm.isStateSaved) return@post
+        val still = childFm.findFragmentById(containerId)
+        if (still != null && still.tag == routeTag) return@post
         commitNestedFragment(childFm, containerId, routeTag, createFragment)
     }
 }
