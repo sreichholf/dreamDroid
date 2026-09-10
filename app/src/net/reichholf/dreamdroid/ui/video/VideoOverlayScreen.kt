@@ -363,9 +363,9 @@ fun ComposeView.bindVideoOverlayScreen(
     onSeekChange: (Int) -> Unit,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    // Let D-pad focus search into Compose children (do not trap on the ComposeView shell).
-    isFocusable = false
-    isFocusableInTouchMode = false
+    // Focusable shell so nextFocusDown from servicelist lands here; we then forward into Compose.
+    isFocusable = true
+    isFocusableInTouchMode = true
     val firstControlFocus = FocusRequester()
     setContent {
         DreamDroidTheme {
@@ -386,7 +386,6 @@ fun ComposeView.bindVideoOverlayScreen(
             )
         }
     }
-    // If the View system still lands focus on this ComposeView, forward into the first control.
     setOnFocusChangeListener { _, hasFocus ->
         if (hasFocus) {
             post {
