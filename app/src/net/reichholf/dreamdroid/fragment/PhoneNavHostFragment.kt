@@ -349,7 +349,8 @@ class PhoneNavHostFragment : BaseFragment() {
         if (!controller.popBackStack()) return
         view?.post {
             val leaf = getActiveLeaf()
-            if (code >= 0 && leaf != null && data != null) {
+            // Profile edit finishes with a null Intent; bouquet pick sends extras.
+            if (code >= 0 && leaf != null) {
                 leaf.onActivityResult(code, resultCode, data)
             }
         }
