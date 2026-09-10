@@ -13,5 +13,6 @@
     <item name="phone_nav_screenshot_slot" type="id"/>
     <item name="phone_nav_current_slot" type="id"/>
     <item name="phone_nav_zap_slot" type="id"/>
+    <item name="phone_nav_backup_slot" type="id"/>
 
 </resources>
