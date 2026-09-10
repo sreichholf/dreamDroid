@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.TimerEditFragment;
 import net.reichholf.dreamdroid.helpers.DateTime;
@@ -246,6 +247,15 @@ public class Timer {
 	 * @param create - set to true if a new timer should be created instead of editing an existing one
 	 */
 	public static void edit(MultiPaneHandler mph, ExtendedHashMap timer, @NonNull Fragment target, boolean create) {
+		Fragment walker = target.getParentFragment();
+		while (walker != null) {
+			if (walker instanceof PhoneNavHostFragment
+					&& ((PhoneNavHostFragment) walker).navigateToTimerEdit(timer, create)) {
+				return;
+			}
+			walker = walker.getParentFragment();
+		}
+
 		ExtendedHashMap data = new ExtendedHashMap();
 		data.put("timer", timer);
 		data.put("action", create ? DreamDroid.ACTION_CREATE : Intent.ACTION_EDIT);
