@@ -14,8 +14,6 @@ import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,8 +40,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
-import net.reichholf.dreamdroid.loader.LoaderResult;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -265,18 +261,17 @@ public class HttpFragmentHelper {
         m.showDetails(f, true);
     }
 
+    /**
+     * Former LoaderManager.restartLoader entry point. Phone HTTP screens load via coroutines;
+     * calling this is a programming error.
+     */
     public void reload() {
-        reload(LOADER_DEFAULT_ID);
+        throw new IllegalStateException(
+                "HttpFragmentHelper.reload() retired; use lifecycleScope / *Load helpers");
     }
 
     public void reload(int loader) {
-        onLoadStarted();
-        if (!"".equals(getBaseFragment().getBaseTitle().trim()))
-            getBaseFragment().setCurrentTitle(mFragment.getString(R.string.loading));
-
-        getAppCompatActivity().setTitle(getBaseFragment().getCurrentTitle());
-        LoaderManager.getInstance(mFragment).restartLoader(loader, getBaseFragment().getLoaderBundle(loader),
-                (LoaderCallbacks<LoaderResult<ExtendedHashMap>>) mFragment);
+        reload();
     }
 
     public SimpleHttpClient getHttpClient() {

@@ -9,8 +9,6 @@ package net.reichholf.dreamdroid.fragment.abs;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -24,7 +22,6 @@ import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
 
@@ -34,7 +31,7 @@ import java.util.ArrayList;
  */
 
 public abstract class BaseHttpFragment extends BaseFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ExtendedHashMap>>, IHttpBase, SwipeRefreshLayout.OnRefreshListener {
+		IHttpBase, SwipeRefreshLayout.OnRefreshListener {
 
 	public static final String sData = "data";
 	protected HttpFragmentHelper mHttpHelper;
@@ -151,53 +148,16 @@ public abstract class BaseHttpFragment extends BaseFragment implements
 		return args;
 	}
 
-	protected void reload(int loader) {
-		mHttpHelper.reload(loader);
-	}
-
+	/**
+	 * Subclasses must override and load via coroutines.
+	 * Do not call {@link HttpFragmentHelper#reload()} — Loader chassis is retired for phone HTTP screens.
+	 */
 	protected void reload() {
-		mHttpHelper.reload();
+		mReload = false;
 	}
 
 	public String getLoadFinishedTitle() {
 		return getBaseTitle();
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader, @NonNull LoaderResult<ExtendedHashMap> result) {
-		mHttpHelper.onLoadFinished();
-		setCurrentTitle(getLoadFinishedTitle());
-		getAppCompatActivity().setTitle(getCurrentTitle());
-		if (result.isError()) {
-			showToast(result.getErrorText());
-			return;
-		}
-		applyData(loader.getId(), result.getResult());
-	}
-
-	@Override
-	public void onLoaderReset(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader) {
-	}
-
-	/*
-	 * You want override this if you plan to use a loader!
-	 * 
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * android.support.v4.app.LoaderManager.LoaderCallbacks#onCreateLoader(int,
-	 * android.os.Bundle)
-	 */
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		return null;
-	}
-
-	/*
-	 * You want override this if you don't override onLoadFinished!
-	 */
-	public void applyData(int loaderId, ExtendedHashMap content) {
 	}
 
 	public void execSimpleResultTask(SimpleResultRequestHandler handler, ArrayList<NameValuePair> params) {

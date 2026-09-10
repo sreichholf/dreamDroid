@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evernote.android.state.State;
@@ -46,10 +45,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.services.MovieListItem;
 import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
 import net.reichholf.dreamdroid.ui.services.MovieListState;
@@ -319,19 +315,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 		}
 
 		return params;
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		// Movies list no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
-		return new AsyncListLoader(getAppCompatActivity(), new MovieListRequestHandler(), false, args);
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from EnigmaClient coroutines.
 	}
 
 	@Override

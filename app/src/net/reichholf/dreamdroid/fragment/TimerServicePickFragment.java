@@ -11,7 +11,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.R;
@@ -23,9 +22,6 @@ import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.pick.PickServiceListState;
 import net.reichholf.dreamdroid.ui.pick.PickServiceListStateKt;
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
@@ -155,18 +151,6 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment {
 			params.add(new NameValuePair("sRef", mCurrentBouquet.getReference()));
 		}
 		return params;
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle args) {
-		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, args);
-	}
-
-	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from BouquetListLoad / ServiceListLoad.
 	}
 
 	@Override

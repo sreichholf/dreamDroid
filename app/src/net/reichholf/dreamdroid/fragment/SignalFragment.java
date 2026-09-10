@@ -19,16 +19,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.enigma.Signal;
 import net.reichholf.dreamdroid.enigma.SignalLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SignalRequestHandler;
-import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.signal.SignalScreenKt;
 import net.reichholf.dreamdroid.ui.signal.SignalUiState;
 
@@ -141,18 +137,6 @@ public class SignalFragment extends BaseHttpFragment {
 				}
 		);
 		return view;
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		// Unused: content comes from EnigmaClient coroutines.
-		return new AsyncSimpleLoader(getAppCompatActivity(), new SignalRequestHandler(), args);
-	}
-
-	@Override
-	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
-		// Unused: content comes from EnigmaClient coroutines.
 	}
 
 	private void applySignal(@NonNull Signal signal) {

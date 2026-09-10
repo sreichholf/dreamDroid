@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.evernote.android.state.State;
@@ -39,11 +38,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.room.AppDatabase;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 import net.reichholf.dreamdroid.ui.services.ServiceListItem;
@@ -274,19 +269,6 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 			param = "sRef";
 		params.add(new NameValuePair(param, mRef));
 		return params;
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		// Hub pages no longer start this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
-		return new AsyncListLoader(getAppCompatActivity(), new EventListRequestHandler(URIStore.EPG_NOW), false, args);
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from EnigmaClient coroutines.
 	}
 
 	@Override
