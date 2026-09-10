@@ -31,20 +31,10 @@
                         android:icon="?attr/ic_menu_current"
                         android:title="@string/current_event"/>
                     <item
-                        android:id="@+id/menu_navigation_power"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_power_off"
-                        android:title="@string/powercontrol"/>
-                    <item
                         android:id="@+id/menu_navigation_zap"
                         android:checked="false"
                         android:icon="?attr/ic_menu_zap"
                         android:title="@string/zap"/>
-                    <item
-                        android:id="@+id/menu_navigation_sleeptimer"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_sleeptimer"
-                        android:title="@string/sleeptimer"/>
                 </group>
             </menu>
         </item>
@@ -64,11 +54,6 @@
                         android:icon="?attr/ic_menu_device"
                         android:title="@string/device_info"/>
                     <item
-                        android:id="@+id/menu_navigation_message"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_mail"
-                        android:title="@string/send_message"/>
-                    <item
                         android:id="@+id/menu_navigation_signal"
                         android:checked="false"
                         android:icon="?attr/ic_menu_signal"
@@ -77,32 +62,42 @@
             </menu>
         </item>
         <item
-            android:id="@+id/settings_about_header"
-            android:title="@string/settings_and_about">
-            <menu>
-                <group android:checkableBehavior="single">
-                    <item
-                        android:id="@+id/menu_navigation_settings"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_settings"
-                        android:title="@string/settings"/>
-                    <item
-                        android:id="@+id/menu_navigation_about"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_about"
-                        android:title="@string/about"/>
-                    <item
-                        android:id="@+id/menu_navigation_backup"
-                        android:checked="false"
-                        android:icon="?attr/ic_import_export"
-                        android:title="@string/backup"/>
-                    <item
-                        android:id="@+id/menu_navigation_changelog"
-                        android:checked="false"
-                        android:icon="?attr/ic_menu_changelog"
-                        android:title="@string/changelog"/>
-                </group>
-            </menu>
-        </item>
+            android:id="@+id/menu_navigation_settings"
+            android:checked="false"
+            android:icon="?attr/ic_menu_settings"
+            android:title="@string/settings"/>
+    </group>
+    <!-- Action ids used by the drawer box strip and Settings footer; not destinations. -->
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/menu_navigation_power"
+            android:icon="?attr/ic_menu_power_off"
+            android:title="@string/powercontrol"
+            android:visible="false"/>
+        <item
+            android:id="@+id/menu_navigation_sleeptimer"
+            android:icon="?attr/ic_menu_sleeptimer"
+            android:title="@string/sleeptimer"
+            android:visible="false"/>
+        <item
+            android:id="@+id/menu_navigation_message"
+            android:icon="?attr/ic_menu_mail"
+            android:title="@string/send_message"
+            android:visible="false"/>
+        <item
+            android:id="@+id/menu_navigation_about"
+            android:icon="?attr/ic_menu_about"
+            android:title="@string/about"
+            android:visible="false"/>
+        <item
+            android:id="@+id/menu_navigation_backup"
+            android:icon="?attr/ic_import_export"
+            android:title="@string/backup"
+            android:visible="false"/>
+        <item
+            android:id="@+id/menu_navigation_changelog"
+            android:icon="?attr/ic_menu_changelog"
+            android:title="@string/changelog"
+            android:visible="false"/>
     </group>
 </menu>
