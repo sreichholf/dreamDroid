@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -79,7 +80,11 @@ fun TvMoviesDestinationBar(
     onDestinationSelected: (TvMoviesDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    NavigationBar(modifier = modifier.fillMaxWidth()) {
+    // Hosted on MainActivity Coordinator which already fits system windows (#263/#264).
+    NavigationBar(
+        modifier = modifier.fillMaxWidth(),
+        windowInsets = WindowInsets(0, 0, 0, 0),
+    ) {
         TvMoviesDestination.entries.forEach { dest ->
             NavigationBarItem(
                 selected = dest == selected,

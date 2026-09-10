@@ -58,6 +58,8 @@ public class ServiceListPager extends BaseHttpFragment {
 	private Job mBouquetLoadJob;
 	@Nullable
 	private Job mLocationsAndTagsJob;
+	@Nullable
+	private ComposeView mDestinationNav;
 
 	@Nullable
 	private Bouquets mBouquets;
@@ -221,17 +223,19 @@ public class ServiceListPager extends BaseHttpFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		ComposeView header = view.findViewById(R.id.tv_movies_header);
-		ComposeView nav = view.findViewById(R.id.tv_movies_nav);
+		mDestinationNav = requireActivity().findViewById(R.id.tv_movies_nav);
 		TvMoviesHubStateKt.bindTvMoviesHeader(header, mHubState, index -> {
 			if (mPager.getAdapter() != null && index >= 0 && index < mPager.getAdapter().getItemCount())
 				mPager.setCurrentItem(index, false);
 			return kotlin.Unit.INSTANCE;
 		});
-		TvMoviesHubStateKt.bindTvMoviesDestinationBar(nav, mHubState, dest -> {
-			onDestinationSelected(dest);
-			return kotlin.Unit.INSTANCE;
-		});
-
+		if (mDestinationNav != null) {
+			mDestinationNav.setVisibility(View.VISIBLE);
+			TvMoviesHubStateKt.bindTvMoviesDestinationBar(mDestinationNav, mHubState, dest -> {
+				onDestinationSelected(dest);
+				return kotlin.Unit.INSTANCE;
+			});
+		}
 		mPager = view.findViewById(R.id.viewPager);
 		mPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
 			@Override
@@ -303,6 +307,11 @@ public class ServiceListPager extends BaseHttpFragment {
 		if (mLocationsAndTagsJob != null) {
 			mLocationsAndTagsJob.cancel(null);
 			mLocationsAndTagsJob = null;
+		}
+		if (mDestinationNav != null) {
+			mDestinationNav.setVisibility(View.GONE);
+			mDestinationNav.disposeComposition();
+			mDestinationNav = null;
 		}
 		super.onDestroyView();
 	}

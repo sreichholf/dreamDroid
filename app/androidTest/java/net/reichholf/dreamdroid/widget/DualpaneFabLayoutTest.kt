@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.widget
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
+import androidx.compose.ui.platform.ComposeView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,5 +34,19 @@ class DualpaneFabLayoutTest {
         assertEquals(View.NO_ID, reloadLp.anchorId)
         assertTrue((reloadLp.gravity and Gravity.TOP) == Gravity.TOP)
         assertTrue((reloadLp.gravity and Gravity.END) == Gravity.END)
+    }
+
+    @Test
+    fun tvMoviesDestinationBarUsesBottomGravityOnCoordinator() {
+        val base = InstrumentationRegistry.getInstrumentation().targetContext
+        val context = ContextThemeWrapper(base, R.style.Theme_DreamDroid_Night)
+        val root = android.view.LayoutInflater.from(context)
+            .inflate(R.layout.dualpane, null, false)
+        val nav = root.findViewById<ComposeView>(R.id.tv_movies_nav)
+        val lp = nav.layoutParams as CoordinatorLayout.LayoutParams
+
+        assertEquals(View.NO_ID, lp.anchorId)
+        assertTrue((lp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
+        assertEquals(View.GONE, nav.visibility)
     }
 }
