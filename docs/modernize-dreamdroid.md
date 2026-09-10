@@ -92,7 +92,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | state-deviceinfo-beachhead | [#247](https://github.com/sreichholf/dreamDroid/pull/247) | merged | Phase 2.3b: DeviceInfoFragment drops `@State`; save/restore typed `DeviceInfo` via fragment Bundle. Keep Bridge/Evernote for other consumers. Keep OkHttp 3.14.9. |
 | state-simple-fragments | [#249](https://github.com/sreichholf/dreamDroid/pull/249) | merged | Phase 2.3c: ServiceListPage / ServiceListPager / EpgBouquet drop `@State`; Bundle string/int save. Keep Bridge. Keep OkHttp 3.14.9. |
 | state-screenshot | [#250](https://github.com/sreichholf/dreamDroid/pull/250) | merged | Phase 2.3d: ScreenShotFragment drops `@State` on `mRawImage`; do not Bundle the bytes — reload on process death. Keep Bridge. Keep OkHttp 3.14.9. |
-| state-hash-fragments | this PR | open | Phase 2.3e: timers/movies/current/BaseHttpRecyclerEvent drop `@State`; Bundle selection + filters (typed `CurrentService`). Keep Bridge for MultiChoiceDialog. Keep OkHttp 3.14.9. |
+| state-hash-fragments | [#251](https://github.com/sreichholf/dreamDroid/pull/251) | merged | Phase 2.3e: timers/movies/current/BaseHttpRecyclerEvent drop `@State`; Bundle selection + filters (typed `CurrentService`). Keep Bridge for MultiChoiceDialog. Keep OkHttp 3.14.9. |
+| state-drop-bridge | this PR | open | Phase 2.3f: MultiChoiceDialog Bundle `boolean[]`; remove Livefront Bridge + Evernote android-state deps from bases/`DreamDroid`. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
