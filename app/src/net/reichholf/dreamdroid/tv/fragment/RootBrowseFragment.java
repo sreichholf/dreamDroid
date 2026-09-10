@@ -24,9 +24,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.enigma.EpgNowNextLoadKt;
-import net.reichholf.dreamdroid.enigma.LocationsAndTagsLoadKt;
 import net.reichholf.dreamdroid.enigma.MovieListLoadKt;
 import net.reichholf.dreamdroid.enigma.ServiceListLoadKt;
+import net.reichholf.dreamdroid.enigma.TvBrowsePrefetchKt;
 import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
@@ -216,19 +216,17 @@ public class RootBrowseFragment extends BaseHttpBrowseFragment implements Profil
 			return;
 		}
 		final ArrayList<NameValuePair> bouquetParams = params;
-		mPrefetchJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(this,
-				(title, progress) -> kotlin.Unit.INSTANCE,
-				() -> {
-					if (!isAdded() || getView() == null) {
+		mPrefetchJob = TvBrowsePrefetchKt.launchTvBrowsePrefetch(this, () -> {
+			if (!isAdded() || getView() == null) {
+				return kotlin.Unit.INSTANCE;
+			}
+			mBouquetJob = ServiceListLoadKt.launchServiceListLoad(this, bouquetParams,
+					(success, services, errorText) -> {
+						onBouquetsReady(success, services, errorText);
 						return kotlin.Unit.INSTANCE;
-					}
-					mBouquetJob = ServiceListLoadKt.launchServiceListLoad(this, bouquetParams,
-							(success, services, errorText) -> {
-								onBouquetsReady(success, services, errorText);
-								return kotlin.Unit.INSTANCE;
-							});
-					return kotlin.Unit.INSTANCE;
-				});
+					});
+			return kotlin.Unit.INSTANCE;
+		});
 	}
 
 	protected void reload() {
