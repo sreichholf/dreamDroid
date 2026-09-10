@@ -7,20 +7,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +56,17 @@ private val KeyBlue = Color(0xFF1565C0)
 private val KeyOnDark = Color.White
 private val KeyOnYellow = Color(0xFF212121)
 
+private data class RemoteMetrics(
+    val keyWidth: Dp,
+    val keyHeight: Dp,
+    val keyHeightLow: Dp,
+    val gap: Dp,
+)
+
+private val LocalRemoteMetrics = compositionLocalOf {
+    RemoteMetrics(keyWidth = 56.dp, keyHeight = 48.dp, keyHeightLow = 36.dp, gap = 4.dp)
+}
+
 @Composable
 fun VirtualRemoteScreen(
     layout: VirtualRemoteLayout,
@@ -60,22 +74,45 @@ fun VirtualRemoteScreen(
     onKey: (keyCode: Int, longClick: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .wrapContentWidth()
-            .widthIn(max = 320.dp)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+    BoxWithConstraints(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
-        when (layout) {
-            VirtualRemoteLayout.QuickZap -> QuickZapPad(onKey = onKey)
-            VirtualRemoteLayout.Simple -> SimplePad(onKey = onKey)
-            VirtualRemoteLayout.Full -> FullPad(
-                playButtonAsPlayPause = playButtonAsPlayPause,
-                onKey = onKey,
-            )
+        val horizontalPad = 16.dp
+        val available = maxWidth - horizontalPad * 2
+        // Full/simple pads are five columns (side + 3 digits + side); quick-zap is also five.
+        val gap = 4.dp
+        val rawKey = (available - gap * 4) / 5
+        val keyWidth = rawKey.coerceIn(52.dp, 72.dp)
+        val keyHeight = (keyWidth * 0.86f).coerceIn(44.dp, 64.dp)
+        val keyHeightLow = (keyHeight * 0.75f).coerceIn(32.dp, 48.dp)
+        val metrics = RemoteMetrics(
+            keyWidth = keyWidth,
+            keyHeight = keyHeight,
+            keyHeightLow = keyHeightLow,
+            gap = gap,
+        )
+        val padMaxWidth = keyWidth * 5 + gap * 4
+
+        CompositionLocalProvider(LocalRemoteMetrics provides metrics) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = padMaxWidth)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = horizontalPad, vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(metrics.gap * 2 + 2.dp),
+            ) {
+                when (layout) {
+                    VirtualRemoteLayout.QuickZap -> QuickZapPad(onKey = onKey)
+                    VirtualRemoteLayout.Simple -> SimplePad(onKey = onKey)
+                    VirtualRemoteLayout.Full -> FullPad(
+                        playButtonAsPlayPause = playButtonAsPlayPause,
+                        onKey = onKey,
+                    )
+                }
+            }
         }
     }
 }
@@ -104,58 +141,60 @@ private fun SimplePad(onKey: (Int, Boolean) -> Unit) {
 
 @Composable
 private fun QuickZapPad(onKey: (Int, Boolean) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        RemoteKey(label = "Help", keyCode = Remote.KEY_HELP, onKey = onKey, height = 36.dp)
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    val m = LocalRemoteMetrics.current
+    Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
+        RemoteKey(label = "Help", keyCode = Remote.KEY_HELP, onKey = onKey, height = m.keyHeightLow)
+        Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
             RemoteKey(label = "V+", keyCode = Remote.KEY_VOLP, onKey = onKey, container = KeyLight)
             RemoteKey(label = "V-", keyCode = Remote.KEY_VOLM, onKey = onKey, container = KeyLight)
         }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
             RemoteKey(label = "Mute", keyCode = Remote.KEY_MUTE, onKey = onKey)
             RemoteKey(label = "Exit", keyCode = Remote.KEY_EXIT, onKey = onKey, container = KeyRed)
         }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
             RemoteKey(label = "B+", keyCode = Remote.KEY_BOUP, onKey = onKey, container = KeyLight)
             RemoteKey(label = "B-", keyCode = Remote.KEY_BOUM, onKey = onKey, container = KeyLight)
         }
-        RemoteKey(label = "PWR", keyCode = Remote.KEY_POWER, onKey = onKey, container = KeyRed, height = 36.dp)
+        RemoteKey(label = "PWR", keyCode = Remote.KEY_POWER, onKey = onKey, container = KeyRed, height = m.keyHeightLow)
     }
     NavigationPad(onKey = onKey, big = true)
-    ColorKeysRow(onKey = onKey, height = 36.dp)
+    ColorKeysRow(onKey = onKey, height = m.keyHeightLow)
 }
 
 @Composable
 private fun NumberVolumeBouquetPad(onKey: (Int, Boolean) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            RemoteKey(label = "Help", keyCode = Remote.KEY_HELP, onKey = onKey, height = 36.dp)
+    val m = LocalRemoteMetrics.current
+    Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
+        Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
+            RemoteKey(label = "Help", keyCode = Remote.KEY_HELP, onKey = onKey, height = m.keyHeightLow)
             RemoteKey(label = "V+", keyCode = Remote.KEY_VOLP, onKey = onKey, container = KeyLight)
             RemoteKey(label = "V-", keyCode = Remote.KEY_VOLM, onKey = onKey, container = KeyLight)
         }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
                 DigitKey("1", Remote.KEY_1, onKey)
                 DigitKey("2", Remote.KEY_2, onKey)
                 DigitKey("3", Remote.KEY_3, onKey)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
                 DigitKey("4", Remote.KEY_4, onKey)
                 DigitKey("5", Remote.KEY_5, onKey)
                 DigitKey("6", Remote.KEY_6, onKey)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
                 DigitKey("7", Remote.KEY_7, onKey)
                 DigitKey("8", Remote.KEY_8, onKey)
                 DigitKey("9", Remote.KEY_9, onKey)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
                 DigitKey("<", Remote.KEY_PREV, onKey)
                 DigitKey("0", Remote.KEY_0, onKey)
                 DigitKey(">", Remote.KEY_NEXT, onKey)
             }
         }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            RemoteKey(label = "PWR", keyCode = Remote.KEY_POWER, onKey = onKey, container = KeyRed, height = 36.dp)
+        Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
+            RemoteKey(label = "PWR", keyCode = Remote.KEY_POWER, onKey = onKey, container = KeyRed, height = m.keyHeightLow)
             RemoteKey(label = "B+", keyCode = Remote.KEY_BOUP, onKey = onKey, container = KeyLight)
             RemoteKey(label = "B-", keyCode = Remote.KEY_BOUM, onKey = onKey, container = KeyLight)
         }
@@ -163,23 +202,26 @@ private fun NumberVolumeBouquetPad(onKey: (Int, Boolean) -> Unit) {
 }
 
 @Composable
-private fun ColorKeysRow(onKey: (Int, Boolean) -> Unit, height: Dp = 30.dp) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        RemoteKey(label = "Red", keyCode = Remote.KEY_RED, onKey = onKey, container = KeyRed, height = height, showLabel = false)
-        RemoteKey(label = "Green", keyCode = Remote.KEY_GREEN, onKey = onKey, container = KeyGreen, height = height, showLabel = false)
-        RemoteKey(label = "Yellow", keyCode = Remote.KEY_YELLOW, onKey = onKey, container = KeyYellow, height = height, showLabel = false, contentColor = KeyOnYellow)
-        RemoteKey(label = "Blue", keyCode = Remote.KEY_BLUE, onKey = onKey, container = KeyBlue, height = height, showLabel = false)
+private fun ColorKeysRow(onKey: (Int, Boolean) -> Unit, height: Dp? = null) {
+    val m = LocalRemoteMetrics.current
+    val rowHeight = height ?: m.keyHeightLow
+    Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
+        RemoteKey(label = "Red", keyCode = Remote.KEY_RED, onKey = onKey, container = KeyRed, height = rowHeight, showLabel = false)
+        RemoteKey(label = "Green", keyCode = Remote.KEY_GREEN, onKey = onKey, container = KeyGreen, height = rowHeight, showLabel = false)
+        RemoteKey(label = "Yellow", keyCode = Remote.KEY_YELLOW, onKey = onKey, container = KeyYellow, height = rowHeight, showLabel = false, contentColor = KeyOnYellow)
+        RemoteKey(label = "Blue", keyCode = Remote.KEY_BLUE, onKey = onKey, container = KeyBlue, height = rowHeight, showLabel = false)
     }
 }
 
 @Composable
 private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
-    val size = if (big) 64.dp else 52.dp
+    val m = LocalRemoteMetrics.current
+    val size = if (big) (m.keyWidth * 1.15f).coerceAtMost(72.dp) else m.keyWidth
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(m.gap),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
             RemoteKey(label = "Info", keyCode = Remote.KEY_INFO, onKey = onKey, width = size, height = size)
             IconRemoteKey(
                 description = "Up",
@@ -192,7 +234,7 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
             )
             RemoteKey(label = "Menu", keyCode = Remote.KEY_MENU, onKey = onKey, width = size, height = size)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
             IconRemoteKey(
                 description = "Left",
                 keyCode = Remote.KEY_LEFT,
@@ -213,7 +255,7 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
                 container = KeyLight,
             )
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
             RemoteKey(label = "Audio", keyCode = Remote.KEY_AUDIO, onKey = onKey, width = size, height = size)
             IconRemoteKey(
                 description = "Down",
@@ -231,22 +273,25 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
 
 @Composable
 private fun MuteExitRow(onKey: (Int, Boolean) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        RemoteKey(label = "Mute", keyCode = Remote.KEY_MUTE, onKey = onKey, width = 88.dp, height = 36.dp)
-        RemoteKey(label = "Exit", keyCode = Remote.KEY_EXIT, onKey = onKey, width = 88.dp, height = 36.dp, container = KeyRed)
+    val m = LocalRemoteMetrics.current
+    val width = m.keyWidth * 1.7f
+    Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
+        RemoteKey(label = "Mute", keyCode = Remote.KEY_MUTE, onKey = onKey, width = width, height = m.keyHeightLow)
+        RemoteKey(label = "Exit", keyCode = Remote.KEY_EXIT, onKey = onKey, width = width, height = m.keyHeightLow, container = KeyRed)
     }
 }
 
 @Composable
 private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    val m = LocalRemoteMetrics.current
+    Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
         IconRemoteKey(
             description = "Rewind",
             keyCode = Remote.KEY_REWIND,
             iconRes = R.drawable.ic_media_previous_dark,
             onKey = onKey,
-            width = 56.dp,
-            height = 48.dp,
+            width = m.keyWidth,
+            height = m.keyHeight,
         )
         if (playButtonAsPlayPause) {
             IconRemoteKey(
@@ -254,8 +299,8 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
                 keyCode = Remote.KEY_PLAYPAUSE,
                 iconRes = R.drawable.ic_media_play_pause_dark,
                 onKey = onKey,
-                width = 56.dp,
-                height = 48.dp,
+                width = m.keyWidth,
+                height = m.keyHeight,
             )
         } else {
             IconRemoteKey(
@@ -263,8 +308,8 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
                 keyCode = Remote.KEY_PLAY,
                 iconRes = R.drawable.ic_media_play_dark,
                 onKey = onKey,
-                width = 56.dp,
-                height = 48.dp,
+                width = m.keyWidth,
+                height = m.keyHeight,
             )
         }
         IconRemoteKey(
@@ -272,32 +317,33 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
             keyCode = Remote.KEY_STOP,
             iconRes = R.drawable.ic_media_stop_dark,
             onKey = onKey,
-            width = 56.dp,
-            height = 48.dp,
+            width = m.keyWidth,
+            height = m.keyHeight,
         )
         IconRemoteKey(
             description = "Forward",
             keyCode = Remote.KEY_FORWARD,
             iconRes = R.drawable.ic_media_next_dark,
             onKey = onKey,
-            width = 56.dp,
-            height = 48.dp,
+            width = m.keyWidth,
+            height = m.keyHeight,
         )
     }
 }
 
 @Composable
 private fun SourcePad(onKey: (Int, Boolean) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        RemoteKey(label = "TV", keyCode = Remote.KEY_TV, onKey = onKey, width = 56.dp, height = 48.dp)
-        RemoteKey(label = "RADIO", keyCode = Remote.KEY_RADIO, onKey = onKey, width = 56.dp, height = 48.dp)
-        RemoteKey(label = "TEXT", keyCode = Remote.KEY_TEXT, onKey = onKey, width = 56.dp, height = 48.dp)
+    val m = LocalRemoteMetrics.current
+    Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
+        RemoteKey(label = "TV", keyCode = Remote.KEY_TV, onKey = onKey, width = m.keyWidth, height = m.keyHeight)
+        RemoteKey(label = "RADIO", keyCode = Remote.KEY_RADIO, onKey = onKey, width = m.keyWidth, height = m.keyHeight)
+        RemoteKey(label = "TEXT", keyCode = Remote.KEY_TEXT, onKey = onKey, width = m.keyWidth, height = m.keyHeight)
         RemoteKey(
             label = "REC",
             keyCode = Remote.KEY_RECORD,
             onKey = onKey,
-            width = 56.dp,
-            height = 48.dp,
+            width = m.keyWidth,
+            height = m.keyHeight,
             contentColor = KeyRed,
         )
     }
@@ -320,17 +366,20 @@ private fun RemoteKey(
     keyCode: Int,
     onKey: (Int, Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    width: Dp = 52.dp,
-    height: Dp = 48.dp,
+    width: Dp? = null,
+    height: Dp? = null,
     container: Color = KeyDark,
     contentColor: Color = KeyOnDark,
     showLabel: Boolean = true,
     fontWeight: FontWeight = FontWeight.Normal,
 ) {
+    val m = LocalRemoteMetrics.current
+    val keyWidth = width ?: m.keyWidth
+    val keyHeight = height ?: m.keyHeight
     Box(
         modifier = modifier
-            .width(width)
-            .height(height)
+            .width(keyWidth)
+            .height(keyHeight)
             .clip(RoundedCornerShape(6.dp))
             .background(container)
             .semantics { contentDescription = label }
