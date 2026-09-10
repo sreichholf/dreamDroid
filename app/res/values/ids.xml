@@ -11,5 +11,6 @@
     <item name="phone_nav_device_info_slot" type="id"/>
     <item name="phone_nav_signal_slot" type="id"/>
     <item name="phone_nav_screenshot_slot" type="id"/>
+    <item name="phone_nav_current_slot" type="id"/>
 
 </resources>

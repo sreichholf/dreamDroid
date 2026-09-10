@@ -8,4 +8,5 @@ object PhoneNavRoutes {
     const val DEVICE_INFO = "device_info"
     const val SIGNAL = "signal"
     const val SCREENSHOT = "screenshot"
+    const val CURRENT = "current"
 }
