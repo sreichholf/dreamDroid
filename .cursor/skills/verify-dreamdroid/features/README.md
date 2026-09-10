@@ -42,7 +42,7 @@ Keep implementation details out of the map. Name only user paths, stable handles
 ## Features
 
 - [Profiles](./profiles.md) covers first-start Profiles, the Demo row, Add Profile, and the drawer profile header.
-- [About](./about.md) covers the About dialog from the drawer (no receiver required).
+- [About](./about.md) covers the About dialog from Settings (no receiver required).
 - [TV and Movies](./tv-and-movies.md) covers drawer TV & Movies and the TV/Radio/Movies/Timer bar.
 - [Zap](./zap.md) covers the Zap screen and changing channel.
 - [Virtual Remote](./virtual-remote.md) covers opening the on-screen remote.

@@ -55,7 +55,7 @@ Pass only when an adb device is in `device` state, `net.reichholf.dreamdroid.deb
 
 ## Drive (optional look)
 
-Prefer resource ids and visible text over coordinates. `tap --text About` matches **Settings & About** first; scroll the drawer and match text exactly `About`.
+Prefer resource ids and visible text over coordinates. About lives at the bottom of Settings, not in the drawer.
 
 | User control | Handle |
 | --- | --- |
@@ -64,7 +64,7 @@ Prefer resource ids and visible text over coordinates. `tap --text About` matche
 | Profile name / status | `...:id/drawer_profile_name`, `...:id/drawer_profile_status` |
 | TV & Movies | text `TV & Movies` |
 | EPG / Virtual Remote / Zap / Current event | text `EPG`, `Virtual Remote`, `Zap`, `Current event` |
-| About | text `About` (opens a dialog) |
+| About | Settings, then text `About` (opens a dialog) |
 | Add Profile FAB | `...:id/fab_main` content-desc from `R.string.profile_add` (shell XML FAB) || Autodiscovery | text `Dreambox Autodiscovery` |
 | TV/Radio/Movies/Timer tabs | text `TV`, `Radio`, `Movies`, `Timer` |
 

@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.drawer
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -28,7 +29,7 @@ class DrawerScreenTest {
     }
 
     @Test
-    fun showsSectionsAndItems() {
+    fun showsSectionsAndPinnedSettings() {
         val state = DrawerListState()
         composeRule.setContent {
             DreamDroidTheme {
@@ -36,12 +37,18 @@ class DrawerScreenTest {
             }
         }
 
+        composeRule.onNodeWithText("Power Control").assertIsDisplayed()
+        composeRule.onNodeWithText("Sleep Timer").assertIsDisplayed()
+        composeRule.onNodeWithText("Send Message").assertIsDisplayed()
         composeRule.onNodeWithText("Control").assertIsDisplayed()
         composeRule.onNodeWithText("Tools").assertIsDisplayed()
-        composeRule.onNodeWithText("Settings & About").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("TV & Movies").assertIsDisplayed()
         composeRule.onNodeWithText("Signal Meter").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Backup").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Settings").assertIsDisplayed()
+        composeRule.onNodeWithText("Settings & About").assertDoesNotExist()
+        composeRule.onNodeWithText("About").assertDoesNotExist()
+        composeRule.onNodeWithText("Backup").assertDoesNotExist()
+        composeRule.onNodeWithText("Changelog").assertDoesNotExist()
     }
 
     @Test
@@ -50,13 +57,10 @@ class DrawerScreenTest {
         var clicked = 0
         composeRule.setContent {
             DreamDroidTheme {
-                DrawerScreen(
-                    state = state,
-                    onItemClick = { id ->
-                        clicked = id
-                        state.select(id)
-                    },
-                )
+                DrawerScreen(state = state, onItemClick = { id ->
+                    clicked = id
+                    state.select(id)
+                })
             }
         }
 
@@ -64,6 +68,44 @@ class DrawerScreenTest {
         composeRule.waitForIdle()
         assertEquals(R.id.menu_navigation_zap, clicked)
         composeRule.onNodeWithText("Zap").assertIsSelected()
+    }
+
+    @Test
+    fun boxActionClickDoesNotStaySelected() {
+        val state = DrawerListState()
+        var clicked = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                DrawerScreen(state = state, onItemClick = { clicked = it })
+            }
+        }
+
+        composeRule.onNodeWithText("Power Control").performClick()
+        composeRule.waitForIdle()
+        assertEquals(R.id.menu_navigation_power, clicked)
+        composeRule.runOnIdle {
+            assertEquals(R.id.menu_none, state.selectedItemId)
+        }
+        composeRule.onNodeWithText("TV & Movies").assertIsNotSelected()
+    }
+
+    @Test
+    fun settingsRowSelects() {
+        val state = DrawerListState()
+        var clicked = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                DrawerScreen(state = state, onItemClick = { id ->
+                    clicked = id
+                    state.select(id)
+                })
+            }
+        }
+
+        composeRule.onNodeWithText("Settings").performClick()
+        composeRule.waitForIdle()
+        assertEquals(R.id.menu_navigation_settings, clicked)
+        composeRule.onNodeWithText("Settings").assertIsSelected()
     }
 
     @Test
@@ -80,7 +122,6 @@ class DrawerScreenTest {
         composeRule.runOnIdle { state.clearSelection() }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("TV & Movies").assertIsDisplayed()
-        // After clear, no drawer destination should stay selected.
         composeRule.runOnIdle {
             assertEquals(R.id.menu_none, state.selectedItemId)
         }

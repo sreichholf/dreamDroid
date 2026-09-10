@@ -23,6 +23,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
+import net.reichholf.dreamdroid.ui.nav.navigateDrawerSettings
+import net.reichholf.dreamdroid.ui.nav.navigateToBackup
 import net.reichholf.dreamdroid.ui.nav.navigateToEpgSearch
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
 
@@ -227,7 +229,18 @@ class PhoneNavHostFragment : BaseFragment() {
     fun navigateToRoute(route: String): Boolean {
         val controller = navController ?: return false
         resultRequestCodes.clear()
+        if (route == PhoneNavRoutes.SETTINGS) {
+            controller.navigateDrawerSettings()
+            return true
+        }
         controller.navigateDrawerRoot(route)
+        return true
+    }
+
+    /** Push nested Backup (Settings → Backup). Back returns to Settings. */
+    fun navigateToBackup(): Boolean {
+        val controller = navController ?: return false
+        controller.navigateToBackup()
         return true
     }
 

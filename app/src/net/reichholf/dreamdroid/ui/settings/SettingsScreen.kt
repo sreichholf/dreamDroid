@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -41,6 +42,9 @@ fun SettingsScreen(
     onThemeChanged: () -> Unit,
     onDynamicColorsChanged: () -> Unit,
     onSyncPicons: () -> Unit,
+    onAbout: () -> Unit = {},
+    onChangelog: () -> Unit = {},
+    onBackup: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var listDialog by remember { mutableStateOf<ListDialogSpec?>(null) }
@@ -265,6 +269,11 @@ fun SettingsScreen(
                 state.setBoolean(DreamDroid.PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED, it)
             },
         )
+
+        HorizontalDivider(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+        ActionPreferenceRow(stringResource(R.string.about), DreamDroid.VERSION_STRING, onAbout)
+        ActionPreferenceRow(stringResource(R.string.changelog), null, onChangelog)
+        ActionPreferenceRow(stringResource(R.string.backup), null, onBackup)
     }
 
     listDialog?.let { dialog ->
@@ -374,7 +383,7 @@ internal fun ListPreferenceRow(
 @Composable
 internal fun ActionPreferenceRow(
     title: String,
-    summary: String,
+    summary: String?,
     onClick: () -> Unit,
     enabled: Boolean = true,
 ) {
@@ -390,12 +399,14 @@ internal fun ActionPreferenceRow(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha),
         )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = summary,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha),
-        )
+        if (!summary.isNullOrEmpty()) {
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha),
+            )
+        }
     }
 }
 
@@ -480,6 +491,9 @@ fun ComposeView.bindSettingsScreen(
     onThemeChanged: () -> Unit,
     onDynamicColorsChanged: () -> Unit,
     onSyncPicons: () -> Unit,
+    onAbout: () -> Unit,
+    onChangelog: () -> Unit,
+    onBackup: () -> Unit,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -489,6 +503,9 @@ fun ComposeView.bindSettingsScreen(
                 onThemeChanged = onThemeChanged,
                 onDynamicColorsChanged = onDynamicColorsChanged,
                 onSyncPicons = onSyncPicons,
+                onAbout = onAbout,
+                onChangelog = onChangelog,
+                onBackup = onBackup,
             )
         }
     }
