@@ -22,8 +22,6 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.evernote.android.state.State;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -62,11 +60,12 @@ import java.util.List;
  * @author sreichholf
  */
 public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
+	private static final String KEY_REF = "service_list_ref";
+	private static final String KEY_NAME = "service_list_name";
+
 	@Nullable
-	@State
 	public String mName;
 	@Nullable
-	@State
 	public String mRef;
 
 	private ArrayList<ExtendedHashMap> mHistory;
@@ -79,26 +78,41 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mName = getString(R.string.services);
 		mHasFabMain = false;
 		mEnableReload = false;
 
-		Bundle args = getArguments();
-		if (args != null)  {
-			mRef = args.getString(Service.KEY_REFERENCE, null);
-			mName = args.getString(Service.KEY_NAME, "-");
+		if (savedInstanceState != null) {
+			mRef = savedInstanceState.getString(KEY_REF);
+			mName = savedInstanceState.getString(KEY_NAME);
+		} else {
+			mName = getString(R.string.services);
+			Bundle args = getArguments();
+			if (args != null) {
+				mRef = args.getString(Service.KEY_REFERENCE, null);
+				mName = args.getString(Service.KEY_NAME, "-");
+			}
+		}
+
+		if (mRef == null) {
+			mRef = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
+			mName = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
+		}
+		if (mName == null) {
+			mName = getString(R.string.services);
 		}
 
 		mCurrentItem = new ExtendedHashMap();
 		mCurrentItem.put(Service.KEY_REFERENCE, mRef);
 		mCurrentItem.put(Service.KEY_NAME, mName);
 		mHistory = new ArrayList<>();
-
-		if (mRef == null) {
-			mRef = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
-			mName = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
-		}
 		mListState = new ServiceListState();
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		outState.putString(KEY_REF, mRef);
+		outState.putString(KEY_NAME, mName);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
