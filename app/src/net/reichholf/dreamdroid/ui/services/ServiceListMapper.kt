@@ -104,6 +104,61 @@ fun serviceNowNextToExtendedHashMap(row: ServiceNowNext): ExtendedHashMap {
     return map
 }
 
+/** Inverse of [serviceNowNextToExtendedHashMap] for Intent / legacy hash edges. */
+fun serviceNowNextFromExtendedHashMap(map: ExtendedHashMap): ServiceNowNext {
+    val serviceReference = map.getString(EventKeys.KEY_SERVICE_REFERENCE).orEmpty()
+    val serviceName = map.getString(EventKeys.KEY_SERVICE_NAME).orEmpty()
+    return ServiceNowNext(
+        serviceReference = serviceReference,
+        serviceName = serviceName,
+        now = eventFromPrefixedMap(map, ""),
+        next = eventFromPrefixedMap(map, EventKeys.PREFIX_NEXT),
+    )
+}
+
+private fun eventFromPrefixedMap(map: ExtendedHashMap, prefix: String): Event? {
+    val eventId = map.getString(prefix + EventKeys.KEY_EVENT_ID).orEmpty()
+    val title = map.getString(prefix + EventKeys.KEY_EVENT_TITLE).orEmpty()
+    val start = map.getString(prefix + EventKeys.KEY_EVENT_START).orEmpty()
+    val duration = map.getString(prefix + EventKeys.KEY_EVENT_DURATION).orEmpty()
+    val currentTime = map.getString(prefix + EventKeys.KEY_CURRENT_TIME).orEmpty()
+    val description = map.getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION).orEmpty()
+    val descriptionExtended = map.getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED).orEmpty()
+    val startReadable = map.getString(prefix + EventKeys.KEY_EVENT_START_READABLE).orEmpty()
+    val startTimeReadable = map.getString(prefix + EventKeys.KEY_EVENT_START_TIME_READABLE).orEmpty()
+    val durationReadable = map.getString(prefix + EventKeys.KEY_EVENT_DURATION_READABLE).orEmpty()
+    if (eventId.isEmpty() && title.isEmpty() && start.isEmpty() && duration.isEmpty()
+        && currentTime.isEmpty() && description.isEmpty() && descriptionExtended.isEmpty()
+        && startReadable.isEmpty() && startTimeReadable.isEmpty() && durationReadable.isEmpty()
+    ) {
+        return null
+    }
+    val serviceReference = if (prefix.isEmpty()) {
+        map.getString(EventKeys.KEY_SERVICE_REFERENCE).orEmpty()
+    } else {
+        ""
+    }
+    val serviceName = if (prefix.isEmpty()) {
+        map.getString(EventKeys.KEY_SERVICE_NAME).orEmpty()
+    } else {
+        ""
+    }
+    return Event(
+        eventId = eventId,
+        title = title,
+        start = start,
+        duration = duration,
+        currentTime = currentTime,
+        description = description,
+        descriptionExtended = descriptionExtended,
+        serviceReference = serviceReference,
+        serviceName = serviceName,
+        startReadable = startReadable,
+        startTimeReadable = startTimeReadable,
+        durationReadable = durationReadable,
+    )
+}
+
 private fun putEventFields(map: ExtendedHashMap, prefix: String, event: Event?) {
     if (event == null) {
         return

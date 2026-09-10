@@ -14,11 +14,11 @@ import android.widget.TextView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
+import net.reichholf.dreamdroid.enigma.Event;
+import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.helpers.DateTime;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Python;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 
@@ -27,14 +27,19 @@ import java.util.ArrayList;
 /**
  * Created by Stephan on 14.05.2015.
  */
-public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder> {
+public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder> {
 	protected Context mContext;
+	protected ArrayList<ServiceNowNext> mData;
 
-	public ServiceAdapter(Context context, ArrayList<ExtendedHashMap> data) {
-		super(data);
+	public ServiceAdapter(Context context, ArrayList<ServiceNowNext> data) {
 		mContext = context;
+		mData = data;
 	}
 
+	@Override
+	public int getItemCount() {
+		return mData.size();
+	}
 
 	@NonNull
 	@Override
@@ -48,53 +53,56 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 
 	@Override
 	public void onBindViewHolder(@NonNull ServiceViewHolder holder, int position) {
-		ExtendedHashMap service = mData.get(position);
-		String next = service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
+		ServiceNowNext service = mData.get(position);
+		Event nextEvent = service.getNext();
+		String next = nextEvent != null ? nextEvent.getTitle() : null;
 		boolean hasNext = next != null && !"".equals(next);
 
-		if (service != null) {
-			String ref = service.getString(Service.KEY_REFERENCE);
-			if (Service.isMarker(ref)) {
-				holder.root.setCardElevation(0);
-				holder.root.setClickable(false);
-				holder.parentService.setVisibility(View.GONE);
-				holder.parentMarker.setVisibility(View.VISIBLE);
-				holder.markerName.setText(service.getString(Event.KEY_SERVICE_NAME));
-				return;
-			}
-			if (Service.isDirectory(ref)) {
-				holder.parentService.setVisibility(View.VISIBLE);
-				holder.parentMarker.setVisibility(View.GONE);
-				holder.parentNow.setVisibility(View.GONE);
-				holder.parentNext.setVisibility(View.GONE);
-				holder.picon.setVisibility(View.GONE);
-				holder.progress.setVisibility(View.GONE);
-				holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
-				holder.root.setClickable(false);
-				holder.serviceName.setText(service.getString(Event.KEY_SERVICE_NAME));
-				return;
-			}
-			holder.parentNow.setVisibility(View.VISIBLE);
-
-			Event.supplementReadables(service);
-			Picon.setPiconForView(mContext, holder.picon, service, Statics.TAG_PICON);
-			holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
+		String ref = service.getServiceReference();
+		if (Service.isMarker(ref)) {
+			holder.root.setCardElevation(0);
 			holder.root.setClickable(false);
+			holder.parentService.setVisibility(View.GONE);
+			holder.parentMarker.setVisibility(View.VISIBLE);
+			holder.markerName.setText(service.getServiceName());
+			return;
+		}
+		if (Service.isDirectory(ref)) {
 			holder.parentService.setVisibility(View.VISIBLE);
 			holder.parentMarker.setVisibility(View.GONE);
-			holder.serviceName.setText(service.getString(Event.KEY_SERVICE_NAME));
-			holder.eventNowTitle.setText(service.getString(Event.KEY_EVENT_TITLE));
-			holder.eventNowStart.setText(service.getString(Event.KEY_EVENT_START_TIME_READABLE));
-			holder.eventNowDuration.setText(service.getString(Event.KEY_EVENT_DURATION_READABLE));
+			holder.parentNow.setVisibility(View.GONE);
+			holder.parentNext.setVisibility(View.GONE);
+			holder.picon.setVisibility(View.GONE);
+			holder.progress.setVisibility(View.GONE);
+			holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
+			holder.root.setClickable(false);
+			holder.serviceName.setText(service.getServiceName());
+			return;
+		}
+		holder.parentNow.setVisibility(View.VISIBLE);
 
-			long max = -1;
-			long cur = -1;
+		Picon.setPiconForView(mContext, holder.picon, ref, service.getServiceName(), Statics.TAG_PICON, null);
+		holder.root.setCardElevation(mContext.getResources().getDimension(R.dimen.cardview_elevation));
+		holder.root.setClickable(false);
+		holder.parentService.setVisibility(View.VISIBLE);
+		holder.parentMarker.setVisibility(View.GONE);
+		holder.serviceName.setText(service.getServiceName());
 
-			String nowTime = service.getString(Event.KEY_CURRENT_TIME);
-			String duration = service.getString(Event.KEY_EVENT_DURATION);
-			String start = service.getString(Event.KEY_EVENT_START);
+		Event now = service.getNow();
+		holder.eventNowTitle.setText(now != null ? now.getTitle() : null);
+		holder.eventNowStart.setText(now != null ? now.getStartTimeReadable() : null);
+		holder.eventNowDuration.setText(now != null ? now.getDurationReadable() : null);
 
-			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
+		long max = -1;
+		long cur = -1;
+
+		if (now != null) {
+			String nowTime = now.getCurrentTime();
+			String duration = now.getDuration();
+			String start = now.getStart();
+
+			if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)
+					&& !duration.isEmpty() && !start.isEmpty()) {
 				try {
 					max = Double.valueOf(duration).longValue() / 60;
 					cur = max - DateTime.getRemaining(duration, start, nowTime);
@@ -102,21 +110,21 @@ public class ServiceAdapter extends BaseAdapter<ServiceAdapter.ServiceViewHolder
 					Log.e(DreamDroid.LOG_TAG, e.toString());
 				}
 			}
+		}
 
-			holder.progress.setVisibility(View.VISIBLE);
-			if (max > 0 && cur >= 0) {
-				holder.progress.setMax((int) max);
-				holder.progress.setProgress((int) cur);
-			}
+		holder.progress.setVisibility(View.VISIBLE);
+		if (max > 0 && cur >= 0) {
+			holder.progress.setMax((int) max);
+			holder.progress.setProgress((int) cur);
+		}
 
-			if (hasNext) {
-				holder.parentNext.setVisibility(View.VISIBLE);
-				holder.eventNextTitle.setText(service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE)));
-				holder.eventNextStart.setText(service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_START_TIME_READABLE)));
-				holder.eventNextDuration.setText(service.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_DURATION_READABLE)));
-			} else {
-				holder.parentNext.setVisibility(View.GONE);
-			}
+		if (hasNext) {
+			holder.parentNext.setVisibility(View.VISIBLE);
+			holder.eventNextTitle.setText(nextEvent.getTitle());
+			holder.eventNextStart.setText(nextEvent.getStartTimeReadable());
+			holder.eventNextDuration.setText(nextEvent.getDurationReadable());
+		} else {
+			holder.parentNext.setVisibility(View.GONE);
 		}
 	}
 

@@ -48,12 +48,13 @@ import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Python;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
 import net.reichholf.dreamdroid.helpers.enigma2.Movie;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.enigma.EpgNowNextLoadKt;
+import net.reichholf.dreamdroid.enigma.Event;
 import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
 import net.reichholf.dreamdroid.ui.services.ServiceListMapperKt;
 import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog;
 import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog;
@@ -96,9 +97,11 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	protected String mServiceRef;
 	protected String mBouquetRef;
 
-	protected ArrayList<ExtendedHashMap> mServiceList;
+	protected ArrayList<ServiceNowNext> mServiceList;
 	@Nullable
-	protected ExtendedHashMap mServiceInfo;
+	protected ServiceNowNext mCurrentService;
+	@Nullable
+	protected net.reichholf.dreamdroid.enigma.Movie mMovie;
 
 	protected Handler mHandler;
 	protected Runnable mAutoHideRunnable;
@@ -164,7 +167,14 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		mServiceRef = getArguments().getString(SERVICE_REFERENCE);
 		mBouquetRef = getArguments().getString(BOUQUET_REFERENCE);
 		mServiceList = new ArrayList<>();
-		mServiceInfo = ((ExtendedHashMap) getArguments().get(SERVICE_INFO));
+		ExtendedHashMap serviceInfoHash = (ExtendedHashMap) getArguments().get(SERVICE_INFO);
+		if (serviceInfoHash != null) {
+			if (serviceInfoHash.containsKey(Movie.KEY_FILE_NAME)) {
+				mMovie = MovieListMapperKt.movieFromExtendedHashMap(serviceInfoHash);
+			} else {
+				mCurrentService = ServiceListMapperKt.serviceNowNextFromExtendedHashMap(serviceInfoHash);
+			}
+		}
 		mHandler = new Handler();
 		mServicesViewVisible = false;
 		mAutoHideRunnable = () -> hideOverlays();
@@ -311,23 +321,29 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void onInfo(){
-		if (mServiceInfo == null)
+		if (mMovie == null && mCurrentService == null)
 			return;
 
 		DialogFragment detailDialog;
-		if (mServiceInfo.containsKey(Movie.KEY_FILE_NAME)) {
-
-			Movie movie = new Movie(mServiceInfo);
+		if (mMovie != null) {
 			if (DreamDroid.isTV(getContext()))
-				detailDialog = MovieDetailDialog.newInstance(movie);
+				detailDialog = MovieDetailDialog.newInstance(mMovie);
 			else
-				detailDialog = MovieDetailBottomSheet.newInstance(movie);
-
+				detailDialog = MovieDetailBottomSheet.newInstance(mMovie);
 		} else {
-			if(DreamDroid.isTV(getContext()))
-				detailDialog = EpgDetailDialog.newInstance(new Event(mServiceInfo));
+			Event event = mCurrentService.getNow();
+			if (event == null) {
+				event = new Event(
+						"", "", "", "", "", "", "",
+						mCurrentService.getServiceReference(),
+						mCurrentService.getServiceName(),
+						"", "", ""
+				);
+			}
+			if (DreamDroid.isTV(getContext()))
+				detailDialog = EpgDetailDialog.newInstance(event);
 			else
-				detailDialog = EpgDetailBottomSheet.newInstance(mServiceInfo);
+				detailDialog = EpgDetailBottomSheet.newInstance(event);
 		}
 		if (detailDialog != null)
 			detailDialog.show(getFragmentManager(), "details_dialog_tv");
@@ -395,17 +411,21 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		onServiceInfoChanged(true);
 	}
 
-	private void applyServiceList(@NonNull ArrayList<ExtendedHashMap> services) {
+	private void applyServiceList(@NonNull ArrayList<ServiceNowNext> services) {
 		mServiceList.clear();
 		if (mServicesView != null)
 			mServicesView.getAdapter().notifyDataSetChanged();
 		mServiceList.addAll(services);
-		for (ExtendedHashMap service : mServiceList) {
-			if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef)) {
-				ExtendedHashMap oldServiceInfo = mServiceInfo;
-				mServiceInfo = service;
-				String eventid = mServiceInfo.getString(Event.KEY_EVENT_ID, "-1");
-				if (oldServiceInfo == null || !eventid.equals(oldServiceInfo.getString(Event.KEY_EVENT_ID, "-2")))
+		for (ServiceNowNext service : mServiceList) {
+			if (service.getServiceReference().equals(mServiceRef)) {
+				ServiceNowNext oldService = mCurrentService;
+				mCurrentService = service;
+				mMovie = null;
+				String eventid = mCurrentService.getNow() != null
+						? mCurrentService.getNow().getEventId() : "-1";
+				String oldEventId = oldService != null && oldService.getNow() != null
+						? oldService.getNow().getEventId() : "-2";
+				if (oldService == null || !eventid.equals(oldEventId))
 					onServiceInfoChanged(false);
 			}
 			if (mServicesView != null)
@@ -424,18 +444,30 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	private void zap() {
 		if (Service.isMarker(mServiceRef))
 			return;
-		Intent streamingIntent = IntentFactory.getStreamServiceIntent(getActivity(), mServiceRef, mTitle, mBouquetRef, mServiceInfo);
+		ExtendedHashMap serviceInfoHash = serviceInfoForIntent();
+		Intent streamingIntent = IntentFactory.getStreamServiceIntent(getActivity(), mServiceRef, mTitle, mBouquetRef, serviceInfoHash);
 		getArguments().putString(TITLE, mTitle);
 		getArguments().getString(SERVICE_REFERENCE, mServiceRef);
 		getArguments().getString(BOUQUET_REFERENCE, mBouquetRef);
-		getArguments().putSerializable(SERVICE_INFO, mServiceInfo);
+		getArguments().putSerializable(SERVICE_INFO, serviceInfoHash);
 		((VideoActivity) getActivity()).handleIntent(streamingIntent);
 
 		onServiceInfoChanged(true);
 	}
 
 	@Nullable
-	private ExtendedHashMap getPreviousServiceInfo() {
+	private ExtendedHashMap serviceInfoForIntent() {
+		if (mMovie != null) {
+			return MovieListMapperKt.movieToExtendedHashMap(mMovie);
+		}
+		if (mCurrentService != null) {
+			return ServiceListMapperKt.serviceNowNextToExtendedHashMap(mCurrentService);
+		}
+		return null;
+	}
+
+	@Nullable
+	private ServiceNowNext getPreviousServiceInfo() {
 		int index = getCurrentServiceIndex();
 		if (index < 0)
 			return null;
@@ -447,17 +479,18 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void previous() {
-		ExtendedHashMap serviceInfo = getPreviousServiceInfo();
+		ServiceNowNext serviceInfo = getPreviousServiceInfo();
 		if (serviceInfo == null)
 			return;
-		mServiceInfo = serviceInfo;
-		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
-		mTitle = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+		mCurrentService = serviceInfo;
+		mMovie = null;
+		mServiceRef = mCurrentService.getServiceReference();
+		mTitle = mCurrentService.getServiceName();
 		zap();
 	}
 
 	@Nullable
-	private ExtendedHashMap getNextServiceInfo() {
+	private ServiceNowNext getNextServiceInfo() {
 		int index = getCurrentServiceIndex();
 		if (index < 0)
 			return null;
@@ -469,12 +502,13 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private void next() {
-		ExtendedHashMap serviceInfo = getNextServiceInfo();
+		ServiceNowNext serviceInfo = getNextServiceInfo();
 		if (serviceInfo == null)
 			return;
-		mServiceInfo = serviceInfo;
-		mServiceRef = mServiceInfo.getString(Event.KEY_SERVICE_REFERENCE);
-		mTitle = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+		mCurrentService = serviceInfo;
+		mMovie = null;
+		mServiceRef = mCurrentService.getServiceReference();
+		mTitle = mCurrentService.getServiceName();
 		zap();
 	}
 
@@ -482,8 +516,8 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (mServiceList == null || mServiceList.isEmpty())
 			return -1;
 		int idx = 0;
-		for (ExtendedHashMap service : mServiceList) {
-			if (service.getString(Event.KEY_SERVICE_REFERENCE).equals(mServiceRef))
+		for (ServiceNowNext service : mServiceList) {
+			if (service.getServiceReference().equals(mServiceRef))
 				return idx;
 			idx++;
 		}
@@ -496,19 +530,21 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			showOverlays();
 		else
 			updateViews();
-		if (mServiceInfo == null)
+		if (mCurrentService == null && mMovie == null)
 			return;
 		mHandler.removeCallbacks(mIssueReloadRunnable);
 		//let's see if we have any info about when the current event ends
-		String start = mServiceInfo.getString(Event.KEY_EVENT_START);
-		String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
-		if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
+		Event now = mCurrentService != null ? mCurrentService.getNow() : null;
+		String start = now != null ? now.getStart() : null;
+		String duration = now != null ? now.getDuration() : null;
+		if (duration != null && start != null && !duration.isEmpty() && !start.isEmpty()
+				&& !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
 			long eventStart = Double.valueOf(start).longValue() * 1000;
 			long eventEnd = eventStart + (Double.valueOf(duration).longValue() * 1000);
-			long now = System.currentTimeMillis();
-			long delay = eventEnd - now;
-			if (eventEnd <= now)
-				delay = now; //outdated, reload in few seconds
+			long nowMs = System.currentTimeMillis();
+			long delay = eventEnd - nowMs;
+			if (eventEnd <= nowMs)
+				delay = nowMs; //outdated, reload in few seconds
 			delay += 2000;
 			mHandler.postDelayed(mIssueReloadRunnable, delay);
 		} else {
@@ -546,10 +582,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (!success) {
 			return;
 		}
-		ArrayList<ExtendedHashMap> services = new ArrayList<>();
-		for (ServiceNowNext row : rows) {
-			services.add(ServiceListMapperKt.serviceNowNextToExtendedHashMap(row));
-		}
+		ArrayList<ServiceNowNext> services = new ArrayList<>(rows);
 		applyServiceList(services);
 	}
 
@@ -569,7 +602,7 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 	}
 
 	private boolean isRecording() {
-		boolean isDreamboxRecording = mServiceInfo != null && mServiceInfo.containsKey(Movie.KEY_FILE_NAME);
+		boolean isDreamboxRecording = mMovie != null;
 		return VLCPlayer.get().isSeekable() || isDreamboxRecording;
 	}
 
@@ -587,35 +620,37 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		View parentNow = view.findViewById(R.id.event_now);
 		View parentNext = view.findViewById(R.id.event_next);
 
-		if (mServiceInfo != null) {
+		if (mMovie != null || mCurrentService != null) {
 			mButtonInfo.setVisibility(View.VISIBLE);
 			if (isRecording()) {
-				title.setText(mServiceInfo.getString(Movie.KEY_TITLE, mTitle));
-			} else {
-				title.setText(mServiceInfo.getString(Event.KEY_SERVICE_NAME, mTitle));
+				String movieTitle = mMovie != null ? mMovie.getTitle() : null;
+				title.setText(movieTitle != null && !movieTitle.isEmpty() ? movieTitle : mTitle);
+			} else if (mCurrentService != null) {
+				String serviceName = mCurrentService.getServiceName();
+				title.setText(serviceName != null && !serviceName.isEmpty() ? serviceName : mTitle);
 				TextView nowStart = view.findViewById(R.id.event_now_start);
 				TextView nowDuration = view.findViewById(R.id.event_now_duration);
 				TextView nowTitle = view.findViewById(R.id.event_now_title);
 
-				Event.supplementReadables(mServiceInfo); //update readable values
-
-				nowStart.setText(mServiceInfo.getString(Event.KEY_EVENT_START_TIME_READABLE));
-				nowTitle.setText(mServiceInfo.getString(Event.KEY_EVENT_TITLE));
-				nowDuration.setText(mServiceInfo.getString(Event.KEY_EVENT_DURATION_READABLE));
+				Event now = mCurrentService.getNow();
+				nowStart.setText(now != null ? now.getStartTimeReadable() : null);
+				nowTitle.setText(now != null ? now.getTitle() : null);
+				nowDuration.setText(now != null ? now.getDurationReadable() : null);
 
 				parentNow.setVisibility(View.VISIBLE);
 			}
 
-			String next = mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE));
+			Event nextEvent = mCurrentService != null ? mCurrentService.getNext() : null;
+			String next = nextEvent != null ? nextEvent.getTitle() : null;
 			boolean hasNext = next != null && !"".equals(next);
 			if (hasNext) {
 				TextView nextStart = view.findViewById(R.id.event_next_start);
 				TextView nextDuration = view.findViewById(R.id.event_next_duration);
 				TextView nextTitle = view.findViewById(R.id.event_next_title);
 
-				nextStart.setText(mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_START_TIME_READABLE)));
-				nextTitle.setText(mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_TITLE)));
-				nextDuration.setText(mServiceInfo.getString(Event.PREFIX_NEXT.concat(Event.KEY_EVENT_DURATION_READABLE)));
+				nextStart.setText(nextEvent.getStartTimeReadable());
+				nextTitle.setText(nextEvent.getTitle());
+				nextDuration.setText(nextEvent.getDurationReadable());
 				parentNext.setVisibility(View.VISIBLE);
 			} else {
 				parentNext.setVisibility(View.GONE);
@@ -662,13 +697,14 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		serviceProgress.setClickable(isSeekable);
 		long len = -1;
 		long cur = -1;
-		if (mServiceInfo != null) {
+		if (mMovie != null || mCurrentService != null) {
 			View parentNow = getView().findViewById(R.id.event_now);
 			View parentNext = getView().findViewById(R.id.event_next);
 			if (isRecording()) {
 				long duration = player.getLength() / 1000;
 				if (duration <= 0) {
-					String textLen = mServiceInfo.getString(Movie.KEY_LENGTH, "00:00");
+					String textLen = mMovie != null && mMovie.getLength() != null && !mMovie.getLength().isEmpty()
+							? mMovie.getLength() : "00:00";
 					String[] l = textLen.split(":");
 					try {
 						duration = (Long.valueOf(l[0]) * 60) + Long.valueOf(l[1]);
@@ -685,18 +721,20 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 					long pos = (long) (duration * player.getPosition()); //getTime() may deliver quite bogous values when streaming from a dreambox so we don't use them.
 					nowStart.setText(DateTime.minutesAndSeconds((int) pos));
-					nowTitle.setText(mServiceInfo.getString(Movie.KEY_SERVICE_NAME, ""));
+					nowTitle.setText(mMovie != null ? mMovie.getServiceName() : "");
 					nowDuration.setText(DateTime.minutesAndSeconds((int) duration));
 					parentNow.setVisibility(View.VISIBLE);
 				} else {
 					parentNow.setVisibility(View.GONE);
 				}
 				parentNext.setVisibility(View.GONE);
-			} else {
-				String duration = mServiceInfo.getString(Event.KEY_EVENT_DURATION);
-				String start = mServiceInfo.getString(Event.KEY_EVENT_START);
+			} else if (mCurrentService != null && mCurrentService.getNow() != null) {
+				Event now = mCurrentService.getNow();
+				String duration = now.getDuration();
+				String start = now.getStart();
 
-				if (duration != null && start != null && !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
+				if (duration != null && start != null && !duration.isEmpty() && !start.isEmpty()
+						&& !Python.NONE.equals(duration) && !Python.NONE.equals(start)) {
 					try {
 						len = Double.valueOf(duration).longValue();
 						cur = len - DateTime.getRemaining(duration, start) * 60;
@@ -865,12 +903,14 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 
 	@Override
 	public void onItemClick(RecyclerView parent, View view, int position, long id) {
-		String serviceRef = mServiceList.get(position).getString(Event.KEY_SERVICE_REFERENCE);
+		ServiceNowNext row = mServiceList.get(position);
+		String serviceRef = row.getServiceReference();
 		if (Service.isMarker(serviceRef))
 			return;
-		mServiceInfo = mServiceList.get(position);
+		mCurrentService = row;
+		mMovie = null;
 		mServiceRef = serviceRef;
-		mTitle = mServiceInfo.getString(Event.KEY_SERVICE_NAME);
+		mTitle = row.getServiceName();
 		zap();
 	}
 

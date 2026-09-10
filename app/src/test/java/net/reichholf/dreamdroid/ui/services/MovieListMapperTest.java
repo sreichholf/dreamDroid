@@ -54,6 +54,38 @@ public class MovieListMapperTest {
     }
 
     @Test
+    public void fromExtendedHashMapRoundTripsFields() {
+        Movie movie = new Movie(
+                "ref",
+                "Title",
+                "desc",
+                "ext",
+                "Service",
+                "100",
+                "readable",
+                "30",
+                "tag",
+                "/file.ts",
+                "1024",
+                "0 MB"
+        );
+        ExtendedHashMap map = MovieListMapperKt.movieToExtendedHashMap(movie);
+        Movie back = MovieListMapperKt.movieFromExtendedHashMap(map);
+        assertEquals(movie.getReference(), back.getReference());
+        assertEquals(movie.getTitle(), back.getTitle());
+        assertEquals(movie.getDescription(), back.getDescription());
+        assertEquals(movie.getDescriptionExtended(), back.getDescriptionExtended());
+        assertEquals(movie.getServiceName(), back.getServiceName());
+        assertEquals(movie.getTime(), back.getTime());
+        assertEquals(movie.getTimeReadable(), back.getTimeReadable());
+        assertEquals(movie.getLength(), back.getLength());
+        assertEquals(movie.getTags(), back.getTags());
+        assertEquals(movie.getFileName(), back.getFileName());
+        assertEquals(movie.getFileSize(), back.getFileSize());
+        assertEquals(movie.getFileSizeReadable(), back.getFileSizeReadable());
+    }
+
+    @Test
     public void emptyTypedListYieldsNoItems() {
         assertEquals(0, MovieListMapperKt.movieListItemsFromMovies(Collections.emptyList()).size());
     }

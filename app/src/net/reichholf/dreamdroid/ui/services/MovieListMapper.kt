@@ -46,3 +46,21 @@ fun movieToExtendedHashMap(movie: Movie): ExtendedHashMap {
     map.put(MovieKeys.KEY_FILE_SIZE_READABLE, movie.fileSizeReadable)
     return map
 }
+
+/** Inverse of [movieToExtendedHashMap] for Intent / legacy hash edges. */
+fun movieFromExtendedHashMap(map: ExtendedHashMap): Movie {
+    return Movie(
+        reference = map.getString(MovieKeys.KEY_REFERENCE).orEmpty(),
+        title = map.getString(MovieKeys.KEY_TITLE).orEmpty(),
+        description = map.getString(MovieKeys.KEY_DESCRIPTION).orEmpty(),
+        descriptionExtended = map.getString(MovieKeys.KEY_DESCRIPTION_EXTENDED).orEmpty(),
+        serviceName = map.getString(MovieKeys.KEY_SERVICE_NAME).orEmpty(),
+        time = map.getString(MovieKeys.KEY_TIME).orEmpty(),
+        timeReadable = map.getString(MovieKeys.KEY_TIME_READABLE).orEmpty(),
+        length = map.getString(MovieKeys.KEY_LENGTH).orEmpty(),
+        tags = map.getString(MovieKeys.KEY_TAGS).orEmpty(),
+        fileName = map.getString(MovieKeys.KEY_FILE_NAME).orEmpty(),
+        fileSize = map.getString(MovieKeys.KEY_FILE_SIZE).orEmpty(),
+        fileSizeReadable = map.getString(MovieKeys.KEY_FILE_SIZE_READABLE).orEmpty(),
+    )
+}
