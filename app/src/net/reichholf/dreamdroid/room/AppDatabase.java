@@ -10,6 +10,9 @@ import net.reichholf.dreamdroid.Profile;
 
 @Database(entities = {Profile.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
+	/** Room profile DB file name under {@code databases/}. */
+	public static final String DATABASE_NAME = "dreambox";
+
 	public abstract Profile.ProfileDao profileDao();
 
 	private static AppDatabase db = null;
@@ -20,7 +23,7 @@ public abstract class AppDatabase extends RoomDatabase {
 			return db;
 		db = Room.databaseBuilder(
 						context.getApplicationContext(),
-						AppDatabase.class, "dreambox"
+						AppDatabase.class, DATABASE_NAME
 				)
 				.allowMainThreadQueries()
 				.build();

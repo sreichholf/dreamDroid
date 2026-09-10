@@ -195,7 +195,8 @@ public class DreamDroid extends Application {
 					dbh.deleteProfile(p);
 					p.setId( dao.addProfile(p) );
 				}
-
+				// Legacy SQLite is migrate-only; drop the file once Room has the profiles.
+				getAppContext().deleteDatabase(DatabaseHelper.DATABASE_NAME);
 			}
 		}
 

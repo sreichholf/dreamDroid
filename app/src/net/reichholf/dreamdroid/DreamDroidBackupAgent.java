@@ -10,9 +10,11 @@ import android.app.backup.BackupAgentHelper;
 import android.app.backup.FileBackupHelper;
 import android.app.backup.SharedPreferencesBackupHelper;
 
+import net.reichholf.dreamdroid.room.AppDatabase;
+
 /**
- * @author sre
- *
+ * Cloud backup for SharedPreferences + Room profile DB ({@link AppDatabase#DATABASE_NAME}).
+ * Legacy SQLite {@code dreamdroid} is migrate-only and is not backed up.
  */
 public class DreamDroidBackupAgent extends BackupAgentHelper {
 	public static final String PREFS = "net.reichholf.dreamdroid_preferences";
@@ -22,7 +24,7 @@ public class DreamDroidBackupAgent extends BackupAgentHelper {
 	public void onCreate(){
 		SharedPreferencesBackupHelper spbh = new SharedPreferencesBackupHelper(this, PREFS);
 		addHelper(PREFS_BACKUP_KEY, spbh);
-		FileBackupHelper dbfbh = new FileBackupHelper(this, "../databases/" + DatabaseHelper.DATABASE_NAME);
+		FileBackupHelper dbfbh = new FileBackupHelper(this, "../databases/" + AppDatabase.DATABASE_NAME);
 		addHelper(DATABASE_BACKUP_KEY, dbfbh);
 	}
 }
