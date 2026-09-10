@@ -36,9 +36,8 @@ import androidx.leanback.widget.ImageCardView;
 import androidx.leanback.widget.Presenter;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.Event;
-import net.reichholf.dreamdroid.helpers.enigma2.Movie;
+import net.reichholf.dreamdroid.enigma.Event;
+import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.tv.BrowseItem;
 import net.reichholf.dreamdroid.tv.view.TextCardView;
@@ -121,35 +120,20 @@ public class CardPresenter extends Presenter {
 
 	@Override
 	public void onBindViewHolder(@NonNull Presenter.ViewHolder viewHolder, Object item) {
-		BrowseItem browseItem = (BrowseItem) item;
-		switch (browseItem.type) {
-			case Service:
-				bindServiceViewHolder(viewHolder, browseItem);
-				break;
-			case Movie:
-				bindMovieViewHolder(viewHolder, browseItem);
-				break;
-			case Reload:
-			case Preferences:
-			case Profile:
-				bindSettingsViewHolder(viewHolder, browseItem);
-				break;
-			default:
-				break;
+		if (item instanceof BrowseItem.Service) {
+			bindServiceViewHolder(viewHolder, (BrowseItem.Service) item);
+		} else if (item instanceof BrowseItem.Movie) {
+			bindMovieViewHolder(viewHolder, (BrowseItem.Movie) item);
+		} else if (item instanceof BrowseItem.Settings) {
+			bindSettingsViewHolder(viewHolder, (BrowseItem.Settings) item);
 		}
 	}
 
-	protected void bindSettingsViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem item) {
-		ExtendedHashMap settings = item.data;
-
+	protected void bindSettingsViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem.Settings item) {
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
-		cardView.setTitleText(settings.getString("title"));
-
-		Integer mainImageId = (Integer) settings.get("icon");
-		if (mainImageId != null)
-			cardView.setMainImage(ResourcesCompat.getDrawable(cardView.getResources(), mainImageId, cardView.getContext().getTheme()));
-		else
-			cardView.setMainImage(mDefaultCardImage);
+		cardView.setTitleText(item.getTitle());
+		cardView.setMainImage(ResourcesCompat.getDrawable(cardView.getResources(), item.getIconRes(),
+				cardView.getContext().getTheme()));
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
 		Resources res = cardView.getResources();
 		int width = res.getDimensionPixelSize(R.dimen.card_width);
@@ -157,22 +141,28 @@ public class CardPresenter extends Presenter {
 		cardView.setMainImageDimensions(width, height);
 	}
 
-	protected void bindServiceViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem item) {
-
-		Event event = new Event(item.data);
-		Event nextEvent = new Event(Event.fromNext(item.data));
+	protected void bindServiceViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem.Service item) {
+		ServiceNowNext row = item.getRow();
+		Event now = row.getNow();
+		Event next = row.getNext();
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
-		//cardView.setMainImage(mDefaultCardImage);
 
-		Picon.setPiconForView(cardView.getContext(), cardView.getMainImageView(), event, "tv_picon");
-		cardView.setTitleText(event.serviceName());
-		if (nextEvent.title().isEmpty()) {
-			cardView.setTitleText(event.title());
+		Picon.setPiconForView(cardView.getContext(), cardView.getMainImageView(),
+				row.getServiceReference(), row.getServiceName(), "tv_picon", null);
+		String nowTitle = now != null ? now.getTitle() : "";
+		String serviceName = row.getServiceName();
+		cardView.setTitleText(serviceName);
+		if (next == null || next.getTitle().isEmpty()) {
+			if (!nowTitle.isEmpty()) {
+				cardView.setTitleText(nowTitle);
+			}
 		} else {
-			String t = String.format("%s\n%s %s", event.title(), nextEvent.startTimeReadable(), nextEvent.title());
+			String displayTitle = !nowTitle.isEmpty() ? nowTitle : serviceName;
+			String nextStart = next.getStartTimeReadable();
+			String t = String.format("%s\n%s %s", displayTitle, nextStart, next.getTitle());
 			Spannable spannable = new SpannableString(t);
-			int offset = event.title().length();
-			int end = offset + nextEvent.startTimeReadable().length() + 1;
+			int offset = displayTitle.length();
+			int end = offset + nextStart.length() + 1;
 			spannable.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), offset, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			TextView content = cardView.findViewById(R.id.content_text);
 			content.setText(spannable, TextView.BufferType.SPANNABLE);
@@ -184,14 +174,16 @@ public class CardPresenter extends Presenter {
 		cardView.setMainImageDimensions(width, height);
 	}
 
-	protected void bindMovieViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem item) {
-		Movie movie = new Movie(item.data);
+	protected void bindMovieViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem.Movie item) {
+		net.reichholf.dreamdroid.enigma.Movie movie = item.getMovie();
 		TextCardView cardView = (TextCardView) viewHolder.view;
-		cardView.setTitleText(movie.title());
-		if (!movie.descriptionExtended().isEmpty())
-			cardView.setContentText(movie.descriptionExtended());
+		cardView.setTitleText(movie.getTitle());
+		// Match helpers.enigma2.Movie.descriptionExtended(): literal "\n" → newline.
+		String descriptionEx = movie.getDescriptionExtended().replace("\\n", "\n");
+		if (!descriptionEx.isEmpty())
+			cardView.setContentText(descriptionEx);
 		else
-			cardView.setContentText(movie.description());
+			cardView.setContentText(movie.getDescription());
 	}
 
 	@Override
