@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
 
-import com.evernote.android.state.State;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
@@ -65,6 +64,10 @@ import kotlinx.coroutines.Job;
 public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDialog.MultiChoiceDialogListener {
 
 	private static final String TAG = TimerEditFragment.class.getSimpleName();
+	private static final String KEY_TIMER = "timer_edit";
+	private static final String KEY_TIMER_OLD = "timer_edit_old";
+	private static final String KEY_TAGS = "timer_edit_tags";
+	private static final String KEY_CREATE = "timer_edit_is_create";
 
 	private static final int[] sRepeatedValues = {1, 2, 4, 8, 16, 32, 64};
 
@@ -73,13 +76,11 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 
 	private boolean mTagsChanged;
 
-	@State
 	public ArrayList<String> mSelectedTags;
-	@State
 	public ExtendedHashMap mTimer;
 	@Nullable
-	@State
 	public ExtendedHashMap mTimerOld;
+	private boolean mIsCreate;
 
 	@Nullable
 	private ProgressDialog mLocationsAndTagsProgress;
@@ -100,6 +101,36 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 		initTitles(getString(R.string.timer));
 		mLocationsAndTagsProgress = null;
 		mEditState = new TimerEditState();
+		if (savedInstanceState != null) {
+			@SuppressWarnings("deprecation")
+			ExtendedHashMap timer = (ExtendedHashMap) savedInstanceState.getSerializable(KEY_TIMER);
+			mTimer = timer;
+			@SuppressWarnings("deprecation")
+			ExtendedHashMap timerOld = (ExtendedHashMap) savedInstanceState.getSerializable(KEY_TIMER_OLD);
+			mTimerOld = timerOld;
+			mSelectedTags = savedInstanceState.getStringArrayList(KEY_TAGS);
+			mIsCreate = savedInstanceState.getBoolean(KEY_CREATE, mTimerOld == null);
+		}
+		if (mSelectedTags == null) {
+			mSelectedTags = new ArrayList<>();
+		}
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		if (mProgress != null) {
+			if (mProgress.isShowing())
+				mProgress.dismiss();
+		}
+		if (mTimer != null) {
+			outState.putSerializable(KEY_TIMER, mTimer);
+		}
+		if (mTimerOld != null) {
+			outState.putSerializable(KEY_TIMER_OLD, mTimerOld);
+		}
+		outState.putStringArrayList(KEY_TAGS, mSelectedTags);
+		outState.putBoolean(KEY_CREATE, mIsCreate || mTimerOld == null);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
@@ -114,36 +145,21 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 	@SuppressWarnings("unchecked")
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		if (mTimer == null || mTimerOld == null) {
+		if (mTimer == null) {
 			ExtendedHashMap data = ((ExtendedHashMap) getArguments().get(sData)).clone();
 			mTimer = ((ExtendedHashMap) data.get("timer")).clone();
 
 			if (Intent.ACTION_EDIT.equals(data.get("action"))) {
 				mTimerOld = mTimer.clone();
+				mIsCreate = false;
 			} else {
 				mTimerOld = null;
+				mIsCreate = true;
 			}
 
 			mSelectedTags = new ArrayList<>();
-
-			if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
-				mLocationsAndTagsJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(
-						this,
-						(title, progress) -> {
-							onGetLocationsAndTagsProgress(title, progress);
-							return Unit.INSTANCE;
-						},
-						() -> {
-							mLocationsAndTagsJob = null;
-							onLocationsAndTagsReady();
-							return Unit.INSTANCE;
-						});
-			} else {
-				reload();
-			}
-		} else {
-			reload();
 		}
+		ensureLocationsAndTagsThenReload();
 
 		ComposeView composeView = new ComposeView(requireContext());
 		composeView.setLayoutParams(new ViewGroup.LayoutParams(
@@ -206,16 +222,6 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 				mEditState.setServiceName(mTimer.getString(Timer.KEY_SERVICE_NAME));
 			}
 		}
-	}
-
-	@Override
-	public void onSaveInstanceState(@NonNull Bundle outState) {
-		if (mProgress != null) {
-			if (mProgress.isShowing()) {
-				mProgress.dismiss();
-			}
-		}
-		super.onSaveInstanceState(outState);
 	}
 
 	protected void pickRepeatings() {
@@ -552,6 +558,27 @@ public class TimerEditFragment extends BaseHttpFragment implements MultiChoiceDi
 			mLocationsAndTagsProgress = ProgressDialog.show(getAppCompatActivity(), title, progress);
 		}
 
+	}
+
+	private void ensureLocationsAndTagsThenReload() {
+		if (DreamDroid.getLocations().size() == 0 || DreamDroid.getTags().size() == 0) {
+			if (mLocationsAndTagsJob != null) {
+				return;
+			}
+			mLocationsAndTagsJob = LocationsAndTagsLoadKt.launchLocationsAndTagsLoad(
+					this,
+					(title, progress) -> {
+						onGetLocationsAndTagsProgress(title, progress);
+						return Unit.INSTANCE;
+					},
+					() -> {
+						mLocationsAndTagsJob = null;
+						onLocationsAndTagsReady();
+						return Unit.INSTANCE;
+					});
+		} else {
+			reload();
+		}
 	}
 
 	private void onLocationsAndTagsReady() {

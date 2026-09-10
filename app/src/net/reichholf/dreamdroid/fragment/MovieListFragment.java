@@ -25,8 +25,6 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.compose.ui.platform.ComposeView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.evernote.android.state.State;
-
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.adapter.recyclerview.SimpleTextAdapter;
@@ -67,13 +65,18 @@ import kotlinx.coroutines.Job;
 public class MovieListFragment extends BaseHttpRecyclerFragment
 		implements MultiChoiceDialog.MultiChoiceDialogListener {
 	public static String ARGUMENT_LOCATION = "location";
+	private static final String KEY_LOCATION = "movie_location";
+	private static final String KEY_SELECTED_TAGS = "movie_selected_tags";
+	private static final String KEY_OLD_TAGS = "movie_old_tags";
+	private static final String KEY_MOVIE = "movie_selected";
+
 	private boolean mTagsChanged;
 	private boolean mReloadOnSimpleResult;
 
-	@State public String mCurrentLocation;
-	@State public ArrayList<String> mSelectedTags;
-	@State public ArrayList<String> mOldTags;
-	@State public ExtendedHashMap mMovie;
+	public String mCurrentLocation;
+	public ArrayList<String> mSelectedTags;
+	public ArrayList<String> mOldTags;
+	public ExtendedHashMap mMovie;
 	private final ArrayList<Movie> mMovies = new ArrayList<>();
 	private MovieListState mListState;
 	@Nullable
@@ -103,13 +106,37 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 		//mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));
-		mCurrentLocation = null;
-		if (savedInstanceState == null) {
+		if (savedInstanceState != null) {
+			mCurrentLocation = savedInstanceState.getString(KEY_LOCATION);
+			mSelectedTags = savedInstanceState.getStringArrayList(KEY_SELECTED_TAGS);
+			mOldTags = savedInstanceState.getStringArrayList(KEY_OLD_TAGS);
+			@SuppressWarnings("deprecation")
+			ExtendedHashMap movie = (ExtendedHashMap) savedInstanceState.getSerializable(KEY_MOVIE);
+			mMovie = movie;
+		} else {
+			mCurrentLocation = null;
 			mSelectedTags = new ArrayList<>();
+			mOldTags = new ArrayList<>();
+		}
+		if (mSelectedTags == null) {
+			mSelectedTags = new ArrayList<>();
+		}
+		if (mOldTags == null) {
 			mOldTags = new ArrayList<>();
 		}
 		setInitialLocation(savedInstanceState);
 		mListState = new MovieListState();
+	}
+
+	@Override
+	public void onSaveInstanceState(@NonNull Bundle outState) {
+		outState.putString(KEY_LOCATION, mCurrentLocation);
+		outState.putStringArrayList(KEY_SELECTED_TAGS, mSelectedTags);
+		outState.putStringArrayList(KEY_OLD_TAGS, mOldTags);
+		if (mMovie != null) {
+			outState.putSerializable(KEY_MOVIE, mMovie);
+		}
+		super.onSaveInstanceState(outState);
 	}
 
 	protected void setInitialLocation(@Nullable Bundle savedInstanceState) {
