@@ -14,13 +14,11 @@ import androidx.fragment.app.FragmentManager;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.MainActivity;
-import net.reichholf.dreamdroid.activities.SimpleNoTitleFragmentActivity;
 import net.reichholf.dreamdroid.activities.SimpleToolbarFragmentActivity;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
-import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PowerStateDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
@@ -52,7 +50,7 @@ import kotlinx.coroutines.Job;
 public class NavigationHelper {
 
     @NonNull
-	protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_remote, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
+	protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_settings, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
 
     MainActivity mActivity;
     @Nullable
@@ -193,13 +191,7 @@ public class NavigationHelper {
                 break;
 
             case R.id.menu_navigation_remote:
-                if (!isTablet()) {
-                    intent = new Intent(mActivity, SimpleNoTitleFragmentActivity.class);
-                    intent.putExtra("fragmentClass", VirtualRemotePagerFragment.class);
-                    mActivity.startActivity(intent);
-                } else {
-                    navigatePhoneNavRoot(PhoneNavRoutes.REMOTE);
-                }
+                navigatePhoneNavRoot(PhoneNavRoutes.REMOTE);
                 break;
 
             case R.id.menu_navigation_settings:
@@ -421,10 +413,6 @@ public class NavigationHelper {
 
     public void setAvailableFeatures() {
         // TODO implement feature-handling for list-navigation
-    }
-
-    protected boolean isTablet() {
-        return getMainActivity().getResources().getBoolean(R.bool.is_tablet);
     }
 
     protected void showToast(String toastText) {
