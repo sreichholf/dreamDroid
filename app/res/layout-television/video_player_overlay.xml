@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/overlay_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,222 +17,27 @@
         android:indeterminate="true"
         android:visibility="gone" />
 
-    <RelativeLayout
-        android:id="@+id/container"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_overlay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="0dp"
-        android:background="?attr/cardBackgroundColor"
         android:fitsSystemWindows="true"
         android:paddingLeft="@dimen/titleSafeLeftRight"
         android:paddingTop="@dimen/titleSafeTopBottom"
         android:paddingRight="@dimen/titleSafeLeftRight"
-        android:paddingBottom="@dimen/titleSafeTopBottom">
-
-        <RelativeLayout
-            android:id="@+id/container_bottom"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="fill_parent"
-                android:layout_height="50dp"
-                android:gravity="center_vertical"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
-
-            <LinearLayout
-                android:id="@+id/event_now"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/title"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/event_now_start"
-                    android:layout_width="50dip"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/event_now_title"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1" />
-
-                <TextView
-                    android:id="@+id/event_now_duration"
-                    android:layout_width="50dip"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:minHeight="0dip" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/event_next"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/event_now"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/event_next_start"
-                    android:layout_width="50dip"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/event_next_title"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="45dip"
-                    android:layout_marginEnd="55dip"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1" />
-
-                <TextView
-                    android:id="@+id/event_next_duration"
-                    android:layout_width="50dip"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:minHeight="0dip" />
-            </LinearLayout>
-
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/controls_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/event_next"
-                android:layout_margin="10dp"
-                android:layout_weight="1"
-                android:visibility="visible"
-                app:cardBackgroundColor="?attr/colorPrimaryDark"
-                app:cardCornerRadius="4dp"
-                app:cardElevation="0dp"
-                app:cardPreventCornerOverlap="false">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <RelativeLayout
-                        android:id="@+id/pvr_controls"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_centerInParent="true">
-
-                        <androidx.appcompat.widget.AppCompatImageButton
-                            android:id="@+id/button_play"
-                            style="@style/VideoPlayerButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerInParent="true"
-                            android:adjustViewBounds="true"
-                            android:nextFocusUp="@id/servicelist"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/ic_play_circle_outline_dark" />
-
-                        <androidx.appcompat.widget.AppCompatImageButton
-                            android:id="@+id/button_rwd"
-                            style="@style/VideoPlayerButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignBottom="@id/button_play"
-                            android:layout_toStartOf="@id/button_play"
-                            android:adjustViewBounds="true"
-                            android:nextFocusUp="@id/servicelist"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/ic_fast_rewind_dark" />
-
-                        <androidx.appcompat.widget.AppCompatImageButton
-                            android:id="@+id/button_fwd"
-                            style="@style/VideoPlayerButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignBottom="@id/button_play"
-                            android:layout_toEndOf="@id/button_play"
-                            android:adjustViewBounds="true"
-                            android:nextFocusUp="@id/servicelist"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/ic_fast_forward_dark" />
-                    </RelativeLayout>
-
-                    <SeekBar
-                        android:id="@+id/service_progress"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/pvr_controls"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="0dp"
-                        android:enabled="false"
-                        android:padding="0dp" />
-
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <RelativeLayout
-                android:id="@+id/parent_actions"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:layout_below="@id/controls_card"
-                android:padding="0dp">
-
-                <LinearLayout
-                    android:id="@+id/video_actions"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_centerInParent="true"
-                    android:orientation="horizontal">
-
-                    <androidx.appcompat.widget.AppCompatImageButton
-                        android:id="@+id/button_audio_track"
-                        style="@style/VideoPlayerButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_action_audio_track"
-                        android:visibility="invisible" />
-
-                    <androidx.appcompat.widget.AppCompatImageButton
-                        android:id="@+id/button_info"
-                        style="@style/VideoPlayerButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_menu_info_dark" />
-
-                    <androidx.appcompat.widget.AppCompatImageButton
-                        android:id="@+id/button_list"
-                        style="@style/VideoPlayerButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_menu_list_dark" />
-
-                    <androidx.appcompat.widget.AppCompatImageButton
-                        android:id="@+id/button_subtitle_track"
-                        style="@style/VideoPlayerButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_action_subtitle"
-                        android:visibility="invisible" />
-                </LinearLayout>
-
-            </RelativeLayout>
-        </RelativeLayout>
-
-    </RelativeLayout>
+        android:paddingBottom="@dimen/titleSafeTopBottom" />
 
     <androidx.leanback.widget.HorizontalGridView
         android:id="@+id/servicelist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/container"
+        android:layout_above="@id/compose_overlay"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="8dp"
+        android:nextFocusDown="@id/compose_overlay" />
 </RelativeLayout>

@@ -355,6 +355,11 @@
     <string name="audio_tracks">Audio Tracks</string>
     <string name="subtitles">Subtitles</string>
     <string name="no_tracks">No tracks available!</string>
+    <string name="play">Play</string>
+    <string name="rewind">Rewind</string>
+    <string name="forward">Forward</string>
+    <string name="info">Info</string>
+    <string name="seek">Seek</string>
     <string name="preferences">Preferences</string>
     <string name="backup">Backup</string>
     <string name="backup_current_profile">current</string>

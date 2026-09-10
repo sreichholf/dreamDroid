@@ -140,7 +140,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 3.1c-iii hub shell decision **merged** [#241](https://github.com/sreichholf/dreamDroid/pull/241) (keep Leanback + Compose cards; defer full Compose hub).
 - Phase 2.4 Room backup finish **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242).
 - Phase 2.5 VLC product decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243) (keep libVLC; Compose overlay rewrite path).
-- Phase 2.5b typed overlay state — **this PR** (`ServiceNowNext` / `Movie`; hash only at stream Intent / legacy edges).
+- Phase 2.5b typed overlay state **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244) (`ServiceNowNext` / `Movie`; hash only at stream Intent / legacy edges).
+- Phase 2.5c Compose VideoOverlay chrome — **this PR** (ComposeView host; ButterKnife library dropped / 2.5d folded).
 - Out of wave still: widgets, NavHost, state. See Appendix H.
 
 ## How to read this
@@ -408,7 +409,7 @@ Play users below API 26 lose install. Floor is on `main`.
 
 No Enigma2 box in CI. Connection error is a valid pass for list content. Crash is not.
 
-ButterKnife remains only on phone `VideoOverlayFragment` (VLC). Do not drop the library as a drive-by. TV binds cleared (#235/#237).
+ButterKnife library removed (**this PR** / 2.5c+2.5d). TV binds cleared earlier (#235/#237); phone `VideoOverlayFragment` chrome is Compose.
 
 Two HTTP stacks. Box XML is `HttpURLConnection`. Picons are Picasso plus OkHttp 3.14.9.
 
@@ -468,7 +469,7 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 - Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Hub TV/Radio now/next loads typed `ServiceNowNext` (#209). Movies list loads typed `enigma.Movie` (#210). Leanback movie browse still uses hash SAX.
 - Enigma2 HTTP still uses `HttpURLConnection` via `SimpleHttpClient` (coroutines + typed `EnigmaClient`). Picons still Picasso + OkHttp 3.14.9. `asynctask/*` retired.
 - Room holds `profile` only (`dreambox`). Android Backup includes Room and legacy `dreamdroid` for restore compat (**this PR**). After migrate/restore copy, legacy file is deleted; `DatabaseHelper` stays migrate-only.
-- ButterKnife (1 file: phone `VideoOverlayFragment` / VLC). TV binds cleared. `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
+- ButterKnife dependency removed (**this PR**). TV binds cleared earlier; phone VLC overlay chrome is Compose. `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
 
 ### Explicitly frozen
 
@@ -544,7 +545,7 @@ Entry: `TabbedNavigationActivity` → TV `MainActivity` when `DreamDroid.isTV()`
 | *(none on TV)* | 0 |
 | **Total** | **0** |
 
-TV ButterKnife cleared (#235 details; #237 `TextCardView`). Phone leftover: `VideoOverlayFragment` (VLC) — blocks full library drop.
+TV ButterKnife cleared (#235 details; #237 `TextCardView`). Phone VLC overlay Compose + library drop **this PR** (2.5c / 2.5d folded).
 
 #### Coupling to phone stack
 
@@ -573,9 +574,9 @@ Prefer **typed browse data → details → hub → prefs** (not prefs-first; not
 2. Detail dialogs → Compose — **merged** [#235](https://github.com/sreichholf/dreamDroid/pull/235) (Phase 3.1b)
 3. Browse hub → TV Compose / foundational focus — gated on focus dive (**this PR**); typed data already on `main`
 4. Leanback prefs → Compose — **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236) (Phase 3.1d)
-5. TV ButterKnife cleared — **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237); full library drop waits on VLC overlay
+5. TV ButterKnife cleared — **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237); phone library drop **this PR** (2.5c)
 
-**Safe next after this dive lands:** hub Compose implementation slices (below), or state/rotation / Room. **Defer full ButterKnife drop** until VLC overlay is rewritten.
+**Safe next after this dive lands:** Phase 2.5e optional VLC smoke, or Phase 2.1b NavHost dive / 2.3 state / 2.6 widgets.
 
 
 ### Phase 3.1c — TV hub focus dive (this PR; docs only)
@@ -638,7 +639,7 @@ Why:
 
 ### Phase 1 — Remaining phone typed API (done)
 
-Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone ButterKnife left only on `VideoOverlayFragment` (VLC / Phase 2). Phase 1 typed leftovers:
+Appendix G phone Compose screens are on `main` through #206 (+ CI #204). Phone ButterKnife dropped with Compose VideoOverlay (**this PR** / 2.5c). Phase 1 typed leftovers:
 
 | Order | Slug | Notes |
 | --- | --- | --- |
@@ -676,19 +677,19 @@ One program each, still one PR (or small PR series) at a time:
 | 2 | HTTP / async stack (program) | Replace `HttpURLConnection` + executor/`Loader` with Kotlin coroutines + typed `EnigmaClient` everywhere; keep OkHttp 3.14.9 for Picasso until a dedicated bump. **Phone+TV Loader paths done through 2r.** Follow-ons: typed TV browse (3.1a) / VLC product decision / NavHost / state. |
 | 3 | State / rotation | Replace Evernote `@State` + Livefront Bridge (frozen today) with SavedStateHandle / rememberSaveable |
 | 4 | Data | Finish Room migration; BackupAgent → Room; drop legacy file after migrate. **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Shrink/remove `DatabaseHelper` later when migrate path is retired. |
-| 5 | VLC / streaming | Product decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243) (option A: keep libVLC + Compose overlay). **This PR:** 2.5b typed overlay state. |
+| 5 | VLC / streaming | Product decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243) (option A: keep libVLC + Compose overlay). Typed overlay **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244). **This PR:** 2.5c Compose overlay chrome (+ ButterKnife drop / 2.5d). |
 | 6 | Widgets | `appwidget/` Virtual Remote — Compose Glance or keep XML |
 
-### Phase 2.5 — VLC / streaming (decision merged [#243](https://github.com/sreichholf/dreamDroid/pull/243); this PR = 2.5b typed overlay state)
+### Phase 2.5 — VLC / streaming (decision merged [#243](https://github.com/sreichholf/dreamDroid/pull/243); this PR = 2.5c Compose overlay)
 
-**Decision A** (docs [#243](https://github.com/sreichholf/dreamDroid/pull/243)): keep libVLC; Compose overlay rewrite path. **This PR (2.5b):** typed `VideoOverlayFragment` state — `List<ServiceNowNext>` + optional `enigma.Movie`; hash only at stream Intent / legacy edges. No Compose overlay UI, no ButterKnife drop, no Media3.
+**Decision A** (docs [#243](https://github.com/sreichholf/dreamDroid/pull/243)): keep libVLC; Compose overlay rewrite path. Typed overlay state **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244). **This PR (2.5c):** Compose chrome in `VideoOverlayFragment` via `ComposeView`; drop ButterKnife dependency (2.5d folded). Keep `VideoActivity` + VLCPlayer + gestures + RecyclerView/HorizontalGridView zap list. No Media3.
 
 #### Inventory (current)
 
 | Piece | Path | LOC | Notes |
 | --- | --- | --- | --- |
 | `VideoActivity` | `activities/VideoActivity.java` | ~455 | Integrated player host: VLC surface + PiP + `ACTION_VIEW` URI; hosts overlay |
-| `VideoOverlayFragment` | `fragment/VideoOverlayFragment.java` | ~944 | Controls, bouquet zap, EPG now/next, seek/gestures, detail dialogs; **last ButterKnife user** (9 `@BindView`) |
+| `VideoOverlayFragment` | `fragment/VideoOverlayFragment.java` | ~900 | Controls, bouquet zap, EPG now/next, seek/gestures, detail dialogs; Compose chrome (**this PR**) |
 | `VLCPlayer` | `video/VLCPlayer.java` | ~177 | Singleton `libvlc` `MediaPlayer` wrapper |
 | `VLCInstance` | `video/VLCInstance.java` | ~61 | Singleton `LibVLC` (`--http-reconnect`) |
 | Stream Intent edge | `intents/IntentFactory.java` + `helpers/SimpleHttpClient` stream URL builders | ~170 | Live TS / encoder / recording `/file` URLs; integrated vs external player |
@@ -724,16 +725,15 @@ Why:
 | Slice | Scope | Non-goals |
 | --- | --- | --- |
 | 2.5a | Docs decision on `main` | **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243). No player code |
-| 2.5b | Typed overlay state (`ServiceNowNext` / movie) — stop hashing for overlay UI lists | **this PR**. No Media3; no ButterKnife library drop yet |
-| 2.5c | Compose overlay controls inside existing `VideoActivity` | Keep libVLC + Intent edge |
-| 2.5d | Drop ButterKnife binds + dependency (last phone binds) | No OkHttp 4; no NavHost drive-by |
+| 2.5b | Typed overlay state (`ServiceNowNext` / movie) — stop hashing for overlay UI lists | **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244). No Media3 |
+| 2.5c | Compose overlay controls inside existing `VideoActivity` | **this PR**. Keep libVLC + Intent edge; ButterKnife drop folded |
+| 2.5d | Drop ButterKnife binds + dependency (last phone binds) | **done in this PR** (folded into 2.5c) |
 | 2.5e | Optional: thin Kotlin VLC wrapper + instrumented overlay smoke | No codec / server work |
 
-#### Explicit non-goals of this dive PR
+#### Explicit non-goals of this PR (2.5c)
 
-- No `VideoActivity` / `VideoOverlayFragment` / `VLC*` code changes
-- No ButterKnife dependency removal
-- No Media3 / ExoPlayer dependency add
+- No `VideoActivity` rewrite; no Media3 / ExoPlayer
+- No LazyRow zap list; keep RecyclerView / HorizontalGridView
 - No OkHttp 4 bump; do not merge `master` into `main`
 - No Enigma2 server / codec / stream-protocol work
 - No NavHost / widgets / full Compose hub (3.1c-iv) drive-bys
@@ -748,9 +748,9 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1b | TV detail dialogs → Compose | Shared phone detail + `DreamDroidTheme`; hide EPG actions on TV; drop ButterKnife on Epg/Movie detail. Keep OkHttp 3.14.9. **merged** [#235](https://github.com/sreichholf/dreamDroid/pull/235). |
 | 3.1c | Browse hub → TV Compose | Focus dive **merged** [#238](https://github.com/sreichholf/dreamDroid/pull/238). Cards **merged** [#239](https://github.com/sreichholf/dreamDroid/pull/239)/[#240](https://github.com/sreichholf/dreamDroid/pull/240). Shell decision **merged** [#241](https://github.com/sreichholf/dreamDroid/pull/241): keep Leanback shell (B); defer full Compose hub (C/3.1c-iv). |
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
-| 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Full library drop waits on phone `VideoOverlayFragment` (VLC). |
+| 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **this PR** (2.5c / 2.5d). |
 
-**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243). **This PR:** Phase 2.5b typed overlay state. Next Appendix H: 2.5c Compose overlay, or Phase 2.1b NavHost dive / 2.3 state / 2.6 widgets — one PR at a time.
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243). Typed overlay **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244). **This PR:** Phase 2.5c Compose overlay chrome (+ ButterKnife drop). Next Appendix H: 2.5e optional smoke, or Phase 2.1b NavHost dive / 2.3 state / 2.6 widgets — one PR at a time.
 
 ### Phase 4 — Operator usertests
 
