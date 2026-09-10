@@ -19,12 +19,13 @@ import androidx.navigation.compose.rememberNavController
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.fragment.ScreenShotFragment
 import net.reichholf.dreamdroid.fragment.SignalFragment
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Phone shell [NavHost]. Migrated drawer leaves: Device Info, Signal. Other destinations still
- * go through [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
+ * Phone shell [NavHost]. Migrated drawer leaves: Device Info, Signal, Screenshot. Other
+ * destinations still go through [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
  */
 @Composable
 fun PhoneNavHost(
@@ -55,6 +56,14 @@ fun PhoneNavHost(
                 containerId = R.id.phone_nav_signal_slot,
                 routeTag = PhoneNavRoutes.SIGNAL,
                 createFragment = { SignalFragment() },
+            )
+        }
+        composable(PhoneNavRoutes.SCREENSHOT) {
+            NestedFragmentDestination(
+                hostFragment = hostFragment,
+                containerId = R.id.phone_nav_screenshot_slot,
+                routeTag = PhoneNavRoutes.SCREENSHOT,
+                createFragment = { ScreenShotFragment() },
             )
         }
     }
