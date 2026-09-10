@@ -19,20 +19,14 @@ package net.reichholf.dreamdroid.tv.presenter;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.leanback.widget.BaseCardView;
-import androidx.leanback.widget.ImageCardView;
 import androidx.leanback.widget.Presenter;
 
 import net.reichholf.dreamdroid.R;
@@ -40,11 +34,13 @@ import net.reichholf.dreamdroid.enigma.Event;
 import net.reichholf.dreamdroid.enigma.ServiceNowNext;
 import net.reichholf.dreamdroid.helpers.enigma2.Picon;
 import net.reichholf.dreamdroid.tv.BrowseItem;
+import net.reichholf.dreamdroid.tv.view.ImageCardView;
 import net.reichholf.dreamdroid.tv.view.TextCardView;
 
 /*
  * A CardPresenter is used to generate Views and bind Objects to them on demand.
- * It contains an Image CardView
+ * Image cards (services/settings) and text cards (movies) use Compose bodies
+ * inside Leanback BaseCardView (Phase 3.1c-i / 3.1c-ii).
  */
 public class CardPresenter extends Presenter {
 	private int mSelectedBackgroundColor = -1;
@@ -90,12 +86,6 @@ public class CardPresenter extends Presenter {
 				@Override
 				public void setSelected(boolean selected) {
 					updateCardBackgroundColor(this, selected);
-					TextView content = findViewById(androidx.leanback.R.id.content_text);
-					if (selected) {
-						content.setMaxLines(4);
-					} else {
-						content.setMaxLines(1);
-					}
 					super.setSelected(selected);
 				}
 			};
@@ -132,6 +122,7 @@ public class CardPresenter extends Presenter {
 	protected void bindSettingsViewHolder(@NonNull Presenter.ViewHolder viewHolder, @NonNull BrowseItem.Settings item) {
 		ImageCardView cardView = (ImageCardView) viewHolder.view;
 		cardView.setTitleText(item.getTitle());
+		cardView.clearContent();
 		cardView.setMainImage(ResourcesCompat.getDrawable(cardView.getResources(), item.getIconRes(),
 				cardView.getContext().getTheme()));
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -153,19 +144,13 @@ public class CardPresenter extends Presenter {
 		String serviceName = row.getServiceName();
 		cardView.setTitleText(serviceName);
 		if (next == null || next.getTitle().isEmpty()) {
+			cardView.clearContent();
 			if (!nowTitle.isEmpty()) {
 				cardView.setTitleText(nowTitle);
 			}
 		} else {
 			String displayTitle = !nowTitle.isEmpty() ? nowTitle : serviceName;
-			String nextStart = next.getStartTimeReadable();
-			String t = String.format("%s\n%s %s", displayTitle, nextStart, next.getTitle());
-			Spannable spannable = new SpannableString(t);
-			int offset = displayTitle.length();
-			int end = offset + nextStart.length() + 1;
-			spannable.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), offset, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			TextView content = cardView.findViewById(androidx.leanback.R.id.content_text);
-			content.setText(spannable, TextView.BufferType.SPANNABLE);
+			cardView.setNowNextContent(displayTitle, next.getStartTimeReadable(), next.getTitle());
 		}
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
 		Resources res = cardView.getResources();
