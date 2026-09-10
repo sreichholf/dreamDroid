@@ -14,4 +14,5 @@ object PhoneNavRoutes {
     const val PROFILES = "profiles"
     const val EPG = "epg"
     const val REMOTE = "remote"
+    const val HUB = "hub"
 }

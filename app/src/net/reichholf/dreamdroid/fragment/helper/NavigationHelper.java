@@ -20,7 +20,6 @@ import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
-import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
 import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PowerStateDialog;
@@ -182,8 +181,7 @@ public class NavigationHelper {
         Intent intent;
         switch (itemId) {
             case R.id.menu_navigation_services:
-                clearBackStack();
-                getMainActivity().showDetails(ServiceListPager.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.HUB);
                 break;
 
             case R.id.menu_navigation_device_info:

@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
- * Migrated drawer leaves include Device Info through Profiles and EPG. Drawer selection uses
+ * Migrated drawer leaves include Device Info through hub (`ServiceListPager`). Drawer selection uses
  * [navigateToRoute] when this host is already shown; [ARG_START_ROUTE] picks the first leaf.
  *
  * [net.reichholf.dreamdroid.activities.abs.BaseActivity] only delivers [onActivityResult] to
@@ -118,6 +118,9 @@ class PhoneNavHostFragment : BaseFragment() {
             PhoneNavRoutes.REMOTE ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_remote_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.REMOTE)
+            PhoneNavRoutes.HUB ->
+                childFragmentManager.findFragmentById(R.id.phone_nav_hub_slot)
+                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB)
             else -> null
         }
     }
