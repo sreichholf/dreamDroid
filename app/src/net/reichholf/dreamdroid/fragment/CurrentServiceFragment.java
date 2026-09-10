@@ -12,7 +12,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,11 +29,8 @@ import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.CurrentServiceRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.current.CurrentServiceScreenKt;
 import net.reichholf.dreamdroid.ui.current.CurrentServiceUiState;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
@@ -272,20 +268,6 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 			IntentFactory.queryIMDb(getAppCompatActivity(), mCurrentItem);
 			break;
 		}
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		// Current service no longer starts this loader. BaseHttpFragment still requires LoaderCallbacks.
-		return new AsyncSimpleLoader(getAppCompatActivity(), new CurrentServiceRequestHandler(),
-				args);
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ExtendedHashMap>> loader,
-			@NonNull LoaderResult<ExtendedHashMap> result) {
-		// Unused: content comes from EnigmaClient coroutines.
 	}
 
 	@Override

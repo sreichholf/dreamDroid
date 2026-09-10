@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DreamDroid;
@@ -26,10 +25,7 @@ import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ServiceListRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
 import net.reichholf.dreamdroid.ui.zap.ZapListState;
 import net.reichholf.dreamdroid.ui.zap.ZapListStateKt;
@@ -160,19 +156,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	@Override
 	public boolean onItemLongClick(RecyclerView rv, View v, int position, long id) {
 		return false;
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int i, Bundle bundle) {
-		// Zap no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
-		return new AsyncListLoader(getAppCompatActivity(), new ServiceListRequestHandler(), false, bundle);
-	}
-
-	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: channel rows come from ServiceListLoad / EnigmaClient.
 	}
 
 	@NonNull

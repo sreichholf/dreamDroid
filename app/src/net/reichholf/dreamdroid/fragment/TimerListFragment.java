@@ -13,7 +13,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -39,9 +38,6 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerListRequestHandler;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.services.TimerListItem;
 import net.reichholf.dreamdroid.ui.services.TimerListMapper;
 import net.reichholf.dreamdroid.ui.services.TimerListMapperKt;
@@ -252,19 +248,6 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	private void setAdapter() {
 		mAdapter = new TimerAdapter(getAppCompatActivity(), mMapList);
 		getRecyclerView().setAdapter(mAdapter);
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		// Timer list no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
-		return new AsyncListLoader(getAppCompatActivity(), new TimerListRequestHandler(), false, args);
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from EnigmaClient coroutines.
 	}
 
 	@Override

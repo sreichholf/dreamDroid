@@ -10,7 +10,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +21,6 @@ import net.reichholf.dreamdroid.enigma.DeviceInfo;
 import net.reichholf.dreamdroid.enigma.DeviceInfoLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
-import net.reichholf.dreamdroid.loader.AsyncSimpleLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoScreenKt;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoUiState;
 
@@ -95,18 +91,6 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	private void applyInfo(@Nullable DeviceInfo info) {
 		mUiState.apply(info, (capacity, free) ->
 				String.format(getString(R.string.hdd_capacity), capacity, free));
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ExtendedHashMap>> onCreateLoader(int id, Bundle args) {
-		// Unused: content comes from EnigmaClient coroutines.
-		return new AsyncSimpleLoader(getAppCompatActivity(), new DeviceInfoRequestHandler(), args);
-	}
-
-	@Override
-	public void applyData(int loaderId, @Nullable ExtendedHashMap content) {
-		// Unused: content comes from EnigmaClient coroutines.
 	}
 
 	@Override

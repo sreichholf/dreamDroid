@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.compose.ui.platform.ComposeView;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.R;
@@ -20,9 +19,6 @@ import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.EventListRequestHandler;
-import net.reichholf.dreamdroid.loader.AsyncListLoader;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgListState;
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgListStateKt;
@@ -128,19 +124,6 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 	@Override
 	public String getLoadFinishedTitle() {
 		return getBaseTitle() + " - " + mName;
-	}
-
-	@NonNull
-	@Override
-	public Loader<LoaderResult<ArrayList<ExtendedHashMap>>> onCreateLoader(int id, Bundle args) {
-		// Service EPG no longer starts this loader. BaseHttpRecyclerFragment still requires LoaderCallbacks.
-		return new AsyncListLoader(getAppCompatActivity(), new EventListRequestHandler(), false, args);
-	}
-
-	@Override
-	public void onLoadFinished(Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		// Unused: rows come from EventListLoad / EnigmaClient.
 	}
 
 	@Override

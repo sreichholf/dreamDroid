@@ -8,8 +8,6 @@ import androidx.annotation.NonNull;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.annotation.Nullable;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -28,7 +26,6 @@ import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
-import net.reichholf.dreamdroid.loader.LoaderResult;
 
 import java.util.ArrayList;
 
@@ -36,7 +33,7 @@ import java.util.ArrayList;
  * Created by Stephan on 03.05.2015.
  */
 public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment implements
-		LoaderManager.LoaderCallbacks<LoaderResult<ArrayList<ExtendedHashMap>>>, IHttpBase, ActionDialog.DialogActionListener {
+		IHttpBase, ActionDialog.DialogActionListener {
 
 	protected final String sData = "data";
 
@@ -276,47 +273,20 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 		return args;
 	}
 
-	protected void reload(int loader) {
-		mHttpHelper.reload(loader);
-	}
-
+	/**
+	 * Subclasses must override and load via coroutines. Default only updates empty-state chrome.
+	 * Do not call {@link HttpFragmentHelper#reload()} — Loader chassis is retired for phone lists.
+	 */
 	protected void reload() {
 		mReload = false;
-		if(mMapList.isEmpty())
+		if (mMapList.isEmpty())
 			setEmptyText(getText(R.string.loading), R.drawable.ic_loading_48dp);
 		else
 			setEmptyText(null);
-		reload(HttpFragmentHelper.LOADER_DEFAULT_ID);
 	}
 
 	public String getLoadFinishedTitle() {
 		return getBaseTitle();
-	}
-
-	@Override
-	public void onLoadFinished(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader,
-							   @NonNull LoaderResult<ArrayList<ExtendedHashMap>> result) {
-		mHttpHelper.onLoadFinished();
-		mMapList.clear();
-		if (result.isError()) {
-			mAdapter.notifyDataSetChanged();
-			setEmptyText(result.getErrorText());
-			return;
-		}
-		setEmptyText(null);
-		ArrayList<ExtendedHashMap> list = result.getResult();
-		setCurrentTitle(getLoadFinishedTitle());
-		getAppCompatActivity().setTitle(getCurrentTitle());
-
-		if (list.size() == 0)
-			setEmptyText(getText(R.string.no_list_item));
-		else
-			mMapList.addAll(list);
-		mAdapter.notifyDataSetChanged();
-	}
-
-	@Override
-	public void onLoaderReset(@NonNull Loader<LoaderResult<ArrayList<ExtendedHashMap>>> loader) {
 	}
 
 	public SimpleHttpClient getHttpClient() {
