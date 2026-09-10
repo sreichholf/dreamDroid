@@ -124,7 +124,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | navhelper-map-routes | [#285](https://github.com/sreichholf/dreamDroid/pull/285) | merged | Phase 2.1h continued: map drawer menu ids → `PhoneNavHost` roots; keep dialog/action arms. Keep OkHttp 3.14.9. |
 | fix-nested-fragment-resume | [#286](https://github.com/sreichholf/dreamDroid/pull/286) | merged | Fix crash: nested `PhoneNavHost` leaves must not call `showDetails`. Keep OkHttp 3.14.9. |
 | drawer-ia-settings | [#282](https://github.com/sreichholf/dreamDroid/pull/282) | merged | Slim drawer; nest About/Changelog/Backup under Settings. Keep OkHttp 3.14.9. |
-| fix-hub-nested-teardown | this PR | open | Fix hub TV/Movies bottom bar stuck after leaving hub (remove nested leaf on NavHost route dispose). Keep OkHttp 3.14.9. |
+| fix-hub-nested-teardown | [#287](https://github.com/sreichholf/dreamDroid/pull/287) | merged | Fix hub TV/Movies bottom bar stuck after leaving hub (remove nested leaf on NavHost route dispose). Keep OkHttp 3.14.9. |
+| widgets-2-6c-config | this PR | open | Phase 2.6c: Compose Virtual Remote widget config activity; keep RemoteViews grids. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -201,8 +202,9 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.1h map drawer NavHost roots **merged** [#285](https://github.com/sreichholf/dreamDroid/pull/285).
 - Nested leaf `showDetails` crash fix **merged** [#286](https://github.com/sreichholf/dreamDroid/pull/286).
 - Drawer IA (About/Changelog/Backup under Settings) **merged** [#282](https://github.com/sreichholf/dreamDroid/pull/282).
-- **This PR** = remove nested NavHost leaves when their Compose route leaves composition (hub bottom bar / Settings).
-- Out of wave still: optional 2.6c Compose config / Phase 4–5 operator. See Appendix H.
+- Nested NavHost leaf teardown (hub bottom bar) **merged** [#287](https://github.com/sreichholf/dreamDroid/pull/287).
+- **This PR** = Phase 2.6c Compose Virtual Remote widget config (keep RemoteViews grids).
+- Out of wave still: Phase 4–5 operator. See Appendix H.
 
 ## How to read this
 
@@ -843,7 +845,7 @@ Why:
 | --- | --- | --- |
 | 2.6a | Docs decision on `main` | **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271). No widget code |
 | 2.6b | Kotlin coroutine click path (`WidgetRemoteRequest.kt`); delete zap stub; prefs delete `isFull`; drop dead `SyncService`/`HttpIntentService` | **merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272). No Glance; no OkHttp 4 |
-| 2.6c | Optional: Compose config activity | Keep RemoteViews grids |
+| 2.6c | Optional: Compose config activity | **this PR** (keep RemoteViews grids) |
 | 2.6d | Glance rewrite | **deferred** (not this program) |
 
 #### Explicit non-goals of this PR
@@ -1016,7 +1018,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 
-**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276). Phase 2.1h phone remote through drawer root map **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277)–[#285](https://github.com/sreichholf/dreamDroid/pull/285) (dialog policy [#278](https://github.com/sreichholf/dreamDroid/pull/278); nested resume crash [#286](https://github.com/sreichholf/dreamDroid/pull/286); drawer IA [#282](https://github.com/sreichholf/dreamDroid/pull/282)). **This PR:** tear down nested NavHost leaves on route dispose (hub bottom bar). Optional next: 2.6c Compose widget config / Phase 4–5 (operator).
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276). Phase 2.1h phone remote through drawer root map **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277)–[#285](https://github.com/sreichholf/dreamDroid/pull/285) (dialog policy [#278](https://github.com/sreichholf/dreamDroid/pull/278); nested resume crash [#286](https://github.com/sreichholf/dreamDroid/pull/286); drawer IA [#282](https://github.com/sreichholf/dreamDroid/pull/282)). **This PR:** tear down nested NavHost leaves on route dispose (hub bottom bar). **This PR:** Phase 2.6c Compose widget config. Optional next: Phase 4–5 (operator).
 
 ### Phase 4 — Operator usertests
 
