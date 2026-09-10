@@ -1,6 +1,9 @@
 package net.reichholf.dreamdroid.ui.video
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,13 +16,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
@@ -28,6 +34,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -125,17 +132,17 @@ fun VideoOverlayScreen(
         ) {
             if (state.showPvrControls) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusGroup(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = onRewind) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_fast_rewind_dark),
-                            contentDescription = rewindLabel,
-                            tint = onSurface,
-                        )
-                    }
+                    RepeatIconButton(
+                        onClick = onRewind,
+                        painter = painterResource(R.drawable.ic_fast_rewind_dark),
+                        contentDescription = rewindLabel,
+                    )
                     IconButton(onClick = onPlay) {
                         Icon(
                             painter = painterResource(R.drawable.ic_play_circle_outline_dark),
@@ -143,13 +150,11 @@ fun VideoOverlayScreen(
                             tint = onSurface,
                         )
                     }
-                    IconButton(onClick = onForward) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_fast_forward_dark),
-                            contentDescription = forwardLabel,
-                            tint = onSurface,
-                        )
-                    }
+                    RepeatIconButton(
+                        onClick = onForward,
+                        painter = painterResource(R.drawable.ic_fast_forward_dark),
+                        contentDescription = forwardLabel,
+                    )
                 }
             }
 
@@ -219,6 +224,40 @@ fun VideoOverlayScreen(
     }
 }
 
+/**
+ * IconButton that fires [onClick] immediately, then repeats while pressed
+ * (parity with [net.reichholf.dreamdroid.view.OnRepeatListener]: 500ms then every 300ms).
+ */
+@Composable
+private fun RepeatIconButton(
+    onClick: () -> Unit,
+    painter: Painter,
+    contentDescription: String,
+    initialDelayMs: Long = 500L,
+    repeatDelayMs: Long = 300L,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    LaunchedEffect(pressed) {
+        if (!pressed) {
+            return@LaunchedEffect
+        }
+        // First fire is IconButton.onClick; hold-repeat starts after initial delay.
+        delay(initialDelayMs)
+        while (true) {
+            onClick()
+            delay(repeatDelayMs)
+        }
+    }
+    IconButton(onClick = onClick, interactionSource = interactionSource) {
+        Icon(
+            painter = painter,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
 @Composable
 private fun EventRow(
     start: String,
@@ -280,6 +319,9 @@ fun ComposeView.bindVideoOverlayScreen(
                 onAudio = onAudio,
                 onSubtitle = onSubtitle,
                 onSeekChange = onSeekChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusGroup(),
             )
         }
     }
