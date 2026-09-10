@@ -215,7 +215,7 @@ public class ScreenShotFragment extends BaseFragment {
 	public void onPause() {
 		mScannerConn.disconnect();
 		mScannerConn = null;
-		cancelLoad();
+		cancelLoad(true);
 		super.onPause();
 	}
 
@@ -342,9 +342,19 @@ public class ScreenShotFragment extends BaseFragment {
 	}
 
 	private void cancelLoad() {
+		cancelLoad(false);
+	}
+
+	private void cancelLoad(boolean finishUi) {
 		if (mLoadJob != null) {
 			mLoadJob.cancel(null);
 			mLoadJob = null;
+		}
+		if (finishUi) {
+			mHttpHelper.onLoadFinished();
+			if (mUiState != null) {
+				mUiState.setLoading(false);
+			}
 		}
 	}
 
