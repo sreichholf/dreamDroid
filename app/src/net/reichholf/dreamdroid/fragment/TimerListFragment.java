@@ -36,6 +36,7 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.services.TimerListItem;
 import net.reichholf.dreamdroid.ui.services.TimerListMapper;
 import net.reichholf.dreamdroid.ui.services.TimerListMapperKt;
@@ -110,6 +111,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	private ProgressDialog mProgress;
 	protected int mCurrentPos;
 	private TimerListState mListState;
+	private ComposeRefreshState mRefreshState;
 	private final ArrayList<Timer> mTimers = new ArrayList<>();
 	@Nullable
 	private Job mLoadJob;
@@ -134,6 +136,7 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		mIsActionMode = false;
 		mReload = true;
 		mListState = new TimerListState();
+		mRefreshState = new ComposeRefreshState();
 	}
 
 	@Override
@@ -156,9 +159,15 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 		super.onViewCreated(view, savedInstanceState);
 		setAdapter();
 		ComposeView compose = view.findViewById(R.id.compose_list);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		TimerListStateKt.bindTimerListScreen(
 				compose,
 				mListState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				item -> {
 					onComposeClick(item, false);
 					return kotlin.Unit.INSTANCE;

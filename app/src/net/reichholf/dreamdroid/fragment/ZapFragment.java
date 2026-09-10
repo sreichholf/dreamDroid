@@ -26,6 +26,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
 import net.reichholf.dreamdroid.ui.zap.ZapListState;
 import net.reichholf.dreamdroid.ui.zap.ZapListStateKt;
@@ -50,6 +51,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	private Service mCurrentBouquet;
 	private final ArrayList<Service> mServices = new ArrayList<>();
 	private ZapListState mListState;
+	private ComposeRefreshState mRefreshState;
 	private boolean mWaitingForPicker;
 	@Nullable
 	private Job mLoadJob;
@@ -59,6 +61,7 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 		mEnableReload = false;
 		super.onCreate(savedInstanceState);
 		mListState = new ZapListState();
+		mRefreshState = new ComposeRefreshState();
 		if (mCurrentBouquet == null) {
 			mReload = true;
 			initTitle("");
@@ -86,9 +89,15 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		ComposeView compose = view.findViewById(R.id.compose_list);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		ZapListStateKt.bindZapScreen(
 				compose,
 				mListState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				service -> {
 					zapTo(service.getReference());
 					return kotlin.Unit.INSTANCE;

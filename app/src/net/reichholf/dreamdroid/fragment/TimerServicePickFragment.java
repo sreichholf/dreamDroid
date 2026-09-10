@@ -22,6 +22,7 @@ import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
 import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.pick.PickServiceListState;
 import net.reichholf.dreamdroid.ui.pick.PickServiceListStateKt;
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper;
@@ -43,6 +44,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment {
 	private final ArrayList<Service> mBouquets = new ArrayList<>();
 	private final ArrayList<Service> mServices = new ArrayList<>();
 	private PickServiceListState mListState;
+	private ComposeRefreshState mRefreshState;
 	@Nullable
 	private Service mCurrentBouquet;
 	@Nullable
@@ -60,6 +62,7 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment {
 		mReload = true;
 		super.onCreate(savedInstanceState);
 		mListState = new PickServiceListState();
+		mRefreshState = new ComposeRefreshState();
 		initTitle(getString(R.string.service));
 		if (savedInstanceState != null) {
 			String ref = savedInstanceState.getString("bouquetRef");
@@ -87,9 +90,15 @@ public class TimerServicePickFragment extends BaseHttpRecyclerFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		ComposeView compose = view.findViewById(R.id.compose_list);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		PickServiceListStateKt.bindPickServiceScreen(
 				compose,
 				mListState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				service -> {
 					onRowClick(service);
 					return kotlin.Unit.INSTANCE;

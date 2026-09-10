@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgListState;
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgListStateKt;
@@ -38,6 +39,7 @@ import kotlinx.coroutines.Job;
 public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 	private final ArrayList<Event> mEvents = new ArrayList<>();
 	private ServiceEpgListState mListState;
+	private ComposeRefreshState mRefreshState;
 	@Nullable
 	private Job mLoadJob;
 
@@ -47,6 +49,7 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 		mEnableReload = true;
 		super.onCreate(savedInstanceState);
 		mListState = new ServiceEpgListState();
+		mRefreshState = new ComposeRefreshState();
 		initTitle(getString(R.string.epg));
 
 		mReference = getDataForKey(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE);
@@ -63,9 +66,15 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		ComposeView compose = view.findViewById(R.id.compose_list);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		ServiceEpgListStateKt.bindServiceEpgScreen(
 				compose,
 				mListState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				event -> {
 					mCurrentItem = EpgListMapper.toExtendedHashMap(event);
 					EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(event);

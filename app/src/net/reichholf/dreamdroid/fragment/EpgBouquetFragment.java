@@ -33,6 +33,7 @@ import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.epg.EpgBouquetListState;
 import net.reichholf.dreamdroid.ui.epg.EpgBouquetListStateKt;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
@@ -56,6 +57,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 
 	private final ArrayList<Event> mEvents = new ArrayList<>();
 	private EpgBouquetListState mListState;
+	private ComposeRefreshState mRefreshState;
 	@Nullable
 	private Job mLoadJob;
 
@@ -70,6 +72,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 		mEnableReload = true;
 		super.onCreate(savedInstanceState);
 		mListState = new EpgBouquetListState();
+		mRefreshState = new ComposeRefreshState();
 		initTitle(getString(R.string.epg));
 
 		int now = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
@@ -149,9 +152,15 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		ComposeView compose = view.findViewById(R.id.compose_list);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		EpgBouquetListStateKt.bindEpgBouquetScreen(
 				compose,
 				mListState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				event -> {
 					mCurrentItem = EpgListMapper.toExtendedHashMap(event);
 					EpgDetailBottomSheet epgDetailBottomSheet = EpgDetailBottomSheet.newInstance(event);
