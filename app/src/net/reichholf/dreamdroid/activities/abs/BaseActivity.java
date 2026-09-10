@@ -17,7 +17,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
-import com.livefront.bridge.Bridge;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
@@ -115,7 +114,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 			e.printStackTrace();
 		}
 		super.onCreate(savedInstanceState);
-		Bridge.restoreInstanceState(this, savedInstanceState);
 		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
 				DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true)) {
 			overridePendingTransition(R.animator.activity_open_translate, R.animator.activity_close_scale);
@@ -125,7 +123,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	@Override
 	protected void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
-		Bridge.saveInstanceState(this, outState);
 	}
 
 	@Override
@@ -160,7 +157,6 @@ public class BaseActivity extends AppCompatActivity implements ActionDialog.Dial
 	protected void onDestroy() {
 		super.onDestroy();
 		PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
-		Bridge.clear(this);
 	}
 
 	@Override

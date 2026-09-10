@@ -18,7 +18,6 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -27,10 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 
-import com.evernote.android.state.StateSaver;
 import com.google.android.material.color.DynamicColors;
-import com.livefront.bridge.Bridge;
-import com.livefront.bridge.SavedStateHandler;
 
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
@@ -174,18 +170,6 @@ public class DreamDroid extends Application {
 		} catch (Exception e) {
 			DATE_LOCALE_WO = false;
 		}
-		Bridge.initialize(getApplicationContext(), new SavedStateHandler() {
-			@Override
-			public void saveInstanceState(@NonNull Object target, @NonNull Bundle state) {
-				StateSaver.saveInstanceState(target, state);
-			}
-
-			@Override
-			public void restoreInstanceState(@NonNull Object target, @Nullable Bundle state) {
-				StateSaver.restoreInstanceState(target, state);
-			}
-		});
-
 
 		Profile.ProfileDao dao = AppDatabase.profiles(getAppContext());
 		if (dao.getProfiles().size() == 0) {

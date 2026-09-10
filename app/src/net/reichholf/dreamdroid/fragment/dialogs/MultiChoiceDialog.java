@@ -14,9 +14,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
-import com.evernote.android.state.State;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.livefront.bridge.Bridge;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.BundleHelper;
@@ -30,9 +28,9 @@ public class MultiChoiceDialog extends DialogFragment {
     private static final String KEY_TITLE_ID = "titleId";
     private static final String KEY_ITEMS = "items";
     private static final String KEY_CHECKED_ITEMS = "checkedItems";
+    private static final String KEY_CHECKED_STATE = "checkedItemsState";
     private static final String KEY_POSITIVE_STRING_ID = "positiveStringId";
 
-    @State
     public boolean[] mCheckedItems;
 
     private int mTitleId;
@@ -48,8 +46,10 @@ public class MultiChoiceDialog extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bridge.restoreInstanceState(this, savedInstanceState);
         setRetainInstance(true);
+        if (savedInstanceState != null) {
+            mCheckedItems = savedInstanceState.getBooleanArray(KEY_CHECKED_STATE);
+        }
     }
 
     @Override
@@ -62,7 +62,9 @@ public class MultiChoiceDialog extends DialogFragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE");
-        Bridge.saveInstanceState(this, outState);
+        if (mCheckedItems != null) {
+            outState.putBooleanArray(KEY_CHECKED_STATE, mCheckedItems);
+        }
         super.onSaveInstanceState(outState);
     }
 
@@ -89,7 +91,9 @@ public class MultiChoiceDialog extends DialogFragment {
         Bundle args = getArguments();
         mTitleId = args.getInt(KEY_TITLE_ID);
         mItems = BundleHelper.toCharSequenceArray(args.getStringArrayList((KEY_ITEMS)));
-        mCheckedItems = args.getBooleanArray(KEY_CHECKED_ITEMS);
+        if (mCheckedItems == null) {
+            mCheckedItems = args.getBooleanArray(KEY_CHECKED_ITEMS);
+        }
         mPositiveStringId = args.getInt(KEY_POSITIVE_STRING_ID);
     }
 
