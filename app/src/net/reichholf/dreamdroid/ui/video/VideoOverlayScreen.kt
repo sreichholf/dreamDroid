@@ -25,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -74,6 +76,7 @@ fun VideoOverlayScreen(
     onSubtitle: () -> Unit,
     onSeekChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    firstControlFocusRequester: FocusRequester? = null,
 ) {
     val playLabel = stringResource(R.string.play)
     val rewindLabel = stringResource(R.string.rewind)
@@ -142,6 +145,8 @@ fun VideoOverlayScreen(
                         onClick = onRewind,
                         painter = painterResource(R.drawable.ic_fast_rewind_dark),
                         contentDescription = rewindLabel,
+                        modifier = firstControlFocusRequester?.let { Modifier.focusRequester(it) }
+                            ?: Modifier,
                     )
                     IconButton(onClick = onPlay) {
                         Icon(
@@ -177,15 +182,31 @@ fun VideoOverlayScreen(
             }
         }
 
+        val firstActionKey = when {
+            state.showPvrControls || firstControlFocusRequester == null -> null
+            state.showAudioButton -> "audio"
+            state.showInfoButton -> "info"
+            state.showListButton -> "list"
+            state.showSubtitleButton -> "subtitle"
+            else -> null
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 4.dp),
+                .padding(top = 4.dp)
+                .focusGroup(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (state.showAudioButton) {
-                IconButton(onClick = onAudio) {
+                IconButton(
+                    onClick = onAudio,
+                    modifier = if (firstActionKey == "audio") {
+                        Modifier.focusRequester(firstControlFocusRequester!!)
+                    } else {
+                        Modifier
+                    },
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_audio_track),
                         contentDescription = audioLabel,
@@ -194,7 +215,14 @@ fun VideoOverlayScreen(
                 }
             }
             if (state.showInfoButton) {
-                IconButton(onClick = onInfo) {
+                IconButton(
+                    onClick = onInfo,
+                    modifier = if (firstActionKey == "info") {
+                        Modifier.focusRequester(firstControlFocusRequester!!)
+                    } else {
+                        Modifier
+                    },
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_menu_info_dark),
                         contentDescription = infoLabel,
@@ -203,7 +231,14 @@ fun VideoOverlayScreen(
                 }
             }
             if (state.showListButton) {
-                IconButton(onClick = onList) {
+                IconButton(
+                    onClick = onList,
+                    modifier = if (firstActionKey == "list") {
+                        Modifier.focusRequester(firstControlFocusRequester!!)
+                    } else {
+                        Modifier
+                    },
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_menu_list_dark),
                         contentDescription = listLabel,
@@ -212,7 +247,14 @@ fun VideoOverlayScreen(
                 }
             }
             if (state.showSubtitleButton) {
-                IconButton(onClick = onSubtitle) {
+                IconButton(
+                    onClick = onSubtitle,
+                    modifier = if (firstActionKey == "subtitle") {
+                        Modifier.focusRequester(firstControlFocusRequester!!)
+                    } else {
+                        Modifier
+                    },
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_subtitle),
                         contentDescription = subtitleLabel,
@@ -234,6 +276,7 @@ private fun RepeatIconButton(
     onClick: () -> Unit,
     painter: Painter,
     contentDescription: String,
+    modifier: Modifier = Modifier,
     initialDelayMs: Long = 500L,
     repeatDelayMs: Long = 300L,
 ) {
@@ -260,6 +303,7 @@ private fun RepeatIconButton(
             }
             onClick()
         },
+        modifier = modifier,
         interactionSource = interactionSource,
     ) {
         Icon(
@@ -319,6 +363,10 @@ fun ComposeView.bindVideoOverlayScreen(
     onSeekChange: (Int) -> Unit,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+    // Let D-pad focus search into Compose children (do not trap on the ComposeView shell).
+    isFocusable = false
+    isFocusableInTouchMode = false
+    val firstControlFocus = FocusRequester()
     setContent {
         DreamDroidTheme {
             VideoOverlayScreen(
@@ -331,10 +379,23 @@ fun ComposeView.bindVideoOverlayScreen(
                 onAudio = onAudio,
                 onSubtitle = onSubtitle,
                 onSeekChange = onSeekChange,
+                firstControlFocusRequester = firstControlFocus,
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusGroup(),
             )
+        }
+    }
+    // If the View system still lands focus on this ComposeView, forward into the first control.
+    setOnFocusChangeListener { _, hasFocus ->
+        if (hasFocus) {
+            post {
+                try {
+                    firstControlFocus.requestFocus()
+                } catch (_: IllegalStateException) {
+                    // Composition not ready yet.
+                }
+            }
         }
     }
 }
