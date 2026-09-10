@@ -13,4 +13,5 @@ object PhoneNavRoutes {
     const val BACKUP = "backup"
     const val PROFILES = "profiles"
     const val EPG = "epg"
+    const val REMOTE = "remote"
 }

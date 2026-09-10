@@ -200,8 +200,7 @@ public class NavigationHelper {
                     intent.putExtra("fragmentClass", VirtualRemotePagerFragment.class);
                     mActivity.startActivity(intent);
                 } else {
-                    clearBackStack();
-                    getMainActivity().showDetails(VirtualRemotePagerFragment.class);
+                    navigatePhoneNavRoot(PhoneNavRoutes.REMOTE);
                 }
                 break;
 

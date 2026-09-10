@@ -16,5 +16,6 @@
     <item name="phone_nav_backup_slot" type="id"/>
     <item name="phone_nav_profiles_slot" type="id"/>
     <item name="phone_nav_epg_slot" type="id"/>
+    <item name="phone_nav_remote_slot" type="id"/>
 
 </resources>
