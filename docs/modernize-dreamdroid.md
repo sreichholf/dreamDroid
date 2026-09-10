@@ -795,7 +795,8 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | Router | `NavigationHelper` | Switch on menu ids → `showDetails` / side activities / dialogs; drawer roots `clearBackStack` |
 | Host API | `MultiPaneHandler` | `isMultiPane()` always true on `MainActivity` (in-host detail, not master–detail columns) |
 | Nested | `FragmentHelper`, `HttpFragmentHelper` | FM back stack; pickers via `targetFragment` / `onActivityResult` |
-| Side hosts | `Simple*FragmentActivity`, `VideoActivity`, `ShareActivity` | Settings/remote/edit/stream outside drawer graph |
+| Side hosts | `Simple*FragmentActivity`, `VideoActivity`, `ShareActivity` | Settings / profile+timer edit / stream / Share. Phone remote → `SimpleNoTitleFragmentActivity`; **tablet** remote stays in-host via `showDetails` |
+| Profiles | Profile header XML + first-start | Not in `DrawerScreen` / `navigation.xml`; opens `ProfileListFragment`, clears drawer selection |
 
 **No `androidx.navigation` / `NavHost` dependency yet.** Phone destinations are Fragments hosting Compose via `ComposeView`.
 
@@ -805,7 +806,8 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 - `isMultiPane()` means in-activity detail — wrong abstraction breaks pickers
 - DialogFragment policy vs Compose dialog routes
 - `VideoActivity` / VLC stays a separate activity (product decision A)
-- Side activities (settings, profile/timer edit, phone remote) remain islands unless later converged
+- Side activities (settings, profile/timer edit, phone-only remote) remain islands unless later converged; tablet remote is in-host
+- Profiles is a top-level route outside the Compose drawer list (header / first-start); must clear or map selection without a menu highlight
 - Hub `ServiceListPager` (ViewPager2 + nested fragments) is a heavy first target — migrate leaves first
 - XML FABs, AppBar, volume keys bind to current detail fragment
 
