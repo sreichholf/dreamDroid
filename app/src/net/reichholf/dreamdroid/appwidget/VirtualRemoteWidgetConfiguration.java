@@ -139,9 +139,17 @@ public class VirtualRemoteWidgetConfiguration extends AppCompatActivity implemen
 
 	public static void deleteWidgetConfiguration(Context context, int appWidgetId) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		SharedPreferences.Editor editor = prefs.edit();
+		boolean changed = false;
 		if (prefs.contains(getProfileIdKey(appWidgetId))) {
-			SharedPreferences.Editor editor = prefs.edit();
 			editor.remove(getProfileIdKey(appWidgetId));
+			changed = true;
+		}
+		if (prefs.contains(getIsFullKey(appWidgetId))) {
+			editor.remove(getIsFullKey(appWidgetId));
+			changed = true;
+		}
+		if (changed) {
 			editor.apply();
 		}
 	}

@@ -2,6 +2,8 @@
 
 Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Build with **JDK 17**.
 
+**New code is Kotlin.** Do not add new `.java` types for modernization work (helpers, UI, loaders, widgets). Edit existing Java surgically when needed; convert to Kotlin when touching a file heavily or extracting a new type. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`.
+
 Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). UI look helper: [`.cursor/skills/verify-dreamdroid/SKILL.md`](.cursor/skills/verify-dreamdroid/SKILL.md).
 
 ## Verify UI with instrumented tests

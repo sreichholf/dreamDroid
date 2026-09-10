@@ -50,19 +50,19 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
             remoteViews = new RemoteViews(context.getPackageName(), R.layout.virtual_remote_appwidget_quickzap);
         remoteViews.setTextViewText(R.id.profile_name, profile.getName());
         boolean mPlayButtonAsPlayPause = PreferenceManager.getDefaultSharedPreferences(context).getBoolean(DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE, false);
-        registerButtons(context, remoteViews, appWidgetId, profile, mPlayButtonAsPlayPause);
+        registerButtons(context, remoteViews, appWidgetId, mPlayButtonAsPlayPause);
         // Tell the AppWidgetManager to perform an update on the current app widget
         remoteViews.setViewVisibility(R.id.ButtonPlay, mPlayButtonAsPlayPause ? View.INVISIBLE : View.VISIBLE);
         remoteViews.setViewVisibility(R.id.ButtonPlayPause, mPlayButtonAsPlayPause ? View.VISIBLE : View.INVISIBLE);
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
 
-    public static void registerButtons(Context context, @NonNull RemoteViews remoteViews, int appWidgetId, Profile profile, boolean mPlayButtonAsPlayPause) {
+    public static void registerButtons(Context context, @NonNull RemoteViews remoteViews, int appWidgetId, boolean mPlayButtonAsPlayPause) {
         for (Integer[] btn : VirtualRemoteFragment.getRemoteButtons(mPlayButtonAsPlayPause)) {
             Intent intent = new Intent(context, VirtualRemoteWidgetProvider.class);
-            intent.putExtra(WidgetService.KEY_WIDGETID, appWidgetId);
-            intent.putExtra(WidgetService.KEY_KEYID, Integer.toString(btn[1]));
-            intent.setAction(WidgetService.ACTION_RCU);
+            intent.putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId);
+            intent.putExtra(WidgetRemoteRequest.KEY_KEYID, Integer.toString(btn[1]));
+            intent.setAction(WidgetRemoteRequest.ACTION_RCU);
 
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, btn[0], intent, PendingIntent.FLAG_IMMUTABLE);
             remoteViews.setOnClickPendingIntent(btn[0], pendingIntent);
@@ -72,8 +72,9 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(@NonNull Context context, @NonNull Intent intent) {
         super.onReceive(context, intent);
-        String action = intent.getAction();
-        if (action.equals(WidgetService.ACTION_RCU) || action.equals(WidgetService.ACTION_ZAP))
-            WidgetService.enqueueWork(context, WidgetService.class, WidgetService.JOB_ID, intent);
+        if (WidgetRemoteRequest.ACTION_RCU.equals(intent.getAction())) {
+            final PendingResult pendingResult = goAsync();
+            WidgetRemoteRequest.enqueue(context, intent, pendingResult::finish);
+        }
     }
 }
