@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.widget
 
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -16,7 +17,8 @@ import org.junit.runner.RunWith
 class DualpaneFabLayoutTest {
     @Test
     fun mainAndReloadFabsUseGravityNotDetailAnchor() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val base = InstrumentationRegistry.getInstrumentation().targetContext
+        val context = ContextThemeWrapper(base, R.style.Theme_DreamDroid_Night)
         val root = android.view.LayoutInflater.from(context)
             .inflate(R.layout.dualpane, null, false)
         val fabMain = root.findViewById<FloatingActionButton>(R.id.fab_main)
