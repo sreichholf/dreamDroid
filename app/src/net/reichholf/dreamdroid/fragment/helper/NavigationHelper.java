@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.fragment.helper;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -48,6 +49,23 @@ public class NavigationHelper {
 
     @NonNull
 	protected static int[] sDialogItemIds = {R.id.menu_navigation_sleeptimer, R.id.menu_navigation_message, R.id.menu_navigation_power, R.id.menu_navigation_about, R.id.menu_navigation_changelog};
+
+	/** Drawer menu ids that open a PhoneNavHost root (no extras). EPG is separate. */
+	@NonNull
+	private static final SparseArray<String> sNavRootRoutes = new SparseArray<>();
+
+	static {
+		sNavRootRoutes.put(R.id.menu_navigation_services, PhoneNavRoutes.HUB);
+		sNavRootRoutes.put(R.id.menu_navigation_device_info, PhoneNavRoutes.DEVICE_INFO);
+		sNavRootRoutes.put(R.id.menu_navigation_current, PhoneNavRoutes.CURRENT);
+		sNavRootRoutes.put(R.id.menu_navigation_remote, PhoneNavRoutes.REMOTE);
+		sNavRootRoutes.put(R.id.menu_navigation_settings, PhoneNavRoutes.SETTINGS);
+		sNavRootRoutes.put(R.id.menu_navigation_screenshot, PhoneNavRoutes.SCREENSHOT);
+		sNavRootRoutes.put(R.id.menu_navigation_profiles, PhoneNavRoutes.PROFILES);
+		sNavRootRoutes.put(R.id.menu_navigation_signal, PhoneNavRoutes.SIGNAL);
+		sNavRootRoutes.put(R.id.menu_navigation_zap, PhoneNavRoutes.ZAP);
+		sNavRootRoutes.put(R.id.menu_navigation_backup, PhoneNavRoutes.BACKUP);
+	}
 
     MainActivity mActivity;
     @Nullable
@@ -173,33 +191,17 @@ public class NavigationHelper {
 
     protected boolean onNavigationItemClick(int itemId) {
         setSelectedItem(itemId);
+
+		String navRoot = sNavRootRoutes.get(itemId);
+		if (navRoot != null) {
+			navigatePhoneNavRoot(navRoot);
+			getMainActivity().showContent();
+			return true;
+		}
+
         switch (itemId) {
-            case R.id.menu_navigation_services:
-                navigatePhoneNavRoot(PhoneNavRoutes.HUB);
-                break;
-
-            case R.id.menu_navigation_device_info:
-                navigatePhoneNavRoot(PhoneNavRoutes.DEVICE_INFO);
-                break;
-
-            case R.id.menu_navigation_current:
-                navigatePhoneNavRoot(PhoneNavRoutes.CURRENT);
-                break;
-
-            case R.id.menu_navigation_remote:
-                navigatePhoneNavRoot(PhoneNavRoutes.REMOTE);
-                break;
-
-            case R.id.menu_navigation_settings:
-                navigatePhoneNavRoot(PhoneNavRoutes.SETTINGS);
-                break;
-
             case R.id.menu_navigation_message:
                 getMainActivity().showDialogFragment(SendMessageDialog.newInstance(), "sendmessage_dialog");
-                break;
-
-            case R.id.menu_navigation_screenshot:
-                navigatePhoneNavRoot(PhoneNavRoutes.SCREENSHOT);
                 break;
 
             case Statics.ITEM_TOGGLE_STANDBY:
@@ -240,44 +242,37 @@ public class NavigationHelper {
                 getSleepTimer(true);
                 break;
 
-            case R.id.menu_navigation_profiles:
-                // Clears drawer highlight (setSelectedItem); still uses NavHost when possible.
-                navigatePhoneNavRoot(PhoneNavRoutes.PROFILES);
-                break;
-
-            case R.id.menu_navigation_signal:
-                navigatePhoneNavRoot(PhoneNavRoutes.SIGNAL);
-                break;
-            case R.id.menu_navigation_zap:
-                navigatePhoneNavRoot(PhoneNavRoutes.ZAP);
-                break;
             case Statics.ITEM_RELOAD:
                 return false;
-            case R.id.menu_navigation_epg: {
-                Bundle epgArgs = new Bundle();
-                String ref = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
-                epgArgs.putString(Event.KEY_SERVICE_REFERENCE, ref);
-                String name = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
-                epgArgs.putString(Event.KEY_SERVICE_NAME, name);
 
-                Fragment detail = getMainActivity().getSupportFragmentManager()
-                        .findFragmentById(R.id.detail_view);
-                if (detail instanceof PhoneNavHostFragment
-                        && ((PhoneNavHostFragment) detail).navigateToEpg(ref, name)) {
-                    break;
-                }
-                clearBackStack();
-                getMainActivity().showDetails(
-                        PhoneNavHostFragment.newInstance(PhoneNavRoutes.EPG, epgArgs));
-                break;
-            }
-            case R.id.menu_navigation_backup:
-                navigatePhoneNavRoot(PhoneNavRoutes.BACKUP);
+            case R.id.menu_navigation_epg:
+                navigateToEpg();
                 break;
         }
         getMainActivity().showContent();
         return !isDialogItem(itemId);
     }
+
+	/**
+	 * EPG drawer root needs default bouquet ref/name extras (not a plain route map entry).
+	 */
+	protected void navigateToEpg() {
+		Bundle epgArgs = new Bundle();
+		String ref = DreamDroid.getCurrentProfile().getDefaultBouquetTv();
+		epgArgs.putString(Event.KEY_SERVICE_REFERENCE, ref);
+		String name = DreamDroid.getCurrentProfile().getDefaultBouquetTvName();
+		epgArgs.putString(Event.KEY_SERVICE_NAME, name);
+
+		Fragment detail = getMainActivity().getSupportFragmentManager()
+				.findFragmentById(R.id.detail_view);
+		if (detail instanceof PhoneNavHostFragment
+				&& ((PhoneNavHostFragment) detail).navigateToEpg(ref, name)) {
+			return;
+		}
+		clearBackStack();
+		getMainActivity().showDetails(
+				PhoneNavHostFragment.newInstance(PhoneNavRoutes.EPG, epgArgs));
+	}
 
     /**
      * @param time
