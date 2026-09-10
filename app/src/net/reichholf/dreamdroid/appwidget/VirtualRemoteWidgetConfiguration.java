@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import net.reichholf.dreamdroid.DatabaseHelper;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
@@ -31,6 +30,10 @@ import java.util.List;
  * Created by Stephan on 07.12.13.
  */
 public class VirtualRemoteWidgetConfiguration extends AppCompatActivity implements ItemClickSupport.OnItemClickListener {
+	/** Adapter map keys (display only; not DB columns). */
+	private static final String KEY_PROFILE_NAME = "profile";
+	private static final String KEY_PROFILE_HOST = "host";
+
     private List<Profile> mProfiles;
 	private RecyclerView mRecyclerView;
 	private ItemClickSupport mItemClickSupport;
@@ -67,13 +70,13 @@ public class VirtualRemoteWidgetConfiguration extends AppCompatActivity implemen
 		if (mProfiles.size() > 0) {
 			for (Profile m : mProfiles) {
 				ExtendedHashMap map = new ExtendedHashMap();
-				map.put(DatabaseHelper.KEY_PROFILE_PROFILE, m.getName());
-				map.put(DatabaseHelper.KEY_PROFILE_HOST, m.getHost());
+				map.put(KEY_PROFILE_NAME, m.getName());
+				map.put(KEY_PROFILE_HOST, m.getHost());
 				profiles.add(map);
 			}
 
 			SimpleTextAdapter adapter = new SimpleTextAdapter(profiles, R.layout.two_line_card_list_item_no_indicator, new String[]{
-                    DatabaseHelper.KEY_PROFILE_PROFILE, DatabaseHelper.KEY_PROFILE_HOST}, new int[]{android.R.id.text1,
+                    KEY_PROFILE_NAME, KEY_PROFILE_HOST}, new int[]{android.R.id.text1,
                     android.R.id.text2});
 			mRecyclerView.setAdapter(adapter);
 			mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
