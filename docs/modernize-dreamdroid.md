@@ -82,7 +82,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | tv-textcard-drop-butterknife | [#237](https://github.com/sreichholf/dreamDroid/pull/237) | merged | Drop ButterKnife on TV `TextCardView` (last TV binds); keep dep for `VideoOverlayFragment` (VLC). Keep OkHttp 3.14.9. |
 | tv-hub-focus-dive | [#238](https://github.com/sreichholf/dreamDroid/pull/238) | merged | Phase 3.1c dive (docs only): TV browse hub focus options + agreed hub Compose PR slices. No hub code. |
 | tv-compose-textcard | [#239](https://github.com/sreichholf/dreamDroid/pull/239) | merged | Phase 3.1c-i: Leanback movie `TextCardView` → Compose body inside `BaseCardView`; keep rows/headers. Keep OkHttp 3.14.9. |
-| tv-compose-imagecard | this PR | open | Phase 3.1c-ii: Leanback service/settings image cards → Compose text + ImageView picons inside `BaseCardView`; keep rows/headers. Keep OkHttp 3.14.9. |
+| tv-compose-imagecard | [#240](https://github.com/sreichholf/dreamDroid/pull/240) | merged | Phase 3.1c-ii: Leanback service/settings image cards → Compose text + ImageView picons inside `BaseCardView`; keep rows/headers. Keep OkHttp 3.14.9. |
+| docs-tv-hub-shell-decision | this PR | open | Phase 3.1c-iii (docs only): keep Leanback shell + Compose cards (option B); defer full Compose hub (C / 3.1c-iv). No hub code. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -133,8 +134,9 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - TV `TextCardView` ButterKnife dropped **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237).
 - Phase 3.1c TV hub focus dive **merged** [#238](https://github.com/sreichholf/dreamDroid/pull/238).
 - Phase 3.1c-i Compose `TextCardView` beachhead **merged** [#239](https://github.com/sreichholf/dreamDroid/pull/239).
-- Phase 3.1c-ii Compose service/settings image cards — **this PR**.
-- Out of wave still: Leanback `tv/` (Phase 3), VLC, widgets. See Appendix H.
+- Phase 3.1c-ii Compose service/settings image cards **merged** [#240](https://github.com/sreichholf/dreamDroid/pull/240).
+- Phase 3.1c-iii hub shell decision — **this PR** (keep Leanback + Compose cards; defer full Compose hub).
+- Out of wave still: VLC, widgets, NavHost, state/Room. See Appendix H.
 
 ## How to read this
 
@@ -584,14 +586,14 @@ Prefer **typed browse data → details → hub → prefs** (not prefs-first; not
 | `BaseHttpBrowseFragment` | `tv/fragment/abs/BaseHttpBrowseFragment.java` | ~29 | `BrowseSupportFragment` + `ArrayObjectAdapter` / `ListRowPresenter` |
 | `CardPresenter` | `tv/presenter/CardPresenter.java` | ~199 | Compose `ImageCardView` (services/settings) + `TextCardView` (movies) |
 | `TextCardView` | `tv/view/TextCardView.kt` | ~125 | Movie cards; Compose body (#239) |
-| `ImageCardView` | `tv/view/ImageCardView.kt` | ~220 | Service/settings cards; ImageView picon + Compose text (this PR) |
+| `ImageCardView` | `tv/view/ImageCardView.kt` | ~220 | Service/settings cards; ImageView picon + Compose text (#240) |
 | `BrowseItem` | `tv/BrowseItem.kt` | ~25 | Sealed `Service` / `Movie` / `Settings` (#234) |
 
 Behaviors to preserve: headers on; brand color + badge; settings Reload/Preferences/Profile; lazy movie load on row select; stream Intent edge via hash mappers; profile-changed reload.
 
 No in-tree `FocusRequester` / `androidx.tv` / TV LazyRow helpers today. No instrumented TV browse coverage.
 
-#### Focus options (choose before coding)
+#### Focus options (chosen)
 
 | Option | Idea | Pros | Cons |
 | --- | --- | --- | --- |
@@ -599,16 +601,28 @@ No in-tree `FocusRequester` / `androidx.tv` / TV LazyRow helpers today. No instr
 | **B. Hybrid** | Leanback headers/rows + Compose item views via `ComposeView` presenters | Incremental; reuses typed `BrowseItem` | Focus handoff Leanback↔Compose is tricky |
 | **C. Full Compose hub** | Replace browse with Compose TV rows (`androidx.tv` or foundation focus) | Clean end state; matches phone Compose direction | Greenfield focus model; largest rewrite; needs TV device proof |
 
-**Agreed default for implementation:** start with **A → B**, not C-first. Prove one Compose card presenter (or settings-row-only Compose island) under Leanback before ripping out `BrowseSupportFragment`.
+**Implementation path taken:** **A → B** (#239 movie text cards, #240 service/settings image cards). Focus rule used: Leanback card keeps focus (`descendantFocusability = FOCUS_BLOCK_DESCENDANTS`; ComposeView not focusable).
 
-#### Proposed hub implementation PR slices (after this dive)
+#### Hub shell decision (Phase 3.1c-iii — this PR)
 
-| Slice | Scope | Non-goals |
+**Decision: keep option B** (Leanback `BrowseSupportFragment` headers/rows + Compose card bodies). **Do not start option C / 3.1c-iv now.**
+
+Why:
+
+- Card Compose under Leanback is proven for both text and image/picon cards without ripping out row/header focus.
+- Full Compose hub needs `androidx.tv` (or equivalent), a new focus model, and TV-device proof — higher risk than remaining phone chassis work.
+- Phase 3 Leanback UI goals for this program are met: typed browse, Compose details/prefs/cards, TV ButterKnife cleared.
+
+**Revisit C later** only if operator asks, or after NavHost / state / Room / VLC product decision, when a TV focus test story exists. Until then 3.1c-iv stays deferred (not “next”).
+
+#### Hub implementation PR slices
+
+| Slice | Scope | Status |
 | --- | --- | --- |
-| 3.1c-i | Compose movie `TextCardView` inside Leanback rows | **merged** [#239](https://github.com/sreichholf/dreamDroid/pull/239). No full hub rewrite; no VLC |
-| 3.1c-ii | Service image cards → Compose (picon + now/next text) | **this PR**. Keep Leanback headers/rows |
-| 3.1c-iii | Decide keep Leanback shell vs full Compose hub; if full, add `androidx.tv` (or equivalent) + focus tests | No OkHttp 4; no ButterKnife library drop |
-| 3.1c-iv | If C: replace `RootBrowseFragment` / `BaseHttpBrowseFragment` with Compose hub host | Keep typed loads + Intent edge |
+| 3.1c-i | Compose movie `TextCardView` inside Leanback rows | **merged** [#239](https://github.com/sreichholf/dreamDroid/pull/239) |
+| 3.1c-ii | Service image cards → Compose (picon + now/next text) | **merged** [#240](https://github.com/sreichholf/dreamDroid/pull/240) |
+| 3.1c-iii | Decide keep Leanback shell vs full Compose hub | **this PR** — keep B; defer C |
+| 3.1c-iv | If C: replace `RootBrowseFragment` / `BaseHttpBrowseFragment` with Compose hub host | **Deferred** (not scheduled). No OkHttp 4; no ButterKnife library drop |
 
 #### Explicit non-goals of this dive PR
 
@@ -668,9 +682,11 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | --- | --- | --- |
 | 3.1a | Typed `BrowseItem` | Sealed Kotlin `Service`/`Movie`/`Settings`; hash only at stream Intent edge; keep Leanback UI. Keep OkHttp 3.14.9. **merged** [#234](https://github.com/sreichholf/dreamDroid/pull/234). |
 | 3.1b | TV detail dialogs → Compose | Shared phone detail + `DreamDroidTheme`; hide EPG actions on TV; drop ButterKnife on Epg/Movie detail. Keep OkHttp 3.14.9. **merged** [#235](https://github.com/sreichholf/dreamDroid/pull/235). |
-| 3.1c | Browse hub → TV Compose | Focus dive **merged** [#238](https://github.com/sreichholf/dreamDroid/pull/238). 3.1c-i **merged** [#239](https://github.com/sreichholf/dreamDroid/pull/239). **3.1c-ii this PR:** Compose `ImageCardView` (picon + now/next) inside Leanback. |
+| 3.1c | Browse hub → TV Compose | Focus dive **merged** [#238](https://github.com/sreichholf/dreamDroid/pull/238). Cards **merged** [#239](https://github.com/sreichholf/dreamDroid/pull/239)/[#240](https://github.com/sreichholf/dreamDroid/pull/240). **3.1c-iii this PR:** keep Leanback shell (B); defer full Compose hub (C/3.1c-iv). |
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Full library drop waits on phone `VideoOverlayFragment` (VLC). |
+
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared). Next Appendix H programs: Phase 2.1b NavHost, Phase 2.3 state/rotation, Phase 2.4 Room, Phase 2.5 VLC product decision, Phase 2.6 widgets — one PR at a time.
 
 ### Phase 4 — Operator usertests
 
