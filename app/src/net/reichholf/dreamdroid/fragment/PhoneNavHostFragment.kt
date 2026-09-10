@@ -31,6 +31,7 @@ class PhoneNavHostFragment : BaseFragment() {
 
     companion object {
         const val ARG_START_ROUTE = "phone_nav_start_route"
+        private const val STATE_PICK_REQUEST_CODE = "phone_nav_pick_request_code"
 
         @JvmStatic
         fun newInstance(startRoute: String): PhoneNavHostFragment {
@@ -64,6 +65,14 @@ class PhoneNavHostFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         mShouldRetainInstance = false
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            pickRequestCode = savedInstanceState.getInt(STATE_PICK_REQUEST_CODE, -1)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(STATE_PICK_REQUEST_CODE, pickRequestCode)
     }
 
     override fun onCreateView(
