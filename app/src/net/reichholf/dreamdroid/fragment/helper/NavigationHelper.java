@@ -25,7 +25,6 @@ import net.reichholf.dreamdroid.fragment.MyPreferenceFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.ServiceListPager;
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment;
-import net.reichholf.dreamdroid.fragment.ZapFragment;
 import net.reichholf.dreamdroid.ui.about.AboutComposeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.PowerStateDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
@@ -272,8 +271,7 @@ public class NavigationHelper {
                 navigatePhoneNavRoot(PhoneNavRoutes.SIGNAL);
                 break;
             case R.id.menu_navigation_zap:
-                clearBackStack();
-                getMainActivity().showDetails(ZapFragment.class);
+                navigatePhoneNavRoot(PhoneNavRoutes.ZAP);
                 break;
             case Statics.ITEM_RELOAD:
                 return false;

@@ -9,4 +9,5 @@ object PhoneNavRoutes {
     const val SIGNAL = "signal"
     const val SCREENSHOT = "screenshot"
     const val CURRENT = "current"
+    const val ZAP = "zap"
 }
