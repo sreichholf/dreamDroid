@@ -40,6 +40,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult;
 import net.reichholf.dreamdroid.helpers.enigma2.Volume;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +52,8 @@ public class HttpFragmentHelper {
     private Fragment mFragment;
     @Nullable
 	private SwipeRefreshLayout mSwipeRefreshLayout;
+    @Nullable
+    private ComposeRefreshState mComposeRefresh;
 
     protected final String sData = "data";
     protected SimpleHttpClient mShc;
@@ -79,6 +82,11 @@ public class HttpFragmentHelper {
             mFragment = fragment;
         }
         mSwipeRefreshLayout = null;
+        mComposeRefresh = null;
+    }
+
+    public void setComposeRefresh(@Nullable ComposeRefreshState composeRefresh) {
+        mComposeRefresh = composeRefresh;
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -312,7 +320,9 @@ public class HttpFragmentHelper {
         if (mIsReloading)
             return;
         mIsReloading = true;
-        if (mSwipeRefreshLayout != null) {
+        if (mComposeRefresh != null) {
+            mComposeRefresh.setRefreshing(true);
+        } else if (mSwipeRefreshLayout != null) {
             if (!mSwipeRefreshLayout.isRefreshing())
                 mSwipeRefreshLayout.setRefreshing(true);
         }
@@ -320,9 +330,12 @@ public class HttpFragmentHelper {
 
     public void onLoadFinished() {
         mIsReloading = false;
-        if (mSwipeRefreshLayout != null)
+        if (mComposeRefresh != null) {
+            mComposeRefresh.setRefreshing(false);
+        } else if (mSwipeRefreshLayout != null) {
             if (mSwipeRefreshLayout.isRefreshing())
                 mSwipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     public void onProfileChanged() {

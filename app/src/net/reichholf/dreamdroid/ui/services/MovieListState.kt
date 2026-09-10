@@ -4,6 +4,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class MovieListState(initial: List<MovieListItem> = emptyList()) {
@@ -17,17 +19,25 @@ class MovieListState(initial: List<MovieListItem> = emptyList()) {
 
 fun ComposeView.bindMovieListScreen(
     state: MovieListState,
+    refresh: ComposeRefreshState,
+    onRefresh: () -> Unit,
     onItemClick: (MovieListItem) -> Unit,
     onItemLongClick: (MovieListItem) -> Unit,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
-            MovieListScreen(
-                items = state.items,
-                onItemClick = onItemClick,
-                onItemLongClick = onItemLongClick,
-            )
+            DreamDroidPullRefresh(
+                refreshing = refresh.isRefreshing,
+                onRefresh = onRefresh,
+                enabled = refresh.enabled,
+            ) {
+                MovieListScreen(
+                    items = state.items,
+                    onItemClick = onItemClick,
+                    onItemLongClick = onItemLongClick,
+                )
+            }
         }
     }
 }

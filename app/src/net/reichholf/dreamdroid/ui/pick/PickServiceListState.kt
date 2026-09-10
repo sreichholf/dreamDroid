@@ -5,6 +5,8 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class PickServiceListState(initial: List<Service> = emptyList()) {
@@ -18,15 +20,23 @@ class PickServiceListState(initial: List<Service> = emptyList()) {
 
 fun ComposeView.bindPickServiceScreen(
     state: PickServiceListState,
+    refresh: ComposeRefreshState,
+    onRefresh: () -> Unit,
     onItemClick: (Service) -> Unit,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
-            PickServiceScreen(
-                items = state.items,
-                onItemClick = onItemClick,
-            )
+            DreamDroidPullRefresh(
+                refreshing = refresh.isRefreshing,
+                onRefresh = onRefresh,
+                enabled = refresh.enabled,
+            ) {
+                PickServiceScreen(
+                    items = state.items,
+                    onItemClick = onItemClick,
+                )
+            }
         }
     }
 }

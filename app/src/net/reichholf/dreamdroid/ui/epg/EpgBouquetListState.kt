@@ -9,6 +9,8 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class EpgBouquetListState(initial: List<Event> = emptyList()) {
@@ -29,17 +31,25 @@ class EpgBouquetListState(initial: List<Event> = emptyList()) {
 
 fun ComposeView.bindEpgBouquetScreen(
     state: EpgBouquetListState,
+    refresh: ComposeRefreshState,
+    onRefresh: () -> Unit,
     onItemClick: (Event) -> Unit,
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
-            EpgBouquetScreen(
-                items = state.items,
-                listState = state.listState,
-                scrollEpoch = state.scrollEpoch,
-                onItemClick = onItemClick,
-            )
+            DreamDroidPullRefresh(
+                refreshing = refresh.isRefreshing,
+                onRefresh = onRefresh,
+                enabled = refresh.enabled,
+            ) {
+                EpgBouquetScreen(
+                    items = state.items,
+                    listState = state.listState,
+                    scrollEpoch = state.scrollEpoch,
+                    onItemClick = onItemClick,
+                )
+            }
         }
     }
 }

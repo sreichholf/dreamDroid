@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.Timer;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.current.CurrentServiceScreenKt;
 import net.reichholf.dreamdroid.ui.current.CurrentServiceUiState;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
@@ -69,6 +70,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	private Job mLoadJob;
 
 	private CurrentServiceUiState mUiState;
+	private ComposeRefreshState mRefreshState;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -77,6 +79,7 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 
 		mCurrentServiceReady = false;
 		mUiState = new CurrentServiceUiState();
+		mRefreshState = new ComposeRefreshState();
 		if (savedInstanceState != null) {
 			@SuppressWarnings("deprecation")
 			CurrentService current = (CurrentService) savedInstanceState.getSerializable(KEY_CURRENT);
@@ -101,9 +104,15 @@ public class CurrentServiceFragment extends BaseHttpFragment {
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.current_service, container, false);
 		ComposeView compose = view.findViewById(R.id.compose_current);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		CurrentServiceScreenKt.bindCurrentServiceScreen(
 				compose,
 				mUiState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				() -> {
 					onItemSelected(Statics.ITEM_NOW);
 					return kotlin.Unit.INSTANCE;

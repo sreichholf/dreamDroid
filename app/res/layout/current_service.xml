@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-    android:id="@+id/ptr_layout"
+<!-- Compose owns Material3 pull-to-refresh; do not wrap ComposeView in SwipeRefreshLayout. -->
+<androidx.compose.ui.platform.ComposeView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/compose_current"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/compose_current"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    android:layout_height="match_parent" />

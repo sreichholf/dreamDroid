@@ -112,7 +112,9 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		super.onActivityCreated(savedInstanceState);
 		//noinspection ConstantConditions
 		mSwipeRefreshLayout = getView().findViewById(R.id.ptr_layout);
-		mSwipeRefreshLayout.setOnRefreshListener(this);
+		if (mSwipeRefreshLayout != null) {
+			mSwipeRefreshLayout.setOnRefreshListener(this);
+		}
 		mHelper.onActivityCreated(savedInstanceState);
 	}
 
@@ -241,7 +243,9 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 
 	@Override
 	public void onRefresh() {
-		mSwipeRefreshLayout.setRefreshing(false);
+		if (mSwipeRefreshLayout != null) {
+			mSwipeRefreshLayout.setRefreshing(false);
+		}
 	}
 
 	@Override

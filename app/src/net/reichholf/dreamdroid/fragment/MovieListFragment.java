@@ -44,6 +44,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Tag;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler;
 import net.reichholf.dreamdroid.intents.IntentFactory;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.services.MovieListItem;
 import net.reichholf.dreamdroid.ui.services.MovieListMapperKt;
 import net.reichholf.dreamdroid.ui.services.MovieListState;
@@ -79,6 +80,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	public ExtendedHashMap mMovie;
 	private final ArrayList<Movie> mMovies = new ArrayList<>();
 	private MovieListState mListState;
+	private ComposeRefreshState mRefreshState;
 	@Nullable
 	private Job mLoadJob;
 	@Nullable
@@ -126,6 +128,7 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 		}
 		setInitialLocation(savedInstanceState);
 		mListState = new MovieListState();
+		mRefreshState = new ComposeRefreshState();
 	}
 
 	@Override
@@ -169,9 +172,15 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		ComposeView compose = view.findViewById(R.id.compose_list);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		MovieListStateKt.bindMovieListScreen(
 				compose,
 				mListState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				item -> {
 					onComposeClick(item, false);
 					return kotlin.Unit.INSTANCE;

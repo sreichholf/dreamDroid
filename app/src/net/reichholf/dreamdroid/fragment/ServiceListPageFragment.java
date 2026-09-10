@@ -39,6 +39,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service;
 import net.reichholf.dreamdroid.intents.IntentFactory;
 import net.reichholf.dreamdroid.room.AppDatabase;
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.services.ServiceListItem;
 import net.reichholf.dreamdroid.ui.services.ServiceListMapperKt;
 import net.reichholf.dreamdroid.ui.services.ServiceListState;
@@ -71,6 +72,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	private ArrayList<ExtendedHashMap> mHistory;
 	private final ArrayList<ServiceNowNext> mRows = new ArrayList<>();
 	private ServiceListState mListState;
+	private ComposeRefreshState mRefreshState;
 	@Nullable
 	private Job mLoadJob;
 
@@ -106,6 +108,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		mCurrentItem.put(Service.KEY_NAME, mName);
 		mHistory = new ArrayList<>();
 		mListState = new ServiceListState();
+		mRefreshState = new ComposeRefreshState();
 	}
 
 	@Override
@@ -135,9 +138,15 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		ComposeView compose = view.findViewById(R.id.compose_list);
+		mHttpHelper.setComposeRefresh(mRefreshState);
 		ServiceListStateKt.bindServiceListScreen(
 				compose,
 				mListState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				},
 				item -> {
 					onComposeClick(item, false);
 					return kotlin.Unit.INSTANCE;

@@ -18,6 +18,7 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.enigma.DeviceInfo;
 import net.reichholf.dreamdroid.enigma.DeviceInfoLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment;
+import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoScreenKt;
 import net.reichholf.dreamdroid.ui.device.DeviceInfoUiState;
 
@@ -41,6 +42,7 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	private Job mLoadJob;
 
 	private DeviceInfoUiState mUiState;
+	private ComposeRefreshState mRefreshState;
 	private boolean mDeviceInfoReady;
 
 	@Override
@@ -48,6 +50,7 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.device_info));
 		mUiState = new DeviceInfoUiState();
+		mRefreshState = new ComposeRefreshState();
 		mDeviceInfoReady = false;
 		if (savedInstanceState != null) {
 			@SuppressWarnings("deprecation")
@@ -68,7 +71,16 @@ public class DeviceInfoFragment extends BaseHttpFragment {
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.device_info, container, false);
 		ComposeView compose = view.findViewById(R.id.compose_device_info);
-		DeviceInfoScreenKt.bindDeviceInfoScreen(compose, mUiState);
+		mHttpHelper.setComposeRefresh(mRefreshState);
+		DeviceInfoScreenKt.bindDeviceInfoScreen(
+				compose,
+				mUiState,
+				mRefreshState,
+				() -> {
+					reload();
+					return kotlin.Unit.INSTANCE;
+				}
+		);
 		return view;
 	}
 
