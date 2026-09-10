@@ -90,7 +90,7 @@ public class CardPresenter extends Presenter {
 				@Override
 				public void setSelected(boolean selected) {
 					updateCardBackgroundColor(this, selected);
-					TextView content = findViewById(R.id.content_text);
+					TextView content = findViewById(androidx.leanback.R.id.content_text);
 					if (selected) {
 						content.setMaxLines(4);
 					} else {
@@ -164,7 +164,7 @@ public class CardPresenter extends Presenter {
 			int offset = displayTitle.length();
 			int end = offset + nextStart.length() + 1;
 			spannable.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), offset, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			TextView content = cardView.findViewById(R.id.content_text);
+			TextView content = cardView.findViewById(androidx.leanback.R.id.content_text);
 			content.setText(spannable, TextView.BufferType.SPANNABLE);
 		}
 		cardView.getMainImageView().setScaleType(ImageView.ScaleType.FIT_CENTER);
