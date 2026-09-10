@@ -109,7 +109,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | navhost-remote-leaf | [#269](https://github.com/sreichholf/dreamDroid/pull/269) | merged | Phase 2.1e continued: tablet Virtual Remote on `PhoneNavHost`; phone still side activity. Keep OkHttp 3.14.9. |
 | navhost-hub-leaf | [#270](https://github.com/sreichholf/dreamDroid/pull/270) | merged | Phase 2.1e continued: hub `ServiceListPager` on `PhoneNavHost`. Keep OkHttp 3.14.9. |
 | widgets-2-6-dive | [#271](https://github.com/sreichholf/dreamDroid/pull/271) | merged | Phase 2.6: widgets product decision (keep XML RemoteViews; no Glance rewrite this program). Keep OkHttp 3.14.9. |
-| widgets-2-6b-cleanup | this PR | open | Phase 2.6b: Kotlin coroutine widget click path (drop JobIntentService); prefs delete `isFull`; remove dead SyncService/`HttpIntentService`. Keep OkHttp 3.14.9. |
+| widgets-2-6b-cleanup | [#272](https://github.com/sreichholf/dreamDroid/pull/272) | merged | Phase 2.6b: Kotlin coroutine widget click path (drop JobIntentService); prefs delete `isFull`; remove dead SyncService/`HttpIntentService`. Keep OkHttp 3.14.9. |
+| anchor-popup-kotlin | this PR | open | Convert `AnchorPopup` helper from Java to Kotlin (new-code language policy). Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -174,8 +175,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.3f Bridge/Evernote drop **merged** [#252](https://github.com/sreichholf/dreamDroid/pull/252) — Phase 2.3 complete.
 - Phase 2.1b NavHost dive **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254).
 - Phase 2.1c–e through hub **merged** [#255](https://github.com/sreichholf/dreamDroid/pull/255)–[#270](https://github.com/sreichholf/dreamDroid/pull/270).
-- Phase 2.6a widgets decision **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271) (keep XML RemoteViews).
-- **This PR** = Phase 2.6b widget click cleanup (no JobIntentService).
+- Phase 2.6a widgets decision **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b **merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272).
+- **This PR** = convert `AnchorPopup` to Kotlin (new-code policy).
 - Out of wave still: optional 2.6c Compose config / 2.1f–h / Phase 4–5 operator. See Appendix H.
 
 ## How to read this
@@ -712,7 +713,7 @@ One program each, still one PR (or small PR series) at a time:
 | 3 | State / rotation | **Complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252): fragment Bundles; Evernote/Bridge removed. |
 | 4 | Data | Finish Room migration; BackupAgent → Room; drop legacy file after migrate. **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Shrink/remove `DatabaseHelper` later when migrate path is retired. |
 | 5 | VLC / streaming | Product decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243) (option A: keep libVLC + Compose overlay). Typed overlay **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244). Compose overlay + ButterKnife drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
-| 6 | Widgets | Decision **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271) (option A: keep XML RemoteViews). **This PR** = 2.6b cleanup. |
+| 6 | Widgets | Decision **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b **merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272). Optional 2.6c Compose config. |
 
 ### Phase 2.5 — VLC / streaming (decision merged [#243](https://github.com/sreichholf/dreamDroid/pull/243); 2.5c merged [#245](https://github.com/sreichholf/dreamDroid/pull/245))
 
@@ -772,9 +773,9 @@ Why:
 - No Enigma2 server / codec / stream-protocol work
 - No NavHost / widgets / full Compose hub (3.1c-iv) drive-bys
 
-### Phase 2.6 — Widgets / Virtual Remote home screen (decision [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b this PR)
+### Phase 2.6 — Widgets / Virtual Remote home screen (decision [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b [#272](https://github.com/sreichholf/dreamDroid/pull/272))
 
-**Decision A** ([#271](https://github.com/sreichholf/dreamDroid/pull/271)): keep XML `RemoteViews` Virtual Remote widget; do **not** rewrite to Compose Glance in this program. **This PR (2.6b):** replace JobIntentService click path with Kotlin coroutines + `goAsync`; delete empty zap stub / dead `SyncService` / `HttpIntentService`; prefs delete `isFull` on remove. No OkHttp 4.
+**Decision A** ([#271](https://github.com/sreichholf/dreamDroid/pull/271)): keep XML `RemoteViews` Virtual Remote widget; do **not** rewrite to Compose Glance in this program. **2.6b merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272): Kotlin coroutines + `goAsync` click path; delete empty zap stub / dead `SyncService` / `HttpIntentService`; prefs delete `isFull` on remove. No OkHttp 4.
 
 #### Inventory (after 2.6b)
 
@@ -816,7 +817,7 @@ Why:
 | Slice | Scope | Non-goals |
 | --- | --- | --- |
 | 2.6a | Docs decision on `main` | **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271). No widget code |
-| 2.6b | Kotlin coroutine click path (`WidgetRemoteRequest.kt`); delete zap stub; prefs delete `isFull`; drop dead `SyncService`/`HttpIntentService` | **this PR**. No Glance; no OkHttp 4 |
+| 2.6b | Kotlin coroutine click path (`WidgetRemoteRequest.kt`); delete zap stub; prefs delete `isFull`; drop dead `SyncService`/`HttpIntentService` | **merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272). No Glance; no OkHttp 4 |
 | 2.6c | Optional: Compose config activity | Keep RemoteViews grids |
 | 2.6d | Glance rewrite | **deferred** (not this program) |
 
@@ -914,7 +915,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 
-**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271). **This PR:** 2.6b widget click cleanup. Optional next: 2.6c / 2.1f–h / Phase 4–5 (operator).
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). **This PR:** `AnchorPopup` → Kotlin. Optional next: 2.6c / 2.1f–h / Phase 4–5 (operator).
 
 ### Phase 4 — Operator usertests
 
