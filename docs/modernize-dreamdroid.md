@@ -102,7 +102,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | dialogs-2-1g-ii-f | [#346](https://github.com/sreichholf/dreamDroid/pull/346) | merged | Phase 2.1g-ii-f: retire DialogFragment chassis for confirms. |
 | widgets-2-6e-glance | [#347](https://github.com/sreichholf/dreamDroid/pull/347) | merged | Phase 2.6e: Glance hybrid Virtual Remote (`GlanceAppWidgetReceiver` + `AndroidRemoteViews` dense RCU); retire Java `VirtualRemoteWidgetProvider`. |
 | okhttp-enigma2 | [#348](https://github.com/sreichholf/dreamDroid/pull/348) | merged | SOTA: Enigma2 `SimpleHttpClient` → Kotlin + OkHttp 4.12 (align with Picasso); drop `HttpURLConnection` on box XML path. |
-| videooverlay-kotlin | | open | SOTA: Kotlin-port `VideoOverlayFragment`; drop Java overlay source. |
+| videooverlay-kotlin | [#349](https://github.com/sreichholf/dreamDroid/pull/349) | open | SOTA: Kotlin-port `VideoOverlayFragment`; drop Java overlay source. |
 | room-backup-finish | [#242](https://github.com/sreichholf/dreamDroid/pull/242) | merged | Phase 2.4: Android BackupAgent includes Room `dreambox` (and legacy `dreamdroid` for restore compat); drop legacy file after migrate; widget stops using `DatabaseHelper` keys. Keep migrate-only `DatabaseHelper`. Keep OkHttp 3.14.9. |
 | docs-vlc-product-decision | [#243](https://github.com/sreichholf/dreamDroid/pull/243) | merged | Phase 2.5 (docs only): VLC/streaming inventory + product options; **decision A** keep libVLC + Compose overlay rewrite path. No player code. Keep OkHttp 3.14.9. |
 | vlc-overlay-typed-state | [#244](https://github.com/sreichholf/dreamDroid/pull/244) | merged | Phase 2.5b typed VideoOverlay state (`ServiceNowNext` / `Movie`); hash only at stream Intent / legacy edges. Keep OkHttp 3.14.9. |
