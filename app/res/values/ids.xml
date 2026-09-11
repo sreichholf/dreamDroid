@@ -13,8 +13,6 @@
     <item name="menu_navigation_changelog" type="id"/>
     <item name="menu_cancel" type="id"/>
     <item name="menu_check_connectivity" type="id"/>
-    <item name="phone_nav_screenshot_slot" type="id"/>
-    <item name="phone_nav_current_slot" type="id"/>
     <item name="phone_nav_zap_slot" type="id"/>
     <item name="phone_nav_profiles_slot" type="id"/>
     <item name="phone_nav_epg_slot" type="id"/>

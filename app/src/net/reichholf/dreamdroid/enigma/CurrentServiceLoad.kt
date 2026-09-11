@@ -1,36 +1,28 @@
 package net.reichholf.dreamdroid.enigma
 
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import android.content.Context
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
+data class CurrentServiceLoadResult(
+    val success: Boolean,
+    val current: CurrentService?,
+    val errorText: String?,
+)
+
 /**
- * Phase 2.2c: load typed current service via coroutines (no executor / runBlocking).
- * Call from a fragment that already has a view ([Fragment.getViewLifecycleOwner]).
- *
- * Uses a dedicated [SimpleHttpClient] per load (same as the old GetCurrentServiceTask).
+ * Phase 2.7c: load typed current service without a Fragment owner.
+ * Dedicated [SimpleHttpClient] per call (cancel does not abort I/O).
  */
-fun Fragment.launchCurrentServiceLoad(
-    onResult: (success: Boolean, current: CurrentService?, errorText: String?) -> Unit,
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val http = SimpleHttpClient.getInstance()
-        val current = EnigmaClient(http).getCurrent()
-        if (!isAdded) {
-            return@launch
-        }
-        // Match GetCurrentServiceTask: non-null parse result counts as success;
-        // empty payload is handled by the fragment UI (keep last-good / toast).
-        val success = current != null
-        val errorText = when {
-            success -> null
-            http.hasError() ->
-                getString(R.string.get_content_error) + "\n" + http.getErrorText(requireContext())
-            else -> getString(R.string.error_parsing)
-        }
-        onResult(success, current, errorText)
+suspend fun loadCurrentService(context: Context): CurrentServiceLoadResult {
+    val http = SimpleHttpClient.getInstance()
+    val current = EnigmaClient(http).getCurrent()
+    val success = current != null
+    val errorText = when {
+        success -> null
+        http.hasError() ->
+            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+        else -> context.getString(R.string.error_parsing)
     }
+    return CurrentServiceLoadResult(success, current, errorText)
 }

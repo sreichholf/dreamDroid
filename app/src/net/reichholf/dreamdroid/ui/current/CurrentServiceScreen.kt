@@ -20,9 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -35,9 +33,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
-import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class CurrentServiceUiState {
     var serviceName by mutableStateOf("")
@@ -289,31 +284,4 @@ private fun ServicePicon(
             )
         },
     )
-}
-
-fun ComposeView.bindCurrentServiceScreen(
-    state: CurrentServiceUiState,
-    refresh: ComposeRefreshState,
-    onRefresh: () -> Unit,
-    onNowClick: () -> Unit,
-    onNextClick: () -> Unit,
-    onStream: () -> Unit,
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            DreamDroidPullRefresh(
-                refreshing = refresh.isRefreshing,
-                onRefresh = onRefresh,
-                enabled = refresh.enabled,
-            ) {
-                CurrentServiceScreen(
-                    state = state,
-                    onNowClick = onNowClick,
-                    onNextClick = onNextClick,
-                    onStream = onStream,
-                )
-            }
-        }
-    }
 }
