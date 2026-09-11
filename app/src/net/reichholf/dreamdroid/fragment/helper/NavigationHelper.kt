@@ -14,9 +14,6 @@ import net.reichholf.dreamdroid.enigma.launchPowerStateSetLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.launchSleepTimerLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.dialogs.PowerStateDialog
-import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog
-import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
@@ -162,8 +159,16 @@ open class NavigationHelper(
         }
 
         when (itemId) {
-            R.id.menu_navigation_message ->
-                getMainActivity().showDialogFragment(SendMessageDialog.newInstance(), "sendmessage_dialog")
+            R.id.menu_navigation_message -> {
+                val messageHost = getMainActivity().supportFragmentManager
+                    .findFragmentById(R.id.detail_view)
+                if (!(messageHost is PhoneNavHostFragment && messageHost.navigateToSendMessage())) {
+                    navigatePhoneNavRoot(PhoneNavRoutes.HUB)
+                    val host = getMainActivity().supportFragmentManager
+                        .findFragmentById(R.id.detail_view)
+                    (host as? PhoneNavHostFragment)?.navigateToSendMessage()
+                }
+            }
 
             Statics.ITEM_TOGGLE_STANDBY ->
                 setPowerState(PowerState.STATE_TOGGLE)
@@ -177,11 +182,16 @@ open class NavigationHelper(
             Statics.ITEM_SHUTDOWN ->
                 setPowerState(PowerState.STATE_SHUTDOWN)
 
-            R.id.menu_navigation_power ->
-                getMainActivity().showDialogFragment(
-                    PowerStateDialog.newInstance(),
-                    "powerstate_dialog",
-                )
+            R.id.menu_navigation_power -> {
+                val powerHost = getMainActivity().supportFragmentManager
+                    .findFragmentById(R.id.detail_view)
+                if (!(powerHost is PhoneNavHostFragment && powerHost.navigateToPower())) {
+                    navigatePhoneNavRoot(PhoneNavRoutes.HUB)
+                    val host = getMainActivity().supportFragmentManager
+                        .findFragmentById(R.id.detail_view)
+                    (host as? PhoneNavHostFragment)?.navigateToPower()
+                }
+            }
 
             R.id.menu_navigation_about -> {
                 val aboutHost = getMainActivity().supportFragmentManager
@@ -196,8 +206,13 @@ open class NavigationHelper(
             Statics.ITEM_CHECK_CONN ->
                 getMainActivity().onProfileChanged(DreamDroid.getCurrentProfile())
 
-            R.id.menu_navigation_changelog ->
-                getMainActivity().showChangeLog(false)
+            R.id.menu_navigation_changelog -> {
+                val changelogHost = getMainActivity().supportFragmentManager
+                    .findFragmentById(R.id.detail_view)
+                if (!(changelogHost is PhoneNavHostFragment && changelogHost.navigateToChangelog())) {
+                    getMainActivity().showChangeLog(false)
+                }
+            }
 
             R.id.menu_navigation_sleeptimer ->
                 getSleepTimer(true)
@@ -271,7 +286,16 @@ open class NavigationHelper(
     ) {
         if (success) {
             if (openDialog) {
-                getMainActivity().showDialogFragment(SleepTimerDialog.newInstance(result), "sleeptimer_dialog")
+                val sleepHost = getMainActivity().supportFragmentManager
+                    .findFragmentById(R.id.detail_view)
+                if (!(sleepHost is PhoneNavHostFragment && sleepHost.navigateToSleepTimer(result))) {
+                    navigatePhoneNavRoot(PhoneNavRoutes.HUB)
+                    val host = getMainActivity().supportFragmentManager
+                        .findFragmentById(R.id.detail_view)
+                    if (host is PhoneNavHostFragment) {
+                        host.queueSleepTimer(result)
+                    }
+                }
                 return
             }
             val text = result.getString(SleepTimer.KEY_TEXT)
