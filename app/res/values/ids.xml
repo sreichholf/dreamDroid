@@ -14,7 +14,5 @@
     <item name="menu_cancel" type="id"/>
     <item name="menu_check_connectivity" type="id"/>
     <item name="phone_nav_hub_slot" type="id"/>
-    <item name="phone_nav_timer_edit_slot" type="id"/>
-    <item name="phone_nav_timer_service_pick_slot" type="id"/>
 
 </resources>

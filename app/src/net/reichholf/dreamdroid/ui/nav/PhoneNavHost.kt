@@ -36,18 +36,16 @@ import net.reichholf.dreamdroid.ui.pick.PickServiceDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.TimerEditFragment
-import net.reichholf.dreamdroid.fragment.TimerServicePickFragment
 import net.reichholf.dreamdroid.fragment.ServiceListPager
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
 import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
 import net.reichholf.dreamdroid.ui.settings.SettingsDestination
+import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
-import net.reichholf.dreamdroid.helpers.enigma2.Service
+import net.reichholf.dreamdroid.ui.pick.TimerServicePickDestination
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
@@ -154,33 +152,13 @@ fun PhoneNavHost(
             }
         }
         composable(PhoneNavRoutes.TIMER_EDIT) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_timer_edit_slot,
-                routeTag = hostFragment.timerEditRouteTag(),
-                createFragment = {
-                    TimerEditFragment().apply {
-                        arguments = hostFragment.timerEditLeafArguments()
-                    }
-                },
-            )
+            val remount by hostFragment.timerEditRemountFlow().collectAsState()
+            key(hostFragment.timerEditRouteTag(), remount) {
+                TimerEditDestination(hostFragment = hostFragment)
+            }
         }
         composable(PhoneNavRoutes.TIMER_SERVICE_PICK) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_timer_service_pick_slot,
-                routeTag = PhoneNavRoutes.TIMER_SERVICE_PICK,
-                createFragment = {
-                    TimerServicePickFragment().apply {
-                        arguments = Bundle().apply {
-                            val data = ExtendedHashMap()
-                            data.put(Service.KEY_REFERENCE, "default")
-                            putSerializable(BaseHttpFragment.sData, data)
-                            putString("action", Intent.ACTION_PICK)
-                        }
-                    }
-                },
-            )
+            TimerServicePickDestination(hostFragment = hostFragment)
         }
     }
 }

@@ -19,7 +19,9 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
+import android.content.DialogInterface
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
+import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
@@ -31,6 +33,7 @@ import net.reichholf.dreamdroid.ui.nav.navigateDrawerSettings
 import net.reichholf.dreamdroid.ui.nav.navigateToBackup
 import net.reichholf.dreamdroid.ui.nav.navigateToEpgSearch
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
+import net.reichholf.dreamdroid.ui.timers.TimerEditSession
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
@@ -40,7 +43,7 @@ import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
  * [net.reichholf.dreamdroid.activities.abs.BaseActivity] only delivers [onActivityResult] to
  * top-level fragments; forward to the active leaf (Profiles edit, EPG bouquet picker, Zap).
  */
-class PhoneNavHostFragment : BaseFragment() {
+class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialogListener {
 
     companion object {
         const val ARG_START_ROUTE = "phone_nav_start_route"
@@ -87,18 +90,26 @@ class PhoneNavHostFragment : BaseFragment() {
 
     var composeActivityResultListener: ActivityResultListener? = null
 
+    /**
+     * Optional MultiChoice sink for Compose destinations (timer edit tags/repeatings).
+     * [MainActivity] forwards via getDetailContentFragment → this host when leaf is null.
+     */
+    var composeMultiChoiceListener: MultiChoiceDialog.MultiChoiceDialogListener? = null
+
     /** Stack of pending onActivityResult request codes (nested edit → service pick). */
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
     private var profileEditArgs: Bundle? = null
     private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
     private var timerEditArgs: Bundle? = null
     private var timerEditTag: String = PhoneNavRoutes.TIMER_EDIT
+    private var timerEditSession: TimerEditSession? = null
     private var pendingProfileEditRequested: Boolean = false
     private var pendingProfileEdit: Profile? = null
     private var pendingTimerEdit: ExtendedHashMap? = null
     private var pendingTimerCreate: Boolean = false
     private var pendingEpgSearchQuery: String? = null
     private val profileEditRemountState = MutableStateFlow(0)
+    private val timerEditRemountState = MutableStateFlow(0)
     private val epgRemountState = MutableStateFlow(0)
     private val epgSearchRemountState = MutableStateFlow(0)
 
@@ -106,7 +117,13 @@ class PhoneNavHostFragment : BaseFragment() {
     val profileEditRemountEpoch: Int
         get() = profileEditRemountState.value
 
+    /** Bumps when timer edit args change while already on [PhoneNavRoutes.TIMER_EDIT]. */
+    val timerEditRemountEpoch: Int
+        get() = timerEditRemountState.value
+
     fun profileEditRemountFlow(): StateFlow<Int> = profileEditRemountState.asStateFlow()
+
+    fun timerEditRemountFlow(): StateFlow<Int> = timerEditRemountState.asStateFlow()
 
     fun epgRemountFlow(): StateFlow<Int> = epgRemountState.asStateFlow()
 
@@ -129,6 +146,7 @@ class PhoneNavHostFragment : BaseFragment() {
             profileEditTag = savedInstanceState.getString(STATE_PROFILE_EDIT_TAG, PhoneNavRoutes.PROFILE_EDIT)
             timerEditArgs = savedInstanceState.getBundle(STATE_TIMER_EDIT_ARGS)
             timerEditTag = savedInstanceState.getString(STATE_TIMER_EDIT_TAG, PhoneNavRoutes.TIMER_EDIT)
+            timerEditSession = TimerEditSession.fromSavedState(savedInstanceState)
         }
     }
 
@@ -139,6 +157,7 @@ class PhoneNavHostFragment : BaseFragment() {
         outState.putString(STATE_PROFILE_EDIT_TAG, profileEditTag)
         timerEditArgs?.let { outState.putBundle(STATE_TIMER_EDIT_ARGS, it) }
         outState.putString(STATE_TIMER_EDIT_TAG, timerEditTag)
+        timerEditSession?.writeTo(outState)
     }
 
     override fun onCreateView(
@@ -197,15 +216,11 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.SERVICE_EPG || route.startsWith("service_epg") -> null
             route == PhoneNavRoutes.EPG_SEARCH || route.startsWith("epg_search") -> null
             route == PhoneNavRoutes.PICK_SERVICE -> null
+            route == PhoneNavRoutes.TIMER_EDIT -> null
+            route == PhoneNavRoutes.TIMER_SERVICE_PICK -> null
             route == PhoneNavRoutes.HUB ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_hub_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB)
-            route == PhoneNavRoutes.TIMER_EDIT ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_timer_edit_slot)
-                    ?: childFragmentManager.findFragmentByTag(timerEditTag)
-            route == PhoneNavRoutes.TIMER_SERVICE_PICK ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_timer_service_pick_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.TIMER_SERVICE_PICK)
             else -> null
         }
     }
@@ -236,6 +251,7 @@ class PhoneNavHostFragment : BaseFragment() {
     fun navigateToRoute(route: String): Boolean {
         val controller = navController ?: return false
         resultRequestCodes.clear()
+        clearTimerEditSession()
         if (route == PhoneNavRoutes.SETTINGS) {
             controller.navigateDrawerSettings()
             return true
@@ -407,7 +423,28 @@ class PhoneNavHostFragment : BaseFragment() {
     fun timerEditLeafArguments(): Bundle = timerEditArgs ?: Bundle()
 
     /**
-     * Push nested timer create/edit. Service pick uses [navigateToTimerServicePick].
+     * Reuse the in-memory edit session across service-pick navigation; create from args
+     * when starting a new edit or after remount.
+     */
+    fun obtainTimerEditSession(routeTag: String, remountEpoch: Int): TimerEditSession {
+        val existing = timerEditSession
+        if (existing != null &&
+            existing.routeTag == routeTag &&
+            existing.remountEpoch == remountEpoch
+        ) {
+            return existing
+        }
+        val session = TimerEditSession.fromArgs(timerEditLeafArguments(), routeTag, remountEpoch)
+        timerEditSession = session
+        return session
+    }
+
+    fun clearTimerEditSession() {
+        timerEditSession = null
+    }
+
+    /**
+     * Push timer create/edit. Service pick uses [navigateToTimerServicePick].
      * Result goes through [deliverPickResult] with [Statics.REQUEST_EDIT_TIMER].
      */
     fun navigateToTimerEdit(timer: ExtendedHashMap, create: Boolean): Boolean {
@@ -426,21 +463,9 @@ class PhoneNavHostFragment : BaseFragment() {
         } else {
             "timer_edit:$ref:$begin"
         }
-        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_timer_edit_slot)
-            ?: childFragmentManager.findFragmentByTag(timerEditTag)
-        if (existing != null && !childFragmentManager.isStateSaved) {
-            childFragmentManager.beginTransaction().remove(existing).commitNow()
-        }
+        timerEditSession = null
         if (controller.currentDestination?.route == PhoneNavRoutes.TIMER_EDIT) {
-            if (!childFragmentManager.isStateSaved) {
-                childFragmentManager.beginTransaction()
-                    .replace(
-                        R.id.phone_nav_timer_edit_slot,
-                        TimerEditFragment().apply { arguments = timerEditLeafArguments() },
-                        timerEditTag,
-                    )
-                    .commitNow()
-            }
+            timerEditRemountState.value = timerEditRemountState.value + 1
             return true
         }
         controller.navigate(PhoneNavRoutes.TIMER_EDIT)
@@ -469,6 +494,9 @@ class PhoneNavHostFragment : BaseFragment() {
         val route = navController?.currentDestination?.route
         if (isResultDestination(route) && resultRequestCodes.isNotEmpty()) {
             resultRequestCodes.removeLast()
+            if (route == PhoneNavRoutes.TIMER_EDIT) {
+                clearTimerEditSession()
+            }
         }
     }
 
@@ -486,6 +514,9 @@ class PhoneNavHostFragment : BaseFragment() {
     fun deliverPickResult(resultCode: Int, data: Intent?) {
         val controller = navController ?: return
         val code = if (resultRequestCodes.isEmpty()) -1 else resultRequestCodes.removeLast()
+        if (code == Statics.REQUEST_EDIT_TIMER) {
+            clearTimerEditSession()
+        }
         if (!controller.popBackStack()) return
         view?.post {
             val composeListener = composeActivityResultListener
@@ -514,6 +545,18 @@ class PhoneNavHostFragment : BaseFragment() {
             return
         }
         super.onDialogAction(action, details, dialogTag)
+    }
+
+    override fun onMultiChoiceDialogSelection(
+        dialogTag: String?,
+        dialog: DialogInterface?,
+        selected: Array<out Int>?,
+    ) {
+        composeMultiChoiceListener?.onMultiChoiceDialogSelection(dialogTag, dialog, selected)
+    }
+
+    override fun onMultiChoiceDialogFinish(dialogTag: String?, result: Int) {
+        composeMultiChoiceListener?.onMultiChoiceDialogFinish(dialogTag, result)
     }
 
     override fun onDrawerOpened() {
