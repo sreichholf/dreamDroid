@@ -29,7 +29,8 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
-import net.reichholf.dreamdroid.fragment.dialogs.IndeterminateProgress
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
+import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -87,12 +88,22 @@ fun ProfilesDestination(
         session.reloadProfiles()
     }
 
+    var showDetectProgress by remember { mutableStateOf(false) }
+    session.onDetectProgressChanged = { showDetectProgress = it }
+
     ProfilesScreen(
         profiles = listState.items,
         onProfileClick = { item -> session.onProfileRowClick(item) },
         onProfileLongClick = { item -> session.onProfileRowLongClick(item) },
         modifier = modifier,
     )
+
+    if (showDetectProgress) {
+        IndeterminateProgressDialog(
+            title = stringResource(R.string.searching),
+            message = stringResource(R.string.searching_known_devices),
+        )
+    }
 }
 
 private class ProfilesSession :
@@ -102,6 +113,7 @@ private class ProfilesSession :
     var context: android.content.Context? = null
     var activity: AppCompatActivity? = null
     var listState: ProfilesListState? = null
+    var onDetectProgressChanged: ((Boolean) -> Unit)? = null
 
     private val profiles = ArrayList<Profile>()
     private var selected: Profile = Profile.getDefault()
@@ -145,10 +157,7 @@ private class ProfilesSession :
     fun cancelDetect() {
         detectJob?.cancel()
         detectJob = null
-        val act = activity ?: return
-        val progress = act.supportFragmentManager
-            .findFragmentByTag("dialog_devicesearch_indeterminate") as? IndeterminateProgress
-        progress?.dismiss()
+        onDetectProgressChanged?.invoke(false)
     }
 
     fun reloadProfiles() {
@@ -210,13 +219,10 @@ private class ProfilesSession :
     private fun detectDevices() {
         val host = hostFragment ?: return
         val act = activity ?: return
-        val mph = act as? MultiPaneHandler ?: return
         val cached = detectedProfiles
         if (cached == null) {
             cancelDetect()
-            val progress = IndeterminateProgress.newInstance(R.string.searching, R.string.searching_known_devices)
-            progress.isCancelable = false
-            mph.showDialogFragment(progress, "dialog_devicesearch_indeterminate")
+            onDetectProgressChanged?.invoke(true)
             detectJob = host.launchDetectDevicesLoad { profiles ->
                 detectJob = null
                 onDevicesDetected(profiles)
@@ -242,9 +248,7 @@ private class ProfilesSession :
 
     private fun onDevicesDetected(found: ArrayList<Profile>) {
         val act = activity ?: return
-        val progress = act.supportFragmentManager
-            .findFragmentByTag("dialog_devicesearch_indeterminate") as? IndeterminateProgress
-        progress?.dismiss()
+        onDetectProgressChanged?.invoke(false)
         detectedProfiles = found
         val builder = MaterialAlertDialogBuilder(act)
         builder.setTitle(R.string.autodiscover_dreamboxes)

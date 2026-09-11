@@ -41,7 +41,6 @@ import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailBottomSheet;
-import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -203,6 +202,10 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 					return kotlin.Unit.INSTANCE;
 				}
 		);
+		mOverlayUiState.setOnChoiceAction((actionId, dialogTag) -> {
+			onDialogAction(actionId, null, dialogTag);
+			return kotlin.Unit.INSTANCE;
+		});
 		return view;
 	}
 
@@ -361,16 +364,14 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 			Toast.makeText(getContext(), R.string.no_tracks, Toast.LENGTH_SHORT).show();
 			return;
 		}
-		CharSequence[] actions = new CharSequence[descriptions.length];
+		java.util.ArrayList<String> labels = new java.util.ArrayList<>(descriptions.length);
 		int[] ids = new int[descriptions.length];
-		int i = 0;
-		for (MediaPlayer.TrackDescription description : descriptions) {
-			actions[i] = description.name;
+		for (int i = 0; i < descriptions.length; i++) {
+			MediaPlayer.TrackDescription description = descriptions[i];
+			labels.add(description.name);
 			ids[i] = description.id;
-			i++;
 		}
-		SimpleChoiceDialog choice = SimpleChoiceDialog.newInstance(title, actions, ids);
-		choice.show(getFragmentManager(), dialog_tag);
+		mOverlayUiState.showChoice(title, labels, ids, dialog_tag);
 	}
 
 	private void onVolumeTouch(float distance_y) {
