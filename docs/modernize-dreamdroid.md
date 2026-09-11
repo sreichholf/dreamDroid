@@ -135,7 +135,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | docs-fragment-rework | [#304](https://github.com/sreichholf/dreamDroid/pull/304) | merged | Phase 2.7a: rework phone Fragment shells into **Kotlin** Compose NavHost destinations (convert off Java; not “same Fragment in Kotlin”). Docs only. |
 | device-info-compose-dest | [#306](https://github.com/sreichholf/dreamDroid/pull/306) | merged | Phase 2.7b: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` + `device_info.xml`. |
 | backup-signal-compose-dest | [#307](https://github.com/sreichholf/dreamDroid/pull/307) | merged | Phase 2.7c partial: Backup + Signal Kotlin Compose destinations; delete `BackupFragment` / `SignalFragment`. |
-| current-screenshot-compose-dest | | open | Phase 2.7c finish: Current + Screenshot Kotlin Compose destinations; delete `CurrentServiceFragment`; keep `ScreenShotFragment` for Virtual Remote embed. |
+| current-screenshot-compose-dest | [#309](https://github.com/sreichholf/dreamDroid/pull/309) | merged | Phase 2.7c finish: Current + Screenshot Kotlin Compose destinations; delete `CurrentServiceFragment` / `ScreenShotFragment`. |
+| zap-remote-compose-dest | | open | Phase 2.7d: Zap + Virtual Remote Kotlin Compose destinations; delete `ZapFragment` / `VirtualRemotePagerFragment` / `VirtualRemoteFragment`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -161,7 +162,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Wave 3 phone Compose screens complete on `main` through #206; CI #204.
 - Appendix G phone UI checklist: all 19 items merged.
 - Remaining typed API (not Wave 3 UI): none on phone list paths (hub now/next #209; movies list #210; detail edge #206). Phase 0 Leanback dive #211 on `main`.
-- Phone NavHost Device Info, Backup, Signal, Current, and Screenshot are **Kotlin Compose destinations** (Phase 2.7b–c). Remaining leaves are still **nested Java Fragments** (`NestedFragmentDestination`). Phase 2.7 converts them to **Kotlin** Compose destinations (decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)).
+- Phone NavHost Device Info, Backup, Signal, Current, Screenshot, Zap, and Virtual Remote are **Kotlin Compose destinations** (Phase 2.7b–d). Remaining leaves are still **nested Java Fragments** (`NestedFragmentDestination`). Phase 2.7 converts them to **Kotlin** Compose destinations (decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)).
 - Phase 2.1a drawer chrome **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). Phase 2.1b–e (through hub) **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Widgets **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). **This PR** = `AnchorPopup` → Kotlin.
 - Phase 2.2a Device Info coroutines **merged** [#213](https://github.com/sreichholf/dreamDroid/pull/213).
 - Phase 2.2b Signal coroutines **merged** [#214](https://github.com/sreichholf/dreamDroid/pull/214).
@@ -221,7 +222,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296).
 - OkHttp 4.12 for Picasso/TLS **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299) (Enigma2 HTTP unchanged).
 - libVLC-all **3.7.5** stable **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300) (still not Media3).
-- Phase 2.7 phone Fragment→**Kotlin** Compose destination rework **in progress** ([#304](https://github.com/sreichholf/dreamDroid/pull/304) docs; **2.7b Device Info** [#306](https://github.com/sreichholf/dreamDroid/pull/306); **Backup+Signal** [#307](https://github.com/sreichholf/dreamDroid/pull/307); **Current+Screenshot** this PR). Remaining nested Java Fragment shells in `PhoneNavHost` are **not** done.
+- Phase 2.7 phone Fragment→**Kotlin** Compose destination rework **in progress** ([#304](https://github.com/sreichholf/dreamDroid/pull/304) docs; **2.7b Device Info** [#306](https://github.com/sreichholf/dreamDroid/pull/306); **Backup+Signal** [#307](https://github.com/sreichholf/dreamDroid/pull/307); **Current+Screenshot** [#309](https://github.com/sreichholf/dreamDroid/pull/309); **Zap+Remote** this PR). Remaining nested Java Fragment shells in `PhoneNavHost` are **not** done.
 - Out of wave still after 2.7: Phase 4–5 operator usertests. See Appendix H.
 
 ## How to read this
@@ -833,7 +834,7 @@ Why:
 | Config | `appwidget/VirtualRemoteWidgetConfiguration.java` | Style + profile pick; Room `ProfileDao`; deletes profile + `isFull` prefs |
 | Click path | `appwidget/WidgetRemoteRequest.kt` | Coroutines (`Dispatchers.IO`) + SSL/toast helpers (no Service) |
 | Layouts | `virtual_remote_appwidget*.xml` + `merge_*_widget.xml` | Dense RCU grids (~780 LOC merges) |
-| Key map | `VirtualRemoteFragment.getRemoteButtons` | Widget-only binder today |
+| Key map | `VirtualRemoteButtons.getRemoteButtons` | Widget RemoteViews binder |
 
 **Flow:** configure → prefs → `updateWidget` → `PendingIntent.getBroadcast(ACTION_RCU)` → provider `onReceive` → `WidgetRemoteRequest` → `SimpleHttpClient` + `RemoteCommandRequestHandler`.
 
@@ -906,13 +907,13 @@ Why:
 | --- | --- | --- |
 | `DEVICE_INFO` | — (Kotlin `DeviceInfoDestination`) | Yes (`DeviceInfoScreen`) — **2.7b** |
 | `SIGNAL` | — (Kotlin `SignalDestination`) | Yes (`SignalScreen`) — **2.7c** |
-| `SCREENSHOT` | — (Kotlin `ScreenshotDestination`; `ScreenShotFragment` kept for Virtual Remote) | Yes — **2.7c** |
+| `SCREENSHOT` | — (Kotlin `ScreenshotDestination`) | Yes — **2.7c** |
 | `CURRENT` | — (Kotlin `CurrentServiceDestination`) | Yes — **2.7c** |
-| `ZAP` | `ZapFragment` | Yes |
+| `ZAP` | — (Kotlin `ZapDestination`) | Yes — **2.7d** |
 | `BACKUP` | — (Kotlin `BackupDestination`) | Yes — **2.7c** |
 | `PROFILES` | `ProfileListFragment` | Yes |
 | `EPG` | `EpgBouquetFragment` | Yes |
-| `REMOTE` | `VirtualRemotePagerFragment` → `VirtualRemoteFragment` | Yes |
+| `REMOTE` | — (Kotlin `VirtualRemoteDestination`) | Yes — **2.7d** |
 | `SETTINGS` | `MyPreferenceFragment` | Yes |
 | `HUB` | `ServiceListPager` (+ page Fragments) | Yes (pages Compose) |
 | `SERVICE_EPG` | `ServiceEpgListFragment` | Yes |
@@ -940,9 +941,9 @@ Hub children still Java Fragment-backed today: `ServiceListPageFragment`, `Movie
 | --- | --- | --- |
 | 2.7a | Docs decision on `main` | **merged** [#304](https://github.com/sreichholf/dreamDroid/pull/304). No app code |
 | 2.7b | Beachhead: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` | **merged** [#306](https://github.com/sreichholf/dreamDroid/pull/306) |
-| 2.7c | Simple leaves: Signal, Screenshot, Current, Backup → Kotlin destinations | Backup + Signal **merged** [#307](https://github.com/sreichholf/dreamDroid/pull/307). **this PR:** Current + Screenshot (keep `ScreenShotFragment` for Virtual Remote) |
+| 2.7c | Simple leaves: Signal, Screenshot, Current, Backup → Kotlin destinations | Backup + Signal **merged** [#307](https://github.com/sreichholf/dreamDroid/pull/307). Current + Screenshot **merged** [#309](https://github.com/sreichholf/dreamDroid/pull/309) |
 | 2.7c | Simple leaves: Signal, Screenshot, Current, Backup → Kotlin destinations | No hub / edit forms |
-| 2.7d | Zap + Virtual Remote → Kotlin destinations | No hub |
+| 2.7d | Zap + Virtual Remote → Kotlin destinations | **this PR** |
 | 2.7e | Settings + Profiles + Profile edit → Kotlin destinations | Keep dialogs as Fragment |
 | 2.7f | EPG bouquet + Service EPG + EPG search + Pick service → Kotlin destinations | No hub |
 | 2.7g | Timer edit + Timer service pick → Kotlin destinations | — |
@@ -1124,7 +1125,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 
-**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276). Phase 2.1h phone remote through drawer root map **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277)–[#285](https://github.com/sreichholf/dreamDroid/pull/285) (dialog policy [#278](https://github.com/sreichholf/dreamDroid/pull/278); nested resume crash [#286](https://github.com/sreichholf/dreamDroid/pull/286); drawer IA [#282](https://github.com/sreichholf/dreamDroid/pull/282)). Hub nested-leaf teardown **merged** [#287](https://github.com/sreichholf/dreamDroid/pull/287). Phase 2.6c Compose widget config **merged** [#288](https://github.com/sreichholf/dreamDroid/pull/288). `SimpleFragmentActivity` retired **merged** [#289](https://github.com/sreichholf/dreamDroid/pull/289). Assert NavHost leaf fallbacks **merged** [#291](https://github.com/sreichholf/dreamDroid/pull/291). Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296). OkHttp 4.12 **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299); libVLC 3.7.5 **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300). **Next phone chassis:** Phase 2.7 Java Fragment shells → Kotlin Compose destinations (decision [#304](https://github.com/sreichholf/dreamDroid/pull/304); **2.7b** [#306](https://github.com/sreichholf/dreamDroid/pull/306); **2.7c Backup+Signal** [#307](https://github.com/sreichholf/dreamDroid/pull/307); **Current+Screenshot** this PR; then 2.7d+). Remaining after 2.7: Phase 4–5 (operator usertests / bugfix).
+**Phase 3 Leanback code path complete for this program** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub stays Leanback shell). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276). Phase 2.1h phone remote through drawer root map **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277)–[#285](https://github.com/sreichholf/dreamDroid/pull/285) (dialog policy [#278](https://github.com/sreichholf/dreamDroid/pull/278); nested resume crash [#286](https://github.com/sreichholf/dreamDroid/pull/286); drawer IA [#282](https://github.com/sreichholf/dreamDroid/pull/282)). Hub nested-leaf teardown **merged** [#287](https://github.com/sreichholf/dreamDroid/pull/287). Phase 2.6c Compose widget config **merged** [#288](https://github.com/sreichholf/dreamDroid/pull/288). `SimpleFragmentActivity` retired **merged** [#289](https://github.com/sreichholf/dreamDroid/pull/289). Assert NavHost leaf fallbacks **merged** [#291](https://github.com/sreichholf/dreamDroid/pull/291). Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296). OkHttp 4.12 **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299); libVLC 3.7.5 **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300). **Next phone chassis:** Phase 2.7 Java Fragment shells → Kotlin Compose destinations (decision [#304](https://github.com/sreichholf/dreamDroid/pull/304); **2.7b** [#306](https://github.com/sreichholf/dreamDroid/pull/306); **2.7c** [#307](https://github.com/sreichholf/dreamDroid/pull/307)/[#309](https://github.com/sreichholf/dreamDroid/pull/309); **2.7d Zap+Remote** this PR; then 2.7e+). Remaining after 2.7: Phase 4–5 (operator usertests / bugfix).
 
 ### Phase 4 — Operator usertests
 

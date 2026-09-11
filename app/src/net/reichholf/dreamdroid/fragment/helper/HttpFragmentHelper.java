@@ -27,7 +27,6 @@ import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
-import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -74,7 +73,7 @@ public class HttpFragmentHelper {
     }
 
     public void bindToFragment(Fragment fragment) {
-        if (!(fragment instanceof IHttpBase) && !(fragment instanceof ScreenShotFragment))
+        if (!(fragment instanceof IHttpBase))
             throw new IllegalStateException(getClass().getSimpleName() + " must be attached to a HttpBaseFragment.");
         if (!fragment.equals(mFragment)) {
             mFragment = fragment;

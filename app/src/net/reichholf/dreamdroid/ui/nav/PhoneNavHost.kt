@@ -40,9 +40,9 @@ import net.reichholf.dreamdroid.fragment.TimerServicePickFragment
 import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
 import net.reichholf.dreamdroid.fragment.ServiceListPager
-import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment
-import net.reichholf.dreamdroid.fragment.ZapFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
+import net.reichholf.dreamdroid.ui.zap.ZapDestination
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Service
@@ -80,12 +80,7 @@ fun PhoneNavHost(
             CurrentServiceDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.ZAP) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_zap_slot,
-                routeTag = PhoneNavRoutes.ZAP,
-                createFragment = { ZapFragment() },
-            )
+            ZapDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.BACKUP) {
             BackupDestination()
@@ -111,12 +106,7 @@ fun PhoneNavHost(
             )
         }
         composable(PhoneNavRoutes.REMOTE) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_remote_slot,
-                routeTag = PhoneNavRoutes.REMOTE,
-                createFragment = { VirtualRemotePagerFragment() },
-            )
+            VirtualRemoteDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.SETTINGS) {
             NestedFragmentDestination(
