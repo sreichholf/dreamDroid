@@ -34,7 +34,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.preference.PreferenceManager
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -59,25 +58,24 @@ import net.reichholf.dreamdroid.helpers.enigma2.Picon
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
-import net.reichholf.dreamdroid.tv.fragment.RootBrowseFragment
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
 import net.reichholf.dreamdroid.ui.services.movieToExtendedHashMap
 import net.reichholf.dreamdroid.ui.services.serviceNowNextToExtendedHashMap
 
 /**
  * Phase 3.1c-iv Compose TV hub host.
- * - **iv-b:** debug-only switch (default Leanback).
- * - **iv-c:** [NavigationDrawer] side headers + row focus chrome; settings
- *   Reload / Preferences / Profile.
- * - **iv-d:** bouquet headers + service/now-next rows with picon cards.
- * - **iv-e:** movie location headers + lazy movie rows on select.
- *   Stream Intent edge unchanged.
+ * - **iv-b..e:** Compose hub beachhead through movie rows.
+ * - **iv-f:** Compose hub is the TV default; Leanback browse path removed.
+ *   Stream Intent edge unchanged. `leanback` kept for VideoOverlay only.
  */
 object TvComposeHubHost {
-    const val PREFS_KEY_COMPOSE_TV_HUB: String = "compose_tv_hub_debug"
     const val HEADER_SETTINGS_ID: String = "settings"
     const val HEADER_PLACEHOLDER_ID: String = "placeholder"
     const val HEADER_MOVIE_PREFIX: String = "movie:"
+
+    /** Same bouquet query formerly on RootBrowseFragment.BOUQUETS_TV. */
+    const val BOUQUETS_TV: String =
+        """1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet"""
 
     fun movieHeaderId(dirname: String): String = HEADER_MOVIE_PREFIX + dirname
 
@@ -85,15 +83,6 @@ object TvComposeHubHost {
         headerId.takeIf { it.startsWith(HEADER_MOVIE_PREFIX) }
             ?.removePrefix(HEADER_MOVIE_PREFIX)
             ?.takeIf { it.isNotEmpty() }
-
-    @JvmStatic
-    fun useComposeHub(context: Context): Boolean {
-        if (!BuildConfig.DEBUG) {
-            return false
-        }
-        return PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean(PREFS_KEY_COMPOSE_TV_HUB, false)
-    }
 
     @JvmStatic
     fun install(activity: ComponentActivity) {
@@ -234,7 +223,7 @@ private suspend fun loadComposeHubBouquets(context: Context): HubLoadResult {
         }
     }
     val locations = DreamDroid.getLocations().toList()
-    val bouquetParams = listOf(NameValuePair("bRef", RootBrowseFragment.BOUQUETS_TV))
+    val bouquetParams = listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV))
     val bouquetResult = loadServiceList(context, bouquetParams)
     if (!bouquetResult.success) {
         return HubLoadResult(emptyList(), locations, bouquetResult.errorText)
