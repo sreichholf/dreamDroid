@@ -40,7 +40,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
 
     fun refreshProfileToggles(data: BackupData) {
         uiState.setProfilesFromBackup(
-            data.profiles,
+            data.getProfiles(),
             DreamDroid.getCurrentProfile().id,
             context.getString(R.string.backup_current_profile),
         )
@@ -85,11 +85,11 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     fun doExport() {
         val data = backupData
         if (!uiState.exportSettings) {
-            data.settings = null
+            data.setSettings(null)
         }
         val excluded = uiState.profiles.filterNot { it.checked }.map { it.id }.toHashSet()
         if (excluded.isNotEmpty()) {
-            data.profiles.removeIf { excluded.contains(it.id) }
+            data.getProfiles().removeIf { excluded.contains(it.id) }
         }
         backupService.doExport(data)
         reloadBackupData()
