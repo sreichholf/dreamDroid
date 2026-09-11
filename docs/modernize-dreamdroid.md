@@ -127,6 +127,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | fix-hub-nested-teardown | [#287](https://github.com/sreichholf/dreamDroid/pull/287) | merged | Fix hub TV/Movies bottom bar stuck after leaving hub (remove nested leaf on NavHost route dispose). Keep OkHttp 3.14.9. |
 | widgets-2-6c-config | [#288](https://github.com/sreichholf/dreamDroid/pull/288) | merged | Phase 2.6c: Compose Virtual Remote widget config activity; keep RemoteViews grids. Keep OkHttp 3.14.9. |
 | retire-simple-fragment-activity | [#289](https://github.com/sreichholf/dreamDroid/pull/289) | merged | Drop orphan `SimpleFragmentActivity`; route SEARCH to `MainActivity` / PhoneNavHost EPG search. Keep OkHttp 3.14.9. |
+| assert-navhost-leaf-fallbacks | (this PR) | open | Drop dead bare leaf `showDetails` fallbacks; cold SEARCH mounts `PhoneNavHost` + `queueEpgSearch`. Keep OkHttp 3.14.9. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -206,6 +207,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Nested NavHost leaf teardown (hub bottom bar) **merged** [#287](https://github.com/sreichholf/dreamDroid/pull/287).
 - Phase 2.6c Compose widget config **merged** [#288](https://github.com/sreichholf/dreamDroid/pull/288).
 - Retire `SimpleFragmentActivity` **merged** [#289](https://github.com/sreichholf/dreamDroid/pull/289).
+- Assert NavHost leaf fallbacks **this PR** (drop bare `showDetails`; cold SEARCH mounts host).
 - Out of wave still: Phase 4–5 operator usertests. See Appendix H.
 
 ## How to read this

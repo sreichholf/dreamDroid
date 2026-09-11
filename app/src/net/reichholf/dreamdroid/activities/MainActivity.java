@@ -46,8 +46,8 @@ import net.reichholf.dreamdroid.activities.abs.BaseActivity;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.enigma.ProfileDetectLoadKt;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
-import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
+import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
 import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
 import net.reichholf.dreamdroid.fragment.ProfileListFragment;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
@@ -558,23 +558,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 * (non-Javadoc)
 	 *
 	 * @see
-	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(java
-	 * .lang.Class, java.lang.Class)
-	 */
-	@Override
-	public void showDetails(@NonNull Class<? extends Fragment> fragmentClass) {
-		try {
-			showDetails(fragmentClass.newInstance());
-		} catch (@NonNull InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
 	 * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
 	 * .support.v4.app.Fragment)
 	 */
@@ -827,16 +810,17 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 	 */
 	@Override
 	public boolean onQueryTextSubmit(String query) {
+		if (query == null || query.isEmpty()) {
+			return true;
+		}
 		Fragment detail = getCurrentDetailFragment();
 		if (detail instanceof PhoneNavHostFragment
 				&& ((PhoneNavHostFragment) detail).navigateToEpgSearch(query)) {
 			return true;
 		}
-		Bundle args = new Bundle();
-		args.putString(SearchManager.QUERY, query);
-		Fragment f = new EpgSearchFragment();
-		f.setArguments(args);
-		showDetails(f, true);
+		PhoneNavHostFragment host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.HUB);
+		host.queueEpgSearch(query);
+		showDetails(host);
 		return true;
 	}
 

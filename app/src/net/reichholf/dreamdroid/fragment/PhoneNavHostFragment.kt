@@ -77,6 +77,7 @@ class PhoneNavHostFragment : BaseFragment() {
     private var pendingProfileEdit: Profile? = null
     private var pendingTimerEdit: ExtendedHashMap? = null
     private var pendingTimerCreate: Boolean = false
+    private var pendingEpgSearchQuery: String? = null
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -353,6 +354,12 @@ class PhoneNavHostFragment : BaseFragment() {
         flushPendingNavigations()
     }
 
+    /** Queue EPG search until [attachNavController] (cold SEARCH / empty detail pane). */
+    fun queueEpgSearch(query: String) {
+        pendingEpgSearchQuery = query
+        flushPendingNavigations()
+    }
+
     private fun flushPendingNavigations() {
         if (navController == null) return
         if (pendingProfileEditRequested) {
@@ -367,6 +374,11 @@ class PhoneNavHostFragment : BaseFragment() {
             val create = pendingTimerCreate
             pendingTimerCreate = false
             navigateToTimerEdit(timer, create)
+        }
+        val searchQuery = pendingEpgSearchQuery
+        if (searchQuery != null) {
+            pendingEpgSearchQuery = null
+            navigateToEpgSearch(searchQuery)
         }
     }
 

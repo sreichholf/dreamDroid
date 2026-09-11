@@ -370,14 +370,7 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 			}
 			parent = parent.getParentFragment();
 		}
-		ServiceEpgListFragment f = new ServiceEpgListFragment();
-		ExtendedHashMap map = new ExtendedHashMap();
-		map.put(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE, ref);
-		map.put(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME, nam);
-		Bundle args = new Bundle();
-		args.putSerializable(sData, map);
-		f.setArguments(args);
-		getMultiPaneHandler().showDetails(f, true);
+		throw new IllegalStateException("Service EPG requires PhoneNavHostFragment");
 	}
 
 	public void showPopupMenu(int windowX, int windowY, @NonNull ServiceNowNext row) {

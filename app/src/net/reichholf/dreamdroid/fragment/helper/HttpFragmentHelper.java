@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.fragment.helper;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -23,12 +22,10 @@ import android.view.View;
 import android.widget.Toast;
 
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.enigma.EnigmaClient;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.enigma.SimpleResultLoadKt;
 import net.reichholf.dreamdroid.enigma.VolumePowerSleepLoadKt;
-import net.reichholf.dreamdroid.fragment.EpgSearchFragment;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
@@ -270,13 +267,7 @@ public class HttpFragmentHelper {
             }
             walker = walker.getParentFragment();
         }
-        EpgSearchFragment f = new EpgSearchFragment();
-        Bundle args = new Bundle();
-        args.putString(SearchManager.QUERY, query);
-        f.setArguments(args);
-
-        MultiPaneHandler m = (MultiPaneHandler) getAppCompatActivity();
-        m.showDetails(f, true);
+        throw new IllegalStateException("EPG search requires PhoneNavHostFragment");
     }
 
     /**

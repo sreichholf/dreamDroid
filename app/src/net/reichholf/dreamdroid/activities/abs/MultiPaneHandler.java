@@ -19,8 +19,6 @@ public interface MultiPaneHandler {
 
 	void showDetails(Fragment fragment, boolean addToBackStack);
 
-	void showDetails(Class<? extends Fragment> fragmentClass);
-
 	void onFragmentResume(Fragment fragment);
 
 	void onFragmentPause(Fragment fragment);

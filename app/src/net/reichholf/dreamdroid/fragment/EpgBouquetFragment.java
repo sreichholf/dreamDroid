@@ -323,18 +323,7 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 			}
 			parent = parent.getParentFragment();
 		}
-		PickServiceFragment f = new PickServiceFragment();
-		Bundle args = new Bundle();
-
-		ExtendedHashMap data = new ExtendedHashMap();
-		data.put(Service.KEY_REFERENCE, "default");
-
-		args.putSerializable(sData, data);
-		args.putString("action", Statics.INTENT_ACTION_PICK_BOUQUET);
-
-		f.setArguments(args);
-		f.setTargetFragment(this, Statics.REQUEST_PICK_BOUQUET);
-		((MultiPaneHandler) getAppCompatActivity()).showDetails(f, true);
+		throw new IllegalStateException("EPG bouquet pick requires PhoneNavHostFragment");
 	}
 
 	@NonNull

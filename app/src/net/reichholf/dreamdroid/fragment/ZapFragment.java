@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.enigma.Service;
 import net.reichholf.dreamdroid.enigma.ServiceListLoadKt;
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpRecyclerFragment;
@@ -278,17 +277,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 			}
 			parent = parent.getParentFragment();
 		}
-		PickServiceFragment f = new PickServiceFragment();
-		Bundle args = new Bundle();
-
-		ExtendedHashMap data = new ExtendedHashMap();
-		data.put(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE, "default");
-
-		args.putSerializable(sData, data);
-		args.putString("action", Statics.INTENT_ACTION_PICK_BOUQUET);
-
-		f.setArguments(args);
-		f.setTargetFragment(this, Statics.REQUEST_PICK_BOUQUET);
-		((MultiPaneHandler) getAppCompatActivity()).showDetails(f, true);
+		throw new IllegalStateException("Zap bouquet pick requires PhoneNavHostFragment");
 	}
 }
