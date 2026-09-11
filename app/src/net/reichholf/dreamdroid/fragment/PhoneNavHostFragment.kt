@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
-import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
 import android.content.DialogInterface
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
@@ -25,6 +24,7 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
@@ -390,7 +390,7 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
             data.put("profile", profile)
         }
         profileEditArgs = Bundle().apply {
-            putSerializable(BaseHttpFragment.sData, data)
+            putSerializable(NavExtras.DATA, data)
         }
         profileEditTag = if (profile != null) {
             "profile_edit:${profile.id}"
@@ -451,7 +451,7 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
         data.put("timer", timer)
         data.put("action", if (create) DreamDroid.ACTION_CREATE else Intent.ACTION_EDIT)
         timerEditArgs = Bundle().apply {
-            putSerializable(BaseHttpFragment.sData, data)
+            putSerializable(NavExtras.DATA, data)
         }
         val ref = timer.getString(Timer.KEY_REFERENCE).orEmpty()
         val begin = timer.getString(Timer.KEY_BEGIN).orEmpty()
