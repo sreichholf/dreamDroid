@@ -50,8 +50,8 @@ typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -
 
 private val EventStartColumnWidth = 45.dp
 private val EventEndColumnWidth = 50.dp
-/** Thinner than the VLC zap list's 4dp strip so the bar sits on the card's top border. */
-private val ProgressBarHeight = 2.dp
+/** Slightly taller than the VLC zap list's 4dp strip so the top-edge progress reads clearly. */
+private val ProgressBarHeight = 6.dp
 
 @Composable
 fun ServiceListScreen(
