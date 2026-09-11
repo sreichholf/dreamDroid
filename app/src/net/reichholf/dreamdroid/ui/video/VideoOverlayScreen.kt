@@ -268,7 +268,7 @@ fun VideoOverlayScreen(
 
 /**
  * IconButton that fires [onClick] on press-down, then repeats while held
- * (parity with [net.reichholf.dreamdroid.view.OnRepeatListener]: 500ms then every 300ms).
+ * (hold-to-repeat: 500ms then every 300ms).
  * Suppresses the IconButton release click so a hold does not seek one extra step.
  */
 @Composable
