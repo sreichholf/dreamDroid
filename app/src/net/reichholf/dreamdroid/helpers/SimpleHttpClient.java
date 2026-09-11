@@ -17,7 +17,6 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore;
-import net.reichholf.dreamdroid.util.Base64;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -205,7 +204,7 @@ public class SimpleHttpClient {
 	private void setAuth(@NonNull HttpURLConnection connection) {
 		if (mProfile.isLogin()) {
 			byte[] auth = (mProfile.getUser() + ":" + mProfile.getPass()).getBytes();
-			String basic = Base64.encode(auth);
+			String basic = android.util.Base64.encodeToString(auth, android.util.Base64.NO_WRAP);
 			connection.setRequestProperty("Authorization", "Basic " + basic);
 		}
 	}

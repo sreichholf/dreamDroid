@@ -47,7 +47,6 @@ public class Statics {
 	public static final int ITEM_SLEEPTIMER = 0x6020;
 	public static final int ITEM_PROFILES = R.id.menu_navigation_profiles;
 	public static final int ITEM_ADD_PROFILE = 0x6023;
-	public static final int ITEM_RELOAD = R.id.menu_reload;
 	public static final int ITEM_SAVE = R.id.menu_save;
 	public static final int ITEM_CANCEL = R.id.menu_cancel;
 	public static final int ITEM_PICK_SERVICE = 0x6027;
@@ -56,9 +55,7 @@ public class Statics {
 	public static final int ITEM_PICK_REPEATED = 0x6030;
 	public static final int ITEM_PICK_TAGS = 0x6031;
 	public static final int ITEM_SELECT_LOCATION = 0x6033;
-	public static final int ITEM_OVERVIEW = R.id.menu_overview;
 	public static final int ITEM_SET_DEFAULT = R.id.menu_default;
-    public static final int ITEM_SYNC_EPG = R.id.menu_sync_epg;
 	public static final int ITEM_TAGS = R.id.menu_tags;
 	public static final int ITEM_NEW_TIMER = 0x6032;
 	public static final int ITEM_CLEANUP = R.id.menu_cleanup;
