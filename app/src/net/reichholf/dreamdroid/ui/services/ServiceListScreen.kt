@@ -112,7 +112,7 @@ private fun ServiceRow(
         Column(Modifier.fillMaxWidth()) {
             if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
                 LinearProgressIndicator(
-                    progress = item.progress.toFloat() / item.progressMax.toFloat(),
+                    progress = { item.progress.toFloat() / item.progressMax.toFloat() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(ProgressBarHeight),
