@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.helpers
 
-import android.text.TextUtils
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 
@@ -26,11 +25,12 @@ class NameValuePair(key: String, value: String?) {
 
         @JvmStatic
         fun toString(pairs: List<NameValuePair>): String {
-            val params = ArrayList<String>()
+            if (pairs.isEmpty()) return ""
+            val params = ArrayList<String>(pairs.size)
             for (pair in pairs) {
                 params.add(toString(pair))
             }
-            return TextUtils.join("&", params)
+            return params.joinToString("&")
         }
     }
 }
