@@ -29,7 +29,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
-import net.reichholf.dreamdroid.ui.about.AboutComposeDialog
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.bindDrawerScreen
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
@@ -184,9 +183,16 @@ open class NavigationHelper(
                     "powerstate_dialog",
                 )
 
-            R.id.menu_navigation_about ->
-                getMainActivity().showDialogFragment(AboutComposeDialog.newInstance(), "about_dialog")
-
+            R.id.menu_navigation_about -> {
+                val aboutHost = getMainActivity().supportFragmentManager
+                    .findFragmentById(R.id.detail_view)
+                if (!(aboutHost is PhoneNavHostFragment && aboutHost.navigateToAbout())) {
+                    navigatePhoneNavRoot(PhoneNavRoutes.SETTINGS)
+                    val host = getMainActivity().supportFragmentManager
+                        .findFragmentById(R.id.detail_view)
+                    (host as? PhoneNavHostFragment)?.navigateToAbout()
+                }
+            }
             Statics.ITEM_CHECK_CONN ->
                 getMainActivity().onProfileChanged(DreamDroid.getCurrentProfile())
 

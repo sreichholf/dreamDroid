@@ -15,8 +15,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import net.reichholf.dreamdroid.ui.about.AboutDialog
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
@@ -144,7 +146,16 @@ fun PhoneNavHost(
         composable(PhoneNavRoutes.TIMER_SERVICE_PICK) {
             TimerServicePickDestination(hostFragment = hostFragment)
         }
+        dialog(PhoneNavRoutes.ABOUT) {
+            AboutDialog(onDismiss = { navController.popBackStack() })
+        }
     }
+}
+
+/** Push About as a Navigation `dialog` (back / dismiss pops it). */
+fun NavHostController.navigateToAbout() {
+    if (currentDestination?.route == PhoneNavRoutes.ABOUT) return
+    navigate(PhoneNavRoutes.ABOUT)
 }
 
 /** Drawer-style top-level navigate: single-top + save/restore under the start destination. */

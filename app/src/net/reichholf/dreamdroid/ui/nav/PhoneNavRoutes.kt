@@ -17,6 +17,9 @@ object PhoneNavRoutes {
     const val SETTINGS = "settings"
     const val HUB = "hub"
 
+    /** Phase 2.1g-ii-b: About as a Navigation Compose `dialog` destination. */
+    const val ABOUT = "about"
+
     /** Nested service EPG (typed string args). */
     const val SERVICE_EPG = "service_epg/{serviceRef}?serviceName={serviceName}"
 

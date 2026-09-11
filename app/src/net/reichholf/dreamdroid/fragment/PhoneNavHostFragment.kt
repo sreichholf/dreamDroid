@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerSettings
+import net.reichholf.dreamdroid.ui.nav.navigateToAbout
 import net.reichholf.dreamdroid.ui.nav.navigateToBackup
 import net.reichholf.dreamdroid.ui.nav.navigateToEpgSearch
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
@@ -261,6 +262,13 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
     fun navigateToBackup(): Boolean {
         val controller = navController ?: return false
         controller.navigateToBackup()
+        return true
+    }
+
+    /** Push About as a Navigation `dialog`. Back / dismiss pops it. */
+    fun navigateToAbout(): Boolean {
+        val controller = navController ?: return false
+        controller.navigateToAbout()
         return true
     }
 
