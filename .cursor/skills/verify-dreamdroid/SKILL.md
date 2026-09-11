@@ -11,7 +11,7 @@ dreamDroid is a phone/tablet Enigma2 remote (`net.reichholf.dreamdroid`). **Defa
 ./gradlew.bat :app:connectedGoogleDebugAndroidTest
 ```
 
-Use **JDK 17** (`JAVA_HOME`). AGP 8.2's `jlink` transform fails on JDK 21. Do not pass `-Pandroid.testInstrumentationRunnerArguments...` — that sets Gradle property `android` to a String and breaks `android.applicationVariants`. Filter a class with:
+Use **JDK 25** (`JAVA_HOME`). App `compileOptions` stay on Java 17; Gradle/AGP run on JDK 25. Do not pass `-Pandroid.testInstrumentationRunnerArguments...` — that sets Gradle property `android` to a String and breaks `android.applicationVariants`. Filter a class with:
 
 ```bash
 adb shell am instrument -w -e class net.reichholf.dreamdroid.ui.about.AboutScreenTest net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner
@@ -37,7 +37,7 @@ Read [features/README.md](features/README.md) before driving. Exercise the mappe
 
 ## Launch (optional look)
 
-1. `JAVA_HOME` at JDK 17. `gradle.properties` must not pass `-XX:MaxPermSize` or CMS flags.
+1. `JAVA_HOME` at JDK 25. `gradle.properties` must not pass `-XX:MaxPermSize` or CMS flags.
 2. Install if needed: `./gradlew.bat :app:installGoogleDebug`
 3. Disposable session: `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py launch --clear-data`
 

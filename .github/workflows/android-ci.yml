@@ -20,10 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v5
         with:
-          java-version: "17"
+          java-version: "25"
           distribution: temurin
 
       # ubuntu-latest already ships Android SDK + ANDROID_HOME. Do not use
@@ -48,7 +48,7 @@ jobs:
           # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
           # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
+          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;36.0.0"
           rm -rf "$SDK/.temp"
 
       - name: Setup Gradle
@@ -103,10 +103,10 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Set up JDK 17
+      - name: Set up JDK 25
         uses: actions/setup-java@v5
         with:
-          java-version: "17"
+          java-version: "25"
           distribution: temurin
 
       - name: Ensure Android SDK platforms
@@ -126,7 +126,7 @@ jobs:
           # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
           # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;34.0.0"
+          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "build-tools;36.0.0"
           rm -rf "$SDK/.temp"
 
       - name: Setup Gradle

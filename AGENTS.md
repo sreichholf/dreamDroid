@@ -1,6 +1,6 @@
 # dreamDroid agent notes
 
-Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Build with **JDK 17**.
+Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Build with **JDK 25**.
 
 **New code is Kotlin.** Do not add new `.java` types for modernization work (helpers, UI, loaders, widgets). Edit existing Java surgically when needed; convert to Kotlin when touching a file heavily or extracting a new type. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`.
 
@@ -18,7 +18,7 @@ Default proof for Compose and in-app UI:
 ./gradlew.bat :app:connectedGoogleDebugAndroidTest
 ```
 
-Use `JAVA_HOME` pointing at JDK 17. Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). If the UI is Compose inside an XML dialog or `ComposeView`, the test must host it that way — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
+Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). If the UI is Compose inside an XML dialog or `ComposeView`, the test must host it that way — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 
@@ -28,7 +28,7 @@ CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `:app:testGo
 
 ## Cloud Agent environment
 
-Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 17 + the Android SDK (build-tools 34, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
+Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 25 + the Android SDK (build-tools 36, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
 
 Nested KVM guest execution hangs on Cursor Cloud VMs: `/dev/kvm` exists and `kvm-ok` passes, but under `-enable-kvm` the guest vCPU never runs (0% CPU, no kernel output). The emulator therefore runs under software (`-accel off`, TCG). It works but is slow. Set `DREAMDROID_EMU_ACCEL=auto` to try KVM on a host that supports nested virt.
 
@@ -42,5 +42,5 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 ## Other traps
 
 - `main` is the rewrite. Do not merge rewrite work into `master`.
-- AGP 8.2 `jlink` fails on JDK 21.
+- Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.

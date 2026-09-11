@@ -4,11 +4,11 @@ Phone users get a Compose Material 3 remote. TV stays Leanback until a later pro
 
 Rewrite trunk is **`main`**. `master` is last 1.15 stable. Do not merge `master` or branches cut from `master` into `main`.
 
-Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap loops. See [`AGENTS.md`](../AGENTS.md). AVD `dreamdroid-verify`. JDK 17. Debug package `net.reichholf.dreamdroid.debug`.
+Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap loops. See [`AGENTS.md`](../AGENTS.md). AVD `dreamdroid-verify`. JDK 25. Debug package `net.reichholf.dreamdroid.debug`.
 
 **Language:** new types are **Kotlin** (not Java). Prefer coroutines. Existing Java may stay until edited; heavy edits / extracted helpers go Kotlin. See [`AGENTS.md`](../AGENTS.md).
 
-GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/android-ci.yml) runs on PRs/`main` — unit tests + assemble + androidTest compile (JDK 17), plus instrumented Compose tests on an API 30 emulator (`-Pci` disables ABI splits for a single installable APK).
+GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/android-ci.yml) runs on PRs/`main` — unit tests + assemble + androidTest compile (JDK 25), plus instrumented Compose tests on an API 30 emulator (`-Pci` disables ABI splits for a single installable APK).
 
 ## Status as of 2026-09-09
 
@@ -144,7 +144,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Theme follows `DreamDroid.getThemeType()`. Default `"1"` is always night. Do not reopen `colorSchemeFromViewTheme`. Version/license `Text` uses `onSurface`. Dialog-hosted Compose must be tested in a dialog/`ComposeView`, not only `setContent { }`.
 - `captureToImage` on this AVD returns black pixels even for light content. Do not use pixel-luminance tests.
 - Java calling Kotlin `(T) -> Unit` must `return kotlin.Unit.INSTANCE`. `DisposeOnViewTreeLifecycleDestroyed` is set from Kotlin, not Java.
-- Two googleDebug processes cannot share one device. AGP 8.2 `jlink` fails on JDK 21.
+- Two googleDebug processes cannot share one device. Gradle 9.6 / AGP 9.4 on JDK 25 (bytecode Java 17).
 
 ### Not done, recorded so it is not pretended done
 
@@ -236,7 +236,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 ### PR mechanics, for every PR
 
 - [x] PRs opened ready, never draft, `--base main`.
-- [x] JDK 17 assemble / connected tests before push where UI changed.
+- [x] JDK 25 assemble / connected tests before push where UI changed.
 - [x] Cursor git wrapper injects `--trailer`; Git 2.23 rejects it. Commit via Python calling `git.exe` with `-F`.
 
 ## Raise the device floor (pr-floor)

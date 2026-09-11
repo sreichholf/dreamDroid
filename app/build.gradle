@@ -6,17 +6,15 @@ buildscript {
         }
         google()
     }
+    ext.kotlin_version = rootProject.ext.kotlin_version
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.0'
+        classpath 'com.android.tools.build:gradle:9.4.0'
+        classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
     }
-    ext.kotlin_version = '1.9.24'
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-
 }
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
+// AGP 9: Kotlin is built-in. Compose needs the Compose compiler Gradle plugin.
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 
 repositories {
     google()
@@ -75,12 +73,6 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
-configurations.configureEach { cfg ->
-    if (cfg.name.startsWith("kotlinCompilerPluginClasspath") && !cfg.name.contains("Native")) {
-        project.dependencies.add(cfg.name, "androidx.compose.compiler:compiler:1.5.14")
-    }
-}
-
 android {
     namespace = "net.reichholf.dreamdroid"
     compileSdk Integer.parseInt(project.COMPILE_SDK_VERSION)
@@ -101,14 +93,22 @@ android {
                     exclude 'test/**'
                     exclude 'androidTest/**'
                 }
+                // AGP 9 built-in Kotlin does not compile .kt from java srcDirs.
+                kotlin {
+                    srcDirs = ['src']
+                    exclude 'test/**'
+                    exclude 'androidTest/**'
+                }
                 res.srcDirs = ['res']
             }
             test {
                 java.srcDirs = ['src/test/java']
+                kotlin.srcDirs = ['src/test/java']
                 resources.srcDirs = ['src/test/resources']
             }
             androidTest {
                 java.srcDirs = ['androidTest/java']
+                kotlin.srcDirs = ['androidTest/java']
                 res.srcDirs = ['androidTest/res']
             }
         }
@@ -138,15 +138,7 @@ android {
         }
     }
 
-    project.ext.versionCodes = ['armeabi': 1, 'armeabi-v7a': 2, 'arm64-v8a': 3, 'mips': 5, 'mips64': 6, 'x86': 8, 'x86_64': 9]
-
-    android.applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            output.versionCodeOverride =
-                    project.ext.versionCodes.get(output.getFilter(
-                            com.android.build.OutputFile.ABI), 99) * 10000000 + android.defaultConfig.versionCode
-        }
-    }
+    // ABI versionCode overrides moved to androidComponents (AGP 9 removed applicationVariants).
 
     buildTypes {
         debug {
@@ -170,17 +162,28 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     lint {
         abortOnError false
     }
     buildFeatures {
         buildConfig true
         compose true
+        // AGP 9 defaults resValues to false; debug/release use resValue.
+        resValues true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.14'
+}
+
+// ABI versionCode overrides via the AGP 9 Variant API.
+ext.abiVersionCodes = ['armeabi': 1, 'armeabi-v7a': 2, 'arm64-v8a': 3, 'mips': 5, 'mips64': 6, 'x86': 8, 'x86_64': 9]
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.outputs.forEach { output ->
+            def abiFilter = output.filters.find {
+                it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI
+            }
+            def abiCode = project.ext.abiVersionCodes.get(abiFilter?.identifier, 99)
+            def base = output.versionCode.orNull ?: android.defaultConfig.versionCode
+            output.versionCode.set(abiCode * 10000000 + base)
+        }
     }
 }
