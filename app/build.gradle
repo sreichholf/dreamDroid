@@ -5,16 +5,20 @@ buildscript {
             dirs 'libs'
         }
         google()
+        gradlePluginPortal()
     }
     ext.kotlin_version = rootProject.ext.kotlin_version
     dependencies {
         classpath 'com.android.tools.build:gradle:9.4.0'
         classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
+        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.2.10-2.0.2"
     }
 }
 apply plugin: 'com.android.application'
 // AGP 9: Kotlin is built-in. Compose needs the Compose compiler Gradle plugin.
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+// Room needs KSP for Kotlin @Database / @Entity (Java annotationProcessor is not enough).
+apply plugin: 'com.google.devtools.ksp'
 
 repositories {
     google()
@@ -25,7 +29,7 @@ repositories {
 dependencies {
     def room_version = "2.5.0"
     implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
 
     //noinspection KtxExtensionAvailable
     implementation 'androidx.preference:preference:1.2.0'
@@ -33,6 +37,9 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.leanback:leanback:1.0.0'
     implementation 'androidx.leanback:leanback-preference:1.0.0'
+    // Phase 3.1c-iv-b: Compose for TV (hub beachhead; Leanback remains default hub).
+    implementation 'androidx.tv:tv-foundation:1.0.0-alpha11'
+    implementation 'androidx.tv:tv-material:1.0.0'
     implementation 'androidx.annotation:annotation:1.5.0'
     //noinspection KtxExtensionAvailable
     implementation 'androidx.fragment:fragment:1.5.5'

@@ -11,6 +11,7 @@ import com.squareup.picasso.Picasso;
 
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager;
+import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -60,7 +61,12 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.tv_main);
+		// Phase 3.1c-iv-b: debug-only Compose hub stub; default Leanback until iv-c+.
+		if (TvComposeHubHost.useComposeHub(this)) {
+			TvComposeHubHost.install(this);
+		} else {
+			setContentView(R.layout.tv_main);
+		}
 		try {
 			// register DreamDroidTrustManager for HTTPS
 			mTrustManager = new DreamDroidTrustManager(this);
