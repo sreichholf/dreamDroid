@@ -67,13 +67,27 @@ jobs:
       # .temp path; dependency/build caches already make the real work ~30s.
       # -Pci disables ABI splits (one APK). androidTest compile catches broken
       # Compose tests without an emulator.
-      - name: Unit tests + assemble + compile androidTest
+      - name: Unit tests + compile androidTest
         run: >
           ./gradlew -Pci --no-configuration-cache
           :app:testGoogleDebugUnitTest
-          :app:assembleGoogleDebug
           :app:compileGoogleDebugAndroidTestKotlin
           :app:compileGoogleDebugAndroidTestJavaWithJavac
+
+      # Separate assemble so the artifact zip is arm64-only (~57MB), not the
+      # -Pci fat APK (~197MB). -Parm64Apk enables a single ABI split.
+      - name: Assemble googleDebug arm64 APK
+        run: >
+          ./gradlew --no-configuration-cache -Parm64Apk
+          :app:assembleGoogleDebug
+
+      - name: Upload googleDebug arm64 APK
+        uses: actions/upload-artifact@v6
+        with:
+          name: dreamdroid-google-debug-apk
+          path: app/build/outputs/apk/google/debug/app-google-arm64-v8a-debug.apk
+          if-no-files-found: error
+          retention-days: 2
 
       - name: Upload unit test reports
         if: always()

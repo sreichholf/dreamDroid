@@ -149,11 +149,17 @@ android {
     }
     splits {
         abi {
-            // CI passes -Pci (unit + androidTest jobs) so we build one APK.
-            enable !project.hasProperty("ci")
+            // -Pci: one fat APK (unit/androidTest jobs).
+            // -Parm64Apk: ABI-split arm64-only (CI artifact upload).
+            enable project.hasProperty("arm64Apk") || !project.hasProperty("ci")
             reset()
-            include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-            universalApk true
+            if (project.hasProperty("arm64Apk")) {
+                include 'arm64-v8a'
+                universalApk false
+            } else {
+                include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+                universalApk true
+            }
         }
     }
 
