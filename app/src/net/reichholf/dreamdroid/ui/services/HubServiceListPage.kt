@@ -6,6 +6,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,6 +58,7 @@ import net.reichholf.dreamdroid.widget.AnchorPopup
  * Phase 2.7h: one TV/Radio hub bouquet page as Compose (parity with former ServiceListPageFragment).
  * Host must keep this in composition only while the page is the active hub child so
  * [PhoneNavHostFragment.composeDialogActionListener] and the options menu stay scoped.
+ * System back pops one directory drill-down level before leaving the hub.
  */
 @Composable
 fun HubServiceListPage(
@@ -79,6 +82,7 @@ fun HubServiceListPage(
     val history = remember(bouquetRef) {
         mutableListOf<Pair<String, String>>()
     }
+    var historyDepth by remember(bouquetRef) { mutableIntStateOf(0) }
 
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.hostFragment = hostFragment
@@ -101,8 +105,13 @@ fun HubServiceListPage(
     session.onLoadJob = { loadJob = it }
     session.onZapJob = { zapJob = it }
     session.history = history
+    session.onHistoryDepth = { historyDepth = it }
     session.rootRef = bouquetRef
     session.rootName = bouquetName
+
+    BackHandler(enabled = historyDepth > 0) {
+        session.navigateUp()
+    }
 
     DisposableEffect(hostFragment, session, dialogSession) {
         hostFragment.composeDialogActionListener = dialogSession
@@ -124,6 +133,7 @@ fun HubServiceListPage(
 
     LaunchedEffect(bouquetRef, bouquetName) {
         history.clear()
+        historyDepth = 0
         currentRef = bouquetRef
         currentName = bouquetName
     }
@@ -179,6 +189,7 @@ private class HubServiceListSession : MenuProvider {
     var scope: kotlinx.coroutines.CoroutineScope? = null
     var dialogSession: EpgEventDialogSession? = null
     var history: MutableList<Pair<String, String>>? = null
+    var onHistoryDepth: ((Int) -> Unit)? = null
     var onCurrentRef: ((String) -> Unit)? = null
     var onCurrentName: ((String) -> Unit)? = null
     var onEmptyMessage: ((String?) -> Unit)? = null
@@ -255,7 +266,9 @@ private class HubServiceListSession : MenuProvider {
             return
         }
         if (Service.isDirectory(ref)) {
-            history?.add(currentRef to currentName)
+            val h = history ?: return
+            h.add(currentRef to currentName)
+            onHistoryDepth?.invoke(h.size)
             currentRef = ref
             currentName = name
             onCurrentRef?.invoke(ref)
@@ -343,9 +356,25 @@ private class HubServiceListSession : MenuProvider {
         }
     }
 
+    /** Pop one directory level; returns false when already at the hub bouquet. */
+    fun navigateUp(): Boolean {
+        val h = history ?: return false
+        if (h.isEmpty()) {
+            return false
+        }
+        val (ref, name) = h.removeAt(h.lastIndex)
+        onHistoryDepth?.invoke(h.size)
+        currentRef = ref
+        currentName = name
+        onCurrentRef?.invoke(ref)
+        onCurrentName?.invoke(name)
+        return true
+    }
+
     /** Reset drill-down history to the hub bouquet and reload (parity with Fragment.upOrReload). */
     fun upOrReload() {
         history?.clear()
+        onHistoryDepth?.invoke(0)
         currentRef = rootRef
         currentName = rootName
         onCurrentRef?.invoke(rootRef)

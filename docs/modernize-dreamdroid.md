@@ -141,7 +141,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | settings-profiles-compose-dest | [#311](https://github.com/sreichholf/dreamDroid/pull/311) | merged | Phase 2.7e: Settings + Profiles + Profile edit Kotlin Compose destinations; delete `MyPreferenceFragment` / `ProfileListFragment` / `ProfileEditFragment`. |
 | epg-cluster-compose-dest | [#312](https://github.com/sreichholf/dreamDroid/pull/312) | merged | Phase 2.7f: EPG bouquet + Service EPG + EPG search + Pick service Kotlin Compose destinations. |
 | timer-edit-compose-dest | [#313](https://github.com/sreichholf/dreamDroid/pull/313) | merged | Phase 2.7g: Timer edit + Timer service pick Kotlin Compose destinations. |
-| hub-compose-dest | — | open | Phase 2.7h: Hub Kotlin Compose destination (`HubDestination` + page composables); delete `ServiceListPager` / page Fragments / `service_list_pager.xml`. |
+| hub-compose-dest | [#314](https://github.com/sreichholf/dreamDroid/pull/314) | open | Phase 2.7h: Hub Kotlin Compose destination (`HubDestination` + page composables); delete `ServiceListPager` / page Fragments / `service_list_pager.xml`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
