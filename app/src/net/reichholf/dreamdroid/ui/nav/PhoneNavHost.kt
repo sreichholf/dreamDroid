@@ -22,7 +22,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
@@ -33,10 +32,10 @@ import net.reichholf.dreamdroid.ui.pick.PickServiceDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.ServiceListPager
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
 import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
+import net.reichholf.dreamdroid.ui.services.HubDestination
 import net.reichholf.dreamdroid.ui.settings.SettingsDestination
 import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
@@ -98,12 +97,7 @@ fun PhoneNavHost(
             SettingsDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.HUB) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_hub_slot,
-                routeTag = PhoneNavRoutes.HUB,
-                createFragment = { ServiceListPager() },
-            )
+            HubDestination(hostFragment = hostFragment)
         }
         composable(
             route = PhoneNavRoutes.SERVICE_EPG,
@@ -169,8 +163,8 @@ private fun NestedFragmentDestination(
 ) {
     // Tear down the child Fragment when this route leaves composition. Without
     // this, AndroidView drops the FragmentContainerView but leaves the leaf
-    // RESUMED under PhoneNavHostFragment — ServiceListPager's activity-scoped
-    // TV/Movies bottom bar then stays visible and blocks drawer Settings.
+    // RESUMED under PhoneNavHostFragment. Kept for Phase 2.7i chassis cleanup
+    // if any nested Fragment route remains.
     DisposableEffect(hostFragment, containerId, routeTag) {
         onDispose {
             removeNestedFragment(hostFragment, containerId, routeTag)
@@ -235,7 +229,7 @@ private fun commitNestedFragment(
 
 /**
  * Remove a nested leaf when its Compose route leaves composition so
- * [Fragment.onDestroyView] runs (e.g. hub clears [R.id.tv_movies_nav]).
+ * [Fragment.onDestroyView] runs (retained for Phase 2.7i).
  */
 internal fun removeNestedFragment(
     hostFragment: Fragment,

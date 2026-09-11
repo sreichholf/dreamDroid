@@ -16,9 +16,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Nested NavHost leaves must be removed when their Compose route leaves composition;
- * otherwise [net.reichholf.dreamdroid.fragment.ServiceListPager] keeps the activity
- * TV/Movies bottom bar visible and drawer Settings appears broken.
+ * Nested NavHost leaves must be removed when their Compose route leaves composition
+ * (helper retained for Phase 2.7i chassis cleanup).
  */
 @RunWith(AndroidJUnit4::class)
 class NestedFragmentTeardownTest {
@@ -29,7 +28,7 @@ class NestedFragmentTeardownTest {
             savedInstanceState: Bundle?,
         ): View {
             return FragmentContainerView(requireContext()).apply {
-                id = R.id.phone_nav_hub_slot
+                id = R.id.detail_title_prio
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -46,11 +45,11 @@ class NestedFragmentTeardownTest {
                 activity.supportFragmentManager.beginTransaction()
                     .replace(android.R.id.content, host, "host")
                     .commitNow()
-                ensureNestedFragment(host, R.id.phone_nav_hub_slot, PhoneNavRoutes.HUB) {
+                ensureNestedFragment(host, R.id.detail_title_prio, PhoneNavRoutes.HUB) {
                     Fragment()
                 }
                 assertNotNull(host.childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB))
-                removeNestedFragment(host, R.id.phone_nav_hub_slot, PhoneNavRoutes.HUB)
+                removeNestedFragment(host, R.id.detail_title_prio, PhoneNavRoutes.HUB)
                 assertNull(host.childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB))
             }
         }
