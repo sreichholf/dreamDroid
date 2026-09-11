@@ -143,7 +143,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | timer-edit-compose-dest | [#313](https://github.com/sreichholf/dreamDroid/pull/313) | merged | Phase 2.7g: Timer edit + Timer service pick Kotlin Compose destinations. |
 | hub-compose-dest | [#314](https://github.com/sreichholf/dreamDroid/pull/314) | merged | Phase 2.7h: Hub Kotlin Compose destination (`HubDestination` + page composables); delete `ServiceListPager` / page Fragments / `service_list_pager.xml`. |
 | chassis-cleanup-2-7i | [#315](https://github.com/sreichholf/dreamDroid/pull/315) | merged | Phase 2.7i: Drop unused `NestedFragmentDestination` / phone `BaseHttp*` / recycler bases / `HttpFragmentHelper` / `IHttpBase`; `NavExtras.DATA` for Bundle `"data"`; TV `LOADER_DEFAULT_ID = 0`. |
-| near-zero-java-dead-weight | — | open | Near-zero Java beachhead: delete post-Compose orphan adapters/helpers/layouts + unused list `*RequestHandler` / `E2*List` SAX / `E2ListHandler`; keep dialogs, VideoOverlay, Leanback, widgets RemoteViews, HttpURLConnection Enigma2. |
+| near-zero-java-dead-weight | [#316](https://github.com/sreichholf/dreamDroid/pull/316) | open | Near-zero Java beachhead: delete post-Compose orphan adapters/helpers/layouts + unused list `*RequestHandler` / `E2*List` SAX / `E2ListHandler`; keep dialogs, VideoOverlay, Leanback, widgets RemoteViews, HttpURLConnection Enigma2. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
