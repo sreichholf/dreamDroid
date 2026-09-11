@@ -1,50 +1,50 @@
 #!/usr/bin/env bash
 # Cloud Agent install phase for dreamDroid.
-# Idempotent: installs JDK 17, the Android SDK, an emulator AVD, and warms the
+# Idempotent: installs JDK 25, the Android SDK, an emulator AVD, and warms the
 # Gradle build. Safe to re-run. Heavy stable state that a build snapshot keeps.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
-JAVA_HOME_17="/usr/lib/jvm/java-17-openjdk-amd64"
+JAVA_HOME_25="/usr/lib/jvm/java-25-openjdk-amd64"
 CMDLINE_TOOLS_VERSION="11076708"
 AVD_NAME="dreamdroid-verify"
 SYSTEM_IMAGE="system-images;android-34;google_apis;x86_64"
 SDK_PACKAGES=(
   "platform-tools"
   "platforms;android-34"
-  "build-tools;34.0.0"
+  "build-tools;36.0.0"
   "emulator"
   "$SYSTEM_IMAGE"
 )
 ENV_FILE="$HOME/.cursor/dreamdroid/env.sh"
 
-echo "== install: system packages (JDK 17, KVM, tools) =="
+echo "== install: system packages (JDK 25, KVM, tools) =="
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-  openjdk-17-jdk qemu-kvm unzip curl
+  openjdk-25-jdk qemu-kvm unzip curl
 
-# AGP 8.2's jlink transform fails on JDK 21, so pin the JVM to 17 and fail if
-# that JDK is missing. Also write env.sh so later shells (start/tests) inherit it.
-if [ ! -x "$JAVA_HOME_17/bin/java" ]; then
-  echo "install: JDK 17 missing at $JAVA_HOME_17" >&2
+# Pin the Gradle JVM to JDK 25 (AGP 9.4 + Gradle 9.6). Fail if missing.
+# Also write env.sh so later shells (start/tests) inherit it.
+if [ ! -x "$JAVA_HOME_25/bin/java" ]; then
+  echo "install: JDK 25 missing at $JAVA_HOME_25" >&2
   exit 1
 fi
-sudo update-java-alternatives -s java-1.17.0-openjdk-amd64 >/dev/null 2>&1 || \
-  echo "install: update-java-alternatives failed; relying on JAVA_HOME=$JAVA_HOME_17" >&2
-export JAVA_HOME="$JAVA_HOME_17"
+sudo update-java-alternatives -s java-1.25.0-openjdk-amd64 >/dev/null 2>&1 || \
+  echo "install: update-java-alternatives failed; relying on JAVA_HOME=$JAVA_HOME_25" >&2
+export JAVA_HOME="$JAVA_HOME_25"
 export PATH="$JAVA_HOME/bin:$PATH"
 mkdir -p "$(dirname "$ENV_FILE")"
 cat > "$ENV_FILE" <<EOF
-export JAVA_HOME="$JAVA_HOME_17"
+export JAVA_HOME="$JAVA_HOME_25"
 export PATH="\$JAVA_HOME/bin:\$PATH"
 export ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT"
 export ANDROID_HOME="$ANDROID_SDK_ROOT"
 EOF
 echo "JAVA_HOME=$JAVA_HOME"
 java -version
-java -version 2>&1 | grep -q 'version "17\.' || {
-  echo "install: expected JDK 17 on PATH, got:" >&2
+java -version 2>&1 | grep -q 'version "25\.' || {
+  echo "install: expected JDK 25 on PATH, got:" >&2
   java -version >&2
   exit 1
 }

@@ -12,7 +12,7 @@ if [ -f "$ENV_FILE" ]; then
   # shellcheck source=/dev/null
   source "$ENV_FILE"
 fi
-export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
+export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-25-openjdk-amd64}"
 export PATH="$JAVA_HOME/bin:$PATH"
 export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
 export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"

@@ -3,10 +3,12 @@ buildscript {
         mavenCentral()
         google()
     }
-    ext.kotlin_version = '1.9.24'
+    // AGP 9 ships built-in Kotlin (KGP >= 2.2.10). Compose compiler plugin
+    // version must match that KGP line.
+    ext.kotlin_version = '2.2.10'
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:9.4.0'
+        classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
     }
 }
 allprojects {
