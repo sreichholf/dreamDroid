@@ -405,7 +405,7 @@ class HubMovieListSession :
                     activity.startActivity(
                         IntentFactory.getStreamFileIntent(
                             activity,
-                            movie?.getString(MovieKeys.KEY_REFERENCE),
+                            movie?.getString(MovieKeys.KEY_REFERENCE).orEmpty(),
                             movie?.getString(MovieKeys.KEY_FILE_NAME),
                             movie?.getString(MovieKeys.KEY_TITLE),
                             movie,
