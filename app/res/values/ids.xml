@@ -13,14 +13,11 @@
     <item name="menu_navigation_changelog" type="id"/>
     <item name="menu_cancel" type="id"/>
     <item name="menu_check_connectivity" type="id"/>
-    <item name="phone_nav_profiles_slot" type="id"/>
     <item name="phone_nav_epg_slot" type="id"/>
-    <item name="phone_nav_settings_slot" type="id"/>
     <item name="phone_nav_hub_slot" type="id"/>
     <item name="phone_nav_service_epg_slot" type="id"/>
     <item name="phone_nav_epg_search_slot" type="id"/>
     <item name="phone_nav_pick_service_slot" type="id"/>
-    <item name="phone_nav_profile_edit_slot" type="id"/>
     <item name="phone_nav_timer_edit_slot" type="id"/>
     <item name="phone_nav_timer_service_pick_slot" type="id"/>
 

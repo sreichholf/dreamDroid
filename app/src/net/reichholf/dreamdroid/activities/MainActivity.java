@@ -48,8 +48,9 @@ import net.reichholf.dreamdroid.enigma.ProfileDetectLoadKt;
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
-import net.reichholf.dreamdroid.fragment.ProfileEditFragment;
-import net.reichholf.dreamdroid.fragment.ProfileListFragment;
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
+import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
+import net.reichholf.dreamdroid.ui.profiles.ProfilesNavigation;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ChangelogDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog;
@@ -722,10 +723,11 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 			if (action != ConnectionErrorDialog.ACTION_EDIT_PROFILE)
 				return;
 
-			if (mDetailFragment != null && ProfileEditFragment.class.equals(mDetailFragment.getClass()))
+			if (mDetailFragment instanceof PhoneNavHostFragment
+					&& PhoneNavRoutes.PROFILE_EDIT.equals(((PhoneNavHostFragment) mDetailFragment).currentRoute()))
 				return;
 
-			ProfileListFragment.openProfileEditActivity(this, DreamDroid.getCurrentProfile());
+			ProfilesNavigation.openProfileEdit(this, DreamDroid.getCurrentProfile());
 			return;
 		}
 

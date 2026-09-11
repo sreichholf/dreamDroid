@@ -8,6 +8,9 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -31,17 +34,17 @@ import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment
-import net.reichholf.dreamdroid.fragment.MyPreferenceFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.PickServiceFragment
-import net.reichholf.dreamdroid.fragment.ProfileEditFragment
 import net.reichholf.dreamdroid.fragment.TimerEditFragment
 import net.reichholf.dreamdroid.fragment.TimerServicePickFragment
-import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
 import net.reichholf.dreamdroid.fragment.ServiceListPager
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
+import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
 import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
+import net.reichholf.dreamdroid.ui.settings.SettingsDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
@@ -86,12 +89,7 @@ fun PhoneNavHost(
             BackupDestination()
         }
         composable(PhoneNavRoutes.PROFILES) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_profiles_slot,
-                routeTag = PhoneNavRoutes.PROFILES,
-                createFragment = { ProfileListFragment() },
-            )
+            ProfilesDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.EPG) {
             NestedFragmentDestination(
@@ -109,12 +107,7 @@ fun PhoneNavHost(
             VirtualRemoteDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.SETTINGS) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_settings_slot,
-                routeTag = PhoneNavRoutes.SETTINGS,
-                createFragment = { MyPreferenceFragment() },
-            )
+            SettingsDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.HUB) {
             NestedFragmentDestination(
@@ -188,16 +181,10 @@ fun PhoneNavHost(
             )
         }
         composable(PhoneNavRoutes.PROFILE_EDIT) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_profile_edit_slot,
-                routeTag = hostFragment.profileEditRouteTag(),
-                createFragment = {
-                    ProfileEditFragment().apply {
-                        arguments = hostFragment.profileEditLeafArguments()
-                    }
-                },
-            )
+            val remount by hostFragment.profileEditRemountFlow().collectAsState()
+            key(hostFragment.profileEditRouteTag(), remount) {
+                ProfileEditDestination(hostFragment = hostFragment)
+            }
         }
         composable(PhoneNavRoutes.TIMER_EDIT) {
             NestedFragmentDestination(
