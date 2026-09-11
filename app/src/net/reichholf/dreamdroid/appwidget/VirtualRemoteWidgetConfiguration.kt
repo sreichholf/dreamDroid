@@ -37,7 +37,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
             AppWidgetManager.INVALID_APPWIDGET_ID,
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
-        val profiles = AppDatabase.profiles(this).profiles
+        val profiles = AppDatabase.profiles(this).getProfiles()
         if (profiles.isEmpty()) {
             Toast.makeText(this, R.string.no_profile_available, Toast.LENGTH_LONG).show()
             finish()
@@ -46,9 +46,9 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
 
         val items = profiles.map { profile ->
             ProfileListItem(
-                id = profile.id,
-                name = profile.name,
-                host = profile.host,
+                id = profile.id ?: 0,
+                name = profile.name.orEmpty(),
+                host = profile.host.orEmpty(),
                 active = false,
             )
         }

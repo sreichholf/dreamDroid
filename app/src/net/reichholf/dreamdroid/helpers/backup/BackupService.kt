@@ -26,7 +26,7 @@ class BackupService(context: Context) {
                 GenericSetting(key, value!!.toString(), value.javaClass.simpleName),
             )
         }
-        for (profile in mProfiles.profiles) {
+        for (profile in mProfiles.getProfiles()) {
             export.addProfile(profile)
         }
         return export
@@ -69,7 +69,7 @@ class BackupService(context: Context) {
 
         val profiles = backupData.getProfiles()
         for (profile in profiles) {
-            val existingProfile = getProfileFromDB(profile.name)
+            val existingProfile = getProfileFromDB(profile.name ?: "")
             if (existingProfile != null) {
                 mProfiles.deleteProfile(existingProfile)
             }
@@ -87,7 +87,7 @@ class BackupService(context: Context) {
     }
 
     private fun getProfileFromDB(profileName: String): Profile? {
-        for (profile in mProfiles.profiles) {
+        for (profile in mProfiles.getProfiles()) {
             if (profile.name == profileName) {
                 return profile
             }

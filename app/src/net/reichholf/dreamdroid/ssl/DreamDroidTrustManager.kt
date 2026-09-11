@@ -36,7 +36,7 @@ class DreamDroidTrustManager(ctx: Context?) : HostnameVerifier, X509TrustManager
     }
 
     fun trustAllCertificates(): Boolean =
-        DreamDroid.getCurrentProfile().isAllCertsTrusted
+        DreamDroid.getCurrentProfile().isAllCertsTrusted()
 
     override fun verify(hostname: String?, session: SSLSession?): Boolean {
         if (trustAllCertificates()) return true

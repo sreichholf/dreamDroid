@@ -38,29 +38,29 @@ class ProfileEditState {
     fun loadFrom(profile: Profile) {
         name = profile.name.orEmpty()
         host = profile.host.orEmpty()
-        streamHost = profile.streamHostValue.orEmpty()
-        ssl = profile.isSsl
-        trustAllCerts = profile.isAllCertsTrusted
-        port = profile.portString
-        streamPort = profile.streamPortString
-        filePort = profile.filePortString
-        login = profile.isLogin
-        streamLogin = profile.isStreamLogin
+        streamHost = profile.getStreamHostValue().orEmpty()
+        ssl = profile.isSsl()
+        trustAllCerts = profile.isAllCertsTrusted()
+        port = profile.getPortString()
+        streamPort = profile.getStreamPortString()
+        filePort = profile.getFilePortString()
+        login = profile.isLogin()
+        streamLogin = profile.isStreamLogin()
         user = profile.user.orEmpty()
         pass = profile.pass.orEmpty()
-        fileLogin = profile.isFileLogin
-        fileSsl = profile.isFileSsl
-        simpleRemote = profile.isSimpleRemote
+        fileLogin = profile.isFileLogin()
+        fileSsl = profile.isFileSsl()
+        simpleRemote = profile.isSimpleRemote()
         ssid = profile.ssid.orEmpty()
-        defaultOnNoWifi = profile.isDefaultProfileOnNoWifi
-        encoderStream = profile.isEncoderStream
+        defaultOnNoWifi = profile.isDefaultProfileOnNoWifi()
+        encoderStream = profile.isEncoderStream()
         encoderPath = profile.encoderPath.orEmpty()
-        encoderPort = profile.encoderPortString
-        encoderLogin = profile.isEncoderLogin
+        encoderPort = profile.getEncoderPortString()
+        encoderLogin = profile.isEncoderLogin()
         encoderUser = profile.encoderUser.orEmpty()
         encoderPass = profile.encoderPass.orEmpty()
-        encoderVideoBitrate = profile.encoderVideoBitrateString
-        encoderAudioBitrate = profile.encoderAudioBitrateString
+        encoderVideoBitrate = profile.getEncoderVideoBitrateString()
+        encoderAudioBitrate = profile.getEncoderAudioBitrateString()
     }
 
     fun applyTo(profile: Profile) {

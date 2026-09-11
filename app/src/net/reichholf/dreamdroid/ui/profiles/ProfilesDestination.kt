@@ -161,7 +161,7 @@ private class ProfilesSession :
         val activeProfileId = sp.getInt(DreamDroid.CURRENT_PROFILE, -1)
         val rows = profiles.map { m ->
             val isActive = activeProfileId > -1 && m.id != null && activeProfileId == m.id
-            ProfileListItem(m.id ?: 0, m.name, m.host, isActive)
+            ProfileListItem(m.id ?: 0, m.name.orEmpty(), m.host.orEmpty(), isActive)
         }
         state.replaceAll(rows)
     }
@@ -191,7 +191,7 @@ private class ProfilesSession :
 
     private fun activateProfile() {
         val act = activity ?: return
-        if (DreamDroid.setCurrentProfile(act, selected.id, true)) {
+        if (DreamDroid.setCurrentProfile(act, selected.id ?: -1, true)) {
             toast(act.getText(R.string.profile_activated).toString() + " '" + selected.name + "'")
         } else {
             toast(act.getText(R.string.profile_not_activated).toString() + " '" + selected.name + "'")
