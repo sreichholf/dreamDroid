@@ -24,8 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -34,7 +32,6 @@ import com.ekndev.gaugelibrary.HalfGauge
 import com.ekndev.gaugelibrary.Range
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Signal
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class SignalUiState {
     var enabled by mutableStateOf(true)
@@ -210,22 +207,5 @@ private fun range(color: String, from: Double, to: Double): Range {
         setColor(Color.parseColor(color))
         setFrom(from)
         setTo(to)
-    }
-}
-
-fun ComposeView.bindSignalScreen(
-    state: SignalUiState,
-    onEnabledChange: (Boolean) -> Unit,
-    onAcousticChange: (Boolean) -> Unit,
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            SignalScreen(
-                state = state,
-                onEnabledChange = onEnabledChange,
-                onAcousticChange = onAcousticChange,
-            )
-        }
     }
 }

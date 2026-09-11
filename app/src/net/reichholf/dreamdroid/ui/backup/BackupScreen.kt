@@ -18,14 +18,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 data class BackupProfileToggle(
     val id: Int,
@@ -158,22 +155,5 @@ private fun BackupSwitchRow(
             checked = checked,
             onCheckedChange = null,
         )
-    }
-}
-
-fun ComposeView.bindBackupScreen(
-    state: BackupUiState,
-    onImport: () -> Unit,
-    onExport: () -> Unit,
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            BackupScreen(
-                state = state,
-                onImport = onImport,
-                onExport = onExport,
-            )
-        }
     }
 }
