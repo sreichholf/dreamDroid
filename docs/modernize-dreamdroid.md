@@ -136,7 +136,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | device-info-compose-dest | [#306](https://github.com/sreichholf/dreamDroid/pull/306) | merged | Phase 2.7b: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` + `device_info.xml`. |
 | backup-signal-compose-dest | [#307](https://github.com/sreichholf/dreamDroid/pull/307) | merged | Phase 2.7c partial: Backup + Signal Kotlin Compose destinations; delete `BackupFragment` / `SignalFragment`. |
 | current-screenshot-compose-dest | [#309](https://github.com/sreichholf/dreamDroid/pull/309) | merged | Phase 2.7c finish: Current + Screenshot Kotlin Compose destinations; delete `CurrentServiceFragment` / `ScreenShotFragment`. |
-| zap-remote-compose-dest | | open | Phase 2.7d: Zap + Virtual Remote Kotlin Compose destinations; delete `ZapFragment` / `VirtualRemotePagerFragment` / `VirtualRemoteFragment`. |
+| zap-remote-compose-dest | [#310](https://github.com/sreichholf/dreamDroid/pull/310) | merged | Phase 2.7d: Zap + Virtual Remote Kotlin Compose destinations; delete `ZapFragment` / `VirtualRemotePagerFragment` / `VirtualRemoteFragment` / `ScreenShotFragment`. |
+| settings-profiles-compose-dest | | open | Phase 2.7e: Settings + Profiles + Profile edit Kotlin Compose destinations; delete `MyPreferenceFragment` / `ProfileListFragment` / `ProfileEditFragment`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 

@@ -11,16 +11,19 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavHostController
 import java.util.ArrayDeque
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.fragment.abs.BaseFragment
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
 import net.reichholf.dreamdroid.helpers.enigma2.Event
+import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
@@ -95,6 +98,13 @@ class PhoneNavHostFragment : BaseFragment() {
     private var pendingTimerEdit: ExtendedHashMap? = null
     private var pendingTimerCreate: Boolean = false
     private var pendingEpgSearchQuery: String? = null
+    private val profileEditRemountState = MutableStateFlow(0)
+
+    /** Bumps when profile edit args change while already on [PhoneNavRoutes.PROFILE_EDIT]. */
+    val profileEditRemountEpoch: Int
+        get() = profileEditRemountState.value
+
+    fun profileEditRemountFlow(): StateFlow<Int> = profileEditRemountState.asStateFlow()
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -173,16 +183,13 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.CURRENT -> null
             route == PhoneNavRoutes.SCREENSHOT -> null
             route == PhoneNavRoutes.ZAP -> null
-            route == PhoneNavRoutes.PROFILES ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_profiles_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PROFILES)
+            route == PhoneNavRoutes.REMOTE -> null
+            route == PhoneNavRoutes.SETTINGS -> null
+            route == PhoneNavRoutes.PROFILES -> null
+            route == PhoneNavRoutes.PROFILE_EDIT -> null
             route == PhoneNavRoutes.EPG ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
-            route == PhoneNavRoutes.REMOTE -> null
-            route == PhoneNavRoutes.SETTINGS ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_settings_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SETTINGS)
             route == PhoneNavRoutes.HUB ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_hub_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB)
@@ -195,9 +202,6 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.PICK_SERVICE ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_pick_service_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PICK_SERVICE)
-            route == PhoneNavRoutes.PROFILE_EDIT ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_profile_edit_slot)
-                    ?: childFragmentManager.findFragmentByTag(profileEditTag)
             route == PhoneNavRoutes.TIMER_EDIT ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_timer_edit_slot)
                     ?: childFragmentManager.findFragmentByTag(timerEditTag)
@@ -393,8 +397,8 @@ class PhoneNavHostFragment : BaseFragment() {
     }
 
     /**
-     * Push nested profile create/edit. Result goes through [deliverPickResult] with
-     * [Statics.REQUEST_EDIT_PROFILE] so [ProfileListFragment] can reload.
+     * Push profile create/edit. Result goes through [deliverPickResult] with
+     * [Statics.REQUEST_EDIT_PROFILE]. ProfilesDestination reloads on re-enter.
      */
     fun navigateToProfileEdit(profile: Profile?): Boolean {
         val controller = navController ?: return false
@@ -412,25 +416,17 @@ class PhoneNavHostFragment : BaseFragment() {
         } else {
             "profile_edit:new"
         }
-        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_profile_edit_slot)
-            ?: childFragmentManager.findFragmentByTag(profileEditTag)
-        if (existing != null && !childFragmentManager.isStateSaved) {
-            childFragmentManager.beginTransaction().remove(existing).commitNow()
-        }
         if (controller.currentDestination?.route == PhoneNavRoutes.PROFILE_EDIT) {
-            if (!childFragmentManager.isStateSaved) {
-                childFragmentManager.beginTransaction()
-                    .replace(
-                        R.id.phone_nav_profile_edit_slot,
-                        ProfileEditFragment().apply { arguments = profileEditLeafArguments() },
-                        profileEditTag,
-                    )
-                    .commitNow()
-            }
+            profileEditRemountState.value = profileEditRemountState.value + 1
             return true
         }
         controller.navigate(PhoneNavRoutes.PROFILE_EDIT)
         return true
+    }
+
+    /** Current NavHost route, or [startRoute] if the controller is not attached. */
+    fun currentRoute(): String {
+        return navController?.currentDestination?.route ?: startRoute()
     }
 
 
