@@ -7,7 +7,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import kotlin.Metadata
+import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -72,5 +75,10 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithContentDescription("Subtitles").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Now").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Next").assertIsDisplayed()
+    }
+
+    @Test
+    fun videoOverlayFragmentIsKotlinClass() {
+        assertNotNull(VideoOverlayFragment::class.java.getAnnotation(Metadata::class.java))
     }
 }
