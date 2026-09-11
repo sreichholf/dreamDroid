@@ -22,7 +22,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
@@ -31,7 +31,7 @@ import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 
 /**
  * Phase 2.7g: timer service picker (bouquet → channel) as a Compose destination.
- * Result Intent carries [BaseHttpFragment.sData] ExtendedHashMap for timer edit.
+ * Result Intent carries [NavExtras.DATA] ExtendedHashMap for timer edit.
  */
 @Composable
 fun TimerServicePickDestination(
@@ -167,7 +167,7 @@ private class TimerServicePickSession {
             return
         }
         val data = Intent().apply {
-            putExtra(BaseHttpFragment.sData, ZapListMapper.toBouquetMap(service))
+            putExtra(NavExtras.DATA, ZapListMapper.toBouquetMap(service))
         }
         host.deliverPickResult(Activity.RESULT_OK, data)
     }

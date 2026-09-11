@@ -26,7 +26,7 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
@@ -159,7 +159,7 @@ class TimerEditSession(
             return
         }
         @Suppress("DEPRECATION")
-        val map = data?.getSerializableExtra(BaseHttpFragment.sData) as? ExtendedHashMap ?: return
+        val map = data?.getSerializableExtra(NavExtras.DATA) as? ExtendedHashMap ?: return
         timer.put(Timer.KEY_SERVICE_NAME, map.getString(Service.KEY_NAME))
         timer.put(Timer.KEY_REFERENCE, map.getString(Service.KEY_REFERENCE))
         editState.serviceName = timer.getString(Timer.KEY_SERVICE_NAME).orEmpty()
@@ -438,7 +438,7 @@ class TimerEditSession(
 
         fun fromArgs(args: android.os.Bundle, routeTag: String, remountEpoch: Int): TimerEditSession {
             @Suppress("DEPRECATION")
-            val data = (args.getSerializable(BaseHttpFragment.sData) as? ExtendedHashMap)?.clone()
+            val data = (args.getSerializable(NavExtras.DATA) as? ExtendedHashMap)?.clone()
                 ?: ExtendedHashMap()
             @Suppress("UNCHECKED_CAST")
             val timer = ((data["timer"] as? ExtendedHashMap) ?: ExtendedHashMap()).clone()

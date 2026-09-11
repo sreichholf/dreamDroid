@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import android.net.Uri
-import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -11,10 +10,6 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -39,8 +34,6 @@ import net.reichholf.dreamdroid.ui.services.HubDestination
 import net.reichholf.dreamdroid.ui.settings.SettingsDestination
 import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.pick.TimerServicePickDestination
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -152,99 +145,6 @@ fun PhoneNavHost(
             TimerServicePickDestination(hostFragment = hostFragment)
         }
     }
-}
-
-@Composable
-private fun NestedFragmentDestination(
-    hostFragment: Fragment,
-    containerId: Int,
-    routeTag: String,
-    createFragment: () -> Fragment,
-) {
-    // Tear down the child Fragment when this route leaves composition. Without
-    // this, AndroidView drops the FragmentContainerView but leaves the leaf
-    // RESUMED under PhoneNavHostFragment. Kept for Phase 2.7i chassis cleanup
-    // if any nested Fragment route remains.
-    DisposableEffect(hostFragment, containerId, routeTag) {
-        onDispose {
-            removeNestedFragment(hostFragment, containerId, routeTag)
-        }
-    }
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = { context ->
-            FragmentContainerView(context).apply {
-                id = containerId
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                )
-            }
-        },
-        update = { container ->
-            ensureNestedFragment(hostFragment, container.id, routeTag, createFragment)
-        },
-    )
-}
-
-/**
- * Mount [createFragment] under the host when missing or when [routeTag] changed
- * (parameterized nested destinations). Never uses `commitNowAllowingStateLoss`;
- * if the child FM has already saved state, defer via [android.view.View.post].
- */
-internal fun ensureNestedFragment(
-    hostFragment: Fragment,
-    containerId: Int,
-    routeTag: String,
-    createFragment: () -> Fragment,
-) {
-    if (!hostFragment.isAdded) return
-    val fm = hostFragment.childFragmentManager
-    val existing = fm.findFragmentById(containerId)
-    if (existing != null && existing.tag == routeTag) return
-    if (!fm.isStateSaved) {
-        commitNestedFragment(fm, containerId, routeTag, createFragment)
-        return
-    }
-    hostFragment.view?.post {
-        if (!hostFragment.isAdded) return@post
-        val childFm = hostFragment.childFragmentManager
-        if (childFm.isStateSaved) return@post
-        val still = childFm.findFragmentById(containerId)
-        if (still != null && still.tag == routeTag) return@post
-        commitNestedFragment(childFm, containerId, routeTag, createFragment)
-    }
-}
-
-private fun commitNestedFragment(
-    fm: FragmentManager,
-    containerId: Int,
-    routeTag: String,
-    createFragment: () -> Fragment,
-) {
-    fm.beginTransaction()
-        .replace(containerId, createFragment(), routeTag)
-        .commitNow()
-}
-
-/**
- * Remove a nested leaf when its Compose route leaves composition so
- * [Fragment.onDestroyView] runs (retained for Phase 2.7i).
- */
-internal fun removeNestedFragment(
-    hostFragment: Fragment,
-    containerId: Int,
-    routeTag: String,
-) {
-    if (!hostFragment.isAdded) return
-    val fm = hostFragment.childFragmentManager
-    val existing = fm.findFragmentById(containerId) ?: return
-    if (existing.tag != routeTag) return
-    if (fm.isStateSaved) {
-        fm.beginTransaction().remove(existing).commitAllowingStateLoss()
-        return
-    }
-    fm.beginTransaction().remove(existing).commitNow()
 }
 
 /** Drawer-style top-level navigate: single-top + save/restore under the start destination. */

@@ -59,7 +59,6 @@ import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog;
 import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog;
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper;
-import net.reichholf.dreamdroid.fragment.interfaces.IHttpBase;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.Statics;
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile;
@@ -536,9 +535,6 @@ public class MainActivity extends BaseActivity implements MultiPaneHandler, Prof
 		}
 		if (mNavigationHelper != null)
 			mNavigationHelper.onProfileChanged();
-		Fragment content = getDetailContentFragment();
-		if (content instanceof IHttpBase)
-			((IHttpBase) content).onProfileChanged();
 	}
 
 	/**

@@ -4,8 +4,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 
 /**
- * Bridge so [net.reichholf.dreamdroid.fragment.helper.HttpFragmentHelper] can drive a
- * Compose pull-to-refresh indicator the same way it used to drive [androidx.swiperefreshlayout.widget.SwipeRefreshLayout].
+ * Holds pull-to-refresh indicator state for Compose list screens (replaces the old
+ * [androidx.swiperefreshlayout.widget.SwipeRefreshLayout] + HTTP helper bridge).
  */
 class ComposeRefreshState(
     /** When false, gesture pull-to-refresh is off; programmatic [setRefreshing] still works. */
