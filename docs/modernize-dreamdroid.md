@@ -161,7 +161,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-database-helper | [#331](https://github.com/sreichholf/dreamDroid/pull/331) | merged | Kotlin-port `DatabaseHelper` (legacy SQLite profiles/events). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-dreamdroid-app | [#332](https://github.com/sreichholf/dreamDroid/pull/332) | merged | Kotlin-port `DreamDroid` Application. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-main-activity | [#333](https://github.com/sreichholf/dreamDroid/pull/333) | merged | Kotlin-port phone `MainActivity` shell. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
-| near-zero-java-keepers-only | | open | Near-zero production Java reached: **15** Java files left, all recorded keepers — `fragment/dialogs/*` (8), `VideoOverlayFragment`, Leanback `tv/{activities,fragment,presenter}` (4), `VirtualRemoteWidgetProvider`, `SimpleHttpClient`. Next program work is Phase **3.1c-iv** / Phase 4–5, not more Java ports unless a keeper is retired. |
+| near-zero-java-keepers-only | [#334](https://github.com/sreichholf/dreamDroid/pull/334) | open | Near-zero production Java reached: **15** Java files left, all recorded keepers — `fragment/dialogs/*` (8), `VideoOverlayFragment`, Leanback `tv/{activities,fragment,presenter}` (4), `VirtualRemoteWidgetProvider`, `SimpleHttpClient`. Next program work is Phase **3.1c-iv** / Phase 4–5, not more Java ports unless a keeper is retired. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
