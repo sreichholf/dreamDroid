@@ -47,9 +47,11 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.BuildConfig
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.loadEpgNowNext
+import net.reichholf.dreamdroid.enigma.loadMovieList
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
@@ -59,6 +61,7 @@ import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import net.reichholf.dreamdroid.tv.fragment.RootBrowseFragment
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
+import net.reichholf.dreamdroid.ui.services.movieToExtendedHashMap
 import net.reichholf.dreamdroid.ui.services.serviceNowNextToExtendedHashMap
 
 /**
@@ -67,12 +70,21 @@ import net.reichholf.dreamdroid.ui.services.serviceNowNextToExtendedHashMap
  * - **iv-c:** [NavigationDrawer] side headers + row focus chrome; settings
  *   Reload / Preferences / Profile.
  * - **iv-d:** bouquet headers + service/now-next rows with picon cards.
- *   Movie rows land in iv-e. Stream Intent edge unchanged.
+ * - **iv-e:** movie location headers + lazy movie rows on select.
+ *   Stream Intent edge unchanged.
  */
 object TvComposeHubHost {
     const val PREFS_KEY_COMPOSE_TV_HUB: String = "compose_tv_hub_debug"
     const val HEADER_SETTINGS_ID: String = "settings"
     const val HEADER_PLACEHOLDER_ID: String = "placeholder"
+    const val HEADER_MOVIE_PREFIX: String = "movie:"
+
+    fun movieHeaderId(dirname: String): String = HEADER_MOVIE_PREFIX + dirname
+
+    fun movieDirnameFromHeader(headerId: String): String? =
+        headerId.takeIf { it.startsWith(HEADER_MOVIE_PREFIX) }
+            ?.removePrefix(HEADER_MOVIE_PREFIX)
+            ?.takeIf { it.isNotEmpty() }
 
     @JvmStatic
     fun useComposeHub(context: Context): Boolean {
@@ -109,23 +121,48 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
     var loading by remember { mutableStateOf(true) }
     var errorText by remember { mutableStateOf<String?>(null) }
     var bouquetRows by remember { mutableStateOf<List<HubBouquetRow>>(emptyList()) }
+    var movieLocations by remember { mutableStateOf<List<String>>(emptyList()) }
+    var moviesByLocation by remember { mutableStateOf<Map<String, List<Movie>>>(emptyMap()) }
+    var movieLoading by remember { mutableStateOf(false) }
+    var movieError by remember { mutableStateOf<String?>(null) }
     var selectedHeaderId by remember { mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID) }
 
     LaunchedEffect(reloadToken) {
         loading = true
         errorText = null
+        movieError = null
+        moviesByLocation = emptyMap()
         val result = loadComposeHubBouquets(activity)
         loading = false
         errorText = result.errorText
         bouquetRows = result.rows
-        if (selectedHeaderId != TvComposeHubHost.HEADER_SETTINGS_ID &&
-            bouquetRows.none { it.bouquet.reference == selectedHeaderId }
-        ) {
+        movieLocations = result.locations
+        val stillValid = selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID ||
+            bouquetRows.any { it.bouquet.reference == selectedHeaderId } ||
+            TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) in movieLocations
+        if (!stillValid) {
             selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID
         }
     }
 
-    val headers = remember(settingsTitle, placeholderTitle, bouquetRows) {
+    // Leanback parity: load movies for a location only when its header is selected.
+    LaunchedEffect(selectedHeaderId, reloadToken) {
+        val dirname = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) ?: return@LaunchedEffect
+        if (dirname in moviesByLocation) {
+            return@LaunchedEffect
+        }
+        movieLoading = true
+        movieError = null
+        val result = loadMovieList(activity, listOf(NameValuePair("dirname", dirname)))
+        movieLoading = false
+        if (result.success) {
+            moviesByLocation = moviesByLocation + (dirname to result.movies)
+        } else {
+            movieError = result.errorText
+        }
+    }
+
+    val headers = remember(settingsTitle, placeholderTitle, bouquetRows, movieLocations) {
         buildList {
             add(HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, settingsTitle))
             if (bouquetRows.isEmpty()) {
@@ -135,6 +172,9 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
                     val title = row.bouquet.name.ifBlank { placeholderTitle }
                     add(HubNavHeader(row.bouquet.reference, title))
                 }
+            }
+            movieLocations.forEach { dirname ->
+                add(HubNavHeader(TvComposeHubHost.movieHeaderId(dirname), dirname))
             }
         }
     }
@@ -156,16 +196,22 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
             }
         },
         bouquetRows = bouquetRows,
+        moviesByLocation = moviesByLocation,
         loading = loading,
-        errorText = errorText,
+        movieLoading = movieLoading,
+        errorText = errorText ?: movieError,
         onServiceClick = { service, bouquetRef ->
             openServiceStream(activity, service, bouquetRef)
+        },
+        onMovieClick = { movie ->
+            openMovieStream(activity, movie)
         },
     )
 }
 
 private data class HubLoadResult(
     val rows: List<HubBouquetRow>,
+    val locations: List<String>,
     val errorText: String?,
 )
 
@@ -187,10 +233,11 @@ private suspend fun loadComposeHubBouquets(context: Context): HubLoadResult {
             }
         }
     }
+    val locations = DreamDroid.getLocations().toList()
     val bouquetParams = listOf(NameValuePair("bRef", RootBrowseFragment.BOUQUETS_TV))
     val bouquetResult = loadServiceList(context, bouquetParams)
     if (!bouquetResult.success) {
-        return HubLoadResult(emptyList(), bouquetResult.errorText)
+        return HubLoadResult(emptyList(), locations, bouquetResult.errorText)
     }
     val rows = ArrayList<HubBouquetRow>()
     var lastError: String? = null
@@ -204,7 +251,7 @@ private suspend fun loadComposeHubBouquets(context: Context): HubLoadResult {
         }
         rows.add(HubBouquetRow(bouquet = bouquet, services = epg.rows))
     }
-    return HubLoadResult(rows, lastError)
+    return HubLoadResult(rows, locations, lastError)
 }
 
 private fun openServiceStream(
@@ -220,6 +267,19 @@ private fun openServiceStream(
             service.serviceReference,
             title,
             bouquetRef,
+            map,
+        ),
+    )
+}
+
+private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
+    val map = movieToExtendedHashMap(movie)
+    activity.startActivity(
+        IntentFactory.getStreamFileIntent(
+            activity,
+            movie.reference,
+            movie.fileName,
+            movie.title,
             map,
         ),
     )
@@ -249,7 +309,7 @@ private fun handleSettingsAction(activity: ComponentActivity, kind: BrowseItem.K
     }
 }
 
-/** Side headers ([NavigationDrawer]) + row list focus chrome (Phase 3.1c-iv-c/d). */
+/** Side headers ([NavigationDrawer]) + row list focus chrome (Phase 3.1c-iv-c/d/e). */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ComposeTvHubChrome(
@@ -260,9 +320,12 @@ fun ComposeTvHubChrome(
     onSettingsClick: (BrowseItem.Kind) -> Unit,
     modifier: Modifier = Modifier,
     bouquetRows: List<HubBouquetRow> = emptyList(),
+    moviesByLocation: Map<String, List<Movie>> = emptyMap(),
     loading: Boolean = false,
+    movieLoading: Boolean = false,
     errorText: String? = null,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
+    onMovieClick: (Movie) -> Unit = {},
 ) {
     MaterialTheme {
         NavigationDrawer(
@@ -338,6 +401,7 @@ fun ComposeTvHubChrome(
                     val selectedBouquet = bouquetRows.firstOrNull {
                         it.bouquet.reference == selectedHeaderId
                     }
+                    val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
                     if (selectedBouquet != null) {
                         item {
                             HubServiceRow(
@@ -345,6 +409,24 @@ fun ComposeTvHubChrome(
                                 services = selectedBouquet.services,
                                 onServiceClick = onServiceClick,
                             )
+                        }
+                    } else if (movieDir != null) {
+                        if (movieLoading && movieDir !in moviesByLocation) {
+                            item {
+                                Text(
+                                    text = stringResource(R.string.loading),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.testTag("hub_movie_loading"),
+                                )
+                            }
+                        } else {
+                            item {
+                                HubMovieRow(
+                                    dirname = movieDir,
+                                    movies = moviesByLocation[movieDir].orEmpty(),
+                                    onMovieClick = onMovieClick,
+                                )
+                            }
                         }
                     } else if (!loading) {
                         item {
@@ -485,6 +567,69 @@ private fun HubServiceCard(
                 nextTitle = nextTitle,
                 contentExpanded = false,
                 imageWidthPx = imageWidthPx,
+            )
+        }
+    }
+}
+
+/** One location's movie cards (Phase 3.1c-iv-e). Public for Compose tests. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun HubMovieRow(
+    dirname: String,
+    movies: List<Movie>,
+    onMovieClick: (Movie) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("hub_movie_row"),
+    ) {
+        items(movies, key = { it.reference + "|" + it.fileName }) { movie ->
+            HubMovieCard(
+                movie = movie,
+                onClick = { onMovieClick(movie) },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubMovieCard(
+    movie: Movie,
+    onClick: () -> Unit,
+) {
+    val descriptionEx = movie.descriptionExtended.replace("\\n", "\n")
+    val content = if (descriptionEx.isNotEmpty()) descriptionEx else movie.description
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .width(200.dp)
+            .height(160.dp)
+            .testTag("hub_movie_card"),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+        ) {
+            Text(
+                text = movie.title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 6,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
             )
         }
     }

@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
+import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -10,6 +11,34 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
+
+data class MovieListLoadResult(
+    val success: Boolean,
+    val movies: List<Movie>,
+    val errorText: String?,
+)
+
+/**
+ * Phase 3.1c-iv-e: load typed movie list without a Fragment owner.
+ * Null parse result is failure (not an empty list) — matches [launchMovieListLoad].
+ * Caller is responsible for locations/tags prefetch when needed.
+ */
+suspend fun loadMovieList(
+    context: Context,
+    params: List<NameValuePair>,
+): MovieListLoadResult {
+    val http = SimpleHttpClient.getInstance()
+    val fetched = EnigmaClient(http).getMovies(params)
+    val success = fetched != null
+    val movies = fetched ?: emptyList()
+    val errorText = when {
+        success -> null
+        http.hasError() ->
+            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+        else -> context.getString(R.string.error_parsing)
+    }
+    return MovieListLoadResult(success, movies, errorText)
+}
 
 /**
  * Phase 2.2e: load typed movie list via coroutines (no executor / runBlocking).
@@ -34,18 +63,13 @@ fun Fragment.launchMovieListLoad(
                 }
             }
         }
-        val fetched = EnigmaClient(http).getMovies(params)
         if (!isAdded) {
             return@launch
         }
-        val success = fetched != null
-        val movies = fetched ?: emptyList()
-        val errorText = when {
-            success -> null
-            http.hasError() ->
-                getString(R.string.get_content_error) + "\n" + http.getErrorText(requireContext())
-            else -> getString(R.string.error_parsing)
+        val result = loadMovieList(requireContext(), params)
+        if (!isAdded) {
+            return@launch
         }
-        onResult(success, movies, errorText)
+        onResult(result.success, result.movies, result.errorText)
     }
 }

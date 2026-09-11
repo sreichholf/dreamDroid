@@ -61,7 +61,7 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// Phase 3.1c-iv: debug-only Compose hub (service rows in iv-d); default Leanback until flag on.
+		// Phase 3.1c-iv: debug-only Compose hub (movies in iv-e); default Leanback until flag on.
 		if (TvComposeHubHost.useComposeHub(this)) {
 			TvComposeHubHost.install(this);
 		} else {
