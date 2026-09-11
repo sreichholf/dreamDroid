@@ -159,19 +159,6 @@ fun HubDestination(
         }
     }
 
-    DisposableEffect(hostFragment, mode, movieSession) {
-        if (mode == MODE_MOVIES) {
-            hostFragment.composeMultiChoiceListener = movieSession
-        } else if (hostFragment.composeMultiChoiceListener === movieSession) {
-            hostFragment.composeMultiChoiceListener = null
-        }
-        onDispose {
-            if (hostFragment.composeMultiChoiceListener === movieSession) {
-                hostFragment.composeMultiChoiceListener = null
-            }
-        }
-    }
-
     LaunchedEffect(Unit) {
         val result = loadBouquetList(context.applicationContext)
         bouquets = result.bouquets

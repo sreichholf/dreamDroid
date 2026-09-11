@@ -44,7 +44,6 @@ import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
 import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog
-import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
@@ -62,7 +61,6 @@ class MainActivity :
     MultiPaneHandler,
     ProfileChangedListener,
     ActionDialog.DialogActionListener,
-    MultiChoiceDialog.MultiChoiceDialogListener,
     SearchView.OnQueryTextListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -751,33 +749,6 @@ class MainActivity :
         }
     }
 
-    override fun onMultiChoiceDialogSelection(
-        dialogTag: String?,
-        dialog: DialogInterface?,
-        selected: Array<out Int>?,
-    ) {
-        if (isNavigationDialog(dialogTag)) {
-            (mNavigationHelper as MultiChoiceDialog.MultiChoiceDialogListener?)
-                ?.onMultiChoiceDialogSelection(dialogTag, dialog, selected)
-        } else if (mDetailFragment != null) {
-            val content = getDetailContentFragment()
-            if (content is MultiChoiceDialog.MultiChoiceDialogListener) {
-                content.onMultiChoiceDialogSelection(dialogTag, dialog, selected)
-            }
-        }
-    }
-
-    override fun onMultiChoiceDialogFinish(dialogTag: String?, result: Int) {
-        if (isNavigationDialog(dialogTag)) {
-            (mNavigationHelper as MultiChoiceDialog.MultiChoiceDialogListener?)
-                ?.onMultiChoiceDialogFinish(dialogTag, result)
-        } else if (mDetailFragment != null) {
-            val content = getDetailContentFragment()
-            if (content is MultiChoiceDialog.MultiChoiceDialogListener) {
-                content.onMultiChoiceDialogFinish(dialogTag, result)
-            }
-        }
-    }
 
     /*
      * (non-Javadoc)

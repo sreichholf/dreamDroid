@@ -14,8 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -26,8 +30,8 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
-import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Python
@@ -58,19 +62,17 @@ fun TimerEditDestination(
     val session = remember(tag, remount) {
         hostFragment.obtainTimerEditSession(tag, remount)
     }
+    var showRepeatingsPicker by remember { mutableStateOf(false) }
+    var showTagsPicker by remember { mutableStateOf(false) }
 
     DisposableEffect(hostFragment, session, tag, remount) {
         hostFragment.composeActivityResultListener = session
-        hostFragment.composeMultiChoiceListener = session
         val activity = context as? AppCompatActivity
         activity?.title = context.getString(R.string.timer)
         activity?.addMenuProvider(session, hostFragment.viewLifecycleOwner)
         onDispose {
             if (hostFragment.composeActivityResultListener === session) {
                 hostFragment.composeActivityResultListener = null
-            }
-            if (hostFragment.composeMultiChoiceListener === session) {
-                hostFragment.composeMultiChoiceListener = null
             }
             activity?.removeMenuProvider(session)
             session.dismissProgress()
@@ -91,11 +93,39 @@ fun TimerEditDestination(
         onPickBeginTime = { session.pickBeginTime() },
         onPickEndDate = { session.pickEndDate() },
         onPickEndTime = { session.pickEndTime() },
-        onPickRepeated = { session.pickRepeatings() },
+        onPickRepeated = { showRepeatingsPicker = true },
         onPickService = { session.pickService() },
-        onPickTags = { session.pickTags() },
+        onPickTags = { showTagsPicker = true },
         modifier = modifier,
     )
+
+    if (showRepeatingsPicker) {
+        val days = context.resources.getTextArray(R.array.weekdays).map { it.toString() }
+        MultiChoiceAlertDialog(
+            title = stringResource(R.string.choose_days),
+            items = days,
+            initialChecked = session.checkedDays.copyOf(),
+            onDismiss = { showRepeatingsPicker = false },
+            onConfirm = { indices ->
+                session.applyRepeatingsSelection(indices)
+                showRepeatingsPicker = false
+            },
+        )
+    }
+    if (showTagsPicker) {
+        val tags = DreamDroid.getTags().map { it.toString() }
+        val checked = BooleanArray(tags.size) { i -> session.selectedTags.contains(DreamDroid.getTags()[i]) }
+        MultiChoiceAlertDialog(
+            title = stringResource(R.string.choose_tags),
+            items = tags,
+            initialChecked = checked,
+            onDismiss = { showTagsPicker = false },
+            onConfirm = { indices ->
+                session.applyTagsSelection(indices)
+                showTagsPicker = false
+            },
+        )
+    }
 }
 
 /**
@@ -111,7 +141,6 @@ class TimerEditSession(
     val selectedTags: ArrayList<String>,
     val checkedDays: BooleanArray,
 ) : PhoneNavHostFragment.ActivityResultListener,
-    MultiChoiceDialog.MultiChoiceDialogListener,
     MenuProvider {
 
     var hostFragment: PhoneNavHostFragment? = null
@@ -169,28 +198,32 @@ class TimerEditSession(
         hostFragment?.navigateToTimerServicePick()
     }
 
-    fun pickRepeatings() {
-        val ctx = context ?: return
-        val days = ctx.resources.getTextArray(R.array.weekdays)
-        val dialog = MultiChoiceDialog.newInstance(R.string.choose_days, days, checkedDays)
-        (ctx as MultiPaneHandler).showDialogFragment(dialog, "dialog_select_repeatings")
+    fun applyRepeatingsSelection(indices: List<Int>) {
+        java.util.Arrays.fill(checkedDays, false)
+        for (which in indices) {
+            if (which in checkedDays.indices) {
+                checkedDays[which] = true
+            }
+        }
+        editState.repeatedLabel = setRepeated(checkedDays)
     }
 
-    fun pickTags() {
-        val ctx = context ?: return
-        val tags = Array(DreamDroid.getTags().size) { i -> DreamDroid.getTags()[i] as CharSequence }
-        val selected = BooleanArray(DreamDroid.getTags().size) { i ->
-            selectedTags.contains(DreamDroid.getTags()[i])
+    fun applyTagsSelection(indices: List<Int>) {
+        val tags = DreamDroid.getTags()
+        val next = ArrayList<String>()
+        for (which in indices) {
+            if (which in tags.indices) {
+                next.add(tags[which])
+            }
         }
-        tagsChanged = false
-        val dialog = MultiChoiceDialog.newInstance(
-            R.string.choose_tags,
-            tags,
-            selected,
-            R.string.ok,
-            R.string.cancel,
-        )
-        (ctx as MultiPaneHandler).showDialogFragment(dialog, "dialog_select_tags")
+        val tagsChanged = next != selectedTags
+        selectedTags.clear()
+        selectedTags.addAll(next)
+        if (tagsChanged) {
+            val joined = Tag.implodeTags(selectedTags)
+            timer.put(Timer.KEY_TAGS, joined)
+            editState.tagsLabel = joined
+        }
     }
 
     fun pickBeginDate() {
@@ -393,37 +426,6 @@ class TimerEditSession(
         editState.setBeginEndLabels(begin, end)
     }
 
-    override fun onMultiChoiceDialogSelection(
-        dialogTag: String?,
-        dialog: DialogInterface?,
-        selected: Array<out Int>?,
-    ) {
-        val indices = selected ?: return
-        if ("dialog_select_tags" == dialogTag) {
-            val tags = DreamDroid.getTags()
-            val next = ArrayList<String>()
-            for (which in indices) {
-                next.add(tags[which])
-            }
-            tagsChanged = next != selectedTags
-            selectedTags.clear()
-            selectedTags.addAll(next)
-        } else if ("dialog_select_repeatings" == dialogTag) {
-            Arrays.fill(checkedDays, false)
-            for (which in indices) {
-                checkedDays[which] = true
-            }
-            editState.repeatedLabel = setRepeated(checkedDays)
-        }
-    }
-
-    override fun onMultiChoiceDialogFinish(dialogTag: String?, result: Int) {
-        if ("dialog_select_tags" == dialogTag && tagsChanged) {
-            val tags = Tag.implodeTags(selectedTags)
-            timer.put(Timer.KEY_TAGS, tags)
-            editState.tagsLabel = tags
-        }
-    }
 
     companion object {
         private val REPEATED_VALUES = intArrayOf(1, 2, 4, 8, 16, 32, 64)

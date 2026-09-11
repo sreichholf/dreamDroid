@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.view.MenuProvider
@@ -44,8 +45,8 @@ import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
-import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
+import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
@@ -65,13 +66,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
 /**
  * Phase 2.7h: one Movies hub location page as Compose (parity with former MovieListFragment).
  *
- * Tag filter uses [MultiChoiceDialog]. This page exposes [HubMovieListSession], which
- * implements [MultiChoiceDialog.MultiChoiceDialogListener]. **HubDestination** must set
- * `hostFragment.composeMultiChoiceListener = session` while movies mode is active, and
- * clear it when leaving movies (or when disposing the session). Pass the same
- * [HubMovieListSession] instance into [HubMovieListPage] so selection callbacks reach
- * this page. The page itself does not touch [PhoneNavHostFragment.composeMultiChoiceListener]
- * (hub owns that slot across TV/Radio/Movies/Timers).
+ * Tag filter uses an in-composition [MultiChoiceAlertDialog] (Phase 2.1g-ii-e).
+ * Pass the same [HubMovieListSession] instance into [HubMovieListPage] so menu actions
+ * reach this page.
  *
  * Options menu (tags) and delete-confirm dialog actions are registered here while this
  * page stays in composition.
@@ -96,6 +93,7 @@ fun HubMovieListPage(
     var deleteJob by remember { mutableStateOf<Job?>(null) }
 
     var selectedTags by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
+    var showTagPicker by remember { mutableStateOf(false) }
 
     session.hostFragment = hostFragment
     session.context = context
@@ -110,6 +108,7 @@ fun HubMovieListPage(
     session.onLoadJob = { loadJob = it }
     session.onZapJob = { zapJob = it }
     session.onDeleteJob = { deleteJob = it }
+    session.onRequestTagPicker = { showTagPicker = true }
 
     DisposableEffect(hostFragment, session) {
         hostFragment.composeDialogActionListener = session
@@ -172,17 +171,30 @@ fun HubMovieListPage(
         )
     }
 
+    if (showTagPicker) {
+        val tags = DreamDroid.getTags().map { it.toString() }
+        val checked = BooleanArray(tags.size) { i ->
+            selectedTags.contains(DreamDroid.getTags()[i])
+        }
+        MultiChoiceAlertDialog(
+            title = stringResource(R.string.choose_tags),
+            items = tags,
+            initialChecked = checked,
+            onDismiss = { showTagPicker = false },
+            onConfirm = { indices ->
+                session.applyTagSelection(indices)
+                showTagPicker = false
+            },
+        )
+    }
 }
 
 /**
  * Mutable movie-list working copy for one hub Movies page.
  *
- * Implements [MultiChoiceDialog.MultiChoiceDialogListener] for tag filter. **HubDestination**
- * registers this on [PhoneNavHostFragment.composeMultiChoiceListener] while movies mode is
- * active (see [HubMovieListPage] KDoc).
+ * Tag filter is requested via [onRequestTagPicker]; the page hosts [MultiChoiceAlertDialog].
  */
 class HubMovieListSession :
-    MultiChoiceDialog.MultiChoiceDialogListener,
     ActionDialog.DialogActionListener,
     MenuProvider {
 
@@ -200,6 +212,7 @@ class HubMovieListSession :
     var onZapJob: ((Job?) -> Unit)? = null
     var onDeleteJob: ((Job?) -> Unit)? = null
     var onShowDetail: ((MovieDetailContent) -> Unit)? = null
+    var onRequestTagPicker: (() -> Unit)? = null
 
     private val movies = ArrayList<Movie>()
     private var selectedMovie: ExtendedHashMap? = null
@@ -302,20 +315,24 @@ class HubMovieListSession :
     }
 
     fun pickTags() {
-        val ctx = context ?: return
-        val tags = Array(DreamDroid.getTags().size) { i -> DreamDroid.getTags()[i] as CharSequence }
-        val selected = BooleanArray(DreamDroid.getTags().size) { i ->
-            selectedTags.contains(DreamDroid.getTags()[i])
-        }
         tagsChanged = false
-        val dialog = MultiChoiceDialog.newInstance(
-            R.string.choose_tags,
-            tags,
-            selected,
-            R.string.ok,
-            R.string.cancel,
-        )
-        (ctx as MultiPaneHandler).showDialogFragment(dialog, "dialog_pick_tags")
+        onRequestTagPicker?.invoke()
+    }
+
+    fun applyTagSelection(indices: List<Int>) {
+        val tags = DreamDroid.getTags()
+        val next = ArrayList<String>()
+        for (which in indices) {
+            if (which in tags.indices) {
+                next.add(tags[which])
+            }
+        }
+        tagsChanged = next != selectedTags
+        selectedTags = next
+        onSelectedTags?.invoke(next.toList())
+        if (tagsChanged) {
+            reload()
+        }
     }
 
     fun zapTo(ref: String) {
@@ -441,29 +458,6 @@ class HubMovieListSession :
         onMovieAction(action)
     }
 
-    override fun onMultiChoiceDialogSelection(
-        dialogTag: String?,
-        dialog: DialogInterface?,
-        selected: Array<out Int>?,
-    ) {
-        val indices = selected ?: return
-        val tags = DreamDroid.getTags()
-        val next = ArrayList<String>()
-        for (which in indices) {
-            if (which in tags.indices) {
-                next.add(tags[which])
-            }
-        }
-        tagsChanged = next != selectedTags
-        selectedTags = next
-        onSelectedTags?.invoke(next.toList())
-    }
-
-    override fun onMultiChoiceDialogFinish(dialogTag: String?, result: Int) {
-        if ("dialog_pick_tags" == dialogTag && tagsChanged) {
-            reload()
-        }
-    }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.locactions_and_tags, menu)
