@@ -159,7 +159,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-service-adapter | [#329](https://github.com/sreichholf/dreamDroid/pull/329) | merged | Kotlin-port `ServiceAdapter` (VideoOverlay list). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-video-activity | [#330](https://github.com/sreichholf/dreamDroid/pull/330) | merged | Kotlin-port `VideoActivity` (VLC shell; overlay fragment stays Java). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-database-helper | [#331](https://github.com/sreichholf/dreamDroid/pull/331) | merged | Kotlin-port `DatabaseHelper` (legacy SQLite profiles/events). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
-| near-zero-java-dreamdroid-app | | open | Kotlin-port `DreamDroid` Application. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
+| near-zero-java-dreamdroid-app | [#332](https://github.com/sreichholf/dreamDroid/pull/332) | open | Kotlin-port `DreamDroid` Application. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
