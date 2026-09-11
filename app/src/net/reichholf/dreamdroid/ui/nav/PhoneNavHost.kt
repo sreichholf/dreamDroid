@@ -1,8 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -25,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
