@@ -131,7 +131,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | dead-weight-epg-database | [#293](https://github.com/sreichholf/dreamDroid/pull/293) | merged | Drop fully commented `EpgDatabase.java` + empty `epgsync/` package. Keep OkHttp 3.14.9. |
 | vlc-kotlin-wrapper | [#296](https://github.com/sreichholf/dreamDroid/pull/296) | merged | Phase 2.5e: thin Kotlin `VLCInstance`/`VLCPlayer`; keep existing overlay Compose smoke test. Keep OkHttp 3.14.9. |
 | okhttp4-picasso | [#299](https://github.com/sreichholf/dreamDroid/pull/299) | merged | Bump OkHttp 3.14.9 → 4.12.0 for Picasso/TLS; drop `okhttp3.internal` hostname verifier. Enigma2 stays HttpURLConnection. No libVLC / Media3 / Glance. |
-| libvlc-375-stable | (this PR) | open | Bump `libvlc-all` 3.5.1 → 3.7.5 (stable); raise `compileSdk` 34→36 (AAR requires ≥36); keep `targetSdk` 34. No Media3 / Glance. |
+| libvlc-375-stable | [#300](https://github.com/sreichholf/dreamDroid/pull/300) | merged | Bump `libvlc-all` 3.5.1 → 3.7.5 (stable); raise `compileSdk` 34→36 (AAR requires ≥36); keep `targetSdk` 34. No Media3 / Glance. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -215,7 +215,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Dead-weight: drop commented `EpgDatabase` **merged** [#293](https://github.com/sreichholf/dreamDroid/pull/293).
 - Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296).
 - OkHttp 4.12 for Picasso/TLS **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299) (Enigma2 HTTP unchanged).
-- libVLC-all **3.7.5** stable **this PR** (still not Media3).
+- libVLC-all **3.7.5** stable **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300) (still not Media3).
 - Out of wave still: Phase 4–5 operator usertests. See Appendix H.
 
 ## How to read this
