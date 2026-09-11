@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.enigma
 /**
  * Parses `/web/epgnownext` XML into paired [ServiceNowNext] rows.
  *
- * Matches legacy [net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2EpgNowNextListHandler]:
+ * Matches legacy EPG now/next list pairing:
  * consecutive `<e2event>` elements are positional now/next pairs. A trailing odd event becomes a
  * now-only row.
  *

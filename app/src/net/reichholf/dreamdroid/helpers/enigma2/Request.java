@@ -14,7 +14,6 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
 import net.reichholf.dreamdroid.parsers.GenericSaxParser;
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2ListHandler;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleHandler;
 import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleListHandler;
 
@@ -64,20 +63,6 @@ public class Request {
 		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
 		handler.setMap(result);
 		sdp.getParser().setHandler(handler);
-		return sdp.parse(xml);
-	}
-
-	/**
-	 * @param xml
-	 * @param list
-	 * @param handler
-	 * @return
-	 */
-	public static boolean parseList(String xml, ArrayList<ExtendedHashMap> list, @NonNull E2ListHandler handler) {
-		SaxDataProvider sdp = new SaxDataProvider(new GenericSaxParser());
-		handler.setList(list);
-		sdp.setHandler(handler);
-
 		return sdp.parse(xml);
 	}
 
