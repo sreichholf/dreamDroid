@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.Profile;
 import net.reichholf.dreamdroid.R;
-import net.reichholf.dreamdroid.fragment.VirtualRemoteFragment;
+import net.reichholf.dreamdroid.ui.remote.VirtualRemoteButtons;
 
 /**
  * Created by Stephan on 07.12.13.
@@ -58,7 +58,7 @@ public class VirtualRemoteWidgetProvider extends AppWidgetProvider {
     }
 
     public static void registerButtons(Context context, @NonNull RemoteViews remoteViews, int appWidgetId, boolean mPlayButtonAsPlayPause) {
-        for (Integer[] btn : VirtualRemoteFragment.getRemoteButtons(mPlayButtonAsPlayPause)) {
+        for (Integer[] btn : VirtualRemoteButtons.getRemoteButtons(mPlayButtonAsPlayPause)) {
             Intent intent = new Intent(context, VirtualRemoteWidgetProvider.class);
             intent.putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId);
             intent.putExtra(WidgetRemoteRequest.KEY_KEYID, Integer.toString(btn[1]));

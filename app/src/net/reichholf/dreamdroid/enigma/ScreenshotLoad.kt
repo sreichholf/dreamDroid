@@ -1,11 +1,7 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -21,8 +17,7 @@ data class ScreenshotLoadResult(
 )
 
 /**
- * Phase 2.7c: load screenshot bytes without a Fragment owner.
- * Also used by [ScreenShotFragment] (Virtual Remote embed) via [launchScreenshotLoad].
+ * Phase 2.7c/d: load screenshot bytes without a Fragment owner.
  */
 suspend fun loadScreenshot(
     context: Context,
@@ -39,17 +34,4 @@ suspend fun loadScreenshot(
         else -> context.getString(R.string.error)
     }
     return ScreenshotLoadResult(success, if (success) bytes else null, errorText)
-}
-
-fun Fragment.launchScreenshotLoad(
-    params: List<NameValuePair>,
-    onResult: (success: Boolean, bytes: ByteArray?, errorText: String?) -> Unit,
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val result = loadScreenshot(requireContext(), params)
-        if (!isAdded) {
-            return@launch
-        }
-        onResult(result.success, result.bytes, result.errorText)
-    }
 }

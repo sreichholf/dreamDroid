@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -27,7 +28,6 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadScreenshot
-import net.reichholf.dreamdroid.fragment.ScreenShotFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import java.io.File
 import java.io.FileOutputStream
@@ -35,15 +35,40 @@ import java.io.IOException
 import java.util.GregorianCalendar
 
 /**
+ * Screenshot grab type / format constants (formerly on ScreenShotFragment).
+ */
+object ScreenshotParams {
+    const val TYPE_OSD = 0
+    const val TYPE_VIDEO = 1
+    const val TYPE_ALL = 2
+    const val FORMAT_JPG = 0
+    const val FORMAT_PNG = 1
+}
+
+/**
+ * Optional external reload trigger for embeds (Virtual Remote tablet pane).
+ */
+class ScreenshotReloadTrigger {
+    var tick by mutableIntStateOf(0)
+        private set
+
+    fun requestReload() {
+        tick++
+    }
+}
+
+/**
  * Phase 2.7c: Screenshot drawer leaf as a direct Compose NavHost destination.
- * [ScreenShotFragment] remains for Virtual Remote embed.
+ * Also embedded under Virtual Remote on large screens ([setTitle]=false, [actionsEnabled]=false).
  */
 @Composable
 fun ScreenshotDestination(
-    type: Int = ScreenShotFragment.TYPE_ALL,
-    format: Int = ScreenShotFragment.FORMAT_JPG,
+    type: Int = ScreenshotParams.TYPE_ALL,
+    format: Int = ScreenshotParams.FORMAT_JPG,
     size: Int = -1,
     actionsEnabled: Boolean = true,
+    setTitle: Boolean = true,
+    reloadTrigger: ScreenshotReloadTrigger? = null,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -61,18 +86,21 @@ fun ScreenshotDestination(
     }
 
     fun setToolbarTitle() {
+        if (!setTitle) {
+            return
+        }
         (context as? AppCompatActivity)?.title = context.getText(R.string.screenshot)
     }
 
     fun fileExtension(): String = when (format) {
-        ScreenShotFragment.FORMAT_JPG -> "jpg"
-        ScreenShotFragment.FORMAT_PNG -> "png"
+        ScreenshotParams.FORMAT_JPG -> "jpg"
+        ScreenshotParams.FORMAT_PNG -> "png"
         else -> ""
     }
 
     fun mimeType(): String = when (format) {
-        ScreenShotFragment.FORMAT_JPG -> "jpeg"
-        ScreenShotFragment.FORMAT_PNG -> "png"
+        ScreenshotParams.FORMAT_JPG -> "jpeg"
+        ScreenshotParams.FORMAT_PNG -> "png"
         else -> ""
     }
 
@@ -85,16 +113,16 @@ fun ScreenshotDestination(
     fun buildParams(): ArrayList<NameValuePair> {
         val params = ArrayList<NameValuePair>()
         when (type) {
-            ScreenShotFragment.TYPE_OSD -> {
+            ScreenshotParams.TYPE_OSD -> {
                 params.add(NameValuePair("o", " "))
                 params.add(NameValuePair("n", " "))
             }
-            ScreenShotFragment.TYPE_VIDEO -> params.add(NameValuePair("v", " "))
-            ScreenShotFragment.TYPE_ALL -> Unit
+            ScreenshotParams.TYPE_VIDEO -> params.add(NameValuePair("v", " "))
+            ScreenshotParams.TYPE_ALL -> Unit
         }
         when (format) {
-            ScreenShotFragment.FORMAT_JPG -> params.add(NameValuePair("format", "jpg"))
-            ScreenShotFragment.FORMAT_PNG -> params.add(NameValuePair("format", "png"))
+            ScreenshotParams.FORMAT_JPG -> params.add(NameValuePair("format", "jpg"))
+            ScreenshotParams.FORMAT_PNG -> params.add(NameValuePair("format", "png"))
         }
         if (size > 0) {
             params.add(NameValuePair("r", size.toString()))
@@ -201,6 +229,13 @@ fun ScreenshotDestination(
             reload()
         } else {
             onAvailable(rawImage)
+        }
+    }
+
+    val triggerTick = reloadTrigger?.tick ?: 0
+    LaunchedEffect(triggerTick) {
+        if (triggerTick > 0) {
+            reload()
         }
     }
 

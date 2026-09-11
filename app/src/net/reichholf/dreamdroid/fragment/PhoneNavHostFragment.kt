@@ -74,6 +74,16 @@ class PhoneNavHostFragment : BaseFragment() {
      */
     var composeDialogActionListener: ActionDialog.DialogActionListener? = null
 
+    /**
+     * Optional activity-result sink for Compose destinations (e.g. Zap bouquet pick).
+     * [deliverPickResult] prefers this when [getActiveLeaf] is null.
+     */
+    fun interface ActivityResultListener {
+        fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
+    }
+
+    var composeActivityResultListener: ActivityResultListener? = null
+
     /** Stack of pending onActivityResult request codes (nested edit → service pick). */
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
     private var profileEditArgs: Bundle? = null
@@ -162,18 +172,14 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.BACKUP -> null
             route == PhoneNavRoutes.CURRENT -> null
             route == PhoneNavRoutes.SCREENSHOT -> null
-            route == PhoneNavRoutes.ZAP ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_zap_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.ZAP)
+            route == PhoneNavRoutes.ZAP -> null
             route == PhoneNavRoutes.PROFILES ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_profiles_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PROFILES)
             route == PhoneNavRoutes.EPG ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
-            route == PhoneNavRoutes.REMOTE ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_remote_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.REMOTE)
+            route == PhoneNavRoutes.REMOTE -> null
             route == PhoneNavRoutes.SETTINGS ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_settings_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SETTINGS)
@@ -514,6 +520,11 @@ class PhoneNavHostFragment : BaseFragment() {
         val code = if (resultRequestCodes.isEmpty()) -1 else resultRequestCodes.removeLast()
         if (!controller.popBackStack()) return
         view?.post {
+            val composeListener = composeActivityResultListener
+            if (code >= 0 && composeListener != null) {
+                composeListener.onActivityResult(code, resultCode, data)
+                return@post
+            }
             val leaf = getActiveLeaf()
             // Profile/timer edit finish with a null Intent; service/bouquet pick send extras.
             if (code >= 0 && leaf != null) {
