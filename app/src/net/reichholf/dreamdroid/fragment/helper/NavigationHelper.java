@@ -241,9 +241,6 @@ public class NavigationHelper {
                 getSleepTimer(true);
                 break;
 
-            case Statics.ITEM_RELOAD:
-                return false;
-
             case R.id.menu_navigation_epg:
                 navigateToEpg();
                 break;

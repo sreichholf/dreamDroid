@@ -18,7 +18,6 @@ import net.reichholf.dreamdroid.enigma.DeviceInfo;
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient;
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.DeviceInfoRequestHandler;
 
 import java.util.ArrayList;
 
@@ -60,12 +59,10 @@ public class CheckProfile {
 				int port = profile.getPort();
 				if (port > 0 && port <= 65535) {
 					addEntry(resultList, R.string.port, false, Integer.toString(port));
-					DeviceInfoRequestHandler dirh = new DeviceInfoRequestHandler();
-
 					SimpleHttpClient shc = SimpleHttpClient.getInstance(profile);
 					String xml = profile.getCachedDeviceInfo();
 					if(xml == null)
-						xml = dirh.get(shc);
+						xml = Request.get(shc, URIStore.DEVICE_INFO);
 
 					if (xml != null && !shc.hasError()) {
 						DeviceInfo deviceInfo = DeviceInfoParser.INSTANCE.parse(xml);
