@@ -36,7 +36,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val backupService = remember { BackupService(context.applicationContext) }
     val uiState = remember { BackupUiState() }
-    var backupData by remember { mutableStateOf(backupService.backupData) }
+    var backupData by remember { mutableStateOf(backupService.getBackupData()) }
 
     fun refreshProfileToggles(data: BackupData) {
         uiState.setProfilesFromBackup(
@@ -47,7 +47,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     }
 
     fun reloadBackupData() {
-        val data = backupService.backupData
+        val data = backupService.getBackupData()
         backupData = data
         refreshProfileToggles(data)
     }
