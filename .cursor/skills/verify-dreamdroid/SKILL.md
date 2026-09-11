@@ -17,7 +17,7 @@ Use **JDK 25** (`JAVA_HOME`). App `compileOptions` stay on Java 17; Gradle/AGP r
 adb shell am instrument -w -e class net.reichholf.dreamdroid.ui.about.AboutScreenTest net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen. If the UI is Compose inside an XML dialog or `ComposeView`, host it that way in the test.
+Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen. Prefer Compose Material 3 / Navigation `dialog` hosts (Phase **2.1g-ii**). If the UI is still Compose inside an XML dialog or `ComposeView`, host it that way in the test until that wrapper is deleted.
 
 `verify-dreamdroid.py` is for a **single look** (screenshot) or a shell-only path that has no instrumented test yet. It is not the verification loop. **On Cursor Cloud Agents, do not use launch / GUI tapping / screenshot walkthroughs** — soft-accelerated emulator + agent display is unreliable; see `AGENTS.md` Cloud Agent environment. Use `bash .cursor/cloud/connected-test.sh` only.
 
@@ -64,7 +64,7 @@ Prefer resource ids and visible text over coordinates. About lives at the bottom
 | Profile name / status | `...:id/drawer_profile_name`, `...:id/drawer_profile_status` |
 | TV & Movies | text `TV & Movies` |
 | EPG / Virtual Remote / Zap / Current event | text `EPG`, `Virtual Remote`, `Zap`, `Current event` |
-| About | Settings, then text `About` (opens a dialog) |
+| About | Settings, then text `About` (modal; migrating off DialogFragment per Phase 2.1g-ii) |
 | Add Profile FAB | `...:id/fab_main` content-desc from `R.string.profile_add` (shell XML FAB) || Autodiscovery | text `Dreambox Autodiscovery` |
 | TV/Radio/Movies/Timer tabs | text `TV`, `Radio`, `Movies`, `Timer` |
 
