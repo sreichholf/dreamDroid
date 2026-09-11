@@ -138,7 +138,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | current-screenshot-compose-dest | [#309](https://github.com/sreichholf/dreamDroid/pull/309) | merged | Phase 2.7c finish: Current + Screenshot Kotlin Compose destinations; delete `CurrentServiceFragment` / `ScreenShotFragment`. |
 | zap-remote-compose-dest | [#310](https://github.com/sreichholf/dreamDroid/pull/310) | merged | Phase 2.7d: Zap + Virtual Remote Kotlin Compose destinations; delete `ZapFragment` / `VirtualRemotePagerFragment` / `VirtualRemoteFragment` / `ScreenShotFragment`. |
 | settings-profiles-compose-dest | [#311](https://github.com/sreichholf/dreamDroid/pull/311) | merged | Phase 2.7e: Settings + Profiles + Profile edit Kotlin Compose destinations; delete `MyPreferenceFragment` / `ProfileListFragment` / `ProfileEditFragment`. |
-| epg-cluster-compose-dest | | open | Phase 2.7f: EPG bouquet + Service EPG + EPG search + Pick service Kotlin Compose destinations. |
+| epg-cluster-compose-dest | [#312](https://github.com/sreichholf/dreamDroid/pull/312) | open | Phase 2.7f: EPG bouquet + Service EPG + EPG search + Pick service Kotlin Compose destinations. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
