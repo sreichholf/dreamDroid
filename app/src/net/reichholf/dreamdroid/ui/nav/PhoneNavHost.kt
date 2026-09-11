@@ -26,8 +26,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.BackupFragment
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment
-import net.reichholf.dreamdroid.fragment.DeviceInfoFragment
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
+import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
@@ -68,12 +68,7 @@ fun PhoneNavHost(
         modifier = Modifier.fillMaxSize(),
     ) {
         composable(PhoneNavRoutes.DEVICE_INFO) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_device_info_slot,
-                routeTag = PhoneNavRoutes.DEVICE_INFO,
-                createFragment = { DeviceInfoFragment() },
-            )
+            DeviceInfoDestination()
         }
         composable(PhoneNavRoutes.SIGNAL) {
             NestedFragmentDestination(

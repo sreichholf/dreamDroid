@@ -1,36 +1,28 @@
 package net.reichholf.dreamdroid.enigma
 
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import android.content.Context
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
+data class DeviceInfoLoadResult(
+    val success: Boolean,
+    val info: DeviceInfo?,
+    val errorText: String?,
+)
+
 /**
- * Phase 2.2 beachhead: load typed device info via coroutines (no executor / runBlocking).
- * Call from a fragment that already has a view ([Fragment.getViewLifecycleOwner]).
- *
- * Uses a dedicated [SimpleHttpClient] per load (same as the old GetDeviceInfoTask),
- * not the fragment helper’s shared client — [SimpleHttpClient] is not thread-safe and
- * Job.cancel does not abort in-flight HttpURLConnection I/O.
+ * Phase 2.7b: load typed device info without a Fragment owner.
+ * Uses a dedicated [SimpleHttpClient] per call (not thread-safe; cancel does not abort I/O).
  */
-fun Fragment.launchDeviceInfoLoad(
-    onResult: (success: Boolean, info: DeviceInfo?, errorText: String?) -> Unit,
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val http = SimpleHttpClient.getInstance()
-        val info = EnigmaClient(http).getDeviceInfo()
-        if (!isAdded) {
-            return@launch
-        }
-        val success = info != null && !info.isEmpty()
-        val errorText = when {
-            success -> null
-            http.hasError() ->
-                getString(R.string.get_content_error) + "\n" + http.getErrorText(requireContext())
-            else -> getString(R.string.error_parsing)
-        }
-        onResult(success, info, errorText)
+suspend fun loadDeviceInfo(context: Context): DeviceInfoLoadResult {
+    val http = SimpleHttpClient.getInstance()
+    val info = EnigmaClient(http).getDeviceInfo()
+    val success = info != null && !info.isEmpty()
+    val errorText = when {
+        success -> null
+        http.hasError() ->
+            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+        else -> context.getString(R.string.error_parsing)
     }
+    return DeviceInfoLoadResult(success, info, errorText)
 }

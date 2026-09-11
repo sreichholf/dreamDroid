@@ -13,7 +13,6 @@
     <item name="menu_navigation_changelog" type="id"/>
     <item name="menu_cancel" type="id"/>
     <item name="menu_check_connectivity" type="id"/>
-    <item name="phone_nav_device_info_slot" type="id"/>
     <item name="phone_nav_signal_slot" type="id"/>
     <item name="phone_nav_screenshot_slot" type="id"/>
     <item name="phone_nav_current_slot" type="id"/>
