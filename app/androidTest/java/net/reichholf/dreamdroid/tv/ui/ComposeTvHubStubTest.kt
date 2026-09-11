@@ -1,9 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import org.junit.Rule
 import org.junit.Test
 
@@ -12,11 +10,11 @@ class ComposeTvHubStubTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun stubLabelVisible() {
+    fun stubHostsChrome() {
         composeRule.setContent {
             ComposeTvHubStub()
         }
-        composeRule.onNodeWithTag("compose_tv_hub_stub").assertIsDisplayed()
-        composeRule.onNodeWithText("Compose TV hub (stub)").assertIsDisplayed()
+        composeRule.onNodeWithTag("compose_tv_hub_chrome").assertExists()
+        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
     }
 }
