@@ -18,7 +18,7 @@ Default proof for Compose and in-app UI:
 ./gradlew.bat :app:connectedGoogleDebugAndroidTest
 ```
 
-Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). If the UI is Compose inside an XML dialog or `ComposeView`, the test must host it that way — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
+Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). Dialogs are moving to Compose Material 3 / Navigation `dialog` destinations (see `docs/modernize-dreamdroid.md` Phase **2.1g-ii**); host tests in composition or a NavHost `dialog` route. While a DialogFragment/`ComposeView` host still exists, the test must use that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 

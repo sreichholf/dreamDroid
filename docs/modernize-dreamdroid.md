@@ -8,9 +8,11 @@ Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap l
 
 **Language:** new types are **Kotlin** (not Java). Prefer coroutines. Existing Java may stay until edited; heavy edits / extracted helpers go Kotlin. See [`AGENTS.md`](../AGENTS.md).
 
+**Modernize to state of the art:** earlier “keep for now” calls (DialogFragments, XML `RemoteViews`, Leanback shell, `HttpURLConnection` Enigma2, leftover Java overlay) were sequencing choices, **not** permanent freezes. When those surfaces come up again, move them to the current Android/Compose default — do not preserve a legacy chassis only because a prior decision deferred it. Dialogs are the first reopen (Phase **2.1g-ii** below).
+
 GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/android-ci.yml) runs on PRs/`main` — unit tests + assemble + androidTest compile (JDK 25), plus instrumented Compose tests on an API 30 emulator (`-Pci` disables ABI splits for a single installable APK).
 
-## Status as of 2026-09-11
+## Status as of 2026-09-11 (SOTA reopen)
 
 | Unit | GitHub | State | Head / merge |
 | --- | --- | --- | --- |
@@ -109,14 +111,14 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | navhost-epg-leaf | [#267](https://github.com/sreichholf/dreamDroid/pull/267) | merged | Phase 2.1e continued: EPG bouquet drawer root on `PhoneNavHost` with service ref/name extras. Keep OkHttp 3.14.9. |
 | navhost-remote-leaf | [#269](https://github.com/sreichholf/dreamDroid/pull/269) | merged | Phase 2.1e continued: tablet Virtual Remote on `PhoneNavHost`; phone still side activity. Keep OkHttp 3.14.9. |
 | navhost-hub-leaf | [#270](https://github.com/sreichholf/dreamDroid/pull/270) | merged | Phase 2.1e continued: hub `ServiceListPager` on `PhoneNavHost`. Keep OkHttp 3.14.9. |
-| widgets-2-6-dive | [#271](https://github.com/sreichholf/dreamDroid/pull/271) | merged | Phase 2.6: widgets product decision (keep XML RemoteViews; no Glance rewrite this program). Keep OkHttp 3.14.9. |
+| widgets-2-6-dive | [#271](https://github.com/sreichholf/dreamDroid/pull/271) | merged | Phase 2.6: widgets product decision (keep XML RemoteViews *then*). **Superseded** — Glance scheduled as **2.6e**. |
 | widgets-2-6b-cleanup | [#272](https://github.com/sreichholf/dreamDroid/pull/272) | merged | Phase 2.6b: Kotlin coroutine widget click path (drop JobIntentService); prefs delete `isFull`; remove dead SyncService/`HttpIntentService`. Keep OkHttp 3.14.9. |
 | anchor-popup-kotlin | [#273](https://github.com/sreichholf/dreamDroid/pull/273) | merged | Convert `AnchorPopup` to Kotlin; retab `WidgetRemoteRequest.kt`. Keep OkHttp 3.14.9. |
 | navhost-service-epg | [#274](https://github.com/sreichholf/dreamDroid/pull/274) | merged | Phase 2.1f beachhead: nested service EPG typed route on `PhoneNavHost`. Keep OkHttp 3.14.9. |
 | navhost-epg-search | [#275](https://github.com/sreichholf/dreamDroid/pull/275) | merged | Phase 2.1f continued: nested EPG search typed query route on `PhoneNavHost`. Keep OkHttp 3.14.9. |
 | navhost-pick-service | [#276](https://github.com/sreichholf/dreamDroid/pull/276) | merged | Phase 2.1f continued: nested bouquet pick on `PhoneNavHost` (host delivers result; no setTargetFragment). Keep OkHttp 3.14.9. |
 | navhost-phone-remote | [#277](https://github.com/sreichholf/dreamDroid/pull/277) | merged | Phase 2.1h beachhead: phone Virtual Remote on `PhoneNavHost` (same as tablet); drop `SimpleNoTitleFragmentActivity`. Keep OkHttp 3.14.9. |
-| docs-dialog-policy | [#278](https://github.com/sreichholf/dreamDroid/pull/278) | merged | Phase 2.1g: dialog policy decision (keep fragment dialogs; no NavHost promotion). Keep OkHttp 3.14.9. |
+| docs-dialog-policy | [#278](https://github.com/sreichholf/dreamDroid/pull/278) | merged | Phase 2.1g: dialog policy decision (keep fragment dialogs *then*). **Superseded** by **2.1g-ii** (Compose M3 / Navigation `dialog`). |
 | navhost-settings-leaf | [#279](https://github.com/sreichholf/dreamDroid/pull/279) | merged | Phase 2.1h continued: Settings drawer root on `PhoneNavHost`; drop side-activity path. Keep OkHttp 3.14.9. |
 | navhost-profile-edit | [#280](https://github.com/sreichholf/dreamDroid/pull/280) | merged | Phase 2.1h continued: nested profile create/edit on `PhoneNavHost` (host delivers result). Keep OkHttp 3.14.9. |
 | navhost-timer-edit | [#281](https://github.com/sreichholf/dreamDroid/pull/281) | merged | Phase 2.1h continued: nested timer create/edit on `PhoneNavHost`; service pick stayed side activity. Keep OkHttp 3.14.9. |
@@ -161,16 +163,18 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-database-helper | [#331](https://github.com/sreichholf/dreamDroid/pull/331) | merged | Kotlin-port `DatabaseHelper` (legacy SQLite profiles/events). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-dreamdroid-app | [#332](https://github.com/sreichholf/dreamDroid/pull/332) | merged | Kotlin-port `DreamDroid` Application. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-main-activity | [#333](https://github.com/sreichholf/dreamDroid/pull/333) | merged | Kotlin-port phone `MainActivity` shell. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
-| near-zero-java-keepers-only | [#334](https://github.com/sreichholf/dreamDroid/pull/334) | open | Near-zero production Java reached: **15** Java files left, all recorded keepers — `fragment/dialogs/*` (8), `VideoOverlayFragment`, Leanback `tv/{activities,fragment,presenter}` (4), `VirtualRemoteWidgetProvider`, `SimpleHttpClient`. Next program work is Phase **3.1c-iv** / Phase 4–5, not more Java ports unless a keeper is retired. |
+| near-zero-java-keepers-only | [#334](https://github.com/sreichholf/dreamDroid/pull/334) | merged | Near-zero production Java reached: **15** Java files left that were recorded as temporary keepers — `fragment/dialogs/*` (8), `VideoOverlayFragment`, Leanback `tv/{activities,fragment,presenter}` (4), `VirtualRemoteWidgetProvider`, `SimpleHttpClient`. Those keepers are **not** permanent; operator reopen (2026-09-11) retires them toward SOTA. |
+| docs-sota-no-keepers | [#335](https://github.com/sreichholf/dreamDroid/pull/335) | open | Operator override: no permanent keepers. Supersede Phase **2.1g** option A — dialogs → Compose Material 3 / Navigation `dialog` destinations. Reopen widgets Glance, Enigma2 OkHttp, VideoOverlay Kotlin, Leanback Compose hub as scheduled SOTA work. Docs only. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183/#203/#209/#210) are on `main`. Dead-weight deletes must not drop ButterKnife (still used by phone VLC overlay).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Wave 3 phone screens complete on `main` through #206** (plus CI #204). Phone Phase 2.7 (Fragment shells → Kotlin Compose destinations) **2.7b–i merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315)). **#316–#333 merged**. **This PR:** document near-zero Java keepers-only residue. **Next:** Phase **3.1c-iv** / Phase 4–5 (Java residue is keepers-only).
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Wave 3 phone screens complete on `main` through #206** (plus CI #204). Phone Phase 2.7 (Fragment shells → Kotlin Compose destinations) **2.7b–i merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315)). **#316–#333 merged**. **Prior:** [#334](https://github.com/sreichholf/dreamDroid/pull/334) documented near-zero Java temporary keepers. **This PR:** supersede keepers — modernize to SOTA (dialogs first as Phase **2.1g-ii**). **Next:** implement **2.1g-ii** dialog migration and/or Phase **3.1c-iv** Compose TV hub (operator pick); former keepers are backlog, not freezes.
 
 ### Operator overrides (this program)
 
+- **No permanent keepers.** Prior “keep DialogFragments / RemoteViews / HttpURLConnection / Leanback shell / Java overlay” decisions were deferrals. Reopen and modernize to the current Android/Compose default when touching that surface; do not leave a legacy chassis because an older plan said keep.
 - **Land** when the operator says land. That waives "owners do not merge" for that PR.
 - **Proof** is `./gradlew.bat :app:connectedGoogleDebugAndroidTest`. Do not prove phone UI by tapping the emulator through `adb` / `verify-dreamdroid.py` in a loop. That script is a single look, or a shell path that has no test yet.
 - Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
@@ -187,7 +191,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Wave 3 phone Compose screens complete on `main` through #206; CI #204.
 - Appendix G phone UI checklist: all 19 items merged.
 - Remaining typed API (not Wave 3 UI): none on phone list paths (hub now/next #209; movies list #210; detail edge #206). Phase 0 Leanback dive #211 on `main`.
-- Phone NavHost Device Info through Hub are **Kotlin Compose destinations**; Phase **2.7b–i** **merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315); decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)). **#316–#333 merged**. **This PR:** document near-zero Java keepers-only residue. **Next:** Phase **3.1c-iv** / Phase 4–5 (Java residue is keepers-only).
+- Phone NavHost Device Info through Hub are **Kotlin Compose destinations**; Phase **2.7b–i** **merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315); decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)). **#316–#333 merged**. **Prior:** [#334](https://github.com/sreichholf/dreamDroid/pull/334) documented near-zero Java temporary keepers. **This PR:** supersede keepers — modernize to SOTA (dialogs first as Phase **2.1g-ii**). **Next:** implement **2.1g-ii** dialog migration and/or Phase **3.1c-iv** Compose TV hub (operator pick); former keepers are backlog, not freezes.
 - Phase 2.1a drawer chrome **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). Phase 2.1b–e (through hub) **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Widgets **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272).
 - Phase 2.2a Device Info coroutines **merged** [#213](https://github.com/sreichholf/dreamDroid/pull/213).
 - Phase 2.2b Signal coroutines **merged** [#214](https://github.com/sreichholf/dreamDroid/pull/214).
@@ -231,7 +235,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.6a widgets decision **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b **merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272).
 - Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276).
 - Phase 2.1h beachhead phone Virtual Remote **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277).
-- Phase 2.1g dialog policy **merged** [#278](https://github.com/sreichholf/dreamDroid/pull/278) (keep fragment dialogs).
+- Phase 2.1g dialog policy **merged** [#278](https://github.com/sreichholf/dreamDroid/pull/278) (option A keep fragment dialogs *then*). **Superseded** by Phase **2.1g-ii** (this PR): Compose Material 3 / Navigation `dialog` destinations; retire DialogFragment chassis.
 - Phase 2.1h Settings leaf **merged** [#279](https://github.com/sreichholf/dreamDroid/pull/279).
 - Phase 2.1h nested profile edit **merged** [#280](https://github.com/sreichholf/dreamDroid/pull/280).
 - Phase 2.1h nested timer edit **merged** [#281](https://github.com/sreichholf/dreamDroid/pull/281).
@@ -249,7 +253,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - OkHttp 4.12 for Picasso/TLS **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299) (Enigma2 HTTP unchanged).
 - libVLC-all **3.7.5** stable **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300) (still not Media3).
 - Phase 2.7 phone Fragment→**Kotlin** Compose destination rework **2.7b–i merged** ([#304](https://github.com/sreichholf/dreamDroid/pull/304) docs; [#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315)).
-- **#316–#333 merged**. **This PR:** document near-zero Java keepers-only residue. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection Enigma2.
+- **#316–#333 merged**. [#334](https://github.com/sreichholf/dreamDroid/pull/334) documented temporary keepers. **This PR:** supersede keepers — SOTA modernization (dialogs = Phase **2.1g-ii**). Former keepers (dialogs, VideoOverlay Java, Leanback shell, RemoteViews widgets, HttpURLConnection Enigma2) are **scheduled backlog**, not freezes.
 
 ## How to read this
 
@@ -574,25 +578,36 @@ Compose on `main`: About dialog, Profiles list + edit form (#184), TV & Movies *
 ### Still the old data stack
 
 - Typed `EnigmaClient` exists. Zap list rows load typed `Service`. Service EPG list rows load typed `Event` (#176). EPG bouquet rows load typed `Event` (#179). EPG search rows load typed `Event` (#180). PickService list typing is on `main` via #181. Hub TV/Radio now/next loads typed `ServiceNowNext` (#209). Movies list loads typed `enigma.Movie` (#210). Leanback movie browse still uses hash SAX.
-- Enigma2 HTTP still uses `HttpURLConnection` via `SimpleHttpClient` (coroutines + typed `EnigmaClient`). Picons still Picasso + OkHttp 3.14.9. `asynctask/*` retired.
+- Enigma2 HTTP still uses `HttpURLConnection` via `SimpleHttpClient` (coroutines + typed `EnigmaClient`). **Scheduled SOTA:** move Enigma2 to OkHttp (Picasso already on OkHttp 4.12). `asynctask/*` retired.
 - Room holds `profile` only (`dreambox`). Android Backup includes Room and legacy `dreamdroid` for restore compat (**merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242)). After migrate/restore copy, legacy file is deleted; `DatabaseHelper` stays migrate-only.
 - ButterKnife dependency removed (**merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245)). TV binds cleared earlier; phone VLC overlay chrome is Compose. `legacy-support-v4` and `legacy-preference-v14` removed. `multiDexEnabled` stays; the `androidx.multidex` install helper is gone (minSdk 26).
 
-### Explicitly frozen
+### Explicitly frozen (narrow)
 
-- `app/src/.../tv/` Leanback. Operator picked phone first.
-- Rotation: fragment-local Bundle save (Evernote/Bridge removed [#252](https://github.com/sreichholf/dreamDroid/pull/252)).
-- VLC playback.
+Historical “keepers” (DialogFragments, RemoteViews widgets, Leanback shell, `HttpURLConnection` Enigma2, Java `VideoOverlayFragment`) are **not** frozen — see operator override and Phase **2.1g-ii**. Still out of scope as *product* rewrites until asked:
+
+- Enigma2 **server** side and VLC **codec / stream-protocol** work (player chrome may still move to Compose/Kotlin).
+- Rotation model already modernized: fragment/destination-local Bundle save (Evernote/Bridge removed [#252](https://github.com/sreichholf/dreamDroid/pull/252)).
+
+### Former keepers → SOTA backlog (scheduled)
+
+| Surface | Was “keep” | SOTA target | Phase / slice |
+| --- | --- | --- | --- |
+| Phone dialogs / sheets | DialogFragment + Compose body ([#278](https://github.com/sreichholf/dreamDroid/pull/278) A) | Compose M3 `AlertDialog` / `ModalBottomSheet`; Navigation `dialog` destinations; delete FM chassis | **2.1g-ii** (docs this PR; code slices b–f) |
+| Home-screen widgets | XML `RemoteViews` ([#271](https://github.com/sreichholf/dreamDroid/pull/271) A) | Glance (or Glance+RemoteViews hybrid for dense RCU) | **2.6e** |
+| Enigma2 HTTP | `HttpURLConnection` `SimpleHttpClient` | OkHttp (aligned with Picasso stack) | dedicated HTTP PR after dialogs/TV hub pick |
+| VLC overlay | Java `VideoOverlayFragment` (Compose chrome already) | Kotlin Compose destination / fragment | follow-on after dialogs beachhead or with player work |
+| TV hub shell | Leanback browse ([#241](https://github.com/sreichholf/dreamDroid/pull/241) B) | Full Compose TV hub | **3.1c-iv** (already scheduled) |
 
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
 2. **Retire `ExtendedHashMap` on one more list path at a time** — EPG, zap, current event. UI can stay XML until the parser boundary is typed. Stops the dual model from rotting. **Done on `main`:** Zap #173, Service EPG #176, bouquet EPG #179, search EPG #180, PickService #181, CurrentService #183, timers #203, device info #199, signal #200, hub now/next #209, movies list #210.
 3. **Replace the drawer shell** — `NavigationHelper` + `MainActivity` in Compose Navigation. Touches every screen. Do this only after a few more destinations are Compose, or it wraps XML forever.
-4. **Kill dead weight without UI rewrite** — ButterKnife (not while TV is frozen). `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in **#175** (merged). #177: dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. ButterKnife still open while TV is frozen.
+4. **Kill dead weight without UI rewrite** — ButterKnife (cleared with overlay Compose). `android-retrostreams` and leftover `res/service_list_pager.xml` dropped in **#172**. MediaPlayer UI + MultiDex lib + orphan layouts in **#175** (merged). #177: dead `EpgTimelineFragment`, `legacy-preference-v14`, `legacy-support-v4`, unused menus, GONE bottom nav. ButterKnife cleared with phone overlay Compose (#245).
 5. **TV program** — Leanback hybrid complete; **full Compose hub (3.1c-iv / option C) after phone Phase 2.7**. Separate program. Do not mix into phone PRs.
 
-Recommended default: finish remaining typed API paths (shape 2), then wave 3 Compose screens (Appendix G). Keep drawer shell (3) and TV (5) as later programs.
+Recommended default (historical): finish remaining typed API paths (shape 2), then wave 3 Compose screens (Appendix G). Drawer shell (3) and TV (5) were later programs — TV hub is now **3.1c-iv**; dialogs/widgets/HTTP keepers reopened under SOTA backlog.
 
 ## Appendix G. Wave 3 — remaining non-Compose phone UIs
 
@@ -685,7 +700,7 @@ Prefer **typed browse data → details → hub → prefs** (not prefs-first; not
 4. Leanback prefs → Compose — **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236) (Phase 3.1d)
 5. TV ButterKnife cleared — **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237); phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c)
 
-**Safe next after Phase 0 / 3.1c focus dive landed:** Phase 3 cards/prefs (done). Broader Appendix H phone NavHost/widgets/VLC/state **merged**. Phone Phase **2.7b–h** destinations **merged**; **2.7i merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). **#316–#333 merged**. **This PR:** document near-zero Java keepers-only residue. **Next:** Phase **3.1c-iv** full Compose TV hub (option C) / Phase 4–5 (Java residue is keepers-only).
+**Safe next after Phase 0 / 3.1c focus dive landed:** Phase 3 cards/prefs (done). Broader Appendix H phone NavHost/widgets/VLC/state **merged**. Phone Phase **2.7b–h** destinations **merged**; **2.7i merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). **#316–#333 merged**. **This PR:** supersede keepers → SOTA (Phase **2.1g-ii** dialogs). **Next:** **2.1g-ii** implementation and/or Phase **3.1c-iv** Compose TV hub; former keepers are backlog.
 
 
 ### Phase 3.1c — TV hub focus dive (this PR; docs only)
@@ -894,7 +909,7 @@ Why:
 
 ### Phase 2.6 — Widgets / Virtual Remote home screen (decision [#271](https://github.com/sreichholf/dreamDroid/pull/271); 2.6b [#272](https://github.com/sreichholf/dreamDroid/pull/272))
 
-**Decision A** ([#271](https://github.com/sreichholf/dreamDroid/pull/271)): keep XML `RemoteViews` Virtual Remote widget; do **not** rewrite to Compose Glance in this program. **2.6b merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272): Kotlin coroutines + `goAsync` click path; delete empty zap stub / dead `SyncService` / `HttpIntentService`; prefs delete `isFull` on remove. No OkHttp 4.
+**Historical Decision A** ([#271](https://github.com/sreichholf/dreamDroid/pull/271)): keep XML `RemoteViews` Virtual Remote widget; defer Compose Glance. **Superseded** by reopen below (Glance is scheduled SOTA). **2.6b merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272): Kotlin coroutines + `goAsync` click path; delete empty zap stub / dead `SyncService` / `HttpIntentService`; prefs delete `isFull` on remove. No OkHttp 4.
 
 #### Inventory (after 2.6b)
 
@@ -919,26 +934,23 @@ Why:
 | **C. Delete widgets** | Remove provider + layouts + service | Deletes ~300 LOC Java + XML | Regresses home-screen remote users |
 | **D. Defer indefinitely** | No decision | — | Leaves Appendix H open |
 
-#### Decision (Phase 2.6 — [#271](https://github.com/sreichholf/dreamDroid/pull/271))
+#### Historical decision (Phase 2.6 — [#271](https://github.com/sreichholf/dreamDroid/pull/271))
 
-**Decision: option A** — keep XML `RemoteViews`. Do **not** start Glance (**B**) or delete (**C**) without a new operator ask.
+**Then: option A** — keep XML `RemoteViews`; defer Glance. That matched dense-RCU risk and program bandwidth while phone NavHost / HTTP / state landed. **2.6b–c** cleaned the RemoteViews path and Compose config.
 
-Why:
+#### Decision (Phase 2.6 reopen — this PR; supersedes A’s “not this program”)
 
-- Home-screen Virtual Remote is a dense RCU control surface; Glance is a poor fit vs existing `RemoteViews` merges.
-- Widgets already use Room profiles; ButterKnife is gone; path is small and stable.
-- Deprecated `JobIntentService` is cleanup, not a product rewrite.
+**Operator reopen:** widgets are not a permanent RemoteViews keeper. **Target:** Compose Glance (option **B**) as the SOTA widget stack, sized carefully for the dense Virtual Remote grid (possibly hybrid Glance chrome + RemoteViews only where Glance cannot express a control). Do **not** delete widgets (**C**) without a separate ask.
 
-**Revisit B later** only if operator asks for Glance, or Android removes RemoteViews paths we need.
-
-#### Proposed implementation PR slices (after this dive)
+#### Proposed implementation PR slices
 
 | Slice | Scope | Non-goals |
 | --- | --- | --- |
 | 2.6a | Docs decision on `main` | **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271). No widget code |
 | 2.6b | Kotlin coroutine click path (`WidgetRemoteRequest.kt`); delete zap stub; prefs delete `isFull`; drop dead `SyncService`/`HttpIntentService` | **merged** [#272](https://github.com/sreichholf/dreamDroid/pull/272). No Glance; no OkHttp 4 |
-| 2.6c | Optional: Compose config activity | **merged** [#288](https://github.com/sreichholf/dreamDroid/pull/288) (keep RemoteViews grids) |
-| 2.6d | Glance rewrite | **deferred** (not this program) |
+| 2.6c | Optional: Compose config activity | **merged** [#288](https://github.com/sreichholf/dreamDroid/pull/288) (RemoteViews grids then) |
+| 2.6d | Glance rewrite | **was deferred**; **reopened** as **2.6e** |
+| 2.6e | Glance (or Glance+RemoteViews hybrid) Virtual Remote; retire Java `VirtualRemoteWidgetProvider` when parity holds | Docs reopen is this PR; implementation is a later PR. Prefer after or beside **2.1g-ii**, not blocking TV hub unless asked |
 
 #### Explicit non-goals of this PR
 
@@ -968,7 +980,7 @@ Why:
 | Leaves | `ui/**/*Destination.kt` | Compose + coroutine load; Bundle extras via `NavExtras.DATA` |
 | Bases | `fragment/abs/BaseFragment.kt`, `activities/abs/BaseActivity.kt` | Titles / multi-pane hooks for host; SSL/Picasso/picon sync shell (**this PR**) |
 | Helpers | `FragmentHelper`, `NavigationHelper` | FM / drawer leftovers; volume/snackbar helpers |
-| Dialogs | `fragment/dialogs/*` | Stay Fragment dialogs (**2.1g**); out of 2.7 scope |
+| Dialogs | `fragment/dialogs/*` | **Was** Fragment dialogs (**2.1g** A). **Now** Phase **2.1g-ii** SOTA Compose/Navigation dialogs (out of 2.7 code scope; scheduled) |
 | Player | `VideoOverlayFragment` + `VideoActivity` | Separate surface; not a `PhoneNavHost` leaf |
 
 #### Inventory — NavHost nested leaves (converted 2.7b–h)
@@ -1013,11 +1025,11 @@ Hub children converted with **2.7h** (`HubServiceListPage` / `HubMovieListPage` 
 | 2.7b | Beachhead: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` | **merged** [#306](https://github.com/sreichholf/dreamDroid/pull/306) |
 | 2.7c | Simple leaves: Signal, Screenshot, Current, Backup → Kotlin destinations | Backup + Signal **merged** [#307](https://github.com/sreichholf/dreamDroid/pull/307). Current + Screenshot **merged** [#309](https://github.com/sreichholf/dreamDroid/pull/309) |
 | 2.7d | Zap + Virtual Remote → Kotlin destinations | **merged** [#310](https://github.com/sreichholf/dreamDroid/pull/310) |
-| 2.7e | Settings + Profiles + Profile edit → Kotlin destinations | **merged** [#311](https://github.com/sreichholf/dreamDroid/pull/311). Keep dialogs as Fragment |
+| 2.7e | Settings + Profiles + Profile edit → Kotlin destinations | **merged** [#311](https://github.com/sreichholf/dreamDroid/pull/311). Dialogs deferred then; reopen under **2.1g-ii** |
 | 2.7f | EPG bouquet + Service EPG + EPG search + Pick service → Kotlin destinations | **merged** [#312](https://github.com/sreichholf/dreamDroid/pull/312). No hub |
 | 2.7g | Timer edit + Timer service pick → Kotlin destinations | **merged** [#313](https://github.com/sreichholf/dreamDroid/pull/313) |
 | 2.7h | Hub (`ServiceListPager` + TV/Radio/Movies/Timers pages) → Kotlin Compose destination | **merged** [#314](https://github.com/sreichholf/dreamDroid/pull/314). No Leanback |
-| 2.7i | Chassis cleanup: drop unused `BaseHttp*` / recycler bases / `HttpFragmentHelper` / `NestedFragmentDestination`; `NavExtras.DATA`; TV `LOADER_DEFAULT_ID = 0` | **merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). No dialog policy reopen; no VideoActivity fold |
+| 2.7i | Chassis cleanup: drop unused `BaseHttp*` / recycler bases / `HttpFragmentHelper` / `NestedFragmentDestination`; `NavExtras.DATA`; TV `LOADER_DEFAULT_ID = 0` | **merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). Dialog reopen is **2.1g-ii** (separate); no VideoActivity fold |
 
 Order may slip for dependency (e.g. edit forms before pick), but **one PR per slice** unless the operator says otherwise. Prefer Device Info first (already coroutine + Bundle state + simplest UI).
 
@@ -1025,12 +1037,12 @@ Order may slip for dependency (e.g. edit forms before pick), but **one PR per sl
 
 - No same-shape `Fragment.java` → `Fragment.kt` without also making it a Compose destination
 - Leaving leaf logic in Java (conversion to Kotlin is in scope)
-- No dialog→NavHost promotion (stays **2.1g** option A)
+- DialogFragment chassis retirement is **Phase 2.1g-ii** (supersedes **2.1g** A); not folded into 2.7i code PRs
 - No `VideoActivity` / `VideoOverlayFragment` fold into `PhoneNavHost`
 - No Leanback / Glance / Media3 / Enigma2 server work (TV Compose hub is **Phase 3.1c-iv after 2.7**, not interleaved)
 - Do not merge `master` into `main`
 
-**Phase 2.7i merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). **#316–#333 merged**. **This PR:** document near-zero Java keepers-only residue. **Next:** Phase **3.1c-iv** / Phase 4–5 (Java residue is keepers-only).
+**Phase 2.7i merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). **#316–#333 merged**. **Prior:** [#334](https://github.com/sreichholf/dreamDroid/pull/334) documented near-zero Java temporary keepers. **This PR:** supersede keepers — modernize to SOTA (dialogs first as Phase **2.1g-ii**). **Next:** implement **2.1g-ii** dialog migration and/or Phase **3.1c-iv** Compose TV hub (operator pick); former keepers are backlog, not freezes.
 
 #### Chassis (after 2.3f)
 
@@ -1092,7 +1104,7 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 
 #### Agreed approach
 
-**A → hybrid beachhead:** add `navigation-compose`; host `NavHost` inside existing `MainActivity` / `detail_view` via `PhoneNavHostFragment`; migrate leaves (Device Info through hub + remote on phone and tablet). Keep `DrawerLayout` + profile header. Keep DialogFragments (**2.1g decision**) and remaining side activities initially. Do **not** fold `VideoActivity` into the phone graph.
+**A → hybrid beachhead:** add `navigation-compose`; host `NavHost` inside existing `MainActivity` / `detail_view` via `PhoneNavHostFragment`; migrate leaves (Device Info through hub + remote on phone and tablet). Keep `DrawerLayout` + profile header. Kept DialogFragments initially (**2.1g** A, later superseded by **2.1g-ii**); remaining side activities initially. Do **not** fold `VideoActivity` into the phone graph.
 
 #### Proposed PR slices
 
@@ -1103,7 +1115,8 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | 2.1d | Drawer → `NavController` for migrated roots; stop `clearBackStack`+`showDetails` for those | **merged** [#256](https://github.com/sreichholf/dreamDroid/pull/256) |
 | 2.1e | More drawer roots | Through hub **merged** [#257](https://github.com/sreichholf/dreamDroid/pull/257)–[#270](https://github.com/sreichholf/dreamDroid/pull/270) |
 | 2.1f | Nested stack (EPG search / service EPG / pick-service) typed routes | **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276) |
-| 2.1g | Dialog policy (keep fragment dialogs or promote a few) | **merged** [#278](https://github.com/sreichholf/dreamDroid/pull/278) — decision A keep fragment dialogs |
+| 2.1g | Dialog policy (keep fragment dialogs or promote a few) | **merged** [#278](https://github.com/sreichholf/dreamDroid/pull/278) — decision A *then*; **superseded** by **2.1g-ii** |
+| 2.1g-ii | Dialog SOTA reopen (Compose M3 + Navigation `dialog`) | **this PR** (docs); implementation slices below |
 | 2.1h | Optional side-activity convergence; retire `NavigationHelper` switch | Phone remote **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277); Settings **merged** [#279](https://github.com/sreichholf/dreamDroid/pull/279); profile/timer nest **merged** [#280](https://github.com/sreichholf/dreamDroid/pull/280)–[#283](https://github.com/sreichholf/dreamDroid/pull/283); fallbacks drop **merged** [#284](https://github.com/sreichholf/dreamDroid/pull/284). **This PR:** map drawer roots → `PhoneNavHost`; keep dialog/action arms. No OkHttp 4; no widgets; no Media3 |
 
 #### Explicit non-goals after 2.1e ([#270](https://github.com/sreichholf/dreamDroid/pull/270))
@@ -1115,14 +1128,14 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 - Timer service pick nested in 2.1h ([#283](https://github.com/sreichholf/dreamDroid/pull/283))
 - `SimpleToolbarFragmentActivity` removed ([#284](https://github.com/sreichholf/dreamDroid/pull/284))
 - Drawer NavHost roots mapped in `NavigationHelper` (**this PR**); dialogs/actions stay
-- Dialogs stay FragmentDialogs / bottom sheets ([#278](https://github.com/sreichholf/dreamDroid/pull/278))
+- Dialogs **were** FragmentDialogs / bottom sheets ([#278](https://github.com/sreichholf/dreamDroid/pull/278)); **reopened** as Compose/Navigation under **2.1g-ii**
 - No VideoActivity / Glance widgets / TV Leanback / Media3
 - No OkHttp 4; do not merge master into main
 - Nested typed routes done in 2.1f
 
-### Phase 2.1g — Dialog policy ([#278](https://github.com/sreichholf/dreamDroid/pull/278); docs only)
+### Phase 2.1g / 2.1g-ii — Dialog policy ([#278](https://github.com/sreichholf/dreamDroid/pull/278); reopen this PR)
 
-**No dialog→NavHost code.** Implementation follow-ons are not required for this decision.
+**2.1g** kept DialogFragments. **2.1g-ii** (this PR) supersedes that: Compose Material 3 + Navigation `dialog` destinations. Docs only here; implementation slices below.
 
 #### Chassis (current)
 
@@ -1165,22 +1178,49 @@ Host: `MainActivity` / `MultiPaneHandler.showDialogFragment`. Drawer tags in `Ma
 | **C. Hybrid** | Promote “big” sheets only | Partial consistency | Two systems forever; unclear win |
 | **D. Defer indefinitely** | No decision | — | Leaves Appendix H open |
 
-#### Decision (Phase 2.1g — [#278](https://github.com/sreichholf/dreamDroid/pull/278))
+#### Historical decision (Phase 2.1g — [#278](https://github.com/sreichholf/dreamDroid/pull/278))
 
-**Decision: option A** — keep fragment dialogs / bottom sheets. Do **not** promote drawer or contextual dialogs to `PhoneNavHost` routes (**B**/**C**) without a new operator ask.
+**Then: option A** — keep fragment dialogs / bottom sheets; do not promote to `PhoneNavHost`. That matched Phase 2.1 sequencing (real leaves + side-activity retirement first). Bodies were already Compose; remaining cost was the DialogFragment / `retainInstance` / `ActionDialog` listener chassis.
 
-Why:
+#### Decision (Phase 2.1g-ii — this PR; docs only; supersedes A)
 
-- These are **modals**, not destinations; NavHost routes would fight dimming, back stack, and `ActionDialog` → `MainActivity` / `NavigationHelper` routing that already works.
-- Bodies are already Compose (Wave 3 / drawer-dialogs / detail sheets); remaining cost is chassis, not XML UI.
-- Phase 2.1 budget went to real leaves and side-activity retirement (through [#277](https://github.com/sreichholf/dreamDroid/pull/277)); dialog promotion is low leverage.
+**Operator reopen (2026-09-11):** do **not** keep DialogFragments because A previously made sense. Modernize dialogs to the current Compose default.
 
-**Revisit B/C later** only if a dialog becomes a full screen with deep links, or the `ActionDialog` / `retainInstance` chassis is retired as its own cleanup (not a NavHost migration).
+**Target (state of the art):**
 
-#### Explicit non-goals of this PR
+| Kind | Pattern | Notes |
+| --- | --- | --- |
+| Ephemeral alerts / confirms | Material 3 Compose `AlertDialog` / `BasicAlertDialog` owned by screen or shell Compose state (ViewModel / `mutableState`) | Prefer over FM for leave-confirm, connection error, simple yes/no |
+| Sheets | Material 3 `ModalBottomSheet` in composition | EPG / movie detail sheets; not `BottomSheetDialogFragment` |
+| Shell / cross-destination modals | Navigation Compose `dialog` destinations on `PhoneNavHost` | About, power, sleep timer, send message, changelog when they need back-stack identity |
+| Choice / progress | Compose M3 dialogs or in-UI progress | Replace `MultiChoiceDialog` / `SimpleChoiceDialog` / `IndeterminateProgress` Java FM |
+| Results | Typed callbacks / `SavedStateHandle` / shared ViewModel | Retire `ActionDialog` → activity `DialogActionListener` + `retainInstance` |
 
-- No dialog→route code; no OkHttp 4; no VideoActivity fold; no Glance
-- Optional follow-ons stay under **2.1h** (retire NavigationHelper switch) or a separate chassis cleanup
+**Not the target:** `DialogFragment` / `BottomSheetDialogFragment` wrappers around ComposeView, even when bodies are already Compose.
+
+**Why this beats A and the old B/C framing:**
+
+- A froze a View-system modal chassis under a Compose-first app.
+- Old **B** (“promote everything to ordinary NavHost composable routes”) fought modal semantics. Navigation’s **`dialog` destination** type is the SOTA middle path: back stack + deep link without pretending a modal is a full leaf screen.
+- Old **C** (hybrid forever) is what we have today; the reopen ends the dual system.
+
+#### Implementation PR slices (2.1g-ii)
+
+| Slice | Scope | Proof |
+| --- | --- | --- |
+| 2.1g-ii-a | Docs reopen (this PR) | Doc review |
+| 2.1g-ii-b | Beachhead: one drawer modal (About or connection error) → Compose `AlertDialog` or Nav `dialog` route; delete its DialogFragment wrapper | Instrumented Compose test hosts the new path (composition or NavHost `dialog`), not only naked `setContent` while any View host remains |
+| 2.1g-ii-c | Remaining drawer modals (power / sleep / send message / changelog) | Same |
+| 2.1g-ii-d | Contextual sheets (EPG / movie detail) → `ModalBottomSheet` | Same |
+| 2.1g-ii-e | Multi/simple choice + indeterminate progress → Compose; delete Java FM helpers | Same |
+| 2.1g-ii-f | Delete `AbstractDialog` / `ActionDialog` / bottom-sheet FM bases; drop `showDialogFragment` / `NAVIGATION_DIALOG_TAGS` listener routing | Assemble + connected tests green; no FM dialog types left under `fragment/dialogs/` |
+
+One PR per slice unless the operator says otherwise. Prefer **2.1g-ii-b** before large TV hub work if dialog debt blocks Compose testing; otherwise operator may interleave with **3.1c-iv**.
+
+#### Explicit non-goals of this docs PR
+
+- No dialog migration code in this PR
+- No Glance / OkHttp Enigma2 / VideoOverlay / TV hub code here (those reopen as separate scheduled slices; see widgets **2.6e** and former keepers backlog)
 
 ### Phase 3 — Leanback TV (after Phase 0 dive)
 
@@ -1194,7 +1234,7 @@ Separate PRs; do not mix with phone shell PRs. Order fixed by Phase 0 dive:
 | 3.1d | Leanback prefs → Compose | **merged** [#236](https://github.com/sreichholf/dreamDroid/pull/236). |
 | 3.1e | Drop ButterKnife | TV binds cleared **merged** [#237](https://github.com/sreichholf/dreamDroid/pull/237). Phone library drop **merged** [#245](https://github.com/sreichholf/dreamDroid/pull/245) (2.5c / 2.5d). |
 
-**Phase 3 hybrid Leanback path complete** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub still Leanback shell until **3.1c-iv**). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276). Phase 2.1h phone remote through drawer root map **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277)–[#285](https://github.com/sreichholf/dreamDroid/pull/285) (dialog policy [#278](https://github.com/sreichholf/dreamDroid/pull/278); nested resume crash [#286](https://github.com/sreichholf/dreamDroid/pull/286); drawer IA [#282](https://github.com/sreichholf/dreamDroid/pull/282)). Hub nested-leaf teardown **merged** [#287](https://github.com/sreichholf/dreamDroid/pull/287). Phase 2.6c Compose widget config **merged** [#288](https://github.com/sreichholf/dreamDroid/pull/288). `SimpleFragmentActivity` retired **merged** [#289](https://github.com/sreichholf/dreamDroid/pull/289). Assert NavHost leaf fallbacks **merged** [#291](https://github.com/sreichholf/dreamDroid/pull/291). Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296). OkHttp 4.12 **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299); libVLC 3.7.5 **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300). Phase **2.7b–h** phone Compose destinations **merged** [#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#314](https://github.com/sreichholf/dreamDroid/pull/314) (decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)). Phase **2.7i** chassis cleanup **merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). **#316–#333 merged**. **This PR:** document near-zero Java keepers-only residue. **Next:** Phase **3.1c-iv** / Phase 4–5 (Java residue is keepers-only).
+**Phase 3 hybrid Leanback path complete** (typed browse, details, prefs, Compose cards, TV ButterKnife cleared; hub still Leanback shell until **3.1c-iv**). Phase 2.4 Room backup **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242). Phase 2.5 VLC through Compose overlay **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243)/[#244](https://github.com/sreichholf/dreamDroid/pull/244)/[#245](https://github.com/sreichholf/dreamDroid/pull/245). Phase 2.3 **complete** [#246](https://github.com/sreichholf/dreamDroid/pull/246)–[#252](https://github.com/sreichholf/dreamDroid/pull/252). Phase 2.1b–e through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Phase 2.6a–b **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272). Phase 2.1f nested typed routes **merged** [#274](https://github.com/sreichholf/dreamDroid/pull/274)–[#276](https://github.com/sreichholf/dreamDroid/pull/276). Phase 2.1h phone remote through drawer root map **merged** [#277](https://github.com/sreichholf/dreamDroid/pull/277)–[#285](https://github.com/sreichholf/dreamDroid/pull/285) (dialog policy [#278](https://github.com/sreichholf/dreamDroid/pull/278); nested resume crash [#286](https://github.com/sreichholf/dreamDroid/pull/286); drawer IA [#282](https://github.com/sreichholf/dreamDroid/pull/282)). Hub nested-leaf teardown **merged** [#287](https://github.com/sreichholf/dreamDroid/pull/287). Phase 2.6c Compose widget config **merged** [#288](https://github.com/sreichholf/dreamDroid/pull/288). `SimpleFragmentActivity` retired **merged** [#289](https://github.com/sreichholf/dreamDroid/pull/289). Assert NavHost leaf fallbacks **merged** [#291](https://github.com/sreichholf/dreamDroid/pull/291). Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296). OkHttp 4.12 **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299); libVLC 3.7.5 **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300). Phase **2.7b–h** phone Compose destinations **merged** [#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#314](https://github.com/sreichholf/dreamDroid/pull/314) (decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)). Phase **2.7i** chassis cleanup **merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). **#316–#333 merged**. **Prior:** [#334](https://github.com/sreichholf/dreamDroid/pull/334) documented near-zero Java temporary keepers. **This PR:** supersede keepers — modernize to SOTA (dialogs first as Phase **2.1g-ii**). **Next:** implement **2.1g-ii** dialog migration and/or Phase **3.1c-iv** Compose TV hub (operator pick); former keepers are backlog, not freezes.
 
 ### Phase 4 — Operator usertests
 
@@ -1208,7 +1248,7 @@ One PR per fix or small related cluster. Prefer regressions covered by Compose t
 
 - Do not merge `master` into `main`.
 - Do not rewrite VLC codecs or Enigma2 server side.
-- Phase **2.7i** chassis cleanup **merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). Near-zero Java non-keepers finished through #333; remaining Java is keepers-only. Prefer **3.1c-iv-b+** hub Compose next (unless the operator chooses otherwise).
+- Phase **2.7i** chassis cleanup **merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). Near-zero Java non-keepers finished through #333; remaining Java was temporary keepers ([#334](https://github.com/sreichholf/dreamDroid/pull/334)) and is now **scheduled SOTA backlog** (dialogs **2.1g-ii**, Glance widgets, OkHttp Enigma2, VideoOverlay Kotlin, Compose TV hub **3.1c-iv**). Prefer **2.1g-ii** and/or **3.1c-iv-b+** next (operator pick).
 
 ## Appendix F. Links
 
