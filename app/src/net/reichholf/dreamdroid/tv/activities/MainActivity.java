@@ -61,12 +61,8 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	protected void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// Phase 3.1c-iv: debug-only Compose hub (movies in iv-e); default Leanback until flag on.
-		if (TvComposeHubHost.useComposeHub(this)) {
-			TvComposeHubHost.install(this);
-		} else {
-			setContentView(R.layout.tv_main);
-		}
+		// Phase 3.1c-iv-f: Compose hub is the TV browse host (Leanback browse removed).
+		TvComposeHubHost.install(this);
 		try {
 			// register DreamDroidTrustManager for HTTPS
 			mTrustManager = new DreamDroidTrustManager(this);

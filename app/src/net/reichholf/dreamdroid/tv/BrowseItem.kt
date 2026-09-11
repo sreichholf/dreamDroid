@@ -5,7 +5,7 @@ import java.io.Serializable
 import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 
 /**
- * Phase 3.1a: typed Leanback browse payload.
+ * Phase 3.1a typed browse payload (settings kinds still used by Compose hub).
  * Hash maps are only built at the stream-Intent edge.
  */
 sealed class BrowseItem : Serializable {
