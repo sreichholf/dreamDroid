@@ -122,6 +122,16 @@ android {
             }
         }
     }
+    // Shared debug cert (repo-root debug.keystore) so CI, Cloud, and local
+    // googleDebug APKs are interchangeable. AGP's default is ~/.android/debug.keystore.
+    signingConfigs {
+        debug {
+            storeFile rootProject.file("debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
     flavorDimensions "distribution"
     productFlavors {
         google {
