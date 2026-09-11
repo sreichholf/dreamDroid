@@ -148,7 +148,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-kotlin-helpers | [#318](https://github.com/sreichholf/dreamDroid/pull/318) | merged | Port tiny helpers to Kotlin (`Python`, `BundleHelper`, `ProfileChangedListener`, `SimpleResult`/`Message`/`Tag`/`Volume`/`PowerState`/`SleepTimer`/`Remote`, `DreamDroidAttributionPresenter`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-more-helpers | [#319](https://github.com/sreichholf/dreamDroid/pull/319) | merged | Kotlin-port more tiny helpers (`CurrentService`/`URIStore`/`Service`/`NameValuePair`/`Statics`/`GenericSetting`/`BackupData`/`AppDatabase`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-interfaces | [#320](https://github.com/sreichholf/dreamDroid/pull/320) | merged | Kotlin-port fragment interfaces + `IntentFactory` + `DeviceDetector` (`MultiPaneHandler`/`ActivityCallbackHandler`/`IBaseFragment`/`IMutliPaneContent`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
-| near-zero-java-datetime | — | open | Kotlin-port `DateTime` + `DataParser`/`AbstractDataProvider`/`SimpleRequestInterface`/`SpacesItemDecoration`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
+| near-zero-java-datetime | [#321](https://github.com/sreichholf/dreamDroid/pull/321) | open | Kotlin-port `DateTime` + `DataParser`/`AbstractDataProvider`/`SimpleRequestInterface`/`SpacesItemDecoration`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
