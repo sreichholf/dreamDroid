@@ -97,4 +97,84 @@ class ComposeTvHubChromeTest {
         composeRule.onNodeWithTag("compose_tv_hub_rows", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("hub_placeholder_row", useUnmergedTree = true).assertExists()
     }
+
+    /** Phase 3.1c-iv-g: drawer header click must drive selection (Leanback parity). */
+    @Test
+    fun headerClickInvokesCallback() {
+        var selected: String? = null
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = { selected = it },
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+            )
+        }
+        val node = composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true)
+        node.assertExists()
+        node.requestFocus()
+        node.performKeyInput { pressKey(Key.DirectionCenter) }
+        if (selected == null) {
+            node.performClick()
+        }
+        assertEquals(TvComposeHubHost.HEADER_PLACEHOLDER_ID, selected)
+    }
+
+    @Test
+    fun loadingStateShowsLoadingTag() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                loading = true,
+            )
+        }
+        composeRule.onNodeWithTag("hub_loading", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun errorStateShowsErrorTag() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                errorText = "box offline",
+            )
+        }
+        composeRule.onNodeWithTag("hub_error", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun movieLoadingShowsMovieLoadingTag() {
+        val headerId = TvComposeHubHost.movieHeaderId("/hdd/movie")
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(headerId, "/hdd/movie"),
+                ),
+                selectedHeaderId = headerId,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                movieLoading = true,
+                moviesByLocation = emptyMap(),
+            )
+        }
+        composeRule.onNodeWithTag("hub_movie_loading", useUnmergedTree = true).assertExists()
+    }
 }
