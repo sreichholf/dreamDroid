@@ -19,6 +19,13 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import net.reichholf.dreamdroid.ui.about.AboutDialog
+import net.reichholf.dreamdroid.ui.dialogs.ChangelogDialog
+import net.reichholf.dreamdroid.ui.dialogs.PowerStateDialog
+import net.reichholf.dreamdroid.ui.dialogs.SendMessageDialog
+import net.reichholf.dreamdroid.ui.dialogs.SleepTimerDialog
+import net.reichholf.dreamdroid.ui.dialogs.defaultSleepTimerAction
+import net.reichholf.dreamdroid.activities.MainActivity
+import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
@@ -149,6 +156,38 @@ fun PhoneNavHost(
         dialog(PhoneNavRoutes.ABOUT) {
             AboutDialog(onDismiss = { navController.popBackStack() })
         }
+        dialog(PhoneNavRoutes.POWER) {
+            val activity = LocalContext.current as? MainActivity
+            PowerStateDialog(
+                onDismiss = { navController.popBackStack() },
+                onChoice = { action -> activity?.onDrawerPowerChoice(action) },
+            )
+        }
+        dialog(PhoneNavRoutes.SEND_MESSAGE) {
+            val activity = LocalContext.current as? MainActivity
+            SendMessageDialog(
+                onDismiss = { navController.popBackStack() },
+                onSend = { text, type, timeout ->
+                    activity?.onSendMessage(text, type, timeout)
+                },
+            )
+        }
+        dialog(PhoneNavRoutes.SLEEP_TIMER) {
+            val activity = LocalContext.current as? MainActivity
+            val args = hostFragment.consumeSleepTimerArgs()
+            SleepTimerDialog(
+                initialMinutes = args.minutes,
+                initialEnabled = args.enabled,
+                initialAction = args.action.ifEmpty { defaultSleepTimerAction() },
+                onDismiss = { navController.popBackStack() },
+                onSave = { time, action, enabled ->
+                    activity?.onSetSleepTimer(time, action, enabled)
+                },
+            )
+        }
+        dialog(PhoneNavRoutes.CHANGELOG) {
+            ChangelogDialog(onDismiss = { navController.popBackStack() })
+        }
     }
 }
 
@@ -156,6 +195,30 @@ fun PhoneNavHost(
 fun NavHostController.navigateToAbout() {
     if (currentDestination?.route == PhoneNavRoutes.ABOUT) return
     navigate(PhoneNavRoutes.ABOUT)
+}
+
+/** Push drawer Power as a Navigation `dialog`. */
+fun NavHostController.navigateToPower() {
+    if (currentDestination?.route == PhoneNavRoutes.POWER) return
+    navigate(PhoneNavRoutes.POWER)
+}
+
+/** Push drawer Send Message as a Navigation `dialog`. */
+fun NavHostController.navigateToSendMessage() {
+    if (currentDestination?.route == PhoneNavRoutes.SEND_MESSAGE) return
+    navigate(PhoneNavRoutes.SEND_MESSAGE)
+}
+
+/** Push drawer Sleep Timer as a Navigation `dialog` (args via host). */
+fun NavHostController.navigateToSleepTimer() {
+    if (currentDestination?.route == PhoneNavRoutes.SLEEP_TIMER) return
+    navigate(PhoneNavRoutes.SLEEP_TIMER)
+}
+
+/** Push Changelog as a Navigation `dialog`. */
+fun NavHostController.navigateToChangelog() {
+    if (currentDestination?.route == PhoneNavRoutes.CHANGELOG) return
+    navigate(PhoneNavRoutes.CHANGELOG)
 }
 
 /** Drawer-style top-level navigate: single-top + save/restore under the start destination. */

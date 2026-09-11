@@ -20,6 +20,12 @@ object PhoneNavRoutes {
     /** Phase 2.1g-ii-b: About as a Navigation Compose `dialog` destination. */
     const val ABOUT = "about"
 
+    /** Phase 2.1g-ii-c: remaining drawer modals as Navigation Compose `dialog`s. */
+    const val POWER = "power"
+    const val SEND_MESSAGE = "send_message"
+    const val SLEEP_TIMER = "sleep_timer"
+    const val CHANGELOG = "changelog"
+
     /** Nested service EPG (typed string args). */
     const val SERVICE_EPG = "service_epg/{serviceRef}?serviceName={serviceName}"
 

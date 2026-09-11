@@ -43,12 +43,9 @@ import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
-import net.reichholf.dreamdroid.fragment.dialogs.ChangelogDialog
 import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
-import net.reichholf.dreamdroid.fragment.dialogs.SendMessageDialog
-import net.reichholf.dreamdroid.fragment.dialogs.SleepTimerDialog
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
@@ -65,8 +62,6 @@ class MainActivity :
     MultiPaneHandler,
     ProfileChangedListener,
     ActionDialog.DialogActionListener,
-    SleepTimerDialog.SleepTimerDialogActionListener,
-    SendMessageDialog.SendMessageDialogActionListener,
     MultiChoiceDialog.MultiChoiceDialogListener,
     SearchView.OnQueryTextListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
@@ -206,7 +201,13 @@ class MainActivity :
             editor.apply()
         }
         if (updated || !onUpdateOnly) {
-            showDialogFragment(ChangelogDialog.newInstance(), "changelog_dialog")
+            val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
+            if (detail is PhoneNavHostFragment && detail.navigateToChangelog()) {
+                return
+            }
+            val host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.HUB)
+            host.queueChangelog()
+            showDetails(host)
         }
     }
 
@@ -730,11 +731,15 @@ class MainActivity :
         return false
     }
 
-    override fun onSetSleepTimer(time: String, action: String, enabled: Boolean) {
+    fun onSetSleepTimer(time: String, action: String, enabled: Boolean) {
         mNavigationHelper?.onSetSleepTimer(time, action, enabled)
     }
 
-    override fun onSendMessage(text: String, type: String, timeout: String) {
+    fun onDrawerPowerChoice(action: Int) {
+        mNavigationHelper?.onDialogAction(action, null, null)
+    }
+
+    fun onSendMessage(text: String, type: String, timeout: String) {
         mNavigationHelper?.onSendMessage(text, type, timeout)
     }
 
@@ -813,9 +818,6 @@ class MainActivity :
 
         @JvmField
         val NAVIGATION_DIALOG_TAGS: List<String> = listOf(
-            "powerstate_dialog",
-            "sendmessage_dialog",
-            "sleeptimer_dialog",
             "sleeptimer_progress_dialog",
         )
 

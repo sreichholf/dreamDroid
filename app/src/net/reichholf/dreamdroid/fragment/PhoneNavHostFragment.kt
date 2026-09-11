@@ -30,6 +30,12 @@ import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerSettings
 import net.reichholf.dreamdroid.ui.nav.navigateToAbout
+import net.reichholf.dreamdroid.helpers.Python
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
+import net.reichholf.dreamdroid.ui.nav.navigateToChangelog
+import net.reichholf.dreamdroid.ui.nav.navigateToPower
+import net.reichholf.dreamdroid.ui.nav.navigateToSendMessage
+import net.reichholf.dreamdroid.ui.nav.navigateToSleepTimer
 import net.reichholf.dreamdroid.ui.nav.navigateToBackup
 import net.reichholf.dreamdroid.ui.nav.navigateToEpgSearch
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
@@ -43,6 +49,28 @@ import net.reichholf.dreamdroid.ui.timers.TimerEditSession
  * [net.reichholf.dreamdroid.activities.abs.BaseActivity] only delivers [onActivityResult] to
  * top-level fragments; forward to the active leaf (Profiles edit, EPG bouquet picker, Zap).
  */
+data class SleepTimerNavArgs(
+    val minutes: Int,
+    val enabled: Boolean,
+    val action: String,
+) {
+    companion object {
+        fun from(timer: ExtendedHashMap): SleepTimerNavArgs {
+            var minutes = 90
+            try {
+                minutes = Integer.parseInt(timer.getString(SleepTimer.KEY_MINUTES))
+            } catch (_: NumberFormatException) {
+            }
+            val enabled = Python.TRUE == timer.getString(SleepTimer.KEY_ENABLED)
+            val action = timer.getString(SleepTimer.KEY_ACTION) ?: SleepTimer.ACTION_STANDBY
+            return SleepTimerNavArgs(minutes, enabled, action)
+        }
+
+        fun defaults(): SleepTimerNavArgs =
+            SleepTimerNavArgs(90, false, SleepTimer.ACTION_STANDBY)
+    }
+}
+
 class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialogListener {
 
     companion object {
@@ -108,6 +136,9 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
     private var pendingTimerEdit: ExtendedHashMap? = null
     private var pendingTimerCreate: Boolean = false
     private var pendingEpgSearchQuery: String? = null
+    private var pendingSleepTimerArgs: SleepTimerNavArgs? = null
+    private var pendingOpenSleepTimer: Boolean = false
+    private var pendingChangelog: Boolean = false
     private val profileEditRemountState = MutableStateFlow(0)
     private val timerEditRemountState = MutableStateFlow(0)
     private val epgRemountState = MutableStateFlow(0)
@@ -272,6 +303,57 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
         return true
     }
 
+    fun navigateToPower(): Boolean {
+        val controller = navController ?: return false
+        controller.navigateToPower()
+        return true
+    }
+
+    fun navigateToSendMessage(): Boolean {
+        val controller = navController ?: return false
+        controller.navigateToSendMessage()
+        return true
+    }
+
+    fun navigateToSleepTimer(timer: ExtendedHashMap): Boolean {
+        pendingSleepTimerArgs = SleepTimerNavArgs.from(timer)
+        val controller = navController
+        if (controller == null) {
+            pendingOpenSleepTimer = true
+            return false
+        }
+        controller.navigateToSleepTimer()
+        return true
+    }
+
+    fun queueSleepTimer(timer: ExtendedHashMap) {
+        pendingSleepTimerArgs = SleepTimerNavArgs.from(timer)
+        pendingOpenSleepTimer = true
+        flushPendingNavigations()
+    }
+
+    fun consumeSleepTimerArgs(): SleepTimerNavArgs {
+        val args = pendingSleepTimerArgs ?: SleepTimerNavArgs.defaults()
+        pendingSleepTimerArgs = null
+        return args
+    }
+
+    fun navigateToChangelog(): Boolean {
+        val controller = navController
+        if (controller == null) {
+            pendingChangelog = true
+            return false
+        }
+        controller.navigateToChangelog()
+        return true
+    }
+
+    fun queueChangelog() {
+        pendingChangelog = true
+        flushPendingNavigations()
+    }
+
+
     /**
      * Open EPG with bouquet args. Remounts when already on the EPG route so
      * [EpgBouquetDestination] reloads from fresh host args.
@@ -376,6 +458,14 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
         if (searchQuery != null) {
             pendingEpgSearchQuery = null
             navigateToEpgSearch(searchQuery)
+        }
+        if (pendingOpenSleepTimer) {
+            pendingOpenSleepTimer = false
+            navController?.navigateToSleepTimer()
+        }
+        if (pendingChangelog) {
+            pendingChangelog = false
+            navController?.navigateToChangelog()
         }
     }
 
