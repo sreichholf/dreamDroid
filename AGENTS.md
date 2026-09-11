@@ -24,11 +24,13 @@ Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets 
 
 CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `:app:testGoogleDebugUnitTest`, assemble, androidTest compile (all with `-Pci` to skip ABI splits). Emulator `connectedGoogleDebugAndroidTest` (API 30) runs on `main` pushes and manual `workflow_dispatch` only (slow/flaky on PR). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
 
-`verify-dreamdroid.py` is for a single look when you need a screenshot or a shell-only path that has no test yet. It is not the verification loop.
+`verify-dreamdroid.py` exists for a shell-only dump when there is no instrumented test yet. It is not the verification loop.
 
 ## Cloud Agent environment
 
 Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 25 + the Android SDK (build-tools 36, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
+
+**Do not visually drive the emulator in Cloud Agent sessions.** Do not use `computerUse`, GUI tapping, screenshot/recording walkthroughs of the phone UI, or `verify-dreamdroid.py launch` / adb tap loops to “look at” the app. Soft-accelerated TCG plus the agent display path is too slow and unreliable here; those attempts waste the session. Prove UI with instrumented tests (`bash .cursor/cloud/connected-test.sh …`) and log/output artifacts only.
 
 Nested KVM guest execution hangs on Cursor Cloud VMs: `/dev/kvm` exists and `kvm-ok` passes, but under `-enable-kvm` the guest vCPU never runs (0% CPU, no kernel output). The emulator therefore runs under software (`-accel off`, TCG). It works but is slow. Set `DREAMDROID_EMU_ACCEL=auto` to try KVM on a host that supports nested virt.
 
