@@ -149,9 +149,8 @@ class PhoneNavHostFragment : BaseFragment() {
     fun getActiveLeaf(): Fragment? {
         val route = navController?.currentDestination?.route ?: startRoute()
         return when {
-            route == PhoneNavRoutes.DEVICE_INFO ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_device_info_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.DEVICE_INFO)
+            // Phase 2.7b: Device Info is a direct Compose destination (no nested Fragment).
+            route == PhoneNavRoutes.DEVICE_INFO -> null
             route == PhoneNavRoutes.SIGNAL ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_signal_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SIGNAL)

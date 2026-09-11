@@ -13,15 +13,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.DeviceInfo
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
-import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 data class DeviceInfoRow(
     val title: String,
@@ -207,24 +202,5 @@ private fun DeviceInfoSection(
                 .fillMaxWidth()
                 .padding(bottom = 6.dp),
         )
-    }
-}
-
-fun ComposeView.bindDeviceInfoScreen(
-    state: DeviceInfoUiState,
-    refresh: ComposeRefreshState,
-    onRefresh: () -> Unit,
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            DreamDroidPullRefresh(
-                refreshing = refresh.isRefreshing,
-                onRefresh = onRefresh,
-                enabled = refresh.enabled,
-            ) {
-                DeviceInfoScreen(state = state)
-            }
-        }
     }
 }
