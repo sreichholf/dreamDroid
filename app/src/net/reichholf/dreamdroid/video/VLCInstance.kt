@@ -1,7 +1,7 @@
-package net.reichholf.dreamdroid.video;
+package net.reichholf.dreamdroid.video
 
 /*****************************************************************************
- * VLCInstance.java
+ * VLCInstance.kt
  *****************************************************************************
  * Copyright © 2011-2014 VLC authors and VideoLAN
  *
@@ -20,42 +20,41 @@ package net.reichholf.dreamdroid.video;
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-import android.content.Context;
+import net.reichholf.dreamdroid.DreamDroid
+import org.videolan.libvlc.LibVLC
 
-import androidx.annotation.Nullable;
+/**
+ * Thin Kotlin port of the LibVLC singleton holder (Phase 2.5e).
+ * Behavior matches the former Java [VLCInstance].
+ */
+object VLCInstance {
+    const val TAG = "VLC/UiTools/VLCInstance"
 
-import net.reichholf.dreamdroid.DreamDroid;
+    @Volatile
+    private var sLibVLC: LibVLC? = null
 
-import org.videolan.libvlc.LibVLC;
+    @JvmStatic
+    @Synchronized
+    fun get(): LibVLC {
+        var instance = sLibVLC
+        if (instance == null) {
+            val context = DreamDroid.getAppContext()
+            val options = ArrayList<String>()
+            options.add("--http-reconnect")
+            instance = LibVLC(context, options)
+            sLibVLC = instance
+        }
+        return instance
+    }
 
-import java.util.ArrayList;
-
-
-public class VLCInstance {
-	public final static String TAG = "VLC/UiTools/VLCInstance";
-
-	@Nullable
-	private static LibVLC sLibVLC = null;
-
-	/**
-	 * A set of utility functions for the VLC application
-	 */
-	@Nullable
-	public synchronized static LibVLC get() throws IllegalStateException {
-		if (sLibVLC == null) {
-			final Context context = DreamDroid.getAppContext();
-			ArrayList<String> options = new ArrayList<>();
-			options.add("--http-reconnect");
-			sLibVLC = new LibVLC(context, options);
-		}
-		return sLibVLC;
-	}
-
-	public static synchronized void restart() throws IllegalStateException {
-		if (sLibVLC != null) {
-			sLibVLC.release();
-			sLibVLC = null;
-			get();
-		}
-	}
+    @JvmStatic
+    @Synchronized
+    fun restart() {
+        val instance = sLibVLC
+        if (instance != null) {
+            instance.release()
+            sLibVLC = null
+            get()
+        }
+    }
 }
