@@ -17,7 +17,7 @@ class Movie : ExtendedHashMap, Serializable {
     constructor() : super()
 
     constructor(data: ExtendedHashMap) {
-        mMap = data.hashMap
+        mMap = data.getHashMap()
     }
 
     fun reference(): String = getString(KEY_REFERENCE, "") ?: ""

@@ -15,7 +15,7 @@ import net.reichholf.dreamdroid.helpers.Python
  */
 class Event : ExtendedHashMap {
     constructor(data: ExtendedHashMap) {
-        mMap = data.hashMap
+        mMap = data.getHashMap()
     }
 
     fun id(): String = getString(KEY_EVENT_ID, "0") ?: "0"
