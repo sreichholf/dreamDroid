@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import android.content.DialogInterface
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
@@ -105,7 +105,7 @@ class PhoneNavHostFragment : BaseFragment() {
      * Optional dialog-action sink for Compose destinations that replaced nested Fragments
      * (e.g. Current Service). [MainActivity] forwards via [getActiveLeaf] → this host.
      */
-    var composeDialogActionListener: ActionDialog.DialogActionListener? = null
+    var composeDialogActionListener: DialogActionListener? = null
 
     /**
      * Optional activity-result sink for Compose destinations (e.g. Zap bouquet pick).

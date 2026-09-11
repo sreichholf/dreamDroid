@@ -99,7 +99,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | dialogs-2-1g-ii-c | [#343](https://github.com/sreichholf/dreamDroid/pull/343) | merged | Phase 2.1g-ii-c: remaining drawer modals (power / sleep / send message / changelog) → Navigation Compose `dialog`s; delete DialogFragment wrappers. |
 | dialogs-2-1g-ii-d | [#344](https://github.com/sreichholf/dreamDroid/pull/344) | open | Phase 2.1g-ii-d: EPG/movie detail → Compose `ModalBottomSheet`; delete bottom-sheet DialogFragment helpers. |
 | dialogs-2-1g-ii-e | [#345](https://github.com/sreichholf/dreamDroid/pull/345) | open | Phase 2.1g-ii-e: Multi/simple choice + indeterminate progress → Compose; delete Java FM helpers. |
-| dialogs-2-1g-ii-f | | open | Phase 2.1g-ii-f: delete AbstractDialog/ActionDialog bases + confirm/connection Compose; drop FM listener routing. |
+| dialogs-2-1g-ii-f | | open | Phase 2.1g-ii-f: delete AbstractDialog/ActionDialog bases; confirm/connection as Compose; only DreamDroidAttributionPresenter left under fragment/dialogs. |
 | room-backup-finish | [#242](https://github.com/sreichholf/dreamDroid/pull/242) | merged | Phase 2.4: Android BackupAgent includes Room `dreambox` (and legacy `dreamdroid` for restore compat); drop legacy file after migrate; widget stops using `DatabaseHelper` keys. Keep migrate-only `DatabaseHelper`. Keep OkHttp 3.14.9. |
 | docs-vlc-product-decision | [#243](https://github.com/sreichholf/dreamDroid/pull/243) | merged | Phase 2.5 (docs only): VLC/streaming inventory + product options; **decision A** keep libVLC + Compose overlay rewrite path. No player code. Keep OkHttp 3.14.9. |
 | vlc-overlay-typed-state | [#244](https://github.com/sreichholf/dreamDroid/pull/244) | merged | Phase 2.5b typed VideoOverlay state (`ServiceNowNext` / `Movie`); hash only at stream Intent / legacy edges. Keep OkHttp 3.14.9. |
@@ -181,7 +181,7 @@ Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Ap
 
 Wave 2 (operator choice): (1) TV & Movies lists (#170), (4) dead-weight (#172/#175/#177), and (2) typed list paths (#173/#176/#179/#180/#181/#183/#203/#209/#210) are on `main`. Dead-weight deletes must not drop ButterKnife (still used by phone VLC overlay).
 
-Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Wave 3 phone screens complete on `main` through #206** (plus CI #204). Phone Phase 2.7 (Fragment shells → Kotlin Compose destinations) **2.7b–i merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315)). **#316–#343 merged**. **#344/#345 open** (ii-d sheets / ii-e choice). **This PR:** Phase **2.1g-ii-f** (delete FM dialog bases; confirm/connection Compose). **Next:** Phase **4** / SOTA backlog / Phase **4** operator usertests.
+Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose + Kotlin, **one PR per screen**. Checklist in Appendix G. **Wave 3 phone screens complete on `main` through #206** (plus CI #204). Phone Phase 2.7 (Fragment shells → Kotlin Compose destinations) **2.7b–i merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315)). **#316–#343 merged**. **#344/#345 open** (ii-d sheets / ii-e choice). **This PR:** Phase **2.1g-ii-f** (delete FM dialog bases; confirm/connection Compose). **Next:** Phase **4** operator usertests / SOTA backlog (Glance / OkHttp Enigma2 / VideoOverlay Kotlin) / Phase **4** operator usertests.
 
 ### Operator overrides (this program)
 
@@ -202,7 +202,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Wave 3 phone Compose screens complete on `main` through #206; CI #204.
 - Appendix G phone UI checklist: all 19 items merged.
 - Remaining typed API (not Wave 3 UI): none on phone list paths (hub now/next #209; movies list #210; detail edge #206). Phase 0 Leanback dive #211 on `main`.
-- Phone NavHost Device Info through Hub are **Kotlin Compose destinations**; Phase **2.7b–i** **merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315); decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)). **#316–#343 merged**. **#344/#345 open** (ii-d sheets / ii-e choice). **This PR:** Phase **2.1g-ii-f** (delete FM dialog bases; confirm/connection Compose). **Next:** Phase **4** / SOTA backlog / Phase **4** operator usertests.
+- Phone NavHost Device Info through Hub are **Kotlin Compose destinations**; Phase **2.7b–i** **merged** ([#306](https://github.com/sreichholf/dreamDroid/pull/306)–[#315](https://github.com/sreichholf/dreamDroid/pull/315); decision [#304](https://github.com/sreichholf/dreamDroid/pull/304)). **#316–#343 merged**. **#344/#345 open** (ii-d sheets / ii-e choice). **This PR:** Phase **2.1g-ii-f** (delete FM dialog bases; confirm/connection Compose). **Next:** Phase **4** operator usertests / SOTA backlog (Glance / OkHttp Enigma2 / VideoOverlay Kotlin) / Phase **4** operator usertests.
 - Phase 2.1a drawer chrome **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). Phase 2.1b–e (through hub) **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). Widgets **merged** [#271](https://github.com/sreichholf/dreamDroid/pull/271)/[#272](https://github.com/sreichholf/dreamDroid/pull/272).
 - Phase 2.2a Device Info coroutines **merged** [#213](https://github.com/sreichholf/dreamDroid/pull/213).
 - Phase 2.2b Signal coroutines **merged** [#214](https://github.com/sreichholf/dreamDroid/pull/214).
@@ -230,7 +230,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 3.1c-i Compose `TextCardView` beachhead **merged** [#239](https://github.com/sreichholf/dreamDroid/pull/239).
 - Phase 3.1c-ii Compose service/settings image cards **merged** [#240](https://github.com/sreichholf/dreamDroid/pull/240).
 - Phase 3.1c-iii hub shell decision **merged** [#241](https://github.com/sreichholf/dreamDroid/pull/241) (kept Leanback + Compose cards at the time).
-- Phase 3.1c-iv full Compose TV hub (**option C**) **merged** through **iv-g** [#336](https://github.com/sreichholf/dreamDroid/pull/336)–[#341](https://github.com/sreichholf/dreamDroid/pull/341). **#343 merged**. **#344 open**. **This PR:** Phase **2.1g-ii-e** choice/progress Compose dialogs.
+- Phase 3.1c-iv full Compose TV hub (**option C**) **merged** through **iv-g** [#336](https://github.com/sreichholf/dreamDroid/pull/336)–[#341](https://github.com/sreichholf/dreamDroid/pull/341). **#343 merged**. **#344 open**. **This PR:** Phase **2.1g-ii-f** choice/progress Compose dialogs.
 - Phase 2.4 Room backup finish **merged** [#242](https://github.com/sreichholf/dreamDroid/pull/242).
 - Phase 2.5 VLC product decision **merged** [#243](https://github.com/sreichholf/dreamDroid/pull/243) (keep libVLC; Compose overlay rewrite path).
 - Phase 2.5b typed overlay state **merged** [#244](https://github.com/sreichholf/dreamDroid/pull/244) (`ServiceNowNext` / `Movie`; hash only at stream Intent / legacy edges).
@@ -1215,7 +1215,7 @@ Host: `MainActivity` / `MultiPaneHandler.showDialogFragment`. Drawer tags in `Ma
 | 2.1g-ii-c | Remaining drawer modals (power / sleep / send message / changelog) | **merged** [#343](https://github.com/sreichholf/dreamDroid/pull/343) |
 | 2.1g-ii-d | Contextual sheets (EPG / movie detail) → `ModalBottomSheet` | **open** [#344](https://github.com/sreichholf/dreamDroid/pull/344) |
 | 2.1g-ii-e | Multi/simple choice + indeterminate progress → Compose; delete Java FM helpers | **open** [#345](https://github.com/sreichholf/dreamDroid/pull/345) |
-| 2.1g-ii-f | Delete `AbstractDialog` / `ActionDialog` bases; confirm/connection Compose; drop FM listener routing | **this PR** |
+| 2.1g-ii-f | Delete `AbstractDialog` / `ActionDialog` bases; confirm/connection Compose; drop FM listener routing | **this PR** — `ConfirmAlertDialog`; MainActivity Material/Compose connection error; TV details extend `DialogFragment`; `fragment/dialogs/` keeps only attribution presenter |
 | 2.1g-ii-f | Delete `AbstractDialog` / `ActionDialog` / bottom-sheet FM bases; drop `showDialogFragment` / `NAVIGATION_DIALOG_TAGS` listener routing | Assemble + connected tests green; no FM dialog types left under `fragment/dialogs/` |
 
 One PR per slice unless the operator says otherwise. Prefer **2.1g-ii-b** before large TV hub work if dialog debt blocks Compose testing; otherwise operator may interleave with **3.1c-iv**.

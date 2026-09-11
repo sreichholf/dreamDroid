@@ -153,3 +153,36 @@ fun IndeterminateProgressDialog(
         confirmButton = {},
     )
 }
+
+
+@Composable
+fun ConfirmAlertDialog(
+    title: String,
+    message: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    confirmLabel: String = stringResource(android.R.string.yes),
+    dismissLabel: String = stringResource(android.R.string.no),
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm()
+                    onDismiss()
+                },
+            ) {
+                Text(confirmLabel)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(dismissLabel)
+            }
+        },
+    )
+}
+

@@ -19,7 +19,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent
@@ -33,7 +33,7 @@ abstract class BaseFragment :
     ActivityCallbackHandler,
     IMutliPaneContent,
     IBaseFragment,
-    ActionDialog.DialogActionListener {
+    DialogActionListener {
     private var mHelper: FragmentHelper? = FragmentHelper()
     protected var mShouldRetainInstance: Boolean = true
     protected var mHasFabMain: Boolean = false

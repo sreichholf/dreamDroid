@@ -17,7 +17,7 @@ import com.squareup.picasso.OkHttp3Downloader
 import com.squareup.picasso.Picasso
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.helpers.PiconSyncService
 import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
 import okhttp3.Credentials
@@ -36,7 +36,7 @@ import javax.net.ssl.X509TrustManager
  */
 open class BaseActivity :
     AppCompatActivity(),
-    ActionDialog.DialogActionListener,
+    DialogActionListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
     private var mTrustManager: DreamDroidTrustManager? = null
 

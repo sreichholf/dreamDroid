@@ -15,7 +15,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.fragment.dialogs.AbstractDialog
+import androidx.fragment.app.DialogFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.enigma2.Event as HashEvent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
@@ -27,7 +27,13 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
  * TV fullscreen EPG detail. Reuses phone [EpgDetailScreen] under [DreamDroidTheme]
  * with actions hidden (Phase 3.1b). Prefers typed [Event]; hash kept for legacy callers.
  */
-class EpgDetailDialog : AbstractDialog() {
+class EpgDetailDialog : DialogFragment() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        @Suppress("DEPRECATION")
+        retainInstance = true
+    }
 
     init {
         setStyle(STYLE_NO_FRAME, R.style.Theme_Dreamdroid_FullscreenDialog)

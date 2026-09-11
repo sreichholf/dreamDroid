@@ -38,7 +38,7 @@ import net.reichholf.dreamdroid.DreamDroid;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.VideoActivity;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
@@ -65,7 +65,7 @@ import org.videolan.libvlc.MediaPlayer;
 import java.util.ArrayList;
 
 public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventListener,
-		ItemClickSupport.OnItemClickListener, ActionDialog.DialogActionListener {
+		ItemClickSupport.OnItemClickListener, DialogActionListener {
 
 	public static final String DIALOG_TAG_AUDIO_TRACK = "dialog_audio_track";
 	public static final String DIALOG_TAG_SUBTITLE_TRACK = "dialog_subtitle_track";

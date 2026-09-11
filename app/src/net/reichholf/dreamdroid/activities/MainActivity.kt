@@ -13,6 +13,12 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
+import net.reichholf.dreamdroid.ui.dialogs.bindConnectionErrorScreen
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.compose.ui.platform.ComposeView
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -42,9 +48,7 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
-import net.reichholf.dreamdroid.fragment.dialogs.ConnectionErrorDialog
-import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
@@ -60,7 +64,7 @@ class MainActivity :
     BaseActivity(),
     MultiPaneHandler,
     ProfileChangedListener,
-    ActionDialog.DialogActionListener,
+    DialogActionListener,
     SearchView.OnQueryTextListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -150,8 +154,25 @@ class MainActivity :
         }
         val p = DreamDroid.getCurrentProfile()
         val title = String.format("%s@%s:%s", p.user, p.host, p.port)
-        val alert = ConnectionErrorDialog.newInstance(title, error)
-        showDialogFragment(alert, "connection_error")
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setCancelable(false)
+            .create()
+        val composeView = ComposeView(this).apply {
+            setViewTreeLifecycleOwner(this@MainActivity)
+            setViewTreeViewModelStoreOwner(this@MainActivity)
+            setViewTreeSavedStateRegistryOwner(this@MainActivity)
+            bindConnectionErrorScreen(
+                message = error.orEmpty(),
+                onPositive = { dialog.dismiss() },
+                onEditProfile = {
+                    dialog.dismiss()
+                    ProfilesNavigation.openProfileEdit(this@MainActivity, DreamDroid.getCurrentProfile())
+                },
+            )
+        }
+        dialog.setView(composeView)
+        dialog.show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -416,17 +437,12 @@ class MainActivity :
         )
 
         if (shouldConfirm && supportFragmentManager.backStackEntryCount == 0) {
-            showDialogFragment(
-                PositiveNegativeDialog.newInstance(
-                    getString(R.string.leave_confirm),
-                    R.string.leave_confirm_long,
-                    android.R.string.yes,
-                    Statics.ACTION_LEAVE_CONFIRMED,
-                    android.R.string.no,
-                    Statics.ACTION_NONE,
-                ),
-                "dialog_leave_confirm",
-            )
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.leave_confirm)
+                .setMessage(R.string.leave_confirm_long)
+                .setPositiveButton(android.R.string.yes) { _, _ -> finish() }
+                .setNegativeButton(android.R.string.no, null)
+                .show()
         } else {
             @Suppress("DEPRECATION")
             super.onBackPressed()
@@ -688,35 +704,17 @@ class MainActivity :
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         getCurrentDetailFragment() // FIXME find the real cause for mDetailFragment being null and fix that
-        if ("connection_error" == dialogTag) {
-            if (action != ConnectionErrorDialog.ACTION_EDIT_PROFILE) {
-                return
-            }
-
-            if (mDetailFragment is PhoneNavHostFragment &&
-                PhoneNavRoutes.PROFILE_EDIT == (mDetailFragment as PhoneNavHostFragment).currentRoute()
-            ) {
-                return
-            }
-
-            ProfilesNavigation.openProfileEdit(this, DreamDroid.getCurrentProfile())
-            return
-        }
-
-        if (action == Statics.ACTION_LEAVE_CONFIRMED) {
-            finish()
-        } else if (action == Statics.ACTION_NONE) {
-            return
-        } else if (isNavigationDialog(dialogTag)) {
+        if (isNavigationDialog(dialogTag)) {
             mNavigationHelper?.onDialogAction(action, details, dialogTag)
         } else if (mDetailFragment != null) {
             val content = getDetailContentFragment()
-            if (content is ActionDialog.DialogActionListener) {
+            if (content is DialogActionListener) {
                 content.onDialogAction(action, details, dialogTag)
             }
         }
         super.onDialogAction(action, details, dialogTag)
     }
+
 
     private fun isNavigationDialog(dialogTag: String?): Boolean {
         for (tag in NAVIGATION_DIALOG_TAGS) {

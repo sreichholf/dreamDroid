@@ -25,7 +25,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
@@ -238,7 +238,7 @@ fun CurrentServiceDestination(
 
 }
 
-private class CurrentServiceSession : ActionDialog.DialogActionListener {
+private class CurrentServiceSession : DialogActionListener {
     var current: CurrentService? = null
     var currentItem: ExtendedHashMap? = null
     var ready: Boolean = false

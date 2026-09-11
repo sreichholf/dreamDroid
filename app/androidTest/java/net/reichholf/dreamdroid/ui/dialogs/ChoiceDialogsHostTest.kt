@@ -116,4 +116,33 @@ class ChoiceDialogsHostTest {
             )
         }
     }
+
+    @Test
+    fun confirmContentColorIsOnSurface() {
+        var localContent = Color.Unspecified
+        var onSurface = Color.Unspecified
+        composeRule.setContent {
+            DreamDroidTheme {
+                localContent = LocalContentColor.current
+                onSurface = MaterialTheme.colorScheme.onSurface
+                ConfirmAlertDialog(
+                    title = "Delete?",
+                    message = "Really delete this item?",
+                    onDismiss = {},
+                    onConfirm = {},
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Delete?").assertIsDisplayed()
+        composeRule.onNodeWithText("Really delete this item?").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals(onSurface, localContent)
+            assertTrue(
+                "night onSurface should be light, luminance=${onSurface.luminance()}",
+                onSurface.luminance() > 0.5f,
+            )
+        }
+    }
+
 }

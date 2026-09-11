@@ -28,10 +28,9 @@ import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
 import androidx.compose.ui.res.stringResource
-import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 
@@ -54,7 +53,6 @@ fun ProfilesDestination(
     session.listState = listState
 
     DisposableEffect(hostFragment, session) {
-        hostFragment.composeDialogActionListener = session
         activity.addMenuProvider(session, hostFragment.viewLifecycleOwner)
         activity.title = context.getString(R.string.profiles)
         val fab = activity.findViewById<FloatingActionButton?>(R.id.fab_main)
@@ -69,9 +67,6 @@ fun ProfilesDestination(
             }
         }
         onDispose {
-            if (hostFragment.composeDialogActionListener === session) {
-                hostFragment.composeDialogActionListener = null
-            }
             activity.removeMenuProvider(session)
             session.finishActionMode()
             session.cancelDetect()
@@ -89,6 +84,8 @@ fun ProfilesDestination(
     }
 
     var showDetectProgress by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
+    session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
     session.onDetectProgressChanged = { showDetectProgress = it }
 
     ProfilesScreen(
@@ -104,12 +101,23 @@ fun ProfilesDestination(
             message = stringResource(R.string.searching_known_devices),
         )
     }
+    showDeleteConfirm?.let { title ->
+        ConfirmAlertDialog(
+            title = title,
+            message = stringResource(R.string.confirm_delete_profile),
+            onDismiss = { showDeleteConfirm = null },
+            onConfirm = {
+                session.deleteProfileConfirmed()
+                showDeleteConfirm = null
+            },
+        )
+    }
 }
 
 private class ProfilesSession :
-    ActionDialog.DialogActionListener,
     MenuProvider {
     var hostFragment: PhoneNavHostFragment? = null
+    var onRequestDeleteConfirm: ((String) -> Unit)? = null
     var context: android.content.Context? = null
     var activity: AppCompatActivity? = null
     var listState: ProfilesListState? = null
@@ -289,31 +297,18 @@ private class ProfilesSession :
                 true
             }
             Statics.ITEM_DELETE -> {
-                mph?.showDialogFragment(
-                    PositiveNegativeDialog.newInstance(
-                        selected.name,
-                        R.string.confirm_delete_profile,
-                        android.R.string.yes,
-                        Statics.ACTION_DELETE_CONFIRMED,
-                        android.R.string.no,
-                        Statics.ACTION_NONE,
-                    ),
-                    "dialog_delete_profile_confirm",
-                )
+                onRequestDeleteConfirm?.invoke(selected.name.orEmpty())
                 true
             }
             else -> false
         }
     }
-
-    override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        if (action == Statics.ACTION_DELETE_CONFIRMED) {
-            val ctx = context ?: return
-            AppDatabase.profiles(ctx).deleteProfile(selected)
-            toast(ctx.getString(R.string.profile_deleted) + " '" + selected.name + "'")
-            reloadProfiles()
-            selected = Profile.getDefault()
-        }
+    fun deleteProfileConfirmed() {
+        val ctx = context ?: return
+        AppDatabase.profiles(ctx).deleteProfile(selected)
+        toast(ctx.getString(R.string.profile_deleted) + " '" + selected.name + "'")
+        reloadProfiles()
+        selected = Profile.getDefault()
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

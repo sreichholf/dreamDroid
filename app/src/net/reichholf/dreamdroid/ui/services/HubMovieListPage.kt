@@ -41,11 +41,10 @@ import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.launchMovieListLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
-import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -94,6 +93,7 @@ fun HubMovieListPage(
 
     var selectedTags by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
     var showTagPicker by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
 
     session.hostFragment = hostFragment
     session.context = context
@@ -109,16 +109,13 @@ fun HubMovieListPage(
     session.onZapJob = { zapJob = it }
     session.onDeleteJob = { deleteJob = it }
     session.onRequestTagPicker = { showTagPicker = true }
+    session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
 
     DisposableEffect(hostFragment, session) {
-        hostFragment.composeDialogActionListener = session
         val activity = context as? AppCompatActivity
         activity?.addMenuProvider(session, hostFragment.viewLifecycleOwner)
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
-            if (hostFragment.composeDialogActionListener === session) {
-                hostFragment.composeDialogActionListener = null
-            }
             activity?.removeMenuProvider(session)
             loadJob?.cancel()
             loadJob = null
@@ -187,6 +184,18 @@ fun HubMovieListPage(
             },
         )
     }
+
+    showDeleteConfirm?.let { title ->
+        ConfirmAlertDialog(
+            title = title,
+            message = stringResource(R.string.delete_confirm),
+            onDismiss = { showDeleteConfirm = null },
+            onConfirm = {
+                session.deleteMovie()
+                showDeleteConfirm = null
+            },
+        )
+    }
 }
 
 /**
@@ -195,7 +204,6 @@ fun HubMovieListPage(
  * Tag filter is requested via [onRequestTagPicker]; the page hosts [MultiChoiceAlertDialog].
  */
 class HubMovieListSession :
-    ActionDialog.DialogActionListener,
     MenuProvider {
 
     var hostFragment: PhoneNavHostFragment? = null
@@ -213,6 +221,7 @@ class HubMovieListSession :
     var onDeleteJob: ((Job?) -> Unit)? = null
     var onShowDetail: ((MovieDetailContent) -> Unit)? = null
     var onRequestTagPicker: (() -> Unit)? = null
+    var onRequestDeleteConfirm: ((String) -> Unit)? = null
 
     private val movies = ArrayList<Movie>()
     private var selectedMovie: ExtendedHashMap? = null
@@ -354,7 +363,7 @@ class HubMovieListSession :
         onZapJob?.invoke(zapJob)
     }
 
-    private fun deleteMovie() {
+    fun deleteMovie() {
         val host = hostFragment ?: return
         val ctx = context ?: return
         val movie = selectedMovie ?: return
@@ -407,17 +416,7 @@ class HubMovieListSession :
                 }
             }
             R.id.menu_delete -> {
-                (ctx as MultiPaneHandler).showDialogFragment(
-                    PositiveNegativeDialog.newInstance(
-                        movie?.getString(MovieKeys.KEY_TITLE),
-                        R.string.delete_confirm,
-                        android.R.string.yes,
-                        Statics.ACTION_DELETE_CONFIRMED,
-                        android.R.string.no,
-                        Statics.ACTION_NONE,
-                    ),
-                    "dialog_delete_movie_confirm",
-                )
+                onRequestDeleteConfirm?.invoke(movie?.getString(MovieKeys.KEY_TITLE).orEmpty())
             }
             Statics.ACTION_DELETE_CONFIRMED -> deleteMovie()
             R.id.menu_download -> {
@@ -452,10 +451,6 @@ class HubMovieListSession :
         val ref = movie.getString(MovieKeys.KEY_REFERENCE)
         val file = movie.getString(MovieKeys.KEY_FILE_NAME)
         return movies.firstOrNull { it.reference == ref && it.fileName == file }
-    }
-
-    override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        onMovieAction(action)
     }
 
 
