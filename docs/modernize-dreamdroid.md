@@ -153,7 +153,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-handlers | [#323](https://github.com/sreichholf/dreamDroid/pull/323) | merged | Kotlin-port request bases (`Request`/`AbstractSimple*RequestHandler`/`SimpleResultRequestHandler`), remaining E2 SAX handlers, `SaxDataProvider`, `DreamDroidTrustManager`, `AutofitRecyclerView`/`DrawerLayout`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-helpers2 | [#324](https://github.com/sreichholf/dreamDroid/pull/324) | merged | Kotlin-port `ExtendedHashMap`/`Picon`/`FragmentHelper`/`GenericSaxParser`/`ShareActivity` + recycler click helpers. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-timer-check | [#325](https://github.com/sreichholf/dreamDroid/pull/325) | merged | Kotlin-port `Timer`/`CheckProfile`/`BackupService`/`PiconSyncService`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
-| near-zero-java-navhelper | — | open | Kotlin-port `NavigationHelper`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
+| near-zero-java-navhelper | [#326](https://github.com/sreichholf/dreamDroid/pull/326) | open | Kotlin-port `NavigationHelper`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
