@@ -146,7 +146,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-dead-weight | [#316](https://github.com/sreichholf/dreamDroid/pull/316) | merged | Near-zero Java beachhead: delete post-Compose orphan adapters/helpers/layouts + unused list `*RequestHandler` / `E2*List` SAX / `E2ListHandler`; keep dialogs, VideoOverlay, Leanback, widgets RemoteViews, HttpURLConnection Enigma2. |
 | near-zero-java-helpers | [#317](https://github.com/sreichholf/dreamDroid/pull/317) | merged | Near-zero Java residue: drop orphan `Signal` + unused DeviceInfo handler/SAX/hash keys + dead menus; Base64 → `android.util.Base64`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-kotlin-helpers | [#318](https://github.com/sreichholf/dreamDroid/pull/318) | merged | Port tiny helpers to Kotlin (`Python`, `BundleHelper`, `ProfileChangedListener`, `SimpleResult`/`Message`/`Tag`/`Volume`/`PowerState`/`SleepTimer`/`Remote`, `DreamDroidAttributionPresenter`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
-| near-zero-java-more-helpers | — | open | Kotlin-port more tiny helpers (`CurrentService`/`URIStore`/`Service`/`NameValuePair`/`Statics`/`GenericSetting`/`BackupData`/`AppDatabase`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
+| near-zero-java-more-helpers | [#319](https://github.com/sreichholf/dreamDroid/pull/319) | open | Kotlin-port more tiny helpers (`CurrentService`/`URIStore`/`Service`/`NameValuePair`/`Statics`/`GenericSetting`/`BackupData`/`AppDatabase`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
