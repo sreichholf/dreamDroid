@@ -19,7 +19,7 @@ adb shell am instrument -w -e class net.reichholf.dreamdroid.ui.about.AboutScree
 
 Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen. If the UI is Compose inside an XML dialog or `ComposeView`, host it that way in the test.
 
-`verify-dreamdroid.py` is for a **single look** (screenshot) or a shell-only path that has no instrumented test yet. It is not the verification loop.
+`verify-dreamdroid.py` is for a **single look** (screenshot) or a shell-only path that has no instrumented test yet. It is not the verification loop. **On Cursor Cloud Agents, do not use launch / GUI tapping / screenshot walkthroughs** — soft-accelerated emulator + agent display is unreliable; see `AGENTS.md` Cloud Agent environment. Use `bash .cursor/cloud/connected-test.sh` only.
 
 Helper (from repo root):
 

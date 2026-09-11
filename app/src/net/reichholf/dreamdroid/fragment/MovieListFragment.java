@@ -104,7 +104,6 @@ public class MovieListFragment extends BaseHttpRecyclerFragment
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		mCardListStyle = true;
-		mEnableReload = true;
 		//mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.movies));

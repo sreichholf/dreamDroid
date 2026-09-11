@@ -170,12 +170,6 @@ fun SettingsScreen(
             )
         }
         SwitchPreferenceRow(
-            title = stringResource(R.string.disable_fab_reload),
-            summary = stringResource(R.string.disable_fab_reload_long),
-            checked = state.disableFabReload,
-            onCheckedChange = { state.setBoolean(SettingsState.KEY_DISABLE_FAB_RELOAD, it) },
-        )
-        SwitchPreferenceRow(
             title = stringResource(R.string.enable_animations),
             summary = stringResource(R.string.enable_animations_long),
             checked = state.enableAnimations,

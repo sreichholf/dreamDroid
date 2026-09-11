@@ -276,8 +276,7 @@
     <string name="disable">Wyłącz</string>
     <string name="epg_sync">Synchronizacja EPG</string>
     <string name="epg_sync_finished">EPG zostało zsynchronizowane</string>
-    <string name="disable_fab_reload">Wyłącz pływający przycisk odświeżenia</string>
-    <string name="disable_fab_reload_long">Odświeżone zostaną umieszczone w pasku działań</string>
+
     <string name="reset_default">Przywróć ustawienia domyślne</string>
     <string name="max_grid_cols">Maks.liczba kolumn w liście kanałów</string>
     <string name="max_grid_cols_long">Liczba kolumn wyświetlana w liście kanałów</string>

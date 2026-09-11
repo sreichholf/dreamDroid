@@ -70,7 +70,6 @@ public class EpgBouquetFragment extends BaseHttpRecyclerEventFragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		mCardListStyle = true;
-		mEnableReload = true;
 		super.onCreate(savedInstanceState);
 		mListState = new EpgBouquetListState();
 		mRefreshState = new ComposeRefreshState();

@@ -46,7 +46,6 @@ public class ServiceEpgListFragment extends BaseHttpRecyclerEventFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
-		mEnableReload = true;
 		super.onCreate(savedInstanceState);
 		mListState = new ServiceEpgListState();
 		mRefreshState = new ComposeRefreshState();

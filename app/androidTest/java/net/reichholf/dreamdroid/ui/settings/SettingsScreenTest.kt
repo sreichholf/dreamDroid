@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.ui.settings
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -50,6 +52,8 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("About").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Changelog").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Backup").performScrollTo().assertIsDisplayed()
+        // Reload FAB / preference removed; list screens use pull-to-refresh only.
+        composeRule.onAllNodesWithText("Disable floating reload button").assertCountEquals(0)
     }
 
     @Test

@@ -263,7 +263,6 @@
     <string name="disable">Desactiva</string>
     <string name="epg_sync">Sincronitzant EPG</string>
     <string name="epg_sync_finished">l\'EPG s\'ha sincronitzat</string>
-    <string name="disable_fab_reload">Desactiva el botó flotant d\'actualització</string>
     <string name="reset_default">Reiniciar valors per defecte</string>
     <string name="donate_sum">Donar %s</string>
     <string name="donate">Fer una donació </string>

@@ -51,7 +51,6 @@ class SettingsState(
     var dynamicThemeColors by mutableStateOf(
         prefs.getBoolean(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS, false),
     )
-    var disableFabReload by mutableStateOf(prefs.getBoolean(KEY_DISABLE_FAB_RELOAD, false))
     var enableAnimations by mutableStateOf(
         prefs.getBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true),
     )
@@ -91,7 +90,6 @@ class SettingsState(
             DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE -> confirmAppClose = value
             DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE -> playButtonAsPlayPause = value
             DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS -> dynamicThemeColors = value
-            KEY_DISABLE_FAB_RELOAD -> disableFabReload = value
             DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS -> enableAnimations = value
             DreamDroid.PREFS_KEY_PICONS_ENABLED -> picons = value
             DreamDroid.PREFS_KEY_PICONS_ONLINE -> piconsOnline = value
@@ -116,7 +114,6 @@ class SettingsState(
     companion object {
         const val KEY_VOLUME_CONTROL = "volume_control"
         const val KEY_MOBILE_IMDB = "mobile_imdb"
-        const val KEY_DISABLE_FAB_RELOAD = "disable_fab_reload"
         const val DEFAULT_SYNC_PICONS_PATH = "/usr/share/enigma2/picon"
 
         @JvmStatic

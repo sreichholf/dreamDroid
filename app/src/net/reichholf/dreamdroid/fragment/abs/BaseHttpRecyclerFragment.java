@@ -1,17 +1,12 @@
 package net.reichholf.dreamdroid.fragment.abs;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -103,38 +98,6 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		return onItemSelected(item.getItemId());
-	}
-
-	public void connectFabReload() {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
-		if (sp.getBoolean("disable_fab_reload", false))
-			return;
-		registerFab(R.id.fab_reload, R.string.reload, R.drawable.ic_action_refresh, v -> reload(), true);
-	}
-
-	@Override
-	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
-		checkMenuReload(menu, inflater);
-	}
-
-	public void detachFabReload() {
-		FloatingActionButton fab = getAppCompatActivity().findViewById(R.id.fab_reload);
-		if (fab != null) {
-			setFabEnabled(fab.getId(), false);
-		}
-	}
-
-	public void checkMenuReload(Menu menu, @NonNull MenuInflater inflater) {
-		if (!mEnableReload)
-			return;
-
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getAppCompatActivity());
-		if (sp.getBoolean("disable_fab_reload", false)) {
-			detachFabReload();
-			inflater.inflate(R.menu.reload, menu);
-		} else {
-			connectFabReload();
-		}
 	}
 
 	/**

@@ -41,7 +41,6 @@ public class MyPreferenceFragment extends BaseFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mHasFabMain = false;
-		mHasFabReload = false;
 		super.onCreate(savedInstanceState);
 		initTitles(getString(R.string.settings));
 		PreferenceManager.setDefaultValues(requireContext(), R.xml.preferences, false);

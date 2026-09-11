@@ -121,7 +121,6 @@ public class TimerListFragment extends BaseHttpRecyclerFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		mCardListStyle = true;
-		mEnableReload = true;
 		mHasFabMain = true;
 		super.onCreate(savedInstanceState);
 		initTitle(getString(R.string.timer));

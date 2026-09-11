@@ -275,8 +275,7 @@
 <string name="disable">Keela</string>
 <string name="epg_sync">EPG sünkroonimine</string>
 <string name="epg_sync_finished">EPG on sünkroonitud</string>
-<string name="disable_fab_reload">Keela ujuv värskenduse nupp</string>
-<string name="disable_fab_reload_long">Värskenduse nupp paigutatakse tegevusribale</string>
+
 <string name="reset_default">Taasta vaikeväärtused</string>
 <string name="max_grid_cols">Kanalinimekirja tulpade arv</string>
 <string name="max_grid_cols_long">Suurim tulpade arv kanalinimekirjas </string>
