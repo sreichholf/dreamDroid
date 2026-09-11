@@ -25,7 +25,7 @@
     <dimen name="keyline2from1">48dip</dimen>
     <dimen name="fab_margin_bottom">16dp</dimen>
     <dimen name="fab_margin_right">16dp</dimen>
-    <!-- Material3 NavigationBar with labels; spacer in service_list_pager matches shell bar. -->
+    <!-- Material3 NavigationBar with labels; hub Scaffold bottomBar height. -->
     <dimen name="tv_movies_destination_bar_height">80dp</dimen>
     <dimen name="recylcerview_content_margin">0dp</dimen>
     <dimen name="navigation_header_height">170dp</dimen>

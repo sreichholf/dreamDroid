@@ -61,8 +61,7 @@ import net.reichholf.dreamdroid.widget.AnchorPopup
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
 
 /**
- * Phase 2.7h: one Movies hub location page as Compose (parity with
- * [net.reichholf.dreamdroid.fragment.MovieListFragment]).
+ * Phase 2.7h: one Movies hub location page as Compose (parity with former MovieListFragment).
  *
  * Tag filter uses [MultiChoiceDialog]. This page exposes [HubMovieListSession], which
  * implements [MultiChoiceDialog.MultiChoiceDialogListener]. **HubDestination** must set

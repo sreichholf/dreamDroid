@@ -53,7 +53,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
- * Phase 2.7h: one TV/Radio hub bouquet page as Compose (parity with [net.reichholf.dreamdroid.fragment.ServiceListPageFragment]).
+ * Phase 2.7h: one TV/Radio hub bouquet page as Compose (parity with former ServiceListPageFragment).
  * Host must keep this in composition only while the page is the active hub child so
  * [PhoneNavHostFragment.composeDialogActionListener] and the options menu stay scoped.
  */

@@ -50,7 +50,7 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 
 /**
- * Phase 2.7h: hub Timers page as Compose (parity with [net.reichholf.dreamdroid.fragment.TimerListFragment]).
+ * Phase 2.7h: hub Timers page as Compose (parity with former TimerListFragment).
  *
  * Reload after timer edit:
  * - bump [remountEpoch] from HubDestination when returning, and/or

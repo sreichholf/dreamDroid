@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
 import android.content.DialogInterface
@@ -37,7 +36,7 @@ import net.reichholf.dreamdroid.ui.timers.TimerEditSession
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
- * Migrated drawer leaves include Device Info through hub (`ServiceListPager`). Drawer selection uses
+ * Migrated drawer leaves include Device Info through hub (Compose destinations). Drawer selection uses
  * [navigateToRoute] when this host is already shown; [ARG_START_ROUTE] picks the first leaf.
  *
  * [net.reichholf.dreamdroid.activities.abs.BaseActivity] only delivers [onActivityResult] to
@@ -218,9 +217,7 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
             route == PhoneNavRoutes.PICK_SERVICE -> null
             route == PhoneNavRoutes.TIMER_EDIT -> null
             route == PhoneNavRoutes.TIMER_SERVICE_PICK -> null
-            route == PhoneNavRoutes.HUB ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_hub_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB)
+            route == PhoneNavRoutes.HUB -> null
             else -> null
         }
     }
