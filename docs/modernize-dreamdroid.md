@@ -149,7 +149,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-more-helpers | [#319](https://github.com/sreichholf/dreamDroid/pull/319) | merged | Kotlin-port more tiny helpers (`CurrentService`/`URIStore`/`Service`/`NameValuePair`/`Statics`/`GenericSetting`/`BackupData`/`AppDatabase`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-interfaces | [#320](https://github.com/sreichholf/dreamDroid/pull/320) | merged | Kotlin-port fragment interfaces + `IntentFactory` + `DeviceDetector` (`MultiPaneHandler`/`ActivityCallbackHandler`/`IBaseFragment`/`IMutliPaneContent`). Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-datetime | [#321](https://github.com/sreichholf/dreamDroid/pull/321) | merged | Kotlin-port `DateTime` + `DataParser`/`AbstractDataProvider`/`SimpleRequestInterface`/`SpacesItemDecoration`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
-| near-zero-java-event-movie | — | open | Kotlin-port `Event`/`Movie`, thin Enigma2 request handlers, tiny SAX helpers, `DreamDroidBackupAgent`, `TabbedNavigationActivity`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
+| near-zero-java-event-movie | [#322](https://github.com/sreichholf/dreamDroid/pull/322) | open | Kotlin-port `Event`/`Movie`, thin Enigma2 request handlers, tiny SAX helpers, `DreamDroidBackupAgent`, `TabbedNavigationActivity`. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
