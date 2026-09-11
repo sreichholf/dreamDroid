@@ -41,7 +41,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     fun refreshProfileToggles(data: BackupData) {
         uiState.setProfilesFromBackup(
             data.getProfiles(),
-            DreamDroid.getCurrentProfile().id,
+            DreamDroid.getCurrentProfile().id ?: -1,
             context.getString(R.string.backup_current_profile),
         )
     }

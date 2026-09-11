@@ -59,7 +59,7 @@ fun VirtualRemoteDestination(
         prefs.getBoolean(DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE, false)
     }
     val simpleRemote = remember {
-        DreamDroid.getCurrentProfile().isSimpleRemote
+        DreamDroid.getCurrentProfile().isSimpleRemote()
     }
     val defaultPage = remember {
         if (!prefs.getBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, true)) 1 else 0

@@ -75,7 +75,7 @@ class PreferenceActivity : ComponentActivity() {
         val dao = AppDatabase.profiles(this)
         dao.updateProfile(profile)
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
-        prefs.edit().putInt(DreamDroid.CURRENT_PROFILE, profile.id).apply()
+        prefs.edit().putInt(DreamDroid.CURRENT_PROFILE, profile.id ?: -1).apply()
         DreamDroid.setCurrentProfile(profile)
     }
 

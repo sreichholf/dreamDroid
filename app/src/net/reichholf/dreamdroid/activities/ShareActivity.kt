@@ -86,7 +86,7 @@ class ShareActivity : AppCompatActivity() {
 
         if (url != null) {
             Log.i(LOG_TAG, url)
-            Log.i(LOG_TAG, p.host)
+            Log.i(LOG_TAG, p.host.orEmpty())
 
             val time = DateFormat.getDateFormat(this).format(Date())
             var title = getString(R.string.sent_from_dreamdroid, time)
@@ -129,7 +129,7 @@ class ShareActivity : AppCompatActivity() {
 
     fun load() {
         val dao = AppDatabase.profiles(this)
-        mProfiles = dao.profiles
+        mProfiles = dao.getProfiles()
         mProfilesById.clear()
         val profiles = mProfiles!!
         if (profiles.size > 1) {
@@ -137,7 +137,7 @@ class ShareActivity : AppCompatActivity() {
             for (m in profiles) {
                 val id = m.id ?: 0
                 mProfilesById[id] = m
-                items.add(ProfileListItem(id, m.name, m.host, false))
+                items.add(ProfileListItem(id, m.name.orEmpty(), m.host.orEmpty(), false))
             }
             mListState.replaceAll(items)
         } else {

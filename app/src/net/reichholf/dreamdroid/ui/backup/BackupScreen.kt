@@ -53,7 +53,7 @@ class BackupUiState {
                 if (id == currentProfileId) {
                     label += " ($currentProfileLabel)"
                 }
-                BackupProfileToggle(id = id, label = label, checked = true)
+                BackupProfileToggle(id = id ?: 0, label = label, checked = true)
             },
         )
     }
@@ -108,7 +108,7 @@ fun BackupScreen(
                 BackupSwitchRow(
                     label = profile.label,
                     checked = profile.checked,
-                    onCheckedChange = { state.setProfileChecked(profile.id, it) },
+                    onCheckedChange = { state.setProfileChecked(profile.id ?: 0, it) },
                 )
             }
 
