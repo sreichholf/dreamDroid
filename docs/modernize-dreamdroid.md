@@ -139,7 +139,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | zap-remote-compose-dest | [#310](https://github.com/sreichholf/dreamDroid/pull/310) | merged | Phase 2.7d: Zap + Virtual Remote Kotlin Compose destinations; delete `ZapFragment` / `VirtualRemotePagerFragment` / `VirtualRemoteFragment` / `ScreenShotFragment`. |
 | settings-profiles-compose-dest | [#311](https://github.com/sreichholf/dreamDroid/pull/311) | merged | Phase 2.7e: Settings + Profiles + Profile edit Kotlin Compose destinations; delete `MyPreferenceFragment` / `ProfileListFragment` / `ProfileEditFragment`. |
 | epg-cluster-compose-dest | [#312](https://github.com/sreichholf/dreamDroid/pull/312) | merged | Phase 2.7f: EPG bouquet + Service EPG + EPG search + Pick service Kotlin Compose destinations. |
-| timer-edit-compose-dest | | open | Phase 2.7g: Timer edit + Timer service pick Kotlin Compose destinations. |
+| timer-edit-compose-dest | [#313](https://github.com/sreichholf/dreamDroid/pull/313) | open | Phase 2.7g: Timer edit + Timer service pick Kotlin Compose destinations. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
