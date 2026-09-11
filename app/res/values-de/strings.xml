@@ -258,8 +258,7 @@
     <string name="use_name_as_picon_filename_long">Kanalnamen als Dateinamen für Picons verwenden</string>
     <string name="use_name_as_picon_filename">Picons über Kanalnamen</string>
     <string name="picons">Picons</string>
-    <string name="disable_fab_reload">Alter Reload Button</string>
-    <string name="disable_fab_reload_long">Wenn aktiv, wird der Reload-Button in der Actionbar angezeigt</string>
+
     <string name="reset_default">Standard zurücksetzen</string>
     <string name="enable">Aktivieren</string>
     <string name="epg_sync">Synchronisiere EPG</string>

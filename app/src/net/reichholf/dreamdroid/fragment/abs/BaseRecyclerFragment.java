@@ -89,7 +89,6 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		mItemClickSupport.setOnItemLongClickListener(this);
 		mSelectionSupport = ItemSelectionSupport.addTo(rv);
 		super.onViewCreated(view, savedInstanceState);
-		setFabEnabled(R.id.fab_reload, mEnableReload);
 		setFabEnabled(R.id.fab_main, mHasFabMain);
 	}
 
@@ -98,7 +97,6 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 		if (fab == null)
 			return;
 
-		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
 		if (enabled) {
 			fab.show();
 		} else {
@@ -276,15 +274,10 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 	}
 
 	protected void registerFab(int id, int descriptionId, int backgroundResId, View.OnClickListener onClickListener) {
-		registerFab(id, descriptionId, backgroundResId, onClickListener, false);
-	}
-
-	protected void registerFab(int id, int descriptionId, int backgroundResId, View.OnClickListener onClickListener, boolean topAligned) {
 		FloatingActionButton fab = getAppCompatActivity().findViewById(id);
 		if (fab == null)
 			return;
 
-		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, true);
 		fab.show();
 		fab.setContentDescription(getString(descriptionId));
 		fab.setImageResource(backgroundResId);

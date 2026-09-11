@@ -17,23 +17,20 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class DualpaneFabLayoutTest {
     @Test
-    fun mainAndReloadFabsUseGravityNotDetailAnchor() {
+    fun mainFabUsesGravityNotDetailAnchorAndReloadFabRemoved() {
         val base = InstrumentationRegistry.getInstrumentation().targetContext
         val context = ContextThemeWrapper(base, R.style.Theme_DreamDroid_Night)
         val root = android.view.LayoutInflater.from(context)
             .inflate(R.layout.dualpane, null, false)
         val fabMain = root.findViewById<FloatingActionButton>(R.id.fab_main)
-        val fabReload = root.findViewById<FloatingActionButton>(R.id.fab_reload)
         val mainLp = fabMain.layoutParams as CoordinatorLayout.LayoutParams
-        val reloadLp = fabReload.layoutParams as CoordinatorLayout.LayoutParams
 
         assertEquals(View.NO_ID, mainLp.anchorId)
         assertTrue((mainLp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
         assertTrue((mainLp.gravity and Gravity.END) == Gravity.END)
-
-        assertEquals(View.NO_ID, reloadLp.anchorId)
-        assertTrue((reloadLp.gravity and Gravity.TOP) == Gravity.TOP)
-        assertTrue((reloadLp.gravity and Gravity.END) == Gravity.END)
+        // Reload FAB removed; id must not remain in the package resources.
+        val reloadId = context.resources.getIdentifier("fab_reload", "id", context.packageName)
+        assertEquals(0, reloadId)
     }
 
     @Test

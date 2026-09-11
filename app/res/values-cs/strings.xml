@@ -278,8 +278,7 @@
     <string name="disable">zakázat</string>
     <string name="epg_sync">synchronizace EPG</string>
     <string name="epg_sync_finished">EPG byla synchronizována</string>
-    <string name="disable_fab_reload">zakázat plovoucí tlačítko zpět.načtení</string>
-    <string name="disable_fab_reload_long">obnoveným bude v panelu nahrazeno</string>
+
     <string name="reset_default">reset předvolby</string>
     <string name="max_grid_cols">max.počet sloupců v seznamu</string>
     <string name="max_grid_cols_long">Max.počet sloupců v seznamu</string>

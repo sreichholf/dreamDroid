@@ -38,7 +38,6 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	@Nullable
 	private FragmentHelper mHelper = null;
 	protected boolean mShouldRetainInstance = true;
-	protected boolean mHasFabReload = false;
 	protected boolean mHasFabMain = false;
 
 	public BaseFragment() {
@@ -61,7 +60,6 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		setFabEnabled(R.id.fab_reload, mHasFabReload);
 		setFabEnabled(R.id.fab_main, mHasFabMain);
 	}
 
@@ -69,7 +67,6 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		FloatingActionButton fab = getAppCompatActivity().findViewById(id);
 		if(fab == null)
 			return;
-		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, enabled);
 		if(enabled) {
 			fab.show();
 		} else {
@@ -184,7 +181,6 @@ public abstract class BaseFragment extends Fragment implements ActivityCallbackH
 		if (fab == null)
 			return;
 
-		fab.setTag(R.id.fab_scrolling_view_behavior_enabled, true);
 		fab.show();
 		fab.setContentDescription(getString(descriptionId));
 		fab.setImageResource(backgroundResId);
