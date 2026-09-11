@@ -39,8 +39,6 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.VideoActivity;
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter;
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog;
-import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet;
-import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailBottomSheet;
 import net.reichholf.dreamdroid.fragment.dialogs.SimpleChoiceDialog;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
@@ -58,6 +56,7 @@ import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog;
 import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog;
 import net.reichholf.dreamdroid.ui.video.VideoOverlayScreenKt;
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState;
+import net.reichholf.dreamdroid.ui.video.VideoOverlayDetailsKt;
 import net.reichholf.dreamdroid.video.VLCPlayer;
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport;
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration;
@@ -320,29 +319,31 @@ public class VideoOverlayFragment extends Fragment implements MediaPlayer.EventL
 		if (mMovie == null && mCurrentService == null)
 			return;
 
-		DialogFragment detailDialog;
 		if (mMovie != null) {
-			if (DreamDroid.isTV(getContext()))
-				detailDialog = MovieDetailDialog.newInstance(mMovie);
-			else
-				detailDialog = MovieDetailBottomSheet.newInstance(mMovie);
-		} else {
-			Event event = mCurrentService.getNow();
-			if (event == null) {
-				event = new Event(
-						"", "", "", "", "", "", "",
-						mCurrentService.getServiceReference(),
-						mCurrentService.getServiceName(),
-						"", "", ""
-				);
+			if (DreamDroid.isTV(getContext())) {
+				MovieDetailDialog.newInstance(mMovie)
+						.show(getFragmentManager(), "details_dialog_tv");
+			} else {
+				VideoOverlayDetailsKt.showMovieDetail(mOverlayUiState, mMovie);
 			}
-			if (DreamDroid.isTV(getContext()))
-				detailDialog = EpgDetailDialog.newInstance(event);
-			else
-				detailDialog = EpgDetailBottomSheet.newInstance(event);
+			return;
 		}
-		if (detailDialog != null)
-			detailDialog.show(getFragmentManager(), "details_dialog_tv");
+
+		Event event = mCurrentService.getNow();
+		if (event == null) {
+			event = new Event(
+					"", "", "", "", "", "", "",
+					mCurrentService.getServiceReference(),
+					mCurrentService.getServiceName(),
+					"", "", ""
+			);
+		}
+		if (DreamDroid.isTV(getContext())) {
+			EpgDetailDialog.newInstance(event)
+					.show(getFragmentManager(), "details_dialog_tv");
+		} else {
+			VideoOverlayDetailsKt.showEpgDetail(mOverlayUiState, getContext(), event);
+		}
 	}
 
 	private void onList() {

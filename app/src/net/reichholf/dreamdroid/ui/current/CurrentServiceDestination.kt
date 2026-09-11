@@ -16,19 +16,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
-import net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
+import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
@@ -90,6 +91,7 @@ fun CurrentServiceDestination(
     }
     var ready by rememberSaveable { mutableStateOf(false) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
+    var detailEvent by remember { mutableStateOf<Event?>(null) }
 
     val baseTitle = context.getString(R.string.current_service)
 
@@ -126,8 +128,7 @@ fun CurrentServiceDestination(
             return
         }
         currentItem = EpgListMapper.toExtendedHashMap(event)
-        val sheet = EpgDetailBottomSheet.newInstance(event)
-        (context as MultiPaneHandler).showDialogFragment(sheet, "current_epg_detail_dialog")
+        detailEvent = event
     }
 
     fun streamService() {
@@ -209,6 +210,32 @@ fun CurrentServiceDestination(
             onStream = { onNowOrNextOrStream(Statics.ITEM_STREAM) },
         )
     }
+
+    detailEvent?.let { event ->
+        val minutesShort = stringResource(R.string.minutes_short)
+        val content = event.toEpgDetailContent(minutesShort)
+        if (content == null) {
+            detailEvent = null
+        } else {
+            EpgDetailModalSheet(
+                content = content,
+                onDismiss = { detailEvent = null },
+                onSetTimer = {
+                    session.onDialogAction(Statics.ACTION_SET_TIMER, null, null)
+                },
+                onEditTimer = {
+                    session.onDialogAction(Statics.ACTION_EDIT_TIMER, null, null)
+                },
+                onImdb = {
+                    session.onDialogAction(Statics.ACTION_IMDB, null, null)
+                },
+                onSimilar = {
+                    session.onDialogAction(Statics.ACTION_FIND_SIMILAR, null, null)
+                },
+            )
+        }
+    }
+
 }
 
 private class CurrentServiceSession : ActionDialog.DialogActionListener {

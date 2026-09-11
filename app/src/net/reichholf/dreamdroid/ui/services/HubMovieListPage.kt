@@ -41,7 +41,9 @@ import net.reichholf.dreamdroid.enigma.launchMovieListLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
-import net.reichholf.dreamdroid.fragment.dialogs.MovieDetailBottomSheet
+import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
+import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
+import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
 import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
@@ -88,6 +90,8 @@ fun HubMovieListPage(
     val refresh = remember { ComposeRefreshState() }
     var emptyMessage by remember { mutableStateOf<String?>(null) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
+    var detailContent by remember { mutableStateOf<MovieDetailContent?>(null) }
+    session.onShowDetail = { detailContent = it }
     var zapJob by remember { mutableStateOf<Job?>(null) }
     var deleteJob by remember { mutableStateOf<Job?>(null) }
 
@@ -160,6 +164,14 @@ fun HubMovieListPage(
             )
         }
     }
+
+    detailContent?.let { content ->
+        MovieDetailModalSheet(
+            content = content,
+            onDismiss = { detailContent = null },
+        )
+    }
+
 }
 
 /**
@@ -187,6 +199,7 @@ class HubMovieListSession :
     var onLoadJob: ((Job?) -> Unit)? = null
     var onZapJob: ((Job?) -> Unit)? = null
     var onDeleteJob: ((Job?) -> Unit)? = null
+    var onShowDetail: ((MovieDetailContent) -> Unit)? = null
 
     private val movies = ArrayList<Movie>()
     private var selectedMovie: ExtendedHashMap? = null
@@ -363,14 +376,12 @@ class HubMovieListSession :
                     return true
                 }
                 val typed = findSelectedTypedMovie()
-                val sheet = if (typed != null) {
-                    MovieDetailBottomSheet.newInstance(typed)
+                val content = if (typed != null) {
+                    typed.toMovieDetailContent()
                 } else {
-                    MovieDetailBottomSheet.newInstance(
-                        net.reichholf.dreamdroid.helpers.enigma2.Movie(movie),
-                    )
+                    net.reichholf.dreamdroid.helpers.enigma2.Movie(movie).toMovieDetailContent()
                 }
-                (ctx as MultiPaneHandler).showDialogFragment(sheet, "movie_detail_dialog")
+                onShowDetail?.invoke(content)
             }
             R.id.menu_zap -> {
                 val ref = movie?.getString(MovieKeys.KEY_REFERENCE).orEmpty()

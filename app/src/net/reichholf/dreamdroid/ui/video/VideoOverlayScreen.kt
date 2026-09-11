@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
+import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
@@ -62,6 +64,9 @@ class VideoOverlayUiState {
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
     var showInfoButton by mutableStateOf(false)
+    /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
+    var epgDetailContent by mutableStateOf<net.reichholf.dreamdroid.ui.epg.EpgDetailContent?>(null)
+    var movieDetailContent by mutableStateOf<net.reichholf.dreamdroid.ui.movies.MovieDetailContent?>(null)
 }
 
 @Composable
@@ -263,6 +268,23 @@ fun VideoOverlayScreen(
                 }
             }
         }
+    }
+
+    state.epgDetailContent?.let { content ->
+        EpgDetailModalSheet(
+            content = content,
+            onDismiss = { state.epgDetailContent = null },
+            onSetTimer = { state.epgDetailContent = null },
+            onEditTimer = { state.epgDetailContent = null },
+            onImdb = { state.epgDetailContent = null },
+            onSimilar = { state.epgDetailContent = null },
+        )
+    }
+    state.movieDetailContent?.let { content ->
+        MovieDetailModalSheet(
+            content = content,
+            onDismiss = { state.movieDetailContent = null },
+        )
     }
 }
 

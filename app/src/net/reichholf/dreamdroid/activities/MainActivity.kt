@@ -685,10 +685,8 @@ class MainActivity :
     }
 
     /*
-     * (non-Javadoc)
-     *
-     * @see net.reichholf.dreamdroid.fragment.dialogs.EpgDetailBottomSheet.
-     * EpgDetailDialogListener#onFinishEpgDetailDialog(int)
+     * Dialog action routing for remaining DialogFragments (choice / progress / connection).
+     * EPG/movie detail sheets are in-composition ModalBottomSheet (Phase 2.1g-ii-d).
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         getCurrentDetailFragment() // FIXME find the real cause for mDetailFragment being null and fix that

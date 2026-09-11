@@ -51,13 +51,14 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
  * Phase 2.7h: one TV/Radio hub bouquet page as Compose (parity with former ServiceListPageFragment).
  * Host must keep this in composition only while the page is the active hub child so
- * [PhoneNavHostFragment.composeDialogActionListener] and the options menu stay scoped.
+ * the options menu stay scoped.
  * System back pops one directory drill-down level before leaving the hub.
  */
 @Composable
@@ -114,14 +115,10 @@ fun HubServiceListPage(
     }
 
     DisposableEffect(hostFragment, session, dialogSession) {
-        hostFragment.composeDialogActionListener = dialogSession
         val activity = context as? AppCompatActivity
         activity?.addMenuProvider(session, hostFragment.viewLifecycleOwner)
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
-            if (hostFragment.composeDialogActionListener === dialogSession) {
-                hostFragment.composeDialogActionListener = null
-            }
             activity?.removeMenuProvider(session)
             loadJob?.cancel()
             loadJob = null
@@ -173,6 +170,8 @@ fun HubServiceListPage(
             )
         }
     }
+
+    EpgEventDetailSheetHost(dialogSession)
 }
 
 private class HubServiceListSession : MenuProvider {
