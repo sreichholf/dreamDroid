@@ -21,7 +21,6 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes;
 import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
-import net.reichholf.dreamdroid.fragment.TimerEditFragment;
 import net.reichholf.dreamdroid.helpers.DateTime;
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap;
 import net.reichholf.dreamdroid.helpers.NameValuePair;
