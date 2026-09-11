@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
+import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
@@ -66,6 +67,12 @@ class PhoneNavHostFragment : BaseFragment() {
 
     @Volatile
     private var navController: NavHostController? = null
+
+    /**
+     * Optional dialog-action sink for Compose destinations that replaced nested Fragments
+     * (e.g. Current Service). [MainActivity] forwards via [getActiveLeaf] → this host.
+     */
+    var composeDialogActionListener: ActionDialog.DialogActionListener? = null
 
     /** Stack of pending onActivityResult request codes (nested edit → service pick). */
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
@@ -153,12 +160,8 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.DEVICE_INFO -> null
             route == PhoneNavRoutes.SIGNAL -> null
             route == PhoneNavRoutes.BACKUP -> null
-            route == PhoneNavRoutes.SCREENSHOT ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_screenshot_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SCREENSHOT)
-            route == PhoneNavRoutes.CURRENT ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_current_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.CURRENT)
+            route == PhoneNavRoutes.CURRENT -> null
+            route == PhoneNavRoutes.SCREENSHOT -> null
             route == PhoneNavRoutes.ZAP ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_zap_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.ZAP)
@@ -523,6 +526,15 @@ class PhoneNavHostFragment : BaseFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         getActiveLeaf()?.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
+        val listener = composeDialogActionListener
+        if (listener != null) {
+            listener.onDialogAction(action, details, dialogTag)
+            return
+        }
+        super.onDialogAction(action, details, dialogTag)
     }
 
     override fun onDrawerOpened() {
