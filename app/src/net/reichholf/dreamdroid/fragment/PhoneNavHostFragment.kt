@@ -18,8 +18,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import android.content.DialogInterface
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
-import net.reichholf.dreamdroid.fragment.dialogs.MultiChoiceDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
@@ -71,7 +70,7 @@ data class SleepTimerNavArgs(
     }
 }
 
-class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialogListener {
+class PhoneNavHostFragment : BaseFragment() {
 
     companion object {
         const val ARG_START_ROUTE = "phone_nav_start_route"
@@ -106,7 +105,7 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
      * Optional dialog-action sink for Compose destinations that replaced nested Fragments
      * (e.g. Current Service). [MainActivity] forwards via [getActiveLeaf] → this host.
      */
-    var composeDialogActionListener: ActionDialog.DialogActionListener? = null
+    var composeDialogActionListener: DialogActionListener? = null
 
     /**
      * Optional activity-result sink for Compose destinations (e.g. Zap bouquet pick).
@@ -118,11 +117,6 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
 
     var composeActivityResultListener: ActivityResultListener? = null
 
-    /**
-     * Optional MultiChoice sink for Compose destinations (timer edit tags/repeatings).
-     * [MainActivity] forwards via getDetailContentFragment → this host when leaf is null.
-     */
-    var composeMultiChoiceListener: MultiChoiceDialog.MultiChoiceDialogListener? = null
 
     /** Stack of pending onActivityResult request codes (nested edit → service pick). */
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
@@ -642,17 +636,6 @@ class PhoneNavHostFragment : BaseFragment(), MultiChoiceDialog.MultiChoiceDialog
         super.onDialogAction(action, details, dialogTag)
     }
 
-    override fun onMultiChoiceDialogSelection(
-        dialogTag: String?,
-        dialog: DialogInterface?,
-        selected: Array<out Int>?,
-    ) {
-        composeMultiChoiceListener?.onMultiChoiceDialogSelection(dialogTag, dialog, selected)
-    }
-
-    override fun onMultiChoiceDialogFinish(dialogTag: String?, result: Int) {
-        composeMultiChoiceListener?.onMultiChoiceDialogFinish(dialogTag, result)
-    }
 
     override fun onDrawerOpened() {
         (getActiveLeaf() as? ActivityCallbackHandler)?.onDrawerOpened()

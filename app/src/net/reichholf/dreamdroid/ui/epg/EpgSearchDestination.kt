@@ -85,12 +85,8 @@ fun EpgSearchDestination(
     }
 
     DisposableEffect(hostFragment, dialogSession) {
-        hostFragment.composeDialogActionListener = dialogSession
         setToolbarTitle(finishedTitle())
         onDispose {
-            if (hostFragment.composeDialogActionListener === dialogSession) {
-                hostFragment.composeDialogActionListener = null
-            }
             loadJob?.cancel()
             loadJob = null
             dialogSession.dismissProgress()
@@ -115,4 +111,6 @@ fun EpgSearchDestination(
             onItemClick = { dialogSession.showDetail(it) },
         )
     }
+
+    EpgEventDetailSheetHost(dialogSession)
 }

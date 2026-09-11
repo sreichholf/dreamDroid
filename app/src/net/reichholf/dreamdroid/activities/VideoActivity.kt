@@ -25,7 +25,7 @@ import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IMedia
@@ -40,7 +40,7 @@ class VideoActivity :
     AppCompatActivity(),
     IVLCVout.OnNewVideoLayoutListener,
     IVLCVout.Callback,
-    ActionDialog.DialogActionListener,
+    DialogActionListener,
     MediaPlayer.EventListener {
 
     var mSurfaceFrame: FrameLayout? = null

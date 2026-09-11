@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.MenuProvider
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -37,8 +38,7 @@ import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadTimerList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.dialogs.ActionDialog
-import net.reichholf.dreamdroid.fragment.dialogs.PositiveNegativeDialog
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
@@ -73,6 +73,8 @@ fun HubTimerListPage(
     var mutateJob by remember { mutableStateOf<Job?>(null) }
 
     val session = remember { HubTimerListSession() }
+    var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
+    session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
     session.hostFragment = hostFragment
     session.context = context
     session.activity = activity
@@ -87,7 +89,6 @@ fun HubTimerListPage(
         // HubDestination owns REQUEST_EDIT_TIMER → remountEpoch; do not steal
         // composeActivityResultListener. Session still implements ActivityResultListener
         // if a host prefers registering it instead of remountEpoch.
-        hostFragment.composeDialogActionListener = session
         activity.addMenuProvider(session, hostFragment.viewLifecycleOwner)
         session.setToolbarTitle(context.getString(R.string.timer))
         val fab = activity.findViewById<FloatingActionButton?>(R.id.fab_main)
@@ -102,9 +103,6 @@ fun HubTimerListPage(
             }
         }
         onDispose {
-            if (hostFragment.composeDialogActionListener === session) {
-                hostFragment.composeDialogActionListener = null
-            }
             activity.removeMenuProvider(session)
             session.finishActionMode()
             session.dismissProgress()
@@ -148,6 +146,18 @@ fun HubTimerListPage(
             }
         }
     }
+
+    showDeleteConfirm?.let { title ->
+        ConfirmAlertDialog(
+            title = title,
+            message = stringResource(R.string.delete_confirm),
+            onDismiss = { showDeleteConfirm = null },
+            onConfirm = {
+                session.confirmDeleteSelected()
+                showDeleteConfirm = null
+            },
+        )
+    }
 }
 
 /**
@@ -157,7 +167,6 @@ fun HubTimerListPage(
  */
 class HubTimerListSession :
     PhoneNavHostFragment.ActivityResultListener,
-    ActionDialog.DialogActionListener,
     MenuProvider {
 
     var hostFragment: PhoneNavHostFragment? = null
@@ -170,7 +179,9 @@ class HubTimerListSession :
     var onLoadJob: ((Job?) -> Unit)? = null
     var onMutateJob: ((Job?) -> Unit)? = null
 
-    private val timers = ArrayList<TypedTimer>()
+    var onRequestDeleteConfirm: ((String) -> Unit)? = null
+
+        private val timers = ArrayList<TypedTimer>()
     private val mapList = ArrayList<ExtendedHashMap>()
     private var selected: ExtendedHashMap = ExtendedHashMap()
     private var loadGeneration = 0
@@ -300,20 +311,15 @@ class HubTimerListSession :
     }
 
     private fun deleteTimerConfirm() {
-        val mph = activity as? MultiPaneHandler ?: return
         val name = selected.getString(Timer.KEY_NAME)
-        val dialog = PositiveNegativeDialog.newInstance(
-            name,
-            R.string.delete_confirm,
-            android.R.string.yes,
-            Statics.ACTION_DELETE_CONFIRMED,
-            android.R.string.no,
-            Statics.ACTION_NONE,
-        )
-        mph.showDialogFragment(dialog, "dialog_delete_timer_confirm")
+        onRequestDeleteConfirm?.invoke(name.orEmpty())
     }
 
-    private fun deleteTimer(timer: ExtendedHashMap) {
+    fun confirmDeleteSelected() {
+        deleteTimer(selected)
+    }
+
+    fun deleteTimer(timer: ExtendedHashMap) {
         val host = hostFragment ?: return
         val ctx = context ?: return
         dismissProgress()
@@ -405,15 +411,6 @@ class HubTimerListSession :
         if (resultCode == Activity.RESULT_OK) {
             Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!")
             reload()
-        }
-    }
-
-    override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        when (action) {
-            Statics.ACTION_EDIT -> editTimer(selected, create = false)
-            Statics.ACTION_DELETE -> deleteTimerConfirm()
-            Statics.ACTION_DELETE_CONFIRMED -> deleteTimer(selected)
-            else -> Unit
         }
     }
 

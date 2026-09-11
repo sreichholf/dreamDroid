@@ -38,6 +38,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
+import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
+import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
@@ -62,7 +65,32 @@ class VideoOverlayUiState {
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
     var showInfoButton by mutableStateOf(false)
+    /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
+    var epgDetailContent by mutableStateOf<net.reichholf.dreamdroid.ui.epg.EpgDetailContent?>(null)
+    var movieDetailContent by mutableStateOf<net.reichholf.dreamdroid.ui.movies.MovieDetailContent?>(null)
+
+    /** Phase 2.1g-ii-e: in-composition simple choice (audio/subtitle tracks). */
+    var choiceTitle by mutableStateOf<String?>(null)
+    var choiceItems by mutableStateOf<List<String>>(emptyList())
+    var choiceActionIds by mutableStateOf<IntArray>(intArrayOf())
+    var choiceDialogTag by mutableStateOf<String?>(null)
+    var onChoiceAction: ((actionId: Int, dialogTag: String) -> Unit)? = null
+
+    fun showChoice(title: String, items: List<String>, actionIds: IntArray, dialogTag: String) {
+        choiceTitle = title
+        choiceItems = items
+        choiceActionIds = actionIds
+        choiceDialogTag = dialogTag
+    }
+
+    fun dismissChoice() {
+        choiceTitle = null
+        choiceItems = emptyList()
+        choiceActionIds = intArrayOf()
+        choiceDialogTag = null
+    }
 }
+
 
 @Composable
 fun VideoOverlayScreen(
@@ -264,6 +292,23 @@ fun VideoOverlayScreen(
             }
         }
     }
+
+    state.epgDetailContent?.let { content ->
+        EpgDetailModalSheet(
+            content = content,
+            onDismiss = { state.epgDetailContent = null },
+            onSetTimer = { state.epgDetailContent = null },
+            onEditTimer = { state.epgDetailContent = null },
+            onImdb = { state.epgDetailContent = null },
+            onSimilar = { state.epgDetailContent = null },
+        )
+    }
+    state.movieDetailContent?.let { content ->
+        MovieDetailModalSheet(
+            content = content,
+            onDismiss = { state.movieDetailContent = null },
+        )
+    }
 }
 
 /**
@@ -384,6 +429,22 @@ fun ComposeView.bindVideoOverlayScreen(
                     .fillMaxWidth()
                     .focusGroup(),
             )
+            val choiceTitle = state.choiceTitle
+            if (choiceTitle != null) {
+                SimpleChoiceAlertDialog(
+                    title = choiceTitle,
+                    items = state.choiceItems,
+                    onDismiss = { state.dismissChoice() },
+                    onChoice = { index ->
+                        val tag = state.choiceDialogTag
+                        val ids = state.choiceActionIds
+                        if (tag != null && index in ids.indices) {
+                            state.onChoiceAction?.invoke(ids[index], tag)
+                        }
+                        state.dismissChoice()
+                    },
+                )
+            }
         }
     }
     setOnFocusChangeListener { _, hasFocus ->

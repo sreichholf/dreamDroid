@@ -100,7 +100,6 @@ fun EpgBouquetDestination(
     session.onLoadJob = { loadJob = it }
 
     DisposableEffect(hostFragment, session, dialogSession, remountEpoch) {
-        hostFragment.composeDialogActionListener = dialogSession
         hostFragment.composeActivityResultListener = session
         activity.addMenuProvider(session, hostFragment.viewLifecycleOwner)
         session.setToolbarTitle(session.finishedTitle())
@@ -148,9 +147,6 @@ fun EpgBouquetDestination(
         frame?.addView(header)
 
         onDispose {
-            if (hostFragment.composeDialogActionListener === dialogSession) {
-                hostFragment.composeDialogActionListener = null
-            }
             if (hostFragment.composeActivityResultListener === session) {
                 hostFragment.composeActivityResultListener = null
             }
@@ -189,6 +185,8 @@ fun EpgBouquetDestination(
             onItemClick = { dialogSession.showDetail(it) },
         )
     }
+
+    EpgEventDetailSheetHost(dialogSession)
 }
 
 private class EpgBouquetSession :

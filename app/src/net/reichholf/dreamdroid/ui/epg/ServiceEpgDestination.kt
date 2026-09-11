@@ -85,12 +85,8 @@ fun ServiceEpgDestination(
     }
 
     DisposableEffect(hostFragment, dialogSession) {
-        hostFragment.composeDialogActionListener = dialogSession
         setToolbarTitle(finishedTitle())
         onDispose {
-            if (hostFragment.composeDialogActionListener === dialogSession) {
-                hostFragment.composeDialogActionListener = null
-            }
             loadJob?.cancel()
             loadJob = null
             dialogSession.dismissProgress()
@@ -117,4 +113,6 @@ fun ServiceEpgDestination(
             onItemClick = { dialogSession.showDetail(it) },
         )
     }
+
+    EpgEventDetailSheetHost(dialogSession)
 }

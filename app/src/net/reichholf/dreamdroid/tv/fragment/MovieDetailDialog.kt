@@ -13,7 +13,7 @@ import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Movie
-import net.reichholf.dreamdroid.fragment.dialogs.AbstractDialog
+import androidx.fragment.app.DialogFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as HashMovie
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailScreen
@@ -24,10 +24,12 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
  * TV fullscreen movie detail. Reuses phone [MovieDetailScreen] under [DreamDroidTheme]
  * (Phase 3.1b). Prefers typed [Movie]; hash kept for legacy callers.
  */
-class MovieDetailDialog : AbstractDialog() {
+class MovieDetailDialog : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        @Suppress("DEPRECATION")
+        retainInstance = true
         setStyle(STYLE_NO_FRAME, R.style.Theme_Dreamdroid_FullscreenDialog)
     }
 
