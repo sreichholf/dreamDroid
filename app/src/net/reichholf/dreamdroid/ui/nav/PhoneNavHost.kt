@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.app.SearchManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -27,18 +26,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
-import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
+import net.reichholf.dreamdroid.ui.epg.EpgBouquetDestination
+import net.reichholf.dreamdroid.ui.epg.EpgSearchDestination
+import net.reichholf.dreamdroid.ui.epg.ServiceEpgDestination
+import net.reichholf.dreamdroid.ui.pick.PickServiceDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
-import net.reichholf.dreamdroid.fragment.EpgSearchFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.PickServiceFragment
 import net.reichholf.dreamdroid.fragment.TimerEditFragment
 import net.reichholf.dreamdroid.fragment.TimerServicePickFragment
-import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
 import net.reichholf.dreamdroid.fragment.ServiceListPager
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
@@ -92,16 +91,10 @@ fun PhoneNavHost(
             ProfilesDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.EPG) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_epg_slot,
-                routeTag = PhoneNavRoutes.EPG,
-                createFragment = {
-                    EpgBouquetFragment().apply {
-                        arguments = hostFragment.epgLeafArguments()
-                    }
-                },
-            )
+            val remount by hostFragment.epgRemountFlow().collectAsState()
+            key(remount) {
+                EpgBouquetDestination(hostFragment = hostFragment, remountEpoch = remount)
+            }
         }
         composable(PhoneNavRoutes.REMOTE) {
             VirtualRemoteDestination(hostFragment = hostFragment)
@@ -129,18 +122,10 @@ fun PhoneNavHost(
         ) { entry ->
             val serviceRef = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_REF).orEmpty()
             val serviceName = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_NAME).orEmpty()
-            NestedFragmentDestination(
+            ServiceEpgDestination(
                 hostFragment = hostFragment,
-                containerId = R.id.phone_nav_service_epg_slot,
-                routeTag = "service_epg:$serviceRef",
-                createFragment = {
-                    ServiceEpgListFragment().apply {
-                        arguments = Bundle().apply {
-                            putString(Event.KEY_SERVICE_REFERENCE, serviceRef)
-                            putString(Event.KEY_SERVICE_NAME, serviceName)
-                        }
-                    }
-                },
+                serviceRef = serviceRef,
+                serviceName = serviceName,
             )
         }
         composable(
@@ -150,35 +135,17 @@ fun PhoneNavHost(
             ),
         ) { entry ->
             val query = entry.arguments?.getString(PhoneNavRoutes.ARG_QUERY).orEmpty()
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_epg_search_slot,
-                routeTag = "epg_search:$query",
-                createFragment = {
-                    EpgSearchFragment().apply {
-                        arguments = Bundle().apply {
-                            putString(SearchManager.QUERY, query)
-                        }
-                    }
-                },
-            )
+            val remount by hostFragment.epgSearchRemountFlow().collectAsState()
+            key(query, remount) {
+                EpgSearchDestination(
+                    hostFragment = hostFragment,
+                    query = query,
+                    remountEpoch = remount,
+                )
+            }
         }
         composable(PhoneNavRoutes.PICK_SERVICE) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_pick_service_slot,
-                routeTag = PhoneNavRoutes.PICK_SERVICE,
-                createFragment = {
-                    PickServiceFragment().apply {
-                        arguments = Bundle().apply {
-                            val data = ExtendedHashMap()
-                            data.put(Service.KEY_REFERENCE, "default")
-                            putSerializable("data", data)
-                            putString("action", Statics.INTENT_ACTION_PICK_BOUQUET)
-                        }
-                    }
-                },
-            )
+            PickServiceDestination(hostFragment = hostFragment)
         }
         composable(PhoneNavRoutes.PROFILE_EDIT) {
             val remount by hostFragment.profileEditRemountFlow().collectAsState()

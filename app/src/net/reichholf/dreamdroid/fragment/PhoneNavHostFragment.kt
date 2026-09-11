@@ -99,12 +99,18 @@ class PhoneNavHostFragment : BaseFragment() {
     private var pendingTimerCreate: Boolean = false
     private var pendingEpgSearchQuery: String? = null
     private val profileEditRemountState = MutableStateFlow(0)
+    private val epgRemountState = MutableStateFlow(0)
+    private val epgSearchRemountState = MutableStateFlow(0)
 
     /** Bumps when profile edit args change while already on [PhoneNavRoutes.PROFILE_EDIT]. */
     val profileEditRemountEpoch: Int
         get() = profileEditRemountState.value
 
     fun profileEditRemountFlow(): StateFlow<Int> = profileEditRemountState.asStateFlow()
+
+    fun epgRemountFlow(): StateFlow<Int> = epgRemountState.asStateFlow()
+
+    fun epgSearchRemountFlow(): StateFlow<Int> = epgSearchRemountState.asStateFlow()
 
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -158,7 +164,7 @@ class PhoneNavHostFragment : BaseFragment() {
         return arguments?.getString(ARG_START_ROUTE) ?: PhoneNavRoutes.DEVICE_INFO
     }
 
-    /** Args for nested [EpgBouquetFragment] (default TV bouquet from drawer). */
+    /** Args for EPG bouquet destination (default TV bouquet from drawer). */
     fun epgLeafArguments(): Bundle {
         return Bundle().apply {
             putString(
@@ -187,21 +193,13 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.SETTINGS -> null
             route == PhoneNavRoutes.PROFILES -> null
             route == PhoneNavRoutes.PROFILE_EDIT -> null
-            route == PhoneNavRoutes.EPG ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
+            route == PhoneNavRoutes.EPG -> null
+            route == PhoneNavRoutes.SERVICE_EPG || route.startsWith("service_epg") -> null
+            route == PhoneNavRoutes.EPG_SEARCH || route.startsWith("epg_search") -> null
+            route == PhoneNavRoutes.PICK_SERVICE -> null
             route == PhoneNavRoutes.HUB ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_hub_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.HUB)
-            route == PhoneNavRoutes.SERVICE_EPG || route.startsWith("service_epg") ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_service_epg_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SERVICE_EPG)
-            route == PhoneNavRoutes.EPG_SEARCH || route.startsWith("epg_search") ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_epg_search_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG_SEARCH)
-            route == PhoneNavRoutes.PICK_SERVICE ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_pick_service_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PICK_SERVICE)
             route == PhoneNavRoutes.TIMER_EDIT ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_timer_edit_slot)
                     ?: childFragmentManager.findFragmentByTag(timerEditTag)
@@ -254,9 +252,8 @@ class PhoneNavHostFragment : BaseFragment() {
     }
 
     /**
-     * Open EPG with bouquet args. Remounts the nested leaf when args change so
-     * [EpgBouquetFragment] reads a fresh Bundle. When already on the EPG route,
-     * `launchSingleTop` would no-op — replace the child fragment directly.
+     * Open EPG with bouquet args. Remounts when already on the EPG route so
+     * [EpgBouquetDestination] reloads from fresh host args.
      */
     fun navigateToEpg(serviceReference: String?, serviceName: String?): Boolean {
         val controller = navController ?: return false
@@ -267,21 +264,8 @@ class PhoneNavHostFragment : BaseFragment() {
         val args = arguments ?: Bundle().also { arguments = it }
         args.putString(Event.KEY_SERVICE_REFERENCE, serviceReference)
         args.putString(Event.KEY_SERVICE_NAME, serviceName)
-        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_epg_slot)
-            ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.EPG)
-        if (existing != null && !childFragmentManager.isStateSaved) {
-            childFragmentManager.beginTransaction().remove(existing).commitNow()
-        }
         if (controller.currentDestination?.route == PhoneNavRoutes.EPG) {
-            if (!childFragmentManager.isStateSaved) {
-                childFragmentManager.beginTransaction()
-                    .replace(
-                        R.id.phone_nav_epg_slot,
-                        EpgBouquetFragment().apply { arguments = epgLeafArguments() },
-                        PhoneNavRoutes.EPG,
-                    )
-                    .commitNow()
-            }
+            epgRemountState.value = epgRemountState.value + 1
             return true
         }
         controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
@@ -289,7 +273,7 @@ class PhoneNavHostFragment : BaseFragment() {
     }
 
     /**
-     * Push nested service EPG onto the NavHost back stack (hub → service EPG).
+     * Push service EPG onto the NavHost back stack (hub → service EPG).
      * Typed string args; back pops to the previous drawer leaf.
      */
     fun navigateToServiceEpg(serviceReference: String?, serviceName: String?): Boolean {
@@ -299,33 +283,17 @@ class PhoneNavHostFragment : BaseFragment() {
     }
 
     /**
-     * Push nested EPG search onto the NavHost back stack.
-     * Typed query string; back pops to the previous leaf.
-     * Resubmitting the same query remounts the leaf so results reload.
+     * Push EPG search onto the NavHost back stack.
+     * Resubmitting the same query bumps a remount epoch so results reload.
      */
     fun navigateToEpgSearch(query: String?): Boolean {
         val controller = navController ?: return false
         val q = query.orEmpty()
         if (q.isEmpty()) return false
-        val existing = childFragmentManager.findFragmentById(R.id.phone_nav_epg_search_slot)
-            ?: childFragmentManager.findFragmentByTag("epg_search:$q")
         val onSearch = controller.currentDestination?.route == PhoneNavRoutes.EPG_SEARCH
             || controller.currentDestination?.route?.startsWith("epg_search") == true
-        if (existing != null && !childFragmentManager.isStateSaved) {
-            childFragmentManager.beginTransaction().remove(existing).commitNow()
-        }
-        if (onSearch && !childFragmentManager.isStateSaved) {
-            childFragmentManager.beginTransaction()
-                .replace(
-                    R.id.phone_nav_epg_search_slot,
-                    EpgSearchFragment().apply {
-                        arguments = Bundle().apply {
-                            putString(android.app.SearchManager.QUERY, q)
-                        }
-                    },
-                    "epg_search:$q",
-                )
-                .commitNow()
+        if (onSearch) {
+            epgSearchRemountState.value = epgSearchRemountState.value + 1
         }
         controller.navigateToEpgSearch(q)
         return true
@@ -427,6 +395,10 @@ class PhoneNavHostFragment : BaseFragment() {
     /** Current NavHost route, or [startRoute] if the controller is not attached. */
     fun currentRoute(): String {
         return navController?.currentDestination?.route ?: startRoute()
+    }
+
+    fun popNavBackStack(): Boolean {
+        return navController?.popBackStack() ?: false
     }
 
 

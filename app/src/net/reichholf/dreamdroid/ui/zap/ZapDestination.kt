@@ -28,7 +28,6 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.PickServiceFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
@@ -37,6 +36,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 
 /**
  * Phase 2.7d: Zap channel grid as a direct Compose NavHost destination.
@@ -234,7 +234,7 @@ private class ZapSession :
             return
         }
         @Suppress("DEPRECATION")
-        val bouquetMap = data?.getSerializableExtra(PickServiceFragment.KEY_BOUQUET) as? ExtendedHashMap
+        val bouquetMap = data?.getSerializableExtra(KEY_BOUQUET) as? ExtendedHashMap
         val bouquet = ZapListMapper.bouquetFrom(bouquetMap)
         if (bouquet.reference != bouquetRef) {
             bouquetRef = bouquet.reference
