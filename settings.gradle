@@ -4,6 +4,11 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    plugins {
+        // Match root ext.kotlin_version (2.2.10). Needed so Room generates
+        // AppDatabase_Impl for Kotlin Profile/AppDatabase (annotationProcessor alone does not).
+        id 'com.google.devtools.ksp' version '2.2.10-2.0.2'
+    }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
