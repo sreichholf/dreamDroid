@@ -12,8 +12,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 
@@ -21,8 +19,6 @@ import net.reichholf.dreamdroid.R;
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler;
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment;
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment;
-import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent;
-import net.reichholf.dreamdroid.helpers.Statics;
 
 
 public class FragmentHelper {
@@ -107,32 +103,8 @@ public class FragmentHelper {
 			}
 			walker = walker.getParentFragment();
 		}
-		MultiPaneHandler mph = ((IMutliPaneContent) mFragment).getMultiPaneHandler();
-		if (mph.isMultiPane()) {
-			boolean explicitShow = false;
-			FragmentManager fm = getAppCompatActivity().getSupportFragmentManager();
-			if (fm.getBackStackEntryCount() > 0) {
-				fm.popBackStackImmediate();
-			} else {
-				explicitShow = true;
-			}
-			Fragment target = mFragment.getTargetFragment();
-
-			if (target != null) {
-				if (resultCode != Statics.RESULT_NONE || data != null) {
-					if (explicitShow) {
-						FragmentTransaction ft = getAppCompatActivity().getSupportFragmentManager().beginTransaction();
-						ft.remove(mFragment);
-						ft.commit();
-
-						mph.showDetails(target);
-					}
-					target.onActivityResult(mFragment.getTargetRequestCode(), resultCode, data);
-				}
-			}
-		} else {
-			getAppCompatActivity().setResult(resultCode, data);
-			getAppCompatActivity().finish();
-		}
+		// Nested leaves finish only under PhoneNavHost; remaining hosts close themselves.
+		getAppCompatActivity().setResult(resultCode, data);
+		getAppCompatActivity().finish();
 	}
 }
