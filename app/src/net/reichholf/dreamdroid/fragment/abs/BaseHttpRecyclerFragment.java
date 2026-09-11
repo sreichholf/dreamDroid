@@ -7,8 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -100,19 +98,6 @@ public abstract class BaseHttpRecyclerFragment extends BaseRecyclerFragment impl
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		return onItemSelected(item.getItemId());
-	}
-
-
-	@Override
-	public void createOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
-		checkMenuReload(menu, inflater);
-	}
-
-
-	public void checkMenuReload(Menu menu, @NonNull MenuInflater inflater) {
-		if (!mEnableReload)
-			return;
-		inflater.inflate(R.menu.reload, menu);
 	}
 
 	/**

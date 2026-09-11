@@ -82,7 +82,6 @@ public class ServiceListPageFragment extends BaseHttpRecyclerEventFragment {
 		super.onCreate(savedInstanceState);
 
 		mHasFabMain = false;
-		mEnableReload = false;
 
 		if (savedInstanceState != null) {
 			mRef = savedInstanceState.getString(KEY_REF);

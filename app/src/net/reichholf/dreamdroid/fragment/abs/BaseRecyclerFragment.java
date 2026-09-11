@@ -41,7 +41,6 @@ public abstract class BaseRecyclerFragment extends Fragment implements ActivityC
 
 	private FragmentHelper mHelper;
 	protected boolean mHasFabMain;
-	protected boolean mEnableReload = true;
 	protected boolean mShouldRetainInstance = true;
 	protected boolean mCardListStyle = false;
 

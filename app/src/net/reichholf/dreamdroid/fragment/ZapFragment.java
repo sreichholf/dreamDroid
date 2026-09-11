@@ -58,7 +58,6 @@ public class ZapFragment extends BaseHttpRecyclerFragment {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		mEnableReload = false;
 		super.onCreate(savedInstanceState);
 		mListState = new ZapListState();
 		mRefreshState = new ComposeRefreshState();

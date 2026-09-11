@@ -52,7 +52,7 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("About").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Changelog").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Backup").performScrollTo().assertIsDisplayed()
-        // Reload FAB and its preference were removed; pull-to-refresh / toolbar reload remain.
+        // Reload FAB / preference removed; list screens use pull-to-refresh only.
         composeRule.onAllNodesWithText("Disable floating reload button").assertCountEquals(0)
     }
 
