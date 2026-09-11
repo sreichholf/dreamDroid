@@ -655,7 +655,7 @@ One PR per screen. Pattern: Compose + Kotlin Material 3 like About (#164) / Prof
 
 ## Appendix H. After Wave 3 — one-by-one modernization plan
 
-Operator intent: **migrate everything** (phone leftovers + Leanback → Compose TV), then operator usertests, then bugfix pass. Do **one PR at a time**. Phase 3 hybrid Leanback path is on `main`; **full Compose hub (option C / 3.1c-iv)** code path is on `main` through **iv-f**; **3.1c-iv complete through iv-g**; **this PR is 2.6e** (Glance hybrid Virtual Remote).
+Operator intent: **migrate everything** (phone leftovers + Leanback → Compose TV), then operator usertests, then bugfix pass. Do **one PR at a time**. Phase 3 hybrid Leanback path is on `main`; **full Compose hub (option C / 3.1c-iv)** code path is on `main` through **iv-f**; **3.1c-iv complete through iv-g**; **this PR is `videooverlay-kotlin`** (Kotlin `VideoOverlayFragment`). **#344–#348 merged**.
 
 Phone Wave 3 + Phase 2.1–2.6 left **Compose UI inside Java Fragment shells** nested under `PhoneNavHost`. Phase **2.7** converts those shells to **Kotlin** Compose destinations (operator ask 2026-09-11): leave Java Fragments, move behavior into Kotlin screens/ViewModels, delete the shell. Do **not** stop at a same-shape Java→Kotlin Fragment rewrite.
 
