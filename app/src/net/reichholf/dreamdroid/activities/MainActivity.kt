@@ -813,7 +813,6 @@ class MainActivity :
 
         @JvmField
         val NAVIGATION_DIALOG_TAGS: List<String> = listOf(
-            "about_dialog",
             "powerstate_dialog",
             "sendmessage_dialog",
             "sleeptimer_dialog",

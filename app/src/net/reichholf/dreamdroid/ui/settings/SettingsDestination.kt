@@ -14,9 +14,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.about.AboutComposeDialog
 
 /**
  * Phase 2.7e: Settings as a direct Compose NavHost destination.
@@ -54,10 +52,8 @@ fun SettingsDestination(
             (context as? BaseActivity)?.startPiconSync()
         },
         onAbout = {
-            (context as? MultiPaneHandler)?.showDialogFragment(
-                AboutComposeDialog.newInstance(),
-                "about_dialog",
-            )
+            // Phase 2.1g-ii-b: Navigation Compose dialog (no DialogFragment).
+            hostFragment.navigateToAbout()
         },
         onChangelog = {
             (context as? MainActivity)?.showChangeLog(false)
