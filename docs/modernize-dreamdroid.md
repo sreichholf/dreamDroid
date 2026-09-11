@@ -130,6 +130,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | assert-navhost-leaf-fallbacks | [#291](https://github.com/sreichholf/dreamDroid/pull/291) | merged | Drop dead bare leaf `showDetails` fallbacks; cold SEARCH mounts `PhoneNavHost` + `queueEpgSearch`. Keep OkHttp 3.14.9. |
 | dead-weight-epg-database | [#293](https://github.com/sreichholf/dreamDroid/pull/293) | merged | Drop fully commented `EpgDatabase.java` + empty `epgsync/` package. Keep OkHttp 3.14.9. |
 | vlc-kotlin-wrapper | [#296](https://github.com/sreichholf/dreamDroid/pull/296) | merged | Phase 2.5e: thin Kotlin `VLCInstance`/`VLCPlayer`; keep existing overlay Compose smoke test. Keep OkHttp 3.14.9. |
+| okhttp4-picasso | (this PR) | open | Bump OkHttp 3.14.9 → 4.12.0 for Picasso/TLS; drop `okhttp3.internal` hostname verifier. Enigma2 stays HttpURLConnection. No libVLC / Media3 / Glance. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -212,6 +213,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Assert NavHost leaf fallbacks **merged** [#291](https://github.com/sreichholf/dreamDroid/pull/291).
 - Dead-weight: drop commented `EpgDatabase` **merged** [#293](https://github.com/sreichholf/dreamDroid/pull/293).
 - Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296).
+- OkHttp 4.12 for Picasso/TLS **this PR** (Enigma2 HTTP unchanged).
 - Out of wave still: Phase 4–5 operator usertests. See Appendix H.
 
 ## How to read this
@@ -491,7 +493,7 @@ Evernote `@State` + Livefront Bridge retired in Phase 2.3 ([#252](https://github
 
 VLC `VideoActivity` is out of this program.
 
-Kotlin plugin is 1.9.24 with Compose compiler 1.5.14. OkHttp stays 3.14.9. Do not bump OkHttp to 4 as a drive-by.
+Kotlin plugin is 1.9.24 with Compose compiler 1.5.14. OkHttp **this PR** bumps Picasso stack to 4.12.0. Enigma2 HTTP remains HttpURLConnection.
 
 Test APK must define `app_name_debug` / `app_name_tv_debug` or AAPT fails.
 

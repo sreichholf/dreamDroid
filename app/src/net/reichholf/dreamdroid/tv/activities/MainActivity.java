@@ -25,7 +25,6 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
-import okhttp3.internal.tls.OkHostnameVerifier;
 
 /**
  * Created by Stephan on 16.10.2016.
@@ -89,7 +88,9 @@ public class MainActivity extends FragmentActivity {
 						return response.request().newBuilder().header("Authorization", cred).build();
 					})
 					.sslSocketFactory(sc.getSocketFactory(), systemDefaultTrustManager())
-					.hostnameVerifier(mTrustManager.wrapHostnameVerifier(OkHostnameVerifier.INSTANCE));
+					// OkHttp 4: avoid okhttp3.internal.*; match HttpsURLConnection verifier wrap.
+					.hostnameVerifier(mTrustManager.wrapHostnameVerifier(
+							HttpsURLConnection.getDefaultHostnameVerifier()));
 			Picasso.Builder builder = new Picasso.Builder(getApplicationContext());
 			builder.downloader(new OkHttp3Downloader(clientBuilder.build()));
 			try {
