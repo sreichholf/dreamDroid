@@ -149,11 +149,10 @@ class PhoneNavHostFragment : BaseFragment() {
     fun getActiveLeaf(): Fragment? {
         val route = navController?.currentDestination?.route ?: startRoute()
         return when {
-            // Phase 2.7b: Device Info is a direct Compose destination (no nested Fragment).
+            // Phase 2.7b/c: Compose destinations (no nested Fragment).
             route == PhoneNavRoutes.DEVICE_INFO -> null
-            route == PhoneNavRoutes.SIGNAL ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_signal_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SIGNAL)
+            route == PhoneNavRoutes.SIGNAL -> null
+            route == PhoneNavRoutes.BACKUP -> null
             route == PhoneNavRoutes.SCREENSHOT ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_screenshot_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.SCREENSHOT)
@@ -163,9 +162,6 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.ZAP ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_zap_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.ZAP)
-            route == PhoneNavRoutes.BACKUP ->
-                childFragmentManager.findFragmentById(R.id.phone_nav_backup_slot)
-                    ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.BACKUP)
             route == PhoneNavRoutes.PROFILES ->
                 childFragmentManager.findFragmentById(R.id.phone_nav_profiles_slot)
                     ?: childFragmentManager.findFragmentByTag(PhoneNavRoutes.PROFILES)

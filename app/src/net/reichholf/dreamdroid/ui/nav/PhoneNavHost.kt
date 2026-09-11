@@ -23,11 +23,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.fragment.BackupFragment
 import net.reichholf.dreamdroid.fragment.abs.BaseHttpFragment
 import net.reichholf.dreamdroid.fragment.CurrentServiceFragment
 import net.reichholf.dreamdroid.fragment.EpgBouquetFragment
+import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
+import net.reichholf.dreamdroid.ui.signal.SignalDestination
 import net.reichholf.dreamdroid.fragment.EpgSearchFragment
 import net.reichholf.dreamdroid.fragment.MyPreferenceFragment
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
@@ -39,7 +40,6 @@ import net.reichholf.dreamdroid.fragment.ProfileListFragment
 import net.reichholf.dreamdroid.fragment.ScreenShotFragment
 import net.reichholf.dreamdroid.fragment.ServiceEpgListFragment
 import net.reichholf.dreamdroid.fragment.ServiceListPager
-import net.reichholf.dreamdroid.fragment.SignalFragment
 import net.reichholf.dreamdroid.fragment.VirtualRemotePagerFragment
 import net.reichholf.dreamdroid.fragment.ZapFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
@@ -71,12 +71,7 @@ fun PhoneNavHost(
             DeviceInfoDestination()
         }
         composable(PhoneNavRoutes.SIGNAL) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_signal_slot,
-                routeTag = PhoneNavRoutes.SIGNAL,
-                createFragment = { SignalFragment() },
-            )
+            SignalDestination()
         }
         composable(PhoneNavRoutes.SCREENSHOT) {
             NestedFragmentDestination(
@@ -103,12 +98,7 @@ fun PhoneNavHost(
             )
         }
         composable(PhoneNavRoutes.BACKUP) {
-            NestedFragmentDestination(
-                hostFragment = hostFragment,
-                containerId = R.id.phone_nav_backup_slot,
-                routeTag = PhoneNavRoutes.BACKUP,
-                createFragment = { BackupFragment() },
-            )
+            BackupDestination()
         }
         composable(PhoneNavRoutes.PROFILES) {
             NestedFragmentDestination(

@@ -1,36 +1,28 @@
 package net.reichholf.dreamdroid.enigma
 
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import android.content.Context
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
+data class SignalLoadResult(
+    val success: Boolean,
+    val signal: Signal?,
+    val errorText: String?,
+)
+
 /**
- * Phase 2.2b: load typed signal via coroutines (no executor / runBlocking).
- * Call from a fragment that already has a view ([Fragment.getViewLifecycleOwner]).
- *
- * Uses a dedicated [SimpleHttpClient] per load (same as the old GetSignalTask),
- * not the fragment helper’s shared client — [SimpleHttpClient] is not thread-safe and
- * Job.cancel does not abort in-flight HttpURLConnection I/O.
+ * Phase 2.7c: load typed signal without a Fragment owner.
+ * Uses a dedicated [SimpleHttpClient] per call (not thread-safe; cancel does not abort I/O).
  */
-fun Fragment.launchSignalLoad(
-    onResult: (success: Boolean, signal: Signal?, errorText: String?) -> Unit,
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val http = SimpleHttpClient.getInstance()
-        val signal = EnigmaClient(http).getSignal()
-        if (!isAdded) {
-            return@launch
-        }
-        val success = signal != null && !signal.isEmpty()
-        val errorText = when {
-            success -> null
-            http.hasError() ->
-                getString(R.string.get_content_error) + "\n" + http.getErrorText(requireContext())
-            else -> getString(R.string.error_parsing)
-        }
-        onResult(success, signal, errorText)
+suspend fun loadSignal(context: Context): SignalLoadResult {
+    val http = SimpleHttpClient.getInstance()
+    val signal = EnigmaClient(http).getSignal()
+    val success = signal != null && !signal.isEmpty()
+    val errorText = when {
+        success -> null
+        http.hasError() ->
+            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+        else -> context.getString(R.string.error_parsing)
     }
+    return SignalLoadResult(success, signal, errorText)
 }

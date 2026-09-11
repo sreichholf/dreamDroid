@@ -133,7 +133,8 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | okhttp4-picasso | [#299](https://github.com/sreichholf/dreamDroid/pull/299) | merged | Bump OkHttp 3.14.9 → 4.12.0 for Picasso/TLS; drop `okhttp3.internal` hostname verifier. Enigma2 stays HttpURLConnection. No libVLC / Media3 / Glance. |
 | libvlc-375-stable | [#300](https://github.com/sreichholf/dreamDroid/pull/300) | merged | Bump `libvlc-all` 3.5.1 → 3.7.5 (stable); raise `compileSdk` 34→36 (AAR requires ≥36); keep `targetSdk` 34. No Media3 / Glance. |
 | docs-fragment-rework | [#304](https://github.com/sreichholf/dreamDroid/pull/304) | merged | Phase 2.7a: rework phone Fragment shells into **Kotlin** Compose NavHost destinations (convert off Java; not “same Fragment in Kotlin”). Docs only. |
-| device-info-compose-dest | | open | Phase 2.7b: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` + `device_info.xml`. |
+| device-info-compose-dest | [#306](https://github.com/sreichholf/dreamDroid/pull/306) | merged | Phase 2.7b: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` + `device_info.xml`. |
+| backup-signal-compose-dest | | open | Phase 2.7c partial: Backup + Signal Kotlin Compose destinations; delete `BackupFragment` / `SignalFragment`. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
 
@@ -219,7 +220,7 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Phase 2.5e thin Kotlin VLC wrapper **merged** [#296](https://github.com/sreichholf/dreamDroid/pull/296).
 - OkHttp 4.12 for Picasso/TLS **merged** [#299](https://github.com/sreichholf/dreamDroid/pull/299) (Enigma2 HTTP unchanged).
 - libVLC-all **3.7.5** stable **merged** [#300](https://github.com/sreichholf/dreamDroid/pull/300) (still not Media3).
-- Phase 2.7 phone Fragment→**Kotlin** Compose destination rework **in progress** ([#304](https://github.com/sreichholf/dreamDroid/pull/304) docs; **2.7b Device Info** this PR). Remaining nested Java Fragment shells in `PhoneNavHost` are **not** done.
+- Phase 2.7 phone Fragment→**Kotlin** Compose destination rework **in progress** ([#304](https://github.com/sreichholf/dreamDroid/pull/304) docs; **2.7b Device Info** [#306](https://github.com/sreichholf/dreamDroid/pull/306); **Backup+Signal** this PR). Remaining nested Java Fragment shells in `PhoneNavHost` are **not** done.
 - Out of wave still after 2.7: Phase 4–5 operator usertests. See Appendix H.
 
 ## How to read this
@@ -903,11 +904,11 @@ Why:
 | Route | Fragment shell today (Java) | Compose UI already? |
 | --- | --- | --- |
 | `DEVICE_INFO` | — (Kotlin `DeviceInfoDestination`) | Yes (`DeviceInfoScreen`) — **2.7b** |
-| `SIGNAL` | `SignalFragment` | Yes (`SignalScreen`) |
+| `SIGNAL` | — (Kotlin `SignalDestination`) | Yes (`SignalScreen`) — **2.7c** |
 | `SCREENSHOT` | `ScreenShotFragment` | Yes |
 | `CURRENT` | `CurrentServiceFragment` | Yes |
 | `ZAP` | `ZapFragment` | Yes |
-| `BACKUP` | `BackupFragment` | Yes |
+| `BACKUP` | — (Kotlin `BackupDestination`) | Yes — **2.7c** |
 | `PROFILES` | `ProfileListFragment` | Yes |
 | `EPG` | `EpgBouquetFragment` | Yes |
 | `REMOTE` | `VirtualRemotePagerFragment` → `VirtualRemoteFragment` | Yes |
@@ -937,7 +938,8 @@ Hub children still Java Fragment-backed today: `ServiceListPageFragment`, `Movie
 | Slice | Scope | Non-goals |
 | --- | --- | --- |
 | 2.7a | Docs decision on `main` | **merged** [#304](https://github.com/sreichholf/dreamDroid/pull/304). No app code |
-| 2.7b | Beachhead: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` | **this PR**. No other leaves; keep dialogs |
+| 2.7b | Beachhead: Device Info Kotlin Compose destination; delete `DeviceInfoFragment` | **merged** [#306](https://github.com/sreichholf/dreamDroid/pull/306) |
+| 2.7c | Simple leaves: Signal, Screenshot, Current, Backup → Kotlin destinations | **this PR:** Backup + Signal. Screenshot/Current follow (dialog / VirtualRemote edges) |
 | 2.7c | Simple leaves: Signal, Screenshot, Current, Backup → Kotlin destinations | No hub / edit forms |
 | 2.7d | Zap + Virtual Remote → Kotlin destinations | No hub |
 | 2.7e | Settings + Profiles + Profile edit → Kotlin destinations | Keep dialogs as Fragment |
