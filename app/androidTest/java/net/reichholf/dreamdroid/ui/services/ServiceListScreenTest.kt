@@ -53,8 +53,13 @@ class ServiceListScreenTest {
             }
         }
         composeRule.onNodeWithText("ARD").assertIsDisplayed()
-        composeRule.onNodeWithText("20:00  Tagesschau  15").assertIsDisplayed()
-        composeRule.onNodeWithText("20:15  Wetter  5").assertIsDisplayed()
+        // Now/next use separate start | title | end columns (aligned under each other).
+        composeRule.onNodeWithText("20:00").assertIsDisplayed()
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("15").assertIsDisplayed()
+        composeRule.onNodeWithText("20:15").assertIsDisplayed()
+        composeRule.onNodeWithText("Wetter").assertIsDisplayed()
+        composeRule.onNodeWithText("5").assertIsDisplayed()
     }
 
     @Test

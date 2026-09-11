@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -24,10 +26,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
@@ -41,6 +47,11 @@ import kotlin.math.roundToInt
 
 /** Window-space top-left of the tapped row — used to anchor View PopupMenus. */
 typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -> Unit
+
+private val EventStartColumnWidth = 45.dp
+private val EventEndColumnWidth = 50.dp
+/** Slightly taller than the VLC zap list's 4dp strip so the top-edge progress reads clearly. */
+private val ProgressBarHeight = 6.dp
 
 @Composable
 fun ServiceListScreen(
@@ -98,44 +109,105 @@ private fun ServiceRow(
             ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
-        Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (item.kind == ServiceRowKind.CHANNEL) {
-                    ServicePicon(item)
-                }
+        Column(Modifier.fillMaxWidth()) {
+            if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
+                LinearProgressIndicator(
+                    progress = { item.progress.toFloat() / item.progressMax.toFloat() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(ProgressBarHeight),
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+            ) {
                 Text(
                     text = item.name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-            }
-            if (item.kind == ServiceRowKind.CHANNEL) {
-                if (item.nowTitle.isNotEmpty()) {
-                    Text(
-                        text = "${item.nowStart}  ${item.nowTitle}  ${item.nowDuration}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-                if (item.progressMax > 0) {
-                    LinearProgressIndicator(
-                        progress = item.progress.toFloat() / item.progressMax.toFloat(),
+                if (item.kind == ServiceRowKind.CHANNEL &&
+                    (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 4.dp),
-                    )
-                }
-                if (item.nextTitle.isNotEmpty()) {
-                    Text(
-                        text = "${item.nextStart}  ${item.nextTitle}  ${item.nextDuration}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        ServicePicon(item)
+                        Column(modifier = Modifier.weight(1f)) {
+                            if (item.nowTitle.isNotEmpty()) {
+                                EventTimeRow(
+                                    start = item.nowStart,
+                                    title = item.nowTitle,
+                                    endValue = item.nowDuration,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                            if (item.nextTitle.isNotEmpty()) {
+                                EventTimeRow(
+                                    start = item.nextStart,
+                                    title = item.nextTitle,
+                                    endValue = item.nextDuration,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+/**
+ * Start | title | remaining-or-duration, with fixed start/end columns so now and next
+ * stack with dedicated fields aligned underneath each other (same as the VLC zap list).
+ */
+@Composable
+private fun EventTimeRow(
+    start: String,
+    title: String,
+    endValue: String,
+    style: TextStyle,
+    color: Color,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = start,
+            style = style,
+            color = color,
+            maxLines = 1,
+            modifier = Modifier.width(EventStartColumnWidth),
+        )
+        Text(
+            text = title,
+            style = style,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 4.dp),
+        )
+        Text(
+            text = endValue,
+            style = style,
+            color = color,
+            maxLines = 1,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(EventEndColumnWidth),
+        )
     }
 }
 
@@ -151,7 +223,7 @@ private fun ServicePicon(item: ServiceListItem) {
         factory = { ctx -> ImageView(ctx) },
         modifier = Modifier
             .padding(end = 8.dp)
-            .size(48.dp),
+            .size(width = 48.dp, height = 30.dp),
         update = { view ->
             val map = ExtendedHashMap()
             map.put(Service.KEY_REFERENCE, item.reference)
