@@ -18,7 +18,6 @@ object StartScreen {
 	const val VALUE_CURRENT = "current"
 	const val VALUE_ZAP = "zap"
 	const val VALUE_TOOLS = "tools"
-	const val VALUE_SETTINGS = "settings"
 
 	val VALUES: List<String> = listOf(
 		VALUE_SERVICES,
@@ -27,7 +26,6 @@ object StartScreen {
 		VALUE_CURRENT,
 		VALUE_ZAP,
 		VALUE_TOOLS,
-		VALUE_SETTINGS,
 	)
 
 	fun read(prefs: SharedPreferences): String {
@@ -45,7 +43,6 @@ object StartScreen {
 		VALUE_CURRENT -> R.id.menu_navigation_current
 		VALUE_ZAP -> R.id.menu_navigation_zap
 		VALUE_TOOLS -> R.id.menu_navigation_tools
-		VALUE_SETTINGS -> R.id.menu_navigation_settings
 		else -> R.id.menu_navigation_services
 	}
 

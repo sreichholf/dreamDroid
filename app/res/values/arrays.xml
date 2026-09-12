@@ -29,7 +29,6 @@
         <item>@string/current_event</item>
         <item>@string/zap</item>
         <item>@string/tools</item>
-        <item>@string/settings</item>
     </string-array>
     <string-array name="start_screen_values">
         <item>services</item>
@@ -38,6 +37,5 @@
         <item>current</item>
         <item>zap</item>
         <item>tools</item>
-        <item>settings</item>
     </string-array>
 </resources>

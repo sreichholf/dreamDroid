@@ -13,11 +13,11 @@ class StartScreenTest {
         assertEquals(R.id.menu_navigation_current, StartScreen.menuId(StartScreen.VALUE_CURRENT))
         assertEquals(R.id.menu_navigation_zap, StartScreen.menuId(StartScreen.VALUE_ZAP))
         assertEquals(R.id.menu_navigation_tools, StartScreen.menuId(StartScreen.VALUE_TOOLS))
-        assertEquals(R.id.menu_navigation_settings, StartScreen.menuId(StartScreen.VALUE_SETTINGS))
     }
 
     @Test
-    fun unknownValueDefaultsToServices() {
+    fun unknownOrLegacySettingsValueDefaultsToServices() {
         assertEquals(R.id.menu_navigation_services, StartScreen.menuId("nope"))
+        assertEquals(R.id.menu_navigation_services, StartScreen.menuId("settings"))
     }
 }
