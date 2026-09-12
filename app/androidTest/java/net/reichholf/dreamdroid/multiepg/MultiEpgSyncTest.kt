@@ -179,4 +179,44 @@ class MultiEpgSyncTest {
         assertEquals(2, peek!!.events.size)
         assertEquals(2, fetches.get())
     }
+
+    @Test
+    fun channelOrderFollowsBouquetNotServiceRef() = runBlocking {
+        val t0 = 1_893_456_000L
+        val firstInBouquet = Event(
+            eventId = "1",
+            title = "Late SID first",
+            start = t0.toString(),
+            duration = "60",
+            serviceReference = "1:0:1:FFFF:1:1:0:0:0:0:",
+            serviceName = "First in bouquet",
+        )
+        val secondInBouquet = Event(
+            eventId = "2",
+            title = "Early SID second",
+            start = t0.toString(),
+            duration = "60",
+            serviceReference = "1:0:1:0001:1:1:0:0:0:0:",
+            serviceName = "Second in bouquet",
+        )
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, _ -> listOf(firstInBouquet, secondInBouquet) },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
+        val loaded = buildMultiEpgChannels(sync.ensureChunk(1, bouquet, t0))
+        val peeked = buildMultiEpgChannels(
+            sync.peekChunk(1, bouquet, t0)!!.events,
+        )
+        assertEquals(
+            listOf("First in bouquet", "Second in bouquet"),
+            loaded.map { it.serviceName },
+        )
+        assertEquals(
+            listOf("First in bouquet", "Second in bouquet"),
+            peeked.map { it.serviceName },
+        )
+    }
 }

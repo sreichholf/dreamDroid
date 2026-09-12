@@ -116,9 +116,7 @@ class MultiEpgSync(
 
         try {
             val events = fetch(bouquetRef, chunk.startSec, chunk.endSec)
-            val entities = events.mapNotNull {
-                it.toEpgEventEntity(profileId, bouquetRef)
-            }
+            val entities = events.toEpgEventEntities(profileId, bouquetRef)
             val meta = EpgChunkMetaEntity(
                 profileId = profileId,
                 bouquetRef = bouquetRef,

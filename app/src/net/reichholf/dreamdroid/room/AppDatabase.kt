@@ -14,7 +14,7 @@ import net.reichholf.dreamdroid.Profile
         EpgEventEntity::class,
         EpgChunkMetaEntity::class,
     ],
-    version = 3,
+    version = 4,
 )
 abstract class AppDatabase : RoomDatabase() {
     /** Room profile DB file name under `databases/`. */
@@ -105,6 +105,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    ALTER TABLE `epg_event`
+                    ADD COLUMN `bouquetPos` INTEGER NOT NULL DEFAULT 0
+                    """.trimIndent(),
+                )
+            }
+        }
+
         @JvmField
         @Volatile
         var db: AppDatabase? = null
@@ -119,7 +130,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME,
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .allowMainThreadQueries()
                     .build()
                     .also { db = it }

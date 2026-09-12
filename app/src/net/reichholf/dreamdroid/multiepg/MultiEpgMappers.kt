@@ -6,6 +6,7 @@ import net.reichholf.dreamdroid.room.EpgEventEntity
 internal fun Event.toEpgEventEntity(
     profileId: Int,
     bouquetRef: String,
+    bouquetPos: Int,
 ): EpgEventEntity? {
     val id = eventId.trim()
     val ref = serviceReference.trim()
@@ -26,6 +27,7 @@ internal fun Event.toEpgEventEntity(
         descriptionExtended = descriptionExtended,
         serviceName = serviceName,
         currentTime = currentTime.toLongOrNull() ?: 0L,
+        bouquetPos = bouquetPos,
     )
 }
 
@@ -41,4 +43,23 @@ internal fun EpgEventEntity.toEvent(): Event {
         serviceReference = serviceRef,
         serviceName = serviceName,
     )
+}
+
+/** Assign [EpgEventEntity.bouquetPos] from first-seen service order in [events]. */
+internal fun List<Event>.toEpgEventEntities(
+    profileId: Int,
+    bouquetRef: String,
+): List<EpgEventEntity> {
+    val posByRef = LinkedHashMap<String, Int>()
+    val out = ArrayList<EpgEventEntity>(size)
+    for (event in this) {
+        val ref = event.serviceReference.trim()
+        if (ref.isEmpty()) {
+            continue
+        }
+        val pos = posByRef.getOrPut(ref) { posByRef.size }
+        val entity = event.toEpgEventEntity(profileId, bouquetRef, pos) ?: continue
+        out.add(entity)
+    }
+    return out
 }

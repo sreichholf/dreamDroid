@@ -64,7 +64,7 @@ interface EpgDao {
           AND bouquetRef = :bouquetRef
           AND start < :windowEnd
           AND (start + duration) > :windowStart
-        ORDER BY serviceRef ASC, start ASC
+        ORDER BY bouquetPos ASC, serviceRef ASC, start ASC
         """,
     )
     fun eventsOverlapping(

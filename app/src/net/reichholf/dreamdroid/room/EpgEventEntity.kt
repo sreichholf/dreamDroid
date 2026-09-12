@@ -23,4 +23,5 @@ data class EpgEventEntity(
     val descriptionExtended: String,
     val serviceName: String,
     val currentTime: Long = 0L,
+    val bouquetPos: Int = 0,
 )
