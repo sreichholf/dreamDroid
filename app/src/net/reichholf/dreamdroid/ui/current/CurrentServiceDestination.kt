@@ -24,21 +24,21 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
-import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper
-import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
+import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
 
 private const val KEY_SAVED_CURRENT = "current_service"
 private const val KEY_SAVED_ITEM = "current_item"

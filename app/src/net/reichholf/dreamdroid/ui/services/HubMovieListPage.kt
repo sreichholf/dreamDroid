@@ -39,18 +39,12 @@ import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.launchMovieListLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
-import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
-import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
-import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
-import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -59,8 +53,14 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
+import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
+import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
+import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 import net.reichholf.dreamdroid.widget.AnchorPopup
-import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
 
 /**
  * Phase 2.7h: one Movies hub location page as Compose (parity with former MovieListFragment).
@@ -196,6 +196,7 @@ fun HubMovieListPage(
             },
         )
     }
+
     IndeterminateProgressHost(session.progress)
 }
 

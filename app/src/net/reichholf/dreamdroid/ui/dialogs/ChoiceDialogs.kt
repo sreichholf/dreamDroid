@@ -149,7 +149,11 @@ fun IndeterminateProgressDialog(
 ) {
     AlertDialog(
         onDismissRequest = {},
-        title = title.takeIf { it.isNotBlank() }?.let { { Text(it) } },
+        title = if (title.isBlank()) {
+            null
+        } else {
+            { Text(title) }
+        },
         text = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(modifier = Modifier.padding(end = 16.dp))
@@ -166,7 +170,6 @@ fun IndeterminateProgressHost(progress: IndeterminateProgressState?) {
         IndeterminateProgressDialog(title = progress.title, message = progress.message)
     }
 }
-
 
 @Composable
 fun ConfirmAlertDialog(

@@ -11,10 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -28,10 +28,6 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
-import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
-import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Python
@@ -41,7 +37,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
-import java.util.Arrays
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import java.util.Calendar
 import java.util.Collections
 
@@ -126,6 +125,7 @@ fun TimerEditDestination(
             },
         )
     }
+
     IndeterminateProgressHost(session.progress)
 }
 
@@ -277,7 +277,6 @@ class TimerEditSession(
 
     fun ensureLocationsAndTagsThenReload() {
         val host = hostFragment ?: return
-        context ?: return
         if (DreamDroid.getLocations().size == 0 || DreamDroid.getTags().size == 0) {
             if (locationsJob != null) {
                 return
