@@ -32,6 +32,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -129,18 +130,24 @@ fun MultiEpgScreen(
         hScroll.scrollTo((hScroll.value + deltaPx).coerceAtLeast(0))
     }
 
+    val timelineStartState = rememberUpdatedState(timelineStartSec)
+    val timelineEndState = rememberUpdatedState(timelineEndSec)
+    val focusSecState = rememberUpdatedState(focusSec)
+
     val cullWindow by remember {
         derivedStateOf {
+            val timelineStart = timelineStartState.value
+            val timelineEnd = timelineEndState.value
             if (viewportWidthPx <= 0) {
-                timelineStartSec to timelineEndSec
+                timelineStart to timelineEnd
             } else {
                 val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
                 val bucketPx = minutePx * 5f
                 val startPx = (hScroll.value / bucketPx).toInt() * bucketPx
                 val padMin = 20f
-                val startSec = timelineStartSec +
+                val startSec = timelineStart +
                     (((startPx / minutePx) - padMin) * 60f).toLong()
-                val endSec = timelineStartSec +
+                val endSec = timelineStart +
                     ((((startPx + viewportWidthPx) / minutePx) + padMin) * 60f).toLong()
                 startSec to endSec
             }
@@ -149,34 +156,38 @@ fun MultiEpgScreen(
 
     val visibleStartSec by remember {
         derivedStateOf {
-            if (viewportWidthPx <= 0 || timelineEndSec <= timelineStartSec) {
-                focusSec.coerceIn(
-                    timelineStartSec,
-                    (timelineEndSec - 60L).coerceAtLeast(timelineStartSec),
+            val timelineStart = timelineStartState.value
+            val timelineEnd = timelineEndState.value
+            if (viewportWidthPx <= 0 || timelineEnd <= timelineStart) {
+                focusSecState.value.coerceIn(
+                    timelineStart,
+                    (timelineEnd - 60L).coerceAtLeast(timelineStart),
                 )
             } else {
                 val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
-                val sec = timelineStartSec +
+                val sec = timelineStart +
                     ((hScroll.value / minutePx) * 60f).toLong()
                 sec.coerceIn(
-                    timelineStartSec,
-                    (timelineEndSec - 60L).coerceAtLeast(timelineStartSec),
+                    timelineStart,
+                    (timelineEnd - 60L).coerceAtLeast(timelineStart),
                 )
             }
         }
     }
     val visibleEndSec by remember {
         derivedStateOf {
-            if (viewportWidthPx <= 0 || timelineEndSec <= timelineStartSec) {
+            val timelineStart = timelineStartState.value
+            val timelineEnd = timelineEndState.value
+            if (viewportWidthPx <= 0 || timelineEnd <= timelineStart) {
                 (visibleStartSec + MULTI_EPG_VISIBLE_MINUTES * 60L)
-                    .coerceAtMost(timelineEndSec.coerceAtLeast(visibleStartSec + 60L))
+                    .coerceAtMost(timelineEnd.coerceAtLeast(visibleStartSec + 60L))
             } else {
                 val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
-                val sec = timelineStartSec +
+                val sec = timelineStart +
                     (((hScroll.value + viewportWidthPx) / minutePx) * 60f).toLong()
                 sec.coerceIn(
-                    (visibleStartSec + 60L).coerceAtMost(timelineEndSec),
-                    timelineEndSec.coerceAtLeast(visibleStartSec + 60L),
+                    (visibleStartSec + 60L).coerceAtMost(timelineEnd),
+                    timelineEnd.coerceAtLeast(visibleStartSec + 60L),
                 )
             }
         }
