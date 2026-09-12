@@ -1286,9 +1286,10 @@ One PR per fix or small related cluster. Prefer regressions covered by Compose t
 
 **Docs only until operator lock-in.** Full design: [`docs/multiepg.md`](multiepg.md).
 
-- Target: GraphMultiEPG-style phone grid + local EPG cache so the box is not overloaded.
-- API: genuine Dreambox WebIf `/web/epgmulti?bRef=&time=&endTime=` (verified in [opendreambox webinterface](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface)); windowed fetches + Room TTL; no webif patches.
-- Implementation phases 0–4 live in that doc; **do not start code** until defaults are accepted there.
+- **UX reference:** DreamOS on-box GraphMultiEPG (`enigma2-plugin-extensions-graphmultiepg`) — horizontal channel×time grid (not stock web column MultiEPG).
+- **Data path:** bounded Dreambox `/web/epgmulti?bRef=&time=&endTime=` + Room TTL (on-box plugin uses `eEPGCache`; the phone cannot).
+- **Defaults pending OK:** keep list EPG + drawer MultiEPG; 2 h visible / 24 h cache chunks; no idle sync; phone-only v1; timer clocks in v1.1.
+- Implementation phases 0–4 live in that doc; **do not start code** until the Decision brief is Accepted there.
 
 ## Appendix F. Links
 
