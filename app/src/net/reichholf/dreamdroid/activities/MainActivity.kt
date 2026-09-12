@@ -25,6 +25,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -85,6 +86,36 @@ class MainActivity :
     private var mSnackbar: Snackbar? = null
 
     private lateinit var mCurrentProfile: Profile
+
+    /**
+     * Lowest-priority back handler: drawer close, then NavHost pop (service EPG, etc.), then
+     * optional leave-confirm. Registered early in [onCreate] so Compose [BackHandler] and
+     * fragment callbacks (provider drill-down, NavHost) stay higher priority.
+     */
+    private val leaveAppCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            if (isNavigationDrawerVisible()) {
+                toggle()
+                return
+            }
+            val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
+            if (detail is PhoneNavHostFragment && detail.popNavBackStack()) {
+                return
+            }
+            val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
+                .getBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true)
+            if (shouldConfirm && supportFragmentManager.backStackEntryCount == 0) {
+                MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle(R.string.leave_confirm)
+                    .setMessage(R.string.leave_confirm_long)
+                    .setPositiveButton(android.R.string.yes) { _, _ -> finish() }
+                    .setNegativeButton(android.R.string.no, null)
+                    .show()
+            } else {
+                finish()
+            }
+        }
+    }
 
     private fun dismissSnackbar() {
         mSnackbar?.dismiss()
@@ -178,6 +209,8 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
+        // Register before fragments/Compose so those BackHandlers outrank leave-confirm.
+        onBackPressedDispatcher.addCallback(this, leaveAppCallback)
 
         mIsDrawerOpen = false
         mCurrentProfile = Profile.getDefault()
@@ -421,31 +454,6 @@ class MainActivity :
         } else {
             Log.i(TAG, "Fragment ${(fragment as Any).javaClass.simpleName} not added, adding")
             ft.replace(viewId, fragment, (fragment as Any).javaClass.simpleName)
-        }
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        if (isNavigationDrawerVisible()) {
-            toggle()
-            return
-        }
-
-        val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-            DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE,
-            true,
-        )
-
-        if (shouldConfirm && supportFragmentManager.backStackEntryCount == 0) {
-            MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.leave_confirm)
-                .setMessage(R.string.leave_confirm_long)
-                .setPositiveButton(android.R.string.yes) { _, _ -> finish() }
-                .setNegativeButton(android.R.string.no, null)
-                .show()
-        } else {
-            @Suppress("DEPRECATION")
-            super.onBackPressed()
         }
     }
 

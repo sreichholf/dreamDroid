@@ -3,10 +3,12 @@ package net.reichholf.dreamdroid.ui.services
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -42,5 +44,22 @@ class TvMoviesScreenTest {
         composeRule.onNodeWithText("Timer").assertIsDisplayed()
         composeRule.onNodeWithText("Favourites (TV)").assertIsDisplayed()
         composeRule.onNodeWithText("All Services").assertIsDisplayed()
+    }
+
+    @Test
+    fun reselectingActiveBouquetTabReportsSameIndex() {
+        val selected = mutableListOf<Int>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                TvMoviesHeader(
+                    rows = listOf("Favourites (TV)", "Provider"),
+                    selectedRow = 1,
+                    error = null,
+                    onRowSelected = { selected += it },
+                )
+            }
+        }
+        composeRule.onNodeWithText("Provider").performClick()
+        assertEquals(listOf(1), selected)
     }
 }

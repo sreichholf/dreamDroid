@@ -30,7 +30,14 @@ class Service : ExtendedHashMap() {
 
         @JvmStatic
         fun isDirectory(ref: String?): Boolean {
-            return (getFlags(ref) and FLAGS.isDirectory.value()) == FLAGS.isDirectory.value()
+            if (ref.isNullOrEmpty()) return false
+            if ((getFlags(ref) and FLAGS.isDirectory.value()) == FLAGS.isDirectory.value()) {
+                return true
+            }
+            // Provider / satellite / bouquet path nodes sometimes omit the directory flag bit.
+            return ref.contains("FROM PROVIDERS") ||
+                ref.contains("FROM SATELLITES") ||
+                ref.contains("FROM BOUQUET")
         }
 
         @JvmStatic

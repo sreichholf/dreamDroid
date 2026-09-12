@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +32,10 @@ fun ServiceEpgDestination(
     serviceName: String,
     modifier: Modifier = Modifier,
 ) {
+    // Prefer Compose BackHandler so system Back pops to hub before MainActivity leave-confirm.
+    BackHandler {
+        hostFragment.popNavBackStack()
+    }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listState = remember { ServiceEpgListState() }
