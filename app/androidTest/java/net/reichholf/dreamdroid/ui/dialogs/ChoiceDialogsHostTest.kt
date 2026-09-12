@@ -118,6 +118,20 @@ class ChoiceDialogsHostTest {
     }
 
     @Test
+    fun blankTitleOmitsHeadingAndShowsMessage() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                IndeterminateProgressDialog(
+                    title = "",
+                    message = "Saving",
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Saving").assertIsDisplayed()
+    }
+
+    @Test
     fun confirmContentColorIsOnSurface() {
         var localContent = Color.Unspecified
         var onSurface = Color.Unspecified

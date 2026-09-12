@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.activities
 
-import android.app.ProgressDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -27,6 +26,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.share.ShareProfilesListState
 import net.reichholf.dreamdroid.ui.share.bindShareProfilesScreen
@@ -40,7 +40,6 @@ class ShareActivity : AppCompatActivity() {
     private var mSimpleResultJob: Job? = null
     private var mShc: SimpleHttpClient? = null
     private lateinit var mListState: ShareProfilesListState
-    private var mProgress: ProgressDialog? = null
     private var mTitle: String? = null
 
     private var mProfiles: List<Profile>? = null
@@ -65,8 +64,7 @@ class ShareActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        mProgress?.dismiss()
-        mProgress = null
+        mListState.progress = null
         mSimpleResultJob?.cancel(null)
         mSimpleResultJob = null
         super.onDestroy()
@@ -151,7 +149,10 @@ class ShareActivity : AppCompatActivity() {
 
     fun execSimpleResultTask(params: ArrayList<NameValuePair>) {
         mSimpleResultJob?.cancel(null)
-        mProgress = ProgressDialog.show(this, getString(R.string.loading), getString(R.string.loading))
+        mListState.progress = IndeterminateProgressState(
+            title = getString(R.string.loading),
+            message = getString(R.string.loading),
+        )
         val handler = SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY)
         mSimpleResultJob = launchSimpleResultLoad(handler, params) { _, result, http ->
             mSimpleResultJob = null
@@ -160,8 +161,7 @@ class ShareActivity : AppCompatActivity() {
     }
 
     fun onSimpleResult(success: Boolean, result: ExtendedHashMap?, http: SimpleHttpClient) {
-        mProgress?.dismiss()
-        mProgress = null
+        mListState.progress = null
 
         if (mTitle == null) mTitle = "..."
         var toastText = getString(R.string.sent_as, mTitle)

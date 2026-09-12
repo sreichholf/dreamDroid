@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.ui.remote
 
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.os.VibrationEffect
 import android.os.Vibrator
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -69,7 +69,7 @@ fun VirtualRemoteDestination(
     val handler = remember { Handler(Looper.getMainLooper()) }
     var pendingScreenshot by remember { mutableStateOf<Runnable?>(null) }
     val vibrator = remember {
-        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        context.getSystemService(Vibrator::class.java)
     }
     val showScreenshot = LocalConfiguration.current.screenWidthDp >= 720
 
@@ -109,8 +109,9 @@ fun VirtualRemoteDestination(
 
     fun onKey(keyCode: Int, longClick: Boolean) {
         val msec = if (longClick) 100L else 25L
-        @Suppress("DEPRECATION")
-        vibrator.vibrate(msec)
+        vibrator?.vibrate(
+            VibrationEffect.createOneShot(msec, VibrationEffect.DEFAULT_AMPLITUDE),
+        )
         val params = ArrayList<NameValuePair>().apply {
             add(NameValuePair("command", keyCode.toString()))
             add(NameValuePair("rcu", if (simpleRemote) "standard" else "advanced"))

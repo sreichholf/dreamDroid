@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.ui.signal
 
+import android.media.AudioAttributes
 import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
@@ -183,14 +183,23 @@ private fun playAcousticTone(freqOfTone: Double) {
     val sample = DoubleArray(numSamples)
     val generatedSnd = ByteArray(2 * numSamples)
     val audioTrack = try {
-        AudioTrack(
-            AudioManager.STREAM_MUSIC,
-            sampleRate,
-            AudioFormat.CHANNEL_OUT_MONO,
-            AudioFormat.ENCODING_PCM_16BIT,
-            numSamples * 2,
-            AudioTrack.MODE_STATIC,
-        )
+        AudioTrack.Builder()
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build(),
+            )
+            .setAudioFormat(
+                AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                    .setSampleRate(sampleRate)
+                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                    .build(),
+            )
+            .setBufferSizeInBytes(numSamples * 2)
+            .setTransferMode(AudioTrack.MODE_STATIC)
+            .build()
     } catch (_: Exception) {
         return
     }

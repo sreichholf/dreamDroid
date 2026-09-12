@@ -1,6 +1,6 @@
 package net.reichholf.dreamdroid.appwidget
 
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView

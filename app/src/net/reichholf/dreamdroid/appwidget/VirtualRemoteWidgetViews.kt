@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.appwidget
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.view.View
 import android.widget.RemoteViews
 import net.reichholf.dreamdroid.DreamDroid

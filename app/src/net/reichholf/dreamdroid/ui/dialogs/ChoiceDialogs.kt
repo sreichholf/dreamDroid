@@ -136,6 +136,12 @@ fun SimpleChoiceAlertDialog(
     )
 }
 
+/** In-composition stand-in for a blocking [android.app.ProgressDialog]. */
+data class IndeterminateProgressState(
+    val message: String,
+    val title: String = "",
+)
+
 @Composable
 fun IndeterminateProgressDialog(
     title: String,
@@ -143,7 +149,11 @@ fun IndeterminateProgressDialog(
 ) {
     AlertDialog(
         onDismissRequest = {},
-        title = { Text(title) },
+        title = if (title.isBlank()) {
+            null
+        } else {
+            { Text(title) }
+        },
         text = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(modifier = Modifier.padding(end = 16.dp))
@@ -154,6 +164,12 @@ fun IndeterminateProgressDialog(
     )
 }
 
+@Composable
+fun IndeterminateProgressHost(progress: IndeterminateProgressState?) {
+    if (progress != null) {
+        IndeterminateProgressDialog(title = progress.title, message = progress.message)
+    }
+}
 
 @Composable
 fun ConfirmAlertDialog(
@@ -161,8 +177,8 @@ fun ConfirmAlertDialog(
     message: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    confirmLabel: String = stringResource(android.R.string.yes),
-    dismissLabel: String = stringResource(android.R.string.no),
+    confirmLabel: String = stringResource(R.string.ok),
+    dismissLabel: String = stringResource(R.string.cancel),
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
