@@ -1,9 +1,9 @@
 # Graphical MultiEPG (plan)
 
 **Status:** design only — **no implementation until operator lock-in.**  
-**Inspiration:** [Vu+ GraphMultiEPG](https://wiki.vuplus-support.org/index.php?title=GraphMultiEPG) (channel rows × time columns).  
-**Target API:** genuine Dreambox WebInterface only (not OpenWebif extensions).  
-**Reference (read-only):** [opendreambox/enigma2-plugins `webinterface`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) — we will **not** patch or extend the box webif.
+**Product reference:** on-box **GraphMultiEPG** (`enigma2-plugin-extensions-graphmultiepg` on DreamOS; same family as [Vu+ GraphMultiEPG](https://wiki.vuplus-support.org/index.php?title=GraphMultiEPG)) — channel rows × time columns, prime time, zoom, timer clocks.  
+**Target API:** genuine Dreambox WebInterface only (not OpenWebif extensions). On-box GraphMultiEPG reads `eEPGCache` locally; dreamDroid must use `/web/epgmulti` over the network.  
+**Reference (read-only):** [opendreambox/enigma2-plugins `webinterface`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) — we will **not** patch or extend the box webif. GraphMultiEPG plugin source (behaviour reference): Enigma2 `Plugins/Extensions/GraphMultiEPG/` (e.g. OpenPLi tree; DreamOS ships the same plugin package).
 
 Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished timeline UI removed in [#177](https://github.com/sreichholf/dreamDroid/pull/177), commented `EpgDatabase` dropped in [#293](https://github.com/sreichholf/dreamDroid/pull/293). Unused constant already exists: `URIStore.EPG_MULTI` (`/web/epgmulti?`).
 
@@ -11,11 +11,12 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 
 | | |
 | --- | --- |
-| **UI** | Phone Compose grid (rows = channels, bars = programmes); keep list EPG; new drawer **MultiEPG** |
-| **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` with **unix** window (default 24 h); never unbounded |
+| **UI** | Phone Compose grid mirroring on-box GraphMultiEPG (rows = channels, bars = programmes); keep list EPG; new drawer **MultiEPG** |
+| **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` with **unix** window (default 24 h cache chunk); never unbounded |
+| **Visible** | Default **~2 h** (GraphMultiEPG `prev_time_period` default 120, range 60–300); zoom 1 / 2 / 4 / 5 h |
 | **Sync** | Room cache + ~20–30 min TTL; **one** in-flight request; no idle background sync in v1 |
 | **Fallback** | Throttled `/web/epgservice` only if spike shows `epgmulti` missing |
-| **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays = v1.1 |
+| **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays = v1.1 (GraphMultiEPG `show_record_clocks`) |
 | **Next after OK** | Mark **Accepted** → Phase 0 spike on a real Dreambox → then Phase 1+ code |
 
 Reply **defaults OK** (or overrides). Full detail in §§1–8 below.
@@ -28,29 +29,29 @@ Reply **defaults OK** (or overrides). Full detail in §§1–8 below.
 | --- | --- |
 | Layout | Channels as rows, programs as timed bars, sticky channel column + time header, “now” line |
 | Scope | One bouquet (reuse bouquet picker) |
-| Visible span | ~3–4 hours (matches stock web MultiEPG JS default `visibleMinutes = 240`), pan horizontally / vertically |
+| Visible span | Default **~2 h** (GraphMultiEPG `prev_time_period` = 120; limits 60–300), pan horizontally / vertically |
 | Prefetch window | Bounded **+24 h** per fetch (see sync) |
-| Density | Time-scale zoom (e.g. 2 / 4 / 6 h visible) |
-| Jump | Now, ±1 day; prime-time optional later |
-| Tap | Existing EPG detail sheet (timer / zap / search) |
-| Timer bars | **Not** in v1 (v1.1) |
+| Density | Time-scale zoom **1 / 2 / 4 / 5 h** (within GraphMultiEPG 60–300 min range) |
+| Jump | Now, ±1 day; prime time (GraphMultiEPG `prime_time`) in polish |
+| Tap | Existing EPG detail sheet (timer / zap / search); OK semantics later: info vs zap |
+| Timer bars | **Not** in v1 (v1.1 — GraphMultiEPG `show_record_clocks`) |
 | TV / Leanback | Out of scope for v1 |
 | List EPG | **Keep** drawer list EPG; add separate **MultiEPG** entry |
 
-Not in v1: STB-style colour-key chrome, AutoTimer, TMDb, clock-vs-bar timer modes from the Vu+ skin.
+Not in v1: STB colour-key remapping, AutoTimer, TMDb/IMDB from skin mods.
 
-### Vu+ GraphMultiEPG → phone mapping
+### On-box GraphMultiEPG → phone mapping
 
-| Vu+ / skin behaviour | dreamDroid v1 |
+| GraphMultiEPG (DreamOS plugin) | dreamDroid v1 |
 | --- | --- |
 | Channel rows × time columns | Same metaphor (Compose grid) |
-| Bouquet switch (CH±) | Bouquet picker (reuse existing) |
-| Zoom density (1/2/3) | Time-scale zoom (2 / 4 / 6 h visible) |
-| Jump now / ±day / prime time | Now + ±day; prime time later |
-| OK → channel list EPG | Tap bar → existing detail sheet |
-| Green timer create | Via detail sheet actions (already present) |
-| Timer bars on grid | **v1.1** |
-| Colour remote keys / AutoTimer / TMDb | Out of scope |
+| Bouquet switch | Bouquet picker (reuse existing) |
+| `prev_time_period` 60–300 (default 120) | Zoom 1 / 2 / 4 / 5 h (default 2 h) |
+| Now / ±day / prime time | Now + ±day; prime time in polish |
+| OK → info / zap / zap+exit | Tap → detail sheet (info); zap from sheet |
+| Record clocks on events | **v1.1** |
+| `items_per_page` (default 6) | Vertically scrollable channel list (no hard page size) |
+| Reads `eEPGCache` on box | `/web/epgmulti` + Room cache on phone |
 
 ### Stock Dreambox web MultiEPG vs our target
 
@@ -61,7 +62,7 @@ Official webif MultiEPG (`tplMultiEpg.htm` + `/web/epgmulti?bRef=…` only):
 - Interaction: popup ~900×570; tap → detail with add/zap/edit timer, IMDB, RSS search
 - Default visible window in JS helpers: **240 minutes** when grouping (`visibleMinutes`)
 
-dreamDroid v1 targets **Vu+ GraphMultiEPG** (channels as **rows**, time as **horizontal** axis) and uses the **same** `/web/epgmulti` API with **bounded** `time`/`endTime`. We are not cloning the stock web column layout.
+dreamDroid v1 mirrors **on-box GraphMultiEPG** (horizontal timeline), not the stock web column UI, while still calling bounded `/web/epgmulti`.
 
 ---
 
@@ -107,7 +108,7 @@ Open MultiEPG(bouquet B)
 | --- | --- |
 | Primary API | Windowed `/web/epgmulti` |
 | Chunk size | Rolling **24 h** windows (`endTime = time + 86400`), aligned to the viewport’s day/hour floor — not “full EPG dump” |
-| Visible span | 3–4 h (UI only; data is the chunk) |
+| Visible span | Default 2 h UI (data chunk still 24 h) |
 | Concurrency | **One** in-flight MultiEPG request (no parallel bouquet dumps) |
 | TTL | ~20–30 minutes |
 | Idle background sync | **No** in v1 |
@@ -222,11 +223,13 @@ On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
 | # | Decision | Proposed default |
 | --- | --- | --- |
 | 1 | Navigation | Keep list EPG; add drawer **MultiEPG** |
-| 2 | Prefetch | +24 h chunks |
-| 3 | Cache TTL | ~20–30 min; no idle sync |
-| 4 | Fallback | Defer `epgservice` fallback until spike proves need |
-| 5 | TV | Phone-only v1 |
-| 6 | Timer bars | v1.1 |
+| 2 | Visible window | **2 h** default (GraphMultiEPG); zoom 1 / 2 / 4 / 5 h |
+| 3 | Prefetch | +24 h Room chunks |
+| 4 | Cache TTL | ~20–30 min; no idle sync |
+| 5 | Fallback | Defer `epgservice` fallback until spike proves need |
+| 6 | TV | Phone-only v1 |
+| 7 | Timer bars | v1.1 (`show_record_clocks`) |
+| 8 | UX reference | On-box GraphMultiEPG, not stock web column MultiEPG |
 
 Reply with **defaults OK** or a short override list. After lock-in, mark this doc **Accepted** and only then start Phase 0.
 
