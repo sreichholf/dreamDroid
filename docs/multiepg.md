@@ -91,6 +91,29 @@ Open MultiEPG(bouquet B)
 | Fallback | Throttled serial `/web/epgservice` per channel only if `epgmulti` unavailable |
 | Unbounded `epgmulti` | Forbidden in app code |
 
+```mermaid
+sequenceDiagram
+  participant UI as MultiEpgScreen
+  participant Sync as MultiEpgSync
+  participant Room as Room cache
+  participant Box as Dreambox /web/epgmulti
+
+  UI->>Sync: open(bouquet, visibleWindow)
+  Sync->>Room: lookup chunk(profile, bRef, day)
+  alt fresh TTL hit
+    Room-->>Sync: events
+    Sync-->>UI: paint
+  else miss / stale
+    Sync->>Box: bRef + time + endTime (bounded)
+    Box-->>Sync: e2eventlist XML
+    Sync->>Room: upsert events + chunk meta
+    Sync-->>UI: paint
+  end
+  UI->>Sync: pan past chunk edge
+  Sync->>Box: adjacent window (single-flight)
+  Note over Sync,Box: never omit endTime; cancel on leave
+```
+
 One windowed `epgmulti` is still one heavy cache lookup on the box; bounds + TTL + single-flight are the load controls. Progressive row paint is optional polish if responses are large.
 
 ---
@@ -189,6 +212,17 @@ Reply with **defaults OK** or a short override list. After lock-in, mark this do
 - [ ] Doc status line set to **Accepted**
 - [ ] Phase 0 spike owner / box availability noted
 - [ ] Explicit: no feature code before Phase 0 notes land
+
+### Planning Definition of Done
+
+This **planning** goal is complete when all of the following are true:
+
+1. `docs/multiepg.md` describes product, Dreambox `/web/epgmulti` sync model, phases 0–4, and non-goals (present).
+2. Operator has explicitly accepted the Decision brief / §6 (or recorded overrides in this doc).
+3. Status line is **Accepted** (not merely “design only”).
+4. No MultiEPG feature implementation has started before that acceptance.
+
+Until (2)–(3), keep status as design-only and do not open implementation PRs.
 
 ---
 
