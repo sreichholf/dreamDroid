@@ -201,20 +201,31 @@ EpgChunkMeta
 
 **No Phase 1+ code until Phase 0 spike notes are accepted and this plan is lock-in.**
 
+### Phase exit criteria
+
+| Phase | Done when |
+| --- | --- |
+| **0** | Documented: `endTime` units (unix vs minutes); byte size + event count for unbounded vs 2 h vs 24 h on a real bouquet; fixture XML checked into androidTest if needed |
+| **1** | `EnigmaClient.getEvents(…, URIStore.EPG_MULTI)` returns typed `Event`s; Room chunk upsert + TTL hit/miss; single-flight covered by unit tests |
+| **2** | Drawer → MultiEPG opens; bouquet context works; grid shows now-line; pan loads adjacent chunk from cache/network; tap opens existing detail sheet; `MultiEpgScreenTest` green via `connected-test.sh` |
+| **3** | Zoom 1/2/4/5 h; ±day + now jump; empty/error/pull-refresh UX; no unbounded requests in code paths |
+| **4** | Timer clocks (or equivalent) on bars from `timerlist` join; optional |
+
 ### Phase 0 spike checklist
 
 On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
 
-1. Unbounded (stock UI behaviour — expect large):  
+1. Unbounded (stock web MultiEPG behaviour — expect large):  
    `GET /web/epgmulti?bRef=BREF`
-2. Windowed 24 h (intended app behaviour):  
-   `GET /web/epgmulti?bRef=BREF&time=T0&endTime=T1`  
-   where `T0` = now (unix), `T1 = T0 + 86400`
-3. Compare to single channel:  
-   `GET /web/epgservice?sRef=SREF&time=T0&endTime=T1`
-4. Record: HTTP status, wall time, uncompressed byte size, event count, whether `endTime` is treated as unix end (not minutes).
-5. Optional: omit `endTime` but set `time` — note whether result is “from time onward unbounded”.
-6. Capture a trimmed XML fixture for androidTest if shape differs from `epgservice.xml`.
+2. Windowed **2 h** (GraphMultiEPG default visible window):  
+   `GET /web/epgmulti?bRef=BREF&time=T0&endTime=T0+7200`
+3. Windowed **24 h** (intended Room chunk):  
+   `GET /web/epgmulti?bRef=BREF&time=T0&endTime=T0+86400`
+4. Compare to single channel:  
+   `GET /web/epgservice?sRef=SREF&time=T0&endTime=T0+86400`
+5. Record: HTTP status, wall time, uncompressed byte size, event count, whether `endTime` is unix end (not minutes).
+6. Optional: omit `endTime` but set `time` — note whether result is “from time onward unbounded”.
+7. Capture a trimmed XML fixture for androidTest if shape differs from `epgservice.xml`.
 
 ---
 
