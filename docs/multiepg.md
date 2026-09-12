@@ -58,6 +58,15 @@ Not in v1: STB colour-key remapping, AutoTimer, TMDb/IMDB from skin mods.
 
 Sticky channel column + time header; vertical channel scroll; horizontal time pan; density via `[2h▾]` (1/2/4/5 h).
 
+### v1 product edges
+
+| Topic | v1 behaviour |
+| --- | --- |
+| Picons | Optional in channel column if already available via existing picon helpers; text name always shown (GraphMultiEPG `servicetitle_mode` can be name-only) |
+| Offline / stale | If Room chunk exists past TTL, still paint it with a subtle stale/refresh affordance; if no chunk and box unreachable, show existing connection-error pattern (do not spin forever) |
+| Orientation | Phone portrait primary; landscape uses same grid with more horizontal hours visible |
+| Profile switch | Invalidate MultiEPG UI state; Room rows are `profileId`-keyed so another profile’s cache is not mixed |
+
 ### On-box GraphMultiEPG → phone mapping
 
 | GraphMultiEPG (DreamOS plugin) | dreamDroid v1 |
