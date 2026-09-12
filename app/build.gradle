@@ -110,15 +110,11 @@ android {
                 }
                 res.srcDirs = ['res']
             }
-            test {
-                java.srcDirs = ['src/test/java']
-                kotlin.srcDirs = ['src/test/java']
-                resources.srcDirs = ['src/test/resources']
-            }
             androidTest {
                 java.srcDirs = ['androidTest/java']
                 kotlin.srcDirs = ['androidTest/java']
                 res.srcDirs = ['androidTest/res']
+                resources.srcDirs = ['androidTest/resources']
             }
         }
     }
