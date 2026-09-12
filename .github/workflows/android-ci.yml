@@ -74,14 +74,16 @@ jobs:
           :app:compileGoogleDebugAndroidTestKotlin
           :app:compileGoogleDebugAndroidTestJavaWithJavac
 
-      # Separate assemble so the artifact zip is arm64-only (~57MB), not the
-      # -Pci fat APK (~197MB). -Parm64Apk enables a single ABI split.
+      # Phone-installable arm64 APK for main only (not every PR). -Parm64Apk
+      # builds a single ABI split (~57MB) instead of the fat -Pci APK.
       - name: Assemble googleDebug arm64 APK
+        if: github.event_name != 'pull_request'
         run: >
           ./gradlew --no-configuration-cache -Parm64Apk
           :app:assembleGoogleDebug
 
       - name: Upload googleDebug arm64 APK
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v6
         with:
           name: dreamdroid-google-debug-apk
