@@ -28,7 +28,7 @@ Reply **defaults OK** (or overrides). Full detail in §§1–8 below.
 | --- | --- |
 | Layout | Channels as rows, programs as timed bars, sticky channel column + time header, “now” line |
 | Scope | One bouquet (reuse bouquet picker) |
-| Visible span | ~3–4 hours, pan horizontally / vertically |
+| Visible span | ~3–4 hours (matches stock web MultiEPG JS default `visibleMinutes = 240`), pan horizontally / vertically |
 | Prefetch window | Bounded **+24 h** per fetch (see sync) |
 | Density | Time-scale zoom (e.g. 2 / 4 / 6 h visible) |
 | Jump | Now, ±1 day; prime-time optional later |
@@ -51,6 +51,17 @@ Not in v1: STB-style colour-key chrome, AutoTimer, TMDb, clock-vs-bar timer mode
 | Green timer create | Via detail sheet actions (already present) |
 | Timer bars on grid | **v1.1** |
 | Colour remote keys / AutoTimer / TMDb | Out of scope |
+
+### Stock Dreambox web MultiEPG vs our target
+
+Official webif MultiEPG (`tplMultiEpg.htm` + `/web/epgmulti?bRef=…` only):
+
+- Layout: **one column per channel**, events stacked **vertically** by duration height (`item.size = remaining * scale` in `helpers.js` `MultiEPGList`)
+- Fetch: **unbounded** `bRef` alone (heavy on the box)
+- Interaction: popup ~900×570; tap → detail with add/zap/edit timer, IMDB, RSS search
+- Default visible window in JS helpers: **240 minutes** when grouping (`visibleMinutes`)
+
+dreamDroid v1 targets **Vu+ GraphMultiEPG** (channels as **rows**, time as **horizontal** axis) and uses the **same** `/web/epgmulti` API with **bounded** `time`/`endTime`. We are not cloning the stock web column layout.
 
 ---
 
