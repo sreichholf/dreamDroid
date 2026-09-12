@@ -190,6 +190,7 @@
     <string name="connection_state">State</string>
     <string name="not_available">Not available</string>
     <string name="checking">checking&#8230;</string>
+    <string name="checking_connection">Checking connection&#8230;</string>
     <string name="error">ERROR!</string>
     <string name="check_connectivity">Check connectivity</string>
     <string name="version_too_low">Version &lt; 1.6.5</string>

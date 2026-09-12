@@ -25,6 +25,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
+import net.reichholf.dreamdroid.ui.nav.navigateToProfileCheck
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerSettings
@@ -133,6 +135,10 @@ class PhoneNavHostFragment : BaseFragment() {
     private var pendingSleepTimerArgs: SleepTimerNavArgs? = null
     private var pendingOpenSleepTimer: Boolean = false
     private var pendingChangelog: Boolean = false
+    private var pendingProfileCheck: Boolean = false
+    private val profileCheckUiState = MutableStateFlow<ProfileCheckUi>(
+        ProfileCheckUi.Checking(""),
+    )
     private val profileEditRemountState = MutableStateFlow(0)
     private val timerEditRemountState = MutableStateFlow(0)
     private val epgRemountState = MutableStateFlow(0)
@@ -348,6 +354,34 @@ class PhoneNavHostFragment : BaseFragment() {
         flushPendingNavigations()
     }
 
+    fun profileCheckUiFlow(): StateFlow<ProfileCheckUi> = profileCheckUiState.asStateFlow()
+
+    fun updateProfileCheckUi(ui: ProfileCheckUi) {
+        profileCheckUiState.value = ui
+    }
+
+    fun isOnProfileCheckRoute(): Boolean {
+        return navController?.currentDestination?.route == PhoneNavRoutes.PROFILE_CHECK
+    }
+
+    fun navigateToProfileCheck(ui: ProfileCheckUi): Boolean {
+        updateProfileCheckUi(ui)
+        val controller = navController
+        if (controller == null) {
+            pendingProfileCheck = true
+            return false
+        }
+        controller.navigateToProfileCheck()
+        return true
+    }
+
+    fun queueProfileCheck(ui: ProfileCheckUi) {
+        updateProfileCheckUi(ui)
+        pendingProfileCheck = true
+        flushPendingNavigations()
+    }
+
+
 
     /**
      * Open EPG with bouquet args. Remounts when already on the EPG route so
@@ -461,6 +495,10 @@ class PhoneNavHostFragment : BaseFragment() {
         if (pendingChangelog) {
             pendingChangelog = false
             navController?.navigateToChangelog()
+        }
+        if (pendingProfileCheck) {
+            pendingProfileCheck = false
+            navController?.navigateToProfileCheck()
         }
     }
 

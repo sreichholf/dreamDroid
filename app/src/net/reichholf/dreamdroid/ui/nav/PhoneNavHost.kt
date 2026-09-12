@@ -38,6 +38,7 @@ import net.reichholf.dreamdroid.ui.signal.SignalDestination
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
+import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckDestination
 import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
 import net.reichholf.dreamdroid.ui.services.HubDestination
 import net.reichholf.dreamdroid.ui.tools.ToolsHubDestination
@@ -120,6 +121,9 @@ private fun PhoneNavHostGraph(
         }
         composable(PhoneNavRoutes.TOOLS) {
             ToolsHubDestination()
+        }
+        composable(PhoneNavRoutes.PROFILE_CHECK) {
+            ProfileCheckDestination(hostFragment = hostFragment)
         }
         composable(
             route = PhoneNavRoutes.SERVICE_EPG,
@@ -239,6 +243,14 @@ fun NavHostController.navigateToSleepTimer() {
 fun NavHostController.navigateToChangelog() {
     if (currentDestination?.route == PhoneNavRoutes.CHANGELOG) return
     navigate(PhoneNavRoutes.CHANGELOG)
+}
+
+/** Show the full-screen profile-check gate (checking / failed). */
+fun NavHostController.navigateToProfileCheck() {
+    if (currentDestination?.route == PhoneNavRoutes.PROFILE_CHECK) return
+    navigate(PhoneNavRoutes.PROFILE_CHECK) {
+        launchSingleTop = true
+    }
 }
 
 /** Drawer-style top-level navigate: single-top + save/restore under the start destination. */
