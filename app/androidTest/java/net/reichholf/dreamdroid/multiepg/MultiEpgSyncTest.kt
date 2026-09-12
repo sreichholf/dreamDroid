@@ -148,4 +148,35 @@ class MultiEpgSyncTest {
         sync.ensureChunk(1, bouquet, t0, forceRefresh = true)
         assertEquals(2, fetches.get())
     }
+
+    @Test
+    fun forceRefreshFailureKeepsRoomRows() = runBlocking {
+        val fetches = AtomicInteger(0)
+        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, _ ->
+                if (fetches.incrementAndGet() > 1) {
+                    error("box down")
+                }
+                fixture
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
+        val t0 = 1_893_456_000L
+        sync.ensureChunk(1, bouquet, t0)
+        var thrown = false
+        try {
+            sync.ensureChunk(1, bouquet, t0, forceRefresh = true)
+        } catch (_: Throwable) {
+            thrown = true
+        }
+        assertTrue(thrown)
+        val peek = sync.peekChunk(1, bouquet, t0)
+        assertTrue(peek != null)
+        assertEquals(2, peek!!.events.size)
+        assertEquals(2, fetches.get())
+    }
 }

@@ -181,4 +181,46 @@ class MultiEpgScreenTest {
         assertEquals(1, prev)
         assertEquals(1, next)
     }
+
+    @Test
+    fun errorBannerKeepsProgrammeBars() {
+        val start = 1_700_000_000L
+        val channels = listOf(
+            MultiEpgChannel(
+                serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "Tagesschau",
+                            start = start.toString(),
+                            duration = "1800",
+                            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = start,
+                        endSec = start + 1800,
+                    ),
+                ),
+            ),
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = channels,
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = "box down",
+                    onJumpToNow = {},
+                    onEventClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("box down").assertIsDisplayed()
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+    }
 }
