@@ -79,6 +79,7 @@
     <string name="set_time_end">End date and time</string>
     <string name="apply">Apply</string>
     <string name="reload">Reload</string>
+    <string name="recheck">Recheck</string>
 
     <string-array name="weekdays_short">
         <item>Mo</item>
