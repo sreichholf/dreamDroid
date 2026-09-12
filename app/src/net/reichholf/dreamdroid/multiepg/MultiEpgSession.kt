@@ -303,8 +303,12 @@ class MultiEpgSession(
         for (start in starts) {
             merged.addAll(eventsByWindow[start].orEmpty())
         }
-        channels = withContext(Dispatchers.Default) {
-            buildMultiEpgChannels(merged)
+        val previous = channels
+        val next = withContext(Dispatchers.Default) {
+            buildMultiEpgChannels(merged, previous)
+        }
+        if (next !== previous) {
+            channels = next
         }
     }
 

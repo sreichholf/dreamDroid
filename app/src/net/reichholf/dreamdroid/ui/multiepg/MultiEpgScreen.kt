@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -128,7 +129,7 @@ fun MultiEpgScreen(
         hScroll.scrollTo((hScroll.value + deltaPx).coerceAtLeast(0))
     }
 
-    val cullWindow by remember(timelineStartSec, timelineEndSec) {
+    val cullWindow by remember {
         derivedStateOf {
             if (viewportWidthPx <= 0) {
                 timelineStartSec to timelineEndSec
@@ -146,7 +147,7 @@ fun MultiEpgScreen(
         }
     }
 
-    val visibleStartSec by remember(timelineStartSec, timelineEndSec) {
+    val visibleStartSec by remember {
         derivedStateOf {
             if (viewportWidthPx <= 0 || timelineEndSec <= timelineStartSec) {
                 focusSec.coerceIn(
@@ -164,7 +165,7 @@ fun MultiEpgScreen(
             }
         }
     }
-    val visibleEndSec by remember(timelineStartSec, timelineEndSec) {
+    val visibleEndSec by remember {
         derivedStateOf {
             if (viewportWidthPx <= 0 || timelineEndSec <= timelineStartSec) {
                 (visibleStartSec + MULTI_EPG_VISIBLE_MINUTES * 60L)
@@ -425,13 +426,15 @@ private fun MultiEpgChannelTimeline(
             .testTag("multi_epg_row"),
     ) {
         for (bar in visibleBars) {
-            ProgrammeBar(
-                bar = bar,
-                timelineStartSec = timelineStartSec,
-                barColor = barColor,
-                onBar = onBar,
-                onEventClick = onEventClick,
-            )
+            key(channel.serviceRef, bar.event.eventId, bar.startSec) {
+                ProgrammeBar(
+                    bar = bar,
+                    timelineStartSec = timelineStartSec,
+                    barColor = barColor,
+                    onBar = onBar,
+                    onEventClick = onEventClick,
+                )
+            }
         }
         if (nowSec in timelineStartSec until timelineEndSec) {
             val nowMin = (nowSec - timelineStartSec) / 60f

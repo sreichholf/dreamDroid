@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.multiepg.MultiEpgSession
@@ -86,6 +87,13 @@ fun MultiEpgDestination(
         session.replaceAndLoad(bouquetRef, anchorSec)
     }
 
+    val onVisibleWindow = remember(session) {
+        { start: Long, end: Long -> session.onVisibleWindow(start, end) }
+    }
+    val onEventClick = remember(dialogSession) {
+        { event: Event -> dialogSession.showDetail(event) }
+    }
+
     MultiEpgScreen(
         bouquetName = bouquetName,
         channels = session.channels,
@@ -121,10 +129,8 @@ fun MultiEpgDestination(
         onRefresh = {
             session.load(session.anchorSec, forceRefresh = true, isPull = true)
         },
-        onVisibleWindow = { start, end ->
-            session.onVisibleWindow(start, end)
-        },
-        onEventClick = { dialogSession.showDetail(it) },
+        onVisibleWindow = onVisibleWindow,
+        onEventClick = onEventClick,
         modifier = modifier,
     )
     EpgEventDetailSheetHost(session = dialogSession)

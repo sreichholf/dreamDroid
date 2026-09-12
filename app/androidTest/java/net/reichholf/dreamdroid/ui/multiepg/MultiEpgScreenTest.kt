@@ -15,6 +15,8 @@ import net.reichholf.dreamdroid.multiepg.buildMultiEpgChannels
 import net.reichholf.dreamdroid.ui.compose.PULL_REFRESH_INDICATOR_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -65,6 +67,83 @@ class MultiEpgScreenTest {
         assertEquals("Das Erste", channels[0].serviceName)
         assertEquals(2, channels[0].bars.size)
         assertEquals("ZDF", channels[1].serviceName)
+    }
+
+    @Test
+    fun buildChannelsReusesBarsWhenAppendingAnotherDay() {
+        val news = Event(
+            eventId = "1",
+            title = "News",
+            start = "1000",
+            duration = "600",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "Das Erste",
+        )
+        val first = buildMultiEpgChannels(listOf(news))
+        val film = Event(
+            eventId = "2",
+            title = "Film",
+            start = "90000",
+            duration = "3600",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "Das Erste",
+        )
+        val newsAgain = news.copy()
+        val second = buildMultiEpgChannels(listOf(newsAgain, film), first)
+        assertEquals(2, second[0].bars.size)
+        assertSame(first[0].bars[0], second[0].bars[0])
+        assertNotSame(first[0], second[0])
+        val dropped = buildMultiEpgChannels(listOf(news.copy()), second)
+        assertEquals(1, dropped[0].bars.size)
+        assertSame(first[0].bars[0], dropped[0].bars[0])
+    }
+
+    @Test
+    fun buildChannelsReturnsPreviousListWhenUnchanged() {
+        val events = listOf(
+            Event(
+                eventId = "1",
+                title = "News",
+                start = "1000",
+                duration = "600",
+                serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                serviceName = "Das Erste",
+            ),
+        )
+        val first = buildMultiEpgChannels(events)
+        val second = buildMultiEpgChannels(listOf(events[0].copy()), first)
+        assertSame(first, second)
+    }
+
+    @Test
+    fun buildChannelsReplacesBarWhenTitleChanges() {
+        val first = buildMultiEpgChannels(
+            listOf(
+                Event(
+                    eventId = "1",
+                    title = "News",
+                    start = "1000",
+                    duration = "600",
+                    serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                    serviceName = "Das Erste",
+                ),
+            ),
+        )
+        val second = buildMultiEpgChannels(
+            listOf(
+                Event(
+                    eventId = "1",
+                    title = "News 2",
+                    start = "1000",
+                    duration = "600",
+                    serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                    serviceName = "Das Erste",
+                ),
+            ),
+            first,
+        )
+        assertNotSame(first[0].bars[0], second[0].bars[0])
+        assertEquals("News 2", second[0].bars[0].event.title)
     }
 
     @Test
