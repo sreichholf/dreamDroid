@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.app.ProgressDialog
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
@@ -18,6 +17,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 
 /**
  * Shared EPG detail-sheet actions for bouquet / service / search / hub destinations.
@@ -29,7 +30,7 @@ class EpgEventDialogSession {
     var currentItem: ExtendedHashMap? = null
     var detailEvent by mutableStateOf<Event?>(null)
         private set
-    private var progress: ProgressDialog? = null
+    var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
     fun showDetail(event: Event) {
         currentItem = EpgListMapper.toExtendedHashMap(event)
@@ -41,7 +42,6 @@ class EpgEventDialogSession {
     }
 
     fun dismissProgress() {
-        progress?.takeIf { it.isShowing }?.dismiss()
         progress = null
     }
 
@@ -49,8 +49,7 @@ class EpgEventDialogSession {
         val host = hostFragment ?: return
         val ctx = context ?: return
         val item = currentItem ?: return
-        dismissProgress()
-        progress = ProgressDialog.show(ctx, "", ctx.getText(R.string.saving), true)
+        progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
         host.launchSimpleResultLoad(
             TimerAddByEventIdRequestHandler(),
             Timer.getEventIdParams(item),
@@ -89,18 +88,22 @@ class EpgEventDialogSession {
 /** Renders [EpgEventDialogSession.detailEvent] as a Material 3 modal sheet when set. */
 @Composable
 fun EpgEventDetailSheetHost(session: EpgEventDialogSession) {
-    val event = session.detailEvent ?: return
-    val minutesShort = stringResource(R.string.minutes_short)
-    val content = event.toEpgDetailContent(minutesShort) ?: run {
-        session.dismissDetail()
-        return
+    val event = session.detailEvent
+    if (event != null) {
+        val minutesShort = stringResource(R.string.minutes_short)
+        val content = event.toEpgDetailContent(minutesShort)
+        if (content == null) {
+            session.dismissDetail()
+        } else {
+            EpgDetailModalSheet(
+                content = content,
+                onDismiss = { session.dismissDetail() },
+                onSetTimer = { session.onSetTimer() },
+                onEditTimer = { session.onEditTimer() },
+                onImdb = { session.onImdb() },
+                onSimilar = { session.onFindSimilar() },
+            )
+        }
     }
-    EpgDetailModalSheet(
-        content = content,
-        onDismiss = { session.dismissDetail() },
-        onSetTimer = { session.onSetTimer() },
-        onEditTimer = { session.onEditTimer() },
-        onImdb = { session.onImdb() },
-        onSimilar = { session.onFindSimilar() },
-    )
+    IndeterminateProgressHost(session.progress)
 }

@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Intent
 import android.util.Log
 import android.view.Menu
@@ -24,8 +23,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Job
@@ -38,7 +37,6 @@ import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadTimerList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
@@ -48,6 +46,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 
 /**
  * Phase 2.7h: hub Timers page as Compose (parity with former TimerListFragment).
@@ -158,6 +159,8 @@ fun HubTimerListPage(
             },
         )
     }
+
+    IndeterminateProgressHost(session.progress)
 }
 
 /**
@@ -181,13 +184,13 @@ class HubTimerListSession :
 
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
 
-        private val timers = ArrayList<TypedTimer>()
+    private val timers = ArrayList<TypedTimer>()
     private val mapList = ArrayList<ExtendedHashMap>()
     private var selected: ExtendedHashMap = ExtendedHashMap()
     private var loadGeneration = 0
     private var loadJob: Job? = null
     private var mutateJob: Job? = null
-    private var progress: ProgressDialog? = null
+    var progress by mutableStateOf<IndeterminateProgressState?>(null)
     private var actionMode: ActionMode? = null
     private var actionModeActive = false
 
@@ -229,7 +232,6 @@ class HubTimerListSession :
     }
 
     fun dismissProgress() {
-        progress?.takeIf { it.isShowing }?.dismiss()
         progress = null
     }
 
@@ -322,8 +324,7 @@ class HubTimerListSession :
     fun deleteTimer(timer: ExtendedHashMap) {
         val host = hostFragment ?: return
         val ctx = context ?: return
-        dismissProgress()
-        progress = ProgressDialog.show(activity, "", ctx.getText(R.string.deleting), true)
+        progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
         val params = Timer.getDeleteParams(timer)
         mutateJob?.cancel()
         mutateJob = host.launchSimpleResultLoad(TimerDeleteRequestHandler(), params) { _, result, http ->
@@ -341,8 +342,7 @@ class HubTimerListSession :
         } else {
             timerNew.put(Timer.KEY_DISABLED, "1")
         }
-        dismissProgress()
-        progress = ProgressDialog.show(activity, "", ctx.getText(R.string.saving), true)
+        progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
         val params = Timer.getSaveParams(timerNew, timer)
         mutateJob?.cancel()
         mutateJob = host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, http ->
@@ -354,8 +354,7 @@ class HubTimerListSession :
     private fun cleanupTimerList() {
         val host = hostFragment ?: return
         val ctx = context ?: return
-        dismissProgress()
-        progress = ProgressDialog.show(activity, "", ctx.getText(R.string.cleaning_timerlist), true)
+        progress = IndeterminateProgressState(message = ctx.getString(R.string.cleaning_timerlist))
         mutateJob?.cancel()
         mutateJob = host.launchSimpleResultLoad(
             TimerCleanupRequestHandler(),

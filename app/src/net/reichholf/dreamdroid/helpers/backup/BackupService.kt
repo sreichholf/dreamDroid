@@ -2,7 +2,7 @@ package net.reichholf.dreamdroid.helpers.backup
 
 import android.content.ContentValues
 import android.content.Context
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.provider.MediaStore
 import android.util.Log
 import com.google.gson.GsonBuilder

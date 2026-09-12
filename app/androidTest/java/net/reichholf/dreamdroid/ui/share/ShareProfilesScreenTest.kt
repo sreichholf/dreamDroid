@@ -7,6 +7,8 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -42,5 +44,24 @@ class ShareProfilesScreenTest {
         composeRule.onNodeWithText("dm7080.local").assertIsDisplayed()
         composeRule.onNodeWithText("Bedroom").assertIsDisplayed().performClick()
         assertEquals(second, clicked)
+    }
+
+    @Test
+    fun progressOverlayShowsLoadingMessage() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                ShareProfilesScreen(
+                    profiles = listOf(
+                        ProfileListItem(id = 1, name = "Living Room", host = "dm7080.local", active = false),
+                    ),
+                    onProfileClick = {},
+                )
+                IndeterminateProgressHost(
+                    IndeterminateProgressState(message = "Loading"),
+                )
+            }
+        }
+        composeRule.onNodeWithText("Living Room").assertIsDisplayed()
+        composeRule.onNodeWithText("Loading").assertIsDisplayed()
     }
 }
