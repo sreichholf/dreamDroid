@@ -53,6 +53,9 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="epg">EPG</string>
+    <string name="multiepg">MultiEPG</string>
+    <string name="multiepg_now">Now</string>
+    <string name="multiepg_empty">No EPG data for this bouquet window.</string>
     <string name="ssl_enabled">https</string>
     <string name="ssid">Wifi Name</string>
     <string name="host">Hostname/IP</string>
@@ -311,6 +314,14 @@
     <string name="host_not_found">Host not found</string>
     <string name="auth_error">Authorization failed (Check user/password?)</string>
     <string name="developer_settings_enable">Enable developer settings</string>
+    <!-- TEMP MultiEPG Phase 1: remove with Phase 2 UI -->
+    <string name="multiepg_sync_test">Run MultiEPG sync test</string>
+    <string name="multiepg_sync_test_long">TEMPORARY: fetch /web/epgmulti for the profile default TV bouquet (24h window), write Room cache, toast event count. Needs a reachable Dreambox.</string>
+    <string name="multiepg_sync_test_no_bouquet">Set a default TV bouquet on the profile first</string>
+    <string name="multiepg_sync_test_running">MultiEPG sync…</string>
+    <string name="multiepg_sync_test_ok">MultiEPG sync OK: %1$d events in %2$d ms</string>
+    <string name="multiepg_sync_test_empty">MultiEPG sync empty (%2$d ms). Bouquet: %1$s — check default TV bouquet and box EPG.</string>
+    <string name="multiepg_sync_test_fail">MultiEPG sync failed: %1$s</string>
     <string name="use_fake_picon">Use a fake picon</string>
     <string name="use_fake_picon_long">Use a fake picon (picon_default.png) to avoid copyright problems on screenshots</string>
     <string name="host_unreach">Could not connect to host</string>
