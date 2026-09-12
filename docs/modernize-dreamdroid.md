@@ -6,7 +6,7 @@ Rewrite trunk is **`main`**. `master` is last 1.15 stable. Do not merge `master`
 
 Default UI proof is instrumented Compose tests, not `verify-dreamdroid.py` tap loops. See [`AGENTS.md`](../AGENTS.md). AVD `dreamdroid-verify`. JDK 25. Debug package `net.reichholf.dreamdroid.debug`.
 
-**Language:** new types are **Kotlin** (not Java). Prefer coroutines. Existing Java may stay until edited; heavy edits / extracted helpers go Kotlin. See [`AGENTS.md`](../AGENTS.md).
+**Language:** new types are **Kotlin** (not Java). Prefer coroutines. Existing Java may stay until edited; heavy edits / extracted helpers go Kotlin. New Kotlin follows [Google’s Android Kotlin style](https://developer.android.com/kotlin/style-guide) — see [`AGENTS.md`](../AGENTS.md).
 
 **Modernize to state of the art:** earlier “keep for now” calls (DialogFragments, XML `RemoteViews`, Leanback shell, `HttpURLConnection` Enigma2, leftover Java overlay) were sequencing choices, **not** permanent freezes. When those surfaces come up again, move them to the current Android/Compose default — do not preserve a legacy chassis only because a prior decision deferred it. Dialogs are the first reopen (Phase **2.1g-ii** below).
 
