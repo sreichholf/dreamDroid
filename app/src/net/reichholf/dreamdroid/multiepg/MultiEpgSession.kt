@@ -176,8 +176,8 @@ class MultiEpgSession(
         if (windowJob?.isActive == true) {
             return
         }
+        beginSync()
         windowJob = scope.launch {
-            beginSync()
             try {
                 var snapStart = this@MultiEpgSession.visibleStartSec
                 var snapEnd = this@MultiEpgSession.visibleEndSec
@@ -211,8 +211,8 @@ class MultiEpgSession(
             return
         }
         prefetchJob?.cancel()
+        beginSync()
         prefetchJob = scope.launch {
-            beginSync()
             try {
                 attachWindow(anchor + MultiEpgWindows.CHUNK_SECONDS)
             } catch (_: Throwable) {
