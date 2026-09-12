@@ -36,6 +36,9 @@ class SettingsState(
 
     var volumeControl by mutableStateOf(prefs.getBoolean(KEY_VOLUME_CONTROL, false))
     var instantZap by mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
+    var startScreen by mutableStateOf(
+        prefs.getString(DreamDroid.PREFS_KEY_START_SCREEN, "services") ?: "services",
+    )
     var simpleVrm by mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, true))
     var mobileImdb by mutableStateOf(prefs.getBoolean(KEY_MOBILE_IMDB, false))
     var confirmAppClose by mutableStateOf(
@@ -106,6 +109,7 @@ class SettingsState(
         when (key) {
             DreamDroid.PREFS_KEY_HWACCEL -> videoHardwareAcceleration = value
             DreamDroid.PREFS_KEY_THEME_TYPE -> themeType = value
+            DreamDroid.PREFS_KEY_START_SCREEN -> startScreen = value
             DreamDroid.PREFS_KEY_GRID_MAX_COLS -> gridMaxCols = value
             DreamDroid.PREFS_KEY_SYNC_PICONS_PATH -> syncPiconsPath = value
         }

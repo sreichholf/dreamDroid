@@ -220,6 +220,7 @@ class DreamDroid : Application() {
         const val PREFS_KEY_INTEGRATED_PLAYER: String = "integrated_video_player"
         const val PREFS_KEY_THEME_TYPE: String = "theme_type"
         const val PREFS_KEY_INSTANT_ZAP: String = "instant_zap"
+        const val PREFS_KEY_START_SCREEN: String = "start_screen"
         const val PREFS_KEY_VIDEO_ENABLE_GESTURES: String = "video_enable_gestures"
         const val PREFS_KEY_LAST_VERSION_CODE: String = "last_version_code"
         const val PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED: String = "auto_switch_profile_wifi_based"

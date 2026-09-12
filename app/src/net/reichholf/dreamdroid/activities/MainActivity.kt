@@ -56,6 +56,7 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.profiles.ProfilesNavigation
 
 /**
@@ -165,7 +166,7 @@ class MainActivity :
             // First-start already navigated to Profiles. The fragment commit is still pending, so
             // mDetailFragment can still be null here; do not overwrite Profiles with services.
             if (!isFirstStart && getCurrentDetailFragment() == null) {
-                mNavigationHelper!!.navigateTo(R.id.menu_navigation_services)
+                mNavigationHelper!!.navigateTo(StartScreen.menuId(this))
             }
         }
 

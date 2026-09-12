@@ -45,6 +45,7 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("Video Player").assertIsDisplayed()
         composeRule.onNodeWithText("Integrated video player").assertIsDisplayed()
         composeRule.onNodeWithText("Useability").assertIsDisplayed()
+        composeRule.onNodeWithText("Start screen").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Appearance").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Day/Night Theme choices").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Picons").performScrollTo().assertIsDisplayed()

@@ -26,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -107,11 +109,19 @@ fun HubDestination(
         when (dest) {
             TvMoviesDestination.TV -> {
                 mode = MODE_TV
-                selectedRow = indexOfRef(tvBouquets, currentTv ?: DreamDroid.getCurrentProfile().defaultBouquetTv)
+                val (idx, ref) = resolveBouquetSelection(
+                    tvBouquets,
+                    currentTv,
+                    DreamDroid.getCurrentProfile().defaultBouquetTv,
+                )
+                selectedRow = idx
+                currentTv = ref
             }
             TvMoviesDestination.RADIO -> {
                 mode = MODE_RADIO
-                selectedRow = indexOfRef(radioBouquets, currentRadio)
+                val (idx, ref) = resolveBouquetSelection(radioBouquets, currentRadio, null)
+                selectedRow = idx
+                currentRadio = ref
             }
             TvMoviesDestination.MOVIES -> {
                 mode = MODE_MOVIES
@@ -171,6 +181,13 @@ fun HubDestination(
     }
 
     LaunchedEffect(Unit) {
+        // Cold start often composes the hub (changelog / early navigate) before
+        // CheckProfile finishes; wait briefly so bouquet HTTP uses a ready client.
+        withTimeoutOrNull(20_000) {
+            while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
+                delay(100)
+            }
+        }
         val result = loadBouquetList(context.applicationContext)
         bouquets = result.bouquets
         bouquetError = result.errorText
@@ -181,7 +198,13 @@ fun HubDestination(
                     context.resources.getStringArray(R.array.servicelist_dedicated),
                     context.resources.getStringArray(R.array.servicerefstv),
                 )
-                selectedRow = indexOfRef(list, currentTv ?: DreamDroid.getCurrentProfile().defaultBouquetTv)
+                val (idx, ref) = resolveBouquetSelection(
+                    list,
+                    currentTv,
+                    DreamDroid.getCurrentProfile().defaultBouquetTv,
+                )
+                selectedRow = idx
+                currentTv = ref
             }
             MODE_RADIO -> {
                 val list = buildDedicatedBouquets(
@@ -189,7 +212,9 @@ fun HubDestination(
                     context.resources.getStringArray(R.array.servicelist_dedicated),
                     context.resources.getStringArray(R.array.servicerefsradio),
                 )
-                selectedRow = indexOfRef(list, currentRadio)
+                val (idx, ref) = resolveBouquetSelection(list, currentRadio, null)
+                selectedRow = idx
+                currentRadio = ref
             }
             MODE_MOVIES -> {
                 if (locationsReady) {
@@ -251,32 +276,37 @@ fun HubDestination(
             ) {
                 when (mode) {
                     MODE_TV -> {
-                        val bouquet = tvBouquets.getOrNull(
-                            if (tvBouquets.isEmpty()) 0 else selectedRow.coerceIn(0, tvBouquets.lastIndex),
-                        )
-                        if (bouquet != null) {
-                            key(bouquet.reference) {
-                                HubServiceListPage(
-                                    hostFragment = hostFragment,
-                                    bouquetRef = bouquet.reference,
-                                    bouquetName = bouquet.name,
-                                    onProvideGoUp = { serviceListGoUp = it },
-                                )
+                        // Wait for bouquet roots (old ServiceListPager stayed empty until then).
+                        if (bouquets != null) {
+                            val bouquet = tvBouquets.getOrNull(
+                                if (tvBouquets.isEmpty()) 0 else selectedRow.coerceIn(0, tvBouquets.lastIndex),
+                            )
+                            if (bouquet != null) {
+                                key(bouquet.reference) {
+                                    HubServiceListPage(
+                                        hostFragment = hostFragment,
+                                        bouquetRef = bouquet.reference,
+                                        bouquetName = bouquet.name,
+                                        onProvideGoUp = { serviceListGoUp = it },
+                                    )
+                                }
                             }
                         }
                     }
                     MODE_RADIO -> {
-                        val bouquet = radioBouquets.getOrNull(
-                            if (radioBouquets.isEmpty()) 0 else selectedRow.coerceIn(0, radioBouquets.lastIndex),
-                        )
-                        if (bouquet != null) {
-                            key(bouquet.reference) {
-                                HubServiceListPage(
-                                    hostFragment = hostFragment,
-                                    bouquetRef = bouquet.reference,
-                                    bouquetName = bouquet.name,
-                                    onProvideGoUp = { serviceListGoUp = it },
-                                )
+                        if (bouquets != null) {
+                            val bouquet = radioBouquets.getOrNull(
+                                if (radioBouquets.isEmpty()) 0 else selectedRow.coerceIn(0, radioBouquets.lastIndex),
+                            )
+                            if (bouquet != null) {
+                                key(bouquet.reference) {
+                                    HubServiceListPage(
+                                        hostFragment = hostFragment,
+                                        bouquetRef = bouquet.reference,
+                                        bouquetName = bouquet.name,
+                                        onProvideGoUp = { serviceListGoUp = it },
+                                    )
+                                }
                             }
                         }
                     }
@@ -312,29 +342,6 @@ fun HubDestination(
             )
         }
     }
-}
-
-private fun buildDedicatedBouquets(
-    loaded: List<Service>,
-    labels: Array<String>,
-    refs: Array<String>,
-): List<Service> {
-    val items = ArrayList<Service>()
-    var start = 0
-    if (loaded.isNotEmpty()) {
-        start = 1
-        items.addAll(loaded)
-    }
-    for (i in start until labels.size) {
-        items.add(Service(refs[i], labels[i]))
-    }
-    return items
-}
-
-private fun indexOfRef(items: List<Service>, ref: String?): Int {
-    if (ref.isNullOrEmpty() || items.isEmpty()) return 0
-    val idx = items.indexOfFirst { it.reference == ref }
-    return if (idx >= 0) idx else 0
 }
 
 private fun indexOfLocation(items: List<String>, location: String?): Int {

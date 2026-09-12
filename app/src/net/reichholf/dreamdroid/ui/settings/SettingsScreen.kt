@@ -105,6 +105,22 @@ fun SettingsScreen(
         )
 
         PreferenceCategoryHeader(stringResource(R.string.usability))
+        val startEntries = stringArrayResource(R.array.start_screen_entries)
+        val startValues = stringArrayResource(R.array.start_screen_values)
+        val startScreenTitle = stringResource(R.string.start_screen)
+        ListPreferenceRow(
+            title = startScreenTitle,
+            summary = entryLabel(startEntries, startValues, state.startScreen),
+            onClick = {
+                listDialog = ListDialogSpec(
+                    title = startScreenTitle,
+                    entries = startEntries.toList(),
+                    values = startValues.toList(),
+                    selectedValue = state.startScreen,
+                    key = DreamDroid.PREFS_KEY_START_SCREEN,
+                )
+            },
+        )
         SwitchPreferenceRow(
             title = stringResource(R.string.enable_volume_control),
             summary = stringResource(R.string.enable_volume_control_long),

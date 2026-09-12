@@ -22,4 +22,22 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+    <string-array name="start_screen_entries">
+        <item>@string/live_movie</item>
+        <item>@string/epg</item>
+        <item>@string/virtual_remote</item>
+        <item>@string/current_event</item>
+        <item>@string/zap</item>
+        <item>@string/tools</item>
+        <item>@string/settings</item>
+    </string-array>
+    <string-array name="start_screen_values">
+        <item>services</item>
+        <item>epg</item>
+        <item>remote</item>
+        <item>current</item>
+        <item>zap</item>
+        <item>tools</item>
+        <item>settings</item>
+    </string-array>
 </resources>
