@@ -51,4 +51,18 @@ object StartScreen {
 
 	@IdRes
 	fun menuId(context: Context): Int = menuId(read(context))
+
+	/** PhoneNavHost route for the configured start screen (drawer roots only). */
+	fun navRoute(value: String): String = when (value) {
+		VALUE_EPG -> PhoneNavRoutes.EPG
+		VALUE_REMOTE -> PhoneNavRoutes.REMOTE
+		VALUE_CURRENT -> PhoneNavRoutes.CURRENT
+		VALUE_ZAP -> PhoneNavRoutes.ZAP
+		VALUE_TOOLS -> PhoneNavRoutes.TOOLS
+		else -> PhoneNavRoutes.HUB
+	}
+
+	fun navRoute(prefs: SharedPreferences): String = navRoute(read(prefs))
+
+	fun navRoute(context: Context): String = navRoute(read(context))
 }

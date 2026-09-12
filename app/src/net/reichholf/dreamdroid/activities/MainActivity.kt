@@ -131,7 +131,8 @@ class MainActivity :
             detail.navigateToProfileCheck(ui)
             return
         }
-        val host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.PROFILE_CHECK)
+        // Start under the configured home route, then push the gate so it is in the back stack.
+        val host = PhoneNavHostFragment.newInstance(StartScreen.navRoute(this))
         host.queueProfileCheck(ui)
         showDetails(host)
     }
@@ -152,7 +153,7 @@ class MainActivity :
             detail.navigateToProfileCheck(ui)
             return
         }
-        val host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.PROFILE_CHECK)
+        val host = PhoneNavHostFragment.newInstance(StartScreen.navRoute(this))
         host.queueProfileCheck(ui)
         showDetails(host)
     }
@@ -174,7 +175,32 @@ class MainActivity :
 
     fun openProfilesFromProfileCheckFailed() {
         mOpenStartOnProfileSuccess = false
+        val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
+        if (detail is PhoneNavHostFragment && detail.isOnProfileCheckRoute()) {
+            // Keep the gate under Profiles so Back returns to the check.
+            detail.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
+            return
+        }
         mNavigationHelper?.navigateTo(R.id.menu_navigation_profiles)
+    }
+
+    private fun leaveProfileCheckGate(isFirstStart: Boolean) {
+        val detail = supportFragmentManager.findFragmentById(R.id.detail_view) as? PhoneNavHostFragment
+        if (detail != null && detail.isOnProfileCheckRoute()) {
+            val route = if (isFirstStart) {
+                PhoneNavRoutes.PROFILES
+            } else {
+                StartScreen.navRoute(this)
+            }
+            // Drop the gate so Back from the service list does not return to the check.
+            detail.navigateReplacingProfileCheck(route)
+            return
+        }
+        if (isFirstStart) {
+            mNavigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
+        } else {
+            mNavigationHelper!!.navigateTo(StartScreen.menuId(this))
+        }
     }
 
     private fun isPaused(): Boolean {
@@ -216,9 +242,12 @@ class MainActivity :
             mOpenStartOnProfileSuccess = false
             val onGate = (supportFragmentManager.findFragmentById(R.id.detail_view) as? PhoneNavHostFragment)
                 ?.isOnProfileCheckRoute() == true
-            if (isFirstStart) {
+            if (onGate || openStart) {
+                // Leave PROFILE_CHECK on the back stack so Back returns to the gate.
+                leaveProfileCheckGate(isFirstStart)
+            } else if (isFirstStart) {
                 mNavigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
-            } else if (getCurrentDetailFragment() == null || openStart || onGate) {
+            } else if (getCurrentDetailFragment() == null) {
                 mNavigationHelper!!.navigateTo(StartScreen.menuId(this))
             }
         }
