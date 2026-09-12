@@ -1,10 +1,18 @@
 package net.reichholf.dreamdroid.ui.compose
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
@@ -83,5 +91,44 @@ class DreamDroidPullRefreshTest {
             }
         }
         composeRule.onNodeWithText("Still here").assertIsDisplayed()
+    }
+
+    /**
+     * Hub layout: bouquet [ScrollableTabRow] above the pull-refresh host. Programmatic
+     * refresh must keep tab labels readable (the container's dark circular surface used to
+     * paint over "Provider").
+     */
+    @Test
+    fun refreshingBelowTabsKeepsBouquetTabLabelsVisible() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                Column(Modifier.fillMaxSize()) {
+                    var selected by remember { mutableIntStateOf(0) }
+                    val tabs = listOf("Favourites (TV)", "Provider", "All Services")
+                    ScrollableTabRow(selectedTabIndex = selected) {
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = index == selected,
+                                onClick = { selected = index },
+                                text = { Text(title) },
+                            )
+                        }
+                    }
+                    DreamDroidPullRefresh(
+                        refreshing = true,
+                        onRefresh = {},
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .testTag("hub_pull"),
+                    ) {
+                        Text("list body")
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithText("Favourites (TV)").assertIsDisplayed()
+        composeRule.onNodeWithText("Provider").assertIsDisplayed()
+        composeRule.onNodeWithText("All Services").assertIsDisplayed()
+        composeRule.onNodeWithText("list body").assertIsDisplayed()
     }
 }

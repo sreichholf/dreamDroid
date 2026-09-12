@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 
 /**
@@ -17,6 +18,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
  * [androidx.swiperefreshlayout.widget.SwipeRefreshLayout]. That View parent treated a
  * [androidx.compose.ui.platform.ComposeView] as never scrolled, so scrolling back up
  * always fired reload.
+ *
+ * [clipToBounds] is required: [PullToRefreshContainer] sits at [Alignment.TopCenter] and
+ * animates in from above its host. Without clipping, its dark circular surface paints over
+ * siblings above the list (hub bouquet [ScrollableTabRow] — e.g. the Provider tab).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +48,12 @@ fun DreamDroidPullRefresh(
         }
     }
 
-    Box(modifier.nestedScroll(state.nestedScrollConnection).fillMaxSize()) {
+    Box(
+        modifier
+            .nestedScroll(state.nestedScrollConnection)
+            .clipToBounds()
+            .fillMaxSize(),
+    ) {
         content()
         PullToRefreshContainer(
             state = state,
