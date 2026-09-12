@@ -30,7 +30,7 @@ Not in v1: STB-style colour-key chrome, AutoTimer, TMDb, clock-vs-bar timer mode
 
 ## 2. Dreambox WebIf — verified EPG surface
 
-Source of truth: `webinterface/src/WebComponents/Sources/EPG.py`, `WebScreens.py`, and `web/epg*.xml` in opendreambox.
+Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG.py`, `WebScreens.py` (`EpgWebScreen` / `EpgMulti`), and `web/epgmulti.xml` (`bRef,time,endTime`).
 
 | Endpoint | XML params | Role |
 | --- | --- | --- |
@@ -88,16 +88,43 @@ One windowed `epgmulti` is still one heavy cache lookup on the box; bounds + TTL
 Drawer MultiEPG
   → PhoneNavRoutes.MULTI_EPG
   → MultiEpgDestination (Compose)
-       ├── MultiEpgSync / EnigmaClient.getEpgMulti
+       ├── MultiEpgSync / EnigmaClient.getEvents(…, URIStore.EPG_MULTI)
        ├── Room EpgDao
        └── MultiEpgScreen (grid)
             └── tap → existing EpgDetail sheet / timer session
 ```
 
+### Existing hooks (no code yet — for implementers)
+
+| Concern | Current beachhead |
+| --- | --- |
+| Route table | `ui/nav/PhoneNavRoutes.kt` (`EPG`, `SERVICE_EPG`, `EPG_SEARCH`) — add `MULTI_EPG` |
+| NavHost | `ui/nav/PhoneNavHost.kt` — register composable |
+| Drawer | `ui/drawer/DrawerScreen.kt` + `res/menu/navigation.xml` — new item beside list EPG |
+| Drawer → EPG | `fragment/helper/NavigationHelper.kt` (`menu_navigation_epg`) — parallel MultiEPG case |
+| HTTP | `enigma/EnigmaClient.getEvents(params, uri)` already takes a URI; pass `URIStore.EPG_MULTI` |
+| Params | Same style as `EpgBouquetDestination`: `NameValuePair("bRef", …)` plus `time` / `endTime` |
+| Parse | Reuse `EventParser` / typed `enigma.Event` (XML tags match `epgservice`) |
+| Detail / timer | Reuse `EpgEventDialogSession` (`ui/epg/EpgEventDialogSession.kt`) from bouquet/service EPG |
+| Room today | `room/AppDatabase.kt` is **Profile-only** (v1) — MultiEPG needs a schema bump + entities |
+| Proof | `bash .cursor/cloud/connected-test.sh …` (not emulator tap loops); see `AGENTS.md` |
+
+### Room sketch (Phase 1 — illustrative)
+
+```text
+EpgEventEntity
+  profileId, serviceRef, eventId, start, duration, title, description, …
+  PK / unique: (profileId, serviceRef, eventId) or (profileId, serviceRef, start)
+
+EpgChunkMeta
+  profileId, bouquetRef, windowStart, windowEnd, fetchedAtMs
+  → TTL freshness for that chunk
+```
+
+Do **not** revive orphan `DatabaseHelper` `events` table writers.
+
 - Kotlin + Compose + coroutines only (see `AGENTS.md`).
-- Reuse: bouquet pick, typed `enigma.Event`, detail/timer session.
 - Grid: custom Compose layout (synced H-scroll time header + V-scroll channels); do not revive deleted `EpgTimelineFragment` / `multiepg*.xml`.
-- Proof: instrumented Compose tests + `bash .cursor/cloud/connected-test.sh …` (no emulator tap loops).
 
 ---
 
@@ -105,13 +132,28 @@ Drawer MultiEPG
 
 | Phase | Deliverable | Gate |
 | --- | --- | --- |
-| **0 — Spike** | Call windowed `epgmulti` on a real Dreambox WebIf; confirm `time`/`endTime` units; note payload size for 24 h × typical bouquet; fixture XML if needed | Operator or lab box result recorded in this doc / PR |
-| **1 — Client + cache** | `EnigmaClient.getEpgMulti`, Room schema, TTL, single-flight | Unit tests + androidTest parse |
+| **0 — Spike** | Lab/operator: windowed `epgmulti` on real Dreambox WebIf; confirm units + size | Notes pasted into this doc / PR |
+| **1 — Client + cache** | `getEvents(…, EPG_MULTI)`, Room schema, TTL, single-flight | Unit + androidTest parse |
 | **2 — Grid beachhead** | Nav + bouquet + now line + pan + tap → detail | `MultiEpgScreenTest` via connected-test helper |
 | **3 — Polish** | Zoom / day jump / empty+error / pull-refresh | Same |
 | **4 — Timers (optional)** | Overlay from `timerlist` | Optional follow-on |
 
 **No Phase 1+ code until Phase 0 spike notes are accepted and this plan is lock-in.**
+
+### Phase 0 spike checklist
+
+On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
+
+1. Unbounded (stock UI behaviour — expect large):  
+   `GET /web/epgmulti?bRef=BREF`
+2. Windowed 24 h (intended app behaviour):  
+   `GET /web/epgmulti?bRef=BREF&time=T0&endTime=T1`  
+   where `T0` = now (unix), `T1 = T0 + 86400`
+3. Compare to single channel:  
+   `GET /web/epgservice?sRef=SREF&time=T0&endTime=T1`
+4. Record: HTTP status, wall time, uncompressed byte size, event count, whether `endTime` is treated as unix end (not minutes).
+5. Optional: omit `endTime` but set `time` — note whether result is “from time onward unbounded”.
+6. Capture a trimmed XML fixture for androidTest if shape differs from `epgservice.xml`.
 
 ---
 
@@ -127,6 +169,13 @@ Drawer MultiEPG
 | 6 | Timer bars | v1.1 |
 
 Reply with **defaults OK** or a short override list. After lock-in, mark this doc **Accepted** and only then start Phase 0.
+
+### Shared-understanding checklist
+
+- [ ] Operator agrees §6 defaults (or lists overrides)
+- [ ] Doc status line set to **Accepted**
+- [ ] Phase 0 spike owner / box availability noted
+- [ ] Explicit: no feature code before Phase 0 notes land
 
 ---
 
