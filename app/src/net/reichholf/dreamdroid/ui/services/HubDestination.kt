@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.zIndex
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -148,13 +149,11 @@ fun HubDestination(
         }
     }
 
-    // Destination bar on activity Coordinator (shell_destination_nav). Putting it in Scaffold
-    // bottomBar inside detail_view pushes it under the system gesture nav.
-    InstallShellDestinationBar {
-        TvMoviesDestinationBar(
-            selected = destinationBarState.selected,
-            onDestinationSelected = { destinationBarState.onDestinationSelected(it) },
-        )
+    // Destination bar on activity Coordinator (shell_destination_nav). Bind a self-contained
+    // shell composition (Snapshot state) — do not capture hub @Composable lambdas into the
+    // sibling ComposeView (that bridge goes blank after bouquet/content load).
+    InstallShellDestinationBar { shellNav ->
+        shellNav.bindTvMoviesDestinationBar(destinationBarState)
     }
 
     DisposableEffect(hostFragment) {
@@ -233,13 +232,17 @@ fun HubDestination(
                 .fillMaxSize()
                 .padding(padding),
         ) {
+            // zIndex above the list: stock PullToRefreshContainer sits TopCenter in the
+            // list slot; Column draws later children on top, so without this the elevated
+            // indicator can paint over bouquet tab labels (e.g. Provider).
             TvMoviesHeader(
                 rows = rows,
                 selectedRow = if (rows.isEmpty()) 0 else selectedRow.coerceIn(0, rows.lastIndex),
                 error = bouquetError,
                 onRowSelected = { onRowSelected(it) },
+                modifier = Modifier.zIndex(1f),
             )
-            // Clip list pages so pull-to-refresh glyphs cannot paint over bouquet tabs above.
+            // Clip list pages so mid-pull glyphs cannot paint outside the list slot.
             Box(
                 modifier = Modifier
                     .weight(1f)
