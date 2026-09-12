@@ -110,7 +110,9 @@ class MultiEpgSync(
          *   GraphMultiEPG passes `time_epoch` minutes the same way. Absolute unix end is wrong
          *   and yields empty results (overflow in startTimeQuery).
          */
-        fun httpFetch(http: SimpleHttpClient = SimpleHttpClient.getInstance()): suspend (String, Long, Long) -> List<Event> {
+        fun httpFetch(
+            http: SimpleHttpClient = SimpleHttpClient.getInstance(),
+        ): suspend (String, Long, Long) -> List<Event> {
             return { bouquetRef, timeSec, endTimeSec ->
                 require(endTimeSec > timeSec) { "window end must be after start" }
                 val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)

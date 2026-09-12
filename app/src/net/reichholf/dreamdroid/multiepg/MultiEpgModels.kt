@@ -46,8 +46,29 @@ fun buildMultiEpgChannels(events: List<Event>): List<MultiEpgChannel> {
     }
 }
 
-/** Bars that intersect [windowStartSec, windowEndSec). */
+/**
+ * Bars that intersect [windowStartSec, windowEndSec).
+ * [MultiEpgChannel.bars] is sorted by [MultiEpgBar.startSec]; uses a lower-bound
+ * binary search then a short backward walk for long-running programmes.
+ */
 fun List<MultiEpgBar>.overlapping(windowStartSec: Long, windowEndSec: Long): List<MultiEpgBar> {
-    if (windowEndSec <= windowStartSec) return emptyList()
-    return filter { it.startSec < windowEndSec && it.endSec > windowStartSec }
+    if (isEmpty() || windowEndSec <= windowStartSec) return emptyList()
+    var lo = 0
+    var hi = size
+    while (lo < hi) {
+        val mid = (lo + hi) ushr 1
+        if (this[mid].startSec < windowStartSec) lo = mid + 1 else hi = mid
+    }
+    var startIdx = lo
+    while (startIdx > 0 && this[startIdx - 1].endSec > windowStartSec) {
+        startIdx--
+    }
+    if (startIdx >= size) return emptyList()
+    val out = ArrayList<MultiEpgBar>()
+    for (i in startIdx until size) {
+        val bar = this[i]
+        if (bar.startSec >= windowEndSec) break
+        if (bar.endSec > windowStartSec) out.add(bar)
+    }
+    return out
 }

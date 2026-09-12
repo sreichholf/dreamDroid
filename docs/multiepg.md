@@ -230,7 +230,7 @@ EpgChunkMeta
 **Phase 0 gate (2026-09-12):** units + XML shape confirmed from [opendreambox `EPG.py` / `epgmulti.xml`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface); live byte/event counts deferred (no Cloud-agent box). Operator script: [`scripts/epgmulti-spike.sh`](../scripts/epgmulti-spike.sh).
 
 
-**TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Drawer **MultiEPG** opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`).
+**TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Drawer **MultiEPG** opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows are dense (~36.dp); off-screen programme bars are viewport-culled.
 
 ### Phase exit criteria
 
