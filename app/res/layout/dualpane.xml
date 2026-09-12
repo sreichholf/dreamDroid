@@ -64,7 +64,7 @@
         <!-- Gravity (not inside detail_view): same ScrollingViewBehavior overflow that clipped
              FABs also pushed the TV/Movies destination bar off the bottom of the screen. -->
         <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/tv_movies_nav"
+            android:id="@+id/shell_destination_nav"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"

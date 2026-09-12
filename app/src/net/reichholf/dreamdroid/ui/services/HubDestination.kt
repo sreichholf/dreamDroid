@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
 import android.app.Activity
-import android.view.View
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,9 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -36,6 +33,7 @@ import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.ui.nav.InstallShellDestinationBar
 
 private const val MODE_TV = "TV"
 private const val MODE_RADIO = "Radio"
@@ -45,7 +43,7 @@ private const val MODE_TIMER = "Timer"
 /**
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * Owns mode + bouquet/location tabs (parity with former ServiceListPager),
- * hosts [TvMoviesDestinationBar] on the activity [R.id.tv_movies_nav] Coordinator slot
+ * hosts [TvMoviesDestinationBar] via [InstallShellDestinationBar] on [R.id.shell_destination_nav]
  * (Scaffold bottomBar inside detail_view sits under the system nav — dualpane ScrollingViewBehavior),
  * and routes MultiChoice / timer-edit results for the active child page.
  */
@@ -55,8 +53,6 @@ fun HubDestination(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
-
     var mode by rememberSaveable { mutableStateOf(MODE_TV) }
     var currentTv by rememberSaveable { mutableStateOf<String?>(null) }
     var currentRadio by rememberSaveable { mutableStateOf<String?>(null) }
@@ -152,18 +148,13 @@ fun HubDestination(
         }
     }
 
-    // Destination bar on activity Coordinator (tv_movies_nav). Putting it in Scaffold
+    // Destination bar on activity Coordinator (shell_destination_nav). Putting it in Scaffold
     // bottomBar inside detail_view pushes it under the system gesture nav.
-    DisposableEffect(view) {
-        val activity = hostFragment.activity ?: return@DisposableEffect onDispose { }
-        val shellNav = activity.findViewById<ComposeView?>(R.id.tv_movies_nav)
-            ?: return@DisposableEffect onDispose { }
-        shellNav.visibility = View.VISIBLE
-        shellNav.bindTvMoviesDestinationBar(destinationBarState)
-        onDispose {
-            shellNav.visibility = View.GONE
-            shellNav.disposeComposition()
-        }
+    InstallShellDestinationBar {
+        TvMoviesDestinationBar(
+            selected = destinationBarState.selected,
+            onDestinationSelected = { destinationBarState.onDestinationSelected(it) },
+        )
     }
 
     DisposableEffect(hostFragment) {
@@ -312,9 +303,9 @@ fun HubDestination(
                     }
                 }
             }
-            // Reserve space for the Coordinator-hosted destination bar (dualpane tv_movies_nav).
+            // Reserve space for the Coordinator-hosted destination bar (dualpane shell_destination_nav).
             Spacer(
-                Modifier.height(dimensionResource(R.dimen.tv_movies_destination_bar_height)),
+                Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height)),
             )
         }
     }

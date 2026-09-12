@@ -34,12 +34,12 @@ class DualpaneFabLayoutTest {
     }
 
     @Test
-    fun tvMoviesDestinationBarUsesBottomGravityOnCoordinator() {
+    fun shellDestinationBarUsesBottomGravityOnCoordinator() {
         val base = InstrumentationRegistry.getInstrumentation().targetContext
         val context = ContextThemeWrapper(base, R.style.Theme_DreamDroid_Night)
         val root = android.view.LayoutInflater.from(context)
             .inflate(R.layout.dualpane, null, false)
-        val nav = root.findViewById<ComposeView>(R.id.tv_movies_nav)
+        val nav = root.findViewById<ComposeView>(R.id.shell_destination_nav)
         val lp = nav.layoutParams as CoordinatorLayout.LayoutParams
 
         assertEquals(View.NO_ID, lp.anchorId)

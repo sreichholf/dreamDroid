@@ -404,13 +404,11 @@ open class NavigationHelper(
         /** Drawer menu ids that open a PhoneNavHost root (no extras). EPG is separate. */
         private val sNavRootRoutes: SparseArray<String> = SparseArray<String>().apply {
             put(R.id.menu_navigation_services, PhoneNavRoutes.HUB)
-            put(R.id.menu_navigation_device_info, PhoneNavRoutes.DEVICE_INFO)
+            put(R.id.menu_navigation_tools, PhoneNavRoutes.TOOLS)
             put(R.id.menu_navigation_current, PhoneNavRoutes.CURRENT)
             put(R.id.menu_navigation_remote, PhoneNavRoutes.REMOTE)
             put(R.id.menu_navigation_settings, PhoneNavRoutes.SETTINGS)
-            put(R.id.menu_navigation_screenshot, PhoneNavRoutes.SCREENSHOT)
             put(R.id.menu_navigation_profiles, PhoneNavRoutes.PROFILES)
-            put(R.id.menu_navigation_signal, PhoneNavRoutes.SIGNAL)
             put(R.id.menu_navigation_zap, PhoneNavRoutes.ZAP)
         }
     }

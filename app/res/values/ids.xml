@@ -11,6 +11,9 @@
     <item name="menu_navigation_about" type="id"/>
     <item name="menu_navigation_backup" type="id"/>
     <item name="menu_navigation_changelog" type="id"/>
+    <item name="menu_navigation_signal" type="id"/>
+    <item name="menu_navigation_device_info" type="id"/>
+    <item name="menu_navigation_screenshot" type="id"/>
     <item name="menu_cancel" type="id"/>
     <item name="menu_check_connectivity" type="id"/>
 

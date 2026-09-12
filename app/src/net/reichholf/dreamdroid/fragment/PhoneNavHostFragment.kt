@@ -244,6 +244,7 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.TIMER_EDIT -> null
             route == PhoneNavRoutes.TIMER_SERVICE_PICK -> null
             route == PhoneNavRoutes.HUB -> null
+            route == PhoneNavRoutes.TOOLS -> null
             else -> null
         }
     }
