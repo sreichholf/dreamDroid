@@ -221,39 +221,49 @@ EpgChunkMeta
 
 | Phase | Deliverable | Gate |
 | --- | --- | --- |
-| **0 — Spike** | Lab/operator: windowed `epgmulti` on real Dreambox WebIf; confirm units + size | Notes pasted into this doc / PR |
-| **1 — Client + cache** | `getEvents(…, EPG_MULTI)`, Room schema, TTL, single-flight | Unit + androidTest parse |
+| **0 — Spike** | Units from official webif source; live sizes via operator script when a box is available | Notes in this section |
+| **1 — Client + cache** | `getEvents(…, EPG_MULTI)`, Room schema, TTL, single-flight | androidTest (`MultiEpgSyncTest`) |
 | **2 — Grid beachhead** | Nav + bouquet + now line + pan + tap → detail | `MultiEpgScreenTest` via connected-test helper |
 | **3 — Polish** | Zoom / day jump / empty+error / pull-refresh | Same |
 | **4 — Timers (optional)** | Overlay from `timerlist` | Optional follow-on |
 
-**No Phase 1+ code until Phase 0 spike notes are accepted and this plan is lock-in.**
+**Phase 0 gate (2026-09-12):** units + XML shape confirmed from [opendreambox `EPG.py` / `epgmulti.xml`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface); live byte/event counts deferred (no Cloud-agent box). Operator script: [`scripts/epgmulti-spike.sh`](../scripts/epgmulti-spike.sh).
 
 ### Phase exit criteria
 
 | Phase | Done when |
 | --- | --- |
-| **0** | Documented: `endTime` units (unix vs minutes); byte size + event count for unbounded vs 2 h vs 24 h on a real bouquet; fixture XML checked into androidTest if needed |
-| **1** | `EnigmaClient.getEvents(…, URIStore.EPG_MULTI)` returns typed `Event`s; Room chunk upsert + TTL hit/miss; single-flight covered by unit tests |
-| **2** | Drawer → MultiEPG opens; bouquet context works; grid shows now-line; pan loads adjacent chunk from cache/network; tap opens existing detail sheet; `MultiEpgScreenTest` green via `connected-test.sh` |
+| **0** | Documented: `endTime` units (unix vs minutes); XML shape vs `epgservice`; live sizes optional until an operator runs the spike script |
+| **1** | `EnigmaClient.getEvents(…, URIStore.EPG_MULTI)` returns typed `Event`s; Room chunk upsert + TTL hit/miss; single-flight covered by androidTest |
+| **2** | Drawer → MultiEPG opens; bouquet context works; grid shows now-line; pan loads adjacent chunk from cache/network; tap opens existing detail sheet; `MultiEpgScreenTest` green via `.cursor/cloud/connected-test.sh` |
 | **3** | Zoom 1/2/4/5 h; ±day + now jump; empty/error/pull-refresh UX; no unbounded requests in code paths |
 | **4** | Timer clocks (or equivalent) on bars from `timerlist` join; optional |
 
-### Phase 0 spike checklist
+### Phase 0 notes (source-confirmed; live sizes deferred)
 
-On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
+| Question | Finding | Confidence |
+| --- | --- | --- |
+| `time` / `endTime` units | **Unix seconds** — `EPG.getEPGofBouquet` does `int(float(param["time"\|"endTime"]))` and passes `(service, 0, time, endtime)` into `eEPGCache.lookupEvent` (same as `getEPGofService`) | High (source) |
+| Omit `endTime` | Non-multi bouquet path ignores end; **multi** path always passes `endtime` (−1 if omitted) → treat omitted end as unbounded; **app must always send `endTime`** | High (source) |
+| XML shape | `web/epgmulti.xml` event tags match `epgservice` (`e2eventid`…`e2eventservicename`); reuse `EventParser` | High (template) |
+| Unbounded vs 2 h vs 24 h sizes | **Not measured here** (no Dreambox on Cloud Agent) | Deferred |
 
-1. Unbounded (stock web MultiEPG behaviour — expect large):  
-   `GET /web/epgmulti?bRef=BREF`
-2. Windowed **2 h** (GraphMultiEPG default visible window):  
-   `GET /web/epgmulti?bRef=BREF&time=T0&endTime=T0+7200`
-3. Windowed **24 h** (intended Room chunk):  
-   `GET /web/epgmulti?bRef=BREF&time=T0&endTime=T0+86400`
-4. Compare to single channel:  
-   `GET /web/epgservice?sRef=SREF&time=T0&endTime=T0+86400`
-5. Record: HTTP status, wall time, uncompressed byte size, event count, whether `endTime` is unix end (not minutes).
-6. Optional: omit `endTime` but set `time` — note whether result is “from time onward unbounded”.
-7. Capture a trimmed XML fixture for androidTest if shape differs from `epgservice.xml`.
+**Operator live checklist** (paste results under this heading):
+
+```bash
+BASE=http://dreambox BREF='…' bash scripts/epgmulti-spike.sh
+# optional: SREF=… USER=… PASS=…
+```
+
+| Probe | status | ms | bytes | events |
+| --- | --- | --- | --- | --- |
+| unbounded | | | | |
+| 2h | | | | |
+| 24h | | | | |
+| time_only | | | | |
+| epgservice_24h | | | | |
+
+Fixture: `app/androidTest/resources/web/epgmulti.xml` (multi-service, same tags as `epgservice.xml`).
 
 ---
 
@@ -288,7 +298,7 @@ Operator confirmed 2026-09-12 (“Defaults look good”). No overrides.
 
 - [x] Operator agrees §6 defaults (or lists overrides)
 - [x] Doc status line set to **Accepted**
-- [ ] Phase 0 spike owner / box availability noted
+- [x] Phase 0: source units confirmed; live sizes deferred to `scripts/epgmulti-spike.sh` (no Cloud-agent box)
 - [x] Explicit: no feature code before Phase 0 notes land
 
 ### Planning Definition of Done
