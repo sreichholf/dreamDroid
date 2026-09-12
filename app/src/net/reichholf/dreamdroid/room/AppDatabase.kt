@@ -14,7 +14,7 @@ import net.reichholf.dreamdroid.Profile
         EpgEventEntity::class,
         EpgChunkMetaEntity::class,
     ],
-    version = 2,
+    version = 3,
 )
 abstract class AppDatabase : RoomDatabase() {
     /** Room profile DB file name under `databases/`. */
@@ -59,6 +59,52 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_2_3: Migration = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE `epg_event_new` (
+                        `profileId` INTEGER NOT NULL,
+                        `bouquetRef` TEXT NOT NULL,
+                        `serviceRef` TEXT NOT NULL,
+                        `eventId` TEXT NOT NULL,
+                        `start` INTEGER NOT NULL,
+                        `duration` INTEGER NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `description` TEXT NOT NULL,
+                        `descriptionExtended` TEXT NOT NULL,
+                        `serviceName` TEXT NOT NULL,
+                        `currentTime` INTEGER NOT NULL,
+                        PRIMARY KEY(
+                            `profileId`,
+                            `bouquetRef`,
+                            `serviceRef`,
+                            `eventId`
+                        )
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    """
+                    INSERT INTO `epg_event_new` (
+                        `profileId`, `bouquetRef`, `serviceRef`, `eventId`,
+                        `start`, `duration`, `title`, `description`,
+                        `descriptionExtended`, `serviceName`, `currentTime`
+                    )
+                    SELECT
+                        `profileId`, '', `serviceRef`, `eventId`,
+                        `start`, `duration`, `title`, `description`,
+                        `descriptionExtended`, `serviceName`, `currentTime`
+                    FROM `epg_event`
+                    """.trimIndent(),
+                )
+                db.execSQL("DROP TABLE `epg_event`")
+                db.execSQL(
+                    "ALTER TABLE `epg_event_new` RENAME TO `epg_event`",
+                )
+            }
+        }
+
         @JvmField
         @Volatile
         var db: AppDatabase? = null
@@ -73,7 +119,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME,
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .allowMainThreadQueries()
                     .build()
                     .also { db = it }

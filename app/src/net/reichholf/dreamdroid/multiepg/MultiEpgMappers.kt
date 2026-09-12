@@ -3,7 +3,10 @@ package net.reichholf.dreamdroid.multiepg
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.room.EpgEventEntity
 
-internal fun Event.toEpgEventEntity(profileId: Int): EpgEventEntity? {
+internal fun Event.toEpgEventEntity(
+    profileId: Int,
+    bouquetRef: String,
+): EpgEventEntity? {
     val id = eventId.trim()
     val ref = serviceReference.trim()
     if (id.isEmpty() || ref.isEmpty()) {
@@ -13,6 +16,7 @@ internal fun Event.toEpgEventEntity(profileId: Int): EpgEventEntity? {
     val durationSec = duration.toLongOrNull() ?: 0L
     return EpgEventEntity(
         profileId = profileId,
+        bouquetRef = bouquetRef,
         serviceRef = ref,
         eventId = id,
         start = startSec,

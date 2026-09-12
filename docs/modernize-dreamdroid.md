@@ -1289,7 +1289,7 @@ One PR per fix or small related cluster. Prefer regressions covered by Compose t
 - **UX reference:** DreamOS on-box GraphMultiEPG (`enigma2-plugin-extensions-graphmultiepg`) — horizontal channel×time grid (not stock web column MultiEPG).
 - **Data path:** bounded Dreambox `/web/epgmulti?bRef=&time=&endTime=` (unix) + Room TTL (on-box plugin uses `eEPGCache`; the phone cannot).
 - **Locked defaults:** keep list EPG + drawer MultiEPG; 2 h visible / 24 h cache chunks; no idle sync; phone-only v1; timer clocks in v1.1.
-- Phase **1** beachhead: `MultiEpgSync` + Room `epg_event` / `epg_chunk` (schema v2).
+- Phase **1** beachhead: `MultiEpgSync` + Room `epg_event` / `epg_chunk` (schema v3; events keyed by bouquet).
 
 ## Appendix F. Links
 

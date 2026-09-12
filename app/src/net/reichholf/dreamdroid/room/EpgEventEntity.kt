@@ -3,15 +3,17 @@ package net.reichholf.dreamdroid.room
 import androidx.room.Entity
 
 /**
- * Cached EPG event for MultiEPG (Room). Keyed per profile + service + event id.
- * Do not write through legacy [net.reichholf.dreamdroid.DatabaseHelper] `events`.
+ * Cached EPG event for MultiEPG (Room). Keyed per profile + bouquet + service
+ * + event id. Do not write through legacy
+ * [net.reichholf.dreamdroid.DatabaseHelper] `events`.
  */
 @Entity(
     tableName = "epg_event",
-    primaryKeys = ["profileId", "serviceRef", "eventId"],
+    primaryKeys = ["profileId", "bouquetRef", "serviceRef", "eventId"],
 )
 data class EpgEventEntity(
     val profileId: Int,
+    val bouquetRef: String,
     val serviceRef: String,
     val eventId: String,
     val start: Long,

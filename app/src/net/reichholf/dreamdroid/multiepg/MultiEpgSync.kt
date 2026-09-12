@@ -55,7 +55,12 @@ class MultiEpgSync(
             dao.getChunk(profileId, bouquetRef, chunk.startSec)
         } ?: return null
         val events = withContext(Dispatchers.IO) {
-            dao.eventsOverlapping(profileId, chunk.startSec, chunk.endSec).map { it.toEvent() }
+            dao.eventsOverlapping(
+                profileId,
+                bouquetRef,
+                chunk.startSec,
+                chunk.endSec,
+            ).map { it.toEvent() }
         }
         val fresh = clockMs() - meta.fetchedAtMs <= ttlMs
         return CachedChunk(events, chunk.startSec, chunk.endSec, meta.fetchedAtMs, fresh)
@@ -82,7 +87,12 @@ class MultiEpgSync(
             }
             if (cached != null && now - cached.fetchedAtMs <= ttlMs) {
                 return withContext(Dispatchers.IO) {
-                    dao.eventsOverlapping(profileId, chunk.startSec, chunk.endSec).map { it.toEvent() }
+                    dao.eventsOverlapping(
+                        profileId,
+                        bouquetRef,
+                        chunk.startSec,
+                        chunk.endSec,
+                    ).map { it.toEvent() }
                 }
             }
         }
@@ -106,7 +116,9 @@ class MultiEpgSync(
 
         try {
             val events = fetch(bouquetRef, chunk.startSec, chunk.endSec)
-            val entities = events.mapNotNull { it.toEpgEventEntity(profileId) }
+            val entities = events.mapNotNull {
+                it.toEpgEventEntity(profileId, bouquetRef)
+            }
             val meta = EpgChunkMetaEntity(
                 profileId = profileId,
                 bouquetRef = bouquetRef,
@@ -118,7 +130,12 @@ class MultiEpgSync(
                 dao.replaceChunk(meta, entities)
             }
             val result = withContext(Dispatchers.IO) {
-                dao.eventsOverlapping(profileId, chunk.startSec, chunk.endSec).map { it.toEvent() }
+                dao.eventsOverlapping(
+                    profileId,
+                    bouquetRef,
+                    chunk.startSec,
+                    chunk.endSec,
+                ).map { it.toEvent() }
             }
             deferred.complete(result)
             return result
