@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -41,8 +44,9 @@ private const val MODE_TIMER = "Timer"
 /**
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * Owns mode + bouquet/location tabs (parity with former ServiceListPager),
- * hides the activity [R.id.tv_movies_nav] shell bar in favor of [TvMoviesDestinationBar] as
- * Scaffold bottomBar, and routes MultiChoice / timer-edit results for the active child page.
+ * hosts [TvMoviesDestinationBar] on the activity [R.id.tv_movies_nav] Coordinator slot
+ * (Scaffold bottomBar inside detail_view sits under the system nav — dualpane ScrollingViewBehavior),
+ * and routes MultiChoice / timer-edit results for the active child page.
  */
 @Composable
 fun HubDestination(
@@ -125,7 +129,20 @@ fun HubDestination(
         }
     }
 
+    /** Active TV/Radio service list's go-up (clear drill-down / reload root). */
+    var serviceListGoUp by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    // Shell destination bar state (Coordinator slot). Keep handler/selection fresh each frame.
+    val destinationBarState = remember { TvMoviesHubState() }
+    destinationBarState.selected = hubSelected
+    destinationBarState.onDestinationSelected = { selectDestination(it) }
+
     fun onRowSelected(index: Int) {
+        // Reselect active bouquet tab → go up one provider/directory level (or reload root).
+        if (index == selectedRow && (mode == MODE_TV || mode == MODE_RADIO)) {
+            serviceListGoUp?.invoke()
+            return
+        }
         selectedRow = index
         when (mode) {
             MODE_TV -> currentTv = tvBouquets.getOrNull(index)?.reference
@@ -134,14 +151,17 @@ fun HubDestination(
         }
     }
 
-    // Keep activity shell destination bar hidden; Scaffold owns the bar.
+    // Destination bar on activity Coordinator (tv_movies_nav). Putting it in Scaffold
+    // bottomBar inside detail_view pushes it under the system gesture nav.
     DisposableEffect(view) {
         val activity = hostFragment.activity ?: return@DisposableEffect onDispose { }
         val shellNav = activity.findViewById<ComposeView?>(R.id.tv_movies_nav)
-        shellNav?.visibility = View.GONE
+            ?: return@DisposableEffect onDispose { }
+        shellNav.visibility = View.VISIBLE
+        shellNav.bindTvMoviesDestinationBar(destinationBarState)
         onDispose {
-            shellNav?.visibility = View.GONE
-            shellNav?.disposeComposition()
+            shellNav.visibility = View.GONE
+            shellNav.disposeComposition()
         }
     }
 
@@ -214,12 +234,6 @@ fun HubDestination(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        bottomBar = {
-            TvMoviesDestinationBar(
-                selected = hubSelected,
-                onDestinationSelected = { selectDestination(it) },
-            )
-        },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         Column(
@@ -249,6 +263,7 @@ fun HubDestination(
                                     hostFragment = hostFragment,
                                     bouquetRef = bouquet.reference,
                                     bouquetName = bouquet.name,
+                                    onProvideGoUp = { serviceListGoUp = it },
                                 )
                             }
                         }
@@ -263,6 +278,7 @@ fun HubDestination(
                                     hostFragment = hostFragment,
                                     bouquetRef = bouquet.reference,
                                     bouquetName = bouquet.name,
+                                    onProvideGoUp = { serviceListGoUp = it },
                                 )
                             }
                         }
@@ -293,6 +309,10 @@ fun HubDestination(
                     }
                 }
             }
+            // Reserve space for the Coordinator-hosted destination bar (dualpane tv_movies_nav).
+            Spacer(
+                Modifier.height(dimensionResource(R.dimen.tv_movies_destination_bar_height)),
+            )
         }
     }
 }

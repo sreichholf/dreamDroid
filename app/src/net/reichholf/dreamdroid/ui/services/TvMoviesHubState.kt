@@ -13,6 +13,8 @@ class TvMoviesHubState {
     var rows by mutableStateOf(listOf<String>())
     var selectedRow by mutableIntStateOf(0)
     var error by mutableStateOf<String?>(null)
+    /** Latest hub destination click handler; shell ComposeView reads this on each click. */
+    var onDestinationSelected: (TvMoviesDestination) -> Unit = {}
 }
 
 fun ComposeView.bindTvMoviesHeader(state: TvMoviesHubState, onRowSelected: (Int) -> Unit) {
@@ -29,16 +31,13 @@ fun ComposeView.bindTvMoviesHeader(state: TvMoviesHubState, onRowSelected: (Int)
     }
 }
 
-fun ComposeView.bindTvMoviesDestinationBar(
-    state: TvMoviesHubState,
-    onDestinationSelected: (TvMoviesDestination) -> Unit,
-) {
+fun ComposeView.bindTvMoviesDestinationBar(state: TvMoviesHubState) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
             TvMoviesDestinationBar(
                 selected = state.selected,
-                onDestinationSelected = onDestinationSelected,
+                onDestinationSelected = { state.onDestinationSelected(it) },
             )
         }
     }

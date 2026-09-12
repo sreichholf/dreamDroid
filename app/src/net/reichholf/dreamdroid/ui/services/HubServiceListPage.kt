@@ -67,6 +67,7 @@ fun HubServiceListPage(
     bouquetRef: String,
     bouquetName: String,
     modifier: Modifier = Modifier,
+    onProvideGoUp: ((() -> Unit)?) -> Unit = {},
 ) {
     val context = LocalContext.current
     val view = LocalView.current
@@ -112,6 +113,11 @@ fun HubServiceListPage(
 
     BackHandler(enabled = historyDepth > 0) {
         session.navigateUp()
+    }
+
+    DisposableEffect(session) {
+        onProvideGoUp { session.upOrReload() }
+        onDispose { onProvideGoUp(null) }
     }
 
     DisposableEffect(hostFragment, session, dialogSession) {
@@ -370,15 +376,23 @@ private class HubServiceListSession : MenuProvider {
         return true
     }
 
-    /** Reset drill-down history to the hub bouquet and reload (parity with Fragment.upOrReload). */
+    /**
+     * Tab reselect: jump back to this bouquet's root when drilled into providers/dirs,
+     * otherwise reload. Matches historical ServiceListPageFragment.upOrReload.
+     * Ref changes reload via the composable LaunchedEffect(currentRef).
+     */
     fun upOrReload() {
-        history?.clear()
-        onHistoryDepth?.invoke(0)
-        currentRef = rootRef
-        currentName = rootName
-        onCurrentRef?.invoke(rootRef)
-        onCurrentName?.invoke(rootName)
-        reload()
+        val h = history ?: return
+        if (h.isNotEmpty()) {
+            h.clear()
+            onHistoryDepth?.invoke(0)
+            currentRef = rootRef
+            currentName = rootName
+            onCurrentRef?.invoke(rootRef)
+            onCurrentName?.invoke(rootName)
+        } else {
+            reload()
+        }
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
