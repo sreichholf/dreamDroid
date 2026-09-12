@@ -13,17 +13,19 @@ import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.navigateAboveProfileCheck
+import net.reichholf.dreamdroid.ui.nav.navigateReplacingProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateToProfileCheck
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * PROFILE_CHECK is pushed onto the NavHost back stack; navigating to a root above it
- * must leave the gate so Back returns to the check.
+ * After a successful check, PROFILE_CHECK must leave the back stack.
+ * From a failed check, Profiles may keep the gate underneath for Recheck.
  */
 class ProfileCheckBackStackTest {
     @get:Rule
@@ -37,7 +39,39 @@ class ProfileCheckBackStackTest {
     }
 
     @Test
-    fun profileCheckRemainsUnderDestinationOnBackStack() {
+    fun successfulLeaveRemovesProfileCheckFromBackStack() {
+        var backStackRoutes = emptyList<String>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = PhoneNavRoutes.HUB,
+                ) {
+                    composable(PhoneNavRoutes.HUB) { Text("Hub") }
+                    composable(PhoneNavRoutes.PROFILE_CHECK) { Text("ProfileCheck") }
+                    composable(PhoneNavRoutes.PROFILES) { Text("Profiles") }
+                }
+                LaunchedEffect(Unit) {
+                    navController.navigateToProfileCheck()
+                    navController.navigateReplacingProfileCheck(PhoneNavRoutes.HUB)
+                    backStackRoutes = navController.currentBackStack.value.mapNotNull { it.destination.route }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Hub").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertFalse(
+                "profile_check must not remain under the service list: $backStackRoutes",
+                PhoneNavRoutes.PROFILE_CHECK in backStackRoutes,
+            )
+            assertEquals(PhoneNavRoutes.HUB, backStackRoutes.last())
+        }
+    }
+
+    @Test
+    fun failedProfilesKeepsProfileCheckUnderneath() {
         var backStackRoutes = emptyList<String>()
         composeRule.setContent {
             DreamDroidTheme {
@@ -61,7 +95,7 @@ class ProfileCheckBackStackTest {
         composeRule.onNodeWithText("Profiles").assertIsDisplayed()
         composeRule.runOnIdle {
             assertTrue(
-                "back stack should contain profile_check: $backStackRoutes",
+                "failed-check → Profiles should keep profile_check underneath: $backStackRoutes",
                 PhoneNavRoutes.PROFILE_CHECK in backStackRoutes,
             )
             assertEquals(PhoneNavRoutes.PROFILES, backStackRoutes.last())

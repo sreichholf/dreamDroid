@@ -254,12 +254,25 @@ fun NavHostController.navigateToProfileCheck() {
 }
 
 /**
- * Open a drawer root above [PhoneNavRoutes.PROFILE_CHECK] without popping the gate,
- * so Back returns to the profile-check screen.
+ * Open a drawer root above [PhoneNavRoutes.PROFILE_CHECK] without popping the gate
+ * (e.g. Profiles from a failed check so Back can return to Recheck).
  */
 fun NavHostController.navigateAboveProfileCheck(route: String) {
     if (currentDestination?.route == route) return
     navigate(route) {
+        launchSingleTop = true
+    }
+}
+
+/**
+ * Leave the profile-check gate for [route], removing [PhoneNavRoutes.PROFILE_CHECK]
+ * from the back stack so Back from the service list does not return to the check.
+ */
+fun NavHostController.navigateReplacingProfileCheck(route: String) {
+    navigate(route) {
+        popUpTo(PhoneNavRoutes.PROFILE_CHECK) {
+            inclusive = true
+        }
         launchSingleTop = true
     }
 }

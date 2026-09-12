@@ -192,7 +192,8 @@ class MainActivity :
             } else {
                 StartScreen.navRoute(this)
             }
-            detail.navigateAboveProfileCheck(route)
+            // Drop the gate so Back from the service list does not return to the check.
+            detail.navigateReplacingProfileCheck(route)
             return
         }
         if (isFirstStart) {
