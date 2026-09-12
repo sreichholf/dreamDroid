@@ -127,7 +127,7 @@ Open MultiEPG(bouquet B)
        yes + fresh TTL → paint from cache
        no  → GET /web/epgmulti?bRef=B&time=T0&endTime=T1
             → upsert Room → paint
-  → pan past chunk edge → fetch adjacent chunk (dedupe in-flight)
+  → pan the sliding window → fetch chunks that enter at the front/back (dedupe in-flight); drop painted chunks that left the padded viewport
   → pull-to-refresh → invalidate chunk + refetch
   → leave screen → cancel HTTP; keep Room until TTL/evict
 ```
@@ -232,7 +232,7 @@ EpgChunkMeta
 
 **TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Drawer **MultiEPG** opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows are dense (~36.dp); off-screen programme bars are viewport-culled.
 
-**Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh/prefetch in the background with a small toolbar spinner (including adjacent-chunk prefetch); pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately.
+**Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh/prefetch in the background with a small toolbar spinner (including next-chunk prefetch); pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left clamp is **now** (furthest-left scroll); panning right appends upcoming chunks and drops chunks that have left the padded viewport at the front; panning back toward now reattaches those chunks from Room at the front and drops far-future chunks at the back. The toolbar shows the local calendar day under the viewport.
 
 ### Phase exit criteria
 

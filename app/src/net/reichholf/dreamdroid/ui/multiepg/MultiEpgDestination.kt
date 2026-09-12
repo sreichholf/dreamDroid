@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ fun MultiEpgDestination(
     var anchorSec by rememberSaveable(remountEpoch) {
         mutableLongStateOf(System.currentTimeMillis() / 1000L)
     }
+    var focusEpoch by remember { mutableIntStateOf(0) }
 
     val sync = remember(context) {
         MultiEpgSync(
@@ -93,28 +95,34 @@ fun MultiEpgDestination(
         loading = session.syncing,
         pullRefreshing = session.pullRefreshing,
         errorMessage = session.errorMessage,
+        focusSec = session.anchorSec,
+        focusEpoch = focusEpoch,
         onJumpToNow = {
             val now = System.currentTimeMillis() / 1000L
             anchorSec = now
-            session.load(now, forceRefresh = false)
+            session.replaceAndLoad(bouquetRef, now)
+            focusEpoch += 1
         },
         onPrevDay = {
-            session.load(
+            val target = maxOf(
+                session.originFloorSec,
                 session.anchorSec - MultiEpgWindows.CHUNK_SECONDS,
-                forceRefresh = false,
             )
+            anchorSec = target
+            session.focusAt(target)
+            focusEpoch += 1
         },
         onNextDay = {
-            session.load(
-                session.anchorSec + MultiEpgWindows.CHUNK_SECONDS,
-                forceRefresh = false,
-            )
+            val target = session.anchorSec + MultiEpgWindows.CHUNK_SECONDS
+            anchorSec = target
+            session.focusAt(target)
+            focusEpoch += 1
         },
         onRefresh = {
             session.load(session.anchorSec, forceRefresh = true, isPull = true)
         },
-        onNearChunkEdge = { towardNext ->
-            session.onNearChunkEdge(towardNext)
+        onVisibleWindow = { start, end ->
+            session.onVisibleWindow(start, end)
         },
         onEventClick = { dialogSession.showDetail(it) },
         modifier = modifier,

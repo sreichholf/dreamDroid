@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,6 +48,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import java.text.DateFormat
@@ -86,37 +88,44 @@ fun MultiEpgScreen(
     onPrevDay: (() -> Unit)? = null,
     onNextDay: (() -> Unit)? = null,
     onRefresh: (() -> Unit)? = null,
-    onNearChunkEdge: ((towardNext: Boolean) -> Unit)? = null,
+    onVisibleWindow: ((visibleStartSec: Long, visibleEndSec: Long) -> Unit)? = null,
     onEventClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
+    focusSec: Long = nowSec,
+    focusEpoch: Int = 0,
 ) {
     val hScroll = rememberScrollState()
     val density = LocalDensity.current
     val timelineSeconds = (timelineEndSec - timelineStartSec).coerceAtLeast(60L)
     val timelineWidth = MinuteWidth * (timelineSeconds / 60f)
     var viewportWidthPx by remember { mutableIntStateOf(0) }
+    var prevTimelineStartSec by remember { mutableLongStateOf(Long.MIN_VALUE) }
 
-    LaunchedEffect(channels, timelineStartSec, nowSec, timelineWidth) {
-        if (channels.isEmpty()) return@LaunchedEffect
-        val nowOffsetMin = ((nowSec - timelineStartSec).coerceAtLeast(0L)) / 60f
+    LaunchedEffect(focusEpoch, channels.isNotEmpty()) {
+        if (channels.isEmpty() || timelineEndSec <= timelineStartSec) {
+            return@LaunchedEffect
+        }
+        val nowOffsetMin = ((focusSec - timelineStartSec).coerceAtLeast(0L)) / 60f
         val targetPx = with(density) { (MinuteWidth * nowOffsetMin - 48.dp).toPx() }
             .toInt()
             .coerceAtLeast(0)
-        // maxValue may still be 0 on the first frame; retry after layout.
         hScroll.scrollTo(targetPx.coerceAtMost(hScroll.maxValue.coerceAtLeast(targetPx)))
     }
 
-    // Warm adjacent day chunks when the user pans near either timeline edge.
-    LaunchedEffect(hScroll.value, hScroll.maxValue, onNearChunkEdge) {
-        val edge = onNearChunkEdge ?: return@LaunchedEffect
-        val max = hScroll.maxValue
-        if (max <= 0) return@LaunchedEffect
-        val threshold = (max * 0.08f).toInt().coerceAtLeast(24)
-        when {
-            hScroll.value <= threshold -> edge(false)
-            hScroll.value >= max - threshold -> edge(true)
+    LaunchedEffect(timelineStartSec, channels.isEmpty()) {
+        if (channels.isEmpty() || timelineStartSec == 0L) {
+            prevTimelineStartSec = Long.MIN_VALUE
+            return@LaunchedEffect
         }
+        val previous = prevTimelineStartSec
+        prevTimelineStartSec = timelineStartSec
+        if (previous == Long.MIN_VALUE) {
+            return@LaunchedEffect
+        }
+        val deltaMin = (previous - timelineStartSec) / 60f
+        val deltaPx = with(density) { (MinuteWidth * deltaMin).toPx() }.toInt()
+        hScroll.scrollTo((hScroll.value + deltaPx).coerceAtLeast(0))
     }
 
     val cullWindow by remember(timelineStartSec, timelineEndSec) {
@@ -134,6 +143,57 @@ fun MultiEpgScreen(
                     ((((startPx + viewportWidthPx) / minutePx) + padMin) * 60f).toLong()
                 startSec to endSec
             }
+        }
+    }
+
+    val visibleStartSec by remember(timelineStartSec, timelineEndSec) {
+        derivedStateOf {
+            if (viewportWidthPx <= 0 || timelineEndSec <= timelineStartSec) {
+                focusSec.coerceIn(
+                    timelineStartSec,
+                    (timelineEndSec - 60L).coerceAtLeast(timelineStartSec),
+                )
+            } else {
+                val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
+                val sec = timelineStartSec +
+                    ((hScroll.value / minutePx) * 60f).toLong()
+                sec.coerceIn(
+                    timelineStartSec,
+                    (timelineEndSec - 60L).coerceAtLeast(timelineStartSec),
+                )
+            }
+        }
+    }
+    val visibleEndSec by remember(timelineStartSec, timelineEndSec) {
+        derivedStateOf {
+            if (viewportWidthPx <= 0 || timelineEndSec <= timelineStartSec) {
+                (visibleStartSec + MULTI_EPG_VISIBLE_MINUTES * 60L)
+                    .coerceAtMost(timelineEndSec.coerceAtLeast(visibleStartSec + 60L))
+            } else {
+                val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
+                val sec = timelineStartSec +
+                    (((hScroll.value + viewportWidthPx) / minutePx) * 60f).toLong()
+                sec.coerceIn(
+                    (visibleStartSec + 60L).coerceAtMost(timelineEndSec),
+                    timelineEndSec.coerceAtLeast(visibleStartSec + 60L),
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(visibleStartSec, visibleEndSec, channels.isNotEmpty(), onVisibleWindow) {
+        val cb = onVisibleWindow ?: return@LaunchedEffect
+        if (channels.isEmpty() || visibleEndSec <= visibleStartSec) {
+            return@LaunchedEffect
+        }
+        cb(visibleStartSec, visibleEndSec)
+    }
+    val todayLabel = stringResource(R.string.multiepg_today)
+    val dayLabel = remember(visibleStartSec, nowSec, todayLabel) {
+        if (timelineEndSec <= timelineStartSec) {
+            ""
+        } else {
+            MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel)
         }
     }
 
@@ -182,6 +242,19 @@ fun MultiEpgScreen(
                         Text(stringResource(R.string.multiepg_next_day))
                     }
                 }
+            }
+
+            if (dayLabel.isNotEmpty()) {
+                Text(
+                    text = dayLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp, vertical = 0.dp)
+                        .testTag("multi_epg_day_label"),
+                )
             }
 
             if (errorMessage != null) {
@@ -382,8 +455,12 @@ private fun ProgrammeBar(
     onBar: Color,
     onEventClick: (Event) -> Unit,
 ) {
-    val startMin = (bar.startSec - timelineStartSec) / 60f
-    val durationMin = max((bar.endSec - bar.startSec) / 60f, 1f)
+    val drawStart = max(bar.startSec, timelineStartSec)
+    if (bar.endSec <= timelineStartSec) {
+        return
+    }
+    val startMin = (drawStart - timelineStartSec) / 60f
+    val durationMin = max((bar.endSec - drawStart) / 60f, 1f)
     val x = MinuteWidth * startMin
     val w = (MinuteWidth * durationMin).coerceAtLeast(MinBarWidth)
     Box(

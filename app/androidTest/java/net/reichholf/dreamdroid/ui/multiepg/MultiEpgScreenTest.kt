@@ -248,4 +248,45 @@ class MultiEpgScreenTest {
         composeRule.onNodeWithTag("multi_epg_sync_indicator").assertIsDisplayed()
         composeRule.onNodeWithTag(PULL_REFRESH_INDICATOR_TAG).assertIsDisplayed()
     }
+
+    @Test
+    fun dayLabelShowsTodayForVisibleWindow() {
+        val start = 1_700_000_000L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = listOf(
+                        MultiEpgChannel(
+                            serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                            bars = listOf(
+                                MultiEpgBar(
+                                    event = Event(
+                                        eventId = "10",
+                                        title = "Tagesschau",
+                                        start = start.toString(),
+                                        duration = "1800",
+                                        serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                                        serviceName = "Das Erste HD",
+                                    ),
+                                    startSec = start,
+                                    endSec = start + 1800,
+                                ),
+                            ),
+                        ),
+                    ),
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_day_label").assertIsDisplayed()
+        composeRule.onNodeWithText("Today", substring = true).assertIsDisplayed()
+    }
 }

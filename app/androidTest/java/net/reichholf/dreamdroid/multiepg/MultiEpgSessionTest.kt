@@ -59,11 +59,11 @@ class MultiEpgSessionTest {
         )
         session.replaceAndLoad("bouquet-a", t0)
         waitUntil { session.channels.isNotEmpty() }
-        assertEquals("T1", firstTitle(session))
+        assertEquals("T1", titleOnFocusedChunk(session, t0))
         assertTrue(session.syncing)
         gate.complete(Unit)
         session.awaitIdle()
-        assertEquals("T2", firstTitle(session))
+        assertEquals("T2", titleOnFocusedChunk(session, t0))
         assertFalse(session.syncing)
         assertEquals(null, session.errorMessage)
     }
@@ -94,7 +94,7 @@ class MultiEpgSessionTest {
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
-        assertEquals("Old", firstTitle(session))
+        assertEquals("Old", titleOnFocusedChunk(session, t0))
         assertEquals("box down", session.errorMessage)
         assertFalse(session.syncing)
     }
@@ -157,7 +157,7 @@ class MultiEpgSessionTest {
         )
         session.replaceAndLoad("bouquet-a", t0)
         waitUntil { session.channels.isNotEmpty() }
-        assertEquals("T", firstTitle(session))
+        assertEquals("T", titleOnFocusedChunk(session, t0))
         assertTrue(session.syncing)
         gate.complete(Unit)
         session.awaitIdle()
@@ -184,15 +184,132 @@ class MultiEpgSessionTest {
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
-        assertEquals("A", firstTitle(session))
+        assertEquals("A", titleOnFocusedChunk(session, t0))
         session.replaceAndLoad("bouquet-b", t0)
         assertTrue(session.channels.isEmpty())
         session.awaitIdle()
-        assertEquals("B", firstTitle(session))
+        assertEquals("B", titleOnFocusedChunk(session, t0))
     }
 
-    private fun firstTitle(session: MultiEpgSession): String {
-        return session.channels.first().bars.first().event.title
+    @Test
+    fun lateInUtcDayOriginIsNowAndPrefetchesTomorrow() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val lateNow = chunk.endSec - 600L
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+        )
+        session.replaceAndLoad("bouquet-a", lateNow)
+        session.awaitIdle()
+        assertEquals(lateNow, session.timelineStartSec)
+        assertEquals(lateNow, session.originFloorSec)
+        assertTrue(session.timelineEndSec > chunk.endSec)
+        assertEquals(chunk.startSec, session.loadedWindowStarts.minOrNull())
+        assertFalse(session.loadedWindowStarts.contains(chunk.startSec - MultiEpgWindows.CHUNK_SECONDS))
+    }
+
+    @Test
+    fun visibleWindowDropsOffscreenPastAndRestoresFromCache() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.endSec - 600L
+        val day2 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+        )
+        session.replaceAndLoad("bouquet-a", now)
+        session.awaitIdle()
+        assertTrue(session.loadedWindowStarts.contains(chunk.startSec))
+
+        session.onVisibleWindow(now, now + 7200L)
+        session.awaitIdle()
+        assertTrue(
+            "panning inside the padded window must keep today",
+            session.loadedWindowStarts.contains(chunk.startSec),
+        )
+
+        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        session.awaitIdle()
+        assertFalse(session.loadedWindowStarts.contains(chunk.startSec))
+        assertTrue(session.timelineStartSec >= chunk.endSec)
+
+        val fetchesBeforeRestore = fetches.size
+        session.onVisibleWindow(now, now + 7200L)
+        session.awaitIdle()
+        assertTrue(session.loadedWindowStarts.contains(chunk.startSec))
+        assertEquals(now, session.timelineStartSec)
+        assertEquals(
+            "restoring today should peek Room, not refetch the box",
+            fetchesBeforeRestore,
+            fetches.size,
+        )
+    }
+
+    @Test
+    fun slidingWindowNeverLoadsYesterday() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val yesterday = chunk.startSec - MultiEpgWindows.CHUNK_SECONDS
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+        )
+        session.replaceAndLoad("bouquet-a", now)
+        session.awaitIdle()
+        session.onVisibleWindow(now, now + 7200L)
+        session.awaitIdle()
+        session.focusAt(now - MultiEpgWindows.CHUNK_SECONDS)
+        session.awaitIdle()
+        assertFalse(fetches.contains(yesterday))
+        assertFalse(session.loadedWindowStarts.contains(yesterday))
+        assertEquals(now, session.originFloorSec)
+        assertEquals(now, session.timelineStartSec)
+    }
+
+    private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
+        val chunk = MultiEpgWindows.chunkContaining(unixSec)
+        for (channel in session.channels) {
+            for (bar in channel.bars) {
+                if (bar.startSec >= chunk.startSec && bar.startSec < chunk.endSec) {
+                    return bar.event.title
+                }
+            }
+        }
+        error("no bar in chunk ${chunk.startSec}")
     }
 
     private fun programme(id: String, title: String, start: Long): Event {
