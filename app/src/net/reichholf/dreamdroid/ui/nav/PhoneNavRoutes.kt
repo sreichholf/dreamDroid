@@ -13,6 +13,7 @@ object PhoneNavRoutes {
     const val BACKUP = "backup"
     const val PROFILES = "profiles"
     const val EPG = "epg"
+    const val MULTI_EPG = "multi_epg"
     const val REMOTE = "remote"
     const val SETTINGS = "settings"
     const val HUB = "hub"

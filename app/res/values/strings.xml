@@ -53,6 +53,9 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="epg">EPG</string>
+    <string name="multiepg">MultiEPG</string>
+    <string name="multiepg_now">Now</string>
+    <string name="multiepg_empty">No EPG data for this bouquet window.</string>
     <string name="ssl_enabled">https</string>
     <string name="ssid">Wifi Name</string>
     <string name="host">Hostname/IP</string>

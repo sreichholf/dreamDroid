@@ -30,6 +30,7 @@ import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.epg.EpgBouquetDestination
+import net.reichholf.dreamdroid.ui.multiepg.MultiEpgDestination
 import net.reichholf.dreamdroid.ui.epg.EpgSearchDestination
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgDestination
 import net.reichholf.dreamdroid.ui.pick.PickServiceDestination
@@ -108,6 +109,12 @@ private fun PhoneNavHostGraph(
             val remount by hostFragment.epgRemountFlow().collectAsState()
             key(remount) {
                 EpgBouquetDestination(hostFragment = hostFragment, remountEpoch = remount)
+            }
+        }
+        composable(PhoneNavRoutes.MULTI_EPG) {
+            val remount by hostFragment.epgRemountFlow().collectAsState()
+            key(remount) {
+                MultiEpgDestination(hostFragment = hostFragment, remountEpoch = remount)
             }
         }
         composable(PhoneNavRoutes.REMOTE) {

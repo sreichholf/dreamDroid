@@ -220,6 +220,9 @@ open class NavigationHelper(
             R.id.menu_navigation_epg ->
                 navigateToEpg()
 
+            R.id.menu_navigation_multiepg ->
+                navigateToMultiEpg()
+
             R.id.menu_navigation_backup -> {
                 val backupHost = getMainActivity().supportFragmentManager
                     .findFragmentById(R.id.detail_view)
@@ -250,6 +253,25 @@ open class NavigationHelper(
         clearBackStack()
         getMainActivity().showDetails(
             PhoneNavHostFragment.newInstance(PhoneNavRoutes.EPG, epgArgs),
+        )
+    }
+
+    /** MultiEPG drawer root — same default bouquet extras as list EPG. */
+    protected fun navigateToMultiEpg() {
+        val epgArgs = Bundle()
+        val ref = DreamDroid.getCurrentProfile().defaultBouquetTv
+        epgArgs.putString(Event.KEY_SERVICE_REFERENCE, ref)
+        val name = DreamDroid.getCurrentProfile().defaultBouquetTvName
+        epgArgs.putString(Event.KEY_SERVICE_NAME, name)
+
+        val detail = getMainActivity().supportFragmentManager
+            .findFragmentById(R.id.detail_view)
+        if (detail is PhoneNavHostFragment && detail.navigateToMultiEpg(ref, name)) {
+            return
+        }
+        clearBackStack()
+        getMainActivity().showDetails(
+            PhoneNavHostFragment.newInstance(PhoneNavRoutes.MULTI_EPG, epgArgs),
         )
     }
 
