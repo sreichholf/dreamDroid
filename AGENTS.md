@@ -22,7 +22,7 @@ Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Co
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 
-CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `:app:testGoogleDebugUnitTest`, assemble, androidTest compile (all with `-Pci` to skip ABI splits). Emulator `connectedGoogleDebugAndroidTest` (API 30) runs on `main` pushes and manual `workflow_dispatch` only (slow/flaky on PR). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
+CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `:app:testGoogleDebugUnitTest`, androidTest compile (with `-Pci`). On `main` pushes / `workflow_dispatch` only: uploads arm64 `dreamdroid-google-debug-apk` (2-day retention) and emulator `connectedGoogleDebugAndroidTest` (API 30). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
 
 `verify-dreamdroid.py` exists for a shell-only dump when there is no instrumented test yet. It is not the verification loop.
 

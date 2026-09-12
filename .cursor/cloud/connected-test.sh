@@ -41,11 +41,20 @@ emu_wait_boot
 echo "== connected-test: installing app + test APKs (streamed) =="
 # The TCG emulator occasionally drops the package-service socket mid-install
 # ("Broken pipe"); retry rather than fail the whole run.
+# A leftover install signed with ~/.android/debug.keystore fails with
+# INSTALL_FAILED_UPDATE_INCOMPATIBLE after switching to the repo keystore.
 adb_install() {
-  local apk="$1" attempt
+  local apk="$1" attempt out
   for attempt in 1 2 3; do
-    if "$ADB" -s "$SERIAL" install -r -t "$apk"; then
+    if out=$("$ADB" -s "$SERIAL" install -r -t "$apk" 2>&1); then
+      printf '%s\n' "$out"
       return 0
+    fi
+    printf '%s\n' "$out" >&2
+    if printf '%s\n' "$out" | grep -q INSTALL_FAILED_UPDATE_INCOMPATIBLE; then
+      echo "connected-test: signature mismatch; uninstalling debug packages" >&2
+      "$ADB" -s "$SERIAL" uninstall net.reichholf.dreamdroid.debug || true
+      "$ADB" -s "$SERIAL" uninstall net.reichholf.dreamdroid.debug.test || true
     fi
     echo "connected-test: install attempt $attempt failed, retrying..." >&2
     "$ADB" -s "$SERIAL" wait-for-device || true
