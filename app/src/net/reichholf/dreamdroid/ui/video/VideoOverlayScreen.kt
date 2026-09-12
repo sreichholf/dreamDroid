@@ -30,6 +30,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -42,6 +43,9 @@ import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+
+/** Test tag for the seek/progress nest behind the overlay Slider. */
+const val VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG = "video_overlay_progress_container"
 
 /**
  * Mutable overlay chrome state driven by [net.reichholf.dreamdroid.fragment.VideoOverlayFragment].
@@ -157,8 +161,10 @@ fun VideoOverlayScreen(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                // Nested chrome on the overlay surface — not primaryContainer (loud blue in night).
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .testTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (state.showPvrControls) {
