@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      upload_apk:
+        description: Build and upload arm64 googleDebug APK artifact
+        type: boolean
+        default: false
 
 concurrency:
   group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -74,16 +79,20 @@ jobs:
           :app:compileGoogleDebugAndroidTestKotlin
           :app:compileGoogleDebugAndroidTestJavaWithJavac
 
-      # Phone-installable arm64 APK for main only (not every PR). -Parm64Apk
-      # builds a single ABI split (~57MB) instead of the fat -Pci APK.
+      # Phone-installable arm64 APK on main pushes, or workflow_dispatch with
+      # upload_apk=true. -Parm64Apk builds one ABI split (~57MB), not fat -Pci.
       - name: Assemble googleDebug arm64 APK
-        if: github.event_name != 'pull_request'
+        if: >-
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && inputs.upload_apk)
         run: >
           ./gradlew --no-configuration-cache -Parm64Apk
           :app:assembleGoogleDebug
 
       - name: Upload googleDebug arm64 APK
-        if: github.event_name != 'pull_request'
+        if: >-
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && inputs.upload_apk)
         uses: actions/upload-artifact@v6
         with:
           name: dreamdroid-google-debug-apk
