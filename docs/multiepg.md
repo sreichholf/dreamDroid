@@ -7,6 +7,19 @@
 
 Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished timeline UI removed in [#177](https://github.com/sreichholf/dreamDroid/pull/177), commented `EpgDatabase` dropped in [#293](https://github.com/sreichholf/dreamDroid/pull/293). Unused constant already exists: `URIStore.EPG_MULTI` (`/web/epgmulti?`).
 
+### Decision brief (lock-in target)
+
+| | |
+| --- | --- |
+| **UI** | Phone Compose grid (rows = channels, bars = programmes); keep list EPG; new drawer **MultiEPG** |
+| **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` with **unix** window (default 24 h); never unbounded |
+| **Sync** | Room cache + ~20–30 min TTL; **one** in-flight request; no idle background sync in v1 |
+| **Fallback** | Throttled `/web/epgservice` only if spike shows `epgmulti` missing |
+| **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays = v1.1 |
+| **Next after OK** | Mark **Accepted** → Phase 0 spike on a real Dreambox → then Phase 1+ code |
+
+Reply **defaults OK** (or overrides). Full detail in §§1–7 below.
+
 ---
 
 ## 1. Product summary (phone v1)
@@ -30,7 +43,7 @@ Not in v1: STB-style colour-key chrome, AutoTimer, TMDb, clock-vs-bar timer mode
 
 ## 2. Dreambox WebIf — verified EPG surface
 
-Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG.py`, `WebScreens.py` (`EpgWebScreen` / `EpgMulti`), and `web/epgmulti.xml` (`bRef,time,endTime`).
+Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG.py`, `WebScreens.py` (`EpgWebScreen` registers `EpgMulti`), and `web/epgmulti.xml` (`bRef,time,endTime`).
 
 | Endpoint | XML params | Role |
 | --- | --- | --- |
@@ -121,7 +134,7 @@ EpgChunkMeta
   → TTL freshness for that chunk
 ```
 
-Do **not** revive orphan `DatabaseHelper` `events` table writers.
+`DatabaseHelper` (`DatabaseHelper.kt`) still creates a legacy SQLite `events` table, but MultiEPG sync writers were removed with the old `epgsync` package. **Do not** revive those writers. New cache goes through **Room** (`AppDatabase`) with a schema version bump; optional later cleanup can drop the unused `events` table from `DatabaseHelper`.
 
 - Kotlin + Compose + coroutines only (see `AGENTS.md`).
 - Grid: custom Compose layout (synced H-scroll time header + V-scroll channels); do not revive deleted `EpgTimelineFragment` / `multiepg*.xml`.
