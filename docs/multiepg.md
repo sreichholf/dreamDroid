@@ -231,6 +231,19 @@ On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
 
 ## 6. Defaults pending operator confirmation
 
+### Already settled in this thread (not re-opened)
+
+| Topic | Settlement |
+| --- | --- |
+| Box API | Genuine **Dreambox WebInterface** only; OpenWebif-only APIs out of scope |
+| Webif source | [opendreambox webinterface](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) is **reference-only** — no patches |
+| Primary EPG fetch | `/web/epgmulti` (confirmed in official webif `EPG.py` / `epgmulti.xml`) |
+| UX metaphor | On-box **GraphMultiEPG** (horizontal grid), not stock web column MultiEPG |
+| Sync | Required: windowed fetches + local cache so the box is not overloaded |
+| Process | Plan + shared understanding **before** any feature implementation |
+
+### Still need your OK (§6)
+
 | # | Decision | Proposed default |
 | --- | --- | --- |
 | 1 | Navigation | Keep list EPG; add drawer **MultiEPG** |
@@ -240,9 +253,8 @@ On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
 | 5 | Fallback | Defer `epgservice` fallback until spike proves need |
 | 6 | TV | Phone-only v1 |
 | 7 | Timer bars | v1.1 (`show_record_clocks`) |
-| 8 | UX reference | On-box GraphMultiEPG, not stock web column MultiEPG |
 
-Reply with **defaults OK** or a short override list. After lock-in, mark this doc **Accepted** and only then start Phase 0.
+Reply **defaults OK** or a short override list (e.g. “3 → 48 h”). After lock-in, mark this doc **Accepted** and only then start Phase 0.
 
 ### Shared-understanding checklist
 
