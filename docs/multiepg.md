@@ -40,6 +40,24 @@ Reply **defaults OK** (or overrides). Full detail in §§1–8 below.
 
 Not in v1: STB colour-key remapping, AutoTimer, TMDb/IMDB from skin mods.
 
+### Phone layout sketch (v1)
+
+```text
+┌─ MultiEPG · Favourites ────────── 14:32 ┐
+│ [Bouquet ▾]  [Now] [−day] [+day]  [2h▾] │
+├────────┬─────15:00─────16:00─────17:00──┤
+│ Das 1  │████ News ███│░░░░ Magazin ░░░░│
+│ ZDF    │░░ Sport ░░░░│████ Serie █████│
+│ RTL    │████ Film ────────────────────│
+│ …      │                              │
+├────────┴──────────────────────────────┤
+│ │ ← now                               │
+└───────────────────────────────────────┘
+  tap bar → existing EPG detail sheet
+```
+
+Sticky channel column + time header; vertical channel scroll; horizontal time pan; density via `[2h▾]` (1/2/4/5 h).
+
 ### On-box GraphMultiEPG → phone mapping
 
 | GraphMultiEPG (DreamOS plugin) | dreamDroid v1 |
