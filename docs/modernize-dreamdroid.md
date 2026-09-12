@@ -1282,6 +1282,14 @@ One PR per fix or small related cluster. Prefer regressions covered by Compose t
 - Do not rewrite VLC codecs or Enigma2 server side.
 - Phase **2.7i** chassis cleanup **merged** [#315](https://github.com/sreichholf/dreamDroid/pull/315). Keepers reopen **merged** [#335](https://github.com/sreichholf/dreamDroid/pull/335). **3.1c-iv-b–g** **merged** [#336](https://github.com/sreichholf/dreamDroid/pull/336)–[#341](https://github.com/sreichholf/dreamDroid/pull/341). **#343 merged**. **#344–#346 merged** (dialogs 2.1g-ii-d…f). **This PR:** Kotlin-port TV `MainActivity`. **Next:** Phase **4** operator usertests.
 
+## Appendix I. Graphical MultiEPG (product plan)
+
+**Docs only until operator lock-in.** Full design: [`docs/multiepg.md`](multiepg.md).
+
+- Target: GraphMultiEPG-style phone grid + local EPG cache so the box is not overloaded.
+- API: genuine Dreambox WebIf `/web/epgmulti?bRef=&time=&endTime=` (verified in [opendreambox webinterface](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface)); windowed fetches + Room TTL; no webif patches.
+- Implementation phases 0–4 live in that doc; **do not start code** until defaults are accepted there.
+
 ## Appendix F. Links
 
-[`AGENTS.md`](../AGENTS.md), [`.cursor/skills/verify-dreamdroid/SKILL.md`](../.cursor/skills/verify-dreamdroid/SKILL.md), [`app/build.gradle`](../app/build.gradle), [`NavigationHelper.java`](../app/src/net/reichholf/dreamdroid/fragment/helper/NavigationHelper.java), [`MainActivity.java`](../app/src/net/reichholf/dreamdroid/activities/MainActivity.java), [`URIStore.java`](../app/src/net/reichholf/dreamdroid/helpers/enigma2/URIStore.java), [`themes.xml`](../app/res/values/themes.xml).
+[`AGENTS.md`](../AGENTS.md), [`.cursor/skills/verify-dreamdroid/SKILL.md`](../.cursor/skills/verify-dreamdroid/SKILL.md), [`docs/multiepg.md`](multiepg.md), [`app/build.gradle`](../app/build.gradle), [`NavigationHelper.java`](../app/src/net/reichholf/dreamdroid/fragment/helper/NavigationHelper.java), [`MainActivity.java`](../app/src/net/reichholf/dreamdroid/activities/MainActivity.java), [`URIStore.java`](../app/src/net/reichholf/dreamdroid/helpers/enigma2/URIStore.java), [`themes.xml`](../app/res/values/themes.xml).
