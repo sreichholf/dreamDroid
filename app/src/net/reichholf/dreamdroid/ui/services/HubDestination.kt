@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
@@ -238,10 +239,12 @@ fun HubDestination(
                 error = bouquetError,
                 onRowSelected = { onRowSelected(it) },
             )
+            // Clip list pages so pull-to-refresh glyphs cannot paint over bouquet tabs above.
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .clipToBounds(),
             ) {
                 when (mode) {
                     MODE_TV -> {
