@@ -17,11 +17,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * One entry in a phone shell bottom [DestinationBar] (TV & Movies, Tools, …).
@@ -65,12 +63,16 @@ fun DestinationBar(
 }
 
 /**
- * Shows [content] on the activity [R.id.shell_destination_nav] ComposeView and
- * clears it when leaving composition. [content] should read Snapshot state from a
- * stable holder so the shell composition updates when the hub changes selection.
+ * Installs destination-bar composition on the activity [R.id.shell_destination_nav]
+ * ComposeView and clears it when leaving this composition.
+ *
+ * [bind] must call a `ComposeView.bind…(state)` helper that owns a self-contained
+ * `setContent { }` reading Snapshot state. Do **not** capture a `@Composable` lambda
+ * from the NavHost/`detail_view` composition into the shell ComposeView — that
+ * cross-ComposeView bridge goes blank after hub content loads (Tools / TV & Movies).
  */
 @Composable
-fun InstallShellDestinationBar(content: @Composable () -> Unit) {
+fun InstallShellDestinationBar(bind: (ComposeView) -> Unit) {
 	val context = LocalContext.current
 	DisposableEffect(context) {
 		val activity = context.findActivity()
@@ -78,14 +80,7 @@ fun InstallShellDestinationBar(content: @Composable () -> Unit) {
 		val shellNav = activity.findViewById<ComposeView?>(R.id.shell_destination_nav)
 			?: return@DisposableEffect onDispose { }
 		shellNav.visibility = View.VISIBLE
-		shellNav.setViewCompositionStrategy(
-			ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed,
-		)
-		shellNav.setContent {
-			DreamDroidTheme {
-				content()
-			}
-		}
+		bind(shellNav)
 		onDispose {
 			shellNav.visibility = View.GONE
 			shellNav.disposeComposition()

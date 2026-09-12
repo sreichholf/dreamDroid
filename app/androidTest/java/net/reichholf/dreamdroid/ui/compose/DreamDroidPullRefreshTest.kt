@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.zIndex
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -99,9 +100,10 @@ class DreamDroidPullRefreshTest {
     }
 
     /**
-     * Hub layout: bouquet [ScrollableTabRow] above the pull-refresh host. Programmatic
-     * reload must keep tab labels readable — the old [androidx.compose.material3.pulltorefresh.PullToRefreshContainer]
-     * elevated dark disk sat under Provider even when clipped (drawn inside the list host).
+     * Hub layout: bouquet [ScrollableTabRow] (zIndex above the list, as in HubDestination)
+     * over stock [androidx.compose.material3.pulltorefresh.PullToRefreshContainer].
+     * Programmatic reload must keep tab labels readable — Column draws the list after the
+     * tabs, so without zIndex the elevated indicator can paint over Provider.
      */
     @Test
     fun refreshingBelowTabsKeepsBouquetTabLabelsVisible() {
@@ -112,7 +114,9 @@ class DreamDroidPullRefreshTest {
                     val tabs = listOf("Favourites (TV)", "Provider", "All Services")
                     ScrollableTabRow(
                         selectedTabIndex = selected,
-                        modifier = Modifier.testTag("hub_tabs"),
+                        modifier = Modifier
+                            .zIndex(1f)
+                            .testTag("hub_tabs"),
                     ) {
                         tabs.forEachIndexed { index, title ->
                             Tab(
@@ -148,7 +152,7 @@ class DreamDroidPullRefreshTest {
         )
 
         // Root pixels over the Provider label must stay readable text contrast — not a flat
-        // elevated surfaceContainerHigh disk painted over the tab (the #351 clip-only failure).
+        // elevated surfaceContainerHigh disk painted over the tab (draw-order without zIndex).
         val providerBounds = composeRule.onNodeWithText("Provider").getBoundsInRoot()
         val rootBounds = composeRule.onRoot().getBoundsInRoot()
         val rootBitmap = composeRule.onRoot().captureToImage().asAndroidBitmap()

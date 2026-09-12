@@ -34,11 +34,8 @@ fun ToolsHubDestination(modifier: Modifier = Modifier) {
 	destinationBarState.selected = selected
 	destinationBarState.onDestinationSelected = { selected = it }
 
-	InstallShellDestinationBar {
-		ToolsDestinationBar(
-			selected = destinationBarState.selected,
-			onDestinationSelected = { destinationBarState.onDestinationSelected(it) },
-		)
+	InstallShellDestinationBar { shellNav ->
+		shellNav.bindToolsDestinationBar(destinationBarState)
 	}
 
 	Scaffold(
