@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.multiepg
 
+import net.reichholf.dreamdroid.enigma.Event
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
