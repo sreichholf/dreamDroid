@@ -125,6 +125,9 @@ open class NavigationHelper(
 
     fun onProfileChanged() {
         mShc = SimpleHttpClient.getInstance()
+        val detail = getMainActivity().supportFragmentManager
+            .findFragmentById(R.id.detail_view)
+        (detail as? PhoneNavHostFragment)?.onActiveProfileChanged()
     }
 
     protected fun setSelectedItem(itemId: Int) {

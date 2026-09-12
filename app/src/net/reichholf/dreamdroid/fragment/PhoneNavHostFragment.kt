@@ -162,6 +162,11 @@ class PhoneNavHostFragment : BaseFragment() {
 
     fun epgSearchRemountFlow(): StateFlow<Int> = epgSearchRemountState.asStateFlow()
 
+    /** Profile switch: drop stale MultiEPG / list-EPG grids immediately. */
+    fun onActiveProfileChanged() {
+        epgRemountState.value = epgRemountState.value + 1
+    }
+
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
             discardResultRequestCodeForCurrentRoute()

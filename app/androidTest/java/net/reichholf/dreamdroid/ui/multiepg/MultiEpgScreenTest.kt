@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.buildMultiEpgChannels
+import net.reichholf.dreamdroid.ui.compose.PULL_REFRESH_INDICATOR_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -222,5 +223,29 @@ class MultiEpgScreenTest {
         }
         composeRule.onNodeWithText("box down").assertIsDisplayed()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+    }
+
+    @Test
+    fun pullRefreshingShowsIndicator() {
+        val start = 1_700_000_000L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = emptyList(),
+                    timelineStartSec = start,
+                    timelineEndSec = start + 3600,
+                    nowSec = start + 60,
+                    loading = true,
+                    pullRefreshing = true,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onRefresh = {},
+                    onEventClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_sync_indicator").assertIsDisplayed()
+        composeRule.onNodeWithTag(PULL_REFRESH_INDICATOR_TAG).assertIsDisplayed()
     }
 }
