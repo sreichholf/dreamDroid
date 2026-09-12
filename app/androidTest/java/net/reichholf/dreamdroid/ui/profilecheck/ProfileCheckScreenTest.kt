@@ -1,4 +1,4 @@
-package net.reichholf.dreamdroid.ui.dialogs
+package net.reichholf.dreamdroid.ui.profilecheck
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -13,7 +13,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class ProfileCheckFailedDialogTest {
+class ProfileCheckScreenTest {
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -25,14 +25,30 @@ class ProfileCheckFailedDialogTest {
     }
 
     @Test
-    fun showsMessageAndActions() {
+    fun checkingShowsProgressMessage() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileCheckScreen(
+                    ui = ProfileCheckUi.Checking("Checking connection…"),
+                    onRecheck = {},
+                    onProfiles = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Checking connection…").assertIsDisplayed()
+    }
+
+    @Test
+    fun failedShowsMessageAndActions() {
         var recheck = false
         var profiles = false
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileCheckFailedDialog(
-                    title = "user@host:80",
-                    message = "Host unreachable",
+                ProfileCheckScreen(
+                    ui = ProfileCheckUi.Failed(
+                        title = "user@host:80",
+                        message = "Host unreachable",
+                    ),
                     onRecheck = { recheck = true },
                     onProfiles = { profiles = true },
                 )

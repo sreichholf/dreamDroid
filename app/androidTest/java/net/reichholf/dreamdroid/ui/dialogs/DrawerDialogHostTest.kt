@@ -27,7 +27,7 @@ import org.junit.Test
 
 /**
  * Phase 2.1g-ii-c: drawer modals are Navigation Compose `dialog`s (SleepTimer proof here).
- * Profile-check failure uses a shell-owned Material 3 AlertDialog.
+ * Profile-check failure is a full-screen PhoneNavHost destination.
  */
 class DrawerDialogHostTest {
     @get:Rule
@@ -83,12 +83,14 @@ class DrawerDialogHostTest {
     }
 
     @Test
-    fun profileCheckFailedDialogShowsRecheckAndProfiles() {
+    fun profileCheckFailedScreenShowsRecheckAndProfiles() {
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileCheckFailedDialog(
-                    title = "user@box:80",
-                    message = "Cannot reach box",
+                net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckScreen(
+                    ui = net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi.Failed(
+                        title = "user@box:80",
+                        message = "Cannot reach box",
+                    ),
                     onRecheck = {},
                     onProfiles = {},
                 )
@@ -100,3 +102,4 @@ class DrawerDialogHostTest {
         composeRule.onNodeWithText("Profiles").assertIsDisplayed()
     }
 }
+

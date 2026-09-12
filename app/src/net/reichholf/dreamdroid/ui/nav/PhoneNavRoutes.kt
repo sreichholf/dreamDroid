@@ -27,6 +27,9 @@ object PhoneNavRoutes {
     const val SLEEP_TIMER = "sleep_timer"
     const val CHANGELOG = "changelog"
 
+    /** Full-screen gate while the active profile is checked / after hard failure. */
+    const val PROFILE_CHECK = "profile_check"
+
     /** Nested service EPG (typed string args). */
     const val SERVICE_EPG = "service_epg/{serviceRef}?serviceName={serviceName}"
 
