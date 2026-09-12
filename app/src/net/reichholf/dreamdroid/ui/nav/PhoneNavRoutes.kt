@@ -16,6 +16,7 @@ object PhoneNavRoutes {
     const val REMOTE = "remote"
     const val SETTINGS = "settings"
     const val HUB = "hub"
+    const val TOOLS = "tools"
 
     /** Phase 2.1g-ii-b: About as a Navigation Compose `dialog` destination. */
     const val ABOUT = "about"

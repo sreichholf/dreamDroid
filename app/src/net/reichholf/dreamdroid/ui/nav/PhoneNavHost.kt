@@ -40,6 +40,7 @@ import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
 import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
 import net.reichholf.dreamdroid.ui.services.HubDestination
+import net.reichholf.dreamdroid.ui.tools.ToolsHubDestination
 import net.reichholf.dreamdroid.ui.settings.SettingsDestination
 import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
@@ -100,6 +101,9 @@ fun PhoneNavHost(
         }
         composable(PhoneNavRoutes.HUB) {
             HubDestination(hostFragment = hostFragment)
+        }
+        composable(PhoneNavRoutes.TOOLS) {
+            ToolsHubDestination()
         }
         composable(
             route = PhoneNavRoutes.SERVICE_EPG,
