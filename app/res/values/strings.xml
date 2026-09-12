@@ -266,6 +266,8 @@
     <string name="login_live">Login (live)</string>
     <string name="appearance">Appearance</string>
     <string name="usability">Useability</string>
+    <string name="start_screen">Start screen</string>
+    <string name="start_screen_long">Screen shown when the app opens (main drawer destinations)</string>
     <string name="use_picons">Use Picons</string>
     <string name="use_picons_long">Enable the use of picons in certain areas.\nRequires picons in /{ExternalStorageDir}/dreamDroid/picons</string>
     <string name="sync_picons">Sync Picons</string>

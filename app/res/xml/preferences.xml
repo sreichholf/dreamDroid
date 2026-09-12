@@ -33,6 +33,13 @@
             android:key="volume_control"
             android:summary="@string/enable_volume_control_long"
             android:title="@string/enable_volume_control"/>
+        <ListPreference
+            android:defaultValue="services"
+            android:entries="@array/start_screen_entries"
+            android:entryValues="@array/start_screen_values"
+            android:key="start_screen"
+            android:summary="@string/start_screen_long"
+            android:title="@string/start_screen"/>
         <CheckBoxPreference
             android:key="instant_zap"
             android:summary="@string/enable_instant_zap_long"
