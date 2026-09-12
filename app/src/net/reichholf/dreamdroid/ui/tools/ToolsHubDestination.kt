@@ -19,13 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
-import net.reichholf.dreamdroid.ui.nav.InstallShellDestinationBar
+import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
+import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
 
 /**
  * Tools hub: Screenshot / Device Info / Signal Meter with a shell bottom destination bar
- * (same Coordinator slot pattern as TV & Movies).
+ * (Coordinator slot owned by [net.reichholf.dreamdroid.ui.nav.ProvideShellDestinationBar]).
  */
 @Composable
 fun ToolsHubDestination(modifier: Modifier = Modifier) {
@@ -34,9 +35,9 @@ fun ToolsHubDestination(modifier: Modifier = Modifier) {
 	destinationBarState.selected = selected
 	destinationBarState.onDestinationSelected = { selected = it }
 
-	InstallShellDestinationBar { shellNav ->
-		shellNav.bindToolsDestinationBar(destinationBarState)
-	}
+	// Publish Snapshot state to the NavHost-owned shell ComposeView — do not install or
+	// setContent on shell_destination_nav from this leaf (content load must not dispose chrome).
+	RegisterShellDestinationBar(ShellDestinationBarContent.Tools(destinationBarState))
 
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
