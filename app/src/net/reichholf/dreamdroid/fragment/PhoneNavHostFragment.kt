@@ -26,6 +26,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
+import net.reichholf.dreamdroid.ui.nav.navigateAboveProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateToProfileCheck
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
@@ -379,6 +380,16 @@ class PhoneNavHostFragment : BaseFragment() {
         updateProfileCheckUi(ui)
         pendingProfileCheck = true
         flushPendingNavigations()
+    }
+
+    /**
+     * Navigate to [route] while leaving [PhoneNavRoutes.PROFILE_CHECK] on the back stack.
+     * Used when leaving the gate for Profiles / start so Back returns to the check.
+     */
+    fun navigateAboveProfileCheck(route: String): Boolean {
+        val controller = navController ?: return false
+        controller.navigateAboveProfileCheck(route)
+        return true
     }
 
 

@@ -245,10 +245,21 @@ fun NavHostController.navigateToChangelog() {
     navigate(PhoneNavRoutes.CHANGELOG)
 }
 
-/** Show the full-screen profile-check gate (checking / failed). */
+/** Push the full-screen profile-check gate (checking / failed) onto the back stack. */
 fun NavHostController.navigateToProfileCheck() {
     if (currentDestination?.route == PhoneNavRoutes.PROFILE_CHECK) return
     navigate(PhoneNavRoutes.PROFILE_CHECK) {
+        launchSingleTop = true
+    }
+}
+
+/**
+ * Open a drawer root above [PhoneNavRoutes.PROFILE_CHECK] without popping the gate,
+ * so Back returns to the profile-check screen.
+ */
+fun NavHostController.navigateAboveProfileCheck(route: String) {
+    if (currentDestination?.route == route) return
+    navigate(route) {
         launchSingleTop = true
     }
 }
