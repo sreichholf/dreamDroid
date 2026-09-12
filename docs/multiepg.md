@@ -1,13 +1,14 @@
 # Graphical MultiEPG (plan)
 
-**Status:** design only — **no implementation until operator lock-in.**  
+**Status:** **Accepted** (operator lock-in 2026-09-12 — “Defaults look good”).  
+**Implementation gate:** no MultiEPG feature code until Phase 0 spike notes land (real Dreambox `/web/epgmulti` sizes + `endTime` units).  
 **Product reference:** on-box **GraphMultiEPG** (`enigma2-plugin-extensions-graphmultiepg` on DreamOS; same family as [Vu+ GraphMultiEPG](https://wiki.vuplus-support.org/index.php?title=GraphMultiEPG)) — channel rows × time columns, prime time, zoom, timer clocks.  
 **Target API:** genuine Dreambox WebInterface only (not OpenWebif extensions). On-box GraphMultiEPG reads `eEPGCache` locally; dreamDroid must use `/web/epgmulti` over the network.  
 **Reference (read-only):** [opendreambox/enigma2-plugins `webinterface`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) — we will **not** patch or extend the box webif. GraphMultiEPG plugin source (behaviour reference): Enigma2 `Plugins/Extensions/GraphMultiEPG/` (e.g. OpenPLi tree; DreamOS ships the same plugin package).
 
 Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished timeline UI removed in [#177](https://github.com/sreichholf/dreamDroid/pull/177), commented `EpgDatabase` dropped in [#293](https://github.com/sreichholf/dreamDroid/pull/293). Unused constant already exists: `URIStore.EPG_MULTI` (`/web/epgmulti?`).
 
-### Decision brief (lock-in target)
+### Decision brief (locked)
 
 | | |
 | --- | --- |
@@ -17,9 +18,9 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 | **Sync** | Room cache + ~20–30 min TTL; **one** in-flight request; no idle background sync in v1 |
 | **Fallback** | Throttled `/web/epgservice` only if spike shows `epgmulti` missing |
 | **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays = v1.1 (GraphMultiEPG `show_record_clocks`) |
-| **Next after OK** | Mark **Accepted** → Phase 0 spike on a real Dreambox → then Phase 1+ code |
+| **Next** | Phase 0 spike on a real Dreambox → then Phase 1+ implementation |
 
-Reply **defaults OK** (or overrides). Full detail in §§1–8 below.
+Full detail in §§1–8 below.
 
 ---
 
@@ -256,9 +257,9 @@ On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
 
 ---
 
-## 6. Defaults pending operator confirmation
+## 6. Locked defaults (Accepted 2026-09-12)
 
-### Already settled in this thread (not re-opened)
+### Already settled (not re-opened)
 
 | Topic | Settlement |
 | --- | --- |
@@ -269,9 +270,9 @@ On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
 | Sync | Required: windowed fetches + local cache so the box is not overloaded |
 | Process | Plan + shared understanding **before** any feature implementation |
 
-### Still need your OK (§6)
+### Operator-confirmed defaults
 
-| # | Decision | Proposed default |
+| # | Decision | Locked default |
 | --- | --- | --- |
 | 1 | Navigation | Keep list EPG; add drawer **MultiEPG** |
 | 2 | Visible window | **2 h** default (GraphMultiEPG); zoom 1 / 2 / 4 / 5 h |
@@ -281,25 +282,23 @@ On a genuine Dreambox WebIf (no OpenWebif), with bouquet ref `BREF` URL-encoded:
 | 6 | TV | Phone-only v1 |
 | 7 | Timer bars | v1.1 (`show_record_clocks`) |
 
-Reply **defaults OK** or a short override list (e.g. “3 → 48 h”). After lock-in, mark this doc **Accepted** and only then start Phase 0.
+Operator confirmed 2026-09-12 (“Defaults look good”). No overrides.
 
 ### Shared-understanding checklist
 
-- [ ] Operator agrees §6 defaults (or lists overrides)
-- [ ] Doc status line set to **Accepted**
+- [x] Operator agrees §6 defaults (or lists overrides)
+- [x] Doc status line set to **Accepted**
 - [ ] Phase 0 spike owner / box availability noted
-- [ ] Explicit: no feature code before Phase 0 notes land
+- [x] Explicit: no feature code before Phase 0 notes land
 
 ### Planning Definition of Done
 
 This **planning** goal is complete when all of the following are true:
 
-1. `docs/multiepg.md` describes product, Dreambox `/web/epgmulti` sync model, phases 0–4, and non-goals (present).
-2. Operator has explicitly accepted the Decision brief / §6 (or recorded overrides in this doc).
-3. Status line is **Accepted** (not merely “design only”).
-4. No MultiEPG feature implementation has started before that acceptance.
-
-Until (2)–(3), keep status as design-only and do not open implementation PRs.
+1. `docs/multiepg.md` describes product, Dreambox `/web/epgmulti` sync model, phases 0–4, and non-goals — **done**.
+2. Operator has explicitly accepted the Decision brief / §6 (or recorded overrides in this doc) — **done** (2026-09-12).
+3. Status line is **Accepted** — **done**.
+4. No MultiEPG feature implementation has started before that acceptance — **still holds**; Phase 0 is the next step (separate work).
 
 ---
 

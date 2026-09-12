@@ -1284,12 +1284,12 @@ One PR per fix or small related cluster. Prefer regressions covered by Compose t
 
 ## Appendix I. Graphical MultiEPG (product plan)
 
-**Docs only until operator lock-in.** Full design: [`docs/multiepg.md`](multiepg.md).
+**Accepted** 2026-09-12. Full design: [`docs/multiepg.md`](multiepg.md). No feature code until Phase 0 spike notes land.
 
 - **UX reference:** DreamOS on-box GraphMultiEPG (`enigma2-plugin-extensions-graphmultiepg`) — horizontal channel×time grid (not stock web column MultiEPG).
 - **Data path:** bounded Dreambox `/web/epgmulti?bRef=&time=&endTime=` + Room TTL (on-box plugin uses `eEPGCache`; the phone cannot).
-- **Defaults pending OK:** keep list EPG + drawer MultiEPG; 2 h visible / 24 h cache chunks; no idle sync; phone-only v1; timer clocks in v1.1.
-- Implementation phases 0–4 live in that doc; **do not start code** until the Decision brief is Accepted there.
+- **Locked defaults:** keep list EPG + drawer MultiEPG; 2 h visible / 24 h cache chunks; no idle sync; phone-only v1; timer clocks in v1.1.
+- Implementation phases 0–4 live in that doc; next step is Phase 0 spike on a real Dreambox.
 
 ## Appendix F. Links
 
