@@ -95,14 +95,13 @@ class MultiEpgSyncTest {
     }
 
     @Test
-    fun staleTtlRefetches() = runBlocking {
+    fun peekChunkReturnsStaleThenEnsureRefreshes() = runBlocking {
         val fetches = AtomicInteger(0)
         var now = 1_000_000L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, end ->
+            fetch = { _, time, _ ->
                 fetches.incrementAndGet()
-                assertTrue(end > time)
                 listOf(
                     Event(
                         eventId = fetches.get().toString(),
@@ -121,7 +120,32 @@ class MultiEpgSyncTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS
         sync.ensureChunk(1, bouquet, t0)
         now += 2_000L
+        val peek = sync.peekChunk(1, bouquet, t0)
+        assertTrue(peek != null)
+        assertTrue(peek!!.events.isNotEmpty())
+        assertTrue(!peek.fresh)
+        assertEquals(1, fetches.get())
         sync.ensureChunk(1, bouquet, t0)
+        assertEquals(2, fetches.get())
+    }
+
+    @Test
+    fun forceRefreshBypassesFreshTtl() = runBlocking {
+        val fetches = AtomicInteger(0)
+        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, _ ->
+                fetches.incrementAndGet()
+                fixture
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
+        val t0 = 1_893_456_000L
+        sync.ensureChunk(1, bouquet, t0)
+        sync.ensureChunk(1, bouquet, t0, forceRefresh = true)
         assertEquals(2, fetches.get())
     }
 }

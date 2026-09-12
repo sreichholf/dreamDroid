@@ -33,25 +33,57 @@ class MultiEpgSync(
         val windowStart: Long,
     )
 
+    data class CachedChunk(
+        val events: List<Event>,
+        val windowStart: Long,
+        val windowEnd: Long,
+        val fetchedAtMs: Long,
+        val fresh: Boolean,
+    )
+
     /**
-     * Ensure the 24 h chunk containing [unixSec] is fresh, then return overlapping Room rows
-     * for that chunk window (all services).
+     * Room peek for the chunk containing [unixSec], ignoring TTL.
+     * Used to paint immediately while a background refresh runs.
+     */
+    suspend fun peekChunk(
+        profileId: Int,
+        bouquetRef: String,
+        unixSec: Long,
+    ): CachedChunk? {
+        val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
+        val meta = withContext(Dispatchers.IO) {
+            dao.getChunk(profileId, bouquetRef, chunk.startSec)
+        } ?: return null
+        val events = withContext(Dispatchers.IO) {
+            dao.eventsOverlapping(profileId, chunk.startSec, chunk.endSec).map { it.toEvent() }
+        }
+        val fresh = clockMs() - meta.fetchedAtMs <= ttlMs
+        return CachedChunk(events, chunk.startSec, chunk.endSec, meta.fetchedAtMs, fresh)
+    }
+
+    /**
+     * Ensure the 24 h chunk containing [unixSec] is available.
+     * When [forceRefresh] is false, a fresh TTL hit returns Room rows without hitting the box.
+     * When [forceRefresh] is true (pull-to-refresh), always refetch (still single-flight).
      */
     suspend fun ensureChunk(
         profileId: Int,
         bouquetRef: String,
         unixSec: Long,
+        forceRefresh: Boolean = false,
     ): List<Event> {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
         val key = ChunkKey(profileId, bouquetRef, chunk.startSec)
         val now = clockMs()
 
-        val cached = withContext(Dispatchers.IO) {
-            dao.getChunk(profileId, bouquetRef, chunk.startSec)
-        }
-        if (cached != null && now - cached.fetchedAtMs <= ttlMs) {
-            return withContext(Dispatchers.IO) {
-                dao.eventsOverlapping(profileId, chunk.startSec, chunk.endSec).map { it.toEvent() }
+        if (!forceRefresh) {
+            val cached = withContext(Dispatchers.IO) {
+                dao.getChunk(profileId, bouquetRef, chunk.startSec)
+            }
+            if (cached != null && now - cached.fetchedAtMs <= ttlMs) {
+                return withContext(Dispatchers.IO) {
+                    dao.eventsOverlapping(profileId, chunk.startSec, chunk.endSec).map { it.toEvent() }
+                }
             }
         }
 

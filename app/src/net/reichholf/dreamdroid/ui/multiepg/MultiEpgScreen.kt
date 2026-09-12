@@ -48,6 +48,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.overlapping
+import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -79,8 +80,13 @@ fun MultiEpgScreen(
     timelineEndSec: Long,
     nowSec: Long,
     loading: Boolean,
+    pullRefreshing: Boolean = false,
     errorMessage: String?,
     onJumpToNow: () -> Unit,
+    onPrevDay: (() -> Unit)? = null,
+    onNextDay: (() -> Unit)? = null,
+    onRefresh: (() -> Unit)? = null,
+    onNearChunkEdge: ((towardNext: Boolean) -> Unit)? = null,
     onEventClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
@@ -101,6 +107,18 @@ fun MultiEpgScreen(
         hScroll.scrollTo(targetPx.coerceAtMost(hScroll.maxValue.coerceAtLeast(targetPx)))
     }
 
+    // Warm adjacent day chunks when the user pans near either timeline edge.
+    LaunchedEffect(hScroll.value, hScroll.maxValue, onNearChunkEdge) {
+        val edge = onNearChunkEdge ?: return@LaunchedEffect
+        val max = hScroll.maxValue
+        if (max <= 0) return@LaunchedEffect
+        val threshold = (max * 0.08f).toInt().coerceAtLeast(24)
+        when {
+            hScroll.value <= threshold -> edge(false)
+            hScroll.value >= max - threshold -> edge(true)
+        }
+    }
+
     val cullWindow by remember(timelineStartSec, timelineEndSec) {
         derivedStateOf {
             if (viewportWidthPx <= 0) {
@@ -119,126 +137,144 @@ fun MultiEpgScreen(
         }
     }
 
-    Column(modifier = modifier.fillMaxSize().testTag("multi_epg_screen")) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = bouquetName.ifBlank { stringResource(R.string.multiepg) },
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .padding(end = 6.dp)
-                        .height(18.dp)
-                        .width(18.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.primary,
+    DreamDroidPullRefresh(
+        refreshing = pullRefreshing,
+        onRefresh = { onRefresh?.invoke() },
+        enabled = onRefresh != null,
+        modifier = modifier,
+    ) {
+        Column(modifier = Modifier.fillMaxSize().testTag("multi_epg_screen")) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = bouquetName.ifBlank { stringResource(R.string.multiepg) },
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
                 )
-            }
-            TextButton(onClick = onJumpToNow) {
-                Text(stringResource(R.string.multiepg_now))
-            }
-        }
-
-        if (errorMessage != null) {
-            Text(
-                text = errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            )
-        }
-
-        if (channels.isEmpty() && !loading && errorMessage == null) {
-            Text(
-                text = stringResource(R.string.multiepg_empty),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(16.dp),
-            )
-            return@Column
-        }
-
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            item(key = "time_ruler", contentType = "ruler") {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(RulerHeight),
-                ) {
-                    Spacer(modifier = Modifier.width(ChannelLabelWidth))
-                    MultiEpgTimeRuler(
-                        timelineStartSec = timelineStartSec,
-                        timelineEndSec = timelineEndSec,
-                        timelineWidth = timelineWidth,
-                        cullStartSec = cullWindow.first,
-                        cullEndSec = cullWindow.second,
+                if (loading) {
+                    CircularProgressIndicator(
                         modifier = Modifier
-                            .weight(1f)
-                            .onSizeChanged { viewportWidthPx = it.width }
-                            .horizontalScroll(hScroll),
+                            .padding(end = 4.dp)
+                            .height(18.dp)
+                            .width(18.dp)
+                            .testTag("multi_epg_sync_indicator"),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            }
-            items(
-                items = channels,
-                key = { it.serviceRef },
-                contentType = { "channel" },
-            ) { channel ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(RowHeight),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(ChannelLabelWidth)
-                            .fillMaxHeight()
-                            .padding(horizontal = 6.dp),
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        Text(
-                            text = channel.serviceName,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .onSizeChanged { viewportWidthPx = it.width }
-                            .horizontalScroll(hScroll),
-                    ) {
-                        MultiEpgChannelTimeline(
-                            channel = channel,
-                            timelineStartSec = timelineStartSec,
-                            timelineWidth = timelineWidth,
-                            nowSec = nowSec,
-                            cullStartSec = cullWindow.first,
-                            cullEndSec = cullWindow.second,
-                            onEventClick = onEventClick,
-                        )
+                if (onPrevDay != null) {
+                    TextButton(onClick = onPrevDay) {
+                        Text(stringResource(R.string.multiepg_prev_day))
                     }
                 }
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                TextButton(onClick = onJumpToNow) {
+                    Text(stringResource(R.string.multiepg_now))
+                }
+                if (onNextDay != null) {
+                    TextButton(onClick = onNextDay) {
+                        Text(stringResource(R.string.multiepg_next_day))
+                    }
+                }
+            }
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                 )
+            }
+
+            if (channels.isEmpty() && !loading && errorMessage == null) {
+                Text(
+                    text = stringResource(R.string.multiepg_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(16.dp),
+                )
+                return@DreamDroidPullRefresh
+            }
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                item(key = "time_ruler", contentType = "ruler") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(RulerHeight),
+                    ) {
+                        Spacer(modifier = Modifier.width(ChannelLabelWidth))
+                        MultiEpgTimeRuler(
+                            timelineStartSec = timelineStartSec,
+                            timelineEndSec = timelineEndSec,
+                            timelineWidth = timelineWidth,
+                            cullStartSec = cullWindow.first,
+                            cullEndSec = cullWindow.second,
+                            modifier = Modifier
+                                .weight(1f)
+                                .onSizeChanged { viewportWidthPx = it.width }
+                                .horizontalScroll(hScroll),
+                        )
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
+                items(
+                    items = channels,
+                    key = { it.serviceRef },
+                    contentType = { "channel" },
+                ) { channel ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(RowHeight),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(ChannelLabelWidth)
+                                .fillMaxHeight()
+                                .padding(horizontal = 6.dp),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            Text(
+                                text = channel.serviceName,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .onSizeChanged { viewportWidthPx = it.width }
+                                .horizontalScroll(hScroll),
+                        ) {
+                            MultiEpgChannelTimeline(
+                                channel = channel,
+                                timelineStartSec = timelineStartSec,
+                                timelineWidth = timelineWidth,
+                                nowSec = nowSec,
+                                cullStartSec = cullWindow.first,
+                                cullEndSec = cullWindow.second,
+                                onEventClick = onEventClick,
+                            )
+                        }
+                    }
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                }
             }
         }
     }

@@ -133,4 +133,52 @@ class MultiEpgScreenTest {
         composeRule.waitForIdle()
         assertEquals("Tagesschau", clicked)
     }
+
+    @Test
+    fun syncIndicatorVisibleWhileLoading() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = emptyList(),
+                    timelineStartSec = 0L,
+                    timelineEndSec = 3600L,
+                    nowSec = 60L,
+                    loading = true,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_sync_indicator").assertIsDisplayed()
+    }
+
+    @Test
+    fun dayButtonsInvokeCallbacks() {
+        var prev = 0
+        var next = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = emptyList(),
+                    timelineStartSec = 0L,
+                    timelineEndSec = 3600L,
+                    nowSec = 60L,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onPrevDay = { prev += 1 },
+                    onNextDay = { next += 1 },
+                    onEventClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("−1d").performClick()
+        composeRule.onNodeWithText("+1d").performClick()
+        composeRule.waitForIdle()
+        assertEquals(1, prev)
+        assertEquals(1, next)
+    }
 }

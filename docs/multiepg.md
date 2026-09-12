@@ -232,6 +232,8 @@ EpgChunkMeta
 
 **TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Drawer **MultiEPG** opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows are dense (~36.dp); off-screen programme bars are viewport-culled.
 
+**Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh/prefetch in the background with a small toolbar spinner (including adjacent-chunk prefetch); pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately.
+
 ### Phase exit criteria
 
 | Phase | Done when |
