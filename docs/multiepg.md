@@ -321,7 +321,7 @@ This **planning** goal is complete when all of the following are true:
 | Risk | Mitigation |
 | --- | --- |
 | Large bouquets + 24 h still heavy on weak boxes | Always bound window; single-flight; TTL; optional later “visible channels first” if spike shows pain |
-| `endTime` units differ from OpenWebif docs | Phase 0 confirms unix vs minutes on genuine Dreambox WebIf |
+| `endTime` units differ from OpenWebif docs | Confirmed: Dreambox webif `endTime` = **minutes** (eEPGCache); app converts unix window → minutes in `MultiEpgSync.httpFetch` |
 | Very old WebIf without `epgmulti` | Spike records it; only then enable throttled `epgservice` fallback |
 | Orphan `DatabaseHelper.events` confusion | New cache is Room-only; do not revive old writers |
 | Grid jank with hundreds of bars | Virtualize rows; recycle bar composables; paint from Room off main thread |
