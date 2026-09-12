@@ -300,6 +300,54 @@ class MultiEpgSessionTest {
         assertEquals(now, session.timelineStartSec)
     }
 
+    @Test
+    fun timelineStartIsEarliestProgrammeCrossingNow() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 10_800L
+        val earliest = now - 7_200L
+        val later = now - 600L
+        val yesterday = chunk.startSec - MultiEpgWindows.CHUNK_SECONDS
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                if (time == chunk.startSec) {
+                    listOf(
+                        programme(
+                            id = "early",
+                            title = "Early",
+                            start = earliest,
+                            duration = "14400",
+                        ),
+                        programme(
+                            id = "later",
+                            title = "Later",
+                            start = later,
+                            duration = "3600",
+                        ),
+                    )
+                } else {
+                    listOf(programme(id = time.toString(), title = "T", start = time))
+                }
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+        )
+        session.replaceAndLoad("bouquet-a", now)
+        session.awaitIdle()
+        assertEquals(earliest, session.timelineStartSec)
+        assertEquals(now, session.originFloorSec)
+        assertFalse(fetches.contains(yesterday))
+        assertFalse(session.loadedWindowStarts.contains(yesterday))
+    }
+
     private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
         for (channel in session.channels) {
@@ -312,12 +360,17 @@ class MultiEpgSessionTest {
         error("no bar in chunk ${chunk.startSec}")
     }
 
-    private fun programme(id: String, title: String, start: Long): Event {
+    private fun programme(
+        id: String,
+        title: String,
+        start: Long,
+        duration: String = "3600",
+    ): Event {
         return Event(
             eventId = id,
             title = title,
             start = start.toString(),
-            duration = "3600",
+            duration = duration,
             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
             serviceName = "TV",
         )

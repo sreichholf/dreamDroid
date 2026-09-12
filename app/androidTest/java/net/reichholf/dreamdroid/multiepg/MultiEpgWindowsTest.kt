@@ -57,4 +57,54 @@ class MultiEpgWindowsTest {
         )
         assertFalse(other.startsWith("Today"))
     }
+
+    @Test
+    fun paintedTimelineStartIsEarliestAiringProgramme() {
+        val now = 10_000L
+        val events = listOf(
+            Event(eventId = "a", title = "Early", start = "7000", duration = "5000"),
+            Event(eventId = "b", title = "Later", start = "9000", duration = "3000"),
+            Event(eventId = "c", title = "Finished", start = "1000", duration = "1000"),
+        )
+        assertEquals(
+            7000L,
+            MultiEpgWindows.paintedTimelineStart(
+                nowSec = now,
+                minWindowStartSec = 0L,
+                events = events,
+            ),
+        )
+    }
+
+    @Test
+    fun paintedTimelineStartFallsBackToNowWhenNothingAiring() {
+        val now = 10_000L
+        val events = listOf(
+            Event(eventId = "c", title = "Finished", start = "1000", duration = "1000"),
+            Event(eventId = "d", title = "Upcoming", start = "20000", duration = "1000"),
+        )
+        assertEquals(
+            now,
+            MultiEpgWindows.paintedTimelineStart(
+                nowSec = now,
+                minWindowStartSec = 0L,
+                events = events,
+            ),
+        )
+    }
+
+    @Test
+    fun paintedTimelineStartUsesOldestWindowOnceNowIsDropped() {
+        val now = 10_000L
+        assertEquals(
+            50_000L,
+            MultiEpgWindows.paintedTimelineStart(
+                nowSec = now,
+                minWindowStartSec = 50_000L,
+                events = listOf(
+                    Event(eventId = "a", title = "Early", start = "7000", duration = "5000"),
+                ),
+            ),
+        )
+    }
 }

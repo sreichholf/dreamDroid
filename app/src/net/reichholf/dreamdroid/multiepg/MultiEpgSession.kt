@@ -14,16 +14,16 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.Event
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.max
 
 /**
  * Stale-while-revalidate MultiEPG grid session: peek Room, refresh and prefetch
  * in the background, keep stale rows on error, replace on bouquet/profile remount.
  *
- * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left clamp
- * is [originFloorSec] ("now"), the right grows as the viewport moves into the
- * future, and chunks that no longer overlap the padded viewport leave at the
- * front or back. Room still holds them; scrolling back reattaches from cache.
+ * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left edge
+ * is the earliest start among programmes overlapping [originFloorSec] ("now"),
+ * the right grows as the viewport moves into the future, and chunks that no
+ * longer overlap the padded viewport leave at the front or back. Room still
+ * holds them; scrolling back reattaches from cache.
  */
 class MultiEpgSession(
     private val sync: MultiEpgSync,
@@ -297,12 +297,16 @@ class MultiEpgSession(
             return
         }
         val starts = eventsByWindow.keys.sorted()
-        timelineStartSec = max(originFloorSec, starts.first())
-        timelineEndSec = starts.last() + MultiEpgWindows.CHUNK_SECONDS
         val merged = ArrayList<Event>(eventsByWindow.values.sumOf { it.size })
         for (start in starts) {
             merged.addAll(eventsByWindow[start].orEmpty())
         }
+        timelineStartSec = MultiEpgWindows.paintedTimelineStart(
+            nowSec = originFloorSec,
+            minWindowStartSec = starts.first(),
+            events = merged,
+        )
+        timelineEndSec = starts.last() + MultiEpgWindows.CHUNK_SECONDS
         val previous = channels
         val next = withContext(Dispatchers.Default) {
             buildMultiEpgChannels(merged, previous)
