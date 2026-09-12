@@ -61,6 +61,22 @@ fun PhoneNavHost(
         hostFragment.attachNavController(navController)
         onDispose { hostFragment.detachNavController(navController) }
     }
+    // Shell destination bar lives for the NavHost lifetime; hubs only publish Snapshot state.
+    ProvideShellDestinationBar {
+        PhoneNavHostGraph(
+            hostFragment = hostFragment,
+            navController = navController,
+            startDestination = startDestination,
+        )
+    }
+}
+
+@Composable
+private fun PhoneNavHostGraph(
+    hostFragment: PhoneNavHostFragment,
+    navController: NavHostController,
+    startDestination: String,
+) {
     NavHost(
         navController = navController,
         startDestination = startDestination,

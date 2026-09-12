@@ -34,7 +34,8 @@ import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.ui.nav.InstallShellDestinationBar
+import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
+import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 
 private const val MODE_TV = "TV"
 private const val MODE_RADIO = "Radio"
@@ -44,8 +45,9 @@ private const val MODE_TIMER = "Timer"
 /**
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * Owns mode + bouquet/location tabs (parity with former ServiceListPager),
- * hosts [TvMoviesDestinationBar] via [InstallShellDestinationBar] on [R.id.shell_destination_nav]
- * (Scaffold bottomBar inside detail_view sits under the system nav — dualpane ScrollingViewBehavior),
+ * publishes [TvMoviesDestinationBar] through [RegisterShellDestinationBar] onto the
+ * NavHost-owned [R.id.shell_destination_nav] Coordinator slot (Scaffold bottomBar inside
+ * detail_view sits under the system nav — dualpane ScrollingViewBehavior),
  * and routes MultiChoice / timer-edit results for the active child page.
  */
 @Composable
@@ -149,12 +151,10 @@ fun HubDestination(
         }
     }
 
-    // Destination bar on activity Coordinator (shell_destination_nav). Bind a self-contained
-    // shell composition (Snapshot state) — do not capture hub @Composable lambdas into the
-    // sibling ComposeView (that bridge goes blank after bouquet/content load).
-    InstallShellDestinationBar { shellNav ->
-        shellNav.bindTvMoviesDestinationBar(destinationBarState)
-    }
+    // Publish Snapshot state to the NavHost-owned shell ComposeView. Installing
+    // shell_destination_nav from this leaf tied chrome disposal to hub content load
+    // (bar vanished after bouquet / list refresh finished).
+    RegisterShellDestinationBar(ShellDestinationBarContent.TvMovies(destinationBarState))
 
     DisposableEffect(hostFragment) {
         val listener = PhoneNavHostFragment.ActivityResultListener { requestCode, resultCode, _ ->
