@@ -246,8 +246,9 @@ EpgChunkMeta
 
 | Question | Finding | Confidence |
 | --- | --- | --- |
-| `time` / `endTime` units | **Unix seconds** — `EPG.getEPGofBouquet` does `int(float(param["time"\|"endTime"]))` and passes `(service, 0, time, endtime)` into `eEPGCache.lookupEvent` (same as `getEPGofService`) | High (source) |
-| Omit `endTime` | Non-multi bouquet path ignores end; **multi** path always passes `endtime` (−1 if omitted) → treat omitted end as unbounded; **app must always send `endTime`** | High (source) |
+| `time` units | **Unix seconds** (start of window) | High (source) |
+| `endTime` units | **Minutes of duration**, not unix end — webif passes the param as eEPGCache’s 4th tuple arg; GraphMultiEPG uses `time_epoch` minutes the same way. Sending unix end (~1.7e9) overflows `startTimeQuery` → **0 events** (seen on device, ~125 ms empty) | High (eEPGCache + device) |
+| Omit `endTime` | Non-multi bouquet path ignores end; **multi** path always passes 4th arg (−1 if omitted) → treat omitted end as unbounded; **app must always send `endTime` as minutes** | High (source) |
 | XML shape | `web/epgmulti.xml` event tags match `epgservice` (`e2eventid`…`e2eventservicename`); reuse `EventParser` | High (template) |
 | Unbounded vs 2 h vs 24 h sizes | **Not measured here** (no Dreambox on Cloud Agent) | Deferred |
 

@@ -317,6 +317,7 @@
     <string name="multiepg_sync_test_no_bouquet">Set a default TV bouquet on the profile first</string>
     <string name="multiepg_sync_test_running">MultiEPG sync…</string>
     <string name="multiepg_sync_test_ok">MultiEPG sync OK: %1$d events in %2$d ms</string>
+    <string name="multiepg_sync_test_empty">MultiEPG sync empty (%2$d ms). Bouquet: %1$s — check default TV bouquet and box EPG.</string>
     <string name="multiepg_sync_test_fail">MultiEPG sync failed: %1$s</string>
     <string name="use_fake_picon">Use a fake picon</string>
     <string name="use_fake_picon_long">Use a fake picon (picon_default.png) to avoid copyright problems on screenshots</string>

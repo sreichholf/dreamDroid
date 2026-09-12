@@ -74,7 +74,15 @@ fun SettingsDestination(
                     unixSec = System.currentTimeMillis() / 1000L,
                 )
                 val ms = System.currentTimeMillis() - started
-                context.getString(R.string.multiepg_sync_test_ok, events.size, ms)
+                if (events.isEmpty()) {
+                    context.getString(
+                        R.string.multiepg_sync_test_empty,
+                        bouquet.take(48),
+                        ms,
+                    )
+                } else {
+                    context.getString(R.string.multiepg_sync_test_ok, events.size, ms)
+                }
             } catch (t: Throwable) {
                 context.getString(
                     R.string.multiepg_sync_test_fail,

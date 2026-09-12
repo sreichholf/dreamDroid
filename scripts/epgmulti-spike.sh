@@ -17,8 +17,11 @@ if [[ -n "${USER:-}" ]]; then
 fi
 
 T0="$(date +%s)"
-T2H=$((T0 + 7200))
-T24H=$((T0 + 86400))
+# endTime is duration in MINUTES (eEPGCache), despite the HTTP param name.
+MIN_2H=120
+MIN_24H=1440
+# Wrong (old) probe: absolute unix end — expect empty / nonsense on many boxes.
+WRONG_UNIX_END=$((T0 + 86400))
 
 encode() {
   python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=""))' "$1"
@@ -43,13 +46,15 @@ probe() {
   rm -f "$tmp"
 }
 
-echo "T0=$T0 (unix seconds — pass as time/endTime; Dreambox webif int(float(...)))"
+echo "T0=$T0 — time=unix start; endTime=duration MINUTES (not unix end)"
 probe "unbounded" "/web/epgmulti?bRef=${BREF_Q}"
-probe "2h" "/web/epgmulti?bRef=${BREF_Q}&time=${T0}&endTime=${T2H}"
-probe "24h" "/web/epgmulti?bRef=${BREF_Q}&time=${T0}&endTime=${T24H}"
+probe "2h_minutes" "/web/epgmulti?bRef=${BREF_Q}&time=${T0}&endTime=${MIN_2H}"
+probe "24h_minutes" "/web/epgmulti?bRef=${BREF_Q}&time=${T0}&endTime=${MIN_24H}"
+probe "24h_WRONG_unix_end" "/web/epgmulti?bRef=${BREF_Q}&time=${T0}&endTime=${WRONG_UNIX_END}"
 probe "time_only" "/web/epgmulti?bRef=${BREF_Q}&time=${T0}"
 if [[ -n "$SREF" ]]; then
   SREF_Q="$(encode "$SREF")"
-  probe "epgservice_24h" "/web/epgservice?sRef=${SREF_Q}&time=${T0}&endTime=${T24H}"
+  # epgservice uses the same 4-tuple; prefer minutes here too.
+  probe "epgservice_24h_minutes" "/web/epgservice?sRef=${SREF_Q}&time=${T0}&endTime=${MIN_24H}"
 fi
 echo "Paste the table into docs/multiepg.md Phase 0 notes when done."

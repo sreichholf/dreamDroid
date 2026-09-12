@@ -103,14 +103,22 @@ class MultiEpgSync(
     }
 
     companion object {
+        /**
+         * Dreambox `/web/epgmulti` query params:
+         * - `time` = unix start
+         * - `endTime` = **duration in minutes** (eEPGCache 4th tuple arg), despite the name —
+         *   GraphMultiEPG passes `time_epoch` minutes the same way. Absolute unix end is wrong
+         *   and yields empty results (overflow in startTimeQuery).
+         */
         fun httpFetch(http: SimpleHttpClient = SimpleHttpClient.getInstance()): suspend (String, Long, Long) -> List<Event> {
             return { bouquetRef, timeSec, endTimeSec ->
-                require(endTimeSec > timeSec) { "endTime must be after time" }
+                require(endTimeSec > timeSec) { "window end must be after start" }
+                val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
                 val events = EnigmaClient(http).getEvents(
                     listOf(
                         NameValuePair("bRef", bouquetRef),
                         NameValuePair("time", timeSec.toString()),
-                        NameValuePair("endTime", endTimeSec.toString()),
+                        NameValuePair("endTime", durationMinutes.toString()),
                     ),
                     URIStore.EPG_MULTI,
                 )
