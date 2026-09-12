@@ -13,7 +13,12 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
-import net.reichholf.dreamdroid.ui.dialogs.bindConnectionErrorScreen
+import net.reichholf.dreamdroid.ui.dialogs.ProfileCheckFailedDialog
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import android.view.ViewGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
@@ -57,7 +62,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
-import net.reichholf.dreamdroid.ui.profiles.ProfilesNavigation
 
 /**
  * @author sre
@@ -85,6 +89,14 @@ class MainActivity :
     private lateinit var mDrawerLayout: DrawerLayout
 
     private var mSnackbar: Snackbar? = null
+
+    /** When true, a successful profile check dismisses the failure dialog and opens the start route. */
+    private var mOpenStartOnProfileSuccess: Boolean = false
+
+    private var mProfileCheckFailedUi by mutableStateOf<ProfileCheckFailedUi?>(null)
+
+    private var mShellDialogHost: ComposeView? = null
+
 
     private lateinit var mCurrentProfile: Profile
 
@@ -123,6 +135,71 @@ class MainActivity :
         mSnackbar = null
     }
 
+    private data class ProfileCheckFailedUi(val title: String, val message: String)
+
+    private fun ensureShellDialogHost() {
+        if (mShellDialogHost != null) {
+            return
+        }
+        val host = ComposeView(this).apply {
+            setViewTreeLifecycleOwner(this@MainActivity)
+            setViewTreeViewModelStoreOwner(this@MainActivity)
+            setViewTreeSavedStateRegistryOwner(this@MainActivity)
+            setContent {
+                DreamDroidTheme {
+                    mProfileCheckFailedUi?.let { ui ->
+                        ProfileCheckFailedDialog(
+                            title = ui.title,
+                            message = ui.message,
+                            onRecheck = { recheckProfileAfterFailure() },
+                            onProfiles = { openProfilesFromProfileCheckFailed() },
+                            onDismissRequest = {},
+                        )
+                    }
+                }
+            }
+        }
+        mShellDialogHost = host
+        // 0×0 host: ProfileCheckFailedDialog uses a Compose Dialog window of its own.
+        findViewById<ViewGroup>(android.R.id.content).addView(
+            host,
+            ViewGroup.LayoutParams(0, 0),
+        )
+    }
+
+    private fun dismissProfileCheckFailedDialog() {
+        mProfileCheckFailedUi = null
+    }
+
+    private fun showProfileCheckFailedDialog(result: ExtendedHashMap) {
+        dismissSnackbar()
+        ensureShellDialogHost()
+        mOpenStartOnProfileSuccess = true
+        var error: String? = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+        error = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error)
+        if (error.isNullOrEmpty()) {
+            error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+        }
+        val p = DreamDroid.getCurrentProfile()
+        val title = String.format("%s@%s:%s", p.user, p.host, p.port)
+        mProfileCheckFailedUi = ProfileCheckFailedUi(title = title, message = error.orEmpty())
+    }
+
+    private fun recheckProfileAfterFailure() {
+        dismissProfileCheckFailedDialog()
+        // Keep mOpenStartOnProfileSuccess so a later success opens the start route.
+        val p = DreamDroid.getCurrentProfile()
+        p.cachedDeviceInfo = null
+        onProfileChanged(p, true)
+    }
+
+    private fun openProfilesFromProfileCheckFailed() {
+        mOpenStartOnProfileSuccess = false
+        dismissProfileCheckFailedDialog()
+        mNavigationHelper?.navigateTo(R.id.menu_navigation_profiles)
+    }
+
+
     private fun isPaused(): Boolean {
         return !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
     }
@@ -150,12 +227,10 @@ class MainActivity :
         ) {
             val error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
             setConnectionState(error, true)
-            dismissSnackbar()
-            mSnackbar = Snackbar.make(findViewById(R.id.drawer_layout), error, Snackbar.LENGTH_INDEFINITE)
-                .setAction(R.string.detail) { showErrorDetails(result) }
-            mSnackbar!!.show()
+            showProfileCheckFailedDialog(result)
         } else {
             dismissSnackbar()
+            dismissProfileCheckFailedDialog()
             if (result[CheckProfile.KEY_SOFT_ERROR] as Boolean) {
                 val error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
                 setConnectionState(error, true)
@@ -165,7 +240,9 @@ class MainActivity :
             mNavigationHelper!!.setAvailableFeatures()
             // First-start already navigated to Profiles. The fragment commit is still pending, so
             // mDetailFragment can still be null here; do not overwrite Profiles with services.
-            if (!isFirstStart && getCurrentDetailFragment() == null) {
+            val openStart = mOpenStartOnProfileSuccess
+            mOpenStartOnProfileSuccess = false
+            if (!isFirstStart && (getCurrentDetailFragment() == null || openStart)) {
                 mNavigationHelper!!.navigateTo(StartScreen.menuId(this))
             }
         }
@@ -176,35 +253,6 @@ class MainActivity :
             }
             sp.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false).apply()
         }
-    }
-
-    fun showErrorDetails(result: ExtendedHashMap) {
-        var error: String? = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
-        error = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error)
-        if (error == null) {
-            error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
-        }
-        val p = DreamDroid.getCurrentProfile()
-        val title = String.format("%s@%s:%s", p.user, p.host, p.port)
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setTitle(title)
-            .setCancelable(false)
-            .create()
-        val composeView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@MainActivity)
-            setViewTreeViewModelStoreOwner(this@MainActivity)
-            setViewTreeSavedStateRegistryOwner(this@MainActivity)
-            bindConnectionErrorScreen(
-                message = error.orEmpty(),
-                onPositive = { dialog.dismiss() },
-                onEditProfile = {
-                    dialog.dismiss()
-                    ProfilesNavigation.openProfileEdit(this@MainActivity, DreamDroid.getCurrentProfile())
-                },
-            )
-        }
-        dialog.setView(composeView)
-        dialog.show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
