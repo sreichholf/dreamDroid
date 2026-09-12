@@ -18,7 +18,7 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 | **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays = v1.1 |
 | **Next after OK** | Mark **Accepted** → Phase 0 spike on a real Dreambox → then Phase 1+ code |
 
-Reply **defaults OK** (or overrides). Full detail in §§1–7 below.
+Reply **defaults OK** (or overrides). Full detail in §§1–8 below.
 
 ---
 
@@ -38,6 +38,19 @@ Reply **defaults OK** (or overrides). Full detail in §§1–7 below.
 | List EPG | **Keep** drawer list EPG; add separate **MultiEPG** entry |
 
 Not in v1: STB-style colour-key chrome, AutoTimer, TMDb, clock-vs-bar timer modes from the Vu+ skin.
+
+### Vu+ GraphMultiEPG → phone mapping
+
+| Vu+ / skin behaviour | dreamDroid v1 |
+| --- | --- |
+| Channel rows × time columns | Same metaphor (Compose grid) |
+| Bouquet switch (CH±) | Bouquet picker (reuse existing) |
+| Zoom density (1/2/3) | Time-scale zoom (2 / 4 / 6 h visible) |
+| Jump now / ±day / prime time | Now + ±day; prime time later |
+| OK → channel list EPG | Tap bar → existing detail sheet |
+| Green timer create | Via detail sheet actions (already present) |
+| Timer bars on grid | **v1.1** |
+| Colour remote keys / AutoTimer / TMDb | Out of scope |
 
 ---
 
@@ -82,7 +95,7 @@ Open MultiEPG(bouquet B)
 | Rule | Default |
 | --- | --- |
 | Primary API | Windowed `/web/epgmulti` |
-| Chunk size | 24 h (`endTime = time + 86400`) |
+| Chunk size | Rolling **24 h** windows (`endTime = time + 86400`), aligned to the viewport’s day/hour floor — not “full EPG dump” |
 | Visible span | 3–4 h (UI only; data is the chunk) |
 | Concurrency | **One** in-flight MultiEPG request (no parallel bouquet dumps) |
 | TTL | ~20–30 minutes |
@@ -226,7 +239,19 @@ Until (2)–(3), keep status as design-only and do not open implementation PRs.
 
 ---
 
-## 7. Explicit non-goals
+## 7. Risks (planning)
+
+| Risk | Mitigation |
+| --- | --- |
+| Large bouquets + 24 h still heavy on weak boxes | Always bound window; single-flight; TTL; optional later “visible channels first” if spike shows pain |
+| `endTime` units differ from OpenWebif docs | Phase 0 confirms unix vs minutes on genuine Dreambox WebIf |
+| Very old WebIf without `epgmulti` | Spike records it; only then enable throttled `epgservice` fallback |
+| Orphan `DatabaseHelper.events` confusion | New cache is Room-only; do not revive old writers |
+| Grid jank with hundreds of bars | Virtualize rows; recycle bar composables; paint from Room off main thread |
+
+---
+
+## 8. Explicit non-goals
 
 - Patching / forking Dreambox `webinterface` on the box.
 - Depending on OpenWebif-only APIs.
