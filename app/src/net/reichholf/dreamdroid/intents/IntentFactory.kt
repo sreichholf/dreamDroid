@@ -4,7 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.util.Log
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.VideoActivity

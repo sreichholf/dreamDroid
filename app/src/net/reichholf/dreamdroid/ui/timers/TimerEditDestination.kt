@@ -1,8 +1,6 @@
 package net.reichholf.dreamdroid.ui.timers
 
 import android.app.Activity
-import android.app.ProgressDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.text.format.DateFormat
 import android.util.Log
@@ -30,6 +28,8 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.helpers.DateTime
@@ -126,6 +126,7 @@ fun TimerEditDestination(
             },
         )
     }
+    IndeterminateProgressHost(session.progress)
 }
 
 /**
@@ -149,16 +150,12 @@ class TimerEditSession(
     var begin: Int = 0
     var end: Int = 0
     private var tagsChanged = false
-    private var progress: ProgressDialog? = null
-    private var locationsProgress: ProgressDialog? = null
+    var progress by mutableStateOf<IndeterminateProgressState?>(null)
     private var locationsJob: kotlinx.coroutines.Job? = null
     private var saveJob: kotlinx.coroutines.Job? = null
 
     fun dismissProgress() {
-        progress?.takeIf { it.isShowing }?.dismiss()
         progress = null
-        locationsProgress?.takeIf { it.isShowing }?.dismiss()
-        locationsProgress = null
         locationsJob?.cancel()
         locationsJob = null
         saveJob?.cancel()
@@ -280,23 +277,18 @@ class TimerEditSession(
 
     fun ensureLocationsAndTagsThenReload() {
         val host = hostFragment ?: return
-        val ctx = context ?: return
+        context ?: return
         if (DreamDroid.getLocations().size == 0 || DreamDroid.getTags().size == 0) {
             if (locationsJob != null) {
                 return
             }
             locationsJob = host.launchLocationsAndTagsLoad(
                 onProgress = { title, progressText ->
-                    if (locationsProgress?.isShowing == true) {
-                        locationsProgress?.setMessage(progressText)
-                    } else {
-                        locationsProgress = ProgressDialog.show(ctx, title, progressText)
-                    }
+                    progress = IndeterminateProgressState(title = title, message = progressText)
                 },
                 onReady = {
                     locationsJob = null
-                    locationsProgress?.dismiss()
-                    locationsProgress = null
+                    progress = null
                     reload()
                 },
             )
@@ -328,13 +320,11 @@ class TimerEditSession(
         val host = hostFragment ?: return
         val ctx = context ?: return
         Log.i(LOG_TAG, "saveTimer()")
-        progress?.takeIf { it.isShowing }?.dismiss()
-        progress = ProgressDialog.show(ctx, "", ctx.getText(R.string.saving), true)
+        progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
         editState.applyTo(timer)
         val params = Timer.getSaveParams(timer, timerOld)
         saveJob?.cancel()
         saveJob = host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, _ ->
-            progress?.dismiss()
             progress = null
             if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
                 host.clearTimerEditSession()

@@ -12,6 +12,8 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -103,5 +105,29 @@ class EpgDetailDialogHostTest {
         composeRule.onNodeWithText("Die Nachrichten um 20 Uhr.").assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
         composeRule.onNodeWithText("Edit Timer").assertDoesNotExist()
+    }
+
+    @Test
+    fun sheetHostShowsSavingProgress() {
+        val session = EpgEventDialogSession()
+        session.showDetail(
+            Event(
+                title = "Tagesschau",
+                serviceName = "Das Erste HD",
+                description = "News",
+                descriptionExtended = "Die Nachrichten um 20 Uhr.",
+                startReadable = "20:00",
+                durationReadable = "15",
+            ),
+        )
+        session.progress = IndeterminateProgressState(message = "Saving")
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgEventDetailSheetHost(session)
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("Saving").assertIsDisplayed()
     }
 }

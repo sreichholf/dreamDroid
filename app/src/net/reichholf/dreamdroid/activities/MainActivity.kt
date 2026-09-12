@@ -108,8 +108,8 @@ class MainActivity :
                 MaterialAlertDialogBuilder(this@MainActivity)
                     .setTitle(R.string.leave_confirm)
                     .setMessage(R.string.leave_confirm_long)
-                    .setPositiveButton(android.R.string.yes) { _, _ -> finish() }
-                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(R.string.ok) { _, _ -> finish() }
+                    .setNegativeButton(R.string.cancel, null)
                     .show()
             } else {
                 finish()

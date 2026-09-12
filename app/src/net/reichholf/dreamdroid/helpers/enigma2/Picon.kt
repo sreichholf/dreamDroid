@@ -8,7 +8,7 @@ package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.content.Context
 import android.os.Environment
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import android.view.View
 import android.widget.ImageView
 import com.squareup.picasso.Callback

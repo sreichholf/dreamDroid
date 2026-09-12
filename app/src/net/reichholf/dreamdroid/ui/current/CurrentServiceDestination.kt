@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.current
 
-import android.app.ProgressDialog
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +25,8 @@ import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
@@ -236,6 +237,7 @@ fun CurrentServiceDestination(
         }
     }
 
+    IndeterminateProgressHost(session.progress)
 }
 
 private class CurrentServiceSession : DialogActionListener {
@@ -244,10 +246,9 @@ private class CurrentServiceSession : DialogActionListener {
     var ready: Boolean = false
     var hostFragment: PhoneNavHostFragment? = null
     var context: android.content.Context? = null
-    private var progress: ProgressDialog? = null
+    var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
     fun dismissProgress() {
-        progress?.takeIf { it.isShowing }?.dismiss()
         progress = null
     }
 
@@ -257,8 +258,7 @@ private class CurrentServiceSession : DialogActionListener {
         when (action) {
             Statics.ACTION_SET_TIMER -> {
                 val event = currentItem ?: return
-                dismissProgress()
-                progress = ProgressDialog.show(ctx, "", ctx.getText(R.string.saving), true)
+                progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
                 host.launchSimpleResultLoad(
                     TimerAddByEventIdRequestHandler(),
                     Timer.getEventIdParams(event),

@@ -1,8 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
-import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.view.Menu
@@ -45,6 +43,8 @@ import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -196,6 +196,7 @@ fun HubMovieListPage(
             },
         )
     }
+    IndeterminateProgressHost(session.progress)
 }
 
 /**
@@ -227,13 +228,12 @@ class HubMovieListSession :
     private var selectedMovie: ExtendedHashMap? = null
     private var tagsChanged = false
     private var reloadOnSimpleResult = false
-    private var progress: ProgressDialog? = null
+    var progress by mutableStateOf<IndeterminateProgressState?>(null)
     private var loadJob: Job? = null
     private var zapJob: Job? = null
     private var deleteJob: Job? = null
 
     fun dismissProgress() {
-        progress?.takeIf { it.isShowing }?.dismiss()
         progress = null
     }
 
@@ -367,8 +367,7 @@ class HubMovieListSession :
         val host = hostFragment ?: return
         val ctx = context ?: return
         val movie = selectedMovie ?: return
-        dismissProgress()
-        progress = ProgressDialog.show(ctx, "", ctx.getText(R.string.deleting), true)
+        progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
         reloadOnSimpleResult = true
         deleteJob?.cancel()
         deleteJob = host.launchSimpleResultLoad(
