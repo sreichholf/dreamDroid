@@ -6,6 +6,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.room.AppDatabase
 import org.junit.After
@@ -452,6 +453,72 @@ class MultiEpgSessionTest {
         assertEquals(MultiEpgTimerClock.Record, session.timerClocks.values.single())
     }
 
+    @Test
+    fun bouquetRosterKeepsRowsWhenWindowHasNoEvents() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.endSec - 600L
+        val day2 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val withEpg = "1:0:1:1:1:1:0:0:0:0:"
+        val withoutEpg = "1:0:1:2:1:1:0:0:0:0:"
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                val events = ArrayList<Event>(2)
+                events.add(
+                    programme(
+                        id = "$time-a",
+                        title = "T",
+                        start = time,
+                        serviceReference = withEpg,
+                        serviceName = "Das Erste",
+                    ),
+                )
+                if (time == chunk.startSec) {
+                    events.add(
+                        programme(
+                            id = "$time-b",
+                            title = "B",
+                            start = time,
+                            serviceReference = withoutEpg,
+                            serviceName = "ZDF",
+                        ),
+                    )
+                }
+                events
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            loadBouquetServices = {
+                listOf(
+                    Service(withEpg, "Das Erste"),
+                    Service(withoutEpg, "ZDF"),
+                )
+            },
+        )
+        session.replaceAndLoad("bouquet-a", now)
+        session.awaitIdle()
+        assertEquals(2, session.channels.size)
+        assertEquals("Das Erste", session.channels[0].serviceName)
+        assertEquals("ZDF", session.channels[1].serviceName)
+        assertTrue(session.channels[1].bars.isNotEmpty())
+
+        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        session.awaitIdle()
+        assertEquals(2, session.channels.size)
+        assertEquals("ZDF", session.channels[1].serviceName)
+        assertTrue(
+            "ZDF stays in the grid after today is dropped",
+            session.channels[1].bars.isEmpty(),
+        )
+        assertTrue(session.channels[0].bars.isNotEmpty())
+    }
+
     private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
         for (channel in session.channels) {
@@ -469,14 +536,16 @@ class MultiEpgSessionTest {
         title: String,
         start: Long,
         duration: String = "3600",
+        serviceReference: String = "1:0:1:1:1:1:0:0:0:0:",
+        serviceName: String = "TV",
     ): Event {
         return Event(
             eventId = id,
             title = title,
             start = start.toString(),
             duration = duration,
-            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-            serviceName = "TV",
+            serviceReference = serviceReference,
+            serviceName = serviceName,
         )
     }
 

@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.multiepg
 
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.room.EpgEventEntity
 
 internal fun Event.toEpgEventEntity(
@@ -42,7 +43,7 @@ internal fun EpgEventEntity.toEvent(): Event {
         descriptionExtended = descriptionExtended,
         serviceReference = serviceRef,
         serviceName = serviceName,
-    )
+    ).withReadableTimes()
 }
 
 /** Assign [EpgEventEntity.bouquetPos] from first-seen service order in [events]. */

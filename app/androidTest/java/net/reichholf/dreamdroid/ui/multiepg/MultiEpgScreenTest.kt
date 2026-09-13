@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,16 +15,19 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.buildMultiEpgChannels
 import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
+import net.reichholf.dreamdroid.multiepg.playableMultiEpgRoster
 import net.reichholf.dreamdroid.ui.compose.PULL_REFRESH_INDICATOR_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -103,6 +107,49 @@ class MultiEpgScreenTest {
         val dropped = buildMultiEpgChannels(listOf(news.copy()), second)
         assertEquals(1, dropped[0].bars.size)
         assertSame(first[0].bars[0], dropped[0].bars[0])
+    }
+
+    @Test
+    fun playableRosterSkipsMarkersAndDirectories() {
+        val live = Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste")
+        val marker = Service("1:64:0:0:0:0:0:0:0:0:", "---")
+        val directory = Service(
+            "1:7:1:0:0:0:FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet",
+            "Favourites",
+        )
+        val roster = playableMultiEpgRoster(listOf(marker, live, directory))
+        assertEquals(1, roster.size)
+        assertEquals("Das Erste", roster[0].name)
+    }
+
+    @Test
+    fun buildChannelsKeepsRosterRowsWithoutEvents() {
+        val liveA = Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste")
+        val liveB = Service("1:0:1:2:1:1:0:0:0:0:", "ZDF")
+        val news = Event(
+            eventId = "1",
+            title = "News",
+            start = "1000",
+            duration = "600",
+            serviceReference = liveA.reference,
+            serviceName = liveA.name,
+        )
+        val channels = buildMultiEpgChannels(
+            events = listOf(news),
+            roster = listOf(liveA, liveB),
+        )
+        assertEquals(2, channels.size)
+        assertEquals("Das Erste", channels[0].serviceName)
+        assertEquals(1, channels[0].bars.size)
+        assertEquals("ZDF", channels[1].serviceName)
+        assertEquals(0, channels[1].bars.size)
+        val again = buildMultiEpgChannels(
+            events = listOf(news.copy()),
+            previous = channels,
+            roster = listOf(liveA, liveB),
+        )
+        assertSame(channels[1], again[1])
+        assertSame(channels[0].bars[0], again[0].bars[0])
     }
 
     @Test
@@ -219,6 +266,53 @@ class MultiEpgScreenTest {
         composeRule.onNodeWithText("Tagesschau").performClick()
         composeRule.waitForIdle()
         assertEquals("Tagesschau", clicked)
+    }
+
+    @Test
+    fun gridKeepsChannelNameWhenRowHasNoBars() {
+        val start = 1_700_000_000L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = listOf(
+                        MultiEpgChannel(
+                            serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                            bars = listOf(
+                                MultiEpgBar(
+                                    event = Event(
+                                        eventId = "10",
+                                        title = "Tagesschau",
+                                        start = start.toString(),
+                                        duration = "1800",
+                                        serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                                        serviceName = "Das Erste HD",
+                                    ),
+                                    startSec = start,
+                                    endSec = start + 1800,
+                                ),
+                            ),
+                        ),
+                        MultiEpgChannel(
+                            serviceRef = "1:0:1:2:1:1:0:0:0:0:",
+                            serviceName = "Deluxe Music HD",
+                            bars = emptyList(),
+                        ),
+                    ),
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithText("Deluxe Music HD").assertIsDisplayed()
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
     }
 
     @Test
@@ -534,5 +628,107 @@ class MultiEpgScreenTest {
     private fun dayLabelText(): String {
         val node = composeRule.onNodeWithTag("multi_epg_day_label").fetchSemanticsNode()
         return node.config[SemanticsProperties.Text].joinToString { it.text }
+    }
+
+    @Test
+    fun zoomMenuSelectsFiveHourSpan() {
+        var visibleMinutes by mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = emptyList(),
+                    timelineStartSec = 0L,
+                    timelineEndSec = 3600L,
+                    nowSec = 60L,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                    visibleMinutes = visibleMinutes,
+                    onVisibleMinutesChange = { visibleMinutes = it },
+                )
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_zoom").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_zoom").performClick()
+        composeRule.onNodeWithText("1h").assertIsDisplayed()
+        composeRule.onNodeWithText("4h").assertIsDisplayed()
+        composeRule.onNodeWithText("5h").performClick()
+        composeRule.waitForIdle()
+        assertEquals(300, visibleMinutes)
+    }
+
+    @Test
+    fun zoomOutWidensVisibleWindowAndKeepsNearBar() {
+        val start = 1_700_000_000L
+        val lateStart = start + 3L * 3600L
+        val channels = listOf(
+            MultiEpgChannel(
+                serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "Tagesschau",
+                            start = start.toString(),
+                            duration = "1800",
+                            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = start,
+                        endSec = start + 1800,
+                    ),
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "11",
+                            title = "LateShow",
+                            start = lateStart.toString(),
+                            duration = "1800",
+                            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = lateStart,
+                        endSec = lateStart + 1800,
+                    ),
+                ),
+            ),
+        )
+        var visibleMinutes by mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
+        var spanSec = 0L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = channels,
+                    timelineStartSec = start,
+                    timelineEndSec = start + 6L * 3600L,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                    onVisibleWindow = { visStart, visEnd ->
+                        spanSec = visEnd - visStart
+                    },
+                    visibleMinutes = visibleMinutes,
+                    onVisibleMinutesChange = { visibleMinutes = it },
+                )
+            }
+        }
+        composeRule.waitUntil(5_000) { spanSec > 0L }
+        val spanAt2h = spanSec
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("LateShow").assertDoesNotExist()
+        val dayBefore = dayLabelText()
+
+        composeRule.runOnIdle { visibleMinutes = 300 }
+        composeRule.waitForIdle()
+        composeRule.waitUntil(5_000) { spanSec > spanAt2h }
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("LateShow").assertIsDisplayed()
+        assertEquals(dayBefore, dayLabelText())
+        assertTrue(spanSec > spanAt2h * 2)
     }
 }

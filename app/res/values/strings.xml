@@ -61,6 +61,8 @@
     <string name="multiepg_empty">No EPG data for this bouquet window.</string>
     <string name="multiepg_timer_record">Recording timer</string>
     <string name="multiepg_timer_zap">Zap timer</string>
+    <string name="multiepg_zoom">Visible span</string>
+    <string name="multiepg_zoom_hours">%1$dh</string>
     <string name="ssl_enabled">https</string>
     <string name="ssid">Wifi Name</string>
     <string name="host">Hostname/IP</string>

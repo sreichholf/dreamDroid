@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 
@@ -30,14 +31,15 @@ data class EpgDetailContent(
 )
 
 fun Event.toEpgDetailContent(minutesShort: String): EpgDetailContent? {
-    if (title.isEmpty() || title == "N/A") return null
-    if (startReadable.isEmpty()) return null
-    val dateLine = "$startReadable ($durationReadable $minutesShort)"
+    val event = withReadableTimes()
+    if (event.title.isEmpty() || event.title == "N/A") return null
+    if (event.startReadable.isEmpty()) return null
+    val dateLine = "${event.startReadable} (${event.durationReadable} $minutesShort)"
     return EpgDetailContent(
-        title = title,
-        serviceName = serviceName,
-        description = description,
-        descriptionExtended = descriptionExtended.replace("\\n", "\n"),
+        title = event.title,
+        serviceName = event.serviceName,
+        description = event.description,
+        descriptionExtended = event.descriptionExtended.replace("\\n", "\n"),
         dateLine = dateLine,
         isNext = false,
     )

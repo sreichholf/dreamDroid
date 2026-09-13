@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
@@ -33,8 +34,9 @@ class EpgEventDialogSession {
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
     fun showDetail(event: Event) {
-        currentItem = EpgListMapper.toExtendedHashMap(event)
-        detailEvent = event
+        val display = event.withReadableTimes()
+        currentItem = EpgListMapper.toExtendedHashMap(display)
+        detailEvent = display
     }
 
     fun dismissDetail() {

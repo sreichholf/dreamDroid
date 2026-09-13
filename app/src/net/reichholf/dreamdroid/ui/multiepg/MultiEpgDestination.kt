@@ -52,6 +52,9 @@ fun MultiEpgDestination(
         mutableLongStateOf(System.currentTimeMillis() / 1000L)
     }
     var focusEpoch by remember { mutableIntStateOf(0) }
+    var visibleMinutes by rememberSaveable(remountEpoch) {
+        mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
+    }
 
     val sync = remember(context) {
         MultiEpgSync(
@@ -68,6 +71,7 @@ fun MultiEpgDestination(
                 R.string.multiepg_sync_test_no_bouquet,
             ),
             fetchTimers = MultiEpgSync.httpFetchTimers(),
+            loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
         )
     }
 
@@ -133,6 +137,8 @@ fun MultiEpgDestination(
         onVisibleWindow = onVisibleWindow,
         onEventClick = onEventClick,
         timerClocks = session.timerClocks,
+        visibleMinutes = visibleMinutes,
+        onVisibleMinutesChange = { visibleMinutes = it },
         modifier = modifier,
     )
     EpgEventDetailSheetHost(session = dialogSession)

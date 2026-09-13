@@ -70,6 +70,24 @@ class MultiEpgSyncTest {
     }
 
     @Test
+    fun roomPeekFillsReadableTimesForDetailSheet() = runBlocking {
+        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, _ -> fixture },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val t0 = 1_893_456_000L
+        val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
+        sync.ensureChunk(1, bouquet, t0)
+        val peeked = sync.peekChunk(1, bouquet, t0)!!.events
+        assertTrue(peeked.isNotEmpty())
+        assertTrue(peeked[0].startReadable.isNotEmpty())
+        assertTrue(peeked[0].durationReadable.isNotEmpty())
+    }
+
+    @Test
     fun singleFlightCoalescesConcurrentMisses() = runBlocking {
         val fetches = AtomicInteger(0)
         val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
