@@ -17,7 +17,7 @@ data class BouquetListLoadResult(
 
 /**
  * Phase 2.7f: load TV+Radio bouquet roots without a Fragment owner.
- * Success keeps partial roots: `hasAny || !http.hasError()`.
+ * TV-root HTTP fail is failure even if radio later succeeds.
  */
 suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
     val http = SimpleHttpClient.getInstance()
@@ -25,11 +25,20 @@ suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
     val bouquets = Bouquets()
     val tvRef = context.resources.getStringArray(R.array.servicerefstv)[0]
     val radioRef = context.resources.getStringArray(R.array.servicerefsradio)[0]
-    bouquets.tv.addAll(client.getServices(listOf(NameValuePair("sRef", tvRef))))
-    bouquets.radio.addAll(client.getServices(listOf(NameValuePair("sRef", radioRef))))
-    val hadError = http.hasError()
-    val hasAny = bouquets.tv.isNotEmpty() || bouquets.radio.isNotEmpty()
-    val success = hasAny || !hadError
+    val tv = client.getServices(listOf(NameValuePair("sRef", tvRef)))
+    if (tv == null) {
+        return BouquetListLoadResult(
+            false,
+            bouquets,
+            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context),
+        )
+    }
+    bouquets.tv.addAll(tv)
+    val radio = client.getServices(listOf(NameValuePair("sRef", radioRef)))
+    if (radio != null) {
+        bouquets.radio.addAll(radio)
+    }
+    val success = radio != null || tv.isNotEmpty()
     val errorText = if (success) {
         null
     } else {
