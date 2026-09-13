@@ -63,6 +63,10 @@
     <string name="multiepg_timer_zap">Zap timer</string>
     <string name="multiepg_zoom">Visible span</string>
     <string name="multiepg_zoom_hours">%1$dh</string>
+    <string name="multiepg_text_size">MultiEPG text size</string>
+    <string name="multiepg_text_size_long">Programme titles and channel names in the MultiEPG grid</string>
+    <string name="multiepg_text_size_compact">Compact</string>
+    <string name="multiepg_text_size_comfortable">Comfortable</string>
     <string name="ssl_enabled">https</string>
     <string name="ssid">Wifi Name</string>
     <string name="host">Hostname/IP</string>

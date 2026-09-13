@@ -57,10 +57,13 @@ fun SettingsScreen(
     val hwValues = stringArrayResource(R.array.hw_accel_values)
     val gridEntries = stringArrayResource(R.array.max_grid_col_entries)
     val gridValues = stringArrayResource(R.array.max_grid_col_values)
+    val multiEpgTextSizeEntries = stringArrayResource(R.array.multiepg_text_size_entries)
+    val multiEpgTextSizeValues = stringArrayResource(R.array.multiepg_text_size_values)
 
     val hwAccelDialogTitle = stringResource(R.string.video_use_hw_accel)
     val themeDialogTitle = stringResource(R.string.theme)
     val gridDialogTitle = stringResource(R.string.max_grid_cols)
+    val multiEpgTextSizeTitle = stringResource(R.string.multiepg_text_size)
     val syncPathDialogTitle = stringResource(R.string.sync_picons_path)
 
     Column(
@@ -202,6 +205,23 @@ fun SettingsScreen(
                     values = gridValues.toList(),
                     selectedValue = state.gridMaxCols,
                     key = DreamDroid.PREFS_KEY_GRID_MAX_COLS,
+                )
+            },
+        )
+        ListPreferenceRow(
+            title = multiEpgTextSizeTitle,
+            summary = entryLabel(
+                multiEpgTextSizeEntries,
+                multiEpgTextSizeValues,
+                state.multiEpgTextSize,
+            ),
+            onClick = {
+                listDialog = ListDialogSpec(
+                    title = multiEpgTextSizeTitle,
+                    entries = multiEpgTextSizeEntries.toList(),
+                    values = multiEpgTextSizeValues.toList(),
+                    selectedValue = state.multiEpgTextSize,
+                    key = DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE,
                 )
             },
         )

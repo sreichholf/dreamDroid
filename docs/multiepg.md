@@ -32,7 +32,7 @@ Full detail in §§1–8 below.
 | Scope | One bouquet (reuse bouquet picker) |
 | Visible span | Default **~2 h** (GraphMultiEPG `prev_time_period` = 120; limits 60–300), pan horizontally / vertically |
 | Prefetch window | Bounded **+24 h** per fetch (see sync) |
-| Density | Time-scale zoom **1 / 2 / 4 / 5 h** (within GraphMultiEPG 60–300 min range) |
+| Density | Time-scale zoom **1 / 2 / 4 / 5 h** (within GraphMultiEPG 60–300 min range); **text size Compact / Comfortable** (Settings → Appearance, default Comfortable) |
 | Jump | Now, ±1 day; prime time (GraphMultiEPG `prime_time`) in polish |
 | Tap | Existing EPG detail sheet (timer / zap / search); OK semantics later: info vs zap |
 | Timer bars | **Not** in v1 (v1.1 — GraphMultiEPG `show_record_clocks`) |
@@ -230,7 +230,7 @@ EpgChunkMeta
 **Phase 0 gate (2026-09-12):** units + XML shape confirmed from [opendreambox `EPG.py` / `epgmulti.xml`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface); live byte/event counts deferred (no Cloud-agent box). Operator script: [`scripts/epgmulti-spike.sh`](../scripts/epgmulti-spike.sh).
 
 
-**TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Drawer **MultiEPG** opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows are dense (~36.dp); off-screen programme bars are viewport-culled.
+**TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Drawer **MultiEPG** opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows default to Comfortable (~48.dp); Compact is the original dense 36.dp. Off-screen programme bars are viewport-culled.
 
 **Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh/prefetch in the background with a small toolbar spinner (including next-chunk prefetch); pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left edge is the **earliest start among programmes overlapping now**; panning right appends upcoming chunks and drops chunks that have left the padded viewport at the front; panning back toward now reattaches those chunks from Room at the front and drops far-future chunks at the back. The toolbar shows the local calendar day under the viewport.
 
