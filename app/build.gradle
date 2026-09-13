@@ -118,6 +118,13 @@ android {
                 res.srcDirs = ['androidTest/res']
                 resources.srcDirs = ['androidTest/resources']
             }
+            // AGP 9 Kotlin compiles every .kt under app/src (exclude is ignored), so
+            // JVM tests cannot live in app/src/test. Use app/test instead.
+            test {
+                java.srcDirs = ['test/java']
+                kotlin.srcDirs = ['test/java']
+                resources.srcDirs = ['test/resources']
+            }
         }
     }
     // Shared debug cert (repo-root debug.keystore) so CI, Cloud, and local
