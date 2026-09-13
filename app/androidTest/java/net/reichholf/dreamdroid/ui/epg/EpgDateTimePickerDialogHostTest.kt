@@ -54,6 +54,9 @@ class EpgDateTimePickerDialogHostTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Date and time").assertIsDisplayed()
+        composeRule.onNodeWithText("Date").assertIsDisplayed()
+        composeRule.onNodeWithText("Time").assertIsDisplayed().performClick()
+        composeRule.waitForIdle()
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
         assertEquals(initial, confirmed)
@@ -81,6 +84,7 @@ class EpgDateTimePickerDialogHostTest {
             }
         }
         composeRule.waitForIdle()
+        composeRule.onNodeWithText("Date").assertIsDisplayed()
         composeRule.onNodeWithText("Cancel").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
         assertEquals(true, dismissed)
