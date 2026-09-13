@@ -52,6 +52,9 @@ fun MultiEpgDestination(
         mutableLongStateOf(System.currentTimeMillis() / 1000L)
     }
     var focusEpoch by remember { mutableIntStateOf(0) }
+    var visibleMinutes by rememberSaveable(remountEpoch) {
+        mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
+    }
 
     val sync = remember(context) {
         MultiEpgSync(
@@ -132,6 +135,8 @@ fun MultiEpgDestination(
         },
         onVisibleWindow = onVisibleWindow,
         onEventClick = onEventClick,
+        visibleMinutes = visibleMinutes,
+        onVisibleMinutesChange = { visibleMinutes = it },
         modifier = modifier,
     )
     EpgEventDetailSheetHost(session = dialogSession)
