@@ -11,31 +11,19 @@ class EpgInstantTest {
     private val berlin = TimeZone.getTimeZone("Europe/Berlin")
 
     @Test
-    fun formatLabelUsesMediumDateAnd24HourTime() {
+    fun formatDateLabelUsesMediumDate() {
         val sec = localSec(2026, Calendar.SEPTEMBER, 13, 20, 15)
         assertEquals(
-            "Sep 13, 2026 · 20:15",
-            EpgInstant.formatLabel(
-                timeSec = sec,
-                is24Hour = true,
-                locale = Locale.US,
-                timeZone = berlin,
-            ),
+            "Sep 13, 2026",
+            EpgInstant.formatDateLabel(sec, Locale.US, berlin),
         )
     }
 
     @Test
-    fun formatLabelUses12HourClockWhenRequested() {
+    fun formatTimeLabelRespects24HourClock() {
         val sec = localSec(2026, Calendar.SEPTEMBER, 13, 20, 15)
-        assertEquals(
-            "Sep 13, 2026 · 8:15 PM",
-            EpgInstant.formatLabel(
-                timeSec = sec,
-                is24Hour = false,
-                locale = Locale.US,
-                timeZone = berlin,
-            ),
-        )
+        assertEquals("20:15", EpgInstant.formatTimeLabel(sec, true, Locale.US, berlin))
+        assertEquals("8:15 PM", EpgInstant.formatTimeLabel(sec, false, Locale.US, berlin))
     }
 
     @Test
@@ -49,6 +37,28 @@ class EpgInstantTest {
         assertEquals(13, utc.get(Calendar.DAY_OF_MONTH))
         assertEquals(0, utc.get(Calendar.HOUR_OF_DAY))
         assertEquals(sec, EpgInstant.combine(utcMidnight, 20, 15, berlin))
+    }
+
+    @Test
+    fun applyDateKeepsLocalTime() {
+        val sec = localSec(2026, Calendar.SEPTEMBER, 13, 20, 15)
+        val nextDay = EpgInstant.utcMidnightMillis(
+            localSec(2026, Calendar.SEPTEMBER, 14, 8, 0),
+            berlin,
+        )
+        assertEquals(
+            localSec(2026, Calendar.SEPTEMBER, 14, 20, 15),
+            EpgInstant.applyDate(sec, nextDay, berlin),
+        )
+    }
+
+    @Test
+    fun applyTimeKeepsLocalDate() {
+        val sec = localSec(2026, Calendar.SEPTEMBER, 13, 20, 15)
+        assertEquals(
+            localSec(2026, Calendar.SEPTEMBER, 13, 18, 0),
+            EpgInstant.applyTime(sec, 18, 0, berlin),
+        )
     }
 
     @Test

@@ -16,19 +16,26 @@ object EpgInstant {
     const val PRIME_HOUR = 20
     const val PRIME_MINUTE = 15
 
-    fun formatLabel(
+    fun formatDateLabel(
+        timeSec: Int,
+        locale: Locale = Locale.getDefault(),
+        timeZone: TimeZone = TimeZone.getDefault(),
+    ): String {
+        val dateFmt = DateFormat.getDateInstance(DateFormat.MEDIUM, locale)
+        dateFmt.timeZone = timeZone
+        return dateFmt.format(Date(timeSec * 1000L))
+    }
+
+    fun formatTimeLabel(
         timeSec: Int,
         is24Hour: Boolean,
         locale: Locale = Locale.getDefault(),
         timeZone: TimeZone = TimeZone.getDefault(),
     ): String {
-        val date = Date(timeSec * 1000L)
-        val dateFmt = DateFormat.getDateInstance(DateFormat.MEDIUM, locale)
-        dateFmt.timeZone = timeZone
-        val timePattern = if (is24Hour) "HH:mm" else "h:mm a"
-        val timeFmt = SimpleDateFormat(timePattern, locale)
+        val pattern = if (is24Hour) "HH:mm" else "h:mm a"
+        val timeFmt = SimpleDateFormat(pattern, locale)
         timeFmt.timeZone = timeZone
-        return "${dateFmt.format(date)} · ${timeFmt.format(date)}"
+        return timeFmt.format(Date(timeSec * 1000L))
     }
 
     fun utcMidnightMillis(
@@ -66,6 +73,35 @@ object EpgInstant {
         )
         local.set(Calendar.MILLISECOND, 0)
         return (local.timeInMillis / 1000).toInt()
+    }
+
+    fun applyDate(
+        timeSec: Int,
+        utcDateMillis: Long,
+        timeZone: TimeZone = TimeZone.getDefault(),
+    ): Int {
+        val local = Calendar.getInstance(timeZone)
+        local.timeInMillis = timeSec * 1000L
+        return combine(
+            utcDateMillis = utcDateMillis,
+            hour = local.get(Calendar.HOUR_OF_DAY),
+            minute = local.get(Calendar.MINUTE),
+            timeZone = timeZone,
+        )
+    }
+
+    fun applyTime(
+        timeSec: Int,
+        hour: Int,
+        minute: Int,
+        timeZone: TimeZone = TimeZone.getDefault(),
+    ): Int {
+        return combine(
+            utcDateMillis = utcMidnightMillis(timeSec, timeZone),
+            hour = hour,
+            minute = minute,
+            timeZone = timeZone,
+        )
     }
 
     fun primeTimeSec(

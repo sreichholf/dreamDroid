@@ -33,19 +33,18 @@ class EpgDateTimePickerDialogHostTest {
     }
 
     @Test
-    fun confirmKeepsInitialInstantAndContentColorIsOnSurface() {
+    fun datePickerConfirmKeepsUtcMidnightAndContentColorIsOnSurface() {
         val berlin = TimeZone.getTimeZone("Europe/Berlin")
         val initial = localSec(berlin, 2026, Calendar.SEPTEMBER, 13, 20, 15)
-        var confirmed: Int? = null
+        var confirmed: Long? = null
         var localContent = Color.Unspecified
         var onSurface = Color.Unspecified
         composeRule.setContent {
             DreamDroidTheme {
                 localContent = LocalContentColor.current
                 onSurface = MaterialTheme.colorScheme.onSurface
-                EpgDateTimePickerDialog(
+                EpgDatePickerDialog(
                     initialTimeSec = initial,
-                    is24Hour = true,
                     timeZone = berlin,
                     onDismiss = {},
                     onConfirm = { confirmed = it },
@@ -53,13 +52,10 @@ class EpgDateTimePickerDialogHostTest {
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Date and time").assertIsDisplayed()
         composeRule.onNodeWithText("Date").assertIsDisplayed()
-        composeRule.onNodeWithText("Time").assertIsDisplayed().performClick()
-        composeRule.waitForIdle()
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
-        assertEquals(initial, confirmed)
+        assertEquals(EpgInstant.utcMidnightMillis(initial, berlin), confirmed)
         composeRule.runOnIdle {
             assertEquals(onSurface, localContent)
             assertTrue(
@@ -70,21 +66,47 @@ class EpgDateTimePickerDialogHostTest {
     }
 
     @Test
-    fun cancelDoesNotConfirm() {
-        var dismissed = false
-        var confirmed: Int? = null
+    fun timePickerConfirmKeepsHourAndMinute() {
+        val berlin = TimeZone.getTimeZone("Europe/Berlin")
+        val initial = localSec(berlin, 2026, Calendar.SEPTEMBER, 13, 20, 15)
+        var hour: Int? = null
+        var minute: Int? = null
         composeRule.setContent {
             DreamDroidTheme {
-                EpgDateTimePickerDialog(
-                    initialTimeSec = 1_789_312_500,
+                EpgTimePickerDialog(
+                    initialTimeSec = initial,
                     is24Hour = true,
+                    timeZone = berlin,
+                    onDismiss = {},
+                    onConfirm = { h, m ->
+                        hour = h
+                        minute = m
+                    },
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Time").assertIsDisplayed()
+        composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
+        composeRule.waitForIdle()
+        assertEquals(20, hour)
+        assertEquals(15, minute)
+    }
+
+    @Test
+    fun datePickerCancelDoesNotConfirm() {
+        var dismissed = false
+        var confirmed: Long? = null
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgDatePickerDialog(
+                    initialTimeSec = 1_789_312_500,
                     onDismiss = { dismissed = true },
                     onConfirm = { confirmed = it },
                 )
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Date").assertIsDisplayed()
         composeRule.onNodeWithText("Cancel").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
         assertEquals(true, dismissed)

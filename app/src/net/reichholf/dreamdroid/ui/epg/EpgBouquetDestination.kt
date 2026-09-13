@@ -39,7 +39,7 @@ import java.util.Locale
 
 /**
  * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
- * Time jump is a Compose chip + Now/Prime; custom instant uses one date/time dialog.
+ * Time jump is date/time chips + Now/Prime; each chip opens a stock Material picker.
  * Bouquet pick results arrive via [PhoneNavHostFragment.composeActivityResultListener].
  */
 @Composable
@@ -68,7 +68,8 @@ fun EpgBouquetDestination(
     var emptyMessage by remember { mutableStateOf<String?>(null) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     var waitingForPicker by rememberSaveable { mutableStateOf(false) }
-    var showDateTimePicker by rememberSaveable { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showTimePicker by rememberSaveable { mutableStateOf(false) }
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.hostFragment = hostFragment
     dialogSession.context = context
@@ -108,8 +109,10 @@ fun EpgBouquetDestination(
     val labelLocale = if (DreamDroid.DATE_LOCALE_WO) Locale.US else Locale.getDefault()
     val is24Hour = DateFormat.is24HourFormat(context)
     val timeJump = EpgTimeJumpUi(
-        label = EpgInstant.formatLabel(timeSec, is24Hour, labelLocale),
-        onPickDateTime = { showDateTimePicker = true },
+        dateLabel = EpgInstant.formatDateLabel(timeSec, labelLocale),
+        timeLabel = EpgInstant.formatTimeLabel(timeSec, is24Hour, labelLocale),
+        onPickDate = { showDatePicker = true },
+        onPickTime = { showTimePicker = true },
         onNow = {
             session.onInstantSet((Calendar.getInstance().timeInMillis / 1000).toInt())
         },
@@ -144,14 +147,24 @@ fun EpgBouquetDestination(
         )
     }
 
-    if (showDateTimePicker) {
-        EpgDateTimePickerDialog(
+    if (showDatePicker) {
+        EpgDatePickerDialog(
+            initialTimeSec = timeSec,
+            onDismiss = { showDatePicker = false },
+            onConfirm = { utcDateMillis ->
+                showDatePicker = false
+                session.onInstantSet(EpgInstant.applyDate(timeSec, utcDateMillis))
+            },
+        )
+    }
+    if (showTimePicker) {
+        EpgTimePickerDialog(
             initialTimeSec = timeSec,
             is24Hour = is24Hour,
-            onDismiss = { showDateTimePicker = false },
-            onConfirm = { selectedSec ->
-                showDateTimePicker = false
-                session.onInstantSet(selectedSec)
+            onDismiss = { showTimePicker = false },
+            onConfirm = { hour, minute ->
+                showTimePicker = false
+                session.onInstantSet(EpgInstant.applyTime(timeSec, hour, minute))
             },
         )
     }

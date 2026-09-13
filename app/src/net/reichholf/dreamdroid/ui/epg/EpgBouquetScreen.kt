@@ -39,13 +39,16 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
 
-const val EPG_TIME_JUMP_CHIP_TAG = "epg_time_jump_chip"
+const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
+const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
 const val EPG_TIME_JUMP_NOW_TAG = "epg_time_jump_now"
 const val EPG_TIME_JUMP_PRIME_TAG = "epg_time_jump_prime"
 
 data class EpgTimeJumpUi(
-    val label: String,
-    val onPickDateTime: () -> Unit,
+    val dateLabel: String,
+    val timeLabel: String,
+    val onPickDate: () -> Unit,
+    val onPickTime: () -> Unit,
     val onNow: () -> Unit,
     val onPrime: () -> Unit,
 )
@@ -119,17 +122,28 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         AssistChip(
-            onClick = timeJump.onPickDateTime,
+            onClick = timeJump.onPickDate,
             label = {
                 Text(
-                    text = timeJump.label,
+                    text = timeJump.dateLabel,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             },
             modifier = Modifier
                 .weight(1f)
-                .testTag(EPG_TIME_JUMP_CHIP_TAG),
+                .testTag(EPG_TIME_JUMP_DATE_CHIP_TAG),
+        )
+        AssistChip(
+            onClick = timeJump.onPickTime,
+            label = {
+                Text(
+                    text = timeJump.timeLabel,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+            modifier = Modifier.testTag(EPG_TIME_JUMP_TIME_CHIP_TAG),
         )
         TextButton(
             onClick = timeJump.onNow,

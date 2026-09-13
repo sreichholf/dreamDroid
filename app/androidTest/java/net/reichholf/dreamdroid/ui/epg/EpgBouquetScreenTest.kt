@@ -67,12 +67,14 @@ class EpgBouquetScreenTest {
         composeRule.onNodeWithText("Die Nachrichten.").assertIsDisplayed()
         composeRule.onNodeWithText("Wetter").assertIsDisplayed().performClick()
         assertEquals(second, clicked)
-        composeRule.onAllNodesWithTag(EPG_TIME_JUMP_CHIP_TAG).assertCountEquals(0)
+        composeRule.onAllNodesWithTag(EPG_TIME_JUMP_DATE_CHIP_TAG).assertCountEquals(0)
+        composeRule.onAllNodesWithTag(EPG_TIME_JUMP_TIME_CHIP_TAG).assertCountEquals(0)
     }
 
     @Test
-    fun timeJumpBarShowsLocaleLabelAndActions() {
-        var pickClicks = 0
+    fun timeJumpBarShowsDateAndTimeChipsAndActions() {
+        var dateClicks = 0
+        var timeClicks = 0
         var nowClicks = 0
         var primeClicks = 0
         composeRule.setContent {
@@ -82,21 +84,26 @@ class EpgBouquetScreenTest {
                     onItemClick = {},
                     emptyMessage = "No items to display…",
                     timeJump = EpgTimeJumpUi(
-                        label = "Sep 13, 2026 · 20:15",
-                        onPickDateTime = { pickClicks++ },
+                        dateLabel = "Sep 13, 2026",
+                        timeLabel = "20:15",
+                        onPickDate = { dateClicks++ },
+                        onPickTime = { timeClicks++ },
                         onNow = { nowClicks++ },
                         onPrime = { primeClicks++ },
                     ),
                 )
             }
         }
-        composeRule.onNodeWithText("Sep 13, 2026 · 20:15").assertIsDisplayed()
+        composeRule.onNodeWithText("Sep 13, 2026").assertIsDisplayed()
+        composeRule.onNodeWithText("20:15").assertIsDisplayed()
         composeRule.onNodeWithText("Now").assertIsDisplayed().performClick()
         composeRule.onNodeWithText("Prime").assertIsDisplayed().performClick()
-        composeRule.onNodeWithTag(EPG_TIME_JUMP_CHIP_TAG).performClick()
+        composeRule.onNodeWithTag(EPG_TIME_JUMP_DATE_CHIP_TAG).performClick()
+        composeRule.onNodeWithTag(EPG_TIME_JUMP_TIME_CHIP_TAG).performClick()
         assertEquals(1, nowClicks)
         assertEquals(1, primeClicks)
-        assertEquals(1, pickClicks)
+        assertEquals(1, dateClicks)
+        assertEquals(1, timeClicks)
         composeRule.onNodeWithText("No items to display…").assertIsDisplayed()
     }
 
