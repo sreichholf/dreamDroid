@@ -14,9 +14,11 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.buildMultiEpgChannels
+import net.reichholf.dreamdroid.multiepg.playableMultiEpgRoster
 import net.reichholf.dreamdroid.ui.compose.PULL_REFRESH_INDICATOR_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -101,6 +103,49 @@ class MultiEpgScreenTest {
         val dropped = buildMultiEpgChannels(listOf(news.copy()), second)
         assertEquals(1, dropped[0].bars.size)
         assertSame(first[0].bars[0], dropped[0].bars[0])
+    }
+
+    @Test
+    fun playableRosterSkipsMarkersAndDirectories() {
+        val live = Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste")
+        val marker = Service("1:64:0:0:0:0:0:0:0:0:", "---")
+        val directory = Service(
+            "1:7:1:0:0:0:FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet",
+            "Favourites",
+        )
+        val roster = playableMultiEpgRoster(listOf(marker, live, directory))
+        assertEquals(1, roster.size)
+        assertEquals("Das Erste", roster[0].name)
+    }
+
+    @Test
+    fun buildChannelsKeepsRosterRowsWithoutEvents() {
+        val liveA = Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste")
+        val liveB = Service("1:0:1:2:1:1:0:0:0:0:", "ZDF")
+        val news = Event(
+            eventId = "1",
+            title = "News",
+            start = "1000",
+            duration = "600",
+            serviceReference = liveA.reference,
+            serviceName = liveA.name,
+        )
+        val channels = buildMultiEpgChannels(
+            events = listOf(news),
+            roster = listOf(liveA, liveB),
+        )
+        assertEquals(2, channels.size)
+        assertEquals("Das Erste", channels[0].serviceName)
+        assertEquals(1, channels[0].bars.size)
+        assertEquals("ZDF", channels[1].serviceName)
+        assertEquals(0, channels[1].bars.size)
+        val again = buildMultiEpgChannels(
+            events = listOf(news.copy()),
+            previous = channels,
+            roster = listOf(liveA, liveB),
+        )
+        assertSame(channels[1], again[1])
+        assertSame(channels[0].bars[0], again[0].bars[0])
     }
 
     @Test
@@ -217,6 +262,53 @@ class MultiEpgScreenTest {
         composeRule.onNodeWithText("Tagesschau").performClick()
         composeRule.waitForIdle()
         assertEquals("Tagesschau", clicked)
+    }
+
+    @Test
+    fun gridKeepsChannelNameWhenRowHasNoBars() {
+        val start = 1_700_000_000L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = listOf(
+                        MultiEpgChannel(
+                            serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                            bars = listOf(
+                                MultiEpgBar(
+                                    event = Event(
+                                        eventId = "10",
+                                        title = "Tagesschau",
+                                        start = start.toString(),
+                                        duration = "1800",
+                                        serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                                        serviceName = "Das Erste HD",
+                                    ),
+                                    startSec = start,
+                                    endSec = start + 1800,
+                                ),
+                            ),
+                        ),
+                        MultiEpgChannel(
+                            serviceRef = "1:0:1:2:1:1:0:0:0:0:",
+                            serviceName = "Deluxe Music HD",
+                            bars = emptyList(),
+                        ),
+                    ),
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithText("Deluxe Music HD").assertIsDisplayed()
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
     }
 
     @Test

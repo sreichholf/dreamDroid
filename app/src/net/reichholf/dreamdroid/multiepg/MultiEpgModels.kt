@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.multiepg
 
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaServiceFlags
 
 /** One programme bar in the MultiEPG grid (precomputed unix bounds). */
 data class MultiEpgBar(
@@ -17,19 +19,48 @@ data class MultiEpgChannel(
 )
 
 /**
+ * Playable bouquet members for MultiEPG rows. Markers and directories stay out
+ * of the grid; the remaining order is the bouquet order from `/web/getservices`.
+ */
+fun playableMultiEpgRoster(services: List<Service>): List<Service> {
+    val out = ArrayList<Service>(services.size)
+    for (service in services) {
+        val ref = service.reference.trim()
+        if (ref.isEmpty()) continue
+        if (EnigmaServiceFlags.isMarker(ref) || EnigmaServiceFlags.isDirectory(ref)) {
+            continue
+        }
+        out.add(
+            if (ref == service.reference && service.name.isNotBlank()) {
+                service
+            } else {
+                Service(ref, service.name.trim().ifBlank { ref })
+            },
+        )
+    }
+    return out
+}
+
+/**
  * Build channel rows from a flat event list. Keeps work off composition —
  * call from a background dispatcher after [MultiEpgSync.ensureChunk].
  *
- * When [previous] is supplied, programme bars whose eventId/times/payload match
- * are the same instances so Compose can skip visible nodes while an off-screen
- * chunk is merged in. Unchanged rows keep their [MultiEpgChannel] instance.
- * The previous list is returned as-is when nothing changed.
+ * When [roster] is non-empty, every playable bouquet service keeps a row even
+ * if the loaded windows have no events for it. [previous] reuses bar/channel
+ * instances so Compose can skip visible nodes while an off-screen chunk is
+ * merged in. The previous list is returned as-is when nothing changed.
  */
 fun buildMultiEpgChannels(
     events: List<Event>,
     previous: List<MultiEpgChannel> = emptyList(),
+    roster: List<Service> = emptyList(),
 ): List<MultiEpgChannel> {
-    if (events.isEmpty()) return emptyList()
+    val playable = if (roster.isEmpty()) {
+        emptyList()
+    } else {
+        playableMultiEpgRoster(roster)
+    }
+    if (events.isEmpty() && playable.isEmpty()) return emptyList()
     val previousChannels = HashMap<String, MultiEpgChannel>(previous.size)
     val previousBars = HashMap<String, MultiEpgBar>(previous.sumOf { it.bars.size })
     for (channel in previous) {
@@ -53,33 +84,54 @@ fun buildMultiEpgChannels(
             names[ref] = event.serviceName.ifBlank { ref }
         }
     }
-    val out = ArrayList<MultiEpgChannel>(byService.size)
-    for ((ref, bars) in byService) {
-        bars.sortBy { it.startSec }
-        val name = names[ref] ?: ref
-        val prev = previousChannels[ref]
-        val barsList: List<MultiEpgBar> =
-            if (prev != null && sameBarInstances(prev.bars, bars)) {
-                prev.bars
-            } else {
-                bars
-            }
-        out.add(
-            if (prev != null && prev.serviceName == name && prev.bars === barsList) {
-                prev
-            } else {
-                MultiEpgChannel(
-                    serviceRef = ref,
-                    serviceName = name,
-                    bars = barsList,
-                )
-            },
-        )
+    val out = ArrayList<MultiEpgChannel>(maxOf(playable.size, byService.size))
+    if (playable.isNotEmpty()) {
+        for (service in playable) {
+            val ref = service.reference
+            val bars = byService.remove(ref) ?: mutableListOf()
+            bars.sortBy { it.startSec }
+            val name = service.name.ifBlank { names[ref] ?: ref }
+            out.add(channelRow(ref, name, bars, previousChannels))
+        }
+        for ((ref, bars) in byService) {
+            bars.sortBy { it.startSec }
+            out.add(channelRow(ref, names[ref] ?: ref, bars, previousChannels))
+        }
+    } else {
+        for ((ref, bars) in byService) {
+            bars.sortBy { it.startSec }
+            out.add(channelRow(ref, names[ref] ?: ref, bars, previousChannels))
+        }
     }
     if (out.size == previous.size && out.indices.all { out[it] === previous[it] }) {
         return previous
     }
     return out
+}
+
+private fun channelRow(
+    serviceRef: String,
+    serviceName: String,
+    bars: List<MultiEpgBar>,
+    previousChannels: Map<String, MultiEpgChannel>,
+): MultiEpgChannel {
+    val prev = previousChannels[serviceRef]
+    val barsList: List<MultiEpgBar> =
+        if (prev != null && sameBarInstances(prev.bars, bars)) {
+            prev.bars
+        } else if (bars.isEmpty()) {
+            emptyList()
+        } else {
+            bars
+        }
+    if (prev != null && prev.serviceName == serviceName && prev.bars === barsList) {
+        return prev
+    }
+    return MultiEpgChannel(
+        serviceRef = serviceRef,
+        serviceName = serviceName,
+        bars = barsList,
+    )
 }
 
 private fun barReuseKey(serviceRef: String, eventId: String): String {
