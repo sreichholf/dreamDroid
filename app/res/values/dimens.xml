@@ -27,6 +27,8 @@
     <dimen name="fab_margin_right">16dp</dimen>
     <!-- Material3 NavigationBar with labels; hub Scaffold bottomBar height. -->
     <dimen name="shell_destination_bar_height">80dp</dimen>
+    <!-- Now-playing strip stacked above that bar in the Coordinator overlay. -->
+    <dimen name="now_playing_strip_height">56dp</dimen>
     <dimen name="recylcerview_content_margin">0dp</dimen>
     <dimen name="navigation_header_height">170dp</dimen>
     <dimen name="navigation_header_padding_top">0dp</dimen>

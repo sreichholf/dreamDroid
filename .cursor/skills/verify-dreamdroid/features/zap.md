@@ -22,11 +22,11 @@ Preconditions:
 
 - **Open drawer.** Run `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py tap --desc "Open navigation drawer"`.
 - **Open Zap.** Run `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py tap --text "Zap"`. The destination is Zap (toolbar or heading includes `Zap`).
-- **Change channel (receiver).** Tap a visible channel name with `tap --text "<channel>"`. Then open `Current event` from the drawer. The current service name is the channel just chosen.
-- **Proof.** Dump and screenshot Zap before the tap and Current event after: `.cursor/skills/verify-dreamdroid/artifacts/zap/`.
+- **Change channel (receiver).** Tap a visible channel name with `tap --text "<channel>"`. Then open `TV & Movies` and read the `Now` strip; the headline is the channel just chosen.
+- **Proof.** Dump and screenshot Zap before the tap and the hub `Now` strip after: `.cursor/skills/verify-dreamdroid/artifacts/zap/`.
 
 ## Gotchas
 
-- Opening Zap is not proof of a zap. A second view (`Current event`) must show the new service.
+- Opening Zap is not proof of a zap. The hub `Now` strip must show the new service.
 - Demo host `dreamdroid.org` usually cannot zap. Skip `zap-channel` with the error dump.
-- Instant-zap settings can change whether a tap zaps immediately; still confirm Current event.
+- Instant-zap settings can change whether a tap zaps immediately; still confirm the `Now` strip.

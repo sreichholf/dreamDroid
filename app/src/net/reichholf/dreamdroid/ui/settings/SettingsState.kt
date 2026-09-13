@@ -11,6 +11,7 @@ import com.google.android.material.color.DynamicColors
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
+import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.video.VLCPlayer
 
 /**
@@ -37,9 +38,10 @@ class SettingsState(
 
     var volumeControl by mutableStateOf(prefs.getBoolean(KEY_VOLUME_CONTROL, false))
     var instantZap by mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
-    var startScreen by mutableStateOf(
-        prefs.getString(DreamDroid.PREFS_KEY_START_SCREEN, "services") ?: "services",
+    var nowPlayingStrip by mutableStateOf(
+        prefs.getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true),
     )
+    var startScreen by mutableStateOf(StartScreen.read(prefs))
     var simpleVrm by mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, true))
     var mobileImdb by mutableStateOf(prefs.getBoolean(KEY_MOBILE_IMDB, false))
     var confirmAppClose by mutableStateOf(
@@ -95,6 +97,7 @@ class SettingsState(
             DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES -> videoEnableGestures = value
             KEY_VOLUME_CONTROL -> volumeControl = value
             DreamDroid.PREFS_KEY_INSTANT_ZAP -> instantZap = value
+            DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP -> nowPlayingStrip = value
             DreamDroid.PREFS_KEY_SIMPLE_VRM -> simpleVrm = value
             KEY_MOBILE_IMDB -> mobileImdb = value
             DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE -> confirmAppClose = value

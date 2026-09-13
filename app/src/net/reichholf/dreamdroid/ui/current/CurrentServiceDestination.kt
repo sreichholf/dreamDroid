@@ -74,11 +74,15 @@ private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
 /**
  * Phase 2.7c: Current Service as a direct Compose NavHost destination.
  * Dialog actions (EPG sheet → timer/IMDb/similar) are registered on [hostFragment].
+ *
+ * [updateToolbarTitle] is false when hosted in [CurrentServiceSheet] so the hub
+ * bouquet title is not overwritten.
  */
 @Composable
 fun CurrentServiceDestination(
     hostFragment: PhoneNavHostFragment,
     modifier: Modifier = Modifier,
+    updateToolbarTitle: Boolean = true,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -104,6 +108,9 @@ fun CurrentServiceDestination(
     session.context = context
 
     fun setToolbarTitle(title: String) {
+        if (!updateToolbarTitle) {
+            return
+        }
         (context as? AppCompatActivity)?.title = title
     }
 

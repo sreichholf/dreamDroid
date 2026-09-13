@@ -43,6 +43,7 @@ class DrawerScreenTest {
 		composeRule.onNodeWithText("Tools").assertIsDisplayed()
 		composeRule.onNodeWithText("Settings").assertIsDisplayed()
 
+		composeRule.onNodeWithText("Current event").assertDoesNotExist()
 		composeRule.onNodeWithText("Control").assertDoesNotExist()
 		composeRule.onNodeWithText("Screenshot").assertDoesNotExist()
 		composeRule.onNodeWithText("Device Information").assertDoesNotExist()

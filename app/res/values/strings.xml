@@ -150,7 +150,7 @@
     <string name="defaultOnNoWifi">Is default profile on no Wifi</string>
     <string name="login_enabled">Enable Login</string>
     <string name="wait_request_finished">Please wait until the running request has finished!</string>
-    <string name="current_service">Current</string>
+    <string name="current_service">Now</string>
     <string name="provider">Provider</string>
     <string name="now">Now</string>
     <string name="next">Next</string>
@@ -246,6 +246,8 @@
     <string name="profiles_long">Configure connection profiles</string>
     <string name="enable_instant_zap">Instant zap</string>
     <string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
+    <string name="show_now_playing_strip">Now-playing strip</string>
+    <string name="show_now_playing_strip_long">Show what\'s currently on the box on TV &amp; Movies</string>
     <string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
     <string name="simple_remote">Simple remote layout</string>
     <string name="screenshot_saved">Screenshot saved to \'%s\'</string>

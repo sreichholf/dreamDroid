@@ -68,6 +68,7 @@ fun HubServiceListPage(
     bouquetName: String,
     modifier: Modifier = Modifier,
     onProvideGoUp: ((() -> Unit)?) -> Unit = {},
+    onZapped: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val view = LocalView.current
@@ -110,6 +111,7 @@ fun HubServiceListPage(
     session.onHistoryDepth = { historyDepth = it }
     session.rootRef = bouquetRef
     session.rootName = bouquetName
+    session.onZapped = onZapped
 
     BackHandler(enabled = historyDepth > 0) {
         session.navigateUp()
@@ -200,6 +202,7 @@ private class HubServiceListSession : MenuProvider {
     var onEmptyMessage: ((String?) -> Unit)? = null
     var onLoadJob: ((Job?) -> Unit)? = null
     var onZapJob: ((Job?) -> Unit)? = null
+    var onZapped: (() -> Unit)? = null
     private var loadJob: Job? = null
     private var zapJob: Job? = null
 
@@ -305,6 +308,7 @@ private class HubServiceListSession : MenuProvider {
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
             }
             toast(toastText)
+            onZapped?.invoke()
         }
         onZapJob?.invoke(zapJob)
     }

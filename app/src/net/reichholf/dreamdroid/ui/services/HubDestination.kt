@@ -36,6 +36,7 @@ import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 
@@ -64,6 +65,7 @@ fun HubDestination(
     var currentMovie by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedRow by rememberSaveable { mutableIntStateOf(0) }
     var timerRemountEpoch by rememberSaveable { mutableIntStateOf(0) }
+    var nowPlayingReloadEpoch by rememberSaveable { mutableIntStateOf(0) }
 
     var bouquets by remember { mutableStateOf<Bouquets?>(null) }
     var bouquetError by remember { mutableStateOf<String?>(null) }
@@ -146,6 +148,11 @@ fun HubDestination(
     val destinationBarState = remember { TvMoviesHubState() }
     destinationBarState.selected = hubSelected
     destinationBarState.onDestinationSelected = { selectDestination(it) }
+
+    HubNowPlaying(
+        reloadEpoch = nowPlayingReloadEpoch,
+        hubState = destinationBarState,
+    )
 
     fun onRowSelected(index: Int) {
         // Reselect active bouquet tab → go up one provider/directory level (or reload root).
@@ -288,6 +295,7 @@ fun HubDestination(
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
+                                        onZapped = { nowPlayingReloadEpoch += 1 },
                                     )
                                 }
                             }
@@ -305,6 +313,7 @@ fun HubDestination(
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
+                                        onZapped = { nowPlayingReloadEpoch += 1 },
                                     )
                                 }
                             }
@@ -336,7 +345,12 @@ fun HubDestination(
                     }
                 }
             }
-            // Reserve space for the Coordinator-hosted destination bar (dualpane shell_destination_nav).
+            // Reserve space for the Coordinator overlay (now-playing strip + destination bar).
+            if (destinationBarState.nowPlayingStripEnabled) {
+                Spacer(
+                    Modifier.height(dimensionResource(R.dimen.now_playing_strip_height)),
+                )
+            }
             Spacer(
                 Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height)),
             )

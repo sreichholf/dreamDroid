@@ -16,4 +16,12 @@ class TvMoviesHubState {
 	var error by mutableStateOf<String?>(null)
 	/** Latest hub destination click handler; shell composition reads this on each click. */
 	var onDestinationSelected: (TvMoviesDestination) -> Unit = {}
+
+	var nowPlayingStripEnabled by mutableStateOf(true)
+	var nowPlayingHeadline by mutableStateOf("")
+	var nowPlayingProgress by mutableStateOf(0f)
+	var nowPlayingReference by mutableStateOf("")
+	var nowPlayingName by mutableStateOf("")
+	/** Latest now-playing tap handler; shell composition reads this on each click. */
+	var onNowPlayingClick: () -> Unit = {}
 }

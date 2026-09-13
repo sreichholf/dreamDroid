@@ -46,6 +46,11 @@
             android:title="@string/enable_instant_zap"/>
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="now_playing_strip"
+            android:summary="@string/show_now_playing_strip_long"
+            android:title="@string/show_now_playing_strip"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="simple_vrm"
             android:summary="@string/default_to_full_vrm_long"
             android:title="@string/default_to_full_vrm"/>

@@ -15,6 +15,7 @@ object StartScreen {
 	const val VALUE_SERVICES = "services"
 	const val VALUE_EPG = "epg"
 	const val VALUE_REMOTE = "remote"
+	/** Legacy start-screen value; mapped to [VALUE_SERVICES] (now-playing lives on the hub). */
 	const val VALUE_CURRENT = "current"
 	const val VALUE_ZAP = "zap"
 	const val VALUE_TOOLS = "tools"
@@ -23,13 +24,13 @@ object StartScreen {
 		VALUE_SERVICES,
 		VALUE_EPG,
 		VALUE_REMOTE,
-		VALUE_CURRENT,
 		VALUE_ZAP,
 		VALUE_TOOLS,
 	)
 
 	fun read(prefs: SharedPreferences): String {
-		val raw = prefs.getString(DreamDroid.PREFS_KEY_START_SCREEN, VALUE_SERVICES) ?: VALUE_SERVICES
+		val raw = prefs.getString(DreamDroid.PREFS_KEY_START_SCREEN, VALUE_SERVICES)
+			?: VALUE_SERVICES
 		return if (raw in VALUES) raw else VALUE_SERVICES
 	}
 
@@ -40,7 +41,6 @@ object StartScreen {
 	fun menuId(value: String): Int = when (value) {
 		VALUE_EPG -> R.id.menu_navigation_epg
 		VALUE_REMOTE -> R.id.menu_navigation_remote
-		VALUE_CURRENT -> R.id.menu_navigation_current
 		VALUE_ZAP -> R.id.menu_navigation_zap
 		VALUE_TOOLS -> R.id.menu_navigation_tools
 		else -> R.id.menu_navigation_services
@@ -56,7 +56,6 @@ object StartScreen {
 	fun navRoute(value: String): String = when (value) {
 		VALUE_EPG -> PhoneNavRoutes.EPG
 		VALUE_REMOTE -> PhoneNavRoutes.REMOTE
-		VALUE_CURRENT -> PhoneNavRoutes.CURRENT
 		VALUE_ZAP -> PhoneNavRoutes.ZAP
 		VALUE_TOOLS -> PhoneNavRoutes.TOOLS
 		else -> PhoneNavRoutes.HUB

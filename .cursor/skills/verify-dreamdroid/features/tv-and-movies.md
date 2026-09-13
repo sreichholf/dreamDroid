@@ -7,6 +7,7 @@ TV and Movies is the bouquet/recordings/timers hub: bouquet tabs on TV or Radio,
 - `services-open` opens TV & Movies from the drawer.
 - `services-tv-bar` shows the TV, Radio, Movies, and Timer destinations.
 - `services-list` shows bouquet or service rows when the receiver answers.
+- `services-now` shows the `Now` strip above the destination bar (what's tuned on the box).
 
 ## How to get to it (user POV)
 
@@ -24,6 +25,7 @@ Preconditions:
 - **Open TV & Movies.** Run `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py tap --text "TV & Movies"`. The bottom bar includes `TV`, `Radio`, `Movies`, and `Timer`.
 - **Bar destinations.** Run `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py tap --text "Radio"` then `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py tap --text "TV"`. The selected destination changes; the screen stays in TV & Movies.
 - **List (receiver).** If no connection error is shown, the list or tabs contain bouquet or service names. If a connection error is shown, dump it and skip this sub-feature.
+- **Now strip.** When Settings → `Now-playing strip` is on (default), the hub shows a `Now` bar above `TV` / `Radio` / `Movies` / `Timer`. Tap it for now/next/stream detail. Without a box it may read `Not available` or `Loading`. Turn the setting off to hide the strip.
 - **Proof.** Run `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py dump --path .cursor/skills/verify-dreamdroid/artifacts/tv-and-movies/ui.xml` and `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py screenshot --path .cursor/skills/verify-dreamdroid/artifacts/tv-and-movies/screen.png`. Artifacts show `TV`, `Radio`, `Movies`, and `Timer`.
 
 ## Gotchas

@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.ui.settings
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.preference.PreferenceManager
@@ -37,5 +39,7 @@ class TvSettingsScreenTest {
         composeRule.onNodeWithText("Accelerated decoding").assertIsDisplayed()
         composeRule.onNodeWithText("Picons").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Picons by service name").performScrollTo().assertIsDisplayed()
+        // Phone hub chrome; not part of the television prefs subset.
+        composeRule.onAllNodesWithText("Now-playing strip").assertCountEquals(0)
     }
 }
