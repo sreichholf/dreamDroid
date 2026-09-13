@@ -182,7 +182,7 @@ fun HubServiceListPage(
     EpgEventDetailSheetHost(dialogSession)
 }
 
-private class HubServiceListSession : MenuProvider {
+class HubServiceListSession : MenuProvider {
     var hostFragment: PhoneNavHostFragment? = null
     var context: android.content.Context? = null
     var popupRoot: ViewGroup? = null
@@ -203,8 +203,42 @@ private class HubServiceListSession : MenuProvider {
     var onLoadJob: ((Job?) -> Unit)? = null
     var onZapJob: ((Job?) -> Unit)? = null
     var onZapped: (() -> Unit)? = null
+    private var loadGeneration = 0
     private var loadJob: Job? = null
     private var zapJob: Job? = null
+
+    fun beginLoad(): Int = ++loadGeneration
+
+    fun applyLoadResult(
+        generation: Int,
+        success: Boolean,
+        rows: List<ServiceNowNext>,
+        errorText: String?,
+    ) {
+        if (generation != loadGeneration) {
+            return
+        }
+        val ctx = context ?: return
+        val state = listState ?: return
+        val refreshState = refresh ?: return
+        refreshState.setRefreshing(false)
+        setToolbarTitle(finishedTitle())
+        (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
+        this.rows?.clear()
+        if (!success) {
+            state.replaceAll(emptyList())
+            onEmptyMessage?.invoke(errorText)
+            return
+        }
+        if (rows.isEmpty()) {
+            state.replaceAll(emptyList())
+            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
+        } else {
+            onEmptyMessage?.invoke(null)
+            this.rows?.addAll(rows)
+            state.replaceAll(serviceListItemsFromNowNext(rows))
+        }
+    }
 
     fun setToolbarTitle(title: String) {
         (context as? AppCompatActivity)?.title = title
@@ -237,26 +271,11 @@ private class HubServiceListSession : MenuProvider {
         }
         refreshState.setRefreshing(true)
         setToolbarTitle(ctx.getString(R.string.loading))
+        val generation = beginLoad()
         loadJob?.cancel()
         loadJob = coroutineScope.launch {
             val result = loadEpgNowNext(ctx.applicationContext, httpParams())
-            refreshState.setRefreshing(false)
-            setToolbarTitle(finishedTitle())
-            (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
-            rows?.clear()
-            if (!result.success) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(result.errorText)
-                return@launch
-            }
-            if (result.rows.isEmpty()) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-            } else {
-                onEmptyMessage?.invoke(null)
-                rows?.addAll(result.rows)
-                state.replaceAll(serviceListItemsFromNowNext(result.rows))
-            }
+            applyLoadResult(generation, result.success, result.rows, result.errorText)
         }
         onLoadJob?.invoke(loadJob)
     }
