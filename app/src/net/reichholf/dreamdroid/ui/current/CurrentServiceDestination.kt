@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.current
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -16,8 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
@@ -85,10 +89,17 @@ fun CurrentServiceDestination(
     updateToolbarTitle: Boolean = true,
 ) {
     val context = LocalContext.current
+    val prefs = remember(context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
     val scope = rememberCoroutineScope()
     val uiState = remember { CurrentServiceUiState() }
     val refresh = remember { ComposeRefreshState() }
-    var current by rememberSaveable(stateSaver = CurrentServiceNullableSaver) {
+    val gate = remember { CurrentServiceLoadGate() }
+    var profileId by remember {
+        mutableIntStateOf(DreamDroid.getCurrentProfile().id ?: -1)
+    }
+    var current by rememberSaveable(profileId, stateSaver = CurrentServiceNullableSaver) {
         mutableStateOf<CurrentService?>(null)
     }
     var currentItem by rememberSaveable(stateSaver = ExtendedHashMapNullableSaver) {
@@ -118,11 +129,18 @@ fun CurrentServiceDestination(
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
-    fun applyCurrent(content: CurrentService?) {
+    fun applyCurrent(generation: Int, loadProfileId: Int, content: CurrentService?) {
         if (content != null && !content.isEmpty()) {
-            current = content
+            if (!gate.applySuccess(generation, loadProfileId, content)) {
+                return
+            }
+            val shown = gate.visible(DreamDroid.getCurrentProfile().id ?: -1)
+            if (shown == null) {
+                return
+            }
+            current = shown
             ready = true
-            uiState.apply(content)
+            uiState.apply(shown)
         } else {
             if (!ready) {
                 uiState.apply(null)
@@ -166,9 +184,14 @@ fun CurrentServiceDestination(
     fun reload() {
         refresh.setRefreshing(true)
         setToolbarTitle(context.getString(R.string.loading))
+        val generation = gate.beginLoad()
+        val loadProfileId = DreamDroid.getCurrentProfile().id ?: -1
         loadJob?.cancel()
         loadJob = scope.launch {
             val result = loadCurrentService(context.applicationContext)
+            if (!gate.isCurrent(generation)) {
+                return@launch
+            }
             refresh.setRefreshing(false)
             setToolbarTitle(baseTitle)
             if (!result.success) {
@@ -178,8 +201,19 @@ fun CurrentServiceDestination(
                 toast(result.errorText ?: context.getText(R.string.not_available))
                 return@launch
             }
-            applyCurrent(result.current)
+            applyCurrent(generation, loadProfileId, result.current)
         }
+    }
+
+    DisposableEffect(prefs, gate) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == DreamDroid.CURRENT_PROFILE) {
+                profileId = prefs.getInt(DreamDroid.CURRENT_PROFILE, profileId)
+                gate.beginLoad()
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     DisposableEffect(hostFragment, session) {
@@ -195,7 +229,7 @@ fun CurrentServiceDestination(
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(profileId) {
         if (current == null || current!!.isEmpty()) {
             reload()
         } else {

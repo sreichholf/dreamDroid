@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,10 +47,16 @@ fun HubNowPlaying(
     var enabled by remember {
         mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true))
     }
+    var profileId by remember {
+        mutableIntStateOf(DreamDroid.getCurrentProfile().id ?: -1)
+    }
     DisposableEffect(prefs) {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP) {
                 enabled = prefs.getBoolean(key, true)
+            }
+            if (key == DreamDroid.CURRENT_PROFILE) {
+                profileId = prefs.getInt(DreamDroid.CURRENT_PROFILE, profileId)
             }
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
@@ -66,27 +73,35 @@ fun HubNowPlaying(
     }
 
     val scope = rememberCoroutineScope()
+    val gate = remember { CurrentServiceLoadGate() }
     var current by remember { mutableStateOf<CurrentService?>(null) }
     var ready by remember { mutableStateOf(false) }
     var showSheet by rememberSaveable { mutableStateOf(false) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     val loadingText = stringResource(R.string.loading)
     val unavailableText = stringResource(R.string.not_available)
+    val shown = current.takeIf { gate.lastGoodProfileId == profileId }
 
     fun reload() {
+        val generation = gate.beginLoad()
+        val loadProfileId = DreamDroid.getCurrentProfile().id ?: -1
         loadJob?.cancel()
         loadJob = scope.launch {
             val result = loadCurrentService(context.applicationContext)
             val next = result.current
-            if (result.success && next != null && !next.isEmpty()) {
-                current = next
+            if (result.success && next != null &&
+                gate.applySuccess(generation, loadProfileId, next)
+            ) {
+                current = gate.visible(DreamDroid.getCurrentProfile().id ?: -1)
             }
-            ready = true
+            if (gate.isCurrent(generation)) {
+                ready = true
+            }
         }
     }
 
     fun stream() {
-        val service = current?.service
+        val service = shown?.service
         val ref = service?.reference.orEmpty()
         val name = service?.name.orEmpty()
         if (ref.isEmpty()) {
@@ -97,7 +112,9 @@ fun HubNowPlaying(
         activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(profileId) {
+        current = gate.visible(profileId)
+        ready = current != null
         withTimeoutOrNull(PROFILE_WAIT_MS) {
             while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
                 delay(100)
@@ -123,8 +140,8 @@ fun HubNowPlaying(
         }
     }
 
-    val service = current?.service
-    val now = current?.now
+    val service = shown?.service
+    val now = shown?.now
     hubState.nowPlayingHeadline = nowPlayingHeadline(
         ready = ready,
         serviceName = service?.name.orEmpty(),
@@ -139,12 +156,44 @@ fun HubNowPlaying(
 
     if (showSheet) {
         CurrentServiceSheet(
-            current = current,
+            current = shown,
             onStream = { stream() },
             onDismiss = {
                 showSheet = false
                 reload()
             },
         )
+    }
+}
+
+/**
+ * Last-good `/web/getcurrent` keyed by profile id. [beginLoad] stamps a generation so a
+ * slower previous fetch cannot paint after a newer reload.
+ */
+class CurrentServiceLoadGate {
+    private var loadGeneration = 0
+    var lastGood: CurrentService? = null
+        private set
+    var lastGoodProfileId: Int? = null
+        private set
+
+    fun beginLoad(): Int = ++loadGeneration
+
+    fun isCurrent(generation: Int): Boolean = generation == loadGeneration
+
+    fun applySuccess(generation: Int, profileId: Int, next: CurrentService): Boolean {
+        if (generation != loadGeneration) {
+            return false
+        }
+        if (next.isEmpty()) {
+            return false
+        }
+        lastGood = next
+        lastGoodProfileId = profileId
+        return true
+    }
+
+    fun visible(profileId: Int): CurrentService? {
+        return lastGood.takeIf { lastGoodProfileId == profileId }
     }
 }
