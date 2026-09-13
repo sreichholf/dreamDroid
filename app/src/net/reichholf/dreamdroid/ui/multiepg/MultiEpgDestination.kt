@@ -67,6 +67,7 @@ fun MultiEpgDestination(
             noBouquetMessage = context.getString(
                 R.string.multiepg_sync_test_no_bouquet,
             ),
+            fetchTimers = MultiEpgSync.httpFetchTimers(),
         )
     }
 
@@ -131,6 +132,7 @@ fun MultiEpgDestination(
         },
         onVisibleWindow = onVisibleWindow,
         onEventClick = onEventClick,
+        timerClocks = session.timerClocks,
         modifier = modifier,
     )
     EpgEventDetailSheetHost(session = dialogSession)
