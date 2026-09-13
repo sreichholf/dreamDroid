@@ -10,6 +10,7 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.provideContent
 import androidx.glance.layout.fillMaxSize
+import net.reichholf.dreamdroid.R
 
 /**
  * Glance Virtual Remote widget. Dense RCU grids remain XML [RemoteViews]
@@ -19,7 +20,16 @@ class VirtualRemoteWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
         val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(context, appWidgetId)
-        val remoteViews = VirtualRemoteWidgetViews.build(context, appWidgetId, profile)
+        val remoteViews = if (profile == null) {
+            RemoteViews(context.packageName, R.layout.virtual_remote_appwidget_quickzap).apply {
+                setTextViewText(
+                    R.id.profile_name,
+                    context.getString(R.string.no_profile_available),
+                )
+            }
+        } else {
+            VirtualRemoteWidgetViews.build(context, appWidgetId, profile)
+        }
         provideContent {
             VirtualRemoteGlanceContent(remoteViews)
         }

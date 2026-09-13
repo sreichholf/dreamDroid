@@ -3,9 +3,10 @@ package net.reichholf.dreamdroid.appwidget
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.preference.PreferenceManager
+import android.net.Uri
 import android.view.View
 import android.widget.RemoteViews
+import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
@@ -44,18 +45,22 @@ object VirtualRemoteWidgetViews {
         playAsPlayPause: Boolean,
     ) {
         for (btn in VirtualRemoteButtons.getRemoteButtons(playAsPlayPause)) {
-            val intent = Intent(context, VirtualRemoteWidgetProvider::class.java).apply {
-                putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId)
-                putExtra(WidgetRemoteRequest.KEY_KEYID, btn[1].toString())
-                action = WidgetRemoteRequest.ACTION_RCU
-            }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 btn[0],
-                intent,
+                rcuButtonIntent(context, appWidgetId, btn[1].toString()),
                 PendingIntent.FLAG_IMMUTABLE,
             )
             remoteViews.setOnClickPendingIntent(btn[0], pendingIntent)
+        }
+    }
+
+    fun rcuButtonIntent(context: Context, appWidgetId: Int, keyId: String): Intent {
+        return Intent(context, VirtualRemoteWidgetProvider::class.java).apply {
+            putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId)
+            putExtra(WidgetRemoteRequest.KEY_KEYID, keyId)
+            action = WidgetRemoteRequest.ACTION_RCU
+            data = Uri.parse("dreamdroid://virtual-remote/$appWidgetId")
         }
     }
 }
