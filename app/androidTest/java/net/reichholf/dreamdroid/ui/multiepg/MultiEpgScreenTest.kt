@@ -8,14 +8,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertDoesNotExist
-import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -651,13 +651,10 @@ class MultiEpgScreenTest {
                 )
             }
         }
-        val compact = composeRule.onNodeWithTag("multi_epg_row").getUnclippedBoundsInRoot().height
+        composeRule.onNodeWithTag("multi_epg_row").assertHeightIsEqualTo(36.dp)
         composeRule.runOnIdle { size = MultiEpgTextSize.Comfortable }
         composeRule.waitForIdle()
-        val comfortable = composeRule.onNodeWithTag("multi_epg_row").getUnclippedBoundsInRoot().height
-        assertEquals(36f, compact.value, 1f)
-        assertEquals(48f, comfortable.value, 1f)
-        assertTrue(comfortable.value > compact.value)
+        composeRule.onNodeWithTag("multi_epg_row").assertHeightIsEqualTo(48.dp)
     }
 
     @Test
@@ -684,8 +681,7 @@ class MultiEpgScreenTest {
                 }
             }
         }
-        val height = composeRule.onNodeWithTag("multi_epg_row").getUnclippedBoundsInRoot().height
-        assertEquals(54f, height.value, 1.5f)
+        composeRule.onNodeWithTag("multi_epg_row").assertHeightIsEqualTo(54.dp)
     }
 
     @Test
@@ -713,19 +709,16 @@ class MultiEpgScreenTest {
                 )
             }
         }
-        val compact = composeRule.onNodeWithTag(
+        composeRule.onNodeWithTag(
             "multi_epg_timer_record",
             useUnmergedTree = true,
-        ).getUnclippedBoundsInRoot()
+        ).assertHeightIsEqualTo(12.dp)
         composeRule.runOnIdle { size = MultiEpgTextSize.Comfortable }
         composeRule.waitForIdle()
-        val comfortable = composeRule.onNodeWithTag(
+        composeRule.onNodeWithTag(
             "multi_epg_timer_record",
             useUnmergedTree = true,
-        ).getUnclippedBoundsInRoot()
-        assertEquals(12f, compact.height.value, 1f)
-        assertEquals(16f, comfortable.height.value, 1f)
-        assertTrue(comfortable.height.value > compact.height.value)
+        ).assertHeightIsEqualTo(16.dp)
     }
 
     private fun oneChannel(
