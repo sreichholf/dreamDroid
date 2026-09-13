@@ -12,6 +12,14 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <string-array name="multiepg_text_size_entries">
+        <item>@string/multiepg_text_size_compact</item>
+        <item>@string/multiepg_text_size_comfortable</item>
+    </string-array>
+    <string-array name="multiepg_text_size_values">
+        <item>compact</item>
+        <item>comfortable</item>
+    </string-array>
     <string-array name="theme_option_values">
         <item>0</item>
         <item>1</item>

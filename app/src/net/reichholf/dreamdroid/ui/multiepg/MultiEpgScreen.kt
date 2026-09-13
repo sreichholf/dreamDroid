@@ -51,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -58,6 +59,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
@@ -73,8 +75,6 @@ import kotlin.math.max
 /** Default visible span (GraphMultiEPG default). */
 const val MULTI_EPG_VISIBLE_MINUTES: Int = MultiEpgZoom.DEFAULT_MINUTES
 
-private val ChannelLabelWidth = 100.dp
-private val RowHeight = 36.dp
 private val RulerHeight = 22.dp
 private val MinBarWidth = 28.dp
 
@@ -110,9 +110,22 @@ fun MultiEpgScreen(
     timerClocks: Map<String, MultiEpgTimerClock> = emptyMap(),
     visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
     onVisibleMinutesChange: ((Int) -> Unit)? = null,
+    textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
 ) {
     val hScroll = hScrollState
     val density = LocalDensity.current
+    val fontScale = density.fontScale
+    val rowHeight = textSize.rowHeightDp(fontScale).dp
+    val channelLabelWidth = textSize.channelWidthDp.dp
+    val clockSize = textSize.clockSizeDp(fontScale).dp
+    val eventStyle = when (textSize) {
+        MultiEpgTextSize.Compact -> MaterialTheme.typography.labelSmall
+        MultiEpgTextSize.Comfortable -> MaterialTheme.typography.titleSmall
+    }
+    val channelStyle = when (textSize) {
+        MultiEpgTextSize.Compact -> MaterialTheme.typography.labelMedium
+        MultiEpgTextSize.Comfortable -> MaterialTheme.typography.titleSmall
+    }
     // Keep painting the last committed origin until scroll is shifted. Using the
     // new painted start in this frame moves every bar and the day label before
     // horizontalScroll can catch up.
@@ -366,7 +379,7 @@ fun MultiEpgScreen(
                             .fillMaxWidth()
                             .height(RulerHeight),
                     ) {
-                        Spacer(modifier = Modifier.width(ChannelLabelWidth))
+                        Spacer(modifier = Modifier.width(channelLabelWidth))
                         MultiEpgTimeRuler(
                             timelineStartSec = originForLayout,
                             timelineEndSec = timelineEndSec,
@@ -391,18 +404,18 @@ fun MultiEpgScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(RowHeight),
+                            .height(rowHeight),
                     ) {
                         Box(
                             modifier = Modifier
-                                .width(ChannelLabelWidth)
+                                .width(channelLabelWidth)
                                 .fillMaxHeight()
                                 .padding(horizontal = 6.dp),
                             contentAlignment = Alignment.CenterStart,
                         ) {
                             Text(
                                 text = channel.serviceName,
-                                style = MaterialTheme.typography.labelMedium,
+                                style = channelStyle,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
@@ -424,6 +437,9 @@ fun MultiEpgScreen(
                                 cullStartSec = cullWindow.first,
                                 cullEndSec = cullWindow.second,
                                 timerClocks = timerClocks,
+                                rowHeight = rowHeight,
+                                eventStyle = eventStyle,
+                                clockSize = clockSize,
                                 onEventClick = onEventClick,
                             )
                         }
@@ -534,6 +550,9 @@ private fun MultiEpgChannelTimeline(
     cullStartSec: Long,
     cullEndSec: Long,
     timerClocks: Map<String, MultiEpgTimerClock>,
+    rowHeight: Dp,
+    eventStyle: TextStyle,
+    clockSize: Dp,
     onEventClick: (Event) -> Unit,
 ) {
     // Match list-EPG cards: surfaceVariant bars, not loud primaryContainer demo chrome.
@@ -550,7 +569,7 @@ private fun MultiEpgChannelTimeline(
     Box(
         modifier = Modifier
             .width(timelineWidth)
-            .height(RowHeight)
+            .height(rowHeight)
             .background(trackColor)
             .testTag("multi_epg_row"),
     ) {
@@ -562,6 +581,8 @@ private fun MultiEpgChannelTimeline(
                     minuteWidth = minuteWidth,
                     barColor = barColor,
                     onBar = onBar,
+                    eventStyle = eventStyle,
+                    clockSize = clockSize,
                     clock = timerClocks[
                         multiEpgTimerClockKey(
                             channel.serviceRef,
@@ -594,6 +615,8 @@ private fun ProgrammeBar(
     minuteWidth: Dp,
     barColor: Color,
     onBar: Color,
+    eventStyle: TextStyle,
+    clockSize: Dp,
     clock: MultiEpgTimerClock?,
     onEventClick: (Event) -> Unit,
 ) {
@@ -619,13 +642,13 @@ private fun ProgrammeBar(
     ) {
         Text(
             text = bar.event.title,
-            style = MaterialTheme.typography.labelSmall,
+            style = eventStyle,
             color = onBar,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(end = if (clock != null) 14.dp else 0.dp),
+                .padding(end = if (clock != null) clockSize + 2.dp else 0.dp),
         )
         if (clock != null) {
             val record = clock == MultiEpgTimerClock.Record
@@ -646,7 +669,7 @@ private fun ProgrammeBar(
                 },
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .size(12.dp)
+                    .size(clockSize)
                     .testTag(
                         if (record) {
                             "multi_epg_timer_record"
