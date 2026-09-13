@@ -67,6 +67,7 @@ fun MultiEpgDestination(
             noBouquetMessage = context.getString(
                 R.string.multiepg_sync_test_no_bouquet,
             ),
+            loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
         )
     }
 

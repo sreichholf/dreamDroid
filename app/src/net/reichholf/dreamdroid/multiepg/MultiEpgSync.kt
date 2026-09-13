@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -175,6 +176,17 @@ class MultiEpgSync(
                     error("epgmulti request failed")
                 }
                 events
+            }
+        }
+
+        /** Bouquet members from `/web/getservices?sRef=`. Failures return empty. */
+        fun httpFetchBouquet(
+            http: SimpleHttpClient = SimpleHttpClient.getInstance(),
+        ): suspend (String) -> List<Service> {
+            return { bouquetRef ->
+                EnigmaClient(http).getServices(
+                    listOf(NameValuePair("sRef", bouquetRef)),
+                )
             }
         }
     }

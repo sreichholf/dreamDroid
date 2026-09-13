@@ -8,11 +8,13 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -23,13 +25,15 @@ import java.util.concurrent.ConcurrentHashMap
  * is the earliest start among programmes overlapping [originFloorSec] ("now"),
  * the right grows as the viewport moves into the future, and chunks that no
  * longer overlap the padded viewport leave at the front or back. Room still
- * holds them; scrolling back reattaches from cache.
+ * holds them; scrolling back reattaches from cache. Bouquet services loaded
+ * from `/web/getservices` keep a row even when a window has no events.
  */
 class MultiEpgSession(
     private val sync: MultiEpgSync,
     private val scope: CoroutineScope,
     private val profileId: () -> Int,
     private val noBouquetMessage: String,
+    private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() },
 ) {
     var bouquetRef: String = ""
         private set
@@ -61,6 +65,7 @@ class MultiEpgSession(
     private var windowJob: Job? = null
     private val gridMutex = Mutex()
     private val eventsByWindow = ConcurrentHashMap<Long, List<Event>>()
+    private var bouquetRoster: List<Service> = emptyList()
     private var visibleStartSec: Long = 0L
     private var visibleEndSec: Long = 0L
 
@@ -79,6 +84,7 @@ class MultiEpgSession(
         prefetchJob?.cancel()
         windowJob?.cancel()
         eventsByWindow.clear()
+        bouquetRoster = emptyList()
         channels = emptyList()
         timelineStartSec = 0L
         timelineEndSec = 0L
@@ -111,17 +117,30 @@ class MultiEpgSession(
         loadJob = scope.launch {
             beginSync()
             try {
+                val rosterDeferred = async(Dispatchers.IO) {
+                    try {
+                        loadBouquetServices(ref)
+                    } catch (_: Throwable) {
+                        emptyList()
+                    }
+                }
                 val id = profileId()
-                if (!forceRefresh) {
-                    val peek = withContext(Dispatchers.IO) {
+                val peek = if (!forceRefresh) {
+                    withContext(Dispatchers.IO) {
                         sync.peekChunk(id, ref, anchorSec)
                     }
-                    if (peek != null && peek.events.isNotEmpty()) {
-                        putWindow(peek.windowStart, peek.events)
-                        if (peek.fresh) {
-                            prefetchFuture(anchorSec)
-                            return@launch
-                        }
+                } else {
+                    null
+                }
+                val roster = playableMultiEpgRoster(rosterDeferred.await())
+                gridMutex.withLock {
+                    bouquetRoster = roster
+                }
+                if (peek != null && peek.events.isNotEmpty()) {
+                    putWindow(peek.windowStart, peek.events)
+                    if (peek.fresh) {
+                        prefetchFuture(anchorSec)
+                        return@launch
                     }
                 }
                 val events = withContext(Dispatchers.IO) {
@@ -309,7 +328,7 @@ class MultiEpgSession(
         val nextEnd = starts.last() + MultiEpgWindows.CHUNK_SECONDS
         val previous = channels
         val next = withContext(Dispatchers.Default) {
-            buildMultiEpgChannels(merged, previous)
+            buildMultiEpgChannels(merged, previous, bouquetRoster)
         }
         timelineStartSec = nextStart
         timelineEndSec = nextEnd
