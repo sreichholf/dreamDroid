@@ -172,10 +172,7 @@ class MultiEpgSync(
                         NameValuePair("endTime", durationMinutes.toString()),
                     ),
                     URIStore.EPG_MULTI,
-                )
-                if (http.hasError()) {
-                    error("epgmulti request failed")
-                }
+                ) ?: error("epgmulti request failed")
                 events
             }
         }
@@ -195,7 +192,7 @@ class MultiEpgSync(
             return { bouquetRef ->
                 EnigmaClient(http).getServices(
                     listOf(NameValuePair("sRef", bouquetRef)),
-                )
+                ) ?: emptyList()
             }
         }
     }
