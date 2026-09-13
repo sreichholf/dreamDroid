@@ -17,15 +17,16 @@ data class ServiceListLoadResult(
 
 /**
  * Phase 2.7d: load typed service list without a Fragment owner.
- * Success is "!http.hasError()" — empty lists are success (matches the former task).
+ * Null fetch is failure. Empty 200 stays an empty list.
  */
 suspend fun loadServiceList(
     context: Context,
     params: List<NameValuePair>,
 ): ServiceListLoadResult {
     val http = SimpleHttpClient.getInstance()
-    val services = EnigmaClient(http).getServices(params)
-    val success = !http.hasError()
+    val fetched = EnigmaClient(http).getServices(params)
+    val success = fetched != null
+    val services = fetched ?: emptyList()
     val errorText = if (success) {
         null
     } else {

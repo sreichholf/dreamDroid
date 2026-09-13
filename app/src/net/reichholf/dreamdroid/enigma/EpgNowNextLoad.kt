@@ -19,7 +19,7 @@ data class EpgNowNextLoadResult(
 
 /**
  * Phase 2.7h: load typed hub now/next rows without a Fragment owner.
- * Success is "!http.hasError()" — empty lists are success (matches the former task).
+ * Null fetch is failure. Empty 200 stays an empty list.
  */
 suspend fun loadEpgNowNext(
     context: Context,
@@ -27,8 +27,9 @@ suspend fun loadEpgNowNext(
 ): EpgNowNextLoadResult {
     val http = SimpleHttpClient.getInstance()
     val uri = if (DreamDroid.featureNowNext()) URIStore.EPG_NOWNEXT else URIStore.EPG_NOW
-    val rows = EnigmaClient(http).getEpgNowNext(params, uri)
-    val success = !http.hasError()
+    val fetched = EnigmaClient(http).getEpgNowNext(params, uri)
+    val success = fetched != null
+    val rows = fetched ?: emptyList()
     val errorText = if (success) {
         null
     } else {
@@ -40,7 +41,7 @@ suspend fun loadEpgNowNext(
 /**
  * Phase 2.2f: load typed hub now/next rows via coroutines (no executor / runBlocking).
  * Uses a dedicated [SimpleHttpClient] per load (same as GetEpgNowNextTask).
- * Success is "!http.hasError()" — empty lists are success (matches the former task).
+ * Null fetch is failure. Empty 200 stays an empty list.
  */
 fun Fragment.launchEpgNowNextLoad(
     params: List<NameValuePair>,
