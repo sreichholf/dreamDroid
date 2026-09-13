@@ -162,6 +162,11 @@ class PhoneNavHostFragment : BaseFragment() {
 
     fun epgSearchRemountFlow(): StateFlow<Int> = epgSearchRemountState.asStateFlow()
 
+    /** Profile switch: drop stale MultiEPG / list-EPG grids immediately. */
+    fun onActiveProfileChanged() {
+        epgRemountState.value = epgRemountState.value + 1
+    }
+
     private val backCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
             discardResultRequestCodeForCurrentRoute()
@@ -246,6 +251,7 @@ class PhoneNavHostFragment : BaseFragment() {
             route == PhoneNavRoutes.PROFILES -> null
             route == PhoneNavRoutes.PROFILE_EDIT -> null
             route == PhoneNavRoutes.EPG -> null
+            route == PhoneNavRoutes.MULTI_EPG -> null
             route == PhoneNavRoutes.SERVICE_EPG || route.startsWith("service_epg") -> null
             route == PhoneNavRoutes.EPG_SEARCH || route.startsWith("epg_search") -> null
             route == PhoneNavRoutes.PICK_SERVICE -> null
@@ -423,6 +429,25 @@ class PhoneNavHostFragment : BaseFragment() {
             return true
         }
         controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
+        return true
+    }
+
+    /**
+     * Open MultiEPG with bouquet args (same extras as list EPG).
+     */
+    fun navigateToMultiEpg(serviceReference: String?, serviceName: String?): Boolean {
+        val controller = navController ?: return false
+        if (controller.currentDestination?.route != PhoneNavRoutes.MULTI_EPG) {
+            resultRequestCodes.clear()
+        }
+        val args = arguments ?: Bundle().also { arguments = it }
+        args.putString(Event.KEY_SERVICE_REFERENCE, serviceReference)
+        args.putString(Event.KEY_SERVICE_NAME, serviceName)
+        if (controller.currentDestination?.route == PhoneNavRoutes.MULTI_EPG) {
+            epgRemountState.value = epgRemountState.value + 1
+            return true
+        }
+        controller.navigateDrawerRoot(PhoneNavRoutes.MULTI_EPG)
         return true
     }
 

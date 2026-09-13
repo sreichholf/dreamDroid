@@ -4,7 +4,14 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 
 **New code is Kotlin.** Do not add new `.java` types for modernization work (helpers, UI, loaders, widgets). Edit existing Java surgically when needed; convert to Kotlin when touching a file heavily or extracting a new type. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`.
 
-**Indent:** preserve the file’s existing tabs-or-spaces. Most Java uses tabs; do not reindent whole files or expand tabs to spaces when editing. New Kotlin next to tabbed Java may use tabs. Avoid drive-by newline/brace restyles.
+**Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Stick to it on every pass — do not retab, re-wrap, or invent a house indent. Converted Kotlin is formatted to this guide (do not keep Java tabs in the new file). Existing Java keeps its tab indent; edit it surgically and do not reindent whole files.
+
+Hard rules for agents:
+- 4 spaces, never tabs
+- 100-character column limit (except `package` / `import` and unavoidable KDoc URLs)
+- K&R braces (`{` on the same line); wrap long function signatures with one parameter per line and `)` on its own line at the same indent as `fun`
+- ASCII-sorted imports; no wildcards
+- One statement per line; no semicolons
 
 Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). UI look helper: [`.cursor/skills/verify-dreamdroid/SKILL.md`](.cursor/skills/verify-dreamdroid/SKILL.md).
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2eventlist>
+	<e2event>
+		<e2eventid>39150</e2eventid>
+		<e2eventstart>1893456000</e2eventstart>
+		<e2eventduration>3600</e2eventduration>
+		<e2eventcurrenttime>1893452400</e2eventcurrenttime>
+		<e2eventtitle>Tagesschau</e2eventtitle>
+		<e2eventdescription>Nachrichten</e2eventdescription>
+		<e2eventdescriptionextended>Die Nachrichten um 20 Uhr.</e2eventdescriptionextended>
+		<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>Das Erste HD</e2eventservicename>
+	</e2event>
+	<e2event>
+		<e2eventid>50001</e2eventid>
+		<e2eventstart>1893456000</e2eventstart>
+		<e2eventduration>5400</e2eventduration>
+		<e2eventcurrenttime>1893452400</e2eventcurrenttime>
+		<e2eventtitle>heute</e2eventtitle>
+		<e2eventdescription>News</e2eventdescription>
+		<e2eventdescriptionextended>ZDF Nachrichten</e2eventdescriptionextended>
+		<e2eventservicereference>1:0:1:6DCB:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>ZDF HD</e2eventservicename>
+	</e2event>
+</e2eventlist>
