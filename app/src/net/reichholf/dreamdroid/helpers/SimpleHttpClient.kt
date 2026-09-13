@@ -14,6 +14,8 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,6 +25,7 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InterruptedIOException
 import java.io.UnsupportedEncodingException
 import java.net.ConnectException
 import java.net.HttpURLConnection
@@ -32,7 +35,10 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.net.UnknownHostException
 import java.security.SecureRandom
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
@@ -51,6 +57,12 @@ class SimpleHttpClient {
     private var mError: Boolean = false
     private var mRememberedReturnCode: Int = 0
     private var mConnectionTimeoutMillis: Int = 3000
+    private var okHttpClient: OkHttpClient? = null
+    private var okHttpTimeoutMillis: Int = -1
+    private var okHttpSsl: Boolean? = null
+    @Volatile
+    private var inFlight: Call? = null
+    private val fetchEpoch = AtomicInteger(0)
 
     constructor() {
         mProfile = null
@@ -203,8 +215,60 @@ class SimpleHttpClient {
         return builder.build()
     }
 
+    private fun httpClient(): OkHttpClient {
+        val ssl = mProfile?.ssl == true
+        val cached = okHttpClient
+        if (
+            cached != null &&
+            okHttpTimeoutMillis == mConnectionTimeoutMillis &&
+            okHttpSsl == ssl
+        ) {
+            return cached
+        }
+        val created = newClient()
+        okHttpClient = created
+        okHttpTimeoutMillis = mConnectionTimeoutMillis
+        okHttpSsl = ssl
+        return created
+    }
+
+    private fun executeInterruptibly(call: Call): Response {
+        val responseRef = AtomicReference<Response>()
+        val errorRef = AtomicReference<IOException>()
+        val done = CountDownLatch(1)
+        call.enqueue(
+            object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    errorRef.set(e)
+                    done.countDown()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    responseRef.set(response)
+                    done.countDown()
+                }
+            },
+        )
+        try {
+            done.await()
+        } catch (e: InterruptedException) {
+            call.cancel()
+            Thread.currentThread().interrupt()
+            val interrupted = InterruptedIOException()
+            interrupted.initCause(e)
+            throw interrupted
+        }
+        val error = errorRef.get()
+        if (error != null) {
+            throw error
+        }
+        return responseRef.get()
+    }
+
     fun fetchPageContent(uri: String, parameters: MutableList<NameValuePair>): Boolean {
         applyConfig()
+        inFlight?.cancel()
+        val epoch = fetchEpoch.incrementAndGet()
 
         mErrorText = ""
         mErrorTextId = -1
@@ -215,11 +279,13 @@ class SimpleHttpClient {
             path = "/$path"
         }
 
+        var call: Call? = null
         try {
+            val requestParams = ArrayList(parameters)
             if (mProfile!!.sessionId != null && !isSessionLess(path)) {
-                parameters.add(NameValuePair("sessionid", mProfile!!.sessionId))
+                requestParams.add(NameValuePair("sessionid", mProfile!!.sessionId))
             }
-            val urlString = buildUrl(path, parameters)
+            val urlString = buildUrl(path, requestParams)
             val requestBuilder = Request.Builder().url(urlString)
             authHeader()?.let { requestBuilder.header("Authorization", it) }
             if (DreamDroid.featurePostRequest()) {
@@ -228,23 +294,34 @@ class SimpleHttpClient {
                 requestBuilder.get()
             }
 
-            newClient().newCall(requestBuilder.build()).execute().use { response ->
-                return handleResponse(path, parameters, urlString, response)
+            call = httpClient().newCall(requestBuilder.build())
+            inFlight = call
+            if (Thread.currentThread().isInterrupted) {
+                call.cancel()
+                throw InterruptedIOException()
+            }
+            executeInterruptibly(call).use { response ->
+                return handleResponse(path, parameters, urlString, response, epoch)
             }
         } catch (e: MalformedURLException) {
+            if (epoch != fetchEpoch.get()) return false
             mError = true
             mErrorTextId = R.string.illegal_host
         } catch (e: UnknownHostException) {
+            if (epoch != fetchEpoch.get()) return false
             mError = true
             mErrorText = null
             mErrorTextId = R.string.host_not_found
         } catch (e: ProtocolException) {
+            if (epoch != fetchEpoch.get()) return false
             mError = true
             mErrorText = e.localizedMessage
         } catch (e: ConnectException) {
+            if (epoch != fetchEpoch.get()) return false
             mError = true
             mErrorTextId = R.string.host_unreach
         } catch (e: IOException) {
+            if (epoch != fetchEpoch.get()) return false
             when (val cause = e.cause) {
                 is UnknownHostException -> {
                     mError = true
@@ -262,11 +339,16 @@ class SimpleHttpClient {
                 }
             }
         } catch (e: NullPointerException) {
+            if (epoch != fetchEpoch.get()) return false
             e.printStackTrace()
             mError = true
             mErrorText = e.localizedMessage
         } finally {
-            if (mError) {
+            val finished = call
+            if (finished != null && inFlight === finished) {
+                inFlight = null
+            }
+            if (mError && epoch == fetchEpoch.get()) {
                 if (mErrorText == null) {
                     mErrorText = "Error text is null"
                 }
@@ -281,6 +363,7 @@ class SimpleHttpClient {
         parameters: MutableList<NameValuePair>,
         urlString: String,
         response: Response,
+        epoch: Int,
     ): Boolean {
         val code = response.code
         if (code != HttpURLConnection.HTTP_OK) {
@@ -298,6 +381,7 @@ class SimpleHttpClient {
                 mRememberedReturnCode = HttpURLConnection.HTTP_PRECON_FAILED
                 return fetchPageContent(uri, parameters)
             }
+            if (epoch != fetchEpoch.get()) return false
             mRememberedReturnCode = 0
             Log.e(LOG_TAG, code.toString())
             when (code) {
@@ -308,7 +392,9 @@ class SimpleHttpClient {
             mError = true
             return false
         }
-        mBytes = response.body?.bytes() ?: ByteArray(0)
+        val body = response.body?.bytes() ?: ByteArray(0)
+        if (epoch != fetchEpoch.get()) return false
+        mBytes = body
         if (DreamDroid.dumpXml()) {
             dumpToFile(urlString)
         }
