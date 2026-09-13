@@ -66,8 +66,8 @@ class Event : ExtendedHashMap {
         const val KEY_EVENT_TITLE: String = "eventtitle"
         const val KEY_EVENT_DESCRIPTION: String = "eventdescription"
         const val KEY_EVENT_DESCRIPTION_EXTENDED: String = "eventdescriptionextended"
-        val KEY_SERVICE_REFERENCE: String = Service.KEY_REFERENCE
-        val KEY_SERVICE_NAME: String = Service.KEY_NAME
+        const val KEY_SERVICE_REFERENCE: String = Service.KEY_REFERENCE
+        const val KEY_SERVICE_NAME: String = Service.KEY_NAME
 
         fun supplementReadables(event: ExtendedHashMap) {
             supplementReadables("", event)

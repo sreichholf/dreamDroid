@@ -31,7 +31,6 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.GregorianCalendar
-import java.util.Objects
 
 /**
  * @author sre
@@ -74,7 +73,7 @@ class DreamDroid : Application() {
             if (dbh.getProfiles().size > 0) {
                 for (p in dbh.getProfiles()) {
                     dbh.deleteProfile(p)
-                    p.setId(dao.addProfile(p))
+                    p.id = dao.addProfile(p).toInt()
                 }
                 // Legacy SQLite is migrate-only; drop the file once Room has the profiles.
                 appContext.deleteDatabase(DatabaseHelper.DATABASE_NAME)
@@ -99,18 +98,19 @@ class DreamDroid : Application() {
             val currentProfile = getCurrentProfile()
 
             Log.i(LOG_TAG, "currentWifiName = $currentWifiName")
-            Log.i(LOG_TAG, "currentProfileSsid = ${currentProfile.getSsid()}")
+            Log.i(LOG_TAG, "currentProfileSsid = ${currentProfile.ssid}")
             val dao = AppDatabase.profiles(getAppContext()!!)
             if (currentWifiName == null) {
                 Log.i(LOG_TAG, "not connected to wifi, will search for default profile")
                 // not connected to wifi, search for default profile
-                if (currentProfile.isDefaultProfileOnNoWifi()) {
+                if (currentProfile.isDefaultProfileOnNoWifi) {
                     Log.i(LOG_TAG, "currentProfile is default for NO WIFI, so no action required")
                 } else {
-                    val noWifiDefault = dao.getProfiles().firstOrNull { it.isDefaultProfileOnNoWifi() }
+                    val noWifiDefault = dao.getProfiles()
+                        .firstOrNull { it.isDefaultProfileOnNoWifi }
                     if (noWifiDefault != null) {
                         Log.i(LOG_TAG, "found profile for default ")
-                        setCurrentProfile(context, noWifiDefault.getId())
+                        setCurrentProfile(context, noWifiDefault.id ?: -1)
                     } else {
                         Log.w(LOG_TAG, "no default profile on no wifi found in all profiles.")
                     }
@@ -122,7 +122,7 @@ class DreamDroid : Application() {
                 )
                 // we are connected to a wifi
                 // check if current active profile fits to the wifi name
-                if (currentWifiName.equals(currentProfile.getSsid(), ignoreCase = true)) {
+                if (currentWifiName.equals(currentProfile.ssid, ignoreCase = true)) {
                     Log.i(LOG_TAG, "currentProfile has correct wifi name configured, so no action required")
                 } else {
                     Log.i(
@@ -131,11 +131,11 @@ class DreamDroid : Application() {
                     )
                     val wifiProfile = dao.getProfiles()
                         .firstOrNull { p ->
-                            p.getSsid() != null && p.getSsid()!!.equals(currentWifiName, ignoreCase = true)
+                            p.ssid != null && p.ssid.equals(currentWifiName, ignoreCase = true)
                         }
                     if (wifiProfile != null) {
                         Log.i(LOG_TAG, "found profile with configured ssid ")
-                        setCurrentProfile(context, wifiProfile.getId())
+                        setCurrentProfile(context, wifiProfile.id ?: -1)
                     } else {
                         Log.w(LOG_TAG, "no profile found with ssid configured for $wifiProfile")
                     }
@@ -339,7 +339,7 @@ class DreamDroid : Application() {
         fun loadCurrentProfile(context: Context) {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             val profileId = sp.getInt(CURRENT_PROFILE, 1)
-            if (sProfile != null && sProfile!!.getId() == profileId) {
+            if (sProfile != null && sProfile!!.id == profileId) {
                 return
             }
 
@@ -362,7 +362,7 @@ class DreamDroid : Application() {
                     null, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
                     false, false, "", "", "", "",
                 )
-                p.setId(dao.addProfile(p))
+                p.id = dao.addProfile(p).toInt()
 
                 val editor = sp.edit()
                 editor.remove(CURRENT_PROFILE)
@@ -406,13 +406,13 @@ class DreamDroid : Application() {
                 val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
                 editor.putInt(CURRENT_PROFILE, id)
                 editor.apply()
-                if (!sProfile!!.equals(oldProfile) || forceEvent) {
+                if (!sProfile!!.hasSameSettings(oldProfile) || forceEvent) {
                     // reset locations and tags, they will be reloaded when needed the next time
                     sLocations.clear()
                     sTags.clear()
                     activeProfileChanged()
-                } else if (Objects.equals(sProfile!!.getId(), oldProfile.getId())) {
-                    sProfile!!.setSessionId(oldProfile.getSessionId())
+                } else if (sProfile!!.id == oldProfile.id) {
+                    sProfile!!.sessionId = oldProfile.sessionId
                 }
                 return true
             } else {
@@ -426,7 +426,7 @@ class DreamDroid : Application() {
         }
 
         fun profileChanged(context: Context, p: Profile) {
-            if (Objects.equals(p.getId(), sProfile!!.getId())) {
+            if (p.id == sProfile!!.id) {
                 reloadCurrentProfile(context)
             }
         }
@@ -445,7 +445,7 @@ class DreamDroid : Application() {
          * @return
          */
         fun reloadCurrentProfile(ctx: Context): Boolean {
-            return setCurrentProfile(ctx, sProfile!!.getId(), true)
+            return setCurrentProfile(ctx, sProfile!!.id ?: -1, true)
         }
 
         /**

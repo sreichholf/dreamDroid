@@ -74,7 +74,7 @@ fun ProfileEditDestination(
             toast(context.getText(R.string.profile_updated).toString() + " '" + currentProfile.name + "'")
             hostFragment.deliverPickResult(Activity.RESULT_OK, null)
         } else {
-            currentProfile.setId(dao.addProfile(currentProfile))
+            currentProfile.id = dao.addProfile(currentProfile).toInt()
             toast(context.getText(R.string.profile_added).toString() + " '" + currentProfile.name + "'")
             hostFragment.deliverPickResult(Activity.RESULT_OK, null)
         }

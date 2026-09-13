@@ -71,14 +71,6 @@ class VideoOverlayFragment :
     ItemClickSupport.OnItemClickListener,
     DialogActionListener {
 
-    val TITLE: String = "title"
-
-    val SERVICE_INFO: String = "serviceInfo"
-
-    val BOUQUET_REFERENCE: String = "bouquetRef"
-
-    val SERVICE_REFERENCE: String = "serviceRef"
-
     protected var mSurfaceHeight: Int = 0
     protected var mSurfaceWidth: Int = 0
 
@@ -886,6 +878,11 @@ class VideoOverlayFragment :
     }
 
     companion object {
+        const val TITLE: String = "title"
+        const val SERVICE_INFO: String = "serviceInfo"
+        const val BOUQUET_REFERENCE: String = "bouquetRef"
+        const val SERVICE_REFERENCE: String = "serviceRef"
+
         const val DIALOG_TAG_AUDIO_TRACK: String = "dialog_audio_track"
         const val DIALOG_TAG_SUBTITLE_TRACK: String = "dialog_subtitle_track"
 

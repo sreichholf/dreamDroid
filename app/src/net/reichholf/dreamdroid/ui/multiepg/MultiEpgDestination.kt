@@ -88,7 +88,7 @@ fun MultiEpgDestination(
         MultiEpgSession(
             sync = sync,
             scope = scope,
-            profileId = { DreamDroid.getCurrentProfile().getId() },
+            profileId = { DreamDroid.getCurrentProfile().id ?: -1 },
             noBouquetMessage = context.getString(
                 R.string.multiepg_sync_test_no_bouquet,
             ),

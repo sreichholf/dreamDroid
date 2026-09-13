@@ -90,11 +90,11 @@ class ProfileEditScreenTest {
     @Test
     fun editModeSeedsProfileFields() {
         val profile = Profile.getDefault()
-        profile.setName("Living Room")
-        profile.setHost("192.168.1.50")
+        profile.name = "Living Room"
+        profile.host = "192.168.1.50"
         profile.setPort("8080", false, false)
-        profile.setLogin(true)
-        profile.setUser("admin")
+        profile.login = true
+        profile.user = "admin"
         val state = ProfileEditState.fromProfile(profile)
         composeRule.setContent {
             DreamDroidTheme {

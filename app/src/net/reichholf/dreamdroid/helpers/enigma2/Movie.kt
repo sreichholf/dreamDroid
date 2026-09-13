@@ -50,11 +50,11 @@ class Movie : ExtendedHashMap, Serializable {
     fun fileSizeReadable(): String? = getString(KEY_FILE_SIZE_READABLE)
 
     companion object {
-        val KEY_REFERENCE: String = Service.KEY_REFERENCE
+        const val KEY_REFERENCE: String = Service.KEY_REFERENCE
         const val KEY_TITLE: String = "title"
         const val KEY_DESCRIPTION: String = "description"
         const val KEY_DESCRIPTION_EXTENDED: String = "descriptionEx"
-        val KEY_SERVICE_NAME: String = Service.KEY_NAME
+        const val KEY_SERVICE_NAME: String = Service.KEY_NAME
         const val KEY_TIME: String = "time"
         const val KEY_TIME_READABLE: String = "time_readable"
         const val KEY_LENGTH: String = "length"

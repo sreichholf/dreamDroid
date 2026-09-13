@@ -73,7 +73,7 @@ class BackupService(context: Context) {
             if (existingProfile != null) {
                 mProfiles.deleteProfile(existingProfile)
             }
-            profile.setId(mProfiles.addProfile(profile))
+            profile.id = mProfiles.addProfile(profile).toInt()
         }
         val settings = backupData.getSettings()
         @Suppress("UNCHECKED_CAST")
