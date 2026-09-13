@@ -12,7 +12,11 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -26,6 +30,15 @@ class ProfileEditScreenTest {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext,
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+    }
+
+    @After
+    fun deleteF05Profiles() {
+        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        val dao = AppDatabase.profiles(ctx)
+        dao.getProfiles()
+            .filter { it.name?.startsWith("f05-") == true }
+            .forEach { dao.deleteProfile(it) }
     }
 
     @Test
@@ -112,5 +125,34 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("User").assertIsDisplayed()
         composeRule.onNodeWithText("admin").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Save").assertIsDisplayed()
+    }
+
+    @Test
+    fun emptyHostSaveDoesNotAddProfile() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        state.name = "f05-empty-host"
+        state.host = ""
+        var outcome: ProfilePersistOutcome? = null
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {
+                        val profile = Profile.getDefault()
+                        state.applyTo(profile)
+                        outcome = persistEditedProfile(context, profile)
+                    },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Save").performClick()
+        assertEquals("The host name cannot be empty!", outcome!!.message)
+        assertFalse(outcome!!.saved)
+        val saved = AppDatabase.profiles(context).getProfiles()
+            .any { it.name == "f05-empty-host" }
+        assertFalse(saved)
     }
 }

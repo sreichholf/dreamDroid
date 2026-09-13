@@ -6,7 +6,12 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -20,6 +25,21 @@ class ProfilesScreenTest {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext,
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+    }
+
+    @After
+    fun deleteF05Profiles() {
+        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        val dao = AppDatabase.profiles(ctx)
+        val keep = dao.getProfiles().firstOrNull {
+            it.name?.startsWith("f05-") != true && it.id != null
+        }
+        dao.getProfiles()
+            .filter { it.name?.startsWith("f05-") == true }
+            .forEach { dao.deleteProfile(it) }
+        if (keep?.id != null) {
+            DreamDroid.setCurrentProfile(ctx, keep.id!!, true)
+        }
     }
 
     @Test
@@ -42,5 +62,31 @@ class ProfilesScreenTest {
         }
         composeRule.onNodeWithText("Demo").assertIsDisplayed()
         composeRule.onNodeWithText("dreamdroid.org").assertIsDisplayed()
+    }
+
+    @Test
+    fun deletingActiveProfileDoesNotKeepGoneId() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val dao = AppDatabase.profiles(context)
+        val keep = Profile.getDefault().apply {
+            name = "f05-keep"
+            host = "10.0.0.2"
+        }
+        val gone = Profile.getDefault().apply {
+            name = "f05-gone"
+            host = "10.0.0.1"
+        }
+        keep.id = dao.addProfile(keep).toInt()
+        gone.id = dao.addProfile(gone).toInt()
+        DreamDroid.setCurrentProfile(context, gone.id!!, true)
+
+        val message = deleteConfirmedProfile(context, gone)
+
+        assertEquals("Deleted profile 'f05-gone'", message)
+        assertFalse(dao.getProfiles().any { it.id == gone.id })
+        assertEquals(keep.id, DreamDroid.getCurrentProfile().id)
+        val prefId = PreferenceManager.getDefaultSharedPreferences(context)
+            .getInt(DreamDroid.CURRENT_PROFILE, -1)
+        assertEquals(keep.id, prefId)
     }
 }

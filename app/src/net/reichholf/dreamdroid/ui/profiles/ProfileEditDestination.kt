@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.profiles
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.view.Menu
 import android.view.MenuInflater
@@ -57,25 +58,9 @@ fun ProfileEditDestination(
 
     fun save() {
         editState.applyTo(currentProfile)
-        val dao = AppDatabase.profiles(context)
-        val id = currentProfile.id ?: 0
-        if (id > 0) {
-            if (currentProfile.host.isNullOrEmpty()) {
-                toast(context.getText(R.string.host_empty))
-                return
-            }
-            if (currentProfile.streamHost == null) {
-                currentProfile.streamHost = ""
-            }
-            dao.updateProfile(currentProfile)
-            if (currentProfile.id == DreamDroid.getCurrentProfile().id) {
-                DreamDroid.setCurrentProfile(currentProfile)
-            }
-            toast(context.getText(R.string.profile_updated).toString() + " '" + currentProfile.name + "'")
-            hostFragment.deliverPickResult(Activity.RESULT_OK, null)
-        } else {
-            currentProfile.id = dao.addProfile(currentProfile).toInt()
-            toast(context.getText(R.string.profile_added).toString() + " '" + currentProfile.name + "'")
+        val outcome = persistEditedProfile(context, currentProfile)
+        toast(outcome.message)
+        if (outcome.saved) {
             hostFragment.deliverPickResult(Activity.RESULT_OK, null)
         }
     }
@@ -120,5 +105,44 @@ fun ProfileEditDestination(
         saveLabel = context.getString(R.string.save),
         onSave = { save() },
         modifier = modifier,
+    )
+}
+
+internal data class ProfilePersistOutcome(
+    val saved: Boolean,
+    val message: String,
+)
+
+internal fun persistEditedProfile(
+    context: Context,
+    profile: Profile,
+): ProfilePersistOutcome {
+    if (profile.host.isNullOrEmpty()) {
+        return ProfilePersistOutcome(
+            saved = false,
+            message = context.getString(R.string.host_empty),
+        )
+    }
+    if (profile.streamHost == null) {
+        profile.streamHost = ""
+    }
+    val dao = AppDatabase.profiles(context)
+    val id = profile.id ?: 0
+    if (id > 0) {
+        dao.updateProfile(profile)
+        if (profile.id == DreamDroid.getCurrentProfile().id) {
+            DreamDroid.setCurrentProfile(profile)
+        }
+        return ProfilePersistOutcome(
+            saved = true,
+            message = context.getText(R.string.profile_updated).toString() +
+                " '" + profile.name + "'",
+        )
+    }
+    profile.id = dao.addProfile(profile).toInt()
+    return ProfilePersistOutcome(
+        saved = true,
+        message = context.getText(R.string.profile_added).toString() +
+            " '" + profile.name + "'",
     )
 }
