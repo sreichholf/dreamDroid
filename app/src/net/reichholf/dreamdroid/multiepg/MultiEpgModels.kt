@@ -69,7 +69,7 @@ fun buildMultiEpgChannels(
             previousBars[barReuseKey(channel.serviceRef, bar.event.eventId)] = bar
         }
     }
-    val byService = LinkedHashMap<String, MutableList<MultiEpgBar>>()
+    val byService = LinkedHashMap<String, LinkedHashMap<String, MultiEpgBar>>()
     val names = HashMap<String, String>()
     for (event in events) {
         val ref = event.serviceReference.trim()
@@ -77,9 +77,10 @@ fun buildMultiEpgChannels(
         val start = event.start.toLongOrNull() ?: continue
         val duration = event.duration.toLongOrNull()?.coerceAtLeast(0L) ?: 0L
         val end = start + duration
-        byService.getOrPut(ref) { ArrayList() }.add(
-            reuseOrCreateBar(previousBars, ref, event, start, end),
-        )
+        val eventId = event.eventId.trim()
+        if (eventId.isEmpty()) continue
+        val barsForService = byService.getOrPut(ref) { LinkedHashMap() }
+        barsForService[eventId] = reuseOrCreateBar(previousBars, ref, event, start, end)
         if (!names.containsKey(ref)) {
             names[ref] = event.serviceName.ifBlank { ref }
         }
@@ -88,25 +89,27 @@ fun buildMultiEpgChannels(
     if (playable.isNotEmpty()) {
         for (service in playable) {
             val ref = service.reference
-            val bars = byService.remove(ref) ?: mutableListOf()
-            bars.sortBy { it.startSec }
+            val bars = barList(byService.remove(ref))
             val name = service.name.ifBlank { names[ref] ?: ref }
             out.add(channelRow(ref, name, bars, previousChannels))
         }
-        for ((ref, bars) in byService) {
-            bars.sortBy { it.startSec }
-            out.add(channelRow(ref, names[ref] ?: ref, bars, previousChannels))
+        for ((ref, barsById) in byService) {
+            out.add(channelRow(ref, names[ref] ?: ref, barList(barsById), previousChannels))
         }
     } else {
-        for ((ref, bars) in byService) {
-            bars.sortBy { it.startSec }
-            out.add(channelRow(ref, names[ref] ?: ref, bars, previousChannels))
+        for ((ref, barsById) in byService) {
+            out.add(channelRow(ref, names[ref] ?: ref, barList(barsById), previousChannels))
         }
     }
     if (out.size == previous.size && out.indices.all { out[it] === previous[it] }) {
         return previous
     }
     return out
+}
+
+private fun barList(barsById: LinkedHashMap<String, MultiEpgBar>?): List<MultiEpgBar> {
+    if (barsById == null || barsById.isEmpty()) return emptyList()
+    return barsById.values.sortedBy { it.startSec }
 }
 
 private fun channelRow(

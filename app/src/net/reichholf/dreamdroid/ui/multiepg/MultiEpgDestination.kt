@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
+import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
 import net.reichholf.dreamdroid.multiepg.MultiEpgSession
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
@@ -44,18 +45,17 @@ fun MultiEpgDestination(
     val activity = context as AppCompatActivity
     val scope = rememberCoroutineScope()
     val leafArgs = hostFragment.epgLeafArguments()
-
-    var bouquetRef by rememberSaveable(remountEpoch) {
-        mutableStateOf(leafArgs.getString(EventKeys.KEY_SERVICE_REFERENCE).orEmpty())
-    }
-    var bouquetName by rememberSaveable(remountEpoch) {
-        mutableStateOf(leafArgs.getString(EventKeys.KEY_SERVICE_NAME).orEmpty())
-    }
-    var anchorSec by rememberSaveable(remountEpoch) {
+    val bouquetRef = MultiEpgRestore.bouquetRef(
+        leafArgs.getString(EventKeys.KEY_SERVICE_REFERENCE),
+    )
+    val bouquetName = MultiEpgRestore.bouquetName(
+        leafArgs.getString(EventKeys.KEY_SERVICE_NAME),
+    )
+    var anchorSec by remember(remountEpoch, bouquetRef) {
         mutableLongStateOf(System.currentTimeMillis() / 1000L)
     }
     var focusEpoch by remember { mutableIntStateOf(0) }
-    var visibleMinutes by rememberSaveable(remountEpoch) {
+    var visibleMinutes by rememberSaveable {
         mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
     }
     val prefs = remember(context) {

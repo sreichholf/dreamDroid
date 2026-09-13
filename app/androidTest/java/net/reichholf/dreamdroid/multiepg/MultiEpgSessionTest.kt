@@ -519,6 +519,50 @@ class MultiEpgSessionTest {
         assertTrue(session.channels[0].bars.isNotEmpty())
     }
 
+    @Test
+    fun spanningProgrammeIsOneBarAcrossAdjacentChunks() = runBlocking {
+        val chunk0 = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val spanStart = chunk0.endSec - 1800L
+        val spanning = programme(
+            id = "span",
+            title = "Overnight",
+            start = spanStart,
+            duration = "7200",
+        )
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                if (time == chunk0.startSec) {
+                    listOf(
+                        spanning,
+                        programme(id = "a", title = "A", start = time),
+                    )
+                } else {
+                    listOf(
+                        spanning,
+                        programme(id = "b", title = "B", start = time),
+                    )
+                }
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val origin = chunk0.endSec - 600L
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+        )
+        session.replaceAndLoad("bouquet-a", origin)
+        session.awaitIdle()
+        session.onVisibleWindow(origin, origin + 4L * 3600L)
+        session.awaitIdle()
+        val spanBars = session.channels.single().bars.filter { it.event.eventId == "span" }
+        assertEquals(1, spanBars.size)
+        assertEquals("Overnight", spanBars.single().event.title)
+    }
+
     private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
         for (channel in session.channels) {

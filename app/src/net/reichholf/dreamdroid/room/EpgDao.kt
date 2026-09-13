@@ -14,16 +14,21 @@ interface EpgDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun upsertChunk(meta: EpgChunkMetaEntity)
 
+    /**
+     * Drop programmes that **start** inside the chunk. Events that began earlier
+     * and span this window stay; overlapping DELETE was wiping those rows when
+     * the next 24 h chunk was stored.
+     */
     @Query(
         """
         DELETE FROM epg_event
         WHERE profileId = :profileId
           AND bouquetRef = :bouquetRef
+          AND start >= :windowStart
           AND start < :windowEnd
-          AND (start + duration) > :windowStart
         """,
     )
-    fun deleteEventsOverlapping(
+    fun deleteEventsStartingIn(
         profileId: Int,
         bouquetRef: String,
         windowStart: Long,
@@ -32,7 +37,7 @@ interface EpgDao {
 
     @Transaction
     fun replaceChunk(meta: EpgChunkMetaEntity, events: List<EpgEventEntity>) {
-        deleteEventsOverlapping(
+        deleteEventsStartingIn(
             meta.profileId,
             meta.bouquetRef,
             meta.windowStart,
