@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
 import android.content.DialogInterface
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
@@ -263,9 +264,11 @@ class PhoneNavHostFragment : BaseFragment() {
 
     fun attachNavController(controller: NavHostController) {
         navController = controller
-        controller.addOnDestinationChangedListener { _, _, _ ->
-            backCallback.isEnabled = controller.previousBackStackEntry != null
-        }
+    controller.addOnDestinationChangedListener { _, dest, _ ->
+        backCallback.isEnabled = controller.previousBackStackEntry != null
+        val previous = controller.previousBackStackEntry?.destination?.route
+        (activity as? DrawerRouteHighlighter)?.highlightDrawerForRoute(dest.route, previous)
+    }
         backCallback.isEnabled = controller.previousBackStackEntry != null
         flushPendingNavigations()
     }

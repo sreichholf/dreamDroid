@@ -100,6 +100,7 @@ fun ProfilesDestination(
         IndeterminateProgressDialog(
             title = stringResource(R.string.searching),
             message = stringResource(R.string.searching_known_devices),
+            onDismiss = { showDetectProgress = false },
         )
     }
     showDeleteConfirm?.let { title ->

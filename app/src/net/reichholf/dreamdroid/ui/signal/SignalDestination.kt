@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
@@ -69,7 +70,7 @@ fun SignalDestination(modifier: Modifier = Modifier) {
             override fun run() {
                 val db = uiState.snrDb
                 val freq = (1650 * db * db) / 1000 + 200
-                playAcousticTone(freq)
+                scope.launch(Dispatchers.IO) { playAcousticTone(freq) }
                 var delay = MIN_DELAY * (MAX_SNR_DB.toDouble().pow(3) / db.pow(3))
                 if (delay > MAX_DELAY) {
                     delay = MAX_DELAY.toDouble()

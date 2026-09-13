@@ -132,6 +132,27 @@ class ChoiceDialogsHostTest {
     }
 
     @Test
+    fun indeterminateProgressHonorsBack() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                IndeterminateProgressHost(
+                    IndeterminateProgressState(
+                        title = "Searching",
+                        message = "Looking for devices",
+                    ),
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Searching").assertIsDisplayed()
+        composeRule.runOnIdle {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Searching").assertDoesNotExist()
+    }
+
+    @Test
     fun confirmContentColorIsOnSurface() {
         var localContent = Color.Unspecified
         var onSurface = Color.Unspecified
