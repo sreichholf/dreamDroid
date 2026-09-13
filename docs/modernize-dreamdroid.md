@@ -179,6 +179,7 @@ GitHub Actions: [`.github/workflows/android-ci.yml`](../.github/workflows/androi
 | near-zero-java-main-activity | [#333](https://github.com/sreichholf/dreamDroid/pull/333) | merged | Kotlin-port phone `MainActivity` shell. Keep dialogs / VideoOverlay / Leanback / RemoteViews / HttpURLConnection. |
 | near-zero-java-keepers-only | [#334](https://github.com/sreichholf/dreamDroid/pull/334) | merged | Near-zero production Java reached: **15** Java files left that were recorded as temporary keepers — `fragment/dialogs/*` (8), `VideoOverlayFragment`, Leanback `tv/{activities,fragment,presenter}` (4), `SimpleHttpClient` (widget provider now Kotlin Glance; dialogs/VideoOverlay/Leanback/`SimpleHttpClient` still Java). Those keepers are **not** permanent; operator reopen (2026-09-11) retires them toward SOTA. |
 | tv-mainactivity-kotlin | [#350](https://github.com/sreichholf/dreamDroid/pull/350) | open | SOTA: Kotlin-port TV `MainActivity` (Compose hub host + Picasso/SSL bootstrap); retire last Leanback-package Java activity. |
+| drop-jvm-interop-annotations | this PR | Drop `@JvmStatic` / `@JvmOverloads` / `@JvmField` left from Java→Kotlin ports now that `app/src` has no Java. Keep `@JvmField` on `Profile` so explicit getX/setX do not clash. |
 | docs-sota-no-keepers | [#335](https://github.com/sreichholf/dreamDroid/pull/335) | merged | Operator override: no permanent keepers. Supersede Phase **2.1g** option A — dialogs → Compose Material 3 / Navigation `dialog` destinations. Reopen widgets Glance, Enigma2 OkHttp, VideoOverlay Kotlin, Leanback Compose hub as scheduled SOTA work. Docs only. |
 
 Wave 1 of this plan is on `main`. It is **not** a finished modernization. See Appendix E / H.
@@ -195,7 +196,8 @@ Wave 3 (operator choice): convert remaining **non-Compose phone UIs** to Compose
 - Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 - Theme follows `DreamDroid.getThemeType()`. Default `"1"` is always night. Do not reopen `colorSchemeFromViewTheme`. Version/license `Text` uses `onSurface`. Dialog-hosted Compose must be tested in a dialog/`ComposeView`, not only `setContent { }`.
 - `captureToImage` on this AVD returns black pixels even for light content. Do not use pixel-luminance tests.
-- Java calling Kotlin `(T) -> Unit` must `return kotlin.Unit.INSTANCE`. `DisposeOnViewTreeLifecycleDestroyed` is set from Kotlin, not Java.
+- ComposeView hosts use `ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed`.
+- `app/src` is Kotlin-only. Do not re-add `@JvmStatic` / `@JvmOverloads` / `@JvmField` for Java callers. Keep `@JvmField` on `Profile` fields (explicit getX/setX).
 - Two googleDebug processes cannot share one device. Gradle 9.6 / AGP 9.4 on JDK 25 (bytecode Java 17).
 
 ### Not done, recorded so it is not pretended done
@@ -552,6 +554,8 @@ Kotlin plugin is 1.9.24 with Compose compiler 1.5.14. OkHttp **this PR** bumps P
 Test APK must define `app_name_debug` / `app_name_tv_debug` or AAPT fails.
 
 Do not merge `cursor/verify-dreamdroid-skill` (or any other `master`-based branch) into `main`. Port files.
+
+`app/src` has no Java sources. `@JvmStatic` / `@JvmOverloads` / `@JvmField` were Java-caller shims from the Kotlin ports; do not put them back. `@JvmField` stays on `Profile` because the entity still has explicit getX/setX methods.
 
 ## Appendix E. What wave 1 did not cover
 

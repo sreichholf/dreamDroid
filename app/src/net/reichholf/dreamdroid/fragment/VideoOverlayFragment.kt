@@ -71,16 +71,12 @@ class VideoOverlayFragment :
     ItemClickSupport.OnItemClickListener,
     DialogActionListener {
 
-    @JvmField
     val TITLE: String = "title"
 
-    @JvmField
     val SERVICE_INFO: String = "serviceInfo"
 
-    @JvmField
     val BOUQUET_REFERENCE: String = "bouquetRef"
 
-    @JvmField
     val SERVICE_REFERENCE: String = "serviceRef"
 
     protected var mSurfaceHeight: Int = 0
@@ -898,10 +894,8 @@ class VideoOverlayFragment :
 
         private val LOG_TAG: String = VideoOverlayFragment::class.java.simpleName
 
-        @JvmField
         var sOverlayAlpha: Float = 0.85f
 
-        @JvmField
         var sSeekStepSize: Float = 0.02f
     }
 }

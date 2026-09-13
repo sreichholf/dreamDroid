@@ -110,7 +110,6 @@ class EpgDetailDialog : DialogFragment() {
         private const val ARG_TYPED_EVENT = "typedEvent"
         private const val ARG_HASH_EVENT = "Event"
 
-        @JvmStatic
         fun newInstance(epg: Event): EpgDetailDialog {
             val args = Bundle()
             args.putSerializable(ARG_TYPED_EVENT, epg)
@@ -119,7 +118,6 @@ class EpgDetailDialog : DialogFragment() {
             return fragment
         }
 
-        @JvmStatic
         fun newInstance(epg: HashEvent): EpgDetailDialog {
             val args = Bundle()
             args.putSerializable(ARG_HASH_EVENT, epg)

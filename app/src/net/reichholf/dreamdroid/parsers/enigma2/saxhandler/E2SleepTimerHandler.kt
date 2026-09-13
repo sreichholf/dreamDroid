@@ -58,15 +58,10 @@ class E2SleepTimerHandler : E2SimpleHandler() {
     }
 
     companion object {
-        @JvmStatic
         protected val TAG_E2SLEEPTIMER: String = "e2sleeptimer"
-        @JvmStatic
         protected val TAG_E2ENABLED: String = "e2enabled"
-        @JvmStatic
         protected val TAG_E2MINUTES: String = "e2minutes"
-        @JvmStatic
         protected val TAG_E2ACTION: String = "e2action"
-        @JvmStatic
         protected val TAG_E2TEXT: String = "e2text"
     }
 }

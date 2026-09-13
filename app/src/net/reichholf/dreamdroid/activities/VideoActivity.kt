@@ -457,7 +457,6 @@ class VideoActivity :
     }
 
     companion object {
-        @JvmField
         val TAG: String = VideoActivity::class.java.simpleName
     }
 }

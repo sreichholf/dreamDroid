@@ -39,8 +39,6 @@ object WidgetRemoteRequest {
 	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 	private val mainHandler = Handler(Looper.getMainLooper())
 
-	@JvmStatic
-	@JvmOverloads
 	fun enqueue(context: Context, intent: Intent, onComplete: Runnable? = null) {
 		val app = context.applicationContext
 		scope.launch {

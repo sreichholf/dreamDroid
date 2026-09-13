@@ -97,7 +97,6 @@ class ProfileEditState {
     }
 
     companion object {
-        @JvmStatic
         fun fromProfile(profile: Profile): ProfileEditState {
             return ProfileEditState().also { it.loadFrom(profile) }
         }

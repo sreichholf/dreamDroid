@@ -378,17 +378,13 @@ class SimpleHttpClient {
     }
 
     companion object {
-        @JvmField
         val LOG_TAG: String = SimpleHttpClient::class.java.simpleName
 
-        @JvmField
         val BIG_BUCK_BUNNY_URL: String =
             "https://dreamdroid.org/bunny/big_buck_bunny_720p_h264.mov"
 
-        @JvmStatic
         fun getInstance(): SimpleHttpClient = SimpleHttpClient()
 
-        @JvmStatic
         fun getInstance(p: Profile?): SimpleHttpClient = SimpleHttpClient(p)
     }
 }

@@ -116,10 +116,8 @@ class GenericSaxParser : DataParser {
     fun getErrorText(): String? = mErrorText
 
     companion object {
-        @JvmField
         val LOG_TAG: String = GenericSaxParser::class.java.simpleName
 
-        @JvmField
         val sControlPatternAggressive: Pattern = Pattern.compile("\\p{C}")
     }
 }

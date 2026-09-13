@@ -2,9 +2,9 @@
 
 Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Build with **JDK 25**.
 
-**New code is Kotlin.** Do not add new `.java` types for modernization work (helpers, UI, loaders, widgets). Edit existing Java surgically when needed; convert to Kotlin when touching a file heavily or extracting a new type. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`.
+**New code is Kotlin.** `app/src` has no Java sources. Do not add `.java` types under `app/src`. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`. Do not add `@JvmStatic`/`@JvmOverloads`/`@JvmField` for Java callers; keep `@JvmField` on `Profile` fields while explicit getX/setX remain.
 
-**Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Stick to it on every pass — do not retab, re-wrap, or invent a house indent. Converted Kotlin is formatted to this guide (do not keep Java tabs in the new file). Existing Java keeps its tab indent; edit it surgically and do not reindent whole files.
+**Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Stick to it on every pass — do not retab, re-wrap, or invent a house indent. Converted Kotlin is formatted to this guide (do not keep Java tabs in the new file).
 
 Hard rules for agents:
 - 4 spaces, never tabs

@@ -18,9 +18,7 @@ import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment
 
 class FragmentHelper {
     private var mFragment: Fragment? = null
-    @JvmField
     protected var mCurrentTitle: String? = null
-    @JvmField
     protected var mBaseTitle: String? = null
 
     constructor()

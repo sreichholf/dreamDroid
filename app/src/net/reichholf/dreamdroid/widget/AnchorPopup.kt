@@ -15,7 +15,6 @@ object AnchorPopup {
 		fun configure(menu: PopupMenu)
 	}
 
-	@JvmStatic
 	fun showAt(
 			root: ViewGroup,
 			xInRoot: Int,
@@ -41,7 +40,6 @@ object AnchorPopup {
 	}
 
 	/** Convert window coordinates to offsets inside [root]. */
-	@JvmStatic
 	fun showAtWindow(
 			root: ViewGroup,
 			windowX: Int,

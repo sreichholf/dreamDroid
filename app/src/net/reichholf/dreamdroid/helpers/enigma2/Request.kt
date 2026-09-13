@@ -18,10 +18,8 @@ import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleListHandler
  * @author sre
  */
 object Request {
-    @JvmStatic
     fun get(shc: SimpleHttpClient, uri: String): String? = get(shc, uri, ArrayList())
 
-    @JvmStatic
     fun get(shc: SimpleHttpClient, uri: String, params: ArrayList<NameValuePair>?): String? {
         val p = params ?: ArrayList()
         if (shc.fetchPageContent(uri, p)) {
@@ -30,7 +28,6 @@ object Request {
         return null
     }
 
-    @JvmStatic
     fun getBytes(shc: SimpleHttpClient, uri: String, params: ArrayList<NameValuePair>?): ByteArray {
         val p = params ?: ArrayList()
         if (shc.fetchPageContent(uri, p)) {
@@ -39,7 +36,6 @@ object Request {
         return ByteArray(0)
     }
 
-    @JvmStatic
     fun getBytes(shc: SimpleHttpClient, uri: String?): ByteArray {
         if (shc.fetchPageContent(uri!!)) {
             return shc.bytes
@@ -47,7 +43,6 @@ object Request {
         return ByteArray(0)
     }
 
-    @JvmStatic
     fun parse(xml: String?, result: ExtendedHashMap?, handler: E2SimpleHandler): Boolean {
         val sdp = SaxDataProvider(GenericSaxParser())
         handler.setMap(result)
@@ -55,7 +50,6 @@ object Request {
         return sdp.parse(xml)
     }
 
-    @JvmStatic
     fun parseList(xml: String?, list: ArrayList<String>?, handler: E2SimpleListHandler): Boolean {
         val sdp = SaxDataProvider(GenericSaxParser())
         handler.setList(list)

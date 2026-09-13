@@ -415,128 +415,87 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     companion object {
         private const val DATABASE_VERSION = 14
 
-        @JvmField
         val LOG_TAG: String = DatabaseHelper::class.java.simpleName
 
-        @JvmField
         val KEY_PROFILE_ID = "_id"
 
-        @JvmField
         val KEY_PROFILE_PROFILE = "profile"
 
-        @JvmField
         val KEY_PROFILE_HOST = "host"
 
-        @JvmField
         val KEY_PROFILE_STREAM_HOST = "streamhost"
 
-        @JvmField
         val KEY_PROFILE_STREAM_PORT = "streamport"
 
-        @JvmField
         val KEY_PROFILE_STREAM_LOGIN = "streamlogin"
 
-        @JvmField
         val KEY_PROFILE_FILE_PORT = "fileport"
 
-        @JvmField
         val KEY_PROFILE_PORT = "port"
 
-        @JvmField
         val KEY_PROFILE_LOGIN = "login"
 
-        @JvmField
         val KEY_PROFILE_USER = "user"
 
-        @JvmField
         val KEY_PROFILE_PASS = "pass"
 
-        @JvmField
         val KEY_PROFILE_SSL = "ssl"
 
-        @JvmField
         val KEY_PROFILE_FILE_SSL = "file_ssl"
 
-        @JvmField
         val KEY_PROFILE_FILE_LOGIN = "file_login"
 
-        @JvmField
         val KEY_PROFILE_SIMPLE_REMOTE = "simpleremote"
 
-        @JvmField
         val KEY_PROFILE_DEFAULT_REF = "default_ref"
 
-        @JvmField
         val KEY_PROFILE_DEFAULT_REF_NAME = "default_ref_name"
 
-        @JvmField
         val KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2"
 
-        @JvmField
         val KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name"
 
-        @JvmField
         val KEY_SSID = "ssid"
 
-        @JvmField
         val KEY_DEFAULT_PROFILE_ON_NO_WIFI = "defaultProfileOnNoWifi"
 
         // ENCODER
-        @JvmField
         val KEY_PROFILE_ENCODER_STREAM = "encoder_stream"
 
-        @JvmField
         val KEY_PROFILE_ENCODER_PATH = "encoder_path"
 
-        @JvmField
         val KEY_PROFILE_ENCODER_PORT = "encoder_port"
 
-        @JvmField
         val KEY_PROFILE_ENCODER_LOGIN = "encoder_login"
 
-        @JvmField
         val KEY_PROFILE_ENCODER_USER = "encoder_user"
 
-        @JvmField
         val KEY_PROFILE_ENCODER_PASS = "encoder_pass"
 
-        @JvmField
         val KEY_PROFILE_ENCODER_VIDEO_BITRATE = "encoder_video_bitrate"
 
-        @JvmField
         val KEY_PROFILE_ENCODER_AUDIO_BITRATE = "encoder_audio_bitrate"
 
-        @JvmField
         val KEY_PROFILE_TRUST_ALL_CERTS = "trust_all_certs"
 
-        @JvmField
         val KEY_EVENT_ID = "id"
 
-        @JvmField
         val KEY_EVENT_START = "start"
 
-        @JvmField
         val KEY_EVENT_DURATION = "duration"
 
-        @JvmField
         val KEY_EVENT_TITLE = "title"
 
-        @JvmField
         val KEY_EVENT_DESCRIPTION = "description"
 
-        @JvmField
         val KEY_EVENT_DESCRIPTION_EXTENDED = "description_ext"
 
-        @JvmField
         val KEY_EVENT_SERVICE_REFERENCE = "sid"
 
-        @JvmField
         val KEY_SERVICES_REFERENCE = "ref"
 
-        @JvmField
         val KEY_SERVICES_NAME = "name"
 
-        @JvmField
         val DATABASE_NAME = "dreamdroid"
 
         private const val PROFILES_TABLE_NAME = "profiles"
@@ -648,7 +607,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 KEY_SERVICES_REFERENCE + " TEXT PRIMARY KEY, " +
                 KEY_SERVICES_NAME + " TEXT);"
 
-        @JvmStatic
         fun getInstance(ctx: Context): DatabaseHelper {
             return DatabaseHelper(ctx)
         }

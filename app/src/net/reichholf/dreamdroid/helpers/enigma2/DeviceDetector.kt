@@ -9,16 +9,13 @@ import java.util.Locale
 import javax.jmdns.JmDNS
 
 object DeviceDetector {
-    @JvmField
     var LOG_TAG: String = DeviceDetector::class.java.name
 
-    @JvmField
     val KNOWN_HOSTNAMES: Array<String> = arrayOf(
         "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2",
         "dm500hdsev2", "dm7020hdv2", "dm7080", "dm820", "dm520", "dm525", "dm900",
     )
 
-    @JvmStatic
     fun getAvailableHosts(): ArrayList<Profile> {
         val profiles = ArrayList<Profile>()
         for (hostname in KNOWN_HOSTNAMES) {

@@ -66,17 +66,13 @@ class Event : ExtendedHashMap {
         const val KEY_EVENT_TITLE: String = "eventtitle"
         const val KEY_EVENT_DESCRIPTION: String = "eventdescription"
         const val KEY_EVENT_DESCRIPTION_EXTENDED: String = "eventdescriptionextended"
-        @JvmField
         val KEY_SERVICE_REFERENCE: String = Service.KEY_REFERENCE
-        @JvmField
         val KEY_SERVICE_NAME: String = Service.KEY_NAME
 
-        @JvmStatic
         fun supplementReadables(event: ExtendedHashMap) {
             supplementReadables("", event)
         }
 
-        @JvmStatic
         fun supplementReadables(prefix: String, event: ExtendedHashMap) {
             val eventstart = event.getString(prefix + KEY_EVENT_START)
 
@@ -110,7 +106,6 @@ class Event : ExtendedHashMap {
             }
         }
 
-        @JvmStatic
         fun fromNext(serviceNowNext: ExtendedHashMap): ExtendedHashMap {
             val event = ExtendedHashMap(serviceNowNext)
             val keys = event.keySet().toTypedArray()

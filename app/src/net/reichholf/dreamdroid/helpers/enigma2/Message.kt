@@ -11,7 +11,6 @@ object Message {
     const val MESSAGE_TYPE_INFO: String = "2"
     const val MESSAGE_TYPE_ERROR: String = "3"
 
-    @JvmStatic
     fun getParams(message: ExtendedHashMap): ArrayList<NameValuePair> {
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("text", message.getString(KEY_TEXT)))

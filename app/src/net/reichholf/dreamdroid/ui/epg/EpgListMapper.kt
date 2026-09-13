@@ -9,7 +9,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
  * [ExtendedHashMap]; convert only at that fragment boundary.
  */
 object EpgListMapper {
-    @JvmStatic
     fun toExtendedHashMap(event: Event): ExtendedHashMap {
         val map = ExtendedHashMap()
         map.put(EventKeys.KEY_EVENT_ID, event.eventId)

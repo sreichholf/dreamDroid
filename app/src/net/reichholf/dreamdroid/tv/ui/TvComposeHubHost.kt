@@ -84,7 +84,6 @@ object TvComposeHubHost {
             ?.removePrefix(HEADER_MOVIE_PREFIX)
             ?.takeIf { it.isNotEmpty() }
 
-    @JvmStatic
     fun install(activity: ComponentActivity) {
         activity.setContent {
             ComposeTvHubApp(activity = activity)

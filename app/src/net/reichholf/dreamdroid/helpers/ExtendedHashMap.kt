@@ -12,7 +12,6 @@ import java.io.Serializable
  * @author sreichholf
  */
 open class ExtendedHashMap : Serializable, Cloneable {
-    @JvmField
     protected var mMap: HashMap<String, Any?>
 
     constructor() {

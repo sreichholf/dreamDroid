@@ -9,7 +9,6 @@ import java.util.HashMap
  * Moved off [net.reichholf.dreamdroid.fragment.VirtualRemoteFragment] in Phase 2.7d.
  */
 object VirtualRemoteButtons {
-    @JvmStatic
     fun getRemoteButtons(isPlayButtonPlayPause: Boolean): Array<Array<Int>> {
         val buttonMap = HashMap<Int, Int>()
         buttonMap[R.id.ButtonPower] = Remote.KEY_POWER

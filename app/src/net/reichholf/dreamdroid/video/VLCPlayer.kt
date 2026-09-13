@@ -10,10 +10,8 @@ import kotlin.math.min
 
 /**
  * Thin Kotlin port of the libVLC [MediaPlayer] singleton wrapper (Phase 2.5e).
- * Java callers keep the same static/instance API as the former `VLCPlayer.java`.
  */
 class VLCPlayer {
-    @JvmField
     protected var mCurrentMedia: Media? = null
 
     fun deinit() {
@@ -126,10 +124,8 @@ class VLCPlayer {
     }
 
     companion object {
-        @JvmField
         var sPlayer: VLCPlayer? = null
 
-        @JvmField
         @Volatile
         var sMediaPlayer: MediaPlayer? = null
 
@@ -137,14 +133,12 @@ class VLCPlayer {
         const val MEDIA_HWACCEL_ENABLED = 0x01
         const val MEDIA_HWACCEL_FORCE = 0x02
 
-        @JvmStatic
         fun release() {
             val player = sPlayer ?: return
             player.deinit()
             sPlayer = null
         }
 
-        @JvmStatic
         fun get(): VLCPlayer? {
             if (sPlayer == null) {
                 sPlayer = VLCPlayer()
@@ -152,7 +146,6 @@ class VLCPlayer {
             return sPlayer
         }
 
-        @JvmStatic
         protected fun init() {
             val mp = MediaPlayer(VLCInstance.get())
             mp.setAspectRatio(null)
@@ -162,7 +155,6 @@ class VLCPlayer {
             sMediaPlayer = mp
         }
 
-        @JvmStatic
         fun getMediaPlayer(): MediaPlayer? {
             if (sMediaPlayer == null) {
                 init()

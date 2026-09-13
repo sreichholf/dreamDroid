@@ -20,12 +20,10 @@ import java.util.Locale
  * @author sreichholf
  */
 object DateTime {
-    @JvmStatic
     fun getRemaining(duration: String?, eventstart: String?): Int {
         return getRemaining(duration, eventstart, null)
     }
 
-    @JvmStatic
     fun getRemaining(duration: String?, eventstart: String?, nowTime: String?): Int {
         if (duration == null || Python.NONE == duration) {
             return 0
@@ -59,7 +57,6 @@ object DateTime {
         return d.toInt()
     }
 
-    @JvmStatic
     fun getDurationString(duration: String?, eventstart: String?): String? {
         if (duration == null || Python.NONE == duration) {
             return "0"
@@ -90,7 +87,6 @@ object DateTime {
         return durationPrefix + d
     }
 
-    @JvmStatic
     fun getDateTimeString(timestamp: String): String {
         val sdfDateTime = if (DreamDroid.DATE_LOCALE_WO) {
             SimpleDateFormat("E, dd.MM. - HH:mm", Locale.US)
@@ -101,12 +97,10 @@ object DateTime {
         return getFormattedDateString(sdfDateTime, timestamp)
     }
 
-    @JvmStatic
     fun getYearDateTimeString(timestamp: Long): String {
         return getYearDateTimeString(timestamp.toString())
     }
 
-    @JvmStatic
     fun getYearDateTimeString(timestamp: String): String {
         val sdfDateTime = if (DreamDroid.DATE_LOCALE_WO) {
             SimpleDateFormat("E, dd.MM.yyyy - HH:mm", Locale.US)
@@ -117,13 +111,11 @@ object DateTime {
         return getFormattedDateString(sdfDateTime, timestamp)
     }
 
-    @JvmStatic
     fun getTimeString(timestamp: String): String {
         val sdfTime = SimpleDateFormat("HH:mm")
         return getFormattedDateString(sdfTime, timestamp)
     }
 
-    @JvmStatic
     fun getDate(timestamp: String): Date? {
         return try {
             var s = timestamp.toDouble().toLong()
@@ -134,7 +126,6 @@ object DateTime {
         }
     }
 
-    @JvmStatic
     fun getFormattedDateString(sdf: SimpleDateFormat, timestamp: String): String {
         val date = getDate(timestamp)
         if (date != null) {
@@ -143,19 +134,16 @@ object DateTime {
         return "-"
     }
 
-    @JvmStatic
     fun parseTimestamp(timestamp: String?): Int {
         return BigDecimal(timestamp).toInt()
     }
 
-    @JvmStatic
     fun minutesAndSeconds(seconds: Int): String {
         val min = seconds / 60
         val sec = seconds % 60
         return String.format("%02d:%02d", min, sec)
     }
 
-    @JvmStatic
     fun getPrimeTimestamp(): Int {
         val cal = Calendar.getInstance()
         cal.set(Calendar.HOUR_OF_DAY, 20)

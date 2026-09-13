@@ -19,8 +19,6 @@ import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
@@ -92,7 +90,7 @@ class DreamDroid : Application() {
         handleProfileSwitch(this)
     }
 
-    private fun handleProfileSwitch(@NonNull context: Context) {
+    private fun handleProfileSwitch(context: Context) {
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED, false,
             )
@@ -146,8 +144,7 @@ class DreamDroid : Application() {
         }
     }
 
-    @Nullable
-    private fun getWifiName(@NonNull context: Context): String? {
+    private fun getWifiName(context: Context): String? {
         val manager =
             context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         if (manager.isWifiEnabled) {
@@ -196,7 +193,6 @@ class DreamDroid : Application() {
         const val PREFS_KEY_HWACCEL: String = "video_hardware_acceleration"
         const val PREFS_KEY_PICONS_ONLINE: String = "picons_online"
 
-        @JvmField
         var VERSION_STRING: String = ""
 
         const val ACTION_CREATE: String = "dreamdroid.intent.action.NEW"
@@ -239,7 +235,6 @@ class DreamDroid : Application() {
         const val SKU_DONATE_20: String = "donate_20"
         const val SKU_DONATE_INSANE: String = "donate_insane"
 
-        @JvmField
         val SKU_LIST: Array<String> = arrayOf(
             SKU_DONATE_1,
             SKU_DONATE_2,
@@ -253,7 +248,6 @@ class DreamDroid : Application() {
 
         const val CURRENT_PROFILE: String = "currentProfile"
 
-        @JvmField
         var DATE_LOCALE_WO: Boolean = false
 
         private var sFeatureSleeptimer: Boolean = true
@@ -264,13 +258,10 @@ class DreamDroid : Application() {
         private var sLocations: ArrayList<String> = ArrayList()
         private var sTags: ArrayList<String> = ArrayList()
 
-        @Nullable
         private var sCurrentProfileChangedListener: ProfileChangedListener? = null
 
         private var sFeaturePostRequest: Boolean = true
 
-        @JvmStatic
-        @Nullable
         fun getAppContext(): Context? {
             if (instance != null) {
                 return instance
@@ -290,8 +281,6 @@ class DreamDroid : Application() {
             }
         }
 
-        @JvmStatic
-        @NonNull
         fun getVersionString(): String {
             var buildDate = "<build-no-date>"
             if (BuildConfig.BUILD_TIME > 0) {
@@ -311,52 +300,42 @@ class DreamDroid : Application() {
             )
         }
 
-        @JvmStatic
         fun disableNowNext() {
             sFeatureNowNext = false
         }
 
-        @JvmStatic
         fun enableNowNext() {
             sFeatureNowNext = true
         }
 
-        @JvmStatic
         fun featureNowNext(): Boolean {
             return sFeatureNowNext
         }
 
-        @JvmStatic
         fun featurePostRequest(): Boolean {
             return sFeaturePostRequest
         }
 
-        @JvmStatic
         fun setFeaturePostRequest(enabled: Boolean) {
             sFeaturePostRequest = enabled
         }
 
-        @JvmStatic
         fun disableSleepTimer() {
             sFeatureSleeptimer = false
         }
 
-        @JvmStatic
         fun enableSleepTimer() {
             sFeatureSleeptimer = true
         }
 
-        @JvmStatic
         fun featureSleepTimer(): Boolean {
             return sFeatureSleeptimer
         }
 
-        @JvmStatic
         fun getCurrentProfile(): Profile {
             return sProfile!!
         }
 
-        @JvmStatic
         fun loadCurrentProfile(context: Context) {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             val profileId = sp.getInt(CURRENT_PROFILE, 1)
@@ -400,12 +379,10 @@ class DreamDroid : Application() {
             }
         }
 
-        @JvmStatic
         fun setCurrentProfile(context: Context, id: Int): Boolean {
             return setCurrentProfile(context, id, false)
         }
 
-        @JvmStatic
         fun dumpXml(): Boolean {
             return sDumpXml
         }
@@ -414,7 +391,6 @@ class DreamDroid : Application() {
          * @param id
          * @return
          */
-        @JvmStatic
         fun setCurrentProfile(context: Context, id: Int, forceEvent: Boolean): Boolean {
             sDumpXml = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("xml_debug", false)
 
@@ -445,13 +421,11 @@ class DreamDroid : Application() {
             return false
         }
 
-        @JvmStatic
         fun setCurrentProfile(profile: Profile) {
             sProfile = profile
         }
 
-        @JvmStatic
-        fun profileChanged(context: Context, @NonNull p: Profile) {
+        fun profileChanged(context: Context, p: Profile) {
             if (Objects.equals(p.getId(), sProfile!!.getId())) {
                 reloadCurrentProfile(context)
             }
@@ -463,7 +437,6 @@ class DreamDroid : Application() {
             }
         }
 
-        @JvmStatic
         fun setCurrentProfileChangedListener(listener: ProfileChangedListener?) {
             sCurrentProfileChangedListener = listener
         }
@@ -471,7 +444,6 @@ class DreamDroid : Application() {
         /**
          * @return
          */
-        @JvmStatic
         fun reloadCurrentProfile(ctx: Context): Boolean {
             return setCurrentProfile(ctx, sProfile!!.getId(), true)
         }
@@ -479,9 +451,8 @@ class DreamDroid : Application() {
         /**
          * @param shc
          */
-        @JvmStatic
         @Synchronized
-        fun loadLocations(@NonNull shc: SimpleHttpClient): Boolean {
+        fun loadLocations(shc: SimpleHttpClient): Boolean {
             sLocations.clear()
 
             var gotLoc = false
@@ -503,7 +474,6 @@ class DreamDroid : Application() {
             return gotLoc
         }
 
-        @JvmStatic
         fun getLocations(): ArrayList<String> {
             return sLocations
         }
@@ -511,9 +481,8 @@ class DreamDroid : Application() {
         /**
          * @param shc
          */
-        @JvmStatic
         @Synchronized
-        fun loadTags(@NonNull shc: SimpleHttpClient): Boolean {
+        fun loadTags(shc: SimpleHttpClient): Boolean {
             sTags.clear()
             var gotTags = false
 
@@ -535,12 +504,10 @@ class DreamDroid : Application() {
             return gotTags
         }
 
-        @JvmStatic
         fun getTags(): ArrayList<String> {
             return sTags
         }
 
-        @JvmStatic
         @Suppress("rawtypes", "unchecked", "UNCHECKED_CAST")
         fun scheduleBackup(context: Context) {
             Log.d(LOG_TAG, "Scheduling backup")
@@ -559,15 +526,13 @@ class DreamDroid : Application() {
             }
         }
 
-        @JvmStatic
         fun getThemeType(context: Context): Int {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             val type = Integer.parseInt(sp.getString("theme_type", "1"))
             return if (type > 2) 2 else type
         }
 
-        @JvmStatic
-        fun setTheme(@NonNull activity: AppCompatActivity) {
+        fun setTheme(activity: AppCompatActivity) {
             val mode = when (getThemeType(activity)) {
                 0 -> AppCompatDelegate.MODE_NIGHT_NO
                 1 -> AppCompatDelegate.MODE_NIGHT_YES
@@ -578,7 +543,6 @@ class DreamDroid : Application() {
             activity.delegate.localNightMode = mode
         }
 
-        @JvmStatic
         fun restart(context: Context) {
             val packageManager: PackageManager = context.packageManager
             val intent = packageManager.getLaunchIntentForPackage(context.packageName)
@@ -588,7 +552,6 @@ class DreamDroid : Application() {
             Runtime.getRuntime().exit(0)
         }
 
-        @JvmStatic
         fun checkInitial(context: Context, which: Int): Boolean {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             val mask = sp.getInt(PREFS_KEY_INITIALBITS, 0)
@@ -596,7 +559,6 @@ class DreamDroid : Application() {
             return (mask and which) != which
         }
 
-        @JvmStatic
         fun setNotInitial(context: Context, which: Int) {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             var mask = sp.getInt(PREFS_KEY_INITIALBITS, 0)
@@ -607,8 +569,7 @@ class DreamDroid : Application() {
             editor.apply()
         }
 
-        @JvmStatic
-        fun isTV(@NonNull context: Context): Boolean {
+        fun isTV(context: Context): Boolean {
             return context.resources.getBoolean(R.bool.is_television)
         }
     }

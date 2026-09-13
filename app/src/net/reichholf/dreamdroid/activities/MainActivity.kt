@@ -846,7 +846,6 @@ class MainActivity :
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
 
-        @JvmField
         val NAVIGATION_DIALOG_TAGS: List<String> = listOf(
             "sleeptimer_progress_dialog",
         )

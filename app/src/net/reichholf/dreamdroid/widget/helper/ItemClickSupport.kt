@@ -122,7 +122,6 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
     }
 
     companion object {
-        @JvmStatic
         fun addTo(view: RecyclerView): ItemClickSupport {
             var support = view.getTag(R.id.recyclerview_item_click_support) as ItemClickSupport?
             if (support == null) {
@@ -131,7 +130,6 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
             return support
         }
 
-        @JvmStatic
         fun removeFrom(view: RecyclerView): ItemClickSupport? {
             val support = view.getTag(R.id.recyclerview_item_click_support) as ItemClickSupport?
             support?.detach(view)

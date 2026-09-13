@@ -116,11 +116,9 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        @JvmField
         @Volatile
         var db: AppDatabase? = null
 
-        @JvmStatic
         fun database(context: Context): AppDatabase {
             db?.let { return it }
             return synchronized(this) {
@@ -138,7 +136,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /** In-memory DB for instrumentation tests (does not touch the process singleton). */
-        @JvmStatic
         fun inMemory(context: Context): AppDatabase {
             return Room.inMemoryDatabaseBuilder(
                 context.applicationContext,
@@ -148,10 +145,8 @@ abstract class AppDatabase : RoomDatabase() {
                 .build()
         }
 
-        @JvmStatic
         fun profiles(context: Context): Profile.ProfileDao = database(context).profileDao()
 
-        @JvmStatic
         fun epg(context: Context): EpgDao = database(context).epgDao()
     }
 }

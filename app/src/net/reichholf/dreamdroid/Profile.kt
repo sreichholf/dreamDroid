@@ -1,8 +1,6 @@
 package net.reichholf.dreamdroid
 
 import android.util.Log
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
@@ -18,6 +16,8 @@ import java.util.Objects
 
 @Entity(tableName = "profile")
 class Profile : Serializable {
+    // @JvmField keeps JVM fields so explicit getX/setX (extra logic, non-null id)
+    // do not clash with Kotlin property accessors. Leave them while those methods stay.
     @Dao
     interface ProfileDao {
         @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -443,7 +443,6 @@ class Profile : Serializable {
     companion object {
         private const val serialVersionUID: Long = 8176949133234868302L
 
-        @JvmStatic
         @Ignore
         fun getDefault(): Profile =
             Profile(null, "", "", "", 443, 8001, 80, false, "root", "dreambox", true, false, false, false, false, "", "", "", "")
