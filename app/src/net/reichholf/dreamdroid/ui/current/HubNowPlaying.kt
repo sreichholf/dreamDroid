@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.current
 
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -19,7 +21,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.loadCurrentService
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 
 private const val POLL_MS = 30_000L
@@ -31,7 +33,6 @@ private const val PROFILE_WAIT_MS = 20_000L
  */
 @Composable
 fun HubNowPlaying(
-    hostFragment: PhoneNavHostFragment,
     reloadEpoch: Int,
     hubState: TvMoviesHubState,
 ) {
@@ -54,6 +55,18 @@ fun HubNowPlaying(
             }
             ready = true
         }
+    }
+
+    fun stream() {
+        val service = current?.service
+        val ref = service?.reference.orEmpty()
+        val name = service?.name.orEmpty()
+        if (ref.isEmpty()) {
+            Toast.makeText(context, R.string.not_available, Toast.LENGTH_LONG).show()
+            return
+        }
+        val activity = context as AppCompatActivity
+        activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
     }
 
     LaunchedEffect(Unit) {
@@ -98,7 +111,8 @@ fun HubNowPlaying(
 
     if (showSheet) {
         CurrentServiceSheet(
-            hostFragment = hostFragment,
+            current = current,
+            onStream = { stream() },
             onDismiss = {
                 showSheet = false
                 reload()

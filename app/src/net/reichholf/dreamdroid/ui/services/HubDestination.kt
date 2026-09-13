@@ -150,7 +150,6 @@ fun HubDestination(
     destinationBarState.onDestinationSelected = { selectDestination(it) }
 
     HubNowPlaying(
-        hostFragment = hostFragment,
         reloadEpoch = nowPlayingReloadEpoch,
         hubState = destinationBarState,
     )

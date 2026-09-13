@@ -63,6 +63,50 @@ fun ExtendedHashMap.toEpgDetailContent(showNext: Boolean, minutesShort: String):
 }
 
 @Composable
+fun EpgDetailBody(
+    content: EpgDetailContent,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.fillMaxWidth()) {
+        Text(
+            text = content.title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        if (content.serviceName.isNotEmpty()) {
+            Text(
+                text = content.serviceName,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+        if (content.description.isNotEmpty()) {
+            Text(
+                text = content.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
+        Text(
+            text = content.dateLine,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+        if (content.descriptionExtended.isNotEmpty()) {
+            Text(
+                text = content.descriptionExtended,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
+    }
+}
+
+@Composable
 fun EpgDetailScreen(
     content: EpgDetailContent,
     onSetTimer: () -> Unit,
@@ -84,41 +128,7 @@ fun EpgDetailScreen(
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp, bottom = 8.dp),
         ) {
-            Text(
-                text = content.title,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (content.serviceName.isNotEmpty()) {
-                Text(
-                    text = content.serviceName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-            }
-            if (content.description.isNotEmpty()) {
-                Text(
-                    text = content.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
-            Text(
-                text = content.dateLine,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-            if (content.descriptionExtended.isNotEmpty()) {
-                Text(
-                    text = content.descriptionExtended,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
+            EpgDetailBody(content)
         }
         if (showActions) {
             Column(

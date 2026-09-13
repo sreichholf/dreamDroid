@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,9 +48,9 @@ fun NowPlayingStrip(
         .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
     val description = "$label. $headline"
     Column(modifier.fillMaxWidth()) {
-        HorizontalDivider()
         Surface(
-            color = MaterialTheme.colorScheme.surfaceVariant,
+            color = NavigationBarDefaults.containerColor,
+            tonalElevation = NavigationBarDefaults.Elevation,
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {
