@@ -11,7 +11,15 @@ import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
-class DreamDroidTrustManager(ctx: Context?) : HostnameVerifier, X509TrustManager {
+class DreamDroidTrustManager(
+    ctx: Context?,
+    private val trustAll: Boolean,
+) : HostnameVerifier, X509TrustManager {
+    constructor(ctx: Context?) : this(
+        ctx,
+        DreamDroid.getCurrentProfile().allCertsTrusted,
+    )
+
     private var mDefaultTrustManager: X509TrustManager? = getDefaultTrustManager()
     private var mDefaultHostnameVerifier: HostnameVerifier? = null
 
@@ -35,8 +43,7 @@ class DreamDroidTrustManager(ctx: Context?) : HostnameVerifier, X509TrustManager
         return this
     }
 
-    fun trustAllCertificates(): Boolean =
-        DreamDroid.getCurrentProfile().allCertsTrusted
+    fun trustAllCertificates(): Boolean = trustAll
 
     override fun verify(hostname: String?, session: SSLSession?): Boolean {
         if (trustAllCertificates()) return true

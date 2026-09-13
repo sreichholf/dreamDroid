@@ -16,12 +16,7 @@ import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
-import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
-import java.security.SecureRandom
 import java.util.ArrayList
-import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.X509TrustManager
 
 /**
  * Home-screen Virtual Remote click handler. Runs RCU HTTP on [Dispatchers.IO]
@@ -51,8 +46,6 @@ object WidgetRemoteRequest {
 	}
 
 	private fun doRemoteRequest(context: Context, intent: Intent) {
-		setupSsl(context)
-
 		val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(
 				context, intent.getIntExtra(KEY_WIDGETID, -1)) ?: return
 
@@ -75,22 +68,6 @@ object WidgetRemoteRequest {
 			val errorText = shc.getErrorText(context).orEmpty()
 			Log.w(TAG, errorText)
 			showToast(context, errorText)
-		}
-	}
-
-	private fun setupSsl(context: Context) {
-		if (HttpsURLConnection.getDefaultSSLSocketFactory().javaClass == DreamDroidTrustManager::class.java) {
-			return
-		}
-		try {
-			val trustManager = DreamDroidTrustManager(context)
-			val sc = SSLContext.getInstance("TLS")
-			sc.init(null, arrayOf<X509TrustManager>(trustManager), SecureRandom())
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.socketFactory)
-			HttpsURLConnection.setDefaultHostnameVerifier(
-					trustManager.wrapHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier()))
-		} catch (e: Exception) {
-			Log.w(TAG, "SSL setup failed", e)
 		}
 	}
 

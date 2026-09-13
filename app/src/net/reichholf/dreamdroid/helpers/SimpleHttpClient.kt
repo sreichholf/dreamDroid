@@ -60,6 +60,7 @@ class SimpleHttpClient {
     private var okHttpClient: OkHttpClient? = null
     private var okHttpTimeoutMillis: Int = -1
     private var okHttpSsl: Boolean? = null
+    private var okHttpTrustAll: Boolean? = null
     @Volatile
     private var inFlight: Call? = null
     private val fetchEpoch = AtomicInteger(0)
@@ -154,10 +155,12 @@ class SimpleHttpClient {
             serviceRef = URLEncoder.encode(serviceRef, "utf-8").replace("+", "%20")
         } catch (_: UnsupportedEncodingException) {
         }
-        var streamLoginString = ""
-        if (mProfile!!.streamLogin) {
-            streamLoginString = mProfile!!.user + ":" + mProfile!!.pass + "@"
-        }
+        val streamLoginString = HttpUserInfo.embed(
+            enabled = mProfile!!.streamLogin,
+            user = mProfile!!.user,
+            pass = mProfile!!.pass,
+            scheme = "http",
+        )
         return "http://" + streamLoginString + mProfile!!.streamHostOrHost + ":" +
             mProfile!!.streamPort + "/" + serviceRef
     }
@@ -172,10 +175,13 @@ class SimpleHttpClient {
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("file", fileName))
         val parms = NameValuePair.toString(params)
-        var fileAuthString = ""
-        if (mProfile!!.fileLogin) {
-            fileAuthString = mProfile!!.user + ":" + mProfile!!.pass + "@"
-        }
+        val fileScheme = if (mProfile!!.fileSsl) "https" else "http"
+        val fileAuthString = HttpUserInfo.embed(
+            enabled = mProfile!!.fileLogin,
+            user = mProfile!!.user,
+            pass = mProfile!!.pass,
+            scheme = fileScheme,
+        )
         return mFilePrefix + fileAuthString + mProfile!!.streamHostOrHost + ":" +
             mProfile!!.filePort + URIStore.FILE + parms
     }
@@ -199,7 +205,8 @@ class SimpleHttpClient {
         val appContext = DreamDroid.getAppContext()
         if (appContext != null) {
             try {
-                val trustManager = DreamDroidTrustManager(appContext)
+                val trustAll = mProfile?.allCertsTrusted == true
+                val trustManager = DreamDroidTrustManager(appContext, trustAll)
                 val sc = SSLContext.getInstance("TLS")
                 sc.init(null, arrayOf<X509TrustManager>(trustManager), SecureRandom())
                 builder.sslSocketFactory(sc.socketFactory, trustManager)
@@ -217,11 +224,13 @@ class SimpleHttpClient {
 
     private fun httpClient(): OkHttpClient {
         val ssl = mProfile?.ssl == true
+        val trustAll = mProfile?.allCertsTrusted == true
         val cached = okHttpClient
         if (
             cached != null &&
             okHttpTimeoutMillis == mConnectionTimeoutMillis &&
-            okHttpSsl == ssl
+            okHttpSsl == ssl &&
+            okHttpTrustAll == trustAll
         ) {
             return cached
         }
@@ -229,6 +238,7 @@ class SimpleHttpClient {
         okHttpClient = created
         okHttpTimeoutMillis = mConnectionTimeoutMillis
         okHttpSsl = ssl
+        okHttpTrustAll = trustAll
         return created
     }
 

@@ -60,13 +60,9 @@ open class BaseActivity :
                 arrayOf<X509TrustManager>(mTrustManager!!),
                 java.security.SecureRandom(),
             )
-            // HttpsURLConnection
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.socketFactory)
-            HttpsURLConnection.setDefaultHostnameVerifier(
-                mTrustManager!!.wrapHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier()),
-            )
             HttpsURLConnection.setFollowRedirects(false)
-            // Picasso w/ OkHttpClient
+            // Picasso w/ OkHttpClient. Do not mutate process-wide
+            // HttpsURLConnection defaults; trust-all is per OkHttp client.
             val clientBuilder = OkHttpClient.Builder()
             clientBuilder
                 .authenticator { _, response ->
