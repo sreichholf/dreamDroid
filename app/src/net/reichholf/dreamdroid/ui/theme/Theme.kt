@@ -2,12 +2,15 @@ package net.reichholf.dreamdroid.ui.theme
 
 import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import net.reichholf.dreamdroid.DreamDroid
@@ -16,7 +19,8 @@ import net.reichholf.dreamdroid.R
 @Composable
 fun DreamDroidTheme(content: @Composable () -> Unit) {
     val dark = isDreamDroidDark(LocalContext.current)
-    val scheme = if (dark) dreamDroidDarkColorScheme() else dreamDroidLightColorScheme()
+    val base = if (dark) dreamDroidDarkColorScheme() else dreamDroidLightColorScheme()
+    val scheme = base.withDreamDroidContainers(dark)
     MaterialTheme(colorScheme = scheme) {
         // Dialog-hosted ComposeView inherits View contentColor (black in night). Override so
         // Text() without an explicit color uses the DreamDroid scheme, not the XML dialog.
@@ -94,3 +98,39 @@ private fun dreamDroidDarkColorScheme() = darkColorScheme(
     inverseSurface = colorResource(R.color.md_theme_dark_inverseSurface),
     inversePrimary = colorResource(R.color.md_theme_dark_primaryInverse),
 )
+
+/**
+ * DatePicker / TimePicker / AlertDialog read [ColorScheme.surfaceContainerHigh] and
+ * [ColorScheme.surfaceContainerHighest]. [lightColorScheme] / [darkColorScheme] fill those
+ * from the baseline Material purple neutrals when omitted, so pickers look off-brand.
+ */
+private fun ColorScheme.withDreamDroidContainers(dark: Boolean): ColorScheme {
+    val outlineVariant = lerp(surfaceVariant, outline, 0.35f)
+    return if (dark) {
+        copy(
+            outlineVariant = outlineVariant,
+            scrim = Color.Black,
+            surfaceTint = primary,
+            surfaceBright = lerp(surface, surfaceVariant, 0.35f),
+            surfaceDim = background,
+            surfaceContainerLowest = background,
+            surfaceContainerLow = lerp(background, surface, 0.55f),
+            surfaceContainer = surface,
+            surfaceContainerHigh = lerp(surface, surfaceVariant, 0.45f),
+            surfaceContainerHighest = lerp(surface, surfaceVariant, 0.8f),
+        )
+    } else {
+        copy(
+            outlineVariant = outlineVariant,
+            scrim = Color.Black,
+            surfaceTint = primary,
+            surfaceBright = surface,
+            surfaceDim = lerp(surface, surfaceVariant, 0.5f),
+            surfaceContainerLowest = surface,
+            surfaceContainerLow = lerp(surface, surfaceVariant, 0.25f),
+            surfaceContainer = lerp(surface, surfaceVariant, 0.45f),
+            surfaceContainerHigh = lerp(surface, surfaceVariant, 0.65f),
+            surfaceContainerHighest = lerp(surface, surfaceVariant, 0.85f),
+        )
+    }
+}
