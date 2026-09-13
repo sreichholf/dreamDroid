@@ -527,7 +527,8 @@ class MultiEpgScreenTest {
             }
         }
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
-        composeRule.onNodeWithTag("multi_epg_timer_record").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_timer_record", useUnmergedTree = true)
+            .assertIsDisplayed()
     }
 
     private fun dayLabelText(): String {

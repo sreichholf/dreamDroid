@@ -520,47 +520,44 @@ private fun ProgrammeBar(
             .padding(horizontal = 4.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = bar.event.title,
-                style = MaterialTheme.typography.labelSmall,
-                color = onBar,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
+        Text(
+            text = bar.event.title,
+            style = MaterialTheme.typography.labelSmall,
+            color = onBar,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(end = if (clock != null) 14.dp else 0.dp),
+        )
+        if (clock != null) {
+            val record = clock == MultiEpgTimerClock.Record
+            val clockCd = stringResource(
+                if (record) {
+                    R.string.multiepg_timer_record
+                } else {
+                    R.string.multiepg_timer_zap
+                },
             )
-            if (clock != null) {
-                val record = clock == MultiEpgTimerClock.Record
-                val clockCd = stringResource(
-                    if (record) {
-                        R.string.multiepg_timer_record
-                    } else {
-                        R.string.multiepg_timer_zap
-                    },
-                )
-                Icon(
-                    painter = painterResource(R.drawable.ic_multiepg_clock),
-                    contentDescription = clockCd,
-                    tint = if (record) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.tertiary
-                    },
-                    modifier = Modifier
-                        .padding(start = 2.dp)
-                        .size(12.dp)
-                        .testTag(
-                            if (record) {
-                                "multi_epg_timer_record"
-                            } else {
-                                "multi_epg_timer_zap"
-                            },
-                        ),
-                )
-            }
+            Icon(
+                painter = painterResource(R.drawable.ic_multiepg_clock),
+                contentDescription = clockCd,
+                tint = if (record) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.tertiary
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(12.dp)
+                    .testTag(
+                        if (record) {
+                            "multi_epg_timer_record"
+                        } else {
+                            "multi_epg_timer_zap"
+                        },
+                    ),
+            )
         }
     }
 }
