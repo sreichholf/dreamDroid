@@ -11,6 +11,7 @@ import com.google.android.material.color.DynamicColors
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
+import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.video.VLCPlayer
 
 /**
@@ -37,9 +38,7 @@ class SettingsState(
 
     var volumeControl by mutableStateOf(prefs.getBoolean(KEY_VOLUME_CONTROL, false))
     var instantZap by mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
-    var startScreen by mutableStateOf(
-        prefs.getString(DreamDroid.PREFS_KEY_START_SCREEN, "services") ?: "services",
-    )
+    var startScreen by mutableStateOf(StartScreen.read(prefs))
     var simpleVrm by mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, true))
     var mobileImdb by mutableStateOf(prefs.getBoolean(KEY_MOBILE_IMDB, false))
     var confirmAppClose by mutableStateOf(

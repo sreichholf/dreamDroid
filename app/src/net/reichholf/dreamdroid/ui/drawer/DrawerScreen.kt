@@ -56,7 +56,6 @@ object DrawerDestinations {
 		DrawerMenuItem(R.id.menu_navigation_epg, R.string.epg, R.attr.ic_menu_epg),
 		DrawerMenuItem(R.id.menu_navigation_multiepg, R.string.multiepg, R.attr.ic_menu_epg),
 		DrawerMenuItem(R.id.menu_navigation_remote, R.string.virtual_remote, R.attr.ic_menu_remote),
-		DrawerMenuItem(R.id.menu_navigation_current, R.string.current_event, R.attr.ic_menu_current),
 		DrawerMenuItem(R.id.menu_navigation_zap, R.string.zap, R.attr.ic_menu_zap),
 		DrawerMenuItem(R.id.menu_navigation_tools, R.string.tools, R.attr.ic_menu_list),
 	)

@@ -36,6 +36,7 @@ import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 
@@ -64,6 +65,7 @@ fun HubDestination(
     var currentMovie by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedRow by rememberSaveable { mutableIntStateOf(0) }
     var timerRemountEpoch by rememberSaveable { mutableIntStateOf(0) }
+    var nowPlayingReloadEpoch by rememberSaveable { mutableIntStateOf(0) }
 
     var bouquets by remember { mutableStateOf<Bouquets?>(null) }
     var bouquetError by remember { mutableStateOf<String?>(null) }
@@ -288,6 +290,7 @@ fun HubDestination(
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
+                                        onZapped = { nowPlayingReloadEpoch += 1 },
                                     )
                                 }
                             }
@@ -305,6 +308,7 @@ fun HubDestination(
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
+                                        onZapped = { nowPlayingReloadEpoch += 1 },
                                     )
                                 }
                             }
@@ -336,6 +340,10 @@ fun HubDestination(
                     }
                 }
             }
+            HubNowPlaying(
+                hostFragment = hostFragment,
+                reloadEpoch = nowPlayingReloadEpoch,
+            )
             // Reserve space for the Coordinator-hosted destination bar (dualpane shell_destination_nav).
             Spacer(
                 Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height)),

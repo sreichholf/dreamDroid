@@ -150,7 +150,7 @@
     <string name="defaultOnNoWifi">Is default profile on no Wifi</string>
     <string name="login_enabled">Enable Login</string>
     <string name="wait_request_finished">Please wait until the running request has finished!</string>
-    <string name="current_service">Current</string>
+    <string name="current_service">Now</string>
     <string name="provider">Provider</string>
     <string name="now">Now</string>
     <string name="next">Next</string>

@@ -430,7 +430,7 @@ open class NavigationHelper(
         private val sNavRootRoutes: SparseArray<String> = SparseArray<String>().apply {
             put(R.id.menu_navigation_services, PhoneNavRoutes.HUB)
             put(R.id.menu_navigation_tools, PhoneNavRoutes.TOOLS)
-            put(R.id.menu_navigation_current, PhoneNavRoutes.CURRENT)
+            put(R.id.menu_navigation_current, PhoneNavRoutes.HUB)
             put(R.id.menu_navigation_remote, PhoneNavRoutes.REMOTE)
             put(R.id.menu_navigation_settings, PhoneNavRoutes.SETTINGS)
             put(R.id.menu_navigation_profiles, PhoneNavRoutes.PROFILES)
