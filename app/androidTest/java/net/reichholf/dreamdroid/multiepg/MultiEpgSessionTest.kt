@@ -348,6 +348,43 @@ class MultiEpgSessionTest {
         assertFalse(session.loadedWindowStarts.contains(yesterday))
     }
 
+    @Test
+    fun slidingAttachSetsSyncingWhileFetching() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.endSec - 600L
+        val day2 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                if (time == day2) {
+                    gate.await()
+                }
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+        )
+        session.replaceAndLoad("bouquet-a", now)
+        session.awaitIdle()
+        assertFalse(session.syncing)
+
+        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        waitUntil { session.syncing }
+        assertTrue(session.channels.isNotEmpty())
+        gate.complete(Unit)
+        session.awaitIdle()
+        assertFalse(session.syncing)
+        assertTrue(session.loadedWindowStarts.contains(day2))
+        assertTrue(session.channels.isNotEmpty())
+    }
+
     private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
         for (channel in session.channels) {

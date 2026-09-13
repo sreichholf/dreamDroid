@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -421,5 +422,67 @@ class MultiEpgScreenTest {
         }
         composeRule.onNodeWithTag("multi_epg_day_label").assertIsDisplayed()
         composeRule.onNodeWithText("Today", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun originJumpKeepsScrolledProgrammeAndDayLabel() {
+        val origin = 1_700_000_000L
+        val visibleOffsetSec = 21L * 3600L
+        val barStart = origin + visibleOffsetSec
+        var timelineStart by mutableLongStateOf(origin)
+        val channels = listOf(
+            MultiEpgChannel(
+                serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "NightShow",
+                            start = barStart.toString(),
+                            duration = "3600",
+                            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = barStart,
+                        endSec = barStart + 3600,
+                    ),
+                ),
+            ),
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = channels,
+                    timelineStartSec = timelineStart,
+                    timelineEndSec = origin + 3L * 86400L,
+                    nowSec = origin + 60,
+                    loading = true,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                    focusSec = barStart,
+                    focusEpoch = 1,
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("NightShow").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_sync_indicator").assertIsDisplayed()
+        val dayBefore = dayLabelText()
+
+        composeRule.runOnIdle {
+            timelineStart = origin + visibleOffsetSec
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("NightShow").assertIsDisplayed()
+        assertEquals(dayBefore, dayLabelText())
+        composeRule.onNodeWithTag("multi_epg_sync_indicator").assertIsDisplayed()
+    }
+
+    private fun dayLabelText(): String {
+        val node = composeRule.onNodeWithTag("multi_epg_day_label").fetchSemanticsNode()
+        return node.config[SemanticsProperties.Text].joinToString { it.text }
     }
 }

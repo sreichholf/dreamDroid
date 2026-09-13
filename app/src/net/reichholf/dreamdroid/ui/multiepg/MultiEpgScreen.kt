@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -51,6 +52,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
+import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import java.text.DateFormat
@@ -94,43 +96,56 @@ fun MultiEpgScreen(
     onEventClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
+    hScrollState: ScrollState = rememberScrollState(),
     focusSec: Long = nowSec,
     focusEpoch: Int = 0,
 ) {
-    val hScroll = rememberScrollState()
+    val hScroll = hScrollState
     val density = LocalDensity.current
-    val timelineSeconds = (timelineEndSec - timelineStartSec).coerceAtLeast(60L)
+    // Keep painting the last committed origin until scroll is shifted. Using the
+    // new painted start in this frame moves every bar and the day label before
+    // horizontalScroll can catch up.
+    var layoutOriginSec by remember { mutableLongStateOf(0L) }
+    val originForLayout =
+        if (layoutOriginSec == 0L) timelineStartSec else layoutOriginSec
+    val timelineSeconds = (timelineEndSec - originForLayout).coerceAtLeast(60L)
     val timelineWidth = MinuteWidth * (timelineSeconds / 60f)
     var viewportWidthPx by remember { mutableIntStateOf(0) }
-    var prevTimelineStartSec by remember { mutableLongStateOf(Long.MIN_VALUE) }
 
     LaunchedEffect(focusEpoch, channels.isNotEmpty()) {
-        if (channels.isEmpty() || timelineEndSec <= timelineStartSec) {
+        if (channels.isEmpty() || timelineEndSec <= originForLayout) {
             return@LaunchedEffect
         }
-        val nowOffsetMin = ((focusSec - timelineStartSec).coerceAtLeast(0L)) / 60f
+        val nowOffsetMin = ((focusSec - originForLayout).coerceAtLeast(0L)) / 60f
         val targetPx = with(density) { (MinuteWidth * nowOffsetMin - 48.dp).toPx() }
             .toInt()
             .coerceAtLeast(0)
         hScroll.scrollTo(targetPx.coerceAtMost(hScroll.maxValue.coerceAtLeast(targetPx)))
     }
 
-    LaunchedEffect(timelineStartSec, channels.isEmpty()) {
-        if (channels.isEmpty() || timelineStartSec == 0L) {
-            prevTimelineStartSec = Long.MIN_VALUE
+    LaunchedEffect(timelineStartSec) {
+        if (timelineStartSec == 0L) {
+            layoutOriginSec = 0L
             return@LaunchedEffect
         }
-        val previous = prevTimelineStartSec
-        prevTimelineStartSec = timelineStartSec
-        if (previous == Long.MIN_VALUE) {
+        val previous = layoutOriginSec
+        if (previous == 0L) {
+            layoutOriginSec = timelineStartSec
             return@LaunchedEffect
         }
-        val deltaMin = (previous - timelineStartSec) / 60f
+        if (previous == timelineStartSec) {
+            return@LaunchedEffect
+        }
+        val deltaMin = MultiEpgWindows.originScrollCompensationSec(
+            previousOriginSec = previous,
+            newOriginSec = timelineStartSec,
+        ) / 60f
         val deltaPx = with(density) { (MinuteWidth * deltaMin).toPx() }.toInt()
         hScroll.scrollTo((hScroll.value + deltaPx).coerceAtLeast(0))
+        layoutOriginSec = timelineStartSec
     }
 
-    val timelineStartState = rememberUpdatedState(timelineStartSec)
+    val timelineStartState = rememberUpdatedState(originForLayout)
     val timelineEndState = rememberUpdatedState(timelineEndSec)
     val focusSecState = rememberUpdatedState(focusSec)
 
@@ -202,7 +217,7 @@ fun MultiEpgScreen(
     }
     val todayLabel = stringResource(R.string.multiepg_today)
     val dayLabel = remember(visibleStartSec, nowSec, todayLabel) {
-        if (timelineEndSec <= timelineStartSec) {
+            if (timelineEndSec <= originForLayout) {
             ""
         } else {
             MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel)
@@ -300,7 +315,7 @@ fun MultiEpgScreen(
                     ) {
                         Spacer(modifier = Modifier.width(ChannelLabelWidth))
                         MultiEpgTimeRuler(
-                            timelineStartSec = timelineStartSec,
+                            timelineStartSec = originForLayout,
                             timelineEndSec = timelineEndSec,
                             timelineWidth = timelineWidth,
                             cullStartSec = cullWindow.first,
@@ -347,7 +362,7 @@ fun MultiEpgScreen(
                         ) {
                             MultiEpgChannelTimeline(
                                 channel = channel,
-                                timelineStartSec = timelineStartSec,
+                                timelineStartSec = originForLayout,
                                 timelineWidth = timelineWidth,
                                 nowSec = nowSec,
                                 cullStartSec = cullWindow.first,
