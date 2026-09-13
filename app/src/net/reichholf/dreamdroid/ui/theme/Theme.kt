@@ -35,6 +35,9 @@ fun isDreamDroidDark(context: Context): Boolean {
     }
 }
 
+// surfaceContainer* / outlineVariant must be set. lightColorScheme/darkColorScheme
+// otherwise fill baseline Material purple neutrals, which stock DatePicker,
+// TimePicker, and AlertDialog use when colors= is omitted.
 @Composable
 private fun dreamDroidLightColorScheme() = lightColorScheme(
     primary = colorResource(R.color.md_theme_light_primary),
