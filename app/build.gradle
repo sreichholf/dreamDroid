@@ -118,6 +118,11 @@ android {
                 res.srcDirs = ['androidTest/res']
                 resources.srcDirs = ['androidTest/resources']
             }
+            test {
+                java.srcDirs = ['test/java']
+                kotlin.srcDirs = ['test/java']
+                resources.srcDirs = ['test/resources']
+            }
         }
     }
     // Shared debug cert (repo-root debug.keystore) so CI, Cloud, and local

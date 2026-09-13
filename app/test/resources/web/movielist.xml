@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2movielist>
+	<e2movie>
+		<e2servicereference>1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/news.ts</e2servicereference>
+		<e2title>Evening News</e2title>
+		<e2description>Daily news</e2description>
+		<e2descriptionextended>Full bulletin.Weather at the end.</e2descriptionextended>
+		<e2servicename>Das Erste HD</e2servicename>
+		<e2time>1893456000</e2time>
+		<e2length>45</e2length>
+		<e2tags>news sports</e2tags>
+		<e2filename>/media/hdd/movie/news.ts</e2filename>
+		<e2filesize>104857600</e2filesize>
+	</e2movie>
+	<e2movie>
+		<e2servicereference>1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/empty.ts</e2servicereference>
+		<e2title>Empty Size</e2title>
+		<e2description/>
+		<e2descriptionextended/>
+		<e2servicename>ZDF HD</e2servicename>
+		<e2time>1893460000</e2time>
+		<e2length>10</e2length>
+		<e2tags/>
+		<e2filename>/media/hdd/movie/empty.ts</e2filename>
+		<e2filesize>None</e2filesize>
+	</e2movie>
+</e2movielist>
