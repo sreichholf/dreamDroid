@@ -45,19 +45,22 @@ object VirtualRemoteWidgetViews {
         playAsPlayPause: Boolean,
     ) {
         for (btn in VirtualRemoteButtons.getRemoteButtons(playAsPlayPause)) {
-            val intent = Intent(context, VirtualRemoteWidgetProvider::class.java).apply {
-                putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId)
-                putExtra(WidgetRemoteRequest.KEY_KEYID, btn[1].toString())
-                action = WidgetRemoteRequest.ACTION_RCU
-                data = Uri.parse("dreamdroid://virtual-remote/$appWidgetId")
-            }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 btn[0],
-                intent,
+                clickIntent(context, appWidgetId, btn[1].toString()),
                 PendingIntent.FLAG_IMMUTABLE,
             )
             remoteViews.setOnClickPendingIntent(btn[0], pendingIntent)
+        }
+    }
+
+    fun clickIntent(context: Context, appWidgetId: Int, keyId: String): Intent {
+        return Intent(context, VirtualRemoteWidgetProvider::class.java).apply {
+            putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId)
+            putExtra(WidgetRemoteRequest.KEY_KEYID, keyId)
+            action = WidgetRemoteRequest.ACTION_RCU
+            data = Uri.parse("dreamdroid://virtual-remote/$appWidgetId")
         }
     }
 }
