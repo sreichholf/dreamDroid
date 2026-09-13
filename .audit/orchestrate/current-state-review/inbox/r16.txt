@@ -1,0 +1,10 @@
+VERDICT: PASS
+HEAD 730630b0
+agent bc-0529d319-fcef-4664-a332-7bc88166dca7
+unit r16
+status success
+
+Production Java under app/src is 0. Dual java/kt pairs 0. JvmStatic/JvmOverloads/JvmField 0.
+fragment/dialogs remains as DreamDroidAttributionPresenter.kt only.
+Leanback browse types gone. HttpURLConnection client gone.
+Follow-ups: no CI assertion that app/src stays Java-free. Docs still mention old Java counts. Vendored libraries still Java. Some DialogFragment date pickers remain.

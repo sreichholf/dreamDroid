@@ -1,0 +1,24 @@
+ts	phase	decision	why	evidence	result
+2026-09-13T17:15:00Z	frame	20 domain slices across 4 tracks, coordinator does not review code	user asked for many slices and an orchestrator, one agent cannot cover the Kotlin rewrite plus MultiEPG plus menu in one pass	docs/modernize-dreamdroid.md Appendix I, app/src/.../multiepg, app/src/.../ui/nav	open
+2026-09-13T17:15:00Z	frame	collapse landing, stacker, per-slice verifiers, dedicated pilot	units are cheap identical-shape read-only reviews with no PRs	playbooks/orchestrate.md ceremony collapse	open
+2026-09-13T17:15:00Z	frame	rolling window of 10 cloud reviewers, refill after drain	orchestrate in-flight cap is about ten, swarm still wants parallel coverage	preferences.md	open
+2026-09-13T17:25:00Z	scale	spawned wave 1 of 10 cloud reviewers on main	highest-risk recent work first (MultiEPG, nav, hub, client, video, TV, leftover Java, tests)	agents.tsv	in-flight
+2026-09-13T19:20:00Z	drain	r16 PASS, refilled window with r06	production Java census is 0, keep the in-flight cap at 10	reports/r16.md	1/20
+2026-09-13T19:21:00Z	drain	r01 ISSUES and r14 ISSUES, refilled with r07 r08	do not synthesize mid-run, park findings in reports/	reports/r01.md reports/r14.md	3/20
+2026-09-13T19:22:00Z	drain	r02 r05 r13 ISSUES, refilled with r09 r10 r12	keep in-flight cap at 10	reports/r02.md reports/r05.md reports/r13.md	6/20
+2026-09-13T19:23:00Z	drain	r11 r18 ISSUES, refilled with r15 r17	keep in-flight cap at 10	reports/r11.md reports/r18.md	8/20
+2026-09-13T19:26:00Z	drain	r04 ISSUES, refilled with r19	keep in-flight cap at 10	reports/r04.md	9/20
+2026-09-13T19:27:00Z	drain	r07 ISSUES, spawned last unit r20	all 20 units now spawned	reports/r07.md	10/20
+2026-09-13T19:27:30Z	drain	r12 ISSUES, no refill	queue empty	reports/r12.md	11/20
+2026-09-13T19:28:00Z	drain	r03 ISSUES, no refill	queue empty	reports/r03.md	12/20
+2026-09-13T19:28:30Z	drain	r09 ISSUES, no refill	queue empty	reports/r09.md	13/20
+2026-09-13T19:29:00Z	drain	r15 ISSUES, no refill	queue empty	reports/r15.md	14/20
+2026-09-13T19:30:00Z	drain	r10 ISSUES, no refill	queue empty	reports/r10.md	15/20
+2026-09-13T19:31:00Z	drain	r08 ISSUES, no refill	queue empty	reports/r08.md	16/20
+2026-09-13T19:31:30Z	drain	r19 ISSUES, no refill	queue empty	reports/r19.md	17/20
+2026-09-13T19:32:00Z	drain	r06 ISSUES, no refill	queue empty	reports/r06.md	18/20
+2026-09-13T19:36:00Z	drain	r20 ISSUES, no refill	queue empty	reports/r20.md	19/20
+2026-09-13T19:38:00Z	drain	r17 ISSUES, predicate met	last in-flight unit returned	reports/r17.md	20/20
+2026-09-13T19:38:00Z	close	synthesize 20 reports, no code landed	read-only review program, 1 PASS 19 ISSUES 0 BLOCKED at 730630b0	units.tsv reports/	20/20
+2026-09-13T19:45:00Z	close	trail audit by a different model family	show-me-your-work requires it before handback	agent 5cc523a3-a7e5-44c8-9548-7955fb97717a	flags
+

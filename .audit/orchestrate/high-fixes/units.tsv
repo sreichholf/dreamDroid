@@ -1,0 +1,8 @@
+id	track	state	branch	pr	sha	brief
+f01	http	done	fix/http-client-transport	https://github.com/sreichholf/dreamDroid/pull/376	briefs/f01.md
+f02	http	in-flight	main		briefs/f02.md
+f03	reload	in-flight	main		briefs/f03.md
+f04	timers	in-flight	main		briefs/f04.md
+f05	profiles	in-flight	main		briefs/f05.md
+f06	widgets	in-flight	main		briefs/f06.md
+f07	ci	queued	main		briefs/f07.md

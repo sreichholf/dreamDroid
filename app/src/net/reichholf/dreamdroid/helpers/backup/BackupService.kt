@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.helpers.backup
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import android.provider.MediaStore
 import android.util.Log
@@ -32,7 +33,7 @@ class BackupService(context: Context) {
         return export
     }
 
-    fun doExport(data: BackupData?) {
+    fun doExport(data: BackupData?): Boolean {
         val gson = GsonBuilder().create()
         val jsonContent = gson.toJson(data)
         try {
@@ -40,25 +41,34 @@ class BackupService(context: Context) {
             val contentValues = ContentValues()
             contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, filename)
             contentValues.put(MediaStore.Files.FileColumns.MIME_TYPE, "application/json")
-            contentValues.put(MediaStore.Files.FileColumns.DATE_ADDED, System.currentTimeMillis() / 1000)
-            contentValues.put(MediaStore.Files.FileColumns.DATE_MODIFIED, System.currentTimeMillis() / 1000)
+            contentValues.put(
+                MediaStore.Files.FileColumns.DATE_ADDED,
+                System.currentTimeMillis() / 1000,
+            )
+            contentValues.put(
+                MediaStore.Files.FileColumns.DATE_MODIFIED,
+                System.currentTimeMillis() / 1000,
+            )
             contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, true)
             val fileUri = mContext.contentResolver.insert(
                 MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
                 contentValues,
-            )
+            ) ?: return false
 
-            val os = mContext.contentResolver.openOutputStream(fileUri!!, "w")
-            os!!.write(jsonContent.toByteArray())
+            val os = mContext.contentResolver.openOutputStream(fileUri, "w") ?: return false
+            os.write(jsonContent.toByteArray())
             os.close()
 
             contentValues.clear()
             contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 0)
             mContext.contentResolver.update(fileUri, contentValues, null, null)
+            return true
         } catch (e: FileNotFoundException) {
             Log.e(TAG, "Export unable to create export file to write the backup to.", e)
+            return false
         } catch (e: IOException) {
-            throw RuntimeException(e)
+            Log.e(TAG, "Export write failed.", e)
+            return false
         }
     }
 
@@ -73,16 +83,29 @@ class BackupService(context: Context) {
             if (existingProfile != null) {
                 mProfiles.deleteProfile(existingProfile)
             }
+            profile.id = null
             profile.id = mProfiles.addProfile(profile).toInt()
         }
-        val settings = backupData.getSettings()
-        @Suppress("UNCHECKED_CAST")
-        val allPreferences = mPreferences.all as MutableMap<String, Any>
+        val settings = backupData.getSettings() ?: return
+        val editor = mPreferences.edit()
+        for (setting in settings) {
+            applyImportedSetting(editor, setting)
+        }
+        editor.apply()
+    }
 
-        if (settings != null) {
-            for (setting in settings) {
-                allPreferences[setting.getKey()] = setting.getValue()
-            }
+    private fun applyImportedSetting(
+        editor: SharedPreferences.Editor,
+        setting: GenericSetting,
+    ) {
+        val key = setting.getKey()
+        val value = setting.getValue()
+        when (setting.getType()) {
+            "Boolean" -> editor.putBoolean(key, value.toBoolean())
+            "Integer" -> editor.putInt(key, value.toInt())
+            "Long" -> editor.putLong(key, value.toLong())
+            "Float" -> editor.putFloat(key, value.toFloat())
+            else -> editor.putString(key, value)
         }
     }
 

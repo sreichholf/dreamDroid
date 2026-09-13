@@ -1,0 +1,5 @@
+ts	phase	decision	why	evidence	result
+2026-09-13T19:50:00Z	frame	start with HTTP client transport before other highs	cancel and shared mBytes are the shared root behind MultiEPG, hub, and bouquet races	reports/r11.md SimpleHttpClient.kt:231	open
+2026-09-13T19:50:00Z	frame	architect skipped for f01	change stays inside SimpleHttpClient, mechanism already cited	SimpleHttpClient.kt:180-233	open
+2026-09-13T19:50:00Z	frame	no commit or PR until the user asks	user rules	user query	open
+2026-09-13T19:51:00Z	scale	spawned f01 local HTTP transport worker	blocking beachhead, exclusive SimpleHttpClient.kt	agents.tsv	in-flight

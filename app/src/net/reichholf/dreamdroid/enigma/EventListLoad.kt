@@ -18,7 +18,7 @@ data class EventListLoadResult(
 
 /**
  * Phase 2.7f: load typed EPG event lists without a Fragment owner.
- * Success is "!http.hasError()" — empty lists are success.
+ * Null fetch is failure. Empty 200 stays an empty list.
  */
 suspend fun loadEventList(
     context: Context,
@@ -26,8 +26,9 @@ suspend fun loadEventList(
     uri: String = URIStore.EPG_SERVICE,
 ): EventListLoadResult {
     val http = SimpleHttpClient.getInstance()
-    val events = EnigmaClient(http).getEvents(params, uri)
-    val success = !http.hasError()
+    val fetched = EnigmaClient(http).getEvents(params, uri)
+    val success = fetched != null
+    val events = fetched ?: emptyList()
     val errorText = if (success) {
         null
     } else {
