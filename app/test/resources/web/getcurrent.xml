@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2currentserviceinformation>
+	<e2service>
+		<e2servicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Das Erste HD</e2servicename>
+		<e2providername>ARD</e2providername>
+		<e2videowidth>1280</e2videowidth>
+		<e2videoheight>720</e2videoheight>
+		<e2servicevideosize>1280x720</e2servicevideosize>
+		<e2iswidescreen>True</e2iswidescreen>
+		<e2apid>101</e2apid>
+		<e2vpid>102</e2vpid>
+		<e2pcrpid>103</e2pcrpid>
+		<e2pmtpid>104</e2pmtpid>
+		<e2txtpid>105</e2txtpid>
+		<e2tsid>1101</e2tsid>
+		<e2onid>1</e2onid>
+		<e2sid>28000</e2sid>
+	</e2service>
+	<e2eventlist>
+		<e2event>
+			<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>
+			<e2eventservicename>Das Erste HD</e2eventservicename>
+			<e2eventprovidername>ARD</e2eventprovidername>
+			<e2eventid>39150</e2eventid>
+			<e2eventname>Tagesschau</e2eventname>
+			<e2eventtitle>Tagesschau</e2eventtitle>
+			<e2eventdescription>Nachrichten</e2eventdescription>
+			<e2eventstart>1893456000</e2eventstart>
+			<e2eventduration>3600</e2eventduration>
+			<e2eventremaining>1800</e2eventremaining>
+			<e2eventcurrenttime>1893452400</e2eventcurrenttime>
+			<e2eventdescriptionextended>Die Nachrichten um 20 Uhr.Mit Wetter.</e2eventdescriptionextended>
+		</e2event>
+		<e2event>
+			<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>
+			<e2eventservicename>Das Erste HD</e2eventservicename>
+			<e2eventprovidername>ARD</e2eventprovidername>
+			<e2eventid>39151</e2eventid>
+			<e2eventname></e2eventname>
+			<e2eventtitle></e2eventtitle>
+			<e2eventdescription/>
+			<e2eventstart>1893459600</e2eventstart>
+			<e2eventduration>1800</e2eventduration>
+			<e2eventremaining>0</e2eventremaining>
+			<e2eventcurrenttime>1893452400</e2eventcurrenttime>
+			<e2eventdescriptionextended/>
+		</e2event>
+	</e2eventlist>
+</e2currentserviceinformation>
