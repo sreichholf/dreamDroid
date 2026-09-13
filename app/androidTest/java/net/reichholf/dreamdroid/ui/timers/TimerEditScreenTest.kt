@@ -1,18 +1,29 @@
 package net.reichholf.dreamdroid.ui.timers
 
+import android.app.Activity
+import android.content.Intent
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.helpers.Python
+import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.enigma2.Service
+import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -129,6 +140,83 @@ class TimerEditScreenTest {
         assertEquals("1", timer.getString(Timer.KEY_JUST_PLAY))
         assertEquals("1", timer.getString(Timer.KEY_AFTER_EVENT))
         assertEquals("/media/hdd/", timer.getString(Timer.KEY_LOCATION))
+    }
+
+    @Test
+    fun servicePickReloadKeepsTypedTitleDescriptionAndToggles() {
+        val session = sessionFrom(sampleTimer())
+        session.reload()
+        session.editState.name = "Keep This Title"
+        session.editState.description = "Keep This Description"
+        session.editState.enabled = false
+        session.editState.zap = true
+
+        val picked = ExtendedHashMap()
+        picked.put(Service.KEY_NAME, "ZDF HD")
+        picked.put(Service.KEY_REFERENCE, "1:0:1:6DCB:44D:1:C00000:0:0:0:")
+        session.onActivityResult(
+            Statics.REQUEST_PICK_SERVICE,
+            Activity.RESULT_OK,
+            Intent().putExtra(NavExtras.DATA, picked),
+        )
+        session.reload()
+
+        assertEquals("Keep This Title", session.editState.name)
+        assertEquals("Keep This Description", session.editState.description)
+        assertEquals("ZDF HD", session.editState.serviceName)
+        assertTrue(!session.editState.enabled)
+        assertTrue(session.editState.zap)
+    }
+
+    @Test
+    fun failedSaveShowsBoxErrorAfterSpinnerClears() {
+        val session = sessionFrom(sampleTimer())
+        session.reload()
+        session.progress = IndeterminateProgressState(message = "Saving")
+        composeRule.setContent {
+            DreamDroidTheme {
+                timerEditForm(session.editState)
+            }
+        }
+
+        val result = ExtendedHashMap()
+        result.put(SimpleResult.KEY_STATE, Python.FALSE)
+        result.put(SimpleResult.KEY_STATE_TEXT, "Conflicting timer exists")
+        session.onSaveResult(result)
+        composeRule.waitForIdle()
+
+        assertNull(session.progress)
+        composeRule.onNodeWithText("Conflicting timer exists").assertIsDisplayed()
+    }
+
+    private fun sessionFrom(timer: ExtendedHashMap): TimerEditSession {
+        val session = TimerEditSession(
+            routeTag = "timer_edit:new:1893456000",
+            remountEpoch = 0,
+            timer = timer,
+            timerOld = null,
+            isCreate = true,
+            selectedTags = ArrayList(),
+            checkedDays = BooleanArray(7),
+        )
+        session.context = InstrumentationRegistry.getInstrumentation().targetContext
+        return session
+    }
+
+    @Composable
+    private fun timerEditForm(state: TimerEditState) {
+        TimerEditScreen(
+            state = state,
+            saveLabel = "Save",
+            onSave = {},
+            onPickBeginDate = {},
+            onPickBeginTime = {},
+            onPickEndDate = {},
+            onPickEndTime = {},
+            onPickRepeated = {},
+            onPickService = {},
+            onPickTags = {},
+        )
     }
 
     private fun sampleTimer(): ExtendedHashMap {
