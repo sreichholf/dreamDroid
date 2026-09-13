@@ -1,16 +1,17 @@
 package net.reichholf.dreamdroid.appwidget
 
-import androidx.preference.PreferenceManager
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.preference.PreferenceManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -46,5 +47,24 @@ class VirtualRemoteWidgetViewsTest {
         assertEquals("Living Room", nameView.text.toString())
         assertEquals(View.VISIBLE, rooted.findViewById<View>(R.id.ButtonPlay).visibility)
         assertEquals(View.INVISIBLE, rooted.findViewById<View>(R.id.ButtonPlayPause).visibility)
+    }
+
+    @Test
+    fun twoAppWidgetIdsDoNotShareClickExtras() {
+        val intentA = VirtualRemoteWidgetViews.rcuButtonIntent(context, 101, "play")
+        val intentB = VirtualRemoteWidgetViews.rcuButtonIntent(context, 202, "play")
+        assertEquals(101, intentA.getIntExtra(WidgetRemoteRequest.KEY_WIDGETID, Int.MIN_VALUE))
+        assertEquals(202, intentB.getIntExtra(WidgetRemoteRequest.KEY_WIDGETID, Int.MIN_VALUE))
+        assertFalse(intentA.filterEquals(intentB))
+    }
+
+    @Test
+    fun missingProfileIsNullNotNpe() {
+        val widgetId = 77
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .putInt(VirtualRemoteWidgetConfiguration.getProfileIdKey(widgetId), 9_001_337)
+            .commit()
+        val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(context, widgetId)
+        assertEquals(null, profile)
     }
 }
