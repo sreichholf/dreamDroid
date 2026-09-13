@@ -9,11 +9,11 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import java.util.ArrayList
 
 class EnigmaClient(private val http: SimpleHttpClient) {
-    suspend fun getServices(params: List<NameValuePair> = emptyList()): List<Service> {
+    suspend fun getServices(params: List<NameValuePair> = emptyList()): List<Service>? {
         return withContext(Dispatchers.IO) {
             val requestParams = ArrayList(params)
             if (!http.fetchPageContent(URIStore.SERVICES, requestParams)) {
-                emptyList()
+                null
             } else {
                 ServiceParser.parse(http.pageContentString)
             }
@@ -23,11 +23,11 @@ class EnigmaClient(private val http: SimpleHttpClient) {
     suspend fun getEvents(
         params: List<NameValuePair> = emptyList(),
         uri: String = URIStore.EPG_SERVICE
-    ): List<Event> {
+    ): List<Event>? {
         return withContext(Dispatchers.IO) {
             val requestParams = ArrayList(params)
             if (!http.fetchPageContent(uri, requestParams)) {
-                emptyList()
+                null
             } else {
                 EventParser.parse(http.pageContentString)
             }
@@ -37,11 +37,11 @@ class EnigmaClient(private val http: SimpleHttpClient) {
     suspend fun getEpgNowNext(
         params: List<NameValuePair> = emptyList(),
         uri: String = URIStore.EPG_NOWNEXT
-    ): List<ServiceNowNext> {
+    ): List<ServiceNowNext>? {
         return withContext(Dispatchers.IO) {
             val requestParams = ArrayList(params)
             if (!http.fetchPageContent(uri, requestParams)) {
-                emptyList()
+                null
             } else {
                 val xml = http.pageContentString
                 if (uri == URIStore.EPG_NOWNEXT) {
@@ -113,7 +113,10 @@ class EnigmaClient(private val http: SimpleHttpClient) {
     }
 
     companion object {
-        fun getServicesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Service> {
+        fun getServicesBlocking(
+            http: SimpleHttpClient,
+            params: List<NameValuePair>,
+        ): List<Service>? {
             return runBlocking {
                 EnigmaClient(http).getServices(params)
             }
@@ -123,7 +126,7 @@ class EnigmaClient(private val http: SimpleHttpClient) {
             http: SimpleHttpClient,
             params: List<NameValuePair>,
             uri: String = URIStore.EPG_SERVICE
-        ): List<Event> {
+        ): List<Event>? {
             return runBlocking {
                 EnigmaClient(http).getEvents(params, uri)
             }

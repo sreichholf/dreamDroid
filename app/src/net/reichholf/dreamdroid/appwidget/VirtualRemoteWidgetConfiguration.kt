@@ -86,10 +86,12 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
     }
 
     companion object {
-        fun getWidgetProfile(context: Context, appWidgetId: Int): Profile {
+        fun getWidgetProfile(context: Context, appWidgetId: Int): Profile? {
             val profileId = PreferenceManager.getDefaultSharedPreferences(context)
                 .getInt(getProfileIdKey(appWidgetId), -1)
-            return AppDatabase.profiles(context).getProfile(profileId)
+            if (profileId < 0) return null
+            return AppDatabase.profiles(context).getProfiles()
+                .firstOrNull { profile -> profile.id == profileId }
         }
 
         fun getProfileIdKey(appWidgetId: Int): String =

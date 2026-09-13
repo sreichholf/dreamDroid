@@ -1,0 +1,21 @@
+id	track	state	branch	pr	sha	brief
+r01	feature	done	main		730630b0	briefs/r01.md
+r02	feature	done	main		730630b0	briefs/r02.md
+r03	feature	done	main		730630b0	briefs/r03.md
+r04	phone-ui	done	main		730630b0	briefs/r04.md
+r05	phone-ui	done	main		730630b0	briefs/r05.md
+r06	phone-ui	done	main		730630b0	briefs/r06.md
+r07	phone-ui	done	main		730630b0	briefs/r07.md
+r08	phone-ui	done	main		730630b0	briefs/r08.md
+r09	phone-ui	done	main		730630b0	briefs/r09.md
+r10	phone-ui	done	main		730630b0	briefs/r10.md
+r11	platform	done	main		730630b0	briefs/r11.md
+r12	platform	done	main		730630b0	briefs/r12.md
+r13	platform	done	main		730630b0	briefs/r13.md
+r14	platform	done	main		730630b0	briefs/r14.md
+r15	platform	done	main		730630b0	briefs/r15.md
+r16	hygiene	done	main		730630b0	briefs/r16.md
+r17	phone-ui	done	main		730630b0	briefs/r17.md
+r18	hygiene	done	main		730630b0	briefs/r18.md
+r19	hygiene	done	main		730630b0	briefs/r19.md
+r20	hygiene	done	main		730630b0	briefs/r20.md

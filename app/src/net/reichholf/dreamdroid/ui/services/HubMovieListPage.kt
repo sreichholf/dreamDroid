@@ -229,10 +229,43 @@ class HubMovieListSession :
     private var selectedMovie: ExtendedHashMap? = null
     private var tagsChanged = false
     private var reloadOnSimpleResult = false
+    private var loadGeneration = 0
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
     private var loadJob: Job? = null
     private var zapJob: Job? = null
     private var deleteJob: Job? = null
+
+    fun beginLoad(): Int = ++loadGeneration
+
+    fun applyLoadResult(
+        generation: Int,
+        success: Boolean,
+        next: List<Movie>,
+        errorText: String?,
+    ) {
+        if (generation != loadGeneration) {
+            return
+        }
+        val ctx = context ?: return
+        val state = listState ?: return
+        val refreshState = refresh ?: return
+        refreshState.setRefreshing(false)
+        setToolbarTitle(finishedTitle())
+        movies.clear()
+        if (!success) {
+            state.replaceAll(emptyList())
+            onEmptyMessage?.invoke(errorText)
+            return
+        }
+        if (next.isEmpty()) {
+            state.replaceAll(emptyList())
+            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
+        } else {
+            onEmptyMessage?.invoke(null)
+            movies.addAll(next)
+            state.replaceAll(movieListItemsFromMovies(movies))
+        }
+    }
 
     fun dismissProgress() {
         progress = null
@@ -275,24 +308,10 @@ class HubMovieListSession :
         }
         refreshState.setRefreshing(true)
         setToolbarTitle(ctx.getString(R.string.loading))
+        val generation = beginLoad()
         loadJob?.cancel()
         loadJob = host.launchMovieListLoad(httpParams()) { success, next, errorText ->
-            refreshState.setRefreshing(false)
-            setToolbarTitle(finishedTitle())
-            movies.clear()
-            if (!success) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(errorText)
-                return@launchMovieListLoad
-            }
-            if (next.isEmpty()) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-            } else {
-                onEmptyMessage?.invoke(null)
-                movies.addAll(next)
-                state.replaceAll(movieListItemsFromMovies(movies))
-            }
+            applyLoadResult(generation, success, next, errorText)
         }
         onLoadJob?.invoke(loadJob)
     }

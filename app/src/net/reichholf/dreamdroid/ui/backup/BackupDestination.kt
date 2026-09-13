@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.backup
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -91,9 +92,9 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         if (excluded.isNotEmpty()) {
             data.getProfiles().removeIf { excluded.contains(it.id) }
         }
-        backupService.doExport(data)
+        val exported = backupService.doExport(data)
         reloadBackupData()
-        toast(context.getString(R.string.backup_export_successful))
+        toast(backupExportUserMessage(context, exported))
     }
 
     DisposableEffect(Unit) {
@@ -125,5 +126,13 @@ private fun readTextFromUri(context: android.content.Context, uri: Uri): String 
             }
             return builder.toString()
         }
+    }
+}
+
+internal fun backupExportUserMessage(context: Context, exported: Boolean): String {
+    return if (exported) {
+        context.getString(R.string.backup_export_successful)
+    } else {
+        context.getString(R.string.backup_export_missing_permission)
     }
 }

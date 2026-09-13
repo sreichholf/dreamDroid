@@ -3,9 +3,10 @@ package net.reichholf.dreamdroid.appwidget
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.preference.PreferenceManager
+import android.net.Uri
 import android.view.View
 import android.widget.RemoteViews
+import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
@@ -48,6 +49,7 @@ object VirtualRemoteWidgetViews {
                 putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId)
                 putExtra(WidgetRemoteRequest.KEY_KEYID, btn[1].toString())
                 action = WidgetRemoteRequest.ACTION_RCU
+                data = Uri.parse("dreamdroid://virtual-remote/$appWidgetId")
             }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,

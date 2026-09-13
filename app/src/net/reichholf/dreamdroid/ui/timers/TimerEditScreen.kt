@@ -75,6 +75,13 @@ fun TimerEditScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            if (state.saveError.isNotEmpty()) {
+                Text(
+                    text = state.saveError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
             OutlinedTextField(
                 value = state.name,
                 onValueChange = { state.name = it },

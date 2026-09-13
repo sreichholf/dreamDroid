@@ -1,0 +1,36 @@
+pr	sha	verdict	evidence	verifier	ts
+r16	730630b0	type-check-only	reports/r16.md	r16-self	2026-09-13T19:20:00Z
+r01	730630b0	type-check-only	reports/r01.md	r01-self	2026-09-13T19:21:00Z
+r14	730630b0	type-check-only	reports/r14.md	r14-self	2026-09-13T19:21:00Z
+r02	730630b0	type-check-only	reports/r02.md	r02-self	2026-09-13T19:22:00Z
+r05	730630b0	type-check-only	reports/r05.md	r05-self	2026-09-13T19:22:00Z
+r13	730630b0	type-check-only	reports/r13.md	r13-self	2026-09-13T19:22:00Z
+r11	730630b0	type-check-only	reports/r11.md	r11-self	2026-09-13T19:23:00Z
+r18	730630b0	type-check-only	reports/r18.md	r18-self	2026-09-13T19:23:00Z
+r04	730630b0	type-check-only	reports/r04.md	r04-self	2026-09-13T19:26:00Z
+r07	730630b0	type-check-only	reports/r07.md	r07-self	2026-09-13T19:27:00Z
+r12	730630b0	type-check-only	reports/r12.md	r12-self	2026-09-13T19:27:00Z
+r03	730630b0	type-check-only	reports/r03.md	r03-self	2026-09-13T19:28:00Z
+r09	730630b0	type-check-only	reports/r09.md	r09-self	2026-09-13T19:28:00Z
+r15	730630b0	type-check-only	reports/r15.md	r15-self	2026-09-13T19:29:00Z
+r10	730630b0	type-check-only	reports/r10.md	r10-self	2026-09-13T19:30:00Z
+r08	730630b0	type-check-only	reports/r08.md	r08-self	2026-09-13T19:31:00Z
+r19	730630b0	type-check-only	reports/r19.md	r19-self	2026-09-13T19:31:00Z
+r06	730630b0	type-check-only	reports/r06.md	r06-self	2026-09-13T19:32:00Z
+r20	730630b0	type-check-only	reports/r20.md	r20-self	2026-09-13T19:36:00Z
+r17	730630b0	type-check-only	reports/r17.md	r17-self	2026-09-13T19:38:00Z
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

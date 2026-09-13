@@ -34,6 +34,7 @@ class TimerEditState {
     var locationIndex by mutableIntStateOf(0)
     var afterEventOptions by mutableStateOf<List<String>>(emptyList())
     var locationOptions by mutableStateOf<List<String>>(emptyList())
+    var saveError by mutableStateOf("")
 
     fun loadFrom(
         timer: ExtendedHashMap,
