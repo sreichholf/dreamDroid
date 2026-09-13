@@ -45,16 +45,20 @@ class VLCPlayer {
         val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
         mCurrentMedia!!.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
-        play()
+        val mp = getMediaPlayer()!!
+        mp.media = mCurrentMedia
+        mp.rate = 1.0f
+        mp.play()
     }
 
     fun play() {
         val media = mCurrentMedia ?: return
         val mp = getMediaPlayer()!!
-        if (media != mp.media) {
+        val sameMedia = media == mp.media
+        if (!sameMedia) {
             mp.media = media
         }
-        if (mp.isPlaying && mp.rate == 1.0f) {
+        if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate, sameMedia)) {
             mp.pause()
         } else {
             mp.play()

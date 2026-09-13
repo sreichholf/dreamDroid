@@ -57,6 +57,7 @@ import net.reichholf.dreamdroid.ui.video.showEpgDetail
 import net.reichholf.dreamdroid.ui.video.showMovieDetail
 import net.reichholf.dreamdroid.ui.video.bindVideoOverlayScreen
 import net.reichholf.dreamdroid.video.VLCPlayer
+import net.reichholf.dreamdroid.video.VideoPlayback
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration
 import org.videolan.libvlc.MediaPlayer
@@ -443,9 +444,8 @@ class VideoOverlayFragment :
     }
 
     private fun getPreviousServiceInfo(): ServiceNowNext? {
-        var index = getCurrentServiceIndex()
+        val index = VideoPlayback.previousIndex(getCurrentServiceIndex(), mServiceList.size)
         if (index < 0) return null
-        index = if (index == 0) mServiceList.size - 1 else index - 1
         return mServiceList[index]
     }
 
@@ -459,12 +459,8 @@ class VideoOverlayFragment :
     }
 
     private fun getNextServiceInfo(): ServiceNowNext? {
-        var index = getCurrentServiceIndex()
+        val index = VideoPlayback.nextIndex(getCurrentServiceIndex(), mServiceList.size)
         if (index < 0) return null
-        index++
-        if (index >= mServiceList.size - 1) {
-            index = 0
-        }
         return mServiceList[index]
     }
 
@@ -847,7 +843,7 @@ class VideoOverlayFragment :
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 if (isOverlaysVisible()) return false
                 if (isRecording()) {
-                    onRewind()
+                    onForward()
                 } else {
                     next()
                 }

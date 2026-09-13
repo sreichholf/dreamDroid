@@ -449,9 +449,7 @@ class VideoActivity :
                     changeSurfaceLayout()
                 }
             }
-            MediaPlayer.Event.EndReached,
-            MediaPlayer.Event.Stopped,
-            -> finish()
+            MediaPlayer.Event.EndReached -> finish()
         }
         mOverlayFragment!!.onEvent(event)
     }
