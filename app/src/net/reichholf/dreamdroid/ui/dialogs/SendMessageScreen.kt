@@ -21,14 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class SendMessageUiState(
     initialMessage: String = "",
@@ -133,15 +130,6 @@ fun SendMessageScreen(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 8.dp),
             )
-        }
-    }
-}
-
-fun ComposeView.bindSendMessageScreen(state: SendMessageUiState) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-    setContent {
-        DreamDroidTheme {
-            SendMessageScreen(state = state)
         }
     }
 }

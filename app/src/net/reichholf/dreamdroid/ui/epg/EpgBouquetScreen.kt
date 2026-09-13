@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import android.widget.ImageView
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -128,7 +126,6 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
             label = {
                 Text(
                     text = timeJump.dateLabel,
-                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -136,28 +133,17 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
             modifier = Modifier
                 .weight(1f)
                 .testTag(EPG_TIME_JUMP_DATE_CHIP_TAG),
-            colors = AssistChipDefaults.assistChipColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                labelColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         )
         AssistChip(
             onClick = timeJump.onPickTime,
             label = {
                 Text(
                     text = timeJump.timeLabel,
-                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             },
             modifier = Modifier.testTag(EPG_TIME_JUMP_TIME_CHIP_TAG),
-            colors = AssistChipDefaults.assistChipColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                labelColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         )
         TextButton(
             onClick = timeJump.onNow,

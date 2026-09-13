@@ -18,8 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -27,7 +25,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.github.stephenvinouze.materialnumberpickercore.MaterialNumberPicker
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class SleepTimerUiState(
     initialMinutes: Int,
@@ -133,15 +130,6 @@ fun SleepTimerScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-        }
-    }
-}
-
-fun ComposeView.bindSleepTimerScreen(state: SleepTimerUiState) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-    setContent {
-        DreamDroidTheme {
-            SleepTimerScreen(state = state)
         }
     }
 }

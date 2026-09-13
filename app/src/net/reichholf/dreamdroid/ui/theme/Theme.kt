@@ -2,15 +2,12 @@ package net.reichholf.dreamdroid.ui.theme
 
 import android.content.Context
 import android.content.res.Configuration
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import net.reichholf.dreamdroid.DreamDroid
@@ -19,8 +16,7 @@ import net.reichholf.dreamdroid.R
 @Composable
 fun DreamDroidTheme(content: @Composable () -> Unit) {
     val dark = isDreamDroidDark(LocalContext.current)
-    val base = if (dark) dreamDroidDarkColorScheme() else dreamDroidLightColorScheme()
-    val scheme = base.withDreamDroidContainers(dark)
+    val scheme = if (dark) dreamDroidDarkColorScheme() else dreamDroidLightColorScheme()
     MaterialTheme(colorScheme = scheme) {
         // Dialog-hosted ComposeView inherits View contentColor (black in night). Override so
         // Text() without an explicit color uses the DreamDroid scheme, not the XML dialog.
@@ -64,6 +60,16 @@ private fun dreamDroidLightColorScheme() = lightColorScheme(
     surfaceVariant = colorResource(R.color.md_theme_light_surfaceVariant),
     onSurfaceVariant = colorResource(R.color.md_theme_light_onSurfaceVariant),
     outline = colorResource(R.color.md_theme_light_outline),
+    outlineVariant = colorResource(R.color.md_theme_light_outlineVariant),
+    scrim = colorResource(R.color.md_theme_light_scrim),
+    surfaceTint = colorResource(R.color.md_theme_light_primary),
+    surfaceBright = colorResource(R.color.md_theme_light_surfaceBright),
+    surfaceDim = colorResource(R.color.md_theme_light_surfaceDim),
+    surfaceContainer = colorResource(R.color.md_theme_light_surfaceContainer),
+    surfaceContainerHigh = colorResource(R.color.md_theme_light_surfaceContainerHigh),
+    surfaceContainerHighest = colorResource(R.color.md_theme_light_surfaceContainerHighest),
+    surfaceContainerLow = colorResource(R.color.md_theme_light_surfaceContainerLow),
+    surfaceContainerLowest = colorResource(R.color.md_theme_light_surfaceContainerLowest),
     inverseOnSurface = colorResource(R.color.md_theme_light_inverseOnSurface),
     inverseSurface = colorResource(R.color.md_theme_light_inverseSurface),
     inversePrimary = colorResource(R.color.md_theme_light_primaryInverse),
@@ -94,43 +100,17 @@ private fun dreamDroidDarkColorScheme() = darkColorScheme(
     surfaceVariant = colorResource(R.color.md_theme_dark_surfaceVariant),
     onSurfaceVariant = colorResource(R.color.md_theme_dark_onSurfaceVariant),
     outline = colorResource(R.color.md_theme_dark_outline),
+    outlineVariant = colorResource(R.color.md_theme_dark_outlineVariant),
+    scrim = colorResource(R.color.md_theme_dark_scrim),
+    surfaceTint = colorResource(R.color.md_theme_dark_primary),
+    surfaceBright = colorResource(R.color.md_theme_dark_surfaceBright),
+    surfaceDim = colorResource(R.color.md_theme_dark_surfaceDim),
+    surfaceContainer = colorResource(R.color.md_theme_dark_surfaceContainer),
+    surfaceContainerHigh = colorResource(R.color.md_theme_dark_surfaceContainerHigh),
+    surfaceContainerHighest = colorResource(R.color.md_theme_dark_surfaceContainerHighest),
+    surfaceContainerLow = colorResource(R.color.md_theme_dark_surfaceContainerLow),
+    surfaceContainerLowest = colorResource(R.color.md_theme_dark_surfaceContainerLowest),
     inverseOnSurface = colorResource(R.color.md_theme_dark_inverseOnSurface),
     inverseSurface = colorResource(R.color.md_theme_dark_inverseSurface),
     inversePrimary = colorResource(R.color.md_theme_dark_primaryInverse),
 )
-
-/**
- * DatePicker / TimePicker / AlertDialog read [ColorScheme.surfaceContainerHigh] and
- * [ColorScheme.surfaceContainerHighest]. [lightColorScheme] / [darkColorScheme] fill those
- * from the baseline Material purple neutrals when omitted, so pickers look off-brand.
- */
-private fun ColorScheme.withDreamDroidContainers(dark: Boolean): ColorScheme {
-    val outlineVariant = lerp(surfaceVariant, outline, 0.35f)
-    return if (dark) {
-        copy(
-            outlineVariant = outlineVariant,
-            scrim = Color.Black,
-            surfaceTint = primary,
-            surfaceBright = lerp(surface, surfaceVariant, 0.35f),
-            surfaceDim = background,
-            surfaceContainerLowest = background,
-            surfaceContainerLow = lerp(background, surface, 0.55f),
-            surfaceContainer = surface,
-            surfaceContainerHigh = lerp(surface, surfaceVariant, 0.45f),
-            surfaceContainerHighest = lerp(surface, surfaceVariant, 0.8f),
-        )
-    } else {
-        copy(
-            outlineVariant = outlineVariant,
-            scrim = Color.Black,
-            surfaceTint = primary,
-            surfaceBright = surface,
-            surfaceDim = lerp(surface, surfaceVariant, 0.5f),
-            surfaceContainerLowest = surface,
-            surfaceContainerLow = lerp(surface, surfaceVariant, 0.25f),
-            surfaceContainer = lerp(surface, surfaceVariant, 0.45f),
-            surfaceContainerHigh = lerp(surface, surfaceVariant, 0.65f),
-            surfaceContainerHighest = lerp(surface, surfaceVariant, 0.85f),
-        )
-    }
-}

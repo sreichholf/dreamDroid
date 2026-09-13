@@ -8,10 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 data class PowerChoiceItem(
     val id: Int,
@@ -35,18 +32,6 @@ fun PowerStateScreen(
                     .clickable { onItemClick(item) }
                     .padding(horizontal = 24.dp, vertical = 14.dp),
             )
-        }
-    }
-}
-
-fun ComposeView.bindPowerStateScreen(
-    items: List<PowerChoiceItem>,
-    onItemClick: (PowerChoiceItem) -> Unit,
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-    setContent {
-        DreamDroidTheme {
-            PowerStateScreen(items = items, onItemClick = onItemClick)
         }
     }
 }

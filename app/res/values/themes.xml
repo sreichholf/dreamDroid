@@ -81,6 +81,7 @@
         <item name="colorOnSurfaceInverse">@color/md_theme_light_inverseOnSurface</item>
         <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_light_primaryInverse</item>
+        <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
 
         <item name="textAppearanceHeadline1">@style/TextAppearance.MaterialComponents.Headline1
         </item>
@@ -159,6 +160,7 @@
         <item name="colorOnSurfaceInverse">@color/md_theme_dark_inverseOnSurface</item>
         <item name="colorSurfaceInverse">@color/md_theme_dark_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_dark_primaryInverse</item>
+        <item name="colorOutlineVariant">@color/md_theme_dark_outlineVariant</item>
         <item name="buttonBarButtonStyle">@style/Widget.Material3.Button.TextButton</item>
         <item name="buttonBarNeutralButtonStyle">@style/Widget.Material3.Button.TextButton</item>
         <item name="buttonBarPositiveButtonStyle">@style/Widget.Material3.Button.TextButton</item>
