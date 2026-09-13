@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,9 +34,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,6 +57,7 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
+import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import java.text.DateFormat
@@ -60,15 +65,13 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.max
 
-/** Default visible span (GraphMultiEPG default). Zoom comes in Phase 3. */
-const val MULTI_EPG_VISIBLE_MINUTES: Int = 120
+/** Default visible span (GraphMultiEPG default). */
+const val MULTI_EPG_VISIBLE_MINUTES: Int = MultiEpgZoom.DEFAULT_MINUTES
 
 private val ChannelLabelWidth = 100.dp
 private val RowHeight = 36.dp
 private val RulerHeight = 22.dp
 private val MinBarWidth = 28.dp
-/** ~3.dp per minute → 2 h fills ~360.dp of a phone-width pane. */
-private val MinuteWidth = 3.dp
 
 /**
  * MultiEPG grid aligned with the rest of the app's Material surfaces.
@@ -99,6 +102,8 @@ fun MultiEpgScreen(
     hScrollState: ScrollState = rememberScrollState(),
     focusSec: Long = nowSec,
     focusEpoch: Int = 0,
+    visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
+    onVisibleMinutesChange: ((Int) -> Unit)? = null,
 ) {
     val hScroll = hScrollState
     val density = LocalDensity.current
@@ -108,8 +113,14 @@ fun MultiEpgScreen(
     var layoutOriginSec by remember { mutableLongStateOf(0L) }
     val originForLayout =
         if (layoutOriginSec == 0L) timelineStartSec else layoutOriginSec
+    // Same hold for zoom: new dp/minute with the old scroll offset would jump
+    // every bar and the day label for one frame.
+    var layoutVisibleMinutes by remember {
+        mutableIntStateOf(MultiEpgZoom.coerce(visibleMinutes))
+    }
+    val minuteWidth = MultiEpgZoom.minuteWidthDp(layoutVisibleMinutes).dp
     val timelineSeconds = (timelineEndSec - originForLayout).coerceAtLeast(60L)
-    val timelineWidth = MinuteWidth * (timelineSeconds / 60f)
+    val timelineWidth = minuteWidth * (timelineSeconds / 60f)
     var viewportWidthPx by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(focusEpoch, channels.isNotEmpty()) {
@@ -117,7 +128,7 @@ fun MultiEpgScreen(
             return@LaunchedEffect
         }
         val nowOffsetMin = ((focusSec - originForLayout).coerceAtLeast(0L)) / 60f
-        val targetPx = with(density) { (MinuteWidth * nowOffsetMin - 48.dp).toPx() }
+        val targetPx = with(density) { (minuteWidth * nowOffsetMin - 48.dp).toPx() }
             .toInt()
             .coerceAtLeast(0)
         hScroll.scrollTo(targetPx.coerceAtMost(hScroll.maxValue.coerceAtLeast(targetPx)))
@@ -140,7 +151,7 @@ fun MultiEpgScreen(
             previousOriginSec = previous,
             newOriginSec = timelineStartSec,
         ) / 60f
-        val deltaPx = with(density) { (MinuteWidth * deltaMin).toPx() }.toInt()
+        val deltaPx = with(density) { (minuteWidth * deltaMin).toPx() }.toInt()
         hScroll.scrollTo((hScroll.value + deltaPx).coerceAtLeast(0))
         layoutOriginSec = timelineStartSec
     }
@@ -156,7 +167,9 @@ fun MultiEpgScreen(
             if (viewportWidthPx <= 0) {
                 timelineStart to timelineEnd
             } else {
-                val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
+                val minutePx = with(density) {
+                    MultiEpgZoom.minuteWidthDp(layoutVisibleMinutes).dp.toPx()
+                }.coerceAtLeast(0.01f)
                 val bucketPx = minutePx * 5f
                 val startPx = (hScroll.value / bucketPx).toInt() * bucketPx
                 val padMin = 20f
@@ -179,7 +192,9 @@ fun MultiEpgScreen(
                     (timelineEnd - 60L).coerceAtLeast(timelineStart),
                 )
             } else {
-                val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
+                val minutePx = with(density) {
+                    MultiEpgZoom.minuteWidthDp(layoutVisibleMinutes).dp.toPx()
+                }.coerceAtLeast(0.01f)
                 val sec = timelineStart +
                     ((hScroll.value / minutePx) * 60f).toLong()
                 sec.coerceIn(
@@ -194,10 +209,12 @@ fun MultiEpgScreen(
             val timelineStart = timelineStartState.value
             val timelineEnd = timelineEndState.value
             if (viewportWidthPx <= 0 || timelineEnd <= timelineStart) {
-                (visibleStartSec + MULTI_EPG_VISIBLE_MINUTES * 60L)
+                (visibleStartSec + layoutVisibleMinutes * 60L)
                     .coerceAtMost(timelineEnd.coerceAtLeast(visibleStartSec + 60L))
             } else {
-                val minutePx = with(density) { MinuteWidth.toPx() }.coerceAtLeast(0.01f)
+                val minutePx = with(density) {
+                    MultiEpgZoom.minuteWidthDp(layoutVisibleMinutes).dp.toPx()
+                }.coerceAtLeast(0.01f)
                 val sec = timelineStart +
                     (((hScroll.value + viewportWidthPx) / minutePx) * 60f).toLong()
                 sec.coerceIn(
@@ -205,6 +222,30 @@ fun MultiEpgScreen(
                     timelineEnd.coerceAtLeast(visibleStartSec + 60L),
                 )
             }
+        }
+    }
+
+    LaunchedEffect(visibleMinutes) {
+        val coerced = MultiEpgZoom.coerce(visibleMinutes)
+        val previous = layoutVisibleMinutes
+        if (previous == coerced) {
+            return@LaunchedEffect
+        }
+        val keepSec = visibleStartSec
+        val newMinuteWidth = MultiEpgZoom.minuteWidthDp(coerced).dp
+        val offsetMin = ((keepSec - originForLayout).coerceAtLeast(0L)) / 60f
+        val targetPx = with(density) { (newMinuteWidth * offsetMin).toPx() }
+            .toInt()
+            .coerceAtLeast(0)
+        if (targetPx <= hScroll.maxValue) {
+            hScroll.scrollTo(targetPx)
+            layoutVisibleMinutes = coerced
+        } else {
+            // Zoom-in grows the scroll range; commit density first so maxValue
+            // can accept the compensated offset.
+            layoutVisibleMinutes = coerced
+            withFrameNanos { _ -> }
+            hScroll.scrollTo(targetPx.coerceAtLeast(0))
         }
     }
 
@@ -269,6 +310,12 @@ fun MultiEpgScreen(
                         Text(stringResource(R.string.multiepg_next_day))
                     }
                 }
+                MultiEpgZoomButton(
+                    visibleMinutes = layoutVisibleMinutes,
+                    onVisibleMinutesChange = { minutes ->
+                        onVisibleMinutesChange?.invoke(minutes)
+                    },
+                )
             }
 
             if (dayLabel.isNotEmpty()) {
@@ -318,6 +365,8 @@ fun MultiEpgScreen(
                             timelineStartSec = originForLayout,
                             timelineEndSec = timelineEndSec,
                             timelineWidth = timelineWidth,
+                            minuteWidth = minuteWidth,
+                            tickStepSec = MultiEpgZoom.tickStepSec(layoutVisibleMinutes),
                             cullStartSec = cullWindow.first,
                             cullEndSec = cullWindow.second,
                             modifier = Modifier
@@ -364,6 +413,7 @@ fun MultiEpgScreen(
                                 channel = channel,
                                 timelineStartSec = originForLayout,
                                 timelineWidth = timelineWidth,
+                                minuteWidth = minuteWidth,
                                 nowSec = nowSec,
                                 cullStartSec = cullWindow.first,
                                 cullEndSec = cullWindow.second,
@@ -381,10 +431,49 @@ fun MultiEpgScreen(
 }
 
 @Composable
+private fun MultiEpgZoomButton(
+    visibleMinutes: Int,
+    onVisibleMinutesChange: (Int) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val hours = MultiEpgZoom.hours(visibleMinutes)
+    val zoomCd = stringResource(R.string.multiepg_zoom)
+    Box {
+        TextButton(
+            onClick = { expanded = true },
+            modifier = Modifier
+                .testTag("multi_epg_zoom")
+                .semantics { contentDescription = zoomCd },
+        ) {
+            Text(stringResource(R.string.multiepg_zoom_hours, hours))
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            for (minutes in MultiEpgZoom.OPTIONS_MINUTES) {
+                val optionHours = MultiEpgZoom.hours(minutes)
+                DropdownMenuItem(
+                    text = {
+                        Text(stringResource(R.string.multiepg_zoom_hours, optionHours))
+                    },
+                    onClick = {
+                        onVisibleMinutesChange(minutes)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun MultiEpgTimeRuler(
     timelineStartSec: Long,
     timelineEndSec: Long,
     timelineWidth: Dp,
+    minuteWidth: Dp,
+    tickStepSec: Long,
     cullStartSec: Long,
     cullEndSec: Long,
     modifier: Modifier = Modifier,
@@ -392,18 +481,23 @@ private fun MultiEpgTimeRuler(
     val tickFormat = remember {
         DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
     }
-    val ticks = remember(timelineStartSec, timelineEndSec, cullStartSec, cullEndSec) {
-        val hourStep = 3600L
-        var t = timelineStartSec - (timelineStartSec % hourStep)
+    val ticks = remember(
+        timelineStartSec,
+        timelineEndSec,
+        cullStartSec,
+        cullEndSec,
+        tickStepSec,
+    ) {
+        var t = timelineStartSec - (timelineStartSec % tickStepSec)
         val list = ArrayList<Long>(32)
         while (t < timelineEndSec) {
             if (t >= timelineStartSec &&
-                t >= cullStartSec - hourStep &&
-                t <= cullEndSec + hourStep
+                t >= cullStartSec - tickStepSec &&
+                t <= cullEndSec + tickStepSec
             ) {
                 list.add(t)
             }
-            t += hourStep
+            t += tickStepSec
         }
         list
     }
@@ -415,7 +509,7 @@ private fun MultiEpgTimeRuler(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
-                    .offset(x = MinuteWidth * offsetMin)
+                    .offset(x = minuteWidth * offsetMin)
                     .padding(start = 2.dp),
                 maxLines = 1,
             )
@@ -428,6 +522,7 @@ private fun MultiEpgChannelTimeline(
     channel: MultiEpgChannel,
     timelineStartSec: Long,
     timelineWidth: Dp,
+    minuteWidth: Dp,
     nowSec: Long,
     cullStartSec: Long,
     cullEndSec: Long,
@@ -438,7 +533,7 @@ private fun MultiEpgChannelTimeline(
     val barColor = MaterialTheme.colorScheme.surfaceVariant
     val onBar = MaterialTheme.colorScheme.onSurface
     val nowColor = MaterialTheme.colorScheme.primary
-    val timelineEndSec = timelineStartSec + ((timelineWidth / MinuteWidth) * 60f).toLong()
+    val timelineEndSec = timelineStartSec + ((timelineWidth / minuteWidth) * 60f).toLong()
 
     val visibleBars = remember(channel.bars, cullStartSec, cullEndSec) {
         channel.bars.overlapping(cullStartSec, cullEndSec)
@@ -456,6 +551,7 @@ private fun MultiEpgChannelTimeline(
                 ProgrammeBar(
                     bar = bar,
                     timelineStartSec = timelineStartSec,
+                    minuteWidth = minuteWidth,
                     barColor = barColor,
                     onBar = onBar,
                     onEventClick = onEventClick,
@@ -466,7 +562,7 @@ private fun MultiEpgChannelTimeline(
             val nowMin = (nowSec - timelineStartSec) / 60f
             Box(
                 modifier = Modifier
-                    .offset(x = MinuteWidth * nowMin)
+                    .offset(x = minuteWidth * nowMin)
                     .width(2.dp)
                     .fillMaxHeight()
                     .background(nowColor)
@@ -480,6 +576,7 @@ private fun MultiEpgChannelTimeline(
 private fun ProgrammeBar(
     bar: MultiEpgBar,
     timelineStartSec: Long,
+    minuteWidth: Dp,
     barColor: Color,
     onBar: Color,
     onEventClick: (Event) -> Unit,
@@ -490,8 +587,8 @@ private fun ProgrammeBar(
     }
     val startMin = (drawStart - timelineStartSec) / 60f
     val durationMin = max((bar.endSec - drawStart) / 60f, 1f)
-    val x = MinuteWidth * startMin
-    val w = (MinuteWidth * durationMin).coerceAtLeast(MinBarWidth)
+    val x = minuteWidth * startMin
+    val w = (minuteWidth * durationMin).coerceAtLeast(MinBarWidth)
     Box(
         modifier = Modifier
             .offset(x = x)

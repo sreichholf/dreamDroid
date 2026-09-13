@@ -1,10 +1,12 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -22,6 +24,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -484,5 +487,107 @@ class MultiEpgScreenTest {
     private fun dayLabelText(): String {
         val node = composeRule.onNodeWithTag("multi_epg_day_label").fetchSemanticsNode()
         return node.config[SemanticsProperties.Text].joinToString { it.text }
+    }
+
+    @Test
+    fun zoomMenuSelectsFiveHourSpan() {
+        var visibleMinutes by mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = emptyList(),
+                    timelineStartSec = 0L,
+                    timelineEndSec = 3600L,
+                    nowSec = 60L,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                    visibleMinutes = visibleMinutes,
+                    onVisibleMinutesChange = { visibleMinutes = it },
+                )
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_zoom").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_zoom").performClick()
+        composeRule.onNodeWithText("1h").assertIsDisplayed()
+        composeRule.onNodeWithText("4h").assertIsDisplayed()
+        composeRule.onNodeWithText("5h").performClick()
+        composeRule.waitForIdle()
+        assertEquals(300, visibleMinutes)
+    }
+
+    @Test
+    fun zoomOutWidensVisibleWindowAndKeepsNearBar() {
+        val start = 1_700_000_000L
+        val lateStart = start + 3L * 3600L
+        val channels = listOf(
+            MultiEpgChannel(
+                serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "Tagesschau",
+                            start = start.toString(),
+                            duration = "1800",
+                            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = start,
+                        endSec = start + 1800,
+                    ),
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "11",
+                            title = "LateShow",
+                            start = lateStart.toString(),
+                            duration = "1800",
+                            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = lateStart,
+                        endSec = lateStart + 1800,
+                    ),
+                ),
+            ),
+        )
+        var visibleMinutes by mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
+        var spanSec = 0L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = channels,
+                    timelineStartSec = start,
+                    timelineEndSec = start + 6L * 3600L,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                    onVisibleWindow = { visStart, visEnd ->
+                        spanSec = visEnd - visStart
+                    },
+                    visibleMinutes = visibleMinutes,
+                    onVisibleMinutesChange = { visibleMinutes = it },
+                )
+            }
+        }
+        composeRule.waitUntil(5_000) { spanSec > 0L }
+        val spanAt2h = spanSec
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("LateShow").assertDoesNotExist()
+        val dayBefore = dayLabelText()
+
+        composeRule.runOnIdle { visibleMinutes = 300 }
+        composeRule.waitForIdle()
+        composeRule.waitUntil(5_000) { spanSec > spanAt2h }
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("LateShow").assertIsDisplayed()
+        assertEquals(dayBefore, dayLabelText())
+        assertTrue(spanSec > spanAt2h * 2)
     }
 }
