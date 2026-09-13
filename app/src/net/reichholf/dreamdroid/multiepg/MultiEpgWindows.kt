@@ -76,4 +76,21 @@ object MultiEpgWindows {
         }
         return earliest ?: nowSec
     }
+
+    /**
+     * Seconds to add to horizontal scroll so the wall-clock under the left edge
+     * stays put when [paintedTimelineStart] moves.
+     */
+    fun originScrollCompensationSec(
+        previousOriginSec: Long,
+        newOriginSec: Long,
+    ): Long {
+        if (previousOriginSec == Long.MIN_VALUE ||
+            previousOriginSec == 0L ||
+            newOriginSec == 0L
+        ) {
+            return 0L
+        }
+        return previousOriginSec - newOriginSec
+    }
 }

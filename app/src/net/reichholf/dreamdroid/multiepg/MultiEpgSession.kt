@@ -301,16 +301,18 @@ class MultiEpgSession(
         for (start in starts) {
             merged.addAll(eventsByWindow[start].orEmpty())
         }
-        timelineStartSec = MultiEpgWindows.paintedTimelineStart(
+        val nextStart = MultiEpgWindows.paintedTimelineStart(
             nowSec = originFloorSec,
             minWindowStartSec = starts.first(),
             events = merged,
         )
-        timelineEndSec = starts.last() + MultiEpgWindows.CHUNK_SECONDS
+        val nextEnd = starts.last() + MultiEpgWindows.CHUNK_SECONDS
         val previous = channels
         val next = withContext(Dispatchers.Default) {
             buildMultiEpgChannels(merged, previous)
         }
+        timelineStartSec = nextStart
+        timelineEndSec = nextEnd
         if (next !== previous) {
             channels = next
         }

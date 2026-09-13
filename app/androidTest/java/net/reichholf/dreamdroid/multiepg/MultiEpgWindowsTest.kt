@@ -95,6 +95,18 @@ class MultiEpgWindowsTest {
     }
 
     @Test
+    fun originScrollCompensationKeepsWallClock() {
+        val previous = 1_000L
+        val jumped = 10_000L
+        val scrollSec = 20_000L
+        val delta = MultiEpgWindows.originScrollCompensationSec(previous, jumped)
+        assertEquals(previous - jumped, delta)
+        assertEquals(previous + scrollSec, jumped + scrollSec + delta)
+        assertEquals(0L, MultiEpgWindows.originScrollCompensationSec(0L, jumped))
+        assertEquals(0L, MultiEpgWindows.originScrollCompensationSec(previous, 0L))
+    }
+
+    @Test
     fun paintedTimelineStartUsesOldestWindowOnceNowIsDropped() {
         val now = 10_000L
         assertEquals(
