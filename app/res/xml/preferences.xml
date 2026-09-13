@@ -94,6 +94,14 @@
             android:key="grid_max_cols"
             android:summary="@string/max_grid_cols_long"
             android:title="@string/max_grid_cols"/>
+        <ListPreference
+            android:defaultValue="comfortable"
+            android:dialogTitle="@string/multiepg_text_size"
+            android:entries="@array/multiepg_text_size_entries"
+            android:entryValues="@array/multiepg_text_size_values"
+            android:key="multiepg_text_size"
+            android:summary="@string/multiepg_text_size_long"
+            android:title="@string/multiepg_text_size"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="category_picons"

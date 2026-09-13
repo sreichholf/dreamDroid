@@ -10,6 +10,7 @@ import androidx.preference.PreferenceManager
 import com.google.android.material.color.DynamicColors
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.video.VLCPlayer
 
 /**
@@ -59,6 +60,12 @@ class SettingsState(
     )
     var gridMaxCols by mutableStateOf(
         prefs.getString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "-1") ?: "-1",
+    )
+    var multiEpgTextSize by mutableStateOf(
+        prefs.getString(
+            DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE,
+            MultiEpgTextSize.DEFAULT.prefValue,
+        ) ?: MultiEpgTextSize.DEFAULT.prefValue,
     )
 
     var picons by mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false))
@@ -111,6 +118,7 @@ class SettingsState(
             DreamDroid.PREFS_KEY_THEME_TYPE -> themeType = value
             DreamDroid.PREFS_KEY_START_SCREEN -> startScreen = value
             DreamDroid.PREFS_KEY_GRID_MAX_COLS -> gridMaxCols = value
+            DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE -> multiEpgTextSize = value
             DreamDroid.PREFS_KEY_SYNC_PICONS_PATH -> syncPiconsPath = value
         }
     }

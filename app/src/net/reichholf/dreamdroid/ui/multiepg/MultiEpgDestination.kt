@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
@@ -21,6 +23,7 @@ import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.multiepg.MultiEpgSession
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
+import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
@@ -54,6 +57,25 @@ fun MultiEpgDestination(
     var focusEpoch by remember { mutableIntStateOf(0) }
     var visibleMinutes by rememberSaveable(remountEpoch) {
         mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
+    }
+    val prefs = remember(context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+    var textSize by remember {
+        mutableStateOf(
+            MultiEpgTextSize.fromPref(
+                prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null),
+            ),
+        )
+    }
+    DisposableEffect(prefs) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE) {
+                textSize = MultiEpgTextSize.fromPref(prefs.getString(key, null))
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     val sync = remember(context) {
@@ -139,6 +161,7 @@ fun MultiEpgDestination(
         timerClocks = session.timerClocks,
         visibleMinutes = visibleMinutes,
         onVisibleMinutesChange = { visibleMinutes = it },
+        textSize = textSize,
         modifier = modifier,
     )
     EpgEventDetailSheetHost(session = dialogSession)

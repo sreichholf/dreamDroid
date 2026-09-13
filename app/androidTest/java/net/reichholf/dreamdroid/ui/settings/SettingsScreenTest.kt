@@ -11,6 +11,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -48,6 +49,7 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("Start screen").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Appearance").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Day/Night Theme choices").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("MultiEPG text size").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Picons").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Use Picons").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("About").performScrollTo().assertIsDisplayed()
@@ -85,5 +87,36 @@ class SettingsScreenTest {
         assertTrue(about)
         assertTrue(changelog)
         assertTrue(backup)
+    }
+
+    @Test
+    fun multiEpgTextSizeDefaultsToComfortableAndStoresCompact() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .remove(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE)
+            .commit()
+        val state = SettingsState.create(context)
+        composeRule.setContent {
+            DreamDroidTheme {
+                SettingsScreen(
+                    state = state,
+                    onThemeChanged = {},
+                    onDynamicColorsChanged = {},
+                    onSyncPicons = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("MultiEPG text size").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Comfortable").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("MultiEPG text size").performClick()
+        composeRule.onNodeWithText("Compact").performClick()
+        composeRule.waitForIdle()
+        assertEquals(
+            "compact",
+            PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null),
+        )
+        assertEquals("compact", state.multiEpgTextSize)
     }
 }
