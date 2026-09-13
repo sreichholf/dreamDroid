@@ -153,6 +153,7 @@ class TimerEditSession(
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
     private var locationsJob: kotlinx.coroutines.Job? = null
     private var saveJob: kotlinx.coroutines.Job? = null
+    private var formHydrated = false
 
     fun dismissProgress() {
         progress = null
@@ -298,6 +299,9 @@ class TimerEditSession(
 
     fun reload() {
         val ctx = context ?: return
+        if (formHydrated) {
+            editState.applyTo(timer)
+        }
         begin = DateTime.parseTimestamp(timer.getString(Timer.KEY_BEGIN))
         end = DateTime.parseTimestamp(timer.getString(Timer.KEY_END))
         var repeatedValue = 0
@@ -313,22 +317,35 @@ class TimerEditSession(
         }
         val afterEvents = ctx.resources.getTextArray(R.array.afterevents).map { it.toString() }
         editState.loadFrom(timer, afterEvents, DreamDroid.getLocations(), repeatedText)
+        formHydrated = true
     }
 
     fun saveTimer() {
         val host = hostFragment ?: return
         val ctx = context ?: return
         Log.i(LOG_TAG, "saveTimer()")
+        editState.saveError = ""
         progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
         editState.applyTo(timer)
         val params = Timer.getSaveParams(timer, timerOld)
         saveJob?.cancel()
         saveJob = host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, _ ->
-            progress = null
-            if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
-                host.clearTimerEditSession()
-                host.deliverPickResult(Activity.RESULT_OK, null)
-            }
+            onSaveResult(result)
+        }
+    }
+
+    fun onSaveResult(result: ExtendedHashMap) {
+        progress = null
+        if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
+            editState.saveError = ""
+            hostFragment?.clearTimerEditSession()
+            hostFragment?.deliverPickResult(Activity.RESULT_OK, null)
+            return
+        }
+        val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+        editState.saveError = when {
+            !stateText.isNullOrEmpty() -> stateText
+            else -> context?.getString(R.string.get_content_error).orEmpty()
         }
     }
 
