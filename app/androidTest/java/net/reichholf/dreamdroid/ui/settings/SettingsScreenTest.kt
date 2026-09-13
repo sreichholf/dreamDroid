@@ -1,7 +1,10 @@
 package net.reichholf.dreamdroid.ui.settings
 
-import androidx.compose.ui.test.assertIsDisplayed
+import android.content.res.Configuration
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -9,7 +12,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -148,5 +153,34 @@ class SettingsScreenTest {
                 .getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true),
         )
         assertEquals(false, state.nowPlayingStrip)
+    }
+
+    @Test
+    fun startScreenTitleIsGermanWhenLocaleIsDe() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(Locale.GERMAN)
+        val germanContext = context.createConfigurationContext(config)
+        assertEquals("Startbildschirm", germanContext.getString(R.string.start_screen))
+        assertEquals(
+            "Bildschirm, der beim Öffnen der App angezeigt wird (Hauptziele im Navigationsmenü)",
+            germanContext.getString(R.string.start_screen_long),
+        )
+
+        val state = SettingsState.create(context)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalContext provides germanContext) {
+                DreamDroidTheme {
+                    SettingsScreen(
+                        state = state,
+                        onThemeChanged = {},
+                        onDynamicColorsChanged = {},
+                        onSyncPicons = {},
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithText("Startbildschirm").performScrollTo().assertIsDisplayed()
     }
 }
