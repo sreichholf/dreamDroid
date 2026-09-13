@@ -17,8 +17,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.ui.services.TvMoviesDestinationBar
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
+import net.reichholf.dreamdroid.ui.services.TvMoviesShellChrome
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.tools.ToolsDestinationBar
 import net.reichholf.dreamdroid.ui.tools.ToolsHubState
@@ -85,9 +85,8 @@ fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
 						selected = shown.state.selected,
 						onDestinationSelected = { shown.state.onDestinationSelected(it) },
 					)
-					is ShellDestinationBarContent.TvMovies -> TvMoviesDestinationBar(
-						selected = shown.state.selected,
-						onDestinationSelected = { shown.state.onDestinationSelected(it) },
+					is ShellDestinationBarContent.TvMovies -> TvMoviesShellChrome(
+						state = shown.state,
 					)
 				}
 			}

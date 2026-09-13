@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.Job
@@ -21,18 +20,20 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 
 private const val POLL_MS = 30_000L
 private const val PROFILE_WAIT_MS = 20_000L
 
 /**
- * Hub-owned now-playing strip: polls `/web/getcurrent`, opens [CurrentServiceSheet] on tap.
+ * Polls `/web/getcurrent` into [hubState] for the Coordinator now-playing strip
+ * and hosts [CurrentServiceSheet] on tap.
  */
 @Composable
 fun HubNowPlaying(
     hostFragment: PhoneNavHostFragment,
     reloadEpoch: Int,
-    modifier: Modifier = Modifier,
+    hubState: TvMoviesHubState,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -40,6 +41,8 @@ fun HubNowPlaying(
     var ready by remember { mutableStateOf(false) }
     var showSheet by rememberSaveable { mutableStateOf(false) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
+    val loadingText = stringResource(R.string.loading)
+    val unavailableText = stringResource(R.string.not_available)
 
     fun reload() {
         loadJob?.cancel()
@@ -81,23 +84,17 @@ fun HubNowPlaying(
 
     val service = current?.service
     val now = current?.now
-    val headline = nowPlayingHeadline(
+    hubState.nowPlayingHeadline = nowPlayingHeadline(
         ready = ready,
         serviceName = service?.name.orEmpty(),
         eventTitle = now?.title.orEmpty(),
-        loadingText = stringResource(R.string.loading),
-        unavailableText = stringResource(R.string.not_available),
+        loadingText = loadingText,
+        unavailableText = unavailableText,
     )
-
-    NowPlayingStrip(
-        label = stringResource(R.string.current_service),
-        headline = headline,
-        progress = eventProgressFraction(now),
-        serviceReference = service?.reference.orEmpty(),
-        serviceName = service?.name.orEmpty(),
-        onClick = { showSheet = true },
-        modifier = modifier,
-    )
+    hubState.nowPlayingProgress = eventProgressFraction(now)
+    hubState.nowPlayingReference = service?.reference.orEmpty()
+    hubState.nowPlayingName = service?.name.orEmpty()
+    hubState.onNowPlayingClick = { showSheet = true }
 
     if (showSheet) {
         CurrentServiceSheet(

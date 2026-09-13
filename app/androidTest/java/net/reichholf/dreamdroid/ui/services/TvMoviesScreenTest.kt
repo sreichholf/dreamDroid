@@ -47,6 +47,24 @@ class TvMoviesScreenTest {
     }
 
     @Test
+    fun nowStripSitsAboveDestinationBar() {
+        val state = TvMoviesHubState().apply {
+            nowPlayingHeadline = "Das Erste HD · Tagesschau"
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                TvMoviesShellChrome(state = state)
+            }
+        }
+        composeRule.onNodeWithText("Now").assertIsDisplayed()
+        composeRule.onNodeWithText("Das Erste HD · Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("TV").assertIsDisplayed()
+        composeRule.onNodeWithText("Radio").assertIsDisplayed()
+        composeRule.onNodeWithText("Movies").assertIsDisplayed()
+        composeRule.onNodeWithText("Timer").assertIsDisplayed()
+    }
+
+    @Test
     fun reselectingActiveBouquetTabReportsSameIndex() {
         val selected = mutableListOf<Int>()
         composeRule.setContent {

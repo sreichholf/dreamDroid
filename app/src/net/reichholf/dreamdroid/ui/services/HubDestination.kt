@@ -149,6 +149,12 @@ fun HubDestination(
     destinationBarState.selected = hubSelected
     destinationBarState.onDestinationSelected = { selectDestination(it) }
 
+    HubNowPlaying(
+        hostFragment = hostFragment,
+        reloadEpoch = nowPlayingReloadEpoch,
+        hubState = destinationBarState,
+    )
+
     fun onRowSelected(index: Int) {
         // Reselect active bouquet tab → go up one provider/directory level (or reload root).
         if (index == selectedRow && (mode == MODE_TV || mode == MODE_RADIO)) {
@@ -340,11 +346,10 @@ fun HubDestination(
                     }
                 }
             }
-            HubNowPlaying(
-                hostFragment = hostFragment,
-                reloadEpoch = nowPlayingReloadEpoch,
+            // Reserve space for the Coordinator overlay (now-playing strip + destination bar).
+            Spacer(
+                Modifier.height(dimensionResource(R.dimen.now_playing_strip_height)),
             )
-            // Reserve space for the Coordinator-hosted destination bar (dualpane shell_destination_nav).
             Spacer(
                 Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height)),
             )

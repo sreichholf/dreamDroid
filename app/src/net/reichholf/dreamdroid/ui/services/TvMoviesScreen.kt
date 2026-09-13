@@ -9,8 +9,10 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.current.NowPlayingStrip
 import net.reichholf.dreamdroid.ui.nav.DestinationBar
 import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
 
@@ -87,6 +89,32 @@ fun TvMoviesDestinationBar(
 		onSelect = { onDestinationSelected(TvMoviesDestination.entries[it]) },
 		modifier = modifier,
 	)
+}
+
+/**
+ * Coordinator overlay chrome: now-playing strip stacked on the destination bar.
+ * Hub list in detail_view overflows under this slot (ScrollingViewBehavior),
+ * so the strip must live here — not in the hub Column.
+ */
+@Composable
+fun TvMoviesShellChrome(
+	state: TvMoviesHubState,
+	modifier: Modifier = Modifier,
+) {
+	Column(modifier.fillMaxWidth()) {
+		NowPlayingStrip(
+			label = stringResource(R.string.current_service),
+			headline = state.nowPlayingHeadline,
+			progress = state.nowPlayingProgress,
+			serviceReference = state.nowPlayingReference,
+			serviceName = state.nowPlayingName,
+			onClick = { state.onNowPlayingClick() },
+		)
+		TvMoviesDestinationBar(
+			selected = state.selected,
+			onDestinationSelected = { state.onDestinationSelected(it) },
+		)
+	}
 }
 
 private fun destinationIcon(dest: TvMoviesDestination): Int {
