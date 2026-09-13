@@ -2,14 +2,10 @@ package net.reichholf.dreamdroid.ui.epg
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
-import android.view.LayoutInflater
+import android.text.format.DateFormat
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
-import android.widget.FrameLayout
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -24,13 +20,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.MenuProvider
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.loadEventList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
@@ -41,15 +34,12 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-private const val LOG_TAG = "EpgBouquetDestination"
-
 /**
  * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
- * Date/time header mounts into activity [R.id.content_header].
+ * Time jump is a Compose chip + Now/Prime; custom instant uses one date/time dialog.
  * Bouquet pick results arrive via [PhoneNavHostFragment.composeActivityResultListener].
  */
 @Composable
@@ -78,6 +68,7 @@ fun EpgBouquetDestination(
     var emptyMessage by remember { mutableStateOf<String?>(null) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     var waitingForPicker by rememberSaveable { mutableStateOf(false) }
+    var showDateTimePicker by rememberSaveable { mutableStateOf(false) }
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.hostFragment = hostFragment
     dialogSession.context = context
@@ -103,49 +94,6 @@ fun EpgBouquetDestination(
         hostFragment.composeActivityResultListener = session
         activity.addMenuProvider(session, hostFragment.viewLifecycleOwner)
         session.setToolbarTitle(session.finishedTitle())
-
-        val header = LayoutInflater.from(activity).inflate(R.layout.date_time_picker_header, null, false)
-        val dateView = header.findViewById<TextView>(R.id.textViewDate)
-        val timeView = header.findViewById<TextView>(R.id.textViewTime)
-        fun syncHeaderLabels() {
-            val cal = session.calendar()
-            dateView.text = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(cal.time)
-            timeView.text = SimpleDateFormat("HH:mm", Locale.US).format(cal.time)
-        }
-        syncHeaderLabels()
-        dateView.setOnClickListener {
-            val picker = MaterialDatePicker.Builder.datePicker()
-                .setSelection(session.calendar().timeInMillis)
-                .build()
-            picker.addOnPositiveButtonClickListener { selection ->
-                val newDate = Calendar.getInstance().apply { timeInMillis = selection as Long }
-                session.onDateSet(
-                    newDate.get(Calendar.YEAR),
-                    newDate.get(Calendar.MONTH),
-                    newDate.get(Calendar.DAY_OF_MONTH),
-                )
-                syncHeaderLabels()
-            }
-            (activity as MultiPaneHandler).showDialogFragment(picker, "epg_bouquet_date_picker")
-        }
-        timeView.setOnClickListener {
-            val c = session.calendar()
-            val picker = MaterialTimePicker.Builder()
-                .setTimeFormat(TimeFormat.CLOCK_24H)
-                .setHour(c.get(Calendar.HOUR_OF_DAY))
-                .setMinute(c.get(Calendar.MINUTE))
-                .build()
-            picker.addOnPositiveButtonClickListener {
-                session.onTimeSet(picker.hour, picker.minute)
-                syncHeaderLabels()
-            }
-            (activity as MultiPaneHandler).showDialogFragment(picker, "epg_bouquet_time_picker")
-        }
-        val frame = activity.findViewById<FrameLayout?>(R.id.content_header)
-        frame?.visibility = View.VISIBLE
-        frame?.removeAllViews()
-        frame?.addView(header)
-
         onDispose {
             if (hostFragment.composeActivityResultListener === session) {
                 hostFragment.composeActivityResultListener = null
@@ -154,10 +102,19 @@ fun EpgBouquetDestination(
             loadJob?.cancel()
             loadJob = null
             dialogSession.dismissProgress()
-            frame?.removeAllViews()
-            frame?.visibility = View.GONE
         }
     }
+
+    val labelLocale = if (DreamDroid.DATE_LOCALE_WO) Locale.US else Locale.getDefault()
+    val is24Hour = DateFormat.is24HourFormat(context)
+    val timeJump = EpgTimeJumpUi(
+        label = EpgInstant.formatLabel(timeSec, is24Hour, labelLocale),
+        onPickDateTime = { showDateTimePicker = true },
+        onNow = {
+            session.onInstantSet((Calendar.getInstance().timeInMillis / 1000).toInt())
+        },
+        onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) },
+    )
 
     LaunchedEffect(remountEpoch, bouquetRef) {
         val args = hostFragment.epgLeafArguments()
@@ -182,7 +139,20 @@ fun EpgBouquetDestination(
             listState = listState.listState,
             scrollEpoch = listState.scrollEpoch,
             emptyMessage = emptyMessage,
+            timeJump = timeJump,
             onItemClick = { dialogSession.showDetail(it) },
+        )
+    }
+
+    if (showDateTimePicker) {
+        EpgDateTimePickerDialog(
+            initialTimeSec = timeSec,
+            is24Hour = is24Hour,
+            onDismiss = { showDateTimePicker = false },
+            onConfirm = { selectedSec ->
+                showDateTimePicker = false
+                session.onInstantSet(selectedSec)
+            },
         )
     }
 
@@ -218,33 +188,12 @@ private class EpgBouquetSession :
         return bouquetName.takeIf { it.isNotEmpty() } ?: ctx.getString(R.string.epg)
     }
 
-    fun calendar(): Calendar = Calendar.getInstance().apply {
-        timeInMillis = timeSec.toLong() * 1000
-    }
-
-    fun onDateSet(year: Int, month: Int, day: Int) {
-        val cal = calendar()
-        if (cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day) {
+    fun onInstantSet(newTimeSec: Int) {
+        if (newTimeSec == timeSec) {
             return
         }
-        cal.set(year, month, day)
-        timeSec = (cal.timeInMillis / 1000).toInt()
+        timeSec = newTimeSec
         onTimeSec?.invoke(timeSec)
-        Log.i(LOG_TAG, "$timeSec")
-        reload()
-    }
-
-    fun onTimeSet(hourOfDay: Int, minute: Int) {
-        val cal = calendar()
-        if (cal.get(Calendar.HOUR_OF_DAY) == hourOfDay && cal.get(Calendar.MINUTE) == minute) {
-            return
-        }
-        cal.set(Calendar.HOUR_OF_DAY, hourOfDay)
-        cal.set(Calendar.MINUTE, minute)
-        cal.set(Calendar.SECOND, 0)
-        timeSec = (cal.timeInMillis / 1000).toInt()
-        onTimeSec?.invoke(timeSec)
-        Log.i(LOG_TAG, "$timeSec")
         reload()
     }
 

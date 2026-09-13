@@ -1,7 +1,10 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -64,6 +67,37 @@ class EpgBouquetScreenTest {
         composeRule.onNodeWithText("Die Nachrichten.").assertIsDisplayed()
         composeRule.onNodeWithText("Wetter").assertIsDisplayed().performClick()
         assertEquals(second, clicked)
+        composeRule.onAllNodesWithTag(EPG_TIME_JUMP_CHIP_TAG).assertCountEquals(0)
+    }
+
+    @Test
+    fun timeJumpBarShowsLocaleLabelAndActions() {
+        var pickClicks = 0
+        var nowClicks = 0
+        var primeClicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgBouquetScreen(
+                    items = emptyList(),
+                    onItemClick = {},
+                    emptyMessage = "No items to display…",
+                    timeJump = EpgTimeJumpUi(
+                        label = "Sep 13, 2026 · 20:15",
+                        onPickDateTime = { pickClicks++ },
+                        onNow = { nowClicks++ },
+                        onPrime = { primeClicks++ },
+                    ),
+                )
+            }
+        }
+        composeRule.onNodeWithText("Sep 13, 2026 · 20:15").assertIsDisplayed()
+        composeRule.onNodeWithText("Now").assertIsDisplayed().performClick()
+        composeRule.onNodeWithText("Prime").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag(EPG_TIME_JUMP_CHIP_TAG).performClick()
+        assertEquals(1, nowClicks)
+        assertEquals(1, primeClicks)
+        assertEquals(1, pickClicks)
+        composeRule.onNodeWithText("No items to display…").assertIsDisplayed()
     }
 
     @Test
