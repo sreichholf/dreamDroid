@@ -10,6 +10,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.gson.GsonBuilder
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.BackupService
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
@@ -17,6 +18,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -83,7 +85,11 @@ class BackupScreenTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val message = backupExportUserMessage(context, exported = false)
         assertEquals(
-            "Please grant \"Storage\" permission to use this feature!",
+            context.getString(R.string.backup_export_missing_permission),
+            message,
+        )
+        assertNotEquals(
+            context.getString(R.string.backup_export_successful),
             message,
         )
     }

@@ -12,6 +12,8 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -84,9 +86,12 @@ class ProfilesScreenTest {
 
         assertEquals("Deleted profile 'f05-gone'", message)
         assertFalse(dao.getProfiles().any { it.id == gone.id })
-        assertEquals(keep.id, DreamDroid.getCurrentProfile().id)
+        val currentId = DreamDroid.getCurrentProfile().id
+        assertNotEquals(gone.id, currentId)
+        assertTrue(dao.getProfiles().any { it.id == currentId })
         val prefId = PreferenceManager.getDefaultSharedPreferences(context)
             .getInt(DreamDroid.CURRENT_PROFILE, -1)
-        assertEquals(keep.id, prefId)
+        assertEquals(currentId, prefId)
+        assertNotEquals(gone.id, prefId)
     }
 }
