@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.ui.profiles
 
 import android.app.Activity
-import androidx.preference.PreferenceManager
+import android.content.Context
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.MenuProvider
+import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import net.reichholf.dreamdroid.DreamDroid
@@ -305,8 +306,7 @@ private class ProfilesSession :
     }
     fun deleteProfileConfirmed() {
         val ctx = context ?: return
-        AppDatabase.profiles(ctx).deleteProfile(selected)
-        toast(ctx.getString(R.string.profile_deleted) + " '" + selected.name + "'")
+        toast(deleteConfirmedProfile(ctx, selected))
         reloadProfiles()
         selected = Profile.getDefault()
     }
@@ -318,4 +318,24 @@ private class ProfilesSession :
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return onItemClicked(menuItem.itemId)
     }
+}
+
+internal fun deleteConfirmedProfile(context: Context, profile: Profile): String {
+    val deletedId = profile.id
+    val currentId = DreamDroid.getCurrentProfile().id
+    AppDatabase.profiles(context).deleteProfile(profile)
+    if (deletedId != null && deletedId == currentId) {
+        val next = AppDatabase.profiles(context).getProfiles()
+            .firstOrNull { it.id != null && it.id != deletedId }
+        if (next != null) {
+            DreamDroid.setCurrentProfile(context, next.id!!, true)
+        } else {
+            PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .remove(DreamDroid.CURRENT_PROFILE)
+                .apply()
+            DreamDroid.setCurrentProfile(Profile.getDefault())
+        }
+    }
+    return context.getString(R.string.profile_deleted) + " '" + profile.name + "'"
 }
