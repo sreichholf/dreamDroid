@@ -206,6 +206,8 @@
     <string name="profiles_long">Profile für Verbindungen konfigurieren</string>
     <string name="enable_instant_zap">Direkt umschalten</string>
     <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
+    <string name="show_now_playing_strip">Es-läuft-Leiste</string>
+    <string name="show_now_playing_strip_long">Aktuelle Sendung als Leiste auf TV &amp; Movies anzeigen</string>
     <string name="wrong_activity">Falsche Aktion aufgerufen. Bitte erstellen Sie die Verknüpfungen zu dreamDroid neu!</string>
     <string name="simple_remote">Einfache Fernbedienung</string>
     <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>

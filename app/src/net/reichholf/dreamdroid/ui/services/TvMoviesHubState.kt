@@ -17,6 +17,7 @@ class TvMoviesHubState {
 	/** Latest hub destination click handler; shell composition reads this on each click. */
 	var onDestinationSelected: (TvMoviesDestination) -> Unit = {}
 
+	var nowPlayingStripEnabled by mutableStateOf(true)
 	var nowPlayingHeadline by mutableStateOf("")
 	var nowPlayingProgress by mutableStateOf(0f)
 	var nowPlayingReference by mutableStateOf("")

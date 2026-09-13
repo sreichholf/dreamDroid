@@ -138,6 +138,14 @@ fun SettingsScreen(
             onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, it) },
         )
         SwitchPreferenceRow(
+            title = stringResource(R.string.show_now_playing_strip),
+            summary = stringResource(R.string.show_now_playing_strip_long),
+            checked = state.nowPlayingStrip,
+            onCheckedChange = {
+                state.setBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, it)
+            },
+        )
+        SwitchPreferenceRow(
             title = stringResource(R.string.default_to_full_vrm),
             summary = stringResource(R.string.default_to_full_vrm_long),
             checked = state.simpleVrm,

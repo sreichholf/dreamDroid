@@ -102,14 +102,16 @@ fun TvMoviesShellChrome(
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier.fillMaxWidth()) {
-		NowPlayingStrip(
-			label = stringResource(R.string.current_service),
-			headline = state.nowPlayingHeadline,
-			progress = state.nowPlayingProgress,
-			serviceReference = state.nowPlayingReference,
-			serviceName = state.nowPlayingName,
-			onClick = { state.onNowPlayingClick() },
-		)
+		if (state.nowPlayingStripEnabled) {
+			NowPlayingStrip(
+				label = stringResource(R.string.current_service),
+				headline = state.nowPlayingHeadline,
+				progress = state.nowPlayingProgress,
+				serviceReference = state.nowPlayingReference,
+				serviceName = state.nowPlayingName,
+				onClick = { state.onNowPlayingClick() },
+			)
+		}
 		TvMoviesDestinationBar(
 			selected = state.selected,
 			onDestinationSelected = { state.onDestinationSelected(it) },

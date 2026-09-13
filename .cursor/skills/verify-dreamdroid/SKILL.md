@@ -67,7 +67,7 @@ Prefer resource ids and visible text over coordinates. About lives at the bottom
 | About | Settings, then text `About` (modal; migrating off DialogFragment per Phase 2.1g-ii) |
 | Add Profile FAB | `...:id/fab_main` content-desc from `R.string.profile_add` (shell XML FAB) || Autodiscovery | text `Dreambox Autodiscovery` |
 | TV/Radio/Movies/Timer tabs | text `TV`, `Radio`, `Movies`, `Timer` |
-| Now strip | text `Now` (English) / `Es läuft` (German) on TV & Movies |
+| Now strip | text `Now` (English) / `Es läuft` (German) on TV & Movies (Settings → Now-playing strip; default on) |
 
 - First-start after `--clear-data` shows Changelog. Dismiss with `back` before driving Profiles or the drawer. The changelog text contains the word `Profiles`, so `wait-text "Profiles"` is a false positive until the dialog is gone.
 

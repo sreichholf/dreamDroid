@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -58,6 +59,25 @@ class TvMoviesScreenTest {
         }
         composeRule.onNodeWithText("Now").assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD · Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("TV").assertIsDisplayed()
+        composeRule.onNodeWithText("Radio").assertIsDisplayed()
+        composeRule.onNodeWithText("Movies").assertIsDisplayed()
+        composeRule.onNodeWithText("Timer").assertIsDisplayed()
+    }
+
+    @Test
+    fun hidesNowStripWhenDisabled() {
+        val state = TvMoviesHubState().apply {
+            nowPlayingStripEnabled = false
+            nowPlayingHeadline = "Das Erste HD · Tagesschau"
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                TvMoviesShellChrome(state = state)
+            }
+        }
+        composeRule.onNodeWithText("Now").assertDoesNotExist()
+        composeRule.onNodeWithText("Das Erste HD · Tagesschau").assertDoesNotExist()
         composeRule.onNodeWithText("TV").assertIsDisplayed()
         composeRule.onNodeWithText("Radio").assertIsDisplayed()
         composeRule.onNodeWithText("Movies").assertIsDisplayed()

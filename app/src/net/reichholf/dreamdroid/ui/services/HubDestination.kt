@@ -346,9 +346,11 @@ fun HubDestination(
                 }
             }
             // Reserve space for the Coordinator overlay (now-playing strip + destination bar).
-            Spacer(
-                Modifier.height(dimensionResource(R.dimen.now_playing_strip_height)),
-            )
+            if (destinationBarState.nowPlayingStripEnabled) {
+                Spacer(
+                    Modifier.height(dimensionResource(R.dimen.now_playing_strip_height)),
+                )
+            }
             Spacer(
                 Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height)),
             )

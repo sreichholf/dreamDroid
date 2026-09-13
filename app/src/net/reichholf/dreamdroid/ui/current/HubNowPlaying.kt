@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.current
 
+import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -29,7 +31,8 @@ private const val PROFILE_WAIT_MS = 20_000L
 
 /**
  * Polls `/web/getcurrent` into [hubState] for the Coordinator now-playing strip
- * and hosts [CurrentServiceSheet] on tap.
+ * and hosts [CurrentServiceSheet] on tap. No-op when
+ * [DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP] is off.
  */
 @Composable
 fun HubNowPlaying(
@@ -37,6 +40,31 @@ fun HubNowPlaying(
     hubState: TvMoviesHubState,
 ) {
     val context = LocalContext.current
+    val prefs = remember(context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+    }
+    var enabled by remember {
+        mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true))
+    }
+    DisposableEffect(prefs) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP) {
+                enabled = prefs.getBoolean(key, true)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    hubState.nowPlayingStripEnabled = enabled
+    if (!enabled) {
+        hubState.nowPlayingHeadline = ""
+        hubState.nowPlayingProgress = 0f
+        hubState.nowPlayingReference = ""
+        hubState.nowPlayingName = ""
+        hubState.onNowPlayingClick = {}
+        return
+    }
+
     val scope = rememberCoroutineScope()
     var current by remember { mutableStateOf<CurrentService?>(null) }
     var ready by remember { mutableStateOf(false) }
