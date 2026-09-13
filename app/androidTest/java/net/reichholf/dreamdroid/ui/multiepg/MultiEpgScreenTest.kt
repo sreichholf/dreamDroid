@@ -1,6 +1,10 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -852,5 +856,68 @@ class MultiEpgScreenTest {
         composeRule.onNodeWithText("LateShow").assertIsDisplayed()
         assertEquals(dayBefore, dayLabelText())
         assertTrue(spanSec > spanAt2h * 2)
+    }
+
+    @Test
+    fun buildChannelsDedupesTheSameEventFromAdjacentWindows() {
+        val event = Event(
+            eventId = "span",
+            title = "Overnight",
+            start = "1000",
+            duration = "90000",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "Das Erste",
+        )
+        val channels = buildMultiEpgChannels(listOf(event, event.copy()))
+        assertEquals(1, channels.size)
+        assertEquals(1, channels[0].bars.size)
+        assertEquals("Overnight", channels[0].bars[0].event.title)
+    }
+
+    @Test
+    fun timeRulerStaysVisibleAfterVerticalFling() {
+        val start = 1_700_000_000L
+        val channels = (0 until 24).map { index ->
+            MultiEpgChannel(
+                serviceRef = "1:0:1:$index:1:1:0:0:0:0:",
+                serviceName = "Channel $index",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "$index",
+                            title = "Show $index",
+                            start = start.toString(),
+                            duration = "1800",
+                            serviceReference = "1:0:1:$index:1:1:0:0:0:0:",
+                            serviceName = "Channel $index",
+                        ),
+                        startSec = start,
+                        endSec = start + 1800,
+                    ),
+                ),
+            )
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(modifier = Modifier.height(220.dp)) {
+                    MultiEpgScreen(
+                        bouquetName = "Favourites",
+                        channels = channels,
+                        timelineStartSec = start,
+                        timelineEndSec = start + 7200,
+                        nowSec = start + 60,
+                        loading = false,
+                        errorMessage = null,
+                        onJumpToNow = {},
+                        onEventClick = {},
+                    )
+                }
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_time_ruler").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_channel_list").performScrollToIndex(23)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Channel 23").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_time_ruler").assertIsDisplayed()
     }
 }

@@ -369,33 +369,35 @@ fun MultiEpgScreen(
                 return@DreamDroidPullRefresh
             }
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(RulerHeight)
+                    .testTag("multi_epg_time_ruler"),
+            ) {
+                Spacer(modifier = Modifier.width(channelLabelWidth))
+                MultiEpgTimeRuler(
+                    timelineStartSec = originForLayout,
+                    timelineEndSec = timelineEndSec,
+                    timelineWidth = timelineWidth,
+                    minuteWidth = minuteWidth,
+                    tickStepSec = MultiEpgZoom.tickStepSec(layoutVisibleMinutes),
+                    cullStartSec = cullWindow.first,
+                    cullEndSec = cullWindow.second,
+                    modifier = Modifier
+                        .weight(1f)
+                        .onSizeChanged { viewportWidthPx = it.width }
+                        .horizontalScroll(hScroll),
+                )
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("multi_epg_channel_list"),
             ) {
-                item(key = "time_ruler", contentType = "ruler") {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(RulerHeight),
-                    ) {
-                        Spacer(modifier = Modifier.width(channelLabelWidth))
-                        MultiEpgTimeRuler(
-                            timelineStartSec = originForLayout,
-                            timelineEndSec = timelineEndSec,
-                            timelineWidth = timelineWidth,
-                            minuteWidth = minuteWidth,
-                            tickStepSec = MultiEpgZoom.tickStepSec(layoutVisibleMinutes),
-                            cullStartSec = cullWindow.first,
-                            cullEndSec = cullWindow.second,
-                            modifier = Modifier
-                                .weight(1f)
-                                .onSizeChanged { viewportWidthPx = it.width }
-                                .horizontalScroll(hScroll),
-                        )
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                }
                 items(
                     items = channels,
                     key = { it.serviceRef },

@@ -441,8 +441,8 @@ class PhoneNavHostFragment : BaseFragment() {
         val args = arguments ?: Bundle().also { arguments = it }
         args.putString(Event.KEY_SERVICE_REFERENCE, serviceReference)
         args.putString(Event.KEY_SERVICE_NAME, serviceName)
+        epgRemountState.value = epgRemountState.value + 1
         if (controller.currentDestination?.route == PhoneNavRoutes.MULTI_EPG) {
-            epgRemountState.value = epgRemountState.value + 1
             return true
         }
         controller.navigateDrawerRoot(PhoneNavRoutes.MULTI_EPG)

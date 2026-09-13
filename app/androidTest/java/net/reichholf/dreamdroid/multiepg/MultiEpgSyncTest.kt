@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -236,5 +237,70 @@ class MultiEpgSyncTest {
             listOf("First in bouquet", "Second in bouquet"),
             peeked.map { it.serviceName },
         )
+    }
+
+    @Test
+    fun replaceChunkKeepsEventThatSpansFromPreviousWindow() = runBlocking {
+        val chunk0 = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS)
+        val spanStart = chunk0.endSec - 3600L
+        val spanning = Event(
+            eventId = "span",
+            title = "Overnight",
+            start = spanStart.toString(),
+            duration = "7200",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "TV",
+        )
+        val day0 = Event(
+            eventId = "day0",
+            title = "Day0",
+            start = chunk0.startSec.toString(),
+            duration = "60",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "TV",
+        )
+        val day1 = Event(
+            eventId = "day1",
+            title = "Day1",
+            start = chunk0.endSec.toString(),
+            duration = "60",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "TV",
+        )
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                if (time == chunk0.startSec) {
+                    listOf(day0, spanning)
+                } else {
+                    listOf(day1)
+                }
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val bouquet = "bouquet-a"
+        sync.ensureChunk(1, bouquet, chunk0.startSec + 10L)
+        sync.ensureChunk(1, bouquet, chunk0.endSec + 10L)
+        val kept = db.epgDao().eventsOverlapping(
+            1,
+            bouquet,
+            chunk0.startSec,
+            chunk0.endSec,
+        )
+        assertTrue(
+            "spanning event must survive the next chunk write",
+            kept.any { it.eventId == "span" },
+        )
+        assertTrue(kept.any { it.eventId == "day0" })
+        val nextWindow = db.epgDao().eventsOverlapping(
+            1,
+            bouquet,
+            chunk0.endSec,
+            chunk0.endSec + MultiEpgWindows.CHUNK_SECONDS,
+        )
+        assertTrue(nextWindow.any { it.eventId == "span" })
+        assertTrue(nextWindow.any { it.eventId == "day1" })
+        assertFalse(nextWindow.any { it.eventId == "day0" })
     }
 }
