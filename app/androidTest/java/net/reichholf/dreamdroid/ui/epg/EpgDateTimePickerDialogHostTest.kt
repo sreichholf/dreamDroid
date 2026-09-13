@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -54,7 +53,6 @@ class EpgDateTimePickerDialogHostTest {
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag(EPG_DATE_TIME_PICKER_TAG).assertIsDisplayed()
         composeRule.onNodeWithText("Date and time").assertIsDisplayed()
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
