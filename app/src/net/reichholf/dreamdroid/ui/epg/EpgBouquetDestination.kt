@@ -70,9 +70,6 @@ fun EpgBouquetDestination(
     }
     val nowSec = (Calendar.getInstance().timeInMillis / 1000).toInt()
     var timeSec by rememberSaveable(remountEpoch) { mutableIntStateOf(nowSec) }
-    if (timeSec < nowSec) {
-        timeSec = nowSec
-    }
     val listState = remember { EpgBouquetListState() }
     val refresh = remember { ComposeRefreshState() }
     var emptyMessage by remember { mutableStateOf<String?>(null) }

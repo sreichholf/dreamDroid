@@ -5,6 +5,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -129,6 +130,27 @@ class ChoiceDialogsHostTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Saving").assertIsDisplayed()
+    }
+
+    @Test
+    fun indeterminateProgressHonorsBack() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                IndeterminateProgressHost(
+                    IndeterminateProgressState(
+                        title = "Searching",
+                        message = "Looking for devices",
+                    ),
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Searching").assertIsDisplayed()
+        composeRule.runOnIdle {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Searching").assertDoesNotExist()
     }
 
     @Test

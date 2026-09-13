@@ -51,7 +51,9 @@ import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
+import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
+import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 
 /**
@@ -63,7 +65,8 @@ class MainActivity :
     ProfileChangedListener,
     DialogActionListener,
     SearchView.OnQueryTextListener,
-    SharedPreferences.OnSharedPreferenceChangeListener {
+    SharedPreferences.OnSharedPreferenceChangeListener,
+    DrawerRouteHighlighter {
 
     private var mSlider: Boolean = false
     private var mIsDrawerOpen: Boolean = false
@@ -353,6 +356,19 @@ class MainActivity :
             return true
         }
         return false
+    }
+
+    override fun highlightDrawerForRoute(route: String?, previousRoute: String?) {
+        val state = mDrawerListState ?: return
+        val itemId = DrawerHighlight.itemIdForRoute(
+            route,
+            previousRoute,
+        ) ?: return
+        if (itemId == R.id.menu_none) {
+            state.clearSelection()
+        } else {
+            state.select(itemId)
+        }
     }
 
     override fun onPause() {

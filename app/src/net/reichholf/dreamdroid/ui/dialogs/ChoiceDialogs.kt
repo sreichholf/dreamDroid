@@ -15,8 +15,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -146,9 +149,10 @@ data class IndeterminateProgressState(
 fun IndeterminateProgressDialog(
     title: String,
     message: String,
+    onDismiss: () -> Unit = {},
 ) {
     AlertDialog(
-        onDismissRequest = {},
+        onDismissRequest = onDismiss,
         title = if (title.isBlank()) {
             null
         } else {
@@ -166,8 +170,13 @@ fun IndeterminateProgressDialog(
 
 @Composable
 fun IndeterminateProgressHost(progress: IndeterminateProgressState?) {
-    if (progress != null) {
-        IndeterminateProgressDialog(title = progress.title, message = progress.message)
+    var dismissed by remember(progress) { mutableStateOf(false) }
+    if (progress != null && !dismissed) {
+        IndeterminateProgressDialog(
+            title = progress.title,
+            message = progress.message,
+            onDismiss = { dismissed = true },
+        )
     }
 }
 
