@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import androidx.compose.foundation.layout.Column
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -13,7 +14,10 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.multiepg.MultiEpgBar
+import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.multiepg.MultiEpgScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -129,5 +133,53 @@ class EpgDetailDialogHostTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.onNodeWithText("Saving").assertIsDisplayed()
+    }
+
+    @Test
+    fun multiEpgBarOpensSharedEpgDetailSheet() {
+        val start = 1_700_000_000L
+        val session = EpgEventDialogSession()
+        val channels = listOf(
+            MultiEpgChannel(
+                serviceRef = "1:0:1:1:1:1:0:0:0:0:",
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "Tagesschau",
+                            start = start.toString(),
+                            duration = "1800",
+                            description = "News",
+                            descriptionExtended = "Die Nachrichten um 20 Uhr.",
+                            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = start,
+                        endSec = start + 1800,
+                    ),
+                ),
+            ),
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = channels,
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = { session.showDetail(it) },
+                )
+                EpgEventDetailSheetHost(session)
+            }
+        }
+        composeRule.onNodeWithText("Tagesschau").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Set Timer").assertIsDisplayed()
+        composeRule.onNodeWithText("Die Nachrichten um 20 Uhr.").assertIsDisplayed()
     }
 }
