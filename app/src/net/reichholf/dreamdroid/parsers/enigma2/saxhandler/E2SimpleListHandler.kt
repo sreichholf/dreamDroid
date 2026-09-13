@@ -13,7 +13,6 @@ abstract class E2SimpleListHandler(private val mTag: String?) : DefaultHandler()
     private var inItem: Boolean = false
     private var mItem: String? = null
 
-    @JvmField
     protected var mList: ArrayList<String>? = null
 
     fun setList(list: ArrayList<String>?) {

@@ -9,7 +9,6 @@ import com.franmontiel.attributionpresenter.entities.License
 import net.reichholf.dreamdroid.R
 
 object DreamDroidAttributionPresenter {
-    @JvmStatic
     fun newInstance(context: Context): AttributionPresenter {
         return AttributionPresenter.Builder(ContextThemeWrapper(context, R.style.Theme_DreamDroid_Dialog))
             .addAttributions(

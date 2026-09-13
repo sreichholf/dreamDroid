@@ -72,7 +72,7 @@ class SimpleHttpClient {
         if (!path.contains("?")) {
             path += "?"
         }
-        return mPrefix + mProfile!!.getHost() + ":" + mProfile!!.getPortString() + path + parms
+        return mPrefix + mProfile!!.host + ":" + mProfile!!.port + path + parms
     }
 
     fun buildAuthedUrl(uri: String, parameters: List<NameValuePair>): String {
@@ -82,14 +82,14 @@ class SimpleHttpClient {
             path += "?"
         }
         var loginString = ""
-        if (mProfile!!.isLogin()) {
-            loginString = String.format("%s:%s@", mProfile!!.getUser(), mProfile!!.getPass())
+        if (mProfile!!.login) {
+            loginString = String.format("%s:%s@", mProfile!!.user, mProfile!!.pass)
         }
-        return mPrefix + loginString + mProfile!!.getHost() + ":" + mProfile!!.getPortString() + path + parms
+        return mPrefix + loginString + mProfile!!.host + ":" + mProfile!!.port + path + parms
     }
 
     fun buildEncoderStreamUrl(ref: String): String {
-        if (mProfile!!.getHost() == "dreamdroid.org") {
+        if (mProfile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
         var encoded = ref
@@ -98,26 +98,26 @@ class SimpleHttpClient {
         } catch (_: UnsupportedEncodingException) {
         }
         var streamLoginString = ""
-        if (mProfile!!.isEncoderLogin()) {
-            streamLoginString = mProfile!!.getEncoderUser() + ":" + mProfile!!.getEncoderPass() + "@"
+        if (mProfile!!.encoderLogin) {
+            streamLoginString = mProfile!!.encoderUser + ":" + mProfile!!.encoderPass + "@"
         }
         return String.format(
             "rtsp://%s%s:%s/%s?ref=%s&video_bitrate=%s&audio_bitrate=%s",
             streamLoginString,
-            mProfile!!.getStreamHost(),
-            mProfile!!.getEncoderPort(),
-            mProfile!!.getEncoderPath(),
+            mProfile!!.streamHostOrHost,
+            mProfile!!.encoderPort,
+            mProfile!!.encoderPath,
             encoded,
-            mProfile!!.getEncoderVideoBitrate(),
-            mProfile!!.getEncoderAudioBitrate(),
+            mProfile!!.encoderVideoBitrate,
+            mProfile!!.encoderAudioBitrate,
         )
     }
 
     fun buildStreamUrl(ref: String): String {
-        if (mProfile!!.getHost() == "dreamdroid.org") {
+        if (mProfile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
-        return if (mProfile!!.isEncoderStream()) {
+        return if (mProfile!!.encoderStream) {
             buildEncoderStreamUrl(ref)
         } else {
             buildServiceStreamUrl(ref)
@@ -125,7 +125,7 @@ class SimpleHttpClient {
     }
 
     fun buildServiceStreamUrl(ref: String): String {
-        if (mProfile!!.getHost() == "dreamdroid.org") {
+        if (mProfile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
         var serviceRef = ref
@@ -143,29 +143,29 @@ class SimpleHttpClient {
         } catch (_: UnsupportedEncodingException) {
         }
         var streamLoginString = ""
-        if (mProfile!!.isStreamLogin()) {
-            streamLoginString = mProfile!!.getUser() + ":" + mProfile!!.getPass() + "@"
+        if (mProfile!!.streamLogin) {
+            streamLoginString = mProfile!!.user + ":" + mProfile!!.pass + "@"
         }
-        return "http://" + streamLoginString + mProfile!!.getStreamHost() + ":" +
-            mProfile!!.getStreamPortString() + "/" + serviceRef
+        return "http://" + streamLoginString + mProfile!!.streamHostOrHost + ":" +
+            mProfile!!.streamPort + "/" + serviceRef
     }
 
     fun buildFileStreamUrl(ref: String, fileName: String?): String {
-        if (mProfile!!.getHost() == "dreamdroid.org") {
+        if (mProfile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
-        if (mProfile!!.isEncoderStream() && ref.startsWith("1:")) {
+        if (mProfile!!.encoderStream && ref.startsWith("1:")) {
             return buildEncoderStreamUrl(ref)
         }
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("file", fileName))
         val parms = NameValuePair.toString(params)
         var fileAuthString = ""
-        if (mProfile!!.isFileLogin()) {
-            fileAuthString = mProfile!!.getUser() + ":" + mProfile!!.getPass() + "@"
+        if (mProfile!!.fileLogin) {
+            fileAuthString = mProfile!!.user + ":" + mProfile!!.pass + "@"
         }
-        return mFilePrefix + fileAuthString + mProfile!!.getStreamHost() + ":" +
-            mProfile!!.getFilePortString() + URIStore.FILE + parms
+        return mFilePrefix + fileAuthString + mProfile!!.streamHostOrHost + ":" +
+            mProfile!!.filePort + URIStore.FILE + parms
     }
 
     fun fetchPageContent(uri: String): Boolean = fetchPageContent(uri, ArrayList())
@@ -173,8 +173,8 @@ class SimpleHttpClient {
     private fun isSessionLess(uri: String): Boolean = URIStore.SCREENSHOT == uri
 
     private fun authHeader(): String? {
-        if (!mProfile!!.isLogin()) return null
-        return Credentials.basic(mProfile!!.getUser().orEmpty(), mProfile!!.getPass().orEmpty())
+        if (!mProfile!!.login) return null
+        return Credentials.basic(mProfile!!.user.orEmpty(), mProfile!!.pass.orEmpty())
     }
 
     private fun newClient(): OkHttpClient {
@@ -216,8 +216,8 @@ class SimpleHttpClient {
         }
 
         try {
-            if (mProfile!!.getSessionId() != null && !isSessionLess(path)) {
-                parameters.add(NameValuePair("sessionid", mProfile!!.getSessionId()))
+            if (mProfile!!.sessionId != null && !isSessionLess(path)) {
+                parameters.add(NameValuePair("sessionid", mProfile!!.sessionId))
             }
             val urlString = buildUrl(path, parameters)
             val requestBuilder = Request.Builder().url(urlString)
@@ -321,9 +321,9 @@ class SimpleHttpClient {
         if (!shc.hasError()) {
             var content = shc.pageContentString
             content = content.replace(Regex("\\<.*?\\>"), "").trim()
-            mProfile!!.setSessionId(content)
+            mProfile!!.sessionId = content
         } else {
-            mProfile!!.setSessionId(null)
+            mProfile!!.sessionId = null
         }
     }
 
@@ -369,8 +369,8 @@ class SimpleHttpClient {
         if (mProfile == null) {
             mProfile = DreamDroid.getCurrentProfile()
         }
-        mPrefix = if (mProfile!!.isSsl()) "https://" else "http://"
-        mFilePrefix = if (mProfile!!.isFileSsl()) "https://" else "http://"
+        mPrefix = if (mProfile!!.ssl) "https://" else "http://"
+        mFilePrefix = if (mProfile!!.fileSsl) "https://" else "http://"
     }
 
     fun setConnectionTimeoutMillis(millis: Int) {
@@ -378,17 +378,13 @@ class SimpleHttpClient {
     }
 
     companion object {
-        @JvmField
         val LOG_TAG: String = SimpleHttpClient::class.java.simpleName
 
-        @JvmField
-        val BIG_BUCK_BUNNY_URL: String =
+        const val BIG_BUCK_BUNNY_URL: String =
             "https://dreamdroid.org/bunny/big_buck_bunny_720p_h264.mov"
 
-        @JvmStatic
         fun getInstance(): SimpleHttpClient = SimpleHttpClient()
 
-        @JvmStatic
         fun getInstance(p: Profile?): SimpleHttpClient = SimpleHttpClient(p)
     }
 }

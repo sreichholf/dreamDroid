@@ -113,15 +113,12 @@ class EnigmaClient(private val http: SimpleHttpClient) {
     }
 
     companion object {
-        @JvmStatic
         fun getServicesBlocking(http: SimpleHttpClient, params: List<NameValuePair>): List<Service> {
             return runBlocking {
                 EnigmaClient(http).getServices(params)
             }
         }
 
-        @JvmStatic
-        @JvmOverloads
         fun getEventsBlocking(
             http: SimpleHttpClient,
             params: List<NameValuePair>,

@@ -16,7 +16,6 @@ class Service : ExtendedHashMap() {
             fun value(): Int = `val`
         }
 
-        @JvmStatic
         fun getFlags(ref: String?): Int {
             var flags = 0
             if (ref.isNullOrEmpty()) return flags
@@ -28,7 +27,6 @@ class Service : ExtendedHashMap() {
             return f.toInt()
         }
 
-        @JvmStatic
         fun isDirectory(ref: String?): Boolean {
             if (ref.isNullOrEmpty()) return false
             if ((getFlags(ref) and FLAGS.isDirectory.value()) == FLAGS.isDirectory.value()) {
@@ -40,10 +38,8 @@ class Service : ExtendedHashMap() {
                 ref.contains("FROM BOUQUET")
         }
 
-        @JvmStatic
         fun isBouquet(ref: String): Boolean = ref.startsWith("1:7:")
 
-        @JvmStatic
         fun isMarker(ref: String?): Boolean {
             return (getFlags(ref) and FLAGS.isMarker.value()) == FLAGS.isMarker.value()
         }

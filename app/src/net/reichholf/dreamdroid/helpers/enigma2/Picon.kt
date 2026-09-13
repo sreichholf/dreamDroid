@@ -24,7 +24,6 @@ import java.io.File
  * @author sre
  */
 object Picon {
-    @JvmStatic
     fun getBasepath(context: Context): String {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
         if (sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
@@ -52,7 +51,6 @@ object Picon {
         )
     }
 
-    @JvmStatic
     fun getPiconFileName(context: Context, service: ExtendedHashMap, useName: Boolean): String? =
         getPiconFileName(
             context,
@@ -61,7 +59,6 @@ object Picon {
             useName,
         )
 
-    @JvmStatic
     fun getPiconFileName(
         context: Context,
         reference: String?,
@@ -93,7 +90,6 @@ object Picon {
         return fileName
     }
 
-    @JvmStatic
     fun setPiconForView(
         context: Context,
         piconView: ImageView?,
@@ -103,7 +99,6 @@ object Picon {
         setPiconForView(context, piconView, service, tag, null)
     }
 
-    @JvmStatic
     fun setPiconForView(
         context: Context,
         piconView: ImageView?,
@@ -121,7 +116,6 @@ object Picon {
         )
     }
 
-    @JvmStatic
     fun setPiconForView(
         context: Context,
         piconView: ImageView?,
@@ -151,7 +145,6 @@ object Picon {
             .error(R.drawable.dreamdroid_logo_simple).into(piconView, callback)
     }
 
-    @JvmStatic
     fun getPiconUri(context: Context, fileName: String?): String {
         if (PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))
@@ -163,7 +156,6 @@ object Picon {
         return String.format("file://%s", fileName)
     }
 
-    @JvmStatic
     fun clearCache() {
     }
 }

@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 
 object IntentFactory {
-    @JvmStatic
     fun queryIMDb(context: Context, event: ExtendedHashMap) {
         val intent = Intent(Intent.ACTION_VIEW)
         var uriString = "imdb:///find?q=" + event.getString(Event.KEY_EVENT_TITLE)
@@ -33,7 +32,6 @@ object IntentFactory {
         }
     }
 
-    @JvmStatic
     fun getStreamServiceIntent(context: Context, ref: String, title: String): Intent {
         return getStreamServiceIntent(context, ref, title, null, null)
     }
@@ -51,7 +49,6 @@ object IntentFactory {
         return intent
     }
 
-    @JvmStatic
     fun getStreamServiceIntent(
         context: Context,
         ref: String,
@@ -76,7 +73,6 @@ object IntentFactory {
         return intent
     }
 
-    @JvmStatic
     fun getStreamFileIntent(
         context: Context,
         ref: String,

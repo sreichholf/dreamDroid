@@ -33,7 +33,6 @@ object VLCInstance {
     @Volatile
     private var sLibVLC: LibVLC? = null
 
-    @JvmStatic
     @Synchronized
     fun get(): LibVLC {
         var instance = sLibVLC
@@ -47,7 +46,6 @@ object VLCInstance {
         return instance
     }
 
-    @JvmStatic
     @Synchronized
     fun restart() {
         val instance = sLibVLC

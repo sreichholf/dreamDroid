@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
  * Shared entry for opening profile edit from Profiles destination or MainActivity.
  */
 object ProfilesNavigation {
-    @JvmStatic
     fun openProfileEdit(activity: Activity, profile: Profile?) {
         if (activity !is FragmentActivity) {
             return

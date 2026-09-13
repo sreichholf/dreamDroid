@@ -178,7 +178,6 @@ class ShareActivity : AppCompatActivity() {
     }
 
     companion object {
-        @JvmField
         var LOG_TAG: String = ShareActivity::class.java.simpleName
     }
 }

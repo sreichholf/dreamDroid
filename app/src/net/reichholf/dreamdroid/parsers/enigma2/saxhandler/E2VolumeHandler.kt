@@ -45,11 +45,8 @@ class E2VolumeHandler : E2SimpleHandler() {
     }
 
     companion object {
-        @JvmStatic
         protected val TAG_E2ISMUTED: String = "e2ismuted"
-        @JvmStatic
         protected val TAG_E2CURRENT: String = "e2current"
-        @JvmStatic
         protected val TAG_E2RESULT: String = "e2result"
     }
 }

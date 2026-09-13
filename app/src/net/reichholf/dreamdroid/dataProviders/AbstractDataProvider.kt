@@ -12,7 +12,6 @@ import net.reichholf.dreamdroid.dataProviders.interfaces.DataParser
  * @author sreichholf
  */
 abstract class AbstractDataProvider(parser: DataParser) {
-    @JvmField
     protected var mParser: DataParser = parser
 
     open fun getParser(): DataParser = mParser

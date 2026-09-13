@@ -45,7 +45,6 @@ class VirtualRemoteWidgetProvider : GlanceAppWidgetReceiver() {
          * Refresh one widget after configure. Prefers Glance update; falls back to a
          * direct [RemoteViews] push if Glance has not bound the id yet.
          */
-        @JvmStatic
         fun updateWidget(
             context: Context,
             appWidgetManager: AppWidgetManager,

@@ -35,24 +35,18 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
  */
 open class NavigationHelper(
     activity: MainActivity,
-    @JvmField protected val mDrawerState: DrawerListState,
+    protected val mDrawerState: DrawerListState,
 ) {
-    @JvmField
     var mActivity: MainActivity = activity
 
-    @JvmField
     protected var mPowerStateJob: Job? = null
 
-    @JvmField
     protected var mSleepTimerJob: Job? = null
 
-    @JvmField
     protected var mSimpleResultJob: Job? = null
 
-    @JvmField
     protected var mShc: SimpleHttpClient? = null
 
-    @JvmField
     protected var mSelectedItemId: Int = mDrawerState.selectedItemId
 
     init {
@@ -417,7 +411,6 @@ open class NavigationHelper(
     fun getContext(): Context = getMainActivity()
 
     companion object {
-        @JvmField
         protected val sDialogItemIds: IntArray = intArrayOf(
             R.id.menu_navigation_sleeptimer,
             R.id.menu_navigation_message,

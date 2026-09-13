@@ -139,35 +139,35 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     private fun p2cv(p: Profile): ContentValues {
         val values = ContentValues()
-        values.put(KEY_PROFILE_PROFILE, p.getName())
-        values.put(KEY_PROFILE_HOST, p.getHost())
-        values.put(KEY_PROFILE_STREAM_HOST, p.getStreamHostValue())
-        values.put(KEY_PROFILE_PORT, p.getPort())
-        values.put(KEY_PROFILE_STREAM_PORT, p.getStreamPort())
-        values.put(KEY_PROFILE_FILE_PORT, p.getFilePort())
-        values.put(KEY_PROFILE_LOGIN, p.isLogin())
-        values.put(KEY_PROFILE_USER, p.getUser())
-        values.put(KEY_PROFILE_PASS, p.getPass())
-        values.put(KEY_PROFILE_SSL, p.isSsl())
-        values.put(KEY_PROFILE_TRUST_ALL_CERTS, p.isAllCertsTrusted())
-        values.put(KEY_PROFILE_STREAM_LOGIN, p.isStreamLogin())
-        values.put(KEY_PROFILE_FILE_LOGIN, p.isFileLogin())
-        values.put(KEY_PROFILE_FILE_SSL, p.isFileSsl())
-        values.put(KEY_PROFILE_SIMPLE_REMOTE, p.isSimpleRemote())
-        values.put(KEY_PROFILE_DEFAULT_REF, p.getDefaultBouquetTv())
-        values.put(KEY_PROFILE_DEFAULT_REF_NAME, p.getDefaultBouquetTvName())
-        values.put(KEY_PROFILE_DEFAULT_REF_2, p.getParentBouquetTv())
-        values.put(KEY_PROFILE_DEFAULT_REF_2_NAME, p.getParentBouquetTvName())
-        values.put(KEY_PROFILE_ENCODER_STREAM, p.isEncoderStream())
-        values.put(KEY_PROFILE_ENCODER_PATH, p.getEncoderPath())
-        values.put(KEY_PROFILE_ENCODER_PORT, p.getEncoderPort())
-        values.put(KEY_PROFILE_ENCODER_LOGIN, p.isEncoderLogin())
-        values.put(KEY_PROFILE_ENCODER_USER, p.getEncoderUser())
-        values.put(KEY_PROFILE_ENCODER_PASS, p.getEncoderPass())
-        values.put(KEY_PROFILE_ENCODER_VIDEO_BITRATE, p.getEncoderVideoBitrate())
-        values.put(KEY_PROFILE_ENCODER_AUDIO_BITRATE, p.getEncoderAudioBitrate())
-        values.put(KEY_SSID, p.getSsid())
-        values.put(KEY_DEFAULT_PROFILE_ON_NO_WIFI, p.isDefaultProfileOnNoWifi())
+        values.put(KEY_PROFILE_PROFILE, p.name)
+        values.put(KEY_PROFILE_HOST, p.host)
+        values.put(KEY_PROFILE_STREAM_HOST, p.streamHost)
+        values.put(KEY_PROFILE_PORT, p.port)
+        values.put(KEY_PROFILE_STREAM_PORT, p.streamPort)
+        values.put(KEY_PROFILE_FILE_PORT, p.filePort)
+        values.put(KEY_PROFILE_LOGIN, p.login)
+        values.put(KEY_PROFILE_USER, p.user)
+        values.put(KEY_PROFILE_PASS, p.pass)
+        values.put(KEY_PROFILE_SSL, p.ssl)
+        values.put(KEY_PROFILE_TRUST_ALL_CERTS, p.allCertsTrusted)
+        values.put(KEY_PROFILE_STREAM_LOGIN, p.streamLogin)
+        values.put(KEY_PROFILE_FILE_LOGIN, p.fileLogin)
+        values.put(KEY_PROFILE_FILE_SSL, p.fileSsl)
+        values.put(KEY_PROFILE_SIMPLE_REMOTE, p.simpleRemote)
+        values.put(KEY_PROFILE_DEFAULT_REF, p.defaultBouquetTv)
+        values.put(KEY_PROFILE_DEFAULT_REF_NAME, p.defaultBouquetTvName)
+        values.put(KEY_PROFILE_DEFAULT_REF_2, p.defaultParentBouquetTv)
+        values.put(KEY_PROFILE_DEFAULT_REF_2_NAME, p.defaultParentBouquetTvName)
+        values.put(KEY_PROFILE_ENCODER_STREAM, p.encoderStream)
+        values.put(KEY_PROFILE_ENCODER_PATH, p.encoderPath)
+        values.put(KEY_PROFILE_ENCODER_PORT, p.encoderPort)
+        values.put(KEY_PROFILE_ENCODER_LOGIN, p.encoderLogin)
+        values.put(KEY_PROFILE_ENCODER_USER, p.encoderUser)
+        values.put(KEY_PROFILE_ENCODER_PASS, p.encoderPass)
+        values.put(KEY_PROFILE_ENCODER_VIDEO_BITRATE, p.encoderVideoBitrate)
+        values.put(KEY_PROFILE_ENCODER_AUDIO_BITRATE, p.encoderAudioBitrate)
+        values.put(KEY_SSID, p.ssid)
+        values.put(KEY_DEFAULT_PROFILE_ON_NO_WIFI, p.isDefaultProfileOnNoWifi)
         return values
     }
 
@@ -179,7 +179,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val id = db.insert(PROFILES_TABLE_NAME, null, p2cv(p))
         if (id > -1) {
             db.close()
-            p.setId(id.toInt())
+            p.id = id.toInt()
             DreamDroid.scheduleBackup(mContext)
             return true
         }
@@ -192,7 +192,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
      */
     fun updateProfile(p: Profile): Boolean {
         val db = writableDatabase
-        val numRows = db.update(PROFILES_TABLE_NAME, p2cv(p), KEY_PROFILE_ID + "=" + p.getId(), null)
+        val numRows = db.update(PROFILES_TABLE_NAME, p2cv(p), KEY_PROFILE_ID + "=" + (p.id ?: -1), null)
         db.close()
         if (numRows == 1) {
             DreamDroid.scheduleBackup(mContext)
@@ -207,7 +207,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
      */
     fun deleteProfile(p: Profile): Boolean {
         val db = writableDatabase
-        val numRows = db.delete(PROFILES_TABLE_NAME, KEY_PROFILE_ID + "=" + p.getId(), null)
+        val numRows = db.delete(PROFILES_TABLE_NAME, KEY_PROFILE_ID + "=" + (p.id ?: -1), null)
         db.close()
         if (numRows == 1) {
             DreamDroid.scheduleBackup(mContext)
@@ -340,8 +340,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             defaultRefName, defaultRef2, defaultRef2Name, isEncoderStream, encoderPath, encoderPort,
             isEncoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate,
         )
-        p.setSsid(ssid)
-        p.setDefaultProfileOnNoWifi(defaultProfileOnNoWifi)
+        p.ssid = ssid
+        p.isDefaultProfileOnNoWifi = defaultProfileOnNoWifi
         return p
     }
 
@@ -415,129 +415,88 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     companion object {
         private const val DATABASE_VERSION = 14
 
-        @JvmField
         val LOG_TAG: String = DatabaseHelper::class.java.simpleName
 
-        @JvmField
-        val KEY_PROFILE_ID = "_id"
+        const val KEY_PROFILE_ID = "_id"
 
-        @JvmField
-        val KEY_PROFILE_PROFILE = "profile"
+        const val KEY_PROFILE_PROFILE = "profile"
 
-        @JvmField
-        val KEY_PROFILE_HOST = "host"
+        const val KEY_PROFILE_HOST = "host"
 
-        @JvmField
-        val KEY_PROFILE_STREAM_HOST = "streamhost"
+        const val KEY_PROFILE_STREAM_HOST = "streamhost"
 
-        @JvmField
-        val KEY_PROFILE_STREAM_PORT = "streamport"
+        const val KEY_PROFILE_STREAM_PORT = "streamport"
 
-        @JvmField
-        val KEY_PROFILE_STREAM_LOGIN = "streamlogin"
+        const val KEY_PROFILE_STREAM_LOGIN = "streamlogin"
 
-        @JvmField
-        val KEY_PROFILE_FILE_PORT = "fileport"
+        const val KEY_PROFILE_FILE_PORT = "fileport"
 
-        @JvmField
-        val KEY_PROFILE_PORT = "port"
+        const val KEY_PROFILE_PORT = "port"
 
-        @JvmField
-        val KEY_PROFILE_LOGIN = "login"
+        const val KEY_PROFILE_LOGIN = "login"
 
-        @JvmField
-        val KEY_PROFILE_USER = "user"
+        const val KEY_PROFILE_USER = "user"
 
-        @JvmField
-        val KEY_PROFILE_PASS = "pass"
+        const val KEY_PROFILE_PASS = "pass"
 
-        @JvmField
-        val KEY_PROFILE_SSL = "ssl"
+        const val KEY_PROFILE_SSL = "ssl"
 
-        @JvmField
-        val KEY_PROFILE_FILE_SSL = "file_ssl"
+        const val KEY_PROFILE_FILE_SSL = "file_ssl"
 
-        @JvmField
-        val KEY_PROFILE_FILE_LOGIN = "file_login"
+        const val KEY_PROFILE_FILE_LOGIN = "file_login"
 
-        @JvmField
-        val KEY_PROFILE_SIMPLE_REMOTE = "simpleremote"
+        const val KEY_PROFILE_SIMPLE_REMOTE = "simpleremote"
 
-        @JvmField
-        val KEY_PROFILE_DEFAULT_REF = "default_ref"
+        const val KEY_PROFILE_DEFAULT_REF = "default_ref"
 
-        @JvmField
-        val KEY_PROFILE_DEFAULT_REF_NAME = "default_ref_name"
+        const val KEY_PROFILE_DEFAULT_REF_NAME = "default_ref_name"
 
-        @JvmField
-        val KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2"
+        const val KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2"
 
-        @JvmField
-        val KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name"
+        const val KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name"
 
-        @JvmField
-        val KEY_SSID = "ssid"
+        const val KEY_SSID = "ssid"
 
-        @JvmField
-        val KEY_DEFAULT_PROFILE_ON_NO_WIFI = "defaultProfileOnNoWifi"
+        const val KEY_DEFAULT_PROFILE_ON_NO_WIFI = "defaultProfileOnNoWifi"
 
         // ENCODER
-        @JvmField
-        val KEY_PROFILE_ENCODER_STREAM = "encoder_stream"
+        const val KEY_PROFILE_ENCODER_STREAM = "encoder_stream"
 
-        @JvmField
-        val KEY_PROFILE_ENCODER_PATH = "encoder_path"
+        const val KEY_PROFILE_ENCODER_PATH = "encoder_path"
 
-        @JvmField
-        val KEY_PROFILE_ENCODER_PORT = "encoder_port"
+        const val KEY_PROFILE_ENCODER_PORT = "encoder_port"
 
-        @JvmField
-        val KEY_PROFILE_ENCODER_LOGIN = "encoder_login"
+        const val KEY_PROFILE_ENCODER_LOGIN = "encoder_login"
 
-        @JvmField
-        val KEY_PROFILE_ENCODER_USER = "encoder_user"
+        const val KEY_PROFILE_ENCODER_USER = "encoder_user"
 
-        @JvmField
-        val KEY_PROFILE_ENCODER_PASS = "encoder_pass"
+        const val KEY_PROFILE_ENCODER_PASS = "encoder_pass"
 
-        @JvmField
-        val KEY_PROFILE_ENCODER_VIDEO_BITRATE = "encoder_video_bitrate"
+        const val KEY_PROFILE_ENCODER_VIDEO_BITRATE = "encoder_video_bitrate"
 
-        @JvmField
-        val KEY_PROFILE_ENCODER_AUDIO_BITRATE = "encoder_audio_bitrate"
+        const val KEY_PROFILE_ENCODER_AUDIO_BITRATE = "encoder_audio_bitrate"
 
-        @JvmField
-        val KEY_PROFILE_TRUST_ALL_CERTS = "trust_all_certs"
+        const val KEY_PROFILE_TRUST_ALL_CERTS = "trust_all_certs"
 
-        @JvmField
-        val KEY_EVENT_ID = "id"
+        const val KEY_EVENT_ID = "id"
 
-        @JvmField
-        val KEY_EVENT_START = "start"
+        const val KEY_EVENT_START = "start"
 
-        @JvmField
-        val KEY_EVENT_DURATION = "duration"
+        const val KEY_EVENT_DURATION = "duration"
 
-        @JvmField
-        val KEY_EVENT_TITLE = "title"
+        const val KEY_EVENT_TITLE = "title"
 
-        @JvmField
-        val KEY_EVENT_DESCRIPTION = "description"
+        const val KEY_EVENT_DESCRIPTION = "description"
 
-        @JvmField
-        val KEY_EVENT_DESCRIPTION_EXTENDED = "description_ext"
+        const val KEY_EVENT_DESCRIPTION_EXTENDED = "description_ext"
 
-        @JvmField
-        val KEY_EVENT_SERVICE_REFERENCE = "sid"
+        const val KEY_EVENT_SERVICE_REFERENCE = "sid"
 
-        @JvmField
-        val KEY_SERVICES_REFERENCE = "ref"
+        const val KEY_SERVICES_REFERENCE = "ref"
 
-        @JvmField
-        val KEY_SERVICES_NAME = "name"
+        const val KEY_SERVICES_NAME = "name"
 
-        @JvmField
-        val DATABASE_NAME = "dreamdroid"
+        const val DATABASE_NAME = "dreamdroid"
 
         private const val PROFILES_TABLE_NAME = "profiles"
         private const val EVENT_TABLE_NAME = "events"
@@ -648,7 +607,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 KEY_SERVICES_REFERENCE + " TEXT PRIMARY KEY, " +
                 KEY_SERVICES_NAME + " TEXT);"
 
-        @JvmStatic
         fun getInstance(ctx: Context): DatabaseHelper {
             return DatabaseHelper(ctx)
         }

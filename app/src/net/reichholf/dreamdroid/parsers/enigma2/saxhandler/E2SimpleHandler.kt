@@ -13,7 +13,6 @@ import org.xml.sax.helpers.DefaultHandler
  * @author sre
  */
 open class E2SimpleHandler : DefaultHandler() {
-    @JvmField
     protected var mResult: ExtendedHashMap? = null
 
     fun setMap(map: ExtendedHashMap?) {

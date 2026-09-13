@@ -85,7 +85,6 @@ class Timer {
         const val KEY_CANCELED: String = "canceled"
         const val KEY_TOGGLE_DISABLED: String = "toggledisabled"
 
-        @JvmStatic
         fun getInitialTimer(): ExtendedHashMap {
             val timer = ExtendedHashMap()
             timer.put(KEY_DESCRIPTION, "")
@@ -107,7 +106,6 @@ class Timer {
             return timer
         }
 
-        @JvmStatic
         fun createByEvent(event: ExtendedHashMap): ExtendedHashMap {
             val timer = getInitialTimer()
 
@@ -126,7 +124,6 @@ class Timer {
             return timer
         }
 
-        @JvmStatic
         fun getSaveParams(timer: ExtendedHashMap, timerOld: ExtendedHashMap?): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
 
@@ -155,7 +152,6 @@ class Timer {
             return params
         }
 
-        @JvmStatic
         fun getEventIdParams(event: ExtendedHashMap): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
             params.add(NameValuePair("sRef", event.getString(Event.KEY_SERVICE_REFERENCE)))
@@ -163,7 +159,6 @@ class Timer {
             return params
         }
 
-        @JvmStatic
         fun getDeleteParams(timer: ExtendedHashMap): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
             params.add(NameValuePair("sRef", timer.getString(KEY_REFERENCE)))
@@ -172,12 +167,10 @@ class Timer {
             return params
         }
 
-        @JvmStatic
         fun editUsingEvent(mph: MultiPaneHandler?, event: ExtendedHashMap, target: Fragment) {
             edit(mph, createByEvent(event), target, true)
         }
 
-        @JvmStatic
         fun edit(mph: MultiPaneHandler?, timer: ExtendedHashMap?, target: Fragment, create: Boolean) {
             var walker = target.parentFragment
             while (walker != null) {

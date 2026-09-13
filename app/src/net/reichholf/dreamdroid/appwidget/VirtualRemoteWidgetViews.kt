@@ -16,7 +16,6 @@ import net.reichholf.dreamdroid.ui.remote.VirtualRemoteButtons
  * [androidx.glance.appwidget.AndroidRemoteViews] (Phase 2.6e hybrid).
  */
 object VirtualRemoteWidgetViews {
-    @JvmStatic
     fun build(context: Context, appWidgetId: Int, profile: Profile): RemoteViews {
         val remoteViews = if (VirtualRemoteWidgetConfiguration.isFull(context, appWidgetId)) {
             RemoteViews(context.packageName, R.layout.virtual_remote_appwidget)

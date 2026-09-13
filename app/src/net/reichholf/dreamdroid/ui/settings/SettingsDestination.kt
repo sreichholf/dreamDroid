@@ -69,7 +69,7 @@ fun SettingsDestination(
                     ttlMs = 0L,
                 )
                 val events = sync.ensureChunk(
-                    profileId = profile.getId(),
+                    profileId = profile.id ?: -1,
                     bouquetRef = bouquet,
                     unixSec = System.currentTimeMillis() / 1000L,
                 )

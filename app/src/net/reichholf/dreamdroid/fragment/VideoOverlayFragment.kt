@@ -71,18 +71,6 @@ class VideoOverlayFragment :
     ItemClickSupport.OnItemClickListener,
     DialogActionListener {
 
-    @JvmField
-    val TITLE: String = "title"
-
-    @JvmField
-    val SERVICE_INFO: String = "serviceInfo"
-
-    @JvmField
-    val BOUQUET_REFERENCE: String = "bouquetRef"
-
-    @JvmField
-    val SERVICE_REFERENCE: String = "serviceRef"
-
     protected var mSurfaceHeight: Int = 0
     protected var mSurfaceWidth: Int = 0
 
@@ -890,6 +878,11 @@ class VideoOverlayFragment :
     }
 
     companion object {
+        const val TITLE: String = "title"
+        const val SERVICE_INFO: String = "serviceInfo"
+        const val BOUQUET_REFERENCE: String = "bouquetRef"
+        const val SERVICE_REFERENCE: String = "serviceRef"
+
         const val DIALOG_TAG_AUDIO_TRACK: String = "dialog_audio_track"
         const val DIALOG_TAG_SUBTITLE_TRACK: String = "dialog_subtitle_track"
 
@@ -898,10 +891,8 @@ class VideoOverlayFragment :
 
         private val LOG_TAG: String = VideoOverlayFragment::class.java.simpleName
 
-        @JvmField
         var sOverlayAlpha: Float = 0.85f
 
-        @JvmField
         var sSeekStepSize: Float = 0.02f
     }
 }

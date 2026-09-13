@@ -84,12 +84,10 @@ class PhoneNavHostFragment : BaseFragment() {
         private const val STATE_TIMER_EDIT_ARGS = "phone_nav_timer_edit_args"
         private const val STATE_TIMER_EDIT_TAG = "phone_nav_timer_edit_tag"
 
-        @JvmStatic
         fun newInstance(startRoute: String): PhoneNavHostFragment {
             return newInstance(startRoute, null)
         }
 
-        @JvmStatic
         fun newInstance(startRoute: String, leafExtras: Bundle?): PhoneNavHostFragment {
             return PhoneNavHostFragment().apply {
                 arguments = Bundle().apply {

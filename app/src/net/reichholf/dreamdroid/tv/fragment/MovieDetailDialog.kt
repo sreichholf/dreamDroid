@@ -83,7 +83,6 @@ class MovieDetailDialog : DialogFragment() {
         private const val ARG_TYPED_MOVIE = "typedMovie"
         private const val ARG_HASH_MOVIE = "Movie"
 
-        @JvmStatic
         fun newInstance(movie: Movie): MovieDetailDialog {
             val fragment = MovieDetailDialog()
             val args = Bundle()
@@ -92,7 +91,6 @@ class MovieDetailDialog : DialogFragment() {
             return fragment
         }
 
-        @JvmStatic
         fun newInstance(movie: HashMovie): MovieDetailDialog {
             val fragment = MovieDetailDialog()
             val args = Bundle()

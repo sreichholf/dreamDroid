@@ -86,29 +86,24 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
     }
 
     companion object {
-        @JvmStatic
         fun getWidgetProfile(context: Context, appWidgetId: Int): Profile {
             val profileId = PreferenceManager.getDefaultSharedPreferences(context)
                 .getInt(getProfileIdKey(appWidgetId), -1)
             return AppDatabase.profiles(context).getProfile(profileId)
         }
 
-        @JvmStatic
         fun getProfileIdKey(appWidgetId: Int): String =
             VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + appWidgetId
 
-        @JvmStatic
         fun getIsFullKey(appWidgetId: Int): String =
             VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + appWidgetId + "isFull"
 
-        @JvmStatic
         fun isFull(context: Context, appWidgetId: Int): Boolean =
             PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
                 VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + appWidgetId + "isFull",
                 false,
             )
 
-        @JvmStatic
         fun deleteWidgetConfiguration(context: Context, appWidgetId: Int) {
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             val editor = prefs.edit()

@@ -50,13 +50,11 @@ class Movie : ExtendedHashMap, Serializable {
     fun fileSizeReadable(): String? = getString(KEY_FILE_SIZE_READABLE)
 
     companion object {
-        @JvmField
-        val KEY_REFERENCE: String = Service.KEY_REFERENCE
+        const val KEY_REFERENCE: String = Service.KEY_REFERENCE
         const val KEY_TITLE: String = "title"
         const val KEY_DESCRIPTION: String = "description"
         const val KEY_DESCRIPTION_EXTENDED: String = "descriptionEx"
-        @JvmField
-        val KEY_SERVICE_NAME: String = Service.KEY_NAME
+        const val KEY_SERVICE_NAME: String = Service.KEY_NAME
         const val KEY_TIME: String = "time"
         const val KEY_TIME_READABLE: String = "time_readable"
         const val KEY_LENGTH: String = "length"
@@ -65,7 +63,6 @@ class Movie : ExtendedHashMap, Serializable {
         const val KEY_FILE_SIZE: String = "filesize"
         const val KEY_FILE_SIZE_READABLE: String = "filesize_readable"
 
-        @JvmStatic
         fun getDeleteParams(movie: ExtendedHashMap): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
             params.add(NameValuePair("sRef", movie.getString(KEY_REFERENCE)))

@@ -248,7 +248,7 @@ private class ProfilesSession :
         val detected = detectedProfiles ?: return
         val dao = AppDatabase.profiles(ctx)
         for (p in detected) {
-            p.setId(dao.addProfile(p))
+            p.id = dao.addProfile(p).toInt()
             toast(ctx.getText(R.string.profile_added).toString() + " '" + p.name + "'")
         }
         reloadProfiles()

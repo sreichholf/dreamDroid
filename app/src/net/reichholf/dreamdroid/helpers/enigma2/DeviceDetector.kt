@@ -9,16 +9,13 @@ import java.util.Locale
 import javax.jmdns.JmDNS
 
 object DeviceDetector {
-    @JvmField
-    var LOG_TAG: String = DeviceDetector::class.java.name
+    val LOG_TAG: String = DeviceDetector::class.java.name
 
-    @JvmField
     val KNOWN_HOSTNAMES: Array<String> = arrayOf(
         "dm500hd", "dm800", "dm800se", "dm7020hd", "dm7025", "dm8000", "dm800sev2",
         "dm500hdsev2", "dm7020hdv2", "dm7080", "dm820", "dm520", "dm525", "dm900",
     )
 
-    @JvmStatic
     fun getAvailableHosts(): ArrayList<Profile> {
         val profiles = ArrayList<Profile>()
         for (hostname in KNOWN_HOSTNAMES) {
@@ -28,12 +25,12 @@ object DeviceDetector {
                 val simpleRemote = false
                 val ip = host.hostAddress ?: continue
                 val p = Profile.getDefault()
-                p.setName(hostname)
-                p.setHost(ip)
-                p.setStreamHost(ip)
-                p.setPort(80)
-                p.setUser("root")
-                p.setSimpleRemote(simpleRemote)
+                p.name = hostname
+                p.host = ip
+                p.streamHost = ip
+                p.port = 80
+                p.user = "root"
+                p.simpleRemote = simpleRemote
                 addToList(profiles, p)
             } catch (e: IOException) {
                 Log.w(LOG_TAG, e.message ?: e.toString())
@@ -50,12 +47,12 @@ object DeviceDetector {
                     val port = s.port
                     val simpleRemote = false
                     val p = Profile.getDefault()
-                    p.setName(s.name)
-                    p.setHost(address)
-                    p.setStreamHost(address)
-                    p.setPort(port)
-                    p.setUser("root")
-                    p.setSimpleRemote(simpleRemote)
+                    p.name = s.name
+                    p.host = address
+                    p.streamHost = address
+                    p.port = port
+                    p.user = "root"
+                    p.simpleRemote = simpleRemote
                     addToList(profiles, p)
                 }
             }

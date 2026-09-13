@@ -131,7 +131,6 @@ class SettingsState(
         const val KEY_MOBILE_IMDB = "mobile_imdb"
         const val DEFAULT_SYNC_PICONS_PATH = "/usr/share/enigma2/picon"
 
-        @JvmStatic
         fun create(context: Context): SettingsState {
             PreferenceManager.setDefaultValues(context, R.xml.preferences, false)
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)

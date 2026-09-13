@@ -44,13 +44,9 @@ class E2SimpleResultHandler : E2SimpleHandler() {
     }
 
     companion object {
-        @JvmStatic
         protected val TAG_E2RESULTTEXT: String = "e2resulttext"
-        @JvmStatic
         protected val TAG_E2STATETEXT: String = "e2statetext"
-        @JvmStatic
         protected val TAG_E2RESULT: String = "e2result"
-        @JvmStatic
         protected val TAG_E2STATE: String = "e2state"
     }
 }

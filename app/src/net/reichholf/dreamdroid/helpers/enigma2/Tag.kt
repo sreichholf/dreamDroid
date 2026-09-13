@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 object Tag {
-    @JvmStatic
     fun implodeTags(selectedTags: ArrayList<String>): String {
         val sb = StringBuilder()
         for (tag in selectedTags) {

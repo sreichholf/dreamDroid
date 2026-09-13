@@ -12,7 +12,6 @@ class NameValuePair(key: String, value: String?) {
     fun value(): String = mValue ?: ""
 
     companion object {
-        @JvmStatic
         fun toString(pair: NameValuePair): String {
             var value = ""
             try {
@@ -23,7 +22,6 @@ class NameValuePair(key: String, value: String?) {
             return String.format("%s=%s", pair.key(), value)
         }
 
-        @JvmStatic
         fun toString(pairs: List<NameValuePair>): String {
             if (pairs.isEmpty()) return ""
             val params = ArrayList<String>(pairs.size)

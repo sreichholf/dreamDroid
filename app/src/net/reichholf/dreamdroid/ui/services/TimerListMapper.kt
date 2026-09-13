@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerKeys
  * [ExtendedHashMap]; convert only at that fragment boundary.
  */
 object TimerListMapper {
-    @JvmStatic
     fun toExtendedHashMap(timer: Timer): ExtendedHashMap {
         val map = ExtendedHashMap()
         map.put(TimerKeys.KEY_REFERENCE, timer.reference)

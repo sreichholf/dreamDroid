@@ -53,7 +53,6 @@ class AutofitRecyclerView : FastScrollRecyclerView {
     }
 
     companion object {
-        @JvmField
-        var DEFAULT_MAX_SPAN_COUNT: Int = -1
+        const val DEFAULT_MAX_SPAN_COUNT: Int = -1
     }
 }

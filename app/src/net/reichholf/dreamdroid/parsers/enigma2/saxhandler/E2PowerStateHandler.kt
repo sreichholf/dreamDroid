@@ -41,7 +41,6 @@ class E2PowerStateHandler : E2SimpleHandler() {
     }
 
     companion object {
-        @JvmStatic
         protected val TAG_E2INSTANDBY: String = "e2instandby"
     }
 }

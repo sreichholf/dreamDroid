@@ -14,8 +14,8 @@ class SimpleHttpClientOkHttpTest {
         val profile = Profile().apply {
             host = "box.local"
             port = 80
-            setSsl(false)
-            setLogin(false)
+            ssl = false
+            login = false
         }
         val client = SimpleHttpClient.getInstance(profile)
         val url = client.buildUrl("/web/about", ArrayList())
@@ -27,8 +27,8 @@ class SimpleHttpClientOkHttpTest {
         val profile = Profile().apply {
             host = "box.local"
             port = 443
-            setSsl(true)
-            setLogin(false)
+            ssl = true
+            login = false
         }
         val client = SimpleHttpClient.getInstance(profile)
         val url = client.buildUrl("/web/about", ArrayList())
@@ -41,8 +41,8 @@ class SimpleHttpClientOkHttpTest {
         val profile = Profile().apply {
             host = "box.local"
             port = 80
-            setSsl(false)
-            setLogin(true)
+            ssl = false
+            login = true
             user = "root"
             pass = "secret"
         }

@@ -17,10 +17,8 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 object CheckProfile {
     const val LOG_TAG: String = "CheckProfile"
 
-    @JvmField
     val FEATURE_EPGNOWNEXT_VERSION: IntArray = intArrayOf(1, 7, 0)
 
-    @JvmField
     val FEATURE_POST_REQEUEST: IntArray = intArrayOf(1, 7, 3)
 
     const val KEY_HAS_ERROR: String = "error"
@@ -31,13 +29,10 @@ object CheckProfile {
     const val KEY_WHAT: String = "what"
     const val KEY_RESULT_LIST: String = "list"
 
-    @JvmField
     val REQUIRED_VERSION: IntArray = intArrayOf(1, 6, 5)
 
-    @JvmField
     var CURRENT_VERSION: IntArray = intArrayOf(0, 0, 0)
 
-    @JvmStatic
     fun checkProfile(profile: Profile, context: Context): ExtendedHashMap {
         CURRENT_VERSION = intArrayOf(0, 0, 0)
         DreamDroid.disableSleepTimer()
@@ -167,10 +162,8 @@ object CheckProfile {
         return checkResult
     }
 
-    @JvmStatic
     fun checkVersion(version: String): Int = checkVersion(version, REQUIRED_VERSION)
 
-    @JvmStatic
     fun checkVersion(version: String, required: IntArray): Int {
         val parts = version.split("\\.".toRegex()).toTypedArray()
 

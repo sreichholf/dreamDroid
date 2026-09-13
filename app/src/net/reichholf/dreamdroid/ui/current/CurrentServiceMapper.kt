@@ -13,7 +13,6 @@ import net.reichholf.dreamdroid.ui.epg.EpgListMapper
  * still take [ExtendedHashMap]; convert only at that fragment boundary.
  */
 object CurrentServiceMapper {
-    @JvmStatic
     fun eventToExtendedHashMap(event: Event?): ExtendedHashMap? {
         if (event == null) {
             return null
@@ -21,7 +20,6 @@ object CurrentServiceMapper {
         return EpgListMapper.toExtendedHashMap(event)
     }
 
-    @JvmStatic
     fun serviceToExtendedHashMap(service: Service?): ExtendedHashMap {
         val map = ExtendedHashMap()
         if (service == null) {
@@ -33,7 +31,6 @@ object CurrentServiceMapper {
         return map
     }
 
-    @JvmStatic
     fun toExtendedHashMap(current: CurrentService?): ExtendedHashMap {
         val map = ExtendedHashMap()
         if (current == null) {

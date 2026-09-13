@@ -24,12 +24,12 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
     private val mId = 0x9923
 
     class DownloadProgress {
-        @JvmField var connected: Boolean = false
-        @JvmField var error: Boolean = false
-        @JvmField var totalFiles: Int = 0
-        @JvmField var downloadedFiles: Int = 0
-        @JvmField var currentFile: String = ""
-        @JvmField var errorText: String? = ""
+        var connected: Boolean = false
+        var error: Boolean = false
+        var totalFiles: Int = 0
+        var downloadedFiles: Int = 0
+        var currentFile: String = ""
+        var errorText: String? = ""
 
         companion object {
             const val EVENT_ID_CONNECTING: Int = 0
