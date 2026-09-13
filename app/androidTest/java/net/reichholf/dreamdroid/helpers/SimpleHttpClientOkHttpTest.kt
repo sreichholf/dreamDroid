@@ -15,6 +15,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import javax.net.ssl.HttpsURLConnection
 
 @RunWith(AndroidJUnit4::class)
 class SimpleHttpClientOkHttpTest {
@@ -183,6 +184,69 @@ class SimpleHttpClientOkHttpTest {
             assertEquals("AAA", firstBody)
         }
         assertEquals("BBB", client.pageContentString)
+    }
+
+    @Test
+    fun buildServiceStreamUrl_httpOmitsUserInfo() {
+        val profile = Profile().apply {
+            host = "box.local"
+            streamPort = 8001
+            streamLogin = true
+            user = "root"
+            pass = "secret"
+            encoderStream = false
+        }
+        val url = SimpleHttpClient.getInstance(profile).buildServiceStreamUrl("1:0:1")
+        assertFalse(url.contains("root:secret@"))
+        assertTrue(url.startsWith("http://"))
+        assertTrue(url.contains("box.local:8001/"))
+    }
+
+    @Test
+    fun buildFileStreamUrl_httpOmitsUserInfo() {
+        val profile = Profile().apply {
+            host = "box.local"
+            filePort = 80
+            fileLogin = true
+            fileSsl = false
+            user = "root"
+            pass = "secret"
+            encoderStream = false
+        }
+        val url = SimpleHttpClient.getInstance(profile).buildFileStreamUrl("1:0:1", "/tmp/a.ts")
+        assertFalse(url.contains("root:secret@"))
+        assertTrue(url.startsWith("http://"))
+    }
+
+    @Test
+    fun buildFileStreamUrl_httpsKeepsUserInfo() {
+        val profile = Profile().apply {
+            host = "box.local"
+            filePort = 443
+            fileLogin = true
+            fileSsl = true
+            user = "root"
+            pass = "secret"
+            encoderStream = false
+        }
+        val url = SimpleHttpClient.getInstance(profile).buildFileStreamUrl("1:0:1", "/tmp/a.ts")
+        assertTrue(url.startsWith("https://"))
+        assertTrue(url.contains("root:secret@"))
+    }
+
+    @Test
+    fun httpClientDoesNotInstallProcessSslDefaults() {
+        val beforeFactory = HttpsURLConnection.getDefaultSSLSocketFactory()
+        val beforeVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
+        val profile = Profile().apply {
+            host = "box.local"
+            port = 443
+            ssl = true
+            allCertsTrusted = true
+        }
+        SimpleHttpClient.getInstance(profile)
+        assertEquals(beforeFactory, HttpsURLConnection.getDefaultSSLSocketFactory())
+        assertEquals(beforeVerifier, HttpsURLConnection.getDefaultHostnameVerifier())
     }
 
     private fun clientForServer(sessionId: String? = null): SimpleHttpClient {
