@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -24,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -56,8 +59,10 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
+import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
+import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import java.text.DateFormat
@@ -102,6 +107,7 @@ fun MultiEpgScreen(
     hScrollState: ScrollState = rememberScrollState(),
     focusSec: Long = nowSec,
     focusEpoch: Int = 0,
+    timerClocks: Map<String, MultiEpgTimerClock> = emptyMap(),
     visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
     onVisibleMinutesChange: ((Int) -> Unit)? = null,
 ) {
@@ -417,6 +423,7 @@ fun MultiEpgScreen(
                                 nowSec = nowSec,
                                 cullStartSec = cullWindow.first,
                                 cullEndSec = cullWindow.second,
+                                timerClocks = timerClocks,
                                 onEventClick = onEventClick,
                             )
                         }
@@ -526,6 +533,7 @@ private fun MultiEpgChannelTimeline(
     nowSec: Long,
     cullStartSec: Long,
     cullEndSec: Long,
+    timerClocks: Map<String, MultiEpgTimerClock>,
     onEventClick: (Event) -> Unit,
 ) {
     // Match list-EPG cards: surfaceVariant bars, not loud primaryContainer demo chrome.
@@ -554,6 +562,13 @@ private fun MultiEpgChannelTimeline(
                     minuteWidth = minuteWidth,
                     barColor = barColor,
                     onBar = onBar,
+                    clock = timerClocks[
+                        multiEpgTimerClockKey(
+                            channel.serviceRef,
+                            bar.event.eventId,
+                            bar.startSec,
+                        ),
+                    ],
                     onEventClick = onEventClick,
                 )
             }
@@ -579,6 +594,7 @@ private fun ProgrammeBar(
     minuteWidth: Dp,
     barColor: Color,
     onBar: Color,
+    clock: MultiEpgTimerClock?,
     onEventClick: (Event) -> Unit,
 ) {
     val drawStart = max(bar.startSec, timelineStartSec)
@@ -607,6 +623,38 @@ private fun ProgrammeBar(
             color = onBar,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(end = if (clock != null) 14.dp else 0.dp),
         )
+        if (clock != null) {
+            val record = clock == MultiEpgTimerClock.Record
+            val clockCd = stringResource(
+                if (record) {
+                    R.string.multiepg_timer_record
+                } else {
+                    R.string.multiepg_timer_zap
+                },
+            )
+            Icon(
+                painter = painterResource(R.drawable.ic_multiepg_clock),
+                contentDescription = clockCd,
+                tint = if (record) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.tertiary
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(12.dp)
+                    .testTag(
+                        if (record) {
+                            "multi_epg_timer_record"
+                        } else {
+                            "multi_epg_timer_zap"
+                        },
+                    ),
+            )
+        }
     }
 }

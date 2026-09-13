@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -176,6 +177,14 @@ class MultiEpgSync(
                     error("epgmulti request failed")
                 }
                 events
+            }
+        }
+
+        fun httpFetchTimers(
+            http: SimpleHttpClient = SimpleHttpClient.getInstance(),
+        ): suspend () -> List<Timer> {
+            return {
+                EnigmaClient(http).getTimers() ?: emptyList()
             }
         }
 

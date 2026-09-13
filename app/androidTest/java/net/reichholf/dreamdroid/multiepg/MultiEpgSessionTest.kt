@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.room.AppDatabase
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -384,6 +385,72 @@ class MultiEpgSessionTest {
         assertFalse(session.syncing)
         assertTrue(session.loadedWindowStarts.contains(day2))
         assertTrue(session.channels.isNotEmpty())
+    }
+
+    @Test
+    fun paintsGridBeforeTimerClocksAndIgnoresTimerFetchErrors() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                listOf(programme(id = "e1", title = "News", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            fetchTimers = {
+                gate.await()
+                error("timerlist down")
+            },
+        )
+        session.replaceAndLoad("bouquet-a", t0)
+        waitUntil { session.channels.isNotEmpty() }
+        assertTrue(session.timerClocks.isEmpty())
+        gate.complete(Unit)
+        session.awaitIdle()
+        assertTrue(session.channels.isNotEmpty())
+        assertTrue(session.timerClocks.isEmpty())
+        assertEquals(null, session.errorMessage)
+    }
+
+    @Test
+    fun overlaysRecordClockFromTimerList() = runBlocking {
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                listOf(programme(id = "e1", title = "News", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            fetchTimers = {
+                listOf(
+                    Timer(
+                        reference = "1:0:1:1:1:1:0:0:0:0:",
+                        begin = t0.toString(),
+                        end = (t0 + 3600L).toString(),
+                        justPlay = "0",
+                        disabled = "0",
+                        repeated = "0",
+                    ),
+                )
+            },
+        )
+        session.replaceAndLoad("bouquet-a", t0)
+        session.awaitIdle()
+        assertEquals(MultiEpgTimerClock.Record, session.timerClocks.values.single())
     }
 
     @Test

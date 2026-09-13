@@ -18,7 +18,9 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.buildMultiEpgChannels
+import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.playableMultiEpgRoster
 import net.reichholf.dreamdroid.ui.compose.PULL_REFRESH_INDICATOR_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -573,6 +575,54 @@ class MultiEpgScreenTest {
         composeRule.onNodeWithText("NightShow").assertIsDisplayed()
         assertEquals(dayBefore, dayLabelText())
         composeRule.onNodeWithTag("multi_epg_sync_indicator").assertIsDisplayed()
+    }
+
+    @Test
+    fun recordClockShowsOnMatchingBar() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:1:1:1:0:0:0:0:"
+        val channels = listOf(
+            MultiEpgChannel(
+                serviceRef = ref,
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "Tagesschau",
+                            start = start.toString(),
+                            duration = "1800",
+                            serviceReference = ref,
+                            serviceName = "Das Erste HD",
+                        ),
+                        startSec = start,
+                        endSec = start + 1800,
+                    ),
+                ),
+            ),
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = channels,
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                    timerClocks = mapOf(
+                        multiEpgTimerClockKey(ref, "10", start) to
+                            MultiEpgTimerClock.Record,
+                    ),
+                )
+            }
+        }
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_timer_record", useUnmergedTree = true)
+            .assertIsDisplayed()
     }
 
     private fun dayLabelText(): String {

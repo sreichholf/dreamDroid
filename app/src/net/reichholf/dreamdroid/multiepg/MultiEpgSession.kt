@@ -9,12 +9,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.Timer
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -33,6 +35,7 @@ class MultiEpgSession(
     private val scope: CoroutineScope,
     private val profileId: () -> Int,
     private val noBouquetMessage: String,
+    private val fetchTimers: suspend () -> List<Timer> = { emptyList() },
     private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() },
 ) {
     var bouquetRef: String = ""
@@ -53,6 +56,8 @@ class MultiEpgSession(
         private set
     var errorMessage by mutableStateOf<String?>(null)
         private set
+    var timerClocks by mutableStateOf<Map<String, MultiEpgTimerClock>>(emptyMap())
+        private set
 
     val syncing: Boolean
         get() = syncingCount > 0
@@ -68,6 +73,7 @@ class MultiEpgSession(
     private var bouquetRoster: List<Service> = emptyList()
     private var visibleStartSec: Long = 0L
     private var visibleEndSec: Long = 0L
+    private var timers: List<Timer> = emptyList()
 
     fun cancel() {
         loadJob?.cancel()
@@ -86,6 +92,8 @@ class MultiEpgSession(
         eventsByWindow.clear()
         bouquetRoster = emptyList()
         channels = emptyList()
+        timerClocks = emptyMap()
+        timers = emptyList()
         timelineStartSec = 0L
         timelineEndSec = 0L
         errorMessage = null
@@ -106,6 +114,8 @@ class MultiEpgSession(
         if (ref.isEmpty()) {
             errorMessage = noBouquetMessage
             channels = emptyList()
+            timerClocks = emptyMap()
+            timers = emptyList()
             return
         }
         loadJob?.cancel()
@@ -115,6 +125,16 @@ class MultiEpgSession(
         }
         this.anchorSec = anchorSec
         loadJob = scope.launch {
+            val timersDeferred = async(Dispatchers.IO) {
+                try {
+                    fetchTimers()
+                } catch (t: Throwable) {
+                    if (t is kotlinx.coroutines.CancellationException) {
+                        throw t
+                    }
+                    emptyList()
+                }
+            }
             beginSync()
             try {
                 val rosterDeferred = async(Dispatchers.IO) {
@@ -159,6 +179,9 @@ class MultiEpgSession(
             } finally {
                 pullRefreshing = false
                 endSync()
+                if (isActive) {
+                    applyTimers(timersDeferred.await())
+                }
             }
         }
     }
@@ -313,6 +336,7 @@ class MultiEpgSession(
             timelineStartSec = 0L
             timelineEndSec = 0L
             channels = emptyList()
+            timerClocks = emptyMap()
             return
         }
         val starts = eventsByWindow.keys.sorted()
@@ -334,6 +358,14 @@ class MultiEpgSession(
         timelineEndSec = nextEnd
         if (next !== previous) {
             channels = next
+        }
+        timerClocks = buildMultiEpgTimerClocks(channels, timers)
+    }
+
+    private suspend fun applyTimers(list: List<Timer>) {
+        gridMutex.withLock {
+            timers = list
+            timerClocks = buildMultiEpgTimerClocks(channels, timers)
         }
     }
 
