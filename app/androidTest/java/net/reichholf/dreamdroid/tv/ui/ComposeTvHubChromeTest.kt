@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -98,6 +99,29 @@ class ComposeTvHubChromeTest {
         composeRule.onNodeWithTag("hub_placeholder_row", useUnmergedTree = true).assertExists()
     }
 
+    /** D-pad TV: focusing a header selects that row without requiring a click. */
+    @Test
+    fun headerFocusInvokesCallback() {
+        var selected: String? = null
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = { selected = it },
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+            )
+        }
+        val node = composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true)
+        node.assertExists()
+        node.requestFocus()
+        composeRule.waitForIdle()
+        assertEquals(TvComposeHubHost.HEADER_PLACEHOLDER_ID, selected)
+    }
+
     /** Phase 3.1c-iv-g: drawer header click must drive selection (Leanback parity). */
     @Test
     fun headerClickInvokesCallback() {
@@ -139,6 +163,25 @@ class ComposeTvHubChromeTest {
             )
         }
         composeRule.onNodeWithTag("hub_loading", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun settingsHeaderHidesBrowseError() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = {},
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+                errorText = "box offline",
+            )
+        }
+        composeRule.onNodeWithTag("hub_error", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
     }
 
     @Test
