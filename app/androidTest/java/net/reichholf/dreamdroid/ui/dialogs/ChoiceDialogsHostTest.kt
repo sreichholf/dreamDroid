@@ -7,8 +7,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
+import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -145,11 +148,15 @@ class ChoiceDialogsHostTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Searching").assertIsDisplayed()
-        composeRule.runOnIdle {
-            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        // KEYCODE_BACK to the dialog window. activity.onBackPressedDispatcher finishes the
+        // paused activity and leaves the AlertDialog window showing.
+        Espresso.pressBack()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Searching").fetchSemanticsNodes().isEmpty()
         }
-        composeRule.waitForIdle()
-        composeRule.onNodeWithText("Searching").assertDoesNotExist()
+        assertTrue(
+            composeRule.activity.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        )
     }
 
     @Test
