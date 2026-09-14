@@ -304,7 +304,7 @@ fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: Stri
 
 /** Nested EPG search: push onto the NavHost back stack (singleTop avoids duplicate same query). */
 fun NavHostController.navigateToEpgSearch(query: String) {
-    navigate("epg_search/${Uri.encode(query)}") {
+    navigate(PhoneNavRoutes.epgSearchRoute(query)) {
         launchSingleTop = true
     }
 }

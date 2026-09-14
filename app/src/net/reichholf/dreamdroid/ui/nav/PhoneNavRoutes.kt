@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import java.net.URLDecoder
+import java.net.URLEncoder
+
 /**
  * Compose Navigation route ids for the phone shell NavHost.
  * Expand as more drawer destinations migrate off [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
@@ -34,8 +37,11 @@ object PhoneNavRoutes {
     /** Nested service EPG (typed string args). */
     const val SERVICE_EPG = "service_epg/{serviceRef}?serviceName={serviceName}"
 
-    /** Nested EPG search (typed query string). */
-    const val EPG_SEARCH = "epg_search/{query}"
+    /**
+     * Nested EPG search. The term is a query parameter so titles that contain `/`
+     * cannot add extra path segments (Navigation splits `{query}` path args).
+     */
+    const val EPG_SEARCH = "epg_search?query={query}"
 
     const val ARG_SERVICE_REF = "serviceRef"
     const val ARG_SERVICE_NAME = "serviceName"
@@ -52,4 +58,33 @@ object PhoneNavRoutes {
 
     /** Nested timer service pick (from timer edit). */
     const val TIMER_SERVICE_PICK = "timer_service_pick"
+
+    private const val ENCODING = "UTF-8"
+
+    /** Filled [EPG_SEARCH] route; percent-encodes [query] as a query parameter. */
+    fun epgSearchRoute(query: String): String {
+        return "epg_search?$ARG_QUERY=${encodeQueryParam(query)}"
+    }
+
+    /**
+     * Inverse of [epgSearchRoute]. Matches the percent-decode Navigation applies
+     * when reading [ARG_QUERY] from the filled URI.
+     */
+    fun queryFromEpgSearchRoute(route: String): String {
+        val prefix = "?$ARG_QUERY="
+        val start = route.indexOf(prefix)
+        if (start < 0) {
+            return ""
+        }
+        val encoded = route.substring(start + prefix.length).substringBefore('&')
+        return decodeQueryParam(encoded)
+    }
+
+    private fun encodeQueryParam(value: String): String {
+        return URLEncoder.encode(value, ENCODING).replace("+", "%20")
+    }
+
+    private fun decodeQueryParam(value: String): String {
+        return URLDecoder.decode(value, ENCODING)
+    }
 }
