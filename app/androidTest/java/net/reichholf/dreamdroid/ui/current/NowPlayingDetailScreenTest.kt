@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
@@ -72,6 +73,63 @@ class NowPlayingDetailScreenTest {
         composeRule.onNodeWithText("Der Wetterbericht.").assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
         composeRule.onNodeWithText("IMDb").assertDoesNotExist()
+        composeRule.onNodeWithText("Stream current").assertIsDisplayed().performClick()
+        assertEquals(1, streamClicks)
+    }
+
+    @Test
+    fun loadingWithoutRefDoesNotOfferStream() {
+        var streamClicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                NowPlayingDetailScreen(
+                    current = null,
+                    loading = true,
+                    onStream = { streamClicks++ },
+                )
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        composeRule.onNodeWithText(context.getString(R.string.loading)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.not_available)).assertDoesNotExist()
+        composeRule.onNodeWithText("Stream current").assertDoesNotExist()
+        assertEquals(0, streamClicks)
+    }
+
+    @Test
+    fun failedWithoutRefDoesNotOfferStream() {
+        var streamClicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                NowPlayingDetailScreen(
+                    current = null,
+                    onStream = { streamClicks++ },
+                )
+            }
+        }
+        composeRule.onNodeWithText("Not available").assertIsDisplayed()
+        composeRule.onNodeWithText("Stream current").assertDoesNotExist()
+        assertEquals(0, streamClicks)
+    }
+
+    @Test
+    fun lastGoodWithoutNowStillShowsStream() {
+        val current = CurrentService(
+            service = Service(
+                reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
+                name = "Das Erste HD",
+            ),
+        )
+        var streamClicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                NowPlayingDetailScreen(
+                    current = current,
+                    onStream = { streamClicks++ },
+                )
+            }
+        }
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
         composeRule.onNodeWithText("Stream current").assertIsDisplayed().performClick()
         assertEquals(1, streamClicks)
     }

@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.current
 
 import android.content.SharedPreferences
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -89,25 +88,23 @@ fun HubNowPlaying(
         loadJob = scope.launch {
             val result = loadCurrentService(context.applicationContext)
             val next = result.current
-            if (result.success && next != null &&
+            if (result.success && next != null) {
                 gate.applySuccess(generation, loadProfileId, next)
-            ) {
-                current = gate.visible(DreamDroid.getCurrentProfile().id ?: -1)
             }
             if (gate.isCurrent(generation)) {
+                current = gate.visible(DreamDroid.getCurrentProfile().id ?: -1)
                 ready = true
             }
         }
     }
 
     fun stream() {
+        if (!currentServiceCanStream(shown)) {
+            return
+        }
         val service = shown?.service
         val ref = service?.reference.orEmpty()
         val name = service?.name.orEmpty()
-        if (ref.isEmpty()) {
-            Toast.makeText(context, R.string.not_available, Toast.LENGTH_LONG).show()
-            return
-        }
         val activity = context as AppCompatActivity
         activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
     }
@@ -157,6 +154,7 @@ fun HubNowPlaying(
     if (showSheet) {
         CurrentServiceSheet(
             current = shown,
+            loading = shown == null && !ready,
             onStream = { stream() },
             onDismiss = {
                 showSheet = false
@@ -196,4 +194,9 @@ class CurrentServiceLoadGate {
     fun visible(profileId: Int): CurrentService? {
         return lastGood.takeIf { lastGoodProfileId == profileId }
     }
+}
+
+/** Stream is only valid when `/web/getcurrent` gave a non-empty service reference. */
+fun currentServiceCanStream(current: CurrentService?): Boolean {
+    return current?.service?.reference?.isNotEmpty() == true
 }

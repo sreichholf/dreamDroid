@@ -18,6 +18,7 @@ fun CurrentServiceSheet(
     current: CurrentService?,
     onStream: () -> Unit,
     onDismiss: () -> Unit,
+    loading: Boolean = false,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -26,6 +27,7 @@ fun CurrentServiceSheet(
     ) {
         NowPlayingDetailScreen(
             current = current,
+            loading = loading,
             onStream = {
                 onStream()
                 onDismiss()
