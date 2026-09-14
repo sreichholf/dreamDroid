@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -154,6 +155,7 @@ fun IndeterminateProgressDialog(title: String, message: String, onDismiss: () ->
             { Text(title) }
         },
         text = {
+            BackHandler(onBack = onDismiss)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(modifier = Modifier.padding(end = 16.dp))
                 Text(message)
@@ -166,10 +168,16 @@ fun IndeterminateProgressDialog(title: String, message: String, onDismiss: () ->
 @Composable
 fun IndeterminateProgressHost(progress: IndeterminateProgressState?) {
     var dismissed by remember(progress) { mutableStateOf(false) }
-    if (progress != null && !dismissed) {
+    val current = progress.takeUnless { dismissed }
+    // AlertDialog is a separate window that pauses the activity. Handle activity-level
+    // Back here so it dismisses the spinner instead of finishing the host.
+    BackHandler(enabled = current != null) {
+        dismissed = true
+    }
+    if (current != null) {
         IndeterminateProgressDialog(
-            title = progress.title,
-            message = progress.message,
+            title = current.title,
+            message = current.message,
             onDismiss = { dismissed = true }
         )
     }
