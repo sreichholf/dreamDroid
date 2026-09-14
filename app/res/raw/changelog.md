@@ -1,5 +1,19 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.461
+* NEW: MultiEPG — graphical EPG grid
+* NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
+* NEW: Choose which screen opens when the app starts (Settings → Start screen)
+* NEW: Tools hub groups Screenshot, Device Info, and Signal Meter with a shared bottom bar
+* UPD: Modernized architecture and Material 3 UI across phone screens
+* UPD: Slimmer navigation drawer; About, Changelog, and Backup live under Settings
+* UPD: Android TV browse hub refreshed
+* UPD: Bouquet EPG date/time jump chips (incl. Now / Prime)
+* UPD: Virtual Remote home-screen widget
+* UPD: Requires Android 8.0 or newer
+* DEL: Built-in Mediaplayer / playlist browser
+* FIX: multiple smaller issues
+
 ## 1.15.460
 * FIX: reenable screenshots
 
