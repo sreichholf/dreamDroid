@@ -35,7 +35,7 @@ class AboutScreenTest {
                 AboutScreen(content = sampleAboutContent(), onLicensesClick = {})
             }
         }
-        composeRule.onNodeWithText("1.15.460", substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText("2.0.461", substring = true).assertIsDisplayed()
         composeRule.onNodeWithText("Licenses").assertIsDisplayed()
     }
 
@@ -62,7 +62,7 @@ class AboutScreenTest {
 
 internal fun sampleAboutContent() = AboutContent(
     title = "About",
-    version = "dreamDroid 1.15.460-debug",
+    version = "dreamDroid 2.0.461-debug",
     license = "GPLv3",
     sourceLink = "Source code available at: http://github.com/sreichholf/dreamDroid",
     licensesLabel = "Licenses"

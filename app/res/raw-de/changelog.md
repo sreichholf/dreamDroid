@@ -1,5 +1,24 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.461
+* NEU: MultiEPG — grafische EPG-Übersicht (Kanäle × Zeit) mit Zoom (1/2/4/5 h), Jetzt/±Tag, Timer-Uhren und Textgröße Kompakt/Komfortabel
+* NEU: Optionale Es-läuft-Leiste auf TV & Movies (Schalter in den Einstellungen)
+* NEU: Startbildschirm wählbar (Einstellungen → Startbildschirm)
+* NEU: Werkzeuge-Hub bündelt Screenshot, Geräte-Info und Signal Meter mit gemeinsamer Leiste
+* UPD: Modernisierte Architektur und Material-3-Oberfläche auf dem Telefon
+* UPD: Schlankeres Navigationsmenü; Über, Änderungen und Backup unter Einstellungen
+* UPD: Android-TV-Browse-Hub überarbeitet
+* UPD: Bouquet-EPG mit Datums-/Zeit-Sprungchips (inkl. Jetzt / Prime)
+* UPD: Virtual-Remote-Homescreen-Widget
+* UPD: Benötigt Android 8.0 oder neuer
+* DEL: Eingebauter Mediaplayer / Playlist-Browser
+* FIX: Profile/Backup Import & Export in Randfällen
+* FIX: Timer-Bearbeitung behält Felder nach Senderwahl; klarere Speicherfehler
+* FIX: EPG-Suche mit Schrägstrichen in der Suchanfrage
+* FIX: Sleep-Timer-Dialog; Zurück bei Fortschrittsdialogen beendet den Bildschirm nicht mehr
+* FIX: Screenshot-Speicherfehler; Signalnadel im Nachtmodus
+* FIX: Klicks am Virtual-Remote-Widget; TLS „Alle Zertifikate“ greift zuverlässig
+
 ## 1.15.460
 * FIX: Screenshots sind wieder aktiviert
 
