@@ -3,7 +3,9 @@ package net.reichholf.dreamdroid.ui.current
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Service
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CurrentServiceLoadGateTest {
@@ -34,5 +36,35 @@ class CurrentServiceLoadGateTest {
 
         assertEquals("Box A", gate.visible(7)?.service?.name)
         assertNull(gate.visible(8))
+        assertFalse(currentServiceCanStream(gate.visible(8)))
+    }
+
+    @Test
+    fun emptyPayloadDoesNotReplaceLastGoodOrEnableStream() {
+        val gate = CurrentServiceLoadGate()
+        val first = gate.beginLoad()
+        val lastGood = CurrentService(service = Service("1:0:1:1", "Box"))
+        assertTrue(gate.applySuccess(first, profileId = 1, next = lastGood))
+        assertTrue(currentServiceCanStream(gate.visible(1)))
+
+        val failed = gate.beginLoad()
+        assertFalse(gate.applySuccess(failed, profileId = 1, next = CurrentService()))
+        assertEquals("Box", gate.visible(1)?.service?.name)
+        assertTrue(currentServiceCanStream(gate.visible(1)))
+        assertTrue(gate.isCurrent(failed))
+    }
+
+    @Test
+    fun failedGenerationWithoutLastGoodCannotStream() {
+        val gate = CurrentServiceLoadGate()
+        val generation = gate.beginLoad()
+        assertTrue(gate.isCurrent(generation))
+        assertNull(gate.visible(3))
+        assertFalse(currentServiceCanStream(gate.visible(3)))
+        assertFalse(currentServiceCanStream(null))
+        assertFalse(currentServiceCanStream(CurrentService()))
+        assertFalse(
+            currentServiceCanStream(CurrentService(service = Service("", "Name only"))),
+        )
     }
 }

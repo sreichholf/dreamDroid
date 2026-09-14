@@ -62,7 +62,7 @@ class CurrentServiceUiState {
 
     fun apply(current: CurrentService?) {
         if (current == null || current.isEmpty()) {
-            // Request finished with nothing usable: stop Loading placeholders without inventing data.
+            clear()
             ready = true
             return
         }
@@ -114,8 +114,15 @@ fun CurrentServiceScreen(
     val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
         .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
     val loading = stringResource(R.string.loading)
+    val unavailable = stringResource(R.string.not_available)
     fun displayOrLoading(value: String): String =
         if (!state.ready) loading else value
+    val serviceText = when {
+        !state.ready -> loading
+        state.serviceName.isNotEmpty() -> state.serviceName
+        else -> unavailable
+    }
+    val canStream = state.serviceReference.isNotEmpty()
 
     Column(
         modifier = modifier
@@ -143,7 +150,7 @@ fun CurrentServiceScreen(
                 )
             }
             Text(
-                text = displayOrLoading(state.serviceName),
+                text = serviceText,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
@@ -185,13 +192,15 @@ fun CurrentServiceScreen(
             modifier = Modifier.padding(bottom = 6.dp),
         )
 
-        Button(
-            onClick = onStream,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 6.dp),
-        ) {
-            Text(stringResource(R.string.stream_current))
+        if (canStream) {
+            Button(
+                onClick = onStream,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+            ) {
+                Text(stringResource(R.string.stream_current))
+            }
         }
     }
 }
@@ -223,7 +232,7 @@ private fun EventBlock(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(enabled = ready && title.isNotEmpty(), onClick = onClick)
             .padding(3.dp),
     ) {
         Text(

@@ -27,6 +27,7 @@ fun NowPlayingDetailScreen(
     current: CurrentService?,
     onStream: () -> Unit,
     modifier: Modifier = Modifier,
+    loading: Boolean = false,
 ) {
     val minutesShort = stringResource(R.string.minutes_short)
     val serviceName = current?.service?.name.orEmpty()
@@ -36,6 +37,11 @@ fun NowPlayingDetailScreen(
     val nextContent = current?.next
         ?.withServiceName("")
         ?.toEpgDetailContent(minutesShort)
+    val canStream = currentServiceCanStream(current)
+    val emptyTitle = when {
+        loading && current == null -> stringResource(R.string.loading)
+        else -> serviceName.ifEmpty { stringResource(R.string.not_available) }
+    }
 
     Column(modifier.fillMaxWidth()) {
         Column(
@@ -50,7 +56,7 @@ fun NowPlayingDetailScreen(
                 EpgDetailBody(nowContent)
             } else {
                 Text(
-                    text = serviceName.ifEmpty { stringResource(R.string.not_available) },
+                    text = emptyTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -65,14 +71,16 @@ fun NowPlayingDetailScreen(
                 EpgDetailBody(nextContent)
             }
         }
-        Button(
-            onClick = onStream,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
-        ) {
-            Text(stringResource(R.string.stream_current))
+        if (canStream) {
+            Button(
+                onClick = onStream,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 16.dp),
+            ) {
+                Text(stringResource(R.string.stream_current))
+            }
         }
     }
 }

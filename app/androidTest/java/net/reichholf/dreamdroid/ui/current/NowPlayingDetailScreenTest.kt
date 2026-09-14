@@ -75,4 +75,60 @@ class NowPlayingDetailScreenTest {
         composeRule.onNodeWithText("Stream current").assertIsDisplayed().performClick()
         assertEquals(1, streamClicks)
     }
+
+    @Test
+    fun loadingWithoutRefDoesNotOfferStream() {
+        var streamClicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                NowPlayingDetailScreen(
+                    current = null,
+                    loading = true,
+                    onStream = { streamClicks++ },
+                )
+            }
+        }
+        composeRule.onNodeWithText("Loading").assertIsDisplayed()
+        composeRule.onNodeWithText("Not available").assertDoesNotExist()
+        composeRule.onNodeWithText("Stream current").assertDoesNotExist()
+        assertEquals(0, streamClicks)
+    }
+
+    @Test
+    fun failedWithoutRefDoesNotOfferStream() {
+        var streamClicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                NowPlayingDetailScreen(
+                    current = null,
+                    onStream = { streamClicks++ },
+                )
+            }
+        }
+        composeRule.onNodeWithText("Not available").assertIsDisplayed()
+        composeRule.onNodeWithText("Stream current").assertDoesNotExist()
+        assertEquals(0, streamClicks)
+    }
+
+    @Test
+    fun lastGoodWithoutNowStillShowsStream() {
+        val current = CurrentService(
+            service = Service(
+                reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
+                name = "Das Erste HD",
+            ),
+        )
+        var streamClicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                NowPlayingDetailScreen(
+                    current = current,
+                    onStream = { streamClicks++ },
+                )
+            }
+        }
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithText("Stream current").assertIsDisplayed().performClick()
+        assertEquals(1, streamClicks)
+    }
 }

@@ -47,6 +47,7 @@ class CurrentServiceScreenTest {
         composeRule.onAllNodesWithText("Loading", substring = true).fetchSemanticsNodes().let {
             assertTrue("expected Loading placeholders", it.isNotEmpty())
         }
+        composeRule.onNodeWithText("Stream current").assertDoesNotExist()
     }
 
     @Test
@@ -132,5 +133,23 @@ class CurrentServiceScreenTest {
         composeRule.onNodeWithText("20:15").assertIsDisplayed()
         composeRule.onNodeWithText("Stream current").assertIsDisplayed().performClick()
         assertTrue(streamClicks == 1)
+    }
+
+    @Test
+    fun failedWithoutRefShowsUnavailableWithoutStream() {
+        val state = CurrentServiceUiState().apply { apply(null) }
+        composeRule.setContent {
+            DreamDroidTheme {
+                CurrentServiceScreen(
+                    state = state,
+                    onNowClick = {},
+                    onNextClick = {},
+                    onStream = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Not available").assertIsDisplayed()
+        composeRule.onNodeWithText("Loading").assertDoesNotExist()
+        composeRule.onNodeWithText("Stream current").assertDoesNotExist()
     }
 }

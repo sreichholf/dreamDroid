@@ -125,8 +125,18 @@ fun CurrentServiceDestination(
         (context as? AppCompatActivity)?.title = title
     }
 
-    fun toast(message: CharSequence) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    fun publishVisible(generation: Int) {
+        if (!gate.isCurrent(generation)) {
+            return
+        }
+        val shown = gate.visible(DreamDroid.getCurrentProfile().id ?: -1)
+        if (shown != null) {
+            current = shown
+            ready = true
+            uiState.apply(shown)
+            return
+        }
+        uiState.apply(null)
     }
 
     fun applyCurrent(generation: Int, loadProfileId: Int, content: CurrentService?) {
@@ -134,19 +144,10 @@ fun CurrentServiceDestination(
             if (!gate.applySuccess(generation, loadProfileId, content)) {
                 return
             }
-            val shown = gate.visible(DreamDroid.getCurrentProfile().id ?: -1)
-            if (shown == null) {
-                return
-            }
-            current = shown
-            ready = true
-            uiState.apply(shown)
-        } else {
-            if (!ready) {
-                uiState.apply(null)
-            }
-            toast(context.getText(R.string.not_available))
+        } else if (!gate.isCurrent(generation)) {
+            return
         }
+        publishVisible(generation)
     }
 
     fun showEpgDetail(event: Event?) {
@@ -158,20 +159,18 @@ fun CurrentServiceDestination(
     }
 
     fun streamService() {
+        if (!currentServiceCanStream(current)) {
+            return
+        }
         val service = current?.service
         val ref = service?.reference.orEmpty()
         val name = service?.name.orEmpty()
-        if (ref.isEmpty()) {
-            toast(context.getText(R.string.not_available))
-            return
-        }
         val activity = context as AppCompatActivity
         activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
     }
 
     fun onNowOrNextOrStream(action: Int) {
         if (!ready) {
-            toast(context.getText(R.string.not_available))
             return
         }
         when (action) {
@@ -194,14 +193,11 @@ fun CurrentServiceDestination(
             }
             refresh.setRefreshing(false)
             setToolbarTitle(baseTitle)
-            if (!result.success) {
-                if (!ready) {
-                    uiState.apply(null)
-                }
-                toast(result.errorText ?: context.getText(R.string.not_available))
-                return@launch
-            }
-            applyCurrent(generation, loadProfileId, result.current)
+            applyCurrent(
+                generation,
+                loadProfileId,
+                content = if (result.success) result.current else null,
+            )
         }
     }
 
@@ -230,7 +226,15 @@ fun CurrentServiceDestination(
     }
 
     LaunchedEffect(profileId) {
-        if (current == null || current!!.isEmpty()) {
+        val shown = gate.visible(profileId)
+        if (shown != null) {
+            current = shown
+            ready = true
+            uiState.apply(shown)
+            setToolbarTitle(baseTitle)
+        } else if (current == null || current!!.isEmpty()) {
+            ready = false
+            uiState.clear()
             reload()
         } else {
             ready = true
