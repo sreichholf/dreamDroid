@@ -8,7 +8,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
-import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -91,11 +90,12 @@ class SleepTimerDialogHostTest {
 
     private fun assertQueuedForm(queued: SleepTimerNavArgs) {
         composeRule.onNodeWithText("Sleep Timer").assertIsDisplayed()
-        composeRule.onNodeWithText("Activate").assertIsOff()
+        // Activate is a selectable Checkbox row (Selected), not ToggleableState.
+        composeRule.onNodeWithText("Activate").assertIsNotSelected()
         composeRule.onNodeWithText("Shutdown").assertIsSelected()
         composeRule.onNodeWithText("Standby").assertIsNotSelected()
         composeRule.runOnIdle {
-            val picker = findNumberPicker(composeRule.activity.window.decorView)
+            val picker = findNumberPicker()
             assertNotNull("sleep timer minutes picker", picker)
             assertEquals(queued.minutes, picker!!.value)
         }
@@ -111,6 +111,19 @@ private class SleepTimerArgsQueue(initial: SleepTimerNavArgs) {
         pending = null
         return args
     }
+}
+
+private fun findNumberPicker(): NumberPicker? {
+    val wmgClass = Class.forName("android.view.WindowManagerGlobal")
+    val instance = wmgClass.getMethod("getInstance").invoke(null)
+    val viewsField = wmgClass.getDeclaredField("mViews")
+    viewsField.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
+    val roots = viewsField.get(instance) as List<View>
+    for (root in roots) {
+        findNumberPicker(root)?.let { return it }
+    }
+    return null
 }
 
 private fun findNumberPicker(root: View): NumberPicker? {

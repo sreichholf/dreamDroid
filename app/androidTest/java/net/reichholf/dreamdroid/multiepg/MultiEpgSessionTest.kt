@@ -36,17 +36,22 @@ class MultiEpgSessionTest {
     @Test
     fun paintsPeekThenRefreshesStaleChunk() = runBlocking {
         val gate = CompletableDeferred<Unit>()
-        val fetches = AtomicInteger(0)
+        val focusedFetches = AtomicInteger(0)
         var now = 1_000_000L
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val focusedStart = MultiEpgWindows.chunkContaining(t0).startSec
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, time, _ ->
-                val n = fetches.incrementAndGet()
-                if (n > 1) {
-                    gate.await()
+                if (time == focusedStart) {
+                    val n = focusedFetches.incrementAndGet()
+                    if (n > 1) {
+                        gate.await()
+                    }
+                    listOf(programme(id = "e-$time", title = "T$n", start = time))
+                } else {
+                    listOf(programme(id = "e-$time", title = "P", start = time))
                 }
-                listOf(programme(id = "e1", title = "T$n", start = time))
             },
             clockMs = { now },
             ttlMs = 1_000L
@@ -60,7 +65,7 @@ class MultiEpgSessionTest {
             noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
-        waitUntil { session.channels.isNotEmpty() }
+        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
         assertEquals("T1", titleOnFocusedChunk(session, t0))
         assertTrue(session.syncing)
         gate.complete(Unit)
@@ -81,7 +86,7 @@ class MultiEpgSessionTest {
                 if (fetches.incrementAndGet() > 1) {
                     error("box down")
                 }
-                listOf(programme(id = "1", title = "Old", start = time))
+                listOf(programme(id = "e-$time", title = "Old", start = time))
             },
             clockMs = { now },
             ttlMs = 1_000L
@@ -396,7 +401,7 @@ class MultiEpgSessionTest {
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, time, _ ->
-                listOf(programme(id = "e1", title = "News", start = time))
+                listOf(programme(id = "e-$time", title = "News", start = time))
             },
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
@@ -427,7 +432,7 @@ class MultiEpgSessionTest {
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, time, _ ->
-                listOf(programme(id = "e1", title = "News", start = time))
+                listOf(programme(id = "e-$time", title = "News", start = time))
             },
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
@@ -452,6 +457,9 @@ class MultiEpgSessionTest {
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
+        waitUntil(dump = { gridDump(session, t0) + " clocks=${session.timerClocks}" }) {
+            session.timerClocks.isNotEmpty()
+        }
         assertEquals(MultiEpgTimerClock.Record, session.timerClocks.values.single())
     }
 
@@ -644,16 +652,29 @@ class MultiEpgSessionTest {
         assertEquals("prefetch down", session.errorMessage)
     }
 
-    private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
+    private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String =
+        titleOnFocusedChunkOrNull(session, unixSec)
+            ?: error(gridDump(session, unixSec))
+
+    private fun titleOnFocusedChunkOrNull(session: MultiEpgSession, unixSec: Long): String? {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
         for (channel in session.channels) {
-            for (bar in channel.bars) {
-                if (bar.startSec >= chunk.startSec && bar.startSec < chunk.endSec) {
-                    return bar.event.title
-                }
+            val bars = channel.bars.overlapping(chunk.startSec, chunk.endSec)
+            if (bars.isNotEmpty()) {
+                return bars.first().event.title
             }
         }
-        error("no bar in chunk ${chunk.startSec}")
+        return null
+    }
+
+    private fun gridDump(session: MultiEpgSession, unixSec: Long): String {
+        val chunk = MultiEpgWindows.chunkContaining(unixSec)
+        val bars = session.channels.joinToString { ch ->
+            ch.bars.joinToString { "${it.event.title}:${it.startSec}-${it.endSec}" }
+        }
+        return "no bar in chunk ${chunk.startSec} " +
+            "windows=${session.loadedWindowStarts} " +
+            "origin=${session.originFloorSec} bars=[$bars]"
     }
 
     private fun programme(
@@ -672,11 +693,15 @@ class MultiEpgSessionTest {
         serviceName = serviceName
     )
 
-    private suspend fun waitUntil(timeoutMs: Long = 5_000L, condition: () -> Boolean) {
+    private suspend fun waitUntil(
+        timeoutMs: Long = 5_000L,
+        dump: () -> String = { "" },
+        condition: () -> Boolean
+    ) {
         val startMs = System.currentTimeMillis()
         while (!condition()) {
             if (System.currentTimeMillis() - startMs > timeoutMs) {
-                error("timed out waiting for session condition")
+                error("timed out waiting for session condition ${dump()}")
             }
             delay(10)
         }
