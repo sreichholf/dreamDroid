@@ -143,7 +143,13 @@ fun loadChangelogMarkdown(context: Context): String {
     val fallback = context.getString(R.string.get_content_error)
     return try {
         context.resources.openRawResource(R.raw.changelog).use { input ->
-            readChangelogUtf8(input) ?: fallback
+            val text = readChangelogUtf8(input)
+            if (text == null) {
+                Log.e(CHANGELOG_LOG_TAG, "Failed to read changelog")
+                fallback
+            } else {
+                text
+            }
         }
     } catch (e: IOException) {
         Log.e(CHANGELOG_LOG_TAG, "Failed to read changelog", e)
@@ -160,8 +166,7 @@ internal fun readChangelogUtf8(input: InputStream): String? {
             baos.write(buffer, 0, length)
         }
         baos.toString("UTF-8")
-    } catch (e: IOException) {
-        Log.e(CHANGELOG_LOG_TAG, "Failed to read changelog", e)
+    } catch (_: IOException) {
         null
     }
 }
