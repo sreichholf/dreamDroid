@@ -227,6 +227,9 @@ private class ZapSession :
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (!ZapPickerGate.isBouquetPickerRequest(requestCode)) {
+            return
+        }
         if (resultCode != Activity.RESULT_OK) {
             val effect = ZapPickerGate.afterNonOkPickerResult(
                 gridEmpty = listState?.items.isNullOrEmpty(),
@@ -240,9 +243,6 @@ private class ZapSession :
                     onEmptyMessage?.invoke(ctx.getString(messageRes))
                 }
             }
-            return
-        }
-        if (requestCode != Statics.REQUEST_PICK_BOUQUET) {
             return
         }
         @Suppress("DEPRECATION")

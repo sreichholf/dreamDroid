@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.zap
 
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.Statics
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -26,6 +27,12 @@ class ZapPickerGateTest {
                 waitingForPicker = afterCancel.waitingForPicker,
             ),
         )
+    }
+
+    @Test
+    fun unrelatedRequestCodeIsIgnored() {
+        assertTrue(ZapPickerGate.isBouquetPickerRequest(Statics.REQUEST_PICK_BOUQUET))
+        assertFalse(ZapPickerGate.isBouquetPickerRequest(Statics.REQUEST_PICK_BOUQUET + 1))
     }
 
     @Test
