@@ -16,7 +16,7 @@ class VLCPlayer {
 
     fun deinit() {
         detach()
-        sMediaPlayer!!.release()
+        sMediaPlayer?.release()
         sMediaPlayer = null
     }
 
@@ -25,15 +25,23 @@ class VLCPlayer {
         surfaceView: SurfaceView?,
         subtitleSurfaceView: SurfaceView?,
     ) {
-        val vlcVout = getMediaPlayer()!!.vlcVout
+        val vlcVout = getMediaPlayer()?.vlcVout ?: return
+        if (vlcVout.areViewsAttached()) {
+            vlcVout.detachViews()
+        }
         vlcVout.setVideoView(surfaceView)
         vlcVout.setSubtitlesView(subtitleSurfaceView)
         vlcVout.attachViews(newVideoLayoutListener)
     }
 
     fun detach() {
+        val mp = sMediaPlayer ?: return
+        val vlcVout = mp.vlcVout
+        if (!VideoPlayback.shouldDetachViews(true, vlcVout.areViewsAttached())) {
+            return
+        }
         stop()
-        getMediaPlayer()!!.vlcVout.detachViews()
+        vlcVout.detachViews()
     }
 
     fun setWindowSize(width: Int, height: Int) {
@@ -41,12 +49,18 @@ class VLCPlayer {
     }
 
     fun playUri(uri: Uri, flags: Int) {
-        mCurrentMedia = Media(VLCInstance.get(), uri)
+        val previous = mCurrentMedia
+        val media = Media(VLCInstance.get(), uri)
         val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
-        mCurrentMedia!!.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
-        val mp = getMediaPlayer()!!
-        mp.media = mCurrentMedia
+        media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
+        mCurrentMedia = media
+        val mp = getMediaPlayer() ?: return
+        if (previous != null && previous !== media) {
+            previous.setEventListener(null)
+            previous.release()
+        }
+        mp.media = media
         mp.rate = 1.0f
         mp.play()
     }
@@ -105,8 +119,9 @@ class VLCPlayer {
     }
 
     fun stop() {
-        getMediaPlayer()!!.stop()
-        val media = getMediaPlayer()!!.media as Media?
+        val mp = sMediaPlayer ?: return
+        mp.stop()
+        val media = mp.media as Media?
         if (media != null) {
             media.setEventListener(null)
             media.release()

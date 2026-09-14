@@ -157,20 +157,21 @@ class VideoActivity :
     }
 
     fun handleIntent(intent: Intent) {
-        if (mPlayer == null) return
         setIntent(intent)
-        if (Intent.ACTION_VIEW == intent.action) {
-            val accel =
-                Integer.parseInt(
-                    PreferenceManager
-                        .getDefaultSharedPreferences(this)
-                        .getString(
-                            DreamDroid.PREFS_KEY_HWACCEL,
-                            Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED),
-                        ),
-                )
-            mPlayer!!.playUri(intent.data!!, accel)
-        }
+        if (Intent.ACTION_VIEW != intent.action) return
+        mOverlayFragment?.applyPlaybackExtras(intent.extras)
+        val player = mPlayer ?: return
+        val data = intent.data ?: return
+        val accel =
+            Integer.parseInt(
+                PreferenceManager
+                    .getDefaultSharedPreferences(this)
+                    .getString(
+                        DreamDroid.PREFS_KEY_HWACCEL,
+                        Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED),
+                    ),
+            )
+        player.playUri(data, accel)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -197,11 +198,16 @@ class VideoActivity :
     }
 
     private fun initializeOverlay() {
-        if (mOverlayFragment != null) return
-
-        mOverlayFragment =
-            supportFragmentManager.findFragmentByTag("video_overlay_fragment") as VideoOverlayFragment?
-        if (mOverlayFragment != null) return
+        if (mOverlayFragment == null) {
+            mOverlayFragment =
+                supportFragmentManager.findFragmentByTag("video_overlay_fragment")
+                    as VideoOverlayFragment?
+        }
+        val overlay = mOverlayFragment
+        if (overlay != null) {
+            overlay.applyPlaybackExtras(intent.extras)
+            return
+        }
 
         mOverlayFragment = VideoOverlayFragment()
         mOverlayFragment!!.arguments = intent.extras
