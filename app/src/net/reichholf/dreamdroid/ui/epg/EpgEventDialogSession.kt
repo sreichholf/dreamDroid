@@ -93,19 +93,16 @@ fun EpgEventDetailSheetHost(session: EpgEventDialogSession) {
     val event = session.detailEvent
     if (event != null) {
         val minutesShort = stringResource(R.string.minutes_short)
-        val content = event.toEpgDetailContent(minutesShort)
-        if (content == null) {
-            session.dismissDetail()
-        } else {
-            EpgDetailModalSheet(
-                content = content,
-                onDismiss = { session.dismissDetail() },
-                onSetTimer = { session.onSetTimer() },
-                onEditTimer = { session.onEditTimer() },
-                onImdb = { session.onImdb() },
-                onSimilar = { session.onFindSimilar() },
-            )
-        }
+        val unavailable = stringResource(R.string.not_available)
+        val content = event.toEpgDetailContentOrUnavailable(minutesShort, unavailable)
+        EpgDetailModalSheet(
+            content = content,
+            onDismiss = { session.dismissDetail() },
+            onSetTimer = { session.onSetTimer() },
+            onEditTimer = { session.onEditTimer() },
+            onImdb = { session.onImdb() },
+            onSimilar = { session.onFindSimilar() },
+        )
     }
     IndeterminateProgressHost(session.progress)
 }

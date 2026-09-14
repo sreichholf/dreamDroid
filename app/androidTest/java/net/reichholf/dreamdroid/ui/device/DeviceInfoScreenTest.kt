@@ -74,4 +74,31 @@ class DeviceInfoScreenTest {
             assertTrue("expected Loading placeholders", it.isNotEmpty())
         }
     }
+
+    @Test
+    fun restoreFromSavedInfoSkipsLoadingPlaceholders() {
+        val state = DeviceInfoUiState()
+        restoreDeviceInfoUiState(
+            state,
+            DeviceInfo(
+                guiVersion = "2016-07-28",
+                imageVersion = "9.0.3.",
+                interfaceVersion = "1.7.4",
+                frontProcessorVersion = "0",
+                deviceName = "Solo4K",
+            ),
+            deviceInfoReady = true,
+        ) { capacity, free -> "$capacity ($free free)" }
+
+        composeRule.setContent {
+            DreamDroidTheme {
+                DeviceInfoScreen(state = state)
+            }
+        }
+
+        composeRule.onNodeWithText("Solo4K").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Loading", substring = true).fetchSemanticsNodes().let {
+            assertTrue("did not expect Loading after restore", it.isEmpty())
+        }
+    }
 }

@@ -42,7 +42,7 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.EpgListMapper
-import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
+import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 
 private const val KEY_SAVED_CURRENT = "current_service"
 private const val KEY_SAVED_ITEM = "current_item"
@@ -259,27 +259,24 @@ fun CurrentServiceDestination(
 
     detailEvent?.let { event ->
         val minutesShort = stringResource(R.string.minutes_short)
-        val content = event.toEpgDetailContent(minutesShort)
-        if (content == null) {
-            detailEvent = null
-        } else {
-            EpgDetailModalSheet(
-                content = content,
-                onDismiss = { detailEvent = null },
-                onSetTimer = {
-                    session.onDialogAction(Statics.ACTION_SET_TIMER, null, null)
-                },
-                onEditTimer = {
-                    session.onDialogAction(Statics.ACTION_EDIT_TIMER, null, null)
-                },
-                onImdb = {
-                    session.onDialogAction(Statics.ACTION_IMDB, null, null)
-                },
-                onSimilar = {
-                    session.onDialogAction(Statics.ACTION_FIND_SIMILAR, null, null)
-                },
-            )
-        }
+        val unavailable = stringResource(R.string.not_available)
+        val content = event.toEpgDetailContentOrUnavailable(minutesShort, unavailable)
+        EpgDetailModalSheet(
+            content = content,
+            onDismiss = { detailEvent = null },
+            onSetTimer = {
+                session.onDialogAction(Statics.ACTION_SET_TIMER, null, null)
+            },
+            onEditTimer = {
+                session.onDialogAction(Statics.ACTION_EDIT_TIMER, null, null)
+            },
+            onImdb = {
+                session.onDialogAction(Statics.ACTION_IMDB, null, null)
+            },
+            onSimilar = {
+                session.onDialogAction(Statics.ACTION_FIND_SIMILAR, null, null)
+            },
+        )
     }
 
     IndeterminateProgressHost(session.progress)

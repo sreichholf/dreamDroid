@@ -72,6 +72,17 @@ class DeviceInfoUiState {
     }
 }
 
+internal fun restoreDeviceInfoUiState(
+    uiState: DeviceInfoUiState,
+    info: DeviceInfo?,
+    deviceInfoReady: Boolean,
+    hddCapacityFormat: (capacity: String, free: String) -> String,
+) {
+    if (deviceInfoReady && info != null && !info.isEmpty() && !uiState.ready) {
+        uiState.apply(info, hddCapacityFormat)
+    }
+}
+
 @Composable
 fun DeviceInfoScreen(
     state: DeviceInfoUiState,

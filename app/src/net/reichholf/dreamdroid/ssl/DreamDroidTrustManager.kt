@@ -64,7 +64,12 @@ class DreamDroidTrustManager(
         }
     }
 
-    override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+    override fun getAcceptedIssuers(): Array<X509Certificate> {
+        if (trustAllCertificates()) {
+            return arrayOf()
+        }
+        return mDefaultTrustManager?.acceptedIssuers ?: emptyArray()
+    }
 
     companion object {
         private val LOG_TAG: String = DreamDroidTrustManager::class.java.simpleName

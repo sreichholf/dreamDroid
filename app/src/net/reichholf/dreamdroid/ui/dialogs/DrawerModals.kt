@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -11,9 +12,9 @@ import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
-import org.apache.commons.io.IOUtils
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.InputStream
 
 /**
  * Phase 2.1g-ii-c: Material 3 [AlertDialog] wrappers for drawer modals
@@ -136,22 +137,33 @@ fun rememberChangelogMarkdown(): String {
     return remember { loadChangelogMarkdown(context) }
 }
 
+private const val CHANGELOG_LOG_TAG = "Changelog"
+
 fun loadChangelogMarkdown(context: Context): String {
-    var text = ""
-    val input = context.resources.openRawResource(R.raw.changelog)
-    try {
+    val fallback = context.getString(R.string.get_content_error)
+    return try {
+        context.resources.openRawResource(R.raw.changelog).use { input ->
+            readChangelogUtf8(input) ?: fallback
+        }
+    } catch (e: IOException) {
+        Log.e(CHANGELOG_LOG_TAG, "Failed to read changelog", e)
+        fallback
+    }
+}
+
+internal fun readChangelogUtf8(input: InputStream): String? {
+    return try {
         val baos = ByteArrayOutputStream()
         val buffer = ByteArray(1024)
         var length: Int
         while (input.read(buffer).also { length = it } != -1) {
             baos.write(buffer, 0, length)
         }
-        text = baos.toString("UTF-8")
+        baos.toString("UTF-8")
     } catch (e: IOException) {
-        e.printStackTrace()
+        Log.e(CHANGELOG_LOG_TAG, "Failed to read changelog", e)
+        null
     }
-    IOUtils.closeQuietly(input)
-    return text
 }
 
 /** Defaults when sleep-timer HTTP load fails but we still want a form. */
