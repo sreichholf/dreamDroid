@@ -16,11 +16,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
+import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
 import net.reichholf.dreamdroid.multiepg.MultiEpgSession
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
@@ -114,6 +117,14 @@ fun MultiEpgDestination(
         session.replaceAndLoad(bouquetRef, anchorSec)
     }
 
+    var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            delay(MultiEpgNowClock.TICK_MS)
+            nowSec = MultiEpgNowClock.sec()
+        }
+    }
+
     val onVisibleWindow = remember(session) {
         { start: Long, end: Long -> session.onVisibleWindow(start, end) }
     }
@@ -126,14 +137,15 @@ fun MultiEpgDestination(
         channels = session.channels,
         timelineStartSec = session.timelineStartSec,
         timelineEndSec = session.timelineEndSec,
-        nowSec = System.currentTimeMillis() / 1000L,
+        nowSec = nowSec,
         loading = session.syncing,
         pullRefreshing = session.pullRefreshing,
         errorMessage = session.errorMessage,
         focusSec = session.anchorSec,
         focusEpoch = focusEpoch,
         onJumpToNow = {
-            val now = System.currentTimeMillis() / 1000L
+            val now = MultiEpgNowClock.sec()
+            nowSec = now
             anchorSec = now
             session.replaceAndLoad(bouquetRef, now)
             focusEpoch += 1
