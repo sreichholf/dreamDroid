@@ -4,9 +4,9 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 
 **New code is Kotlin.** `app/src` has no Java sources. Do not add `.java` types under `app/src`. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`. Do not add `@JvmStatic`/`@JvmOverloads`/`@JvmField` for Java callers.
 
-**Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Stick to it on every pass — do not retab, re-wrap, or invent a house indent. Converted Kotlin is formatted to this guide (do not keep Java tabs in the new file).
+**Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Spotless + ktlint `android_studio` is the checker (`.editorconfig`). Run `./gradlew spotlessApply` on Kotlin you touch; `./gradlew spotlessCheck` is in CI. Do not hand-retab or invent a house indent. Ratchet is `origin/main` (only changed files). Whole-tree format: `./gradlew spotlessApply -PspotlessFull`.
 
-Hard rules for agents:
+Hard rules (also in `.editorconfig`):
 - 4 spaces, never tabs
 - 100-character column limit (except `package` / `import` and unavoidable KDoc URLs)
 - K&R braces (`{` on the same line); wrap long function signatures with one parameter per line and `)` on its own line at the same indent as `fun`
@@ -29,7 +29,7 @@ Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Co
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 
-CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `:app:testGoogleDebugUnitTest`, androidTest compile (with `-Pci`). Arm64 `dreamdroid-google-debug-apk` (2-day retention) uploads on `main` pushes, or `workflow_dispatch` with `upload_apk=true`. Emulator `connectedGoogleDebugAndroidTest` (API 30) on `main` pushes / `workflow_dispatch` (slow/flaky on PR). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
+CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `spotlessCheck`, `:app:testGoogleDebugUnitTest`, androidTest compile (with `-Pci`). Arm64 `dreamdroid-google-debug-apk` (2-day retention) uploads on `main` pushes, or `workflow_dispatch` with `upload_apk=true`. Emulator `connectedGoogleDebugAndroidTest` (API 30) on `main` pushes / `workflow_dispatch` (slow/flaky on PR). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
 
 `verify-dreamdroid.py` exists for a shell-only dump when there is no instrumented test yet. It is not the verification loop.
 
